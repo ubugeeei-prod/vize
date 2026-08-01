@@ -17,7 +17,10 @@ type OracleCase = {
 };
 
 const oracle = JSON.parse(
-  fs.readFileSync(path.join(root, "tests/_fixtures/vue-language-server-auto-insertion.json"), "utf8"),
+  fs.readFileSync(
+    path.join(root, "tests/_fixtures/vue-language-server-auto-insertion.json"),
+    "utf8",
+  ),
 ) as {
   oracle: { package: string; version: string; method: string; measuredAt: string };
   capability: {
@@ -36,11 +39,7 @@ function resolveCorsaBinary(): string | undefined {
   ].find((candidate) => fs.existsSync(candidate));
 }
 
-async function request(
-  session: LspSession,
-  uri: string,
-  fixture: OracleCase,
-): Promise<unknown> {
+async function request(session: LspSession, uri: string, fixture: OracleCase): Promise<unknown> {
   session.notify("textDocument/didOpen", {
     textDocument: { uri, languageId: "vue", version: 1, text: fixture.source },
   });
