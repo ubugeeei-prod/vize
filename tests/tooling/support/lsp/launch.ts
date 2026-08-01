@@ -6,26 +6,27 @@ import { root } from "./paths.ts";
  * Resolves the fastest available way to launch `vize lsp` for smoke tests.
  *
  * A caller-provided binary wins first, then the checkout's debug binary, then
- * CI/release artifacts, then a globally installed CLI. Preferring the debug
- * binary keeps local and workflow tests tied to the code that was just built
- * instead of a stale `target/ci/vize` left by a previous job.
+ * CI/release artifacts. If none exist, build and run the current workspace;
+ * a globally installed CLI may exercise unrelated code and invalidate the
+ * regression that the test is meant to cover.
  */
-export function resolveVizeLaunchCommand(): string[] {
-  const envBinary = process.env.VIZE_LSP_BIN;
+export function resolveVizeLaunchCommand(
+  canLaunch: (command: string) => boolean = (command) =>
+    spawnSync(command, ["--version"], {
+      cwd: root,
+      encoding: "utf8",
+    }).status === 0,
+  envBinary = process.env.VIZE_LSP_BIN,
+): string[] {
   const candidates = [
     ...(envBinary ? [[envBinary, "lsp"]] : []),
     [path.join(root, "target/debug/vize"), "lsp"],
     [path.join(root, "target/ci/vize"), "lsp"],
     [path.join(root, "target/release/vize"), "lsp"],
-    ["vize", "lsp"],
   ];
 
   for (const candidate of candidates) {
-    const probe = spawnSync(candidate[0], ["--version"], {
-      cwd: root,
-      encoding: "utf8",
-    });
-    if (probe.status === 0) {
+    if (canLaunch(candidate[0])) {
       return candidate;
     }
   }
