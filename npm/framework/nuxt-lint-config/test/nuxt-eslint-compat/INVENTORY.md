@@ -57,17 +57,17 @@ the oracle.
 
 ## `nuxt/prefer-import-meta` rule cases
 
-| Case                                                       | Behaviour                                                                                         |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `prefer-import-meta/static-suffixes`                       | All seven upstream suffixes diagnose and preserve their suffix in `import.meta.*`.                |
-| `prefer-import-meta/computed-identifier`                   | `process[client]` matches the upstream property-node predicate.                                   |
-| `prefer-import-meta/optional-chain`                        | The complete optional member expression is replaced.                                             |
-| `prefer-import-meta/nested-member`                         | Only the inner `process.*` member is replaced in a longer chain.                                  |
-| `prefer-import-meta/shadowed-process`                      | The syntax-only upstream rule reports a shadowed `process` parameter.                             |
-| `prefer-import-meta/assignment-target`                     | Assignment targets are diagnosed and fixed.                                                      |
-| `prefer-import-meta/computed-and-object-near-misses`       | String keys, unknown properties, and non-root `process` members stay valid.                       |
-| `prefer-import-meta/lexical-near-misses`                   | Strings, comments, other identifier spellings, and object keys stay valid.                        |
-| `prefer-import-meta/multiple-lines`                        | Multiple findings retain exact non-overlapping ranges and fix together.                           |
+| Case                                                 | Behaviour                                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `prefer-import-meta/static-suffixes`                 | All seven upstream suffixes diagnose and preserve their suffix in `import.meta.*`. |
+| `prefer-import-meta/computed-identifier`             | `process[client]` matches the upstream property-node predicate.                    |
+| `prefer-import-meta/optional-chain`                  | The complete optional member expression is replaced.                               |
+| `prefer-import-meta/nested-member`                   | Only the inner `process.*` member is replaced in a longer chain.                   |
+| `prefer-import-meta/shadowed-process`                | The syntax-only upstream rule reports a shadowed `process` parameter.              |
+| `prefer-import-meta/assignment-target`               | Assignment targets are diagnosed and fixed.                                        |
+| `prefer-import-meta/computed-and-object-near-misses` | String keys, unknown properties, and non-root `process` members stay valid.        |
+| `prefer-import-meta/lexical-near-misses`             | Strings, comments, other identifier spellings, and object keys stay valid.         |
+| `prefer-import-meta/multiple-lines`                  | Multiple findings retain exact non-overlapping ranges and fix together.            |
 
 ## Intentional divergences
 
