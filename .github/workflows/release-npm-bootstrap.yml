@@ -1,0 +1,85 @@
+name: Bootstrap npm package
+
+on:
+  repository_dispatch:
+    types: [npm-bootstrap]
+
+run-name: Bootstrap ${{ github.event.client_payload.package_path }} from ${{ github.event.client_payload.tag_name }} run ${{ github.event.client_payload.release_run_id }}
+
+concurrency:
+  group: npm-bootstrap-${{ github.event.client_payload.package_path }}
+  cancel-in-progress: false
+
+permissions: { contents: read }
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PUBLISH_RETRY_LIMIT: 3
+  PUBLISH_RETRY_DELAY: 10
+  PUBLISH_RESOLUTION_RETRY_LIMIT: 24
+  PUBLISH_RESOLUTION_RETRY_DELAY: 10
+
+jobs:
+  bootstrap:
+    name: First publish to npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: npm
+    permissions: { actions: read, contents: read, id-token: write }
+    steps:
+      - name: Checkout bootstrap controls from main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - name: Validate first-publish request
+        id: preflight
+        env:
+          BOOTSTRAP_PACKAGE_PATH: ${{ github.event.client_payload.package_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_RUN_ID: ${{ github.event.client_payload.release_run_id }}
+          RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
+        run: node tools/github/npm-bootstrap-preflight.mjs preflight
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          cache: true
+          node-version-file: ".node-version"
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - name: Install package build dependencies
+        env:
+          BOOTSTRAP_PACKAGE_PATH: ${{ steps.preflight.outputs.package_path }}
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter "./${BOOTSTRAP_PACKAGE_PATH}..."
+      - name: Test and build package at the dispatch SHA
+        env:
+          BOOTSTRAP_PACKAGE_PATH: ${{ steps.preflight.outputs.package_path }}
+        run: vp run --filter "./${BOOTSTRAP_PACKAGE_PATH}" test
+      - name: Download the smoke-tested Release package artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ steps.preflight.outputs.artifact_name }}
+          path: bootstrap-package
+          run-id: ${{ steps.preflight.outputs.release_run_id }}
+          github-token: ${{ github.token }}
+      - name: Validate and smoke the exact Release package artifact
+        env:
+          BOOTSTRAP_ARTIFACT_PATH: bootstrap-package
+          EXPECTED_PACKAGE_NAME: ${{ steps.preflight.outputs.package_name }}
+          EXPECTED_PACKAGE_VERSION: ${{ steps.preflight.outputs.version }}
+        run: |
+          node tools/github/npm-bootstrap-preflight.mjs artifact
+          node tools/npm/smoke-release-install.mjs --prepare-manifests "$BOOTSTRAP_ARTIFACT_PATH"
+      - name: Confirm package is still unpublished
+        env:
+          BOOTSTRAP_PACKAGE_PATH: ${{ steps.preflight.outputs.package_path }}
+          RELEASE_RUN_ID: ${{ steps.preflight.outputs.release_run_id }}
+          RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
+        run: node tools/github/npm-bootstrap-preflight.mjs registry-recheck
+      - name: Publish the package once with provenance
+        env:
+          BOOTSTRAP_PACKAGE_PATH: bootstrap-package
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/npm-bootstrap.npmrc
+        run: |
+          trap 'rm -f "$NPM_CONFIG_USERCONFIG"' EXIT
+          printf '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\n' > "$NPM_CONFIG_USERCONFIG"
+          moon run --target native tools/moon/cmd/publish_npm_package -- "$BOOTSTRAP_PACKAGE_PATH" --provenance

@@ -76,6 +76,64 @@ Configure each npm package's Trusted Publisher with:
 - Workflow filename: `release.yml`
 - Environment name: `npm`
 
+### First-publish bootstrap
+
+npm only allows Trusted Publishing to be configured after a package exists. Do
+not use an older failed release for recovery. Merge the bootstrap workflow,
+create a fresh release tag at the current default-branch tip, and let the normal
+Release workflow reach a terminal failure at the new package's OIDC publish
+job. Record that Release run ID, then send the fixed `npm-bootstrap` repository
+dispatch:
+
+Freeze `main` from creation of the fresh tag until GitHub has accepted the
+repository dispatch and the bootstrap run has started. Disable PR auto-merge
+and allow neither direct pushes nor other merges during that window. If the
+bootstrap reports that the tag and repository-dispatch SHA differ, stop and
+investigate; do not create replacement tags merely to chase a moving `main`.
+
+```bash
+FRESH_TAG=vX.Y.Z
+RELEASE_RUN_ID=123456789
+gh api repos/ubugeeei-prod/vize/dispatches \
+  -f event_type=npm-bootstrap \
+  -F "client_payload[tag_name]=$FRESH_TAG" \
+  -F "client_payload[release_run_id]=$RELEASE_RUN_ID" \
+  -F 'client_payload[package_path]=npm/framework/nuxt-lint-config'
+```
+
+GitHub executes the workflow definition from the default branch. The bootstrap
+requires the tag commit to equal that repository-dispatch SHA and to be on
+`origin/main`'s first-parent history. It also binds the tag, workspace, and
+package versions, and queries the supplied Release run before any credential is
+available. The run must be the completed failed `.github/workflows/release.yml`
+tag run for the same SHA. Its package build, release preflight, and tarball smoke
+jobs must be successful, while only the target package publish job is required
+to have failed. The exact package artifact from that run is downloaded,
+identity-checked, smoke-installed again, and published with provenance. The
+workflow refuses to run unless the package remains absent from npm.
+
+npm Granular Access Tokens expire after at most 90 days. Before dispatch, rotate
+an expired or long-lived `NPM_TOKEN` repository secret to a short-lived Granular
+Access Token scoped to write packages in `@vizejs` and permitted to bypass 2FA.
+The secret is exposed only to the final publish step. Never place the token in a
+workflow-level or job-level environment.
+
+Immediately after the first publish of `@vizejs/nuxt-lint-config`, configure the
+normal release workflow as its trusted publisher. Use npm CLI 11.17.0 or newer
+and authenticate as an npm owner with settings 2FA:
+
+```bash
+npm trust github @vizejs/nuxt-lint-config --file release.yml --repo ubugeeei-prod/vize --env npm --allow-publish --yes
+```
+
+Confirm the package's npm settings name `release.yml` and the `npm` environment.
+Revoke the short-lived Granular Access Token immediately and remove or rotate
+the `NPM_TOKEN` secret, then rerun only the failed jobs in the same Release run.
+The standard OIDC-only publish job will see the exact version and finish its
+registry verification, allowing the remaining release jobs to complete. Use
+`.github/workflows/release.yml` for every later version. Do not use the bootstrap
+workflow after the package exists; its registry guard will reject the request.
+
 After every package is configured and one release has verified OIDC publishing,
 set the npm package publishing access to require two-factor authentication and
 disallow tokens, then revoke the old automation token.
