@@ -120,6 +120,8 @@ fn babel_compat_rewrites_xlink_href_across_prop_shapes_only_when_opted_in() {
 
     assert!(native.contains("{ xlinkHref: \"#a\" }"), "{native}");
     assert!(native.contains("{ xlinkHref: href }"), "{native}");
+    assert!(native.contains("{ \"xlink:href\": \"#b\" }"), "{native}");
+    assert!(!babel.contains("xlinkHref"), "{babel}");
     assert!(babel.contains("{ \"xlink:href\": \"#a\" }"), "{babel}");
     assert!(babel.contains("{ \"xlink:href\": href }"), "{babel}");
     assert!(babel.contains("{ \"xlink:href\": \"#b\" }"), "{babel}");
