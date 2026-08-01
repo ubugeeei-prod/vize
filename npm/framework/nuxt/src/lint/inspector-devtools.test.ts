@@ -140,6 +140,10 @@ void test("lazy lint inspector launches a hardened UI and forwards API requests"
   assert.equal((await rawRequest(api, { method: "POST" })).status, 405);
   assert.equal((await rawRequest(api, { host: "example.com" })).status, 421);
   assert.equal((await rawRequest(new URL("api?file=../secret", viewer))).status, 400);
+  assert.equal((await rawRequest(new URL("/wrong-token/", viewer))).status, 404);
+  assert.equal((await rawRequest(new URL("/wrong-token/api", viewer))).status, 404);
+  assert.equal((await rawRequest(new URL("api?unknown=1", viewer))).status, 400);
+  assert.equal((await rawRequest(new URL("api?fresh=0", viewer))).status, 400);
   const head = await rawRequest(viewer, { method: "HEAD" });
   assert.equal(head.status, 200);
   assert.equal(head.body, "");

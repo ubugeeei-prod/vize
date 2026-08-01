@@ -72,7 +72,15 @@ export async function setupNuxtLintDevtools(
     tabs.push(controller.tab());
   });
   nuxt.hook("close", () => controller.close());
-  if (resolved.enabled === true) await controller.start();
+  if (resolved.enabled === true) {
+    try {
+      await controller.start();
+    } catch (error) {
+      console.warn(
+        `[vize] Nuxt lint inspector failed to start: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
   return controller;
 }
 

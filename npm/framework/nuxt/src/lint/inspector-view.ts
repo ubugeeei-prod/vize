@@ -120,7 +120,7 @@ export function renderNuxtLintInspectorHtml(nonce: string): string {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || "Inspector request failed");
         renderEffective(payload); renderItems(payload);
-        status.textContent = "Resolved " + payload.items.length + " config items";
+        status.textContent = "Resolved " + (payload.items || []).length + " config items";
       } catch (error) {
         status.className = "error";
         status.textContent = error instanceof Error ? error.message : String(error);
