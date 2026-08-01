@@ -12,6 +12,10 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  createFormatterChangeEvidence,
+  validateFormatterChangeEvidence,
+} from "./tool-matrix-formatter.mjs";
 import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -119,6 +123,59 @@ export function withFormattedWorkspace(project, files, launch, run) {
   } finally {
     rmSync(workspaceDir, { recursive: true, force: true });
   }
+}
+
+/** Load the preceding real-project matrix's validated formatter check evidence. */
+export function loadFormatterCheckEvidence(project, reportDir = process.env.FIXTURE_REPORT_DIR) {
+  if (reportDir == null || reportDir === "") return null;
+
+  const reportPath = resolve(repoRoot, reportDir, `${project.id}-formatter.json`);
+  if (!existsSync(reportPath)) {
+    throw new Error(`missing formatter check report for ${project.id}: ${reportPath}`);
+  }
+  const report = JSON.parse(readFileSync(reportPath, "utf8"));
+  if (
+    report.schema !== "vize.fixtureToolRun" ||
+    report.version !== 1 ||
+    report.project !== project.id ||
+    report.tool !== "formatter"
+  ) {
+    throw new Error(`invalid formatter check report identity for ${project.id}: ${reportPath}`);
+  }
+  validateFormatterChangeEvidence(
+    report.formatterCheck,
+    `${project.id} formatter --check evidence`,
+  );
+  return report.formatterCheck;
+}
+
+/** Measure which copied fixture inputs the first formatter write actually changed. */
+export function collectFormatterWriteEvidence(project, files, workspaceDir) {
+  const changedPaths = files.filter(
+    (file) =>
+      !readFileSync(join(project.fixtureDir, file)).equals(readFileSync(join(workspaceDir, file))),
+  );
+  return createFormatterChangeEvidence(files.length, changedPaths);
+}
+
+/** Require formatter --check's prediction to equal the first --write mutation set. */
+export function assertFormatterCheckWriteAgreement(projectId, checkEvidence, writeEvidence) {
+  validateFormatterChangeEvidence(checkEvidence, `${projectId} formatter --check evidence`);
+  validateFormatterChangeEvidence(writeEvidence, `${projectId} formatter --write evidence`);
+  const fields = [
+    "checkedFileCount",
+    "changedFileCount",
+    "unchangedFileCount",
+    "changedPathsSha256",
+  ];
+  const mismatches = fields.filter((field) => checkEvidence[field] !== writeEvidence[field]);
+  if (mismatches.length === 0) return;
+  throw new Error(
+    `${projectId}: formatter --check prediction disagrees with actual --write mutation ` +
+      `(${mismatches.join(", ")})\n` +
+      `  --check: ${JSON.stringify(checkEvidence)}\n` +
+      `  --write: ${JSON.stringify(writeEvidence)}`,
+  );
 }
 
 function formatWorkspace(project, workspaceDir, launch) {

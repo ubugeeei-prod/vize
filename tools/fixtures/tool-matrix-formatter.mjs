@@ -59,7 +59,7 @@ export function validateFormatterOutput(
       invalid("zero-file fixture emitted an unexpected report");
     }
     if (exitCode !== 1) invalid(`zero-file exit code ${exitCode} does not match expected 1`);
-    return formatterSummary(0, [], 0);
+    return createFormatterChangeEvidence(0, []);
   }
 
   const lines = normalizedStderr.slice(0, -1).split("\n");
@@ -115,21 +115,46 @@ export function validateFormatterOutput(
   if (exitCode !== expectedExitCode) {
     invalid(`exit code ${exitCode} does not match expected ${expectedExitCode}`);
   }
-  return formatterSummary(checked, changedPaths, unchanged);
+  return createFormatterChangeEvidence(checked, changedPaths);
 }
 
-function formatterSummary(checkedFileCount, changedPaths, unchangedFileCount) {
+/** Build the canonical evidence shared by formatter check and write validation. */
+export function createFormatterChangeEvidence(checkedFileCount, changedPaths) {
   const digest = createHash("sha256");
   for (const inputPath of [...changedPaths].sort((left, right) => left.localeCompare(right))) {
     digest.update(inputPath);
     digest.update("\0");
   }
-  return {
+  const evidence = {
     checkedFileCount,
     changedFileCount: changedPaths.length,
-    unchangedFileCount,
+    unchangedFileCount: checkedFileCount - changedPaths.length,
     changedPathsSha256: digest.digest("hex"),
   };
+  validateFormatterChangeEvidence(evidence);
+  return evidence;
+}
+
+/** Validate persisted formatter evidence before comparing separate CLI runs. */
+export function validateFormatterChangeEvidence(evidence, label = "formatter change evidence") {
+  if (evidence == null || typeof evidence !== "object" || Array.isArray(evidence)) {
+    throw new Error(`invalid ${label}`);
+  }
+  const keys = ["changedFileCount", "changedPathsSha256", "checkedFileCount", "unchangedFileCount"];
+  if (JSON.stringify(Object.keys(evidence).sort()) !== JSON.stringify(keys)) {
+    throw new Error(`invalid ${label} keys`);
+  }
+  for (const field of ["checkedFileCount", "changedFileCount", "unchangedFileCount"]) {
+    if (!Number.isSafeInteger(evidence[field]) || evidence[field] < 0) {
+      throw new Error(`invalid ${label} ${field}`);
+    }
+  }
+  if (evidence.checkedFileCount !== evidence.changedFileCount + evidence.unchangedFileCount) {
+    throw new Error(`${label} counts do not reconcile`);
+  }
+  if (!/^[0-9a-f]{64}$/.test(evidence.changedPathsSha256)) {
+    throw new Error(`invalid ${label} changedPathsSha256`);
+  }
 }
 
 function parseCount(line, pattern, label) {

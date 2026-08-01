@@ -1,19 +1,25 @@
 // Corpus-wide glyph formatter idempotence: for every Vue SFC in the hydrated
-// ecosystem fixtures, `fmt(fmt(x)) == fmt(x)` byte-for-byte. Fixtures are
-// hydrated per-lane, so absent projects are reported as skipped, never failed;
-// the weekly Real Project Matrix shards hydrate the full registry. Set
-// VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT to cap files for local iteration.
+// ecosystem fixtures, `fmt(fmt(x)) == fmt(x)` byte-for-byte. In the Real
+// Project Matrix, the preceding `--check` prediction must also equal the first
+// `--write` mutation set. Fixtures are hydrated per-lane, so absent projects
+// are reported as skipped, never failed; the weekly matrix shards hydrate the
+// full registry. Set VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT to cap files for
+// local iteration.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import { createFormatterChangeEvidence } from "../../tools/fixtures/tool-matrix-formatter.mjs";
 import {
+  assertFormatterCheckWriteAgreement,
+  collectFormatterWriteEvidence,
   collectProjectVueFiles,
   diffExcerpt,
   isKnownViolation,
   loadGlyphCorpusProjects,
+  loadFormatterCheckEvidence,
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
@@ -39,6 +45,7 @@ function sweepProject(
   launch: { command: string; prefix: string[] },
   violations: Violation[],
   counters: { files: number; skipped: number },
+  checkEvidence: FormatterEvidence | null = null,
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
@@ -47,6 +54,13 @@ function sweepProject(
     files,
     launch,
     (workspace: { workspaceDir: string; reformat: () => void }) => {
+      if (checkEvidence != null) {
+        assertFormatterCheckWriteAgreement(
+          project.id,
+          checkEvidence,
+          collectFormatterWriteEvidence(project, files, workspace.workspaceDir),
+        );
+      }
       const firstPass = snapshotWorkspaceFiles(workspace.workspaceDir, files) as Map<
         string,
         Buffer
@@ -88,7 +102,7 @@ test("glyph corpus idempotence holds for every hydrated fixture", () => {
   const violations: Violation[] = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters);
+    sweepProject(project, launch, violations, counters, loadFormatterCheckEvidence(project));
   }
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
@@ -148,6 +162,148 @@ test("glyph corpus idempotence machinery flags a drifting formatter", () => {
     fs.rmSync(fakeDir, { recursive: true, force: true });
   }
 });
+
+for (const fixtureCase of [
+  {
+    name: "glyph corpus accepts an exact formatter check/write prediction",
+    write: "change",
+    checkPaths: ["src/App.vue"],
+    agrees: true,
+  },
+  {
+    name: "glyph corpus rejects a formatter check false positive",
+    write: "clean",
+    checkPaths: ["src/App.vue"],
+    agrees: false,
+  },
+  {
+    name: "glyph corpus rejects a formatter check false negative",
+    write: "change",
+    checkPaths: [],
+    agrees: false,
+  },
+] as const) {
+  test(fixtureCase.name, () => {
+    const fixture = makeAgreementFixture(fixtureCase.write);
+    const violations: Violation[] = [];
+    const counters = { files: 0, skipped: 0 };
+    const sweep = () =>
+      sweepProject(
+        fixture.project,
+        fixture.launch,
+        violations,
+        counters,
+        formatterEvidence(1, [...fixtureCase.checkPaths]),
+      );
+    try {
+      if (fixtureCase.agrees) {
+        assert.doesNotThrow(sweep);
+        assert.deepEqual(violations, []);
+        assert.deepEqual(counters, { files: 1, skipped: 0 });
+      } else {
+        assert.throws(sweep, /--check prediction disagrees with actual --write mutation/);
+      }
+    } finally {
+      fixture.cleanup();
+    }
+  });
+}
+
+test("glyph corpus rejects different changed paths even when counts agree", () => {
+  assert.throws(
+    () =>
+      assertFormatterCheckWriteAgreement(
+        "synthetic-path-mismatch",
+        formatterEvidence(2, ["src/App.vue"]),
+        formatterEvidence(2, ["src/Card.vue"]),
+      ),
+    /changedPathsSha256/,
+  );
+});
+
+test("glyph corpus loads only the matching validated matrix check evidence", () => {
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-check-report-"));
+  const project = { id: "synthetic-report" };
+  const evidence = formatterEvidence(2, ["src/App.vue"]);
+  const reportPath = path.join(reportDir, `${project.id}-formatter.json`);
+  try {
+    assert.throws(
+      () => loadFormatterCheckEvidence(project, reportDir),
+      /missing formatter check report/,
+    );
+    fs.writeFileSync(
+      reportPath,
+      `${JSON.stringify({
+        schema: "vize.fixtureToolRun",
+        version: 1,
+        project: project.id,
+        tool: "formatter",
+        formatterCheck: evidence,
+      })}\n`,
+    );
+    assert.deepEqual(loadFormatterCheckEvidence(project, reportDir), evidence);
+
+    fs.writeFileSync(
+      reportPath,
+      `${JSON.stringify({
+        schema: "vize.fixtureToolRun",
+        version: 1,
+        project: "wrong-project",
+        tool: "formatter",
+        formatterCheck: evidence,
+      })}\n`,
+    );
+    assert.throws(
+      () => loadFormatterCheckEvidence(project, reportDir),
+      /invalid formatter check report identity/,
+    );
+  } finally {
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
+type FormatterEvidence = {
+  checkedFileCount: number;
+  changedFileCount: number;
+  unchangedFileCount: number;
+  changedPathsSha256: string;
+};
+
+function formatterEvidence(checkedFileCount: number, changedPaths: string[]): FormatterEvidence {
+  return createFormatterChangeEvidence(checkedFileCount, changedPaths) as FormatterEvidence;
+}
+
+function makeAgreementFixture(mode: "change" | "clean") {
+  const project = makeSyntheticProject([["src/App.vue", "<template><p>x</p></template>\n"]]);
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-check-write-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.writeFileSync(
+    executable,
+    [
+      "#!/usr/bin/env node",
+      'import fs from "node:fs";',
+      ...(mode === "change"
+        ? [
+            'const file = "src/App.vue";',
+            'const source = fs.readFileSync(file, "utf8");',
+            'if (source === "<template><p>x</p></template>\\n") {',
+            '  fs.writeFileSync(file, "<template>\\n  <p>x</p>\\n</template>\\n");',
+            "}",
+          ]
+        : []),
+      "",
+    ].join("\n"),
+  );
+  fs.chmodSync(executable, 0o755);
+  return {
+    project,
+    launch: { command: executable, prefix: [] },
+    cleanup: () => {
+      fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+      fs.rmSync(fakeDir, { recursive: true, force: true });
+    },
+  };
+}
 
 function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {
   const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-corpus-"));
