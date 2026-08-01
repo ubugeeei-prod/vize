@@ -85,6 +85,32 @@ impl CorsaBridge {
         overlays: &[(PathBuf, String)],
         virtual_ts_options: &VirtualTsOptions,
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let overlays = overlays
+            .iter()
+            .map(|(path, content)| (path.clone(), content.as_str()))
+            .collect::<Vec<_>>();
+        self.open_vue_virtual_document_with_borrowed_overlays_and_options(
+            source_path,
+            content,
+            options,
+            &overlays,
+            virtual_ts_options,
+        )
+        .await
+    }
+
+    /// Generate and sync a Vue document without copying unchanged overlay text.
+    ///
+    /// Only dependency entries reachable from the host's imports are read, so
+    /// callers with shared buffer snapshots can lend their text for this call.
+    pub async fn open_vue_virtual_document_with_borrowed_overlays_and_options(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, &str)],
+        virtual_ts_options: &VirtualTsOptions,
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
         let project = build_vue_virtual_project_with_overlays_and_options(
             source_path,
             content,
@@ -133,7 +159,7 @@ pub(crate) fn build_vue_virtual_project_with_overlays(
     source_path: &Path,
     content: &str,
     options: CorsaVueVirtualDocumentOptions,
-    overlays: &[(PathBuf, String)],
+    overlays: &[(PathBuf, &str)],
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     build_vue_virtual_project_with_overlays_and_options(
         source_path,
@@ -148,7 +174,7 @@ fn build_vue_virtual_project_with_overlays_and_options(
     source_path: &Path,
     content: &str,
     options: CorsaVueVirtualDocumentOptions,
-    overlays: &[(PathBuf, String)],
+    overlays: &[(PathBuf, &str)],
     virtual_ts_options: &VirtualTsOptions,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
@@ -167,7 +193,7 @@ fn build_vue_virtual_project_with_overlays_and_options(
         .iter()
         .map(|(path, content)| {
             let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
-            (key, content.as_str())
+            (key, *content)
         })
         .collect::<FxHashMap<_, _>>();
     collect_dependency_documents(&mut documents, &host, options, &rewriter, &overlays);

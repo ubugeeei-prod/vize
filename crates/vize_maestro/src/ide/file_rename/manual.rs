@@ -256,7 +256,7 @@ pub(super) fn rename_open_documents(
             continue;
         }
 
-        if state.documents.rename(&old_uri, new_uri.clone()) {
+        if state.rename_document(&old_uri, new_uri.clone()) {
             state.remove_virtual_docs(&old_uri);
 
             if let Some(document) = state.documents.get(&new_uri) {

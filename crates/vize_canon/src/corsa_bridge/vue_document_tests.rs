@@ -2,6 +2,7 @@ use super::vue_document::{
     CorsaVueVirtualDocumentOptions, build_vue_virtual_project,
     build_vue_virtual_project_with_overlays,
 };
+use crate::CorsaBridge;
 use crate::file_uri::path_to_file_uri;
 
 #[test]
@@ -133,7 +134,7 @@ fn vue_virtual_project_prefers_open_dependency_overlays() {
     .expect("child");
     let overlays = vec![(
         child_path.clone(),
-        "<script setup lang=\"ts\">defineProps<{ count: number }>()</script>".into(),
+        "<script setup lang=\"ts\">defineProps<{ count: number }>()</script>",
     )];
 
     let virtual_project = build_vue_virtual_project_with_overlays(
@@ -151,6 +152,19 @@ fn vue_virtual_project_prefers_open_dependency_overlays() {
         .expect("child virtual document");
     assert!(child.contains("count: number"), "{child}");
     assert!(!child.contains("count: string"), "{child}");
+}
+
+#[test]
+fn owned_overlay_bridge_api_remains_source_compatible() {
+    let bridge = CorsaBridge::new();
+    let overlays: Vec<(std::path::PathBuf, vize_carton::String)> =
+        vec![(std::path::PathBuf::from("Child.vue"), "".into())];
+    let _future = bridge.open_vue_virtual_document_with_overlays(
+        std::path::Path::new("Host.vue"),
+        "",
+        CorsaVueVirtualDocumentOptions::default(),
+        &overlays,
+    );
 }
 
 #[test]

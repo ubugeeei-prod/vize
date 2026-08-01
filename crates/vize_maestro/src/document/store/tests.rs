@@ -305,3 +305,38 @@ fn test_document_store_text_snapshot_holds_no_shard_lock() {
     assert_eq!(store.text(&uri).as_deref(), Some("after"));
     assert_eq!(store.text(&Url::parse("file:///absent.vue").unwrap()), None);
 }
+
+// `revision` is what content caches key on, so an unchanged stamp has to be
+// proof the text is unchanged. The client-supplied `version` cannot carry that
+// promise: editors restart it at 1 on reopen and hand the same numbers to
+// every document (#3442).
+#[test]
+fn test_document_revision_is_unique_per_content_snapshot() {
+    let store = DocumentStore::new();
+    let uri = test_uri();
+    let other = Url::parse("file:///other.vue").unwrap();
+
+    store.open(uri.clone(), "first".to_string(), 1, "vue".to_string());
+    let opened = store.get(&uri).unwrap().revision();
+
+    store.open(other.clone(), "first".to_string(), 1, "vue".to_string());
+    assert_ne!(
+        store.get(&other).unwrap().revision(),
+        opened,
+        "documents opened at the same version must not share a revision"
+    );
+
+    store.apply_changes(&uri, vec![full_change("second")], 2);
+    let edited = store.get(&uri).unwrap().revision();
+    assert_ne!(edited, opened, "an edit must move the revision");
+
+    // Reopening resets the client version to 1; the revision must still move.
+    store.close(&uri);
+    store.open(uri.clone(), "third".to_string(), 1, "vue".to_string());
+    let reopened = store.get(&uri).unwrap().revision();
+    assert_ne!(reopened, opened);
+    assert_ne!(reopened, edited);
+
+    // A read that changes nothing must report the same stamp.
+    assert_eq!(store.get(&uri).unwrap().revision(), reopened);
+}

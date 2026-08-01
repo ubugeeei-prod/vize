@@ -148,18 +148,18 @@ impl DiagnosticService {
                 tracing::warn!("cannot derive source path for {}", uri);
                 return Ok(vec![]);
             };
-            let overlays = state
-                .documents
+            // Incrementally refreshed: documents unchanged since the last pass
+            // keep their cached text instead of being copied out of their ropes
+            // again, so a keystroke costs one document rather than every open
+            // one (#3442). The snapshot is owned and lock-free, so holding it
+            // across the bridge `.await` below is safe (#3315).
+            let cached_overlays = state.corsa_overlays();
+            let overlays = cached_overlays
                 .iter()
-                .filter_map(|document| {
-                    Some((
-                        document.key().to_file_path().ok()?,
-                        document.value().text().into(),
-                    ))
-                })
-                .collect::<Vec<(std::path::PathBuf, vize_carton::String)>>();
+                .map(|(path, text)| (path.clone(), &**text))
+                .collect::<Vec<(std::path::PathBuf, &str)>>();
             let opened = bridge
-                .open_vue_virtual_document_with_overlays_and_options(
+                .open_vue_virtual_document_with_borrowed_overlays_and_options(
                     &source_path,
                     &content,
                     CorsaVueVirtualDocumentOptions {

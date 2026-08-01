@@ -2,12 +2,26 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use dashmap::DashMap;
 use ropey::Rope;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
 use crate::utils::position_to_offset;
+
+/// Source of [`Document::revision`] stamps.
+///
+/// Process-global and monotonic, so a stamp identifies one exact content
+/// snapshot across the whole server for the lifetime of the process. The
+/// client-supplied `version` cannot do this job: it is chosen by the editor,
+/// resets on reopen, and is reused across documents, so equal versions do not
+/// imply equal text.
+static NEXT_DOCUMENT_REVISION: AtomicU64 = AtomicU64::new(1);
+
+fn next_revision() -> u64 {
+    NEXT_DOCUMENT_REVISION.fetch_add(1, Ordering::Relaxed)
+}
 
 /// A document managed by the LSP server.
 #[derive(Debug)]
@@ -20,6 +34,13 @@ pub struct Document {
     pub content: Rope,
     /// Language ID (e.g., "vue", "typescript")
     pub language_id: String,
+    /// Monotonic stamp for the exact content this document currently holds.
+    ///
+    /// Bumped by every mutation. Caches that key derived data on a document
+    /// compare this instead of `version`: an unchanged stamp is proof the
+    /// content is byte-identical, which is what makes reusing a cached
+    /// snapshot safe rather than merely likely.
+    revision: u64,
     /// Lazily computed structural petite-vue detection result, memoized per
     /// document version so per-request consumers (completion, definition, ...)
     /// never re-scan the content. Reset on every edit.
@@ -34,8 +55,18 @@ impl Document {
             version,
             content: Rope::from_str(&content),
             language_id,
+            revision: next_revision(),
             petite_vue_detected: OnceLock::new(),
         }
+    }
+
+    /// Monotonic stamp for the content this document currently holds.
+    ///
+    /// Two reads that return the same value observed the same text; a bumped
+    /// value means the text may differ. Never reused across documents.
+    #[inline]
+    pub fn revision(&self) -> u64 {
+        self.revision
     }
 
     /// Whether the document structurally uses petite-vue (see
@@ -69,6 +100,7 @@ impl Document {
     /// Apply an incremental change to the document.
     pub fn apply_change(&mut self, change: &TextDocumentContentChangeEvent, new_version: i32) {
         self.version = new_version;
+        self.revision = next_revision();
         self.petite_vue_detected = OnceLock::new();
 
         if let Some(range) = change.range {
@@ -142,6 +174,10 @@ impl DocumentStore {
         };
 
         document.uri = new_uri.clone();
+        // A rename moves the same text to a new path. Overlay consumers key on
+        // the path, so the entry they cached under the old URI must not be
+        // mistaken for this one; a fresh stamp keeps the two unrelatable.
+        document.revision = next_revision();
         self.documents.insert(new_uri, document);
         true
     }

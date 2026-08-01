@@ -11,10 +11,14 @@ mod batch_cache;
 #[cfg(feature = "native")]
 mod corsa;
 #[cfg(feature = "native")]
+mod corsa_overlays;
+#[cfg(feature = "native")]
 mod global_components;
 
 #[cfg(test)]
 mod config_tests;
+#[cfg(all(test, feature = "native"))]
+mod corsa_overlays_tests;
 #[cfg(test)]
 mod tests;
 
@@ -130,6 +134,13 @@ pub struct ServerState {
     /// Batch type check result cache
     #[cfg(feature = "native")]
     batch_cache: BatchTypeCheckCache,
+    /// Unsaved-buffer overlays handed to Corsa, rebuilt incrementally.
+    ///
+    /// Rebuilding the whole set per pass costs one full copy of every open
+    /// document per keystroke; this keeps the unchanged ones and re-reads only
+    /// the document whose revision moved (#3442).
+    #[cfg(feature = "native")]
+    corsa_overlays: corsa_overlays::CorsaOverlayCache,
 }
 
 impl Default for ServerState {
@@ -183,6 +194,8 @@ impl ServerState {
             batch_checker: OnceLock::new(),
             #[cfg(feature = "native")]
             batch_cache: BatchTypeCheckCache::new(),
+            #[cfg(feature = "native")]
+            corsa_overlays: corsa_overlays::CorsaOverlayCache::default(),
         }
     }
 
@@ -193,6 +206,26 @@ impl ServerState {
         self.global_component_references.invalidate();
         // Invalidate batch cache when workspace changes
         self.batch_cache.invalidate();
+        // Overlays shadow files resolved relative to the workspace root, so a
+        // new root retargets them even though no document changed.
+        self.corsa_overlays.invalidate();
+    }
+
+    /// Close a document and release any cached Corsa overlay immediately.
+    pub(crate) fn close_document(&self, uri: &Url) {
+        self.documents.close(uri);
+        #[cfg(feature = "native")]
+        self.corsa_overlays.remove(uri);
+    }
+
+    /// Rename a document while dropping the overlay cached under its old URI.
+    pub(crate) fn rename_document(&self, old_uri: &Url, new_uri: Url) -> bool {
+        let renamed = self.documents.rename(old_uri, new_uri);
+        #[cfg(feature = "native")]
+        if renamed {
+            self.corsa_overlays.remove(old_uri);
+        }
+        renamed
     }
 
     /// Check whether LSP type checking is enabled.

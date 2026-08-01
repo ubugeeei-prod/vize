@@ -77,6 +77,11 @@ impl ServerState {
 
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
         *self.type_checker_config.write() = config;
+        // The tsconfig and runtime this selects decide which project the
+        // overlays are layered onto, so a reload retargets them even though no
+        // document changed (#3442).
+        #[cfg(feature = "native")]
+        self.invalidate_corsa_overlays();
         tracing::info!("Loaded type checker config from {}", source);
     }
 

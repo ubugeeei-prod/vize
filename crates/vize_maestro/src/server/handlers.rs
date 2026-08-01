@@ -128,7 +128,7 @@ impl LanguageServer for MaestroServer {
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
-        self.state.documents.close(&uri);
+        self.state.close_document(&uri);
 
         // Clean up virtual documents cache
         self.state.remove_virtual_docs(&uri);
