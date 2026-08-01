@@ -1,4 +1,7 @@
-use super::{analyze_options_api_script, generate_virtual_ts_with_offsets_options_api};
+use super::{
+    analyze_options_api_script, generate_virtual_ts_with_offsets_legacy_vue2,
+    generate_virtual_ts_with_offsets_options_api,
+};
 
 #[test]
 fn test_options_api_setup_return_bindings_use_default_instance_type() {
@@ -121,10 +124,19 @@ export default defineComponent({
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
     );
+    // The typed instance bridge is Vue 2 only, where nothing else types `this`.
+    let legacy = generate_virtual_ts_with_offsets_legacy_vue2(
+        &summary,
+        Some(script),
+        None,
+        0,
+        0,
+        &Default::default(),
+    );
     assert!(
-        output.code.contains("    store: any;"),
+        legacy.code.contains("    store: any;"),
         "Options API `this` bridge should include setup() return bindings:\n{}",
-        output.code
+        legacy.code
     );
 }
 
@@ -256,7 +268,7 @@ export default defineComponent({
 })
 "#;
     let summary = analyze_options_api_script(script);
-    let output = generate_virtual_ts_with_offsets_options_api(
+    let output = generate_virtual_ts_with_offsets_legacy_vue2(
         &summary,
         Some(script),
         None,
@@ -301,7 +313,8 @@ export default defineComponent({
 })
 "#;
     let summary = analyze_options_api_script(script);
-    let output = generate_virtual_ts_with_offsets_options_api(
+    // Spread helper shapes only reach the type checker through the Vue 2 bridge.
+    let output = generate_virtual_ts_with_offsets_legacy_vue2(
         &summary,
         Some(script),
         None,

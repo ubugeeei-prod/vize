@@ -2,7 +2,8 @@ use super::helpers::{VUE_SETUP_HELPERS, generate_template_context, get_dom_event
 use super::{
     TemplateGlobal, VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
     generate_virtual_ts, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_options_api,
+    generate_virtual_ts_with_offsets_and_checks, generate_virtual_ts_with_offsets_legacy_vue2,
+    generate_virtual_ts_with_offsets_options_api,
 };
 use vize_carton::config::VueVersion;
 mod auto_import_shadowing;
@@ -14,6 +15,7 @@ mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
 mod options_api_props_spread;
 mod options_api_setup_spread;
+mod options_api_this_bridge;
 mod slot_component_bindings;
 mod unused_refs;
 mod vif_chain;
@@ -114,68 +116,6 @@ fn analyze_options_api_script(script: &str) -> vize_croquis::Croquis {
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
     analyzer.analyze_script_plain(script);
     analyzer.finish()
-}
-
-#[test]
-fn test_options_api_virtual_ts_emits_this_bridge() {
-    let script = r#"import { defineComponent } from 'vue'
-
-function useFakeStore() {
-    return {
-        ready: false,
-        items: [] as Array<{ id: number; label: string }>,
-    }
-}
-
-export default defineComponent({
-    setup() {
-        const store = useFakeStore()
-        return { store }
-    },
-    data() {
-        return { count: 0 }
-    },
-    computed: {
-        status() {
-            return this.store.ready
-        },
-    },
-    methods: {
-        bump(step: number) {
-            this.count = this.count + step
-            return this.status
-        },
-    },
-    props: {
-        initial: { type: Number, default: 0 },
-    },
-})
-"#;
-    let summary = analyze_options_api_script(script);
-    let output = generate_virtual_ts_with_offsets_options_api(
-        &summary,
-        Some(script),
-        None,
-        0,
-        0,
-        &Default::default(),
-    );
-
-    assert!(
-        output.code.contains("type __VizeThis ="),
-        "expected typed Options API `this` bridge:\n{}",
-        output.code
-    );
-    assert!(
-        output.code.contains("__vize_method_bump"),
-        "expected method body to be checked through a typed wrapper:\n{}",
-        output.code
-    );
-    assert!(
-        output.code.contains("__vize_computed_status"),
-        "expected computed body to be checked through a typed wrapper:\n{}",
-        output.code
-    );
 }
 
 #[test]

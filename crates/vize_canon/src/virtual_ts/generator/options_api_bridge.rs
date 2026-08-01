@@ -4,6 +4,16 @@
 //! scope with an explicit `this: __VizeThis` receiver, so `this.foo` in an
 //! Options API component is type-checked instead of silently `any`.
 //!
+//! Only the Vue 2 dialect emits it. A Vue 3 options object is generated (or
+//! wrapped) as `defineComponent({ ... })`, so Vue's own options machinery
+//! already types `this` inside the authored copy; re-checking those bodies
+//! against the approximate `__VizeThis` shape adds no coverage, and now that
+//! the copies anchor on authored bytes it would publish findings vue-tsc never
+//! reports: implicit `any` callback parameters off `any`-typed members, plus
+//! every member the shape cannot see (mixins, `extends`, `$emit`, plugin
+//! globals). The Vue 2 `defineComponent` shim types no receiver at all, which
+//! is where the bridge remains the only checker.
+//!
 //! Because those bodies are verbatim copies of authored bytes, every copy is
 //! published as a [`VizeMapping`]. Without them a diagnostic raised inside a
 //! bridged body has no authored origin, and `CompositeSourceMap` reports the
@@ -20,9 +30,22 @@ use vize_croquis::{BindingType, Croquis};
 use self::collect::collect_options_api_bridge;
 use super::options_api_support::{extend_options_api_descriptor_names, is_safe_value_identifier};
 use crate::virtual_ts::types::VizeMapping;
-use vize_carton::{CompactString, String, append};
+use vize_carton::{CompactString, String, append, profile};
 
 pub(super) fn generate_options_api_bridge(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    summary: &Croquis,
+    script: &str,
+    script_offset: usize,
+) {
+    profile!(
+        "canon.virtual_ts.generate_options_api_bridge",
+        emit_options_api_bridge(ts, mappings, summary, script, script_offset)
+    );
+}
+
+fn emit_options_api_bridge(
     mut ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
@@ -62,10 +85,20 @@ pub(super) fn generate_options_api_bridge(
 
     ts.push_str("  // Options API typed instance bridge\n");
     for (index, mapped_type) in bridge.mapped_types.iter().enumerate() {
+        // `ReturnType<typeof store>` only instantiates for a store *factory*;
+        // a plain store object raises TS2344 here. Anchor the alias on the
+        // authored spread so that finding cannot escape as an unmapped offset.
+        let gen_start = ts.len();
         append!(
             ts,
-            "  type __VizeOptionsMap{index} = {{ {mapped_type} }};\n"
+            "  type __VizeOptionsMap{index} = {{ {} }};\n",
+            mapped_type.text
         );
+        mappings.push(VizeMapping {
+            gen_range: gen_start..ts.len(),
+            src_range: shift(script_offset, &mapped_type.src),
+            sub_spans: Vec::new(),
+        });
     }
     ts.push_str("  type __VizeThis = {\n");
     for name in names {
@@ -77,11 +110,8 @@ pub(super) fn generate_options_api_bridge(
     }
     ts.push_str(";\n");
 
-    for function in &bridge.computed {
-        emit_bridge_function(ts, mappings, "computed", function, script_offset);
-    }
-    for function in &bridge.methods {
-        emit_bridge_function(ts, mappings, "method", function, script_offset);
+    for function in bridge.computed.iter().chain(bridge.methods.iter()) {
+        emit_bridge_function(ts, mappings, function, script_offset);
     }
 
     if !bridge.computed.is_empty() || !bridge.methods.is_empty() {
@@ -107,7 +137,6 @@ pub(super) fn generate_options_api_bridge(
 fn emit_bridge_function(
     mut ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    kind: &str,
     function: &OptionsFunction,
     script_offset: usize,
 ) {
@@ -118,10 +147,16 @@ fn emit_bridge_function(
         params.push_str(&function.params);
         params
     };
+    // The authored modifiers have to survive the copy: dropping `async` makes
+    // TypeScript report TS1308 on the author's `await`, and dropping `*` makes
+    // it report TS1163 on their `yield`.
+    let modifier = if function.is_async { "async " } else { "" };
+    let star = if function.is_generator { "*" } else { "" };
+    let kind = function.kind_prefix();
     let gen_start = ts.len();
     append!(
         ts,
-        "  function __vize_{kind}_{}({params}) ",
+        "  {modifier}function{star} __vize_{kind}_{}({params}) ",
         function.safe_name
     );
     let body_gen_start = ts.len();
@@ -158,7 +193,15 @@ fn shift(script_offset: usize, span: &Range<usize>) -> Range<usize> {
 struct OptionsApiBridge {
     computed: Vec<OptionsFunction>,
     methods: Vec<OptionsFunction>,
-    mapped_types: Vec<String>,
+    mapped_types: Vec<MappedType>,
+}
+
+/// One `...mapState(store, [...])` spread lowered to a mapped type, paired with
+/// the script-relative range of the authored call it was derived from.
+#[derive(Debug)]
+struct MappedType {
+    text: String,
+    src: Range<usize>,
 }
 
 #[derive(Debug)]
@@ -167,6 +210,8 @@ struct OptionsFunction {
     safe_name: CompactString,
     params: String,
     body: String,
+    is_async: bool,
+    is_generator: bool,
     /// Authored spans this function reproduces.
     spans: BridgeSpans,
 }
@@ -190,7 +235,7 @@ impl OptionsFunction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum OptionsFunctionKind {
     Computed,
     Method,

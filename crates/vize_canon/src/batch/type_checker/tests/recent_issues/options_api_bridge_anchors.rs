@@ -77,9 +77,6 @@ fn options_api_method_diagnostics_anchor_on_the_authored_property() {
 
     let snapshot = legacy_vue2_diagnostics(&project_root);
     let _ = std::fs::remove_dir_all(&project_root);
-    let Some(snapshot) = snapshot else {
-        return;
-    };
 
     // `this.missingHelper` is authored at line 33, column 25 — inside the
     // `<script>` block that starts on line 26, never in the template above it.
@@ -95,13 +92,17 @@ fn options_api_method_diagnostics_anchor_on_the_authored_property() {
 
 /// [`super::super::snapshot_project_diagnostics`] with the Vue 2 dialect on,
 /// which is what turns the Options API typed-instance bridge on.
+///
+/// The caller already gated on the two legitimate skips (no `tsgo` binary, no
+/// installed `vue`), so a checker error past that point is a real defect and
+/// must fail the test rather than collapse into a silent pass.
 fn legacy_vue2_diagnostics(
     project_root: &Path,
-) -> Option<Vec<(vize_carton::String, Option<u32>, vize_carton::String)>> {
-    let mut checker = BatchTypeChecker::new(project_root).ok()?;
+) -> Vec<(vize_carton::String, Option<u32>, vize_carton::String)> {
+    let mut checker = BatchTypeChecker::new(project_root).expect("batch type checker construction");
     checker.enable_legacy_vue2();
-    checker.scan_project().ok()?;
-    let result = checker.check_project().ok()?;
+    checker.scan_project().expect("project scan");
+    let result = checker.check_project().expect("project check");
 
     let mut snapshot: Vec<_> = result
         .diagnostics
@@ -126,5 +127,5 @@ fn legacy_vue2_diagnostics(
         })
         .collect();
     snapshot.sort();
-    Some(snapshot)
+    snapshot
 }

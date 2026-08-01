@@ -14,8 +14,8 @@ use super::super::options_api::{
     component_options_from_program, option_object_property, property_key_name, safe_identifier,
     source_slice,
 };
-use super::{BridgeSpans, OptionsApiBridge, OptionsFunction, OptionsFunctionKind};
-use vize_carton::{CompactString, String, append};
+use super::{BridgeSpans, MappedType, OptionsApiBridge, OptionsFunction, OptionsFunctionKind};
+use vize_carton::{CompactString, FxHashSet, String, append};
 
 /// Generated prefix that wraps a concise arrow body into a statement body.
 const ARROW_BODY_PREFIX: &str = "{ return ";
@@ -54,12 +54,13 @@ fn collect_function_bridge(
     option_name: &str,
     kind: OptionsFunctionKind,
     output: &mut Vec<OptionsFunction>,
-    mapped_types: &mut Vec<String>,
+    mapped_types: &mut Vec<MappedType>,
 ) {
     let Some(object) = option_object_property(options, option_name) else {
         return;
     };
 
+    let mut used = FxHashSet::default();
     for property in &object.properties {
         match property {
             ObjectPropertyKind::ObjectProperty(property) => {
@@ -69,17 +70,12 @@ fn collect_function_bridge(
                 let Some(name) = property_key_name(&property.key) else {
                     continue;
                 };
-                let Some(function) = options_function_from_expression(
-                    script,
-                    name,
-                    &property.value,
-                    match kind {
-                        OptionsFunctionKind::Computed => OptionsFunctionKind::Computed,
-                        OptionsFunctionKind::Method => OptionsFunctionKind::Method,
-                    },
-                ) else {
+                let Some(mut function) =
+                    options_function_from_expression(script, name, &property.value, kind)
+                else {
                     continue;
                 };
+                function.safe_name = unique_name(function.safe_name, &mut used);
                 output.push(function);
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
@@ -91,13 +87,29 @@ fn collect_function_bridge(
     }
 }
 
+/// `safe_identifier` maps every non-identifier byte to `_`, so distinct
+/// authored keys can collapse onto one name (`"a-b"` and `"a.b"` both yield
+/// `a_b`). Two bridge functions sharing a name raise TS2393 against an
+/// authored body, so suffix repeats before anything is emitted.
+fn unique_name(mut name: CompactString, used: &mut FxHashSet<CompactString>) -> CompactString {
+    let base = name.clone();
+    let mut counter = 1u32;
+    while !used.insert(name.clone()) {
+        counter = counter.saturating_add(1);
+        let mut candidate = String::from(base.as_str());
+        append!(candidate, "_{counter}");
+        name = CompactString::new(candidate.as_str());
+    }
+    name
+}
+
 fn options_function_from_expression(
     script: &str,
     name: &str,
     expression: &Expression<'_>,
     kind: OptionsFunctionKind,
 ) -> Option<OptionsFunction> {
-    let (params, body, spans) = match expression {
+    let parts = match expression {
         Expression::FunctionExpression(function) => function_parts(script, function)?,
         Expression::ArrowFunctionExpression(arrow) => arrow_function_parts(script, arrow)?,
         Expression::ParenthesizedExpression(parenthesized) => {
@@ -118,13 +130,21 @@ fn options_function_from_expression(
     Some(OptionsFunction {
         kind,
         safe_name: CompactString::new(safe_identifier(name).as_str()),
-        params,
-        body,
-        spans,
+        params: parts.params,
+        body: parts.body,
+        is_async: parts.is_async,
+        is_generator: parts.is_generator,
+        spans: parts.spans,
     })
 }
 
-type FunctionParts = (String, String, BridgeSpans);
+struct FunctionParts {
+    params: String,
+    body: String,
+    spans: BridgeSpans,
+    is_async: bool,
+    is_generator: bool,
+}
 
 fn function_parts(script: &str, function: &Function<'_>) -> Option<FunctionParts> {
     let params = params_source(script, &function.params)?;
@@ -134,7 +154,13 @@ fn function_parts(script: &str, function: &Function<'_>) -> Option<FunctionParts
         function: function.params.span().start as usize..body.span().end as usize,
         body: Some((0, body_span)),
     };
-    Some((params, String::from(body_source), spans))
+    Some(FunctionParts {
+        params,
+        body: String::from(body_source),
+        spans,
+        is_async: function.r#async,
+        is_generator: function.generator,
+    })
 }
 
 fn arrow_function_parts(
@@ -157,13 +183,25 @@ fn arrow_function_parts(
                 body_span.start..body_span.start.saturating_add(expression.len()),
             )),
         };
-        Some((params, body, spans))
+        Some(FunctionParts {
+            params,
+            body,
+            spans,
+            is_async: arrow.r#async,
+            is_generator: false,
+        })
     } else {
         let spans = BridgeSpans {
             function,
             body: Some((0, body_span)),
         };
-        Some((params, String::from(body_source), spans))
+        Some(FunctionParts {
+            params,
+            body: String::from(body_source),
+            spans,
+            is_async: arrow.r#async,
+            is_generator: false,
+        })
     }
 }
 
@@ -196,7 +234,7 @@ fn params_source(script: &str, params: &oxc_ast::ast::FormalParameters<'_>) -> O
     Some(result)
 }
 
-fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>) {
+fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<MappedType>) {
     let Expression::Identifier(callee) = &call.callee else {
         return;
     };
@@ -235,11 +273,14 @@ fn collect_mapped_type(call: &CallExpression<'_>, mapped_types: &mut Vec<String>
         append!(key_union, "'{key}'");
     }
 
-    let mut mapped_type = String::default();
+    let mut text = String::default();
     append!(
-        mapped_type,
+        text,
         "[K in {key_union}]: ReturnType<typeof {}>[K]",
         store.name.as_str()
     );
-    mapped_types.push(mapped_type);
+    mapped_types.push(MappedType {
+        text,
+        src: call.span().start as usize..call.span().end as usize,
+    });
 }

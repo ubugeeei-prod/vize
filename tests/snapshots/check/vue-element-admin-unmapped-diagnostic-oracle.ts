@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 
 import { withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
+  type CheckReport,
   resolveTsgoBinary,
   runVizeCheck,
   symlinkVueTypes,
@@ -20,8 +21,10 @@ const sourcePath = "src/views/dashboard/admin/components/TransactionTable.vue";
 // shape that used to publish a generated-coordinate diagnostic
 // ("Property 'list' does not exist on type '__VizeThis'") positioned past the
 // authored EOF — line 67 of a 56-line file — that `vize check` suppressed
-// (#3299). The rule this pins is general: every published range must be
-// addressable in the authored document, and the LSP must agree with the CLI.
+// (#3299). That finding is real, and #3596 anchored it back onto the authored
+// `this.list`, so it is published now. The rule this pins is unchanged: every
+// published range must be addressable in the authored document, and the LSP
+// must agree with the CLI.
 const cleanDataKey = "list: null";
 const brokenDataKey = "tableList: null";
 
@@ -34,6 +37,21 @@ const staleListBindingDiagnostic = {
   code: 2304,
   source: "vize/types",
   message: "Cannot find name 'list'.",
+};
+
+// `this.list` inside `fetchData`, reached through the Options API typed
+// instance bridge. The LSP adds the Vue `.value` hint the CLI does not.
+const staleListMemberDiagnostic = {
+  range: {
+    start: { line: 49, character: 13 },
+    end: { line: 49, character: 17 },
+  },
+  severity: 1,
+  code: 2339,
+  source: "vize/types",
+  message:
+    "Property 'list' does not exist on type '__VizeThis'.\n\n" +
+    "If you intended to read the reactive value, try `.value`. (vize/types)",
 };
 
 test("vue-element-admin data-key-only rename keeps every published range inside the document", async () => {
@@ -74,20 +92,26 @@ test("vue-element-admin data-key-only rename keeps every published range inside 
         const brokenPublish = await waitForPublish(session, sourceUri, 2);
 
         assertRangesWithinDocument(brokenPublish.diagnostics, brokenSource);
-        assert.deepEqual(brokenPublish.diagnostics, [staleListBindingDiagnostic]);
+        assert.deepEqual(byPosition(brokenPublish.diagnostics), [
+          staleListBindingDiagnostic,
+          staleListMemberDiagnostic,
+        ]);
 
         // The CLI's diagnostic set is the reference: the LSP must not add a
         // diagnostic the CLI drops as unmappable.
         const check = runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]);
         assert.equal(check.status, 1, check.stderr || check.stdout);
-        assert.deepEqual(check.report, {
+        assert.deepEqual(sortedReport(check.report), {
           files: [
             {
               file: sourcePath,
-              diagnostics: ["error:2:20 [TS2304] Cannot find name 'list'."],
+              diagnostics: [
+                "error:2:20 [TS2304] Cannot find name 'list'.",
+                "error:50:14 [TS2339] Property 'list' does not exist on type '__VizeThis'.",
+              ],
             },
           ],
-          errorCount: 1,
+          errorCount: 2,
           warningCount: 0,
           fileCount: 1,
         });
@@ -110,6 +134,24 @@ test("vue-element-admin data-key-only rename keeps every published range inside 
     },
   );
 });
+
+/// Publication order is not part of the contract; the set and the ranges are.
+function byPosition(
+  diagnostics: PublishDiagnosticsParams["diagnostics"],
+): PublishDiagnosticsParams["diagnostics"] {
+  return [...diagnostics].sort(
+    (left, right) =>
+      left.range.start.line - right.range.start.line ||
+      left.range.start.character - right.range.start.character,
+  );
+}
+
+function sortedReport(report: CheckReport): CheckReport {
+  return {
+    ...report,
+    files: report.files.map((file) => ({ ...file, diagnostics: [...file.diagnostics].sort() })),
+  };
+}
 
 function assertRangesWithinDocument(
   diagnostics: PublishDiagnosticsParams["diagnostics"],

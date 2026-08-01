@@ -724,17 +724,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 script.len()
             );
 
-            if options_api {
-                profile!(
-                    "canon.virtual_ts.generate_options_api_bridge",
-                    generate_options_api_bridge(
-                        &mut ts,
-                        &mut mappings,
-                        summary,
-                        script,
-                        script_offset as usize,
-                    )
-                );
+            // Vue 2 only; see the bridge module doc for why Vue 3 skips it.
+            if legacy_vue2 {
+                let offset = script_offset as usize;
+                generate_options_api_bridge(&mut ts, &mut mappings, summary, script, offset);
             }
         });
     }
