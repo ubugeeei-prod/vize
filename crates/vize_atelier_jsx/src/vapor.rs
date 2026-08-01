@@ -14,7 +14,9 @@
 
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
-use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
+use vize_atelier_vapor::{
+    VaporGenerateOptions, drop_ir_stack_safe, generate_vapor_with_options, transform_to_ir,
+};
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
@@ -160,6 +162,7 @@ pub(crate) fn compile_root_to_vapor(
     let ir = transform_to_ir(bump, &root);
     let generated =
         generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
+    drop_ir_stack_safe(ir);
 
     let (code, templates) = if let Some(style) = scoped_style.as_ref() {
         inject_scope_id(&generated.code, &generated.templates, &style.scope_id)

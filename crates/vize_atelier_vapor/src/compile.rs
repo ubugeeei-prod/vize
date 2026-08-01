@@ -4,6 +4,7 @@
 //! code generation behind the public `compile_vapor*` functions.
 
 use crate::generate::generate_vapor;
+use crate::ir_drop::drop_ir_stack_safe;
 use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
@@ -111,6 +112,17 @@ fn compile_vapor_inner<'a>(
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    vize_carton::ensure_sufficient_stack(|| {
+        compile_vapor_inner_with_stack(allocator, source, options, template_syntax)
+    })
+}
+
+fn compile_vapor_inner_with_stack<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     // Parse
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
@@ -161,6 +173,8 @@ fn compile_vapor_inner<'a>(
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());
+    drop_ir_stack_safe(ir);
+    drop(root);
 
     (
         VaporCompileResult {

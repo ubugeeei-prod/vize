@@ -106,6 +106,7 @@ fn separated_text_runs_inside_patterned_template_dom_output() {
 
 const DEEP_TEMPLATE_DEPTH: usize = 1100;
 const SMALL_STACK: usize = 256 * 1024;
+const DEEP_PATTERN_CHILD: &str = "VIZE_VAPOR_DEEP_PATTERN_DROP_CHILD";
 
 fn vapor_output_on_small_stack(source: std::string::String) -> std::string::String {
     std::thread::Builder::new()
@@ -133,6 +134,61 @@ fn deeply_nested_template_source(wrapped: bool) -> std::string::String {
         source.push_str("</div>");
     }
     source
+}
+
+fn deeply_nested_pattern_source(with_diagnostic: bool) -> std::string::String {
+    let mut source = if with_diagnostic {
+        std::string::String::from(r#"<div v-memo="[label]">"#)
+    } else {
+        std::string::String::from("<div>")
+    };
+    for _ in 0..DEEP_TEMPLATE_DEPTH {
+        source.push_str(r#"<ul v-match="status"><li v-case="'ready'">"#);
+    }
+    source.push_str("{{ label }}");
+    for _ in 0..DEEP_TEMPLATE_DEPTH {
+        source.push_str("</li></ul>");
+    }
+    source.push_str("</div>");
+    source
+}
+
+#[test]
+fn deeply_nested_patterned_ir_teardown_is_stack_safe() {
+    if std::env::var_os(DEEP_PATTERN_CHILD).is_some() {
+        for with_diagnostic in [false, true] {
+            let source = deeply_nested_pattern_source(with_diagnostic);
+            let expected = vapor_output(&source);
+            let actual = vapor_output_on_small_stack(source);
+            assert_eq!(actual, expected);
+            if with_diagnostic {
+                assert!(
+                    actual.contains(
+                        "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\\\"[]\\\" until memo guards are implemented."
+                    )
+                );
+            } else {
+                assert!(actual.starts_with("errors=[]"));
+            }
+        }
+        return;
+    }
+
+    let output = std::process::Command::new(std::env::current_exe().expect("current test binary"))
+        .arg("tests_template_children::deeply_nested_patterned_ir_teardown_is_stack_safe")
+        .arg("--exact")
+        .arg("--nocapture")
+        .env(DEEP_PATTERN_CHILD, "1")
+        .output()
+        .expect("spawn isolated deep-pattern teardown regression");
+
+    assert!(
+        output.status.success(),
+        "child failed with {}\nstdout:\n{}\nstderr:\n{}",
+        output.status,
+        std::string::String::from_utf8_lossy(&output.stdout),
+        std::string::String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 #[test]
