@@ -5,89 +5,23 @@ import {
   assertPackageIsUnpublished,
   bootstrapArtifacts,
   bootstrapPackages,
-  requiredFailedReleaseJobs,
-  requiredSkippedReleaseJobs,
-  requiredSuccessfulReleaseJobs,
   validateBootstrapManifest,
-  validateBootstrapRequest,
   validateDownloadedArtifact,
   validateRegistryResponse,
-  validateReleaseArtifact,
   validateReleaseCommit,
-  validateReleaseJobs,
-  validateReleaseRun,
-  verifyReleaseRunEvidence,
-} from "../../tools/github/npm-bootstrap-preflight.mjs";
-
-const tagName = "v1.2.3";
-const tagSha = "a".repeat(40);
-const mainSha = "b".repeat(40);
-const releaseRunId = "123456789";
-const repository = "ubugeeei-prod/vize";
-const packagePath = "npm/framework/nuxt-lint-config";
-const packageName = "@vizejs/nuxt-lint-config";
-const artifactName = "release-package-nuxt-lint-config";
-const cargoToml = '[workspace.package]\nversion = "1.2.3"\n';
-const packageManifest = JSON.stringify({
-  name: packageName,
-  version: "1.2.3",
-  publishConfig: { access: "public" },
-});
-
-function request(overrides: Record<string, string> = {}) {
-  return validateBootstrapRequest({
-    tagName,
-    packagePath,
-    releaseRunId,
-    workflowRef: "refs/heads/main",
-    workflowSha: tagSha,
-    ...overrides,
-  });
-}
-
-function releaseRun(overrides: Record<string, unknown> = {}) {
-  return {
-    id: Number(releaseRunId),
-    name: "Release",
-    path: ".github/workflows/release.yml",
-    event: "push",
-    status: "completed",
-    conclusion: "failure",
-    head_branch: tagName,
-    head_sha: tagSha,
-    head_repository: { full_name: repository },
-    ...overrides,
-  };
-}
-
-function releaseJobs() {
-  return [
-    ...requiredSuccessfulReleaseJobs.map((name) => ({
-      name,
-      status: "completed",
-      conclusion: "success",
-    })),
-    ...requiredFailedReleaseJobs.map((name) => ({
-      name,
-      status: "completed",
-      conclusion: "failure",
-    })),
-    ...requiredSkippedReleaseJobs.map((name) => ({
-      name,
-      status: "completed",
-      conclusion: "skipped",
-    })),
-  ];
-}
-
-function releaseArtifact(overrides: Record<string, unknown> = {}) {
-  return {
-    name: artifactName,
-    expired: false,
-    workflow_run: { id: Number(releaseRunId), head_branch: tagName, head_sha: tagSha },
-    ...overrides,
-  };
-}
+} from "../../tools/github/npm-bootstrap-contract.mjs";
+import {
+  artifactName,
+  cargoToml,
+  mainSha,
+  packageManifest,
+  packageName,
+  packagePath,
+  releaseRunId,
+  request,
+  tagName,
+  tagSha,
+} from "./support/npm-bootstrap.ts";
 
 test("npm bootstrap allowlist binds one package path to one Release artifact", () => {
   assert.deepEqual([...bootstrapPackages], [[packagePath, packageName]]);
@@ -204,130 +138,6 @@ test("npm bootstrap requires the tag to equal dispatch SHA on main first-parent"
     () => validateReleaseCommit({ tagSha, workflowSha: tagSha, mainSha, isOnFirstParent: false }),
     /not on the first-parent history/,
   );
-});
-
-test("npm bootstrap accepts only the exact completed failed tag Release run", () => {
-  assert.doesNotThrow(() =>
-    validateReleaseRun({ run: releaseRun(), releaseRunId, repository, tagName, tagSha }),
-  );
-  for (const changed of [
-    { id: 1 },
-    { name: "Check" },
-    { path: ".github/workflows/check.yml" },
-    { event: "workflow_dispatch" },
-    { status: "in_progress" },
-    { conclusion: "success" },
-    { head_branch: "main" },
-    { head_sha: "c".repeat(40) },
-    { head_repository: { full_name: "someone/fork" } },
-  ]) {
-    assert.throws(
-      () =>
-        validateReleaseRun({
-          run: releaseRun(changed),
-          releaseRunId,
-          repository,
-          tagName,
-          tagSha,
-        }),
-      /does not match the failed exact-tag release contract/,
-    );
-  }
-});
-
-test("npm bootstrap requires exact unique successful gates and the failed target publish job", () => {
-  assert.doesNotThrow(() => validateReleaseJobs(releaseJobs()));
-  const missing = releaseJobs().slice(1);
-  assert.throws(() => validateReleaseJobs(missing), /exactly one Build release npm packages/);
-  const duplicate = [...releaseJobs(), releaseJobs()[0]];
-  assert.throws(() => validateReleaseJobs(duplicate), /job names must be unique/);
-  const failedGate = releaseJobs();
-  failedGate[0] = { ...failedGate[0], conclusion: "failure" };
-  assert.throws(() => validateReleaseJobs(failedGate), /completed\/success/);
-  const successfulPublish = releaseJobs();
-  successfulPublish[requiredSuccessfulReleaseJobs.length].conclusion = "success";
-  assert.throws(() => validateReleaseJobs(successfulPublish), /completed\/failure/);
-});
-
-test("npm bootstrap rejects every unexpected non-terminal or non-success Release job", () => {
-  const nonTerminal = releaseJobs();
-  nonTerminal.push({ name: "Some new job", status: "in_progress", conclusion: null });
-  assert.throws(() => validateReleaseJobs(nonTerminal), /Every Release job must be terminal/);
-
-  for (const conclusion of [
-    "failure",
-    "cancelled",
-    "timed_out",
-    "action_required",
-    "stale",
-    "startup_failure",
-    "neutral",
-    "skipped",
-  ]) {
-    const jobs = releaseJobs();
-    jobs.push({ name: `Unexpected ${conclusion}`, status: "completed", conclusion });
-    assert.throws(() => validateReleaseJobs(jobs), /Unexpected Release job conclusion/, conclusion);
-  }
-
-  const wrongSkipped = releaseJobs();
-  wrongSkipped.at(-1)!.conclusion = "success";
-  assert.throws(() => validateReleaseJobs(wrongSkipped), /completed\/skipped/);
-});
-
-test("npm bootstrap requires one unexpired artifact bound to the Release run", () => {
-  const validate = (artifacts: Array<Record<string, unknown>>) =>
-    validateReleaseArtifact({ artifacts, artifactName, releaseRunId, tagName, tagSha });
-  assert.doesNotThrow(() => validate([releaseArtifact()]));
-  assert.throws(() => validate([]), /exactly one/);
-  assert.throws(() => validate([releaseArtifact(), releaseArtifact()]), /found 2/);
-  assert.throws(() => validate([releaseArtifact({ expired: true })]), /has expired/);
-  assert.throws(
-    () =>
-      validate([
-        releaseArtifact({
-          workflow_run: { id: 1, head_branch: tagName, head_sha: tagSha },
-        }),
-      ]),
-    /not bound/,
-  );
-});
-
-test("npm bootstrap verifies run, jobs, and artifact through the GitHub API", async () => {
-  const requested: string[] = [];
-  const fetchImpl = async (input: string | URL | Request) => {
-    const url = new URL(input instanceof Request ? input.url : input);
-    requested.push(url.pathname);
-    let payload;
-    if (url.pathname.endsWith(`/actions/runs/${releaseRunId}`)) {
-      payload = releaseRun();
-    } else if (url.pathname.endsWith(`/actions/runs/${releaseRunId}/jobs`)) {
-      payload = { jobs: releaseJobs() };
-    } else if (url.pathname.endsWith(`/actions/runs/${releaseRunId}/artifacts`)) {
-      payload = { artifacts: [releaseArtifact()] };
-    } else {
-      return new Response("not found", { status: 404 });
-    }
-    return new Response(JSON.stringify(payload), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    });
-  };
-
-  await verifyReleaseRunEvidence({
-    apiUrl: "https://api.github.test",
-    repository,
-    token: "token",
-    releaseRunId,
-    tagName,
-    tagSha,
-    artifactName,
-    fetchImpl,
-  });
-  assert.deepEqual(requested, [
-    `/repos/${repository}/actions/runs/${releaseRunId}`,
-    `/repos/${repository}/actions/runs/${releaseRunId}/jobs`,
-    `/repos/${repository}/actions/runs/${releaseRunId}/artifacts`,
-  ]);
 });
 
 test("npm bootstrap binds the downloaded package manifest to preflight outputs", () => {
