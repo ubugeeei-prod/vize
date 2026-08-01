@@ -18,7 +18,7 @@ interface FixtureProject {
   revision: string;
   license: { spdx: string; files: string[] };
   vueGlobs: string[];
-  expectedVueFileCount?: 0;
+  expectedVueFileCount?: number;
   tsconfig?: string;
   coverage: string[];
   diff: FixtureDiff;
@@ -70,6 +70,7 @@ const requestedFixtures = [
   "pinia",
   "vue-tui",
   "vue-termui",
+  "vuefes-japan-speakers",
 ] as const;
 const requiredTypecheckProjects = ["voicevox", "elk", "misskey"] as const;
 const newlyAddedSubmodules = new Set([
@@ -93,6 +94,7 @@ const newlyAddedSubmodules = new Set([
   "pinia",
   "vue-tui",
   "vue-termui",
+  "vuefes-japan-speakers",
 ]);
 const requestedFixtureLicenses = new Map<string, string>([
   ["airi", "MIT"],
@@ -107,6 +109,7 @@ const requestedFixtureLicenses = new Map<string, string>([
   ["pinia", "MIT"],
   ["vue-tui", "MIT"],
   ["vue-termui", "MIT"],
+  ["vuefes-japan-speakers", "CC-BY-SA-4.0"],
 ]);
 
 function readJsonFile<T>(filePath: string): T {
@@ -173,7 +176,7 @@ test("Vue ecosystem registry covers the requested projects", () => {
   }
 });
 
-test("fixtures without Vue SFCs declare an exact zero-file expectation", () => {
+test("fixtures with exact Vue SFC expectations stay explicit", () => {
   const registry = readRegistry();
   const projects = registry.projects.filter((project) => "expectedVueFileCount" in project);
 
@@ -182,8 +185,20 @@ test("fixtures without Vue SFCs declare an exact zero-file expectation", () => {
     [
       { id: "docsify", count: 0 },
       { id: "vue-native-core", count: 0 },
+      { id: "vuefes-japan-speakers", count: 15 },
     ],
   );
+});
+
+test("Vue Fes Japan Speakers fixture pins its complete Vue application corpus", () => {
+  const registry = readRegistry();
+  const project = registry.projects.find((candidate) => candidate.id === "vuefes-japan-speakers");
+
+  assert.ok(project);
+  assert.equal(project.kind, "application");
+  assert.deepEqual(project.vueGlobs, ["app/**/*.vue"]);
+  assert.equal(project.expectedVueFileCount, 15);
+  assert.equal(project.tsconfig, "tsconfig.vize.json");
 });
 
 test("registered fixtures are pinned submodules with declared licenses", () => {

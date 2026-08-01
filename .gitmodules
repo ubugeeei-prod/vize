@@ -14,6 +14,11 @@
 	path = tests/_fixtures/_git/vuefes-2025
 	url = https://github.com/vuejs-jp/vuefes-2025-website.git
 
+[submodule "tests/_fixtures/_git/vuefes-japan-speakers"]
+	path = tests/_fixtures/_git/vuefes-japan-speakers
+	url = https://github.com/ubugeeei-forks/vuefes-japan-speakers.git
+	shallow = true
+
 [submodule "tests/_fixtures/_git/frontend-phpcon-do-website"]
 	path = tests/_fixtures/_git/frontend-phpcon-do-website
 	url = https://github.com/frontend-phpcon-do/frontend-phpcon-do-website.git

@@ -2991,6 +2991,34 @@
         "lsp"
       ],
       "diff": "e2e-vrt"
+    },
+    {
+      "id": "vuefes-japan-speakers",
+      "displayName": "Vue Fes Japan Speakers",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vuefes-japan-speakers",
+      "repository": "https://github.com/ubugeeei-forks/vuefes-japan-speakers.git",
+      "revision": "ab9367c8768c8c61977785157d03a71034ff93ad",
+      "license": {
+        "spdx": "CC-BY-SA-4.0",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "app/**/*.vue"
+      ],
+      "expectedVueFileCount": 15,
+      "tsconfig": "tsconfig.vize.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
     }
   ]
 }
