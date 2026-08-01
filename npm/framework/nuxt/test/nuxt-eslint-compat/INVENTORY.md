@@ -11,6 +11,11 @@ which records the result in `fixtures/nuxt-eslint-output.json`.
 - Re-record with
   `node npm/framework/nuxt/test/nuxt-eslint-compat/oracle.mjs --write`.
 
+Each project case records both the upstream Nuxt-aware config items and the
+complete oxlint artifact Vize emits from them. The offline suite compares that
+artifact as one byte string, including item order, rule-id mapping, whitespace,
+and the trailing newline.
+
 Pinned upstream: `@nuxt/eslint@1.16.0`, `@nuxt/eslint-config@1.16.0` (catalog
 `nuxt-eslint-oracle` in `pnpm-workspace.yaml`).
 
@@ -20,9 +25,9 @@ Vize does not vendor ESLint. Patina runs through oxlint via
 `oxlint-plugin-vize`, and its rule ids are already `eslint-plugin-vue`
 compatible, so the port reproduces `@nuxt/eslint`'s _semantics and surface_ on
 Vize's own engine. The plan this phase produces is therefore engine-neutral:
-it names rules with their eslint-compatible ids, and the emitter that turns a
-plan into an oxlint config (where Patina rules gain oxlint's `vize/` plugin
-prefix) is a later phase.
+it names rules with their eslint-compatible ids. The emitter turns that plan
+into an oxlint config, adding the `vize/` plugin prefix only at the engine
+boundary.
 
 ## Config items
 
@@ -48,10 +53,11 @@ the oracle.
 
 ## Intentional divergences
 
-| Difference                                                           | Why                                                                                                                                                                                           |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The ignore block is named `nuxt/ignores`; upstream leaves it unnamed | Every block needs a stable identity for the emitter to address and for users to override. Applied in exactly one place in `oracle.test.ts`.                                                   |
-| `features` carries only feature keys                                 | Upstream serialises the whole module option object into `features`, so `configFile`, `autoInit`, `rootDir` and `devtools` leak into it. Vize keeps module options and feature flags separate. |
+| Difference                                                           | Why                                                                                                                                                                                                    |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The ignore block is named `nuxt/ignores`; upstream leaves it unnamed | Every block needs a stable identity for the emitter to address and for users to override. Applied in exactly one place in `oracle.test.ts`.                                                            |
+| `features` carries only feature keys                                 | Upstream serialises the whole module option object into `features`, so `configFile`, `autoInit`, `rootDir` and `devtools` leak into it. Vize keeps module options and feature flags separate.          |
+| Auto-init creates an `oxlint.config.mts` loader                      | Oxlint 1.64 does not inherit `globals` from a JSON config in `extends`. The loader returns the current generated object directly and rebases its JS plugin URL, preserving `$fetch` and addon globals. |
 
 ## Directory defaults
 

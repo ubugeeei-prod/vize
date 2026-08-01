@@ -19,6 +19,7 @@ import {
   type NuxtLintDirs,
   type NuxtLintProjectState,
 } from "./dirs.ts";
+import { renderNuxtOxlintConfig } from "./emitter.ts";
 import { resolveNuxtLintFeatures } from "./features.ts";
 import { buildNuxtLintPlan, type NuxtLintConfigItem } from "./plan.ts";
 
@@ -51,6 +52,7 @@ interface RecordedCase {
   features: Record<string, unknown>;
   configNames: Array<string | null>;
   nuxtConfigs: RecordedItem[];
+  oxlintConfig: string;
 }
 
 function readJson<T>(...segments: string[]): T {
@@ -84,6 +86,7 @@ const recording = readJson<{
  * machine-specific paths.
  */
 const ROOT_DIR = "/project";
+const RECORDED_VIZE_PLUGIN_SPECIFIER = "../node_modules/oxlint-plugin-vize/dist/index.mjs";
 
 function projectState(entry: CorpusCase): NuxtLintProjectState {
   return {
@@ -163,6 +166,16 @@ for (const entry of corpus.cases) {
     assert.deepEqual(
       plan.map(planItemAsRecorded),
       recorded.nuxtConfigs.map((item) => ({ ...item, name: recordedItemName(item) })),
+    );
+  });
+
+  void test(`${entry.id}: whole generated oxlint artifact matches the recording`, () => {
+    const features = resolveNuxtLintFeatures(entry.config, () => recording.typeScriptDetected);
+    const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(projectState(entry)));
+
+    assert.equal(
+      renderNuxtOxlintConfig(plan, RECORDED_VIZE_PLUGIN_SPECIFIER),
+      recorded.oxlintConfig,
     );
   });
 }

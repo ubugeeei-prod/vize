@@ -67,6 +67,7 @@ void test("Nuxt module entry runs in a Nuxt 2 webpack-style context", async () =
   await nuxtModule(
     {
       compiler: false,
+      lint: false,
       musea: false,
       compatibility: { nuxtVersion: 2, vueVersion: 2 },
     },
@@ -115,6 +116,7 @@ void test("Nuxt 2 host-compiler compatibility skips Vite plugin loading", async 
   await nuxtModule(
     {
       compiler: true,
+      lint: false,
       musea: false,
       bridge: true,
       compatibility: {

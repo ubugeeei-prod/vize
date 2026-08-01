@@ -20,6 +20,7 @@ export default defineConfig({
         "@vizejs/vite-plugin",
         "@vizejs/vite-plugin-musea",
         "nitropack/runtime",
+        "oxlint-plugin-vize",
         "#vizejs/nuxt/dev-stylesheet-links-config",
         "vize",
       ],

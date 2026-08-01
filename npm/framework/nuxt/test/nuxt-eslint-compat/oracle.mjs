@@ -26,7 +26,11 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { renderNuxtOxlintConfig } from "../../src/lint/emitter.ts";
+import { buildNuxtLintPlan } from "../../src/lint/plan.ts";
+
 const here = dirname(fileURLToPath(import.meta.url));
+const RECORDED_VIZE_PLUGIN_SPECIFIER = "../node_modules/oxlint-plugin-vize/dist/index.mjs";
 export const corpusPath = join(here, "fixtures", "corpus.json");
 export const recordedPath = join(here, "fixtures", "nuxt-eslint-output.json");
 
@@ -193,16 +197,21 @@ export async function runOracle() {
     const options = { features: entry.config, dirs };
     const resolved = resolveOptions(structuredClone(options));
     const items = await createConfigForNuxt(structuredClone(options));
+    const nuxtConfigs = items.filter(isNuxtOwned).map(recordConfigItem);
     cases[entry.id] = {
       dirs,
       features: resolved.features,
       configNames: items.map((item) => item.name ?? null),
-      nuxtConfigs: items.filter(isNuxtOwned).map(recordConfigItem),
+      nuxtConfigs,
+      oxlintConfig: renderNuxtOxlintConfig(
+        buildNuxtLintPlan(resolved.features, dirs),
+        RECORDED_VIZE_PLUGIN_SPECIFIER,
+      ),
     };
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),

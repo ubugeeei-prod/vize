@@ -24,6 +24,7 @@ void test("Nuxt 2 musea options do not load the ESM-only Musea Vite plugin", asy
   await nuxtModule(
     {
       compiler: false,
+      lint: false,
       musea: {
         include: ["stories/**/*.art.vue"],
         basePath: "/__musea__",

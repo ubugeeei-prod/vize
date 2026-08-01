@@ -57,6 +57,7 @@
     "@nuxt/kit": "catalog:nuxt-module",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
+    "oxlint-plugin-vize": "workspace:*",
     "vize": "workspace:*"
   },
   "devDependencies": {

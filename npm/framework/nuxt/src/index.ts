@@ -1,5 +1,6 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
+import { setupNuxtLintConfigGeneration } from "./lint/generation";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import "./schema";
@@ -71,16 +72,12 @@ type VizeNuxtModuleContext = {
   nuxt?: NuxtWithBuilderOptions;
 };
 
-const moduleMeta = {
-  name: "@vizejs/nuxt",
-  configKey: "vize",
-} as const;
+const moduleMeta = { name: "@vizejs/nuxt", configKey: "vize" } as const;
 
 const moduleDefaults = {
+  lint: true,
   musea: false,
-  nuxtMusea: {
-    route: { path: "/" },
-  },
+  nuxtMusea: { route: { path: "/" } },
 } satisfies Partial<VizeNuxtOptions>;
 
 let nuxtKitPromise: Promise<NuxtKit> | null = null;
@@ -336,6 +333,7 @@ function patchNuxtAutoImportTransformPlugin(
 }
 
 async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
+  await setupNuxtLintConfigGeneration(options.lint, nuxt);
   const resolver = createNuxtModuleResolver();
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
@@ -674,6 +672,7 @@ export type {
   VizeNuxtCompatibilityOptions,
   VizeNuxtCompilerOptions,
   VizeNuxtDevOptions,
+  VizeNuxtLintOptions,
   VizeNuxtMajorVersion,
   VizeNuxtOptions,
   VizeNuxtUnoCssOptions,

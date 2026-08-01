@@ -4,6 +4,7 @@ import type {
   VizeNuxtCompilerOptions,
   VizeNuxtVueVersion,
 } from "./compiler-options.ts";
+import type { VizeNuxtLintOptions } from "./lint/options.ts";
 import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, buildNuxtCompilerOptions } from "./utils.ts";
 
 export type {
@@ -11,6 +12,7 @@ export type {
   VizeNuxtCompilerOptions,
   VizeNuxtVueVersion,
 } from "./compiler-options.ts";
+export type { VizeNuxtLintOptions } from "./lint/options.ts";
 export { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE };
 
 export type VizeNuxtMajorVersion = 2 | 3 | 4;
@@ -176,6 +178,12 @@ export interface VizeNuxtOptions {
    * Dev-server integration options.
    */
   dev?: VizeNuxtDevOptions;
+
+  /**
+   * Generate the Nuxt-aware oxlint config consumed by Vize's linting engine.
+   * @default true
+   */
+  lint?: boolean | VizeNuxtLintOptions;
 
   /**
    * Musea gallery options.

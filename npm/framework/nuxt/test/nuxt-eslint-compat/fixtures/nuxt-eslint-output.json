@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
@@ -189,7 +189,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/srcdir-is-root": {
       "dirs": {
@@ -308,7 +309,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app.{js,ts,jsx,tsx,vue}\",\n        \"components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"error.{js,ts,jsx,tsx,vue}\",\n        \"layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/two-layers": {
       "dirs": {
@@ -443,7 +445,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/app.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/error.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"layers/base/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/dir-overrides": {
       "dirs": {
@@ -562,7 +565,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/routes/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/shells/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/routes/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/routes/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/shells/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/imports-dirs": {
       "dirs": {
@@ -681,7 +685,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/components-string-array": {
       "dirs": {
@@ -802,7 +807,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/blocks/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/ui/**/*.server.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/blocks/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/ui/*/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/components-prefixed": {
       "dirs": {
@@ -924,7 +930,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/ui/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/widgets/**/*.server.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/ui/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/widgets/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/widgets/*/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "dirs/components-true": {
       "dirs": {
@@ -1043,7 +1050,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/defaults": {
       "dirs": {
@@ -1162,7 +1170,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/standalone-false": {
       "dirs": {
@@ -1260,7 +1269,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/stylistic": {
       "dirs": {
@@ -1390,7 +1400,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/nuxt-config-keys-order\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/stylistic-sort-opt-out": {
       "dirs": {
@@ -1512,7 +1523,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/sort-config-opt-in": {
       "dirs": {
@@ -1643,7 +1655,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/nuxt-config-keys-order\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/typescript-false": {
       "dirs": {
@@ -1762,7 +1775,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/typescript-true": {
       "dirs": {
@@ -1883,7 +1897,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     },
     "features/tooling": {
       "dirs": {
@@ -2005,7 +2020,8 @@
           },
           "globals": null
         }
-      ]
+      ],
+      "oxlintConfig": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
     }
   }
 }
