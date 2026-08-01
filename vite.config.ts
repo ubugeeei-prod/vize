@@ -11,6 +11,14 @@ const localGeneratedIgnorePatterns = [
   "target/**",
 ];
 const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
+/**
+ * The VS Code / Neovim real-server scenario file carries deliberate authored
+ * defects (a `vue/no-multi-spaces` warning next to a prop type error) that the
+ * editor tests fix and re-read at runtime. Formatting it would erase the very
+ * diagnostic the scenario asserts on.
+ */
+const editorScenarioFixtureIgnorePattern =
+  "editors/vscode/test-fixtures/extension-host/real-vue/src/Scenario.vue";
 
 /**
  * Root Vite+ configuration.
@@ -40,6 +48,7 @@ const config = {
       testOutputIgnorePattern,
       "**/__ubugeeei__/**",
       "tests/_fixtures/**",
+      editorScenarioFixtureIgnorePattern,
     ],
   },
   lint: {
