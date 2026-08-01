@@ -38,13 +38,10 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // -- elements --------------------------------------------------------
     ("elements/intrinsic", Same),
     ("elements/component_pascal", Same),
-    (
-        "elements/unknown_lowercase",
-        Diff("unknown tag stays intrinsic"),
-    ),
+    ("elements/unknown_lowercase", Same),
     ("elements/dashed_lowercase", Same),
     ("elements/svg_tag", Same),
-    ("elements/mathml_tag", Diff("unknown tag stays intrinsic")),
+    ("elements/mathml_tag", Same),
     // Closed by #3421: a member tag names a component value, so it lowers to
     // `resolveDynamicComponent`, which passes a non-string through unchanged.
     ("elements/member_tag", Same),

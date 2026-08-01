@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   84 |
-| divergent  |   12 |
+| equivalent |   86 |
+| divergent  |   10 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -111,10 +111,10 @@ deliberate answer, recorded here so it is not relitigated.
 | -------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------- | ------- |
 | `elements/intrinsic`             | `createVNode("div", …)`                                          | `createElementBlock("div")`                        | no change                                    | ✅      |
 | `elements/component_pascal`      | `resolveComponent("B")`                                          | same                                               | no change                                    | ✅      |
-| `elements/unknown_lowercase`     | `<foo/>` → `resolveComponent("foo")`                             | stays an intrinsic element                         | classify any non-HTML/SVG tag as a component | ❌      |
+| `elements/unknown_lowercase`     | `<foo/>` → `resolveComponent("foo")`                             | same in opt-in compat mode; native stays intrinsic | non-HTML/SVG lowercase classification (#3391) | ✅      |
 | `elements/dashed_lowercase`      | `resolveComponent("my-el")`                                      | same                                               | no change                                    | ✅      |
 | `elements/svg_tag`               | `createVNode("circle", …)`                                       | same                                               | no change                                    | ✅      |
-| `elements/mathml_tag`            | `<mi/>` → `resolveComponent("mi")` (only HTML+SVG are intrinsic) | stays an intrinsic element                         | same fix as `unknown_lowercase`              | ❌      |
+| `elements/mathml_tag`            | `<mi/>` → `resolveComponent("mi")` (only HTML+SVG are intrinsic) | same in opt-in compat mode; native stays intrinsic | same fix as `unknown_lowercase` (#3391)       | ✅      |
 | `elements/member_tag`            | `createVNode(a.b.c, …)`                                          | `resolveDynamicComponent(a.b.c)` (#3421)           | no change                                    | ✅      |
 | `elements/namespaced_tag`        | rejects: `getTag: JSXNamespacedName is not supported`            | rejects it too, naming the namespace (#3421)       | no change                                    | ✅      |
 | `elements/fragment`              | `createVNode(Fragment, null, […])`                               | `createElementBlock(Fragment, …, STABLE_FRAGMENT)` | no change                                    | ✅      |

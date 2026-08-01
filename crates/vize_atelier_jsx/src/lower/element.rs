@@ -32,13 +32,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         };
         let loc = self.mapper().location(element.span);
         let mut node = ElementNode::new(self.bump(), tag, loc);
-        node.tag_type = element_type(&opening.name);
+        node.tag_type = element_type(&opening.name, self.uses_babel_compat());
         node.is_self_closing = element.closing_element.is_none();
-        // `v-models` and `v-slots` are component-only. A dashed lowercase tag is
-        // classified as an intrinsic element here, but the DOM backend still
-        // resolves it with `resolveComponent`, so custom elements count as
-        // components for those checks just as they do for
-        // `@vue/babel-plugin-jsx`.
+        // `v-models` and `v-slots` are component-only. Native mode classifies a
+        // dashed lowercase tag as an intrinsic element here, but the DOM backend
+        // still resolves it with `resolveComponent`; Babel compatibility
+        // classifies it as a component during lowering, matching the plugin.
         let on_component = node.tag_type == ElementType::Component || node.tag.contains('-');
         node.props = self.lower_attributes(&opening.attributes, on_component);
         if let Some(span) = expression_tag {
@@ -109,8 +108,8 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     }
 }
 
-fn element_type(name: &JSXElementName<'_>) -> ElementType {
-    if name::is_component(name) {
+fn element_type(name: &JSXElementName<'_>, babel_compat: bool) -> ElementType {
+    if name::is_component(name, babel_compat) {
         ElementType::Component
     } else {
         ElementType::Element

@@ -41,15 +41,28 @@ pub(crate) fn element_tag(name: &JSXElementName<'_>) -> String {
 /// Whether a JSX element name refers to a component rather than an intrinsic
 /// (HTML/SVG) element.
 ///
-/// Mirrors the Vue JSX convention also used by `vize_patina`: a tag whose name
-/// begins with a lowercase ASCII letter is intrinsic; everything else
-/// (capitalized identifiers, member expressions, `this`) is a component.
-pub(crate) fn is_component(name: &JSXElementName<'_>) -> bool {
+/// Native Vize JSX follows the casing convention also used by `vize_patina`:
+/// a tag beginning with a lowercase ASCII letter is intrinsic. Babel
+/// compatibility instead follows `@vue/babel-plugin-jsx`: only known HTML and
+/// SVG identifiers are intrinsic, so unknown lowercase and MathML identifiers
+/// resolve as components. Namespaced tags keep Vize's explicit namespace
+/// handling in either mode.
+pub(crate) fn is_component(name: &JSXElementName<'_>, babel_compat: bool) -> bool {
     match name {
-        JSXElementName::Identifier(id) => !is_intrinsic(id.name.as_str()),
-        JSXElementName::IdentifierReference(reference) => !is_intrinsic(reference.name.as_str()),
+        JSXElementName::Identifier(id) => is_identifier_component(id.name.as_str(), babel_compat),
+        JSXElementName::IdentifierReference(reference) => {
+            is_identifier_component(reference.name.as_str(), babel_compat)
+        }
         JSXElementName::NamespacedName(named) => !is_intrinsic(named.name.name.as_str()),
         JSXElementName::MemberExpression(_) | JSXElementName::ThisExpression(_) => true,
+    }
+}
+
+fn is_identifier_component(name: &str, babel_compat: bool) -> bool {
+    if babel_compat {
+        !vize_carton::is_html_tag(name) && !vize_carton::is_svg_tag(name)
+    } else {
+        !is_intrinsic(name)
     }
 }
 
