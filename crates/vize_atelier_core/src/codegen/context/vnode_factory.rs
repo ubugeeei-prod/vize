@@ -1,8 +1,52 @@
-use crate::RuntimeHelper;
+use vize_carton::{FxHashSet, String, ToCompactString};
+
+use crate::codegen::helpers::default_helper_alias;
+use crate::codegen::source_map::SourceMapBuilder;
+use crate::options::CodegenOptions;
+use crate::runtime_helpers::RuntimeHelpers;
+use crate::{Namespace, RuntimeHelper};
 
 use super::CodegenContext;
 
 impl CodegenContext {
+    /// Create a new codegen context.
+    pub fn new(options: CodegenOptions) -> Self {
+        Self::new_with_vnode_factory(options, None)
+    }
+
+    /// Create a context that emits vnode creation through a custom factory.
+    pub(in crate::codegen) fn new_with_vnode_factory(
+        options: CodegenOptions,
+        vnode_factory: Option<&str>,
+    ) -> Self {
+        let map_builder = options.source_map.then(SourceMapBuilder::new);
+        Self {
+            code: String::with_capacity(4096),
+            indent_level: 0,
+            ssr: options.ssr,
+            helper_alias: default_helper_alias,
+            vnode_factory: vnode_factory.map(String::from),
+            runtime_global_name: options.runtime_global_name.to_compact_string(),
+            runtime_module_name: options.runtime_module_name.to_compact_string(),
+            options,
+            pure: false,
+            used_helpers: RuntimeHelpers::default(),
+            cache_index: 0,
+            slot_params: FxHashSet::default(),
+            skip_is_prop: false,
+            skip_scope_id: false,
+            skip_normalize: false,
+            in_v_for: false,
+            skip_v_memo: false,
+            props_is_plain_element: false,
+            parent_ns: Namespace::Html,
+            static_cache: false,
+            in_cached_static: false,
+            v_if_branch_counter: 0,
+            map_builder,
+        }
+    }
+
     /// Name used for vnode creation helpers under the optional JSX factory.
     pub(in crate::codegen) fn vnode_helper(&self, helper: RuntimeHelper) -> &str {
         debug_assert!(is_vnode_factory_helper(helper));
