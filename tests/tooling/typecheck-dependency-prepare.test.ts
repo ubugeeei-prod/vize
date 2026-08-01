@@ -70,15 +70,7 @@ function setup(packageManager: (typeof packageManagers)[number] = packageManager
   writeJson(registryPath, { projects: [project] });
   git(fixtureRoot, ["init", "-q"]);
   git(fixtureRoot, ["add", "."]);
-  git(fixtureRoot, [
-    "-c",
-    "user.name=Fixture",
-    "-c",
-    "user.email=fixture@example.com",
-    "commit",
-    "-qm",
-    "fixture",
-  ]);
+  commit(fixtureRoot, "fixture");
   const invocationPath = path.join(fakeDir, "invocation.json");
   const manager = path.join(fakeDir, packageManager.name);
   writeManager(manager, invocationPath, packageManager.version, successBody);
@@ -128,6 +120,19 @@ function run(fixture: ReturnType<typeof setup>, extraArgs: string[] = []) {
 function git(cwd: string, args: string[]) {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
+}
+
+// CI runners have no git identity, so every commit has to carry its own.
+function commit(cwd: string, message: string) {
+  git(cwd, [
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.com",
+    "commit",
+    "-qm",
+    message,
+  ]);
 }
 
 function artifactPath(fixture: ReturnType<typeof setup>) {
@@ -223,7 +228,7 @@ test("dependency prepare materializes and records an explicit generated baseline
     };
     writeJson(fixture.registryPath, { projects: [project] });
     git(fixture.fixtureRoot, ["add", "registry.json"]);
-    git(fixture.fixtureRoot, ["commit", "-qm", "configure generated baseline"]);
+    commit(fixture.fixtureRoot, "configure generated baseline");
     writeManager(
       fixture.manager,
       fixture.invocationPath,
