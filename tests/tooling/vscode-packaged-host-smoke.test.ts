@@ -57,6 +57,11 @@ test("the real-server fixture workspace turns off the built-in AI code actions",
   // diagnostic span. The real-server scenario asserts the COMPLETE code-action
   // list the language server answers with (#3457), so the fixture workspace has
   // to keep the workbench's own AI actions out of that list.
+  //
+  // `chat.disableAIFeatures` only exists from VS Code 1.104, which is below the
+  // stable build `@vscode/test-electron` downloads for this harness. It does not
+  // constrain the extension's own `engines.vscode` range: this file is a test
+  // fixture workspace, never shipped, and older builds ignore unknown keys.
   const settings = JSON.parse(
     readRepoFile(
       "editors",

@@ -68,6 +68,19 @@ test("the VS Code real-server suite drives all five scorecard steps", () => {
   assert.match(scenario, /vscode\.executeDocumentRenameProvider/);
   assert.match(scenario, /document\.save\(\)/);
 
+  // Step 1 and step 3 are the two steps whose value lives in what is asserted
+  // rather than in the call itself: diagnostics must be compared against the
+  // authored-span expectation, and the save must be followed by a check that
+  // the document really came back formatted.
+  assert.match(
+    scenario,
+    /assert\.deepEqual\(sortDiagnostics\(diagnostics\)\.map\(describeDiagnostic\), expected\.diagnostics\)/,
+  );
+  assert.match(
+    scenario,
+    /const saved = await document\.save\(\);[\s\S]*?assert\.equal\(document\.getText\(\), expected\.formattedSource,/,
+  );
+
   // Rule for this suite: complete-response assertions only.
   assert.doesNotMatch(scenario, /\.includes\(|\.contains\(/);
 });

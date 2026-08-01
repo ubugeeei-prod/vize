@@ -21,7 +21,7 @@ import {
 const nvimPath = process.env.VIZE_TEST_NVIM_PATH?.trim() || "nvim";
 const pluginRoot = path.join(repositoryRoot, "editors", "nvim");
 const specPath = path.join(pluginRoot, "test", "vize_e2e_spec.lua");
-const serverPath = path.resolve(resolveRealServerPath());
+const serverPath = resolveRealServerPath();
 const sessionPath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nvim-e2e-"));
 const workspacePath = path.join(sessionPath, "real-vue");
 
@@ -38,10 +38,14 @@ try {
       "-n",
       "-i",
       "NONE",
+      // Paths can contain spaces, backslashes or `|`, which ex commands would
+      // mangle, so hand them to Lua as literals instead. The spec prepends the
+      // plugin root itself, but do it here too so `require("vize.…")` works even
+      // if the spec is ever loaded differently.
       "-c",
-      `set runtimepath^=${pluginRoot}`,
+      `lua vim.opt.runtimepath:prepend(${JSON.stringify(pluginRoot)})`,
       "-c",
-      `luafile ${specPath}`,
+      `lua dofile(${JSON.stringify(specPath)})`,
       "-c",
       "qall!",
     ],
@@ -53,7 +57,11 @@ try {
         VIZE_E2E_SERVER: serverPath,
         VIZE_E2E_WORKSPACE: workspacePath,
       },
-      timeout: 300_000,
+      // The spec's own waits already add up to 960s in the worst case (120s
+      // initialize + 240s diagnostics + 120s for each of the five requests and
+      // the synchronous format), so this outer kill switch has to sit above
+      // that or it would pre-empt the assertions it is meant to bound.
+      timeout: 1_200_000,
     },
   );
 

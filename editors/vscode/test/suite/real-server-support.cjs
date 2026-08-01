@@ -81,6 +81,12 @@ async function prepareConfiguredRealServer(serverPath, overrides = {}) {
     await updateVizeConfiguration(key, value);
   }
   await updateVizeConfiguration("serverPath", serverPath);
+  // This short settle only lets the extension coalesce the configuration
+  // writes above into a single client restart; it is deliberately not a
+  // readiness wait. Callers must not fire one-shot provider requests straight
+  // after this: every suite first blocks on `waitForDiagnostics` for a document
+  // it opens after the restart, which is the deterministic gate that proves the
+  // new session is serving.
   await sleep(300);
 }
 

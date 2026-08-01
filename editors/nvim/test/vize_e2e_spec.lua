@@ -75,12 +75,15 @@ local function step_diagnostics(uri, published)
     fail("real server did not publish the scenario diagnostics", published)
   end
 
-  assert_eq(vim.tbl_keys(published), { uri }, "diagnostics were published for exactly one file")
+  -- `vim.tbl_keys` has no defined order, so sort before the deep compare.
+  local published_uris = vim.tbl_keys(published)
+  table.sort(published_uris)
+  assert_eq(published_uris, { uri }, "diagnostics were published for exactly one file")
   assert_eq(sorted_by_start(published[uri]), expected.diagnostics, "published diagnostics")
 end
 
 --- Step 2: the quick fix the server offers on the lint warning's own span.
-local function step_quick_fix(bufnr, uri)
+local function step_quick_fix(bufnr, uri, offset_encoding)
   local actions = request(bufnr, "textDocument/codeAction", {
     context = { diagnostics = {} },
     range = expected.quick_fix_range,
@@ -88,7 +91,7 @@ local function step_quick_fix(bufnr, uri)
   })
   assert_eq(actions, expected.code_actions(uri), "code actions on the lint warning span")
 
-  vim.lsp.util.apply_workspace_edit(actions[1].edit, "utf-16")
+  vim.lsp.util.apply_workspace_edit(actions[1].edit, offset_encoding)
   assert_eq(buffer_text(bufnr), expected.quick_fixed_source, "buffer after applying the quick fix")
 end
 
@@ -123,7 +126,7 @@ local function step_semantic_tokens(bufnr, uri)
 end
 
 --- Step 5: rename the script binding the template consumes.
-local function step_rename(bufnr, uri)
+local function step_rename(bufnr, uri, offset_encoding)
   local edit = request(bufnr, "textDocument/rename", {
     newName = expected.rename_new_name,
     position = expected.rename_position,
@@ -131,7 +134,7 @@ local function step_rename(bufnr, uri)
   })
   assert_eq(edit, expected.rename_edit(uri), "rename workspace edit")
 
-  vim.lsp.util.apply_workspace_edit(edit, "utf-16")
+  vim.lsp.util.apply_workspace_edit(edit, offset_encoding)
   assert_eq(buffer_text(bufnr), expected.renamed_source, "buffer after applying the rename")
 end
 
@@ -193,11 +196,19 @@ local function main()
   local client_id = start_client(bufnr, published)
   local uri = vim.uri_from_bufnr(bufnr)
 
+  -- Apply edits with the position encoding the client actually negotiated
+  -- rather than assuming UTF-16, so a future encoding change is not silently
+  -- mis-applied here.
+  local client = vim.lsp.get_client_by_id(client_id)
+  assert(client ~= nil, "the vize client disappeared after initialization")
+  local offset_encoding = client.offset_encoding
+  assert(offset_encoding ~= nil, "the vize client negotiated no position encoding")
+
   step_diagnostics(uri, published)
-  step_quick_fix(bufnr, uri)
+  step_quick_fix(bufnr, uri, offset_encoding)
   step_format_on_save(bufnr, uri, scenario_path)
   step_semantic_tokens(bufnr, uri)
-  step_rename(bufnr, uri)
+  step_rename(bufnr, uri, offset_encoding)
 
   vim.lsp.stop_client(client_id, true)
 end

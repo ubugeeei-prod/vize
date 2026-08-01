@@ -59,9 +59,12 @@ export function resolveRealServerPath() {
         path.join(repositoryRoot, "target", profile, exeName),
       );
 
+  // Always hand back an absolute path: callers spawn the binary with the
+  // fixture workspace as the working directory, so a relative
+  // `VIZE_SERVER_PATH` would otherwise resolve differently per caller.
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
-      return candidate;
+      return path.resolve(candidate);
     }
   }
 
@@ -82,21 +85,43 @@ export function resolveCorsaPath() {
   const metaManifestPath = fs.realpathSync(
     extensionRequire.resolve("@typescript/native-preview/package.json"),
   );
-  const platformPackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
-  const platformManifestPath = createRequire(metaManifestPath).resolve(
-    `${platformPackage}/package.json`,
-  );
-  const tsgoPath = path.join(
-    path.dirname(platformManifestPath),
-    "lib",
-    process.platform === "win32" ? "tsgo.exe" : "tsgo",
-  );
+  const metaRequire = createRequire(metaManifestPath);
+  const basePackage = `@typescript/native-preview-${process.platform}-${process.arch}`;
+  // The platform packages are optional dependencies gated on os/cpu/libc, so a
+  // host only ever has one of them installed. On Linux that is either the
+  // glibc or the musl build; probe both instead of assuming glibc.
+  const platformPackages =
+    process.platform === "linux" ? [basePackage, `${basePackage}-musl`] : [basePackage];
+  const attempted = [];
 
-  if (!fs.existsSync(tsgoPath)) {
-    throw new Error(`missing tsgo binary for ${platformPackage}: ${tsgoPath}`);
+  for (const platformPackage of platformPackages) {
+    const platformManifestPath = resolveOptional(metaRequire, `${platformPackage}/package.json`);
+    if (platformManifestPath === undefined) {
+      attempted.push(`${platformPackage} (not installed)`);
+      continue;
+    }
+
+    const tsgoPath = path.join(
+      path.dirname(platformManifestPath),
+      "lib",
+      process.platform === "win32" ? "tsgo.exe" : "tsgo",
+    );
+    if (fs.existsSync(tsgoPath)) {
+      return tsgoPath;
+    }
+    attempted.push(tsgoPath);
   }
 
-  return tsgoPath;
+  throw new Error(`missing tsgo binary (checked ${attempted.join(", ")})`);
+}
+
+/** `require.resolve` that reports a missing package as `undefined`. */
+function resolveOptional(resolver, specifier) {
+  try {
+    return resolver.resolve(specifier);
+  } catch {
+    return undefined;
+  }
 }
 
 /**

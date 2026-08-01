@@ -99,6 +99,11 @@ async function stepFormatOnSave(document) {
   );
   assert.deepEqual(edits.map(describeTextEdit), expected.formattingEdits);
 
+  // `vscode.executeFormatDocumentProvider` only computes the edits, it never
+  // applies them, so the document is still unformatted here. `save()` is what
+  // exercises format-on-save: it runs the `editor.formatOnSave` save
+  // participant configured in `enableFormatOnSave`, which applies the very
+  // edits asserted above before the file hits disk.
   const saved = await document.save();
   assert.equal(saved, true, "expected the scenario document to save");
   assert.equal(document.getText(), expected.formattedSource, "document after format-on-save");
