@@ -59,6 +59,7 @@ export const buildTasks = defineTasks({
     runInPackages("build", [
       "./npm/builder/vite-musea",
       "./npm/framework/musea-nuxt",
+      "./npm/framework/nuxt-lint-config",
       "./npm/framework/nuxt",
     ]),
   ),

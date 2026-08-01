@@ -115,6 +115,7 @@ test("pull requests run one path-filtered fast app readiness job", () => {
     "'npm/cli/**'",
     "'npm/builder/vite/**'",
     "'npm/framework/nuxt/**'",
+    "'npm/framework/nuxt-lint-config/**'",
     "'pnpm-lock.yaml'",
     "'tests/package.json'",
     "'tests/tsconfig.json'",

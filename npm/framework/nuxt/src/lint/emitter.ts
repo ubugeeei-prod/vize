@@ -5,7 +5,7 @@
  * Patina as the `vize` JavaScript plugin, so this boundary is the one place
  * those ids gain their `vize/` prefix.
  */
-import type { NuxtLintConfigItem, NuxtLintSeverity } from "./plan.ts";
+import type { NuxtLintConfigItem, NuxtLintSeverity } from "@vizejs/nuxt-lint-config";
 
 interface OxlintOverride {
   files: string[];

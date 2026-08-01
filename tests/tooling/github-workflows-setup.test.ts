@@ -191,6 +191,7 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
     "./npm/builder/vite-musea",
     "./npm/builder/rspack",
     "./npm/framework/musea-nuxt",
+    "./npm/framework/nuxt-lint-config",
     "./npm/framework/nuxt",
   ]) {
     assert.match(job, new RegExp(packagePath.replaceAll("/", "\\/").replace(".", "\\.")));

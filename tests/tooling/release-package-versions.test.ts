@@ -14,6 +14,7 @@ const releasePackageJsonPaths = [
   "npm/fresco/package.json",
   "npm/fresco-native/package.json",
   "npm/framework/musea-nuxt/package.json",
+  "npm/framework/nuxt-lint-config/package.json",
   "npm/framework/nuxt/package.json",
   "npm/marquette/package.json",
   "npm/mcp-musea/package.json",

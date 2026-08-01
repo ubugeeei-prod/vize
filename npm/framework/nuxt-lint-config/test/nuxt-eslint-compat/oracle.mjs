@@ -1,10 +1,10 @@
 /**
- * Differential oracle for `@nuxt/eslint` compatibility.
+ * Differential oracle for the shareable Nuxt lint preset and its Nuxt emitter.
  *
  * Runs every case in `fixtures/corpus.json` through the real `@nuxt/eslint`
  * module and `@nuxt/eslint-config`, and records what they produce in
  * `fixtures/nuxt-eslint-output.json`. That recorded file is the committed
- * ground truth: `src/lint/oracle.test.ts` reads it with no `@nuxt/*` dependency
+ * ground truth: `src/oracle.test.ts` reads the preset portion with no `@nuxt/*` dependency
  * at all, so the package's own suite stays offline and fast, while
  * `tests/tooling/nuxt-eslint-oracle.test.ts` re-runs this script in CI and
  * fails if the recording has drifted from the installed packages.
@@ -19,15 +19,15 @@
  *      in what order, over which globs. Produced by `@nuxt/eslint-config`.
  *
  * Usage:
- *   node npm/framework/nuxt/test/nuxt-eslint-compat/oracle.mjs --check   # verify
- *   node npm/framework/nuxt/test/nuxt-eslint-compat/oracle.mjs --write   # re-record
+ *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --check
+ *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --write
  */
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { renderNuxtOxlintConfig } from "../../src/lint/emitter.ts";
-import { buildNuxtLintPlan } from "../../src/lint/plan.ts";
+import { renderNuxtOxlintConfig } from "../../../nuxt/src/lint/emitter.ts";
+import { buildNuxtLintPlan } from "../../src/plan.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const RECORDED_VIZE_PLUGIN_SPECIFIER = "../node_modules/oxlint-plugin-vize/dist/index.mjs";

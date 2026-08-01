@@ -45,6 +45,7 @@ runs:
           --filter './npm/native...' \
           --filter './npm/cli...' \
           --filter './npm/builder/vite...' \
+          --filter './npm/framework/nuxt-lint-config...' \
           --filter './npm/framework/nuxt...' \
           --filter './npm/builder/vite-musea...' \
           --filter './npm/framework/musea-nuxt...'

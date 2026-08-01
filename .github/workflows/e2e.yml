@@ -83,6 +83,7 @@ jobs:
               - 'npm/cli/**'
               - 'npm/builder/vite/**'
               - 'npm/framework/nuxt/**'
+              - 'npm/framework/nuxt-lint-config/**'
               - 'npm/builder/vite-musea/**'
               - 'npm/framework/musea-nuxt/**'
               - 'package.json'

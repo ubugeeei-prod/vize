@@ -4,12 +4,12 @@ Ground truth for the Nuxt lint config port. The corpus in `fixtures/corpus.json`
 is run through the real `@nuxt/eslint` and `@nuxt/eslint-config` by `oracle.mjs`,
 which records the result in `fixtures/nuxt-eslint-output.json`.
 
-- `npm/framework/nuxt/src/lint/oracle.test.ts` reads the recording offline and
+- `npm/framework/nuxt-lint-config/src/oracle.test.ts` reads the plan recording offline and
   holds Vize's implementation to it.
 - `tests/tooling/nuxt-eslint-oracle.test.ts` re-derives the recording from the
   installed packages in CI, so an upstream bump fails loudly.
 - Re-record with
-  `node npm/framework/nuxt/test/nuxt-eslint-compat/oracle.mjs --write`.
+  `node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --write`.
 
 Each project case records both the upstream Nuxt-aware config items and the
 complete oxlint artifact Vize emits from them. The offline suite compares that

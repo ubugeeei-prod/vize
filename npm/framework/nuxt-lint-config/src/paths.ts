@@ -1,5 +1,5 @@
 /**
- * POSIX path helpers with `pathe` semantics.
+ * POSIX path helpers with upstream `pathe` semantics.
  *
  * `@nuxt/eslint` builds every lint directory and glob with `pathe`, which
  * normalises Windows separators to `/` and then behaves like `node:path/posix`.

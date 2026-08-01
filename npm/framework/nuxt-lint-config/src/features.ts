@@ -1,5 +1,5 @@
 /**
- * Feature-flag resolution for the Nuxt lint config generator.
+ * Feature-flag resolution for the shareable Nuxt lint config.
  *
  * This is a behavioural port of `resolveOptions().features` in
  * `@nuxt/eslint-config` (see `test/nuxt-eslint-compat/`). The defaults are

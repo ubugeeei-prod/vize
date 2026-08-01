@@ -5,12 +5,16 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
 
+import {
+  buildNuxtLintPlan,
+  collectNuxtLintDirs,
+  resolveNuxtLintFeatures,
+  type NuxtLintConfigItem,
+} from "@vizejs/nuxt-lint-config";
+
 import type { VizeNuxtLintOptions } from "../options.ts";
-import { collectNuxtLintDirs } from "./dirs.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
-import { resolveNuxtLintFeatures } from "./features.ts";
 import { toNuxtLintProjectState, type NuxtLintSourceOptions } from "./nuxt-state.ts";
-import { buildNuxtLintPlan, type NuxtLintConfigItem } from "./plan.ts";
 
 const GENERATED_CONFIG_NAME = "oxlint.config.json";
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { collectNuxtLintDirs } from "./dirs.ts";
+import { collectNuxtLintDirs } from "@vizejs/nuxt-lint-config";
 import { toNuxtLintProjectState } from "./nuxt-state.ts";
 
 void test("Nuxt 3 and 4 layers keep their order and their own source directories", () => {

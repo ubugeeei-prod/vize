@@ -1,6 +1,6 @@
 /**
  * Guards the `@nuxt/eslint` differential oracle used by
- * `npm/framework/nuxt/src/lint/oracle.test.ts`.
+ * `npm/framework/nuxt-lint-config/src/oracle.test.ts`.
  *
  * That suite reads a *recorded* copy of `@nuxt/eslint`'s output so the package
  * tests run offline. The recording is only trustworthy if something re-derives
@@ -21,7 +21,14 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const compatDir = join(repoRoot, "npm", "framework", "nuxt", "test", "nuxt-eslint-compat");
+const compatDir = join(
+  repoRoot,
+  "npm",
+  "framework",
+  "nuxt-lint-config",
+  "test",
+  "nuxt-eslint-compat",
+);
 const oracle = await import(join(compatDir, "oracle.mjs"));
 
 test("recorded output matches the installed @nuxt/eslint packages", async () => {

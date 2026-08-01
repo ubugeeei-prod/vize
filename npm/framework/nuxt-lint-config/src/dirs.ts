@@ -1,5 +1,5 @@
 /**
- * Project-state to lint-directory resolution.
+ * Project-state to shareable lint-directory resolution.
  *
  * This is a behavioural port of `getDirs()` in `@nuxt/eslint` plus the `dirs`
  * defaulting in `@nuxt/eslint-config`'s `resolveOptions()`. Every directory the

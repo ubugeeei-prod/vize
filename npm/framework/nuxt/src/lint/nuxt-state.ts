@@ -5,7 +5,11 @@
  * a pure function of plain data: the oracle drives it from a JSON corpus, and
  * the module drives it from a live Nuxt instance, with no shared mutable state.
  */
-import type { NuxtLintDirNames, NuxtLintLayer, NuxtLintProjectState } from "./dirs.ts";
+import type {
+  NuxtLintDirNames,
+  NuxtLintLayer,
+  NuxtLintProjectState,
+} from "@vizejs/nuxt-lint-config";
 
 /** The subset of a Nuxt instance lint config generation reads. */
 export interface NuxtLintSourceOptions {

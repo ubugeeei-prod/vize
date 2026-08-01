@@ -5,7 +5,7 @@
     "moduleVersion": "1.16.0",
     "configVersion": "1.16.0"
   },
-  "description": "Nuxt project states whose generated lint config @vizejs/nuxt must reproduce. Each case is materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "description": "Nuxt project states whose generated lint config @vizejs/nuxt-lint-config must reproduce. Each case is materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
   "dirDefaultCases": [
     {
       "id": "defaults/empty",

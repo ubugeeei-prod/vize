@@ -8,11 +8,7 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "paths": {
-      "@vizejs/nuxt-lint-config": ["../nuxt-lint-config/src/index.ts"],
-      "@vizejs/vite-plugin-musea": ["../../builder/vite-musea/src/index.ts"]
-    }
+    "rootDir": "src"
   },
   "include": ["src"]
 }

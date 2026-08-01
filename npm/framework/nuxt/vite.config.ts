@@ -17,6 +17,7 @@ export default defineConfig({
     clean: true,
     deps: {
       neverBundle: [
+        "@vizejs/nuxt-lint-config",
         "@vizejs/vite-plugin",
         "@vizejs/vite-plugin-musea",
         "nitropack/runtime",

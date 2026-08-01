@@ -72,12 +72,12 @@ le changement est mentionné dans les notes de sortie lorsqu’il change. Les pa
 
 ## Paliers de support des paquets
 
-| Paliers                    | Paquets                                                                                       | Contrat                                                                                                                                  |
-| -------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Alpha-supporté             | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                               | Destiné aux premiers essais de production avec des changements de casse soutenus par la note de sortie.                                  |
-| Aperçu de la compatibilité | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/musea-nuxt`             | On s’attend à ce qu’il fonctionne pour des configurations hôtes courantes, mais la compatibilité hôte-framework peut évoluer rapidement. |
-| Expérimental               | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm` | Les paquets publics, mais les API, commandes, sortie et forme du workflow peuvent changer pendant l’alpha.                               |
-| Incubation                 | `@vizejs/fresco`, `@vizejs/fresco-native`, extensions d’éditeur                               | Utile pour le développement et les retours, mais pas encore dans la cible de production alpha v1.                                        |
+| Paliers                    | Paquets                                                                                                       | Contrat                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Alpha-supporté             | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                                               | Destiné aux premiers essais de production avec des changements de casse soutenus par la note de sortie.                                  |
+| Aperçu de la compatibilité | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`, `@vizejs/musea-nuxt` | On s’attend à ce qu’il fonctionne pour des configurations hôtes courantes, mais la compatibilité hôte-framework peut évoluer rapidement. |
+| Expérimental               | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm`                 | Les paquets publics, mais les API, commandes, sortie et forme du workflow peuvent changer pendant l’alpha.                               |
+| Incubation                 | `@vizejs/fresco`, `@vizejs/fresco-native`, extensions d’éditeur                                               | Utile pour le développement et les retours, mais pas encore dans la cible de production alpha v1.                                        |
 
 ## Niveaux de support de caisse de rouille
 

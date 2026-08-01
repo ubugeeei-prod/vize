@@ -70,6 +70,7 @@ test("release workflow jobs cap runtime with explicit timeouts", () => {
     ["release-npm-vite-plugin-musea", 15],
     ["release-npm-rspack-plugin", 15],
     ["release-npm-musea-nuxt", 15],
+    ["release-npm-nuxt-lint-config", 15],
     ["release-npm-nuxt", 15],
     ["release-crates", 30],
     ["create-github-release", 20],
@@ -112,6 +113,7 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
     "npm/builder/vite-musea",
     "npm/builder/rspack",
     "npm/framework/musea-nuxt",
+    "npm/framework/nuxt-lint-config",
     "npm/framework/nuxt",
   ]) {
     assert.match(smokeJob, new RegExp(packageDir.replaceAll("/", "\\/")));
@@ -127,6 +129,7 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
     "release-npm-vite-plugin-musea",
     "release-npm-rspack-plugin",
     "release-npm-musea-nuxt",
+    "release-npm-nuxt-lint-config",
     "release-npm-nuxt",
   ]) {
     assert.match(workflowJobBody(workflow, jobName), /smoke-release-packages/);

@@ -7,7 +7,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { renderNuxtOxlintConfig } from "./emitter.ts";
-import type { NuxtLintConfigItem } from "./plan.ts";
+import type { NuxtLintConfigItem } from "@vizejs/nuxt-lint-config";
 
 const plan: NuxtLintConfigItem[] = [
   {

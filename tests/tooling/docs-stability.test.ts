@@ -52,6 +52,7 @@ test("stability page documents v1 alpha support tiers", () => {
     "@vizejs/unplugin",
     "@vizejs/rspack-plugin",
     "@vizejs/nuxt",
+    "@vizejs/nuxt-lint-config",
     "@vizejs/vite-plugin-musea",
     "@vizejs/wasm",
     "@vizejs/fresco",

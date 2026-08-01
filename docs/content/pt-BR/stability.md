@@ -72,12 +72,12 @@ a mudança é mencionada nas notas de lançamento quando muda. Empacotadores pos
 
 ## Níveis de Suporte a Pacotes
 
-| Tier                      | Pacotes                                                                                       | Contrato                                                                                                                 |
-| ------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Suporte Alpha             | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                               | Destinado a testes iniciais de produção com alterações de quebra respaldadas por releasenote de lançamento.              |
-| Prévia de compatibilidade | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/musea-nuxt`             | Espera-se que funcione para configurações comuns de host, mas a compatibilidade host-framework pode avançar rapidamente. |
-| Experimental              | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm` | Pacotes públicos, mas APIs, comandos, saída e formato de fluxo de trabalho podem mudar durante o alfa.                   |
-| Incubação                 | `@vizejs/fresco`, `@vizejs/fresco-native`, pacotes de extensão de editor                      | Útil para desenvolvimento e feedback, mas ainda não faz parte da meta de produção da alpha v1.                           |
+| Tier                      | Pacotes                                                                                                       | Contrato                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Suporte Alpha             | `vize`, `@vizejs/native`, `@vizejs/vite-plugin`                                                               | Destinado a testes iniciais de produção com alterações de quebra respaldadas por releasenote de lançamento.              |
+| Prévia de compatibilidade | `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/nuxt-lint-config`, `@vizejs/musea-nuxt` | Espera-se que funcione para configurações comuns de host, mas a compatibilidade host-framework pode avançar rapidamente. |
+| Experimental              | `oxlint-plugin-vize`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, `@vizejs/wasm`                 | Pacotes públicos, mas APIs, comandos, saída e formato de fluxo de trabalho podem mudar durante o alfa.                   |
+| Incubação                 | `@vizejs/fresco`, `@vizejs/fresco-native`, pacotes de extensão de editor                                      | Útil para desenvolvimento e feedback, mas ainda não faz parte da meta de produção da alpha v1.                           |
 
 ## Níveis de Suporte de Caixas de Ferrugem
 

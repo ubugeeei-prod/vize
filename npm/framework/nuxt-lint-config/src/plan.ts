@@ -1,5 +1,5 @@
 /**
- * The Nuxt-aware lint config plan.
+ * The shareable Nuxt-aware lint config plan.
  *
  * `@nuxt/eslint` turns a Nuxt project into an ordered list of flat-config
  * items. The Nuxt-specific ones — the blocks that know about pages, layouts,
