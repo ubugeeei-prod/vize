@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { parse } from "yaml";
 
 import type * as NuxtLintConfig from "../../npm/framework/nuxt-lint-config/src/index.ts";
 
@@ -107,7 +108,12 @@ test("shareable Nuxt lint config resolves a complete standalone plan", async () 
 test("shareable Nuxt lint config is a public dependency of the Nuxt module", () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(packageDir, "package.json"), "utf8"),
-  ) as { exports?: unknown; name?: string; publishConfig?: { access?: string } };
+  ) as {
+    exports?: unknown;
+    name?: string;
+    publishConfig?: { access?: string };
+    scripts?: Record<string, string>;
+  };
   const nuxtPackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/framework/nuxt/package.json"), "utf8"),
   ) as { dependencies?: Record<string, string> };
@@ -115,5 +121,19 @@ test("shareable Nuxt lint config is a public dependency of the Nuxt module", () 
   assert.equal(packageJson.name, "@vizejs/nuxt-lint-config");
   assert.equal(packageJson.publishConfig?.access, "public");
   assert.ok(packageJson.exports);
+  assert.equal(packageJson.scripts?.build, "vp pack");
+  assert.equal(packageJson.scripts?.dev, "vp pack --watch");
   assert.equal(nuxtPackage.dependencies?.["@vizejs/nuxt-lint-config"], "workspace:*");
+});
+
+test("release workflow publishes the Nuxt module after its runtime lint dependencies", () => {
+  const workflow = parse(
+    fs.readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8"),
+  ) as { jobs?: Record<string, { needs?: string | string[] }> };
+  const needs = workflow.jobs?.["release-npm-nuxt"]?.needs;
+  const nuxtNeeds = Array.isArray(needs) ? needs : needs == null ? [] : [needs];
+
+  for (const dependency of ["release-npm-nuxt-lint-config", "release-npm-oxlint-plugin"]) {
+    assert.ok(nuxtNeeds.includes(dependency), `release-npm-nuxt must wait for ${dependency}`);
+  }
 });

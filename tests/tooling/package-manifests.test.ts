@@ -424,10 +424,8 @@ test("release workflow publishes npm packages after their npm dependencies", () 
   assert.ok(vitePluginNeeds.includes("release-npm-cli"));
   assert.ok(nuxtNeeds.includes("release-npm-cli"));
   assert.ok(nuxtNeeds.includes("release-npm-vite-plugin"));
-  assert.ok(nuxtNeeds.includes("release-npm-oxlint-plugin"));
   assert.ok(nuxtNeeds.includes("release-npm-vite-plugin-musea"));
   assert.ok(nuxtNeeds.includes("release-npm-musea-nuxt"));
-  assert.ok(nuxtNeeds.includes("release-npm-nuxt-lint-config"));
 });
 
 test("editor extension manifests keep expected defaults and version alignment", () => {
@@ -561,7 +559,6 @@ test("workspace TypeScript package builds use vp pack", () => {
     ["npm/fresco", "vp pack", "vp pack --watch"],
     ["npm/mcp-musea", "vp pack", "vp pack --watch"],
     ["npm/framework/musea-nuxt", "vp pack", "vp pack --watch"],
-    ["npm/framework/nuxt-lint-config", "vp pack", "vp pack --watch"],
     ["npm/framework/nuxt", "vp pack", "vp pack --watch"],
     ["npm/oxint", "vp pack", undefined],
     ["npm/builder/rspack", "vp pack", "vp pack --watch"],
