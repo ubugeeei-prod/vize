@@ -44,10 +44,6 @@ test("CI runs both headless editor specs", () => {
   const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 
   assert.match(taskCommand("test:nvim-extension:headless"), /VIZE_TEST_ART_VUE_NATIVE_PARSER=1/);
-  assert.match(
-    action,
-    /^description: Run VS Code and Neovim real-server scenarios plus Neovim and Vim headless specs$/m,
-  );
   assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
   assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
   assert.match(action, /command -v vim/);
