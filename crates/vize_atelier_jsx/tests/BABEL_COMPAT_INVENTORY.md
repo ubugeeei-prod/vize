@@ -192,17 +192,17 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 
 ## Slots
 
-| Case                                 | Babel                                 | Vize today                                  | Compat mode                           | Verdict |
-| ------------------------------------ | ------------------------------------- | ------------------------------------------- | ------------------------------------- | ------- |
-| `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                    | no change                             | ✅      |
-| `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`   | no change                             | ✅      |
-| `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`              | no change                             | ✅      |
-| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | same keys + `1024 /* DYNAMIC_SLOTS */` (#3467) | no change                          | ✅      |
-| `slots/v_slots_only`                 | slots object passed as children       | same + `1024 /* DYNAMIC_SLOTS */` (#3467)   | no change                             | ✅      |
-| `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)            | no change                             | ✅      |
-| `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418) | no change                             | ✅      |
-| `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`             | no change                             | ✅      |
-| `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | warns and drops the slot                    | deferred: needs dynamic-slot lowering | ⏸       |
+| Case                                 | Babel                                 | Vize today                                     | Compat mode                           | Verdict |
+| ------------------------------------ | ------------------------------------- | ---------------------------------------------- | ------------------------------------- | ------- |
+| `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                       | no change                             | ✅      |
+| `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`      | no change                             | ✅      |
+| `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`                 | no change                             | ✅      |
+| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | same keys + `1024 /* DYNAMIC_SLOTS */` (#3467) | no change                             | ✅      |
+| `slots/v_slots_only`                 | slots object passed as children       | same + `1024 /* DYNAMIC_SLOTS */` (#3467)      | no change                             | ✅      |
+| `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)               | no change                             | ✅      |
+| `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418)    | no change                             | ✅      |
+| `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`                | no change                             | ✅      |
+| `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | warns and drops the slot                       | deferred: needs dynamic-slot lowering | ⏸       |
 
 ### Forwarding an opaque slots object (#3467)
 
@@ -253,7 +253,7 @@ here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
   (`v-slots={1}`, `v-slots={[…]}`) — babel forwards these as the component's
   children, which is meaningless for a component. A slots object is either an
   object literal to expand or an opaque expression to forward, never a literal.
-- `v-slots={() => …}` — a lone function is the *default slot*, not a slots
+- `v-slots={() => …}` — a lone function is the _default slot_, not a slots
   object: babel forwards it as children and Vue wraps it as `{default: fn}`.
   Spreading it would contribute nothing, so Vize names it and points at
   `v-slots={{ default: … }}` (or the render-prop child form, which it supports).
@@ -284,24 +284,24 @@ here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
 
 Compared against Vize's default, which is already fully optimized.
 
-| Case                             | Babel                        | Vize today                            | Compat mode                     | Verdict |
-| -------------------------------- | ---------------------------- | ------------------------------------- | ------------------------------- | ------- |
-| `optimize/static`                | no flag                      | no flag                               | no change                       | ✅      |
-| `optimize/class_only`            | `2`                          | `2 /* CLASS */`                       | no change                       | ✅      |
-| `optimize/style_only`            | `4`                          | `4 /* STYLE */`                       | no change                       | ✅      |
-| `optimize/text_only`             | raw child, no flag           | `toDisplayString(t)` + `1 /* TEXT */` | emit the raw child              | ❌      |
-| `optimize/class_and_props`       | `10, ["id"]`                 | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drop the TEXT child             | ❌      |
-| `optimize/spread`                | `16`                         | `16 /* FULL_PROPS */`                 | no change                       | ✅      |
-| `optimize/ref`                   | `512`                        | `512 /* NEED_PATCH */`                | no change                       | ✅      |
-| `optimize/key`                   | no flag                      | no flag                               | no change                       | ✅      |
-| `optimize/event`                 | `8, ["onClick"]`             | same                                  | no change                       | ✅      |
-| `optimize/component_props`       | `8, ["foo"]`                 | same                                  | no change                       | ✅      |
-| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]` | same                                  | no change                       | ✅      |
-| `optimize/slots_stability`       | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
-| `optimize/scoped_slot_stability` | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
-| `optimize/v_slots_stability`     | slots object as children, no `_` flag | same, no `_` flag (#3467)    | no change                       | ✅      |
-| `optimize/fragment`              | no flag                      | `64 /* STABLE_FRAGMENT */`            | no change                       | ✅      |
-| `optimize/map_list`              | raw array child              | `renderList` + `KEYED_FRAGMENT`       | no change                       | ✅      |
+| Case                             | Babel                                 | Vize today                            | Compat mode         | Verdict |
+| -------------------------------- | ------------------------------------- | ------------------------------------- | ------------------- | ------- |
+| `optimize/static`                | no flag                               | no flag                               | no change           | ✅      |
+| `optimize/class_only`            | `2`                                   | `2 /* CLASS */`                       | no change           | ✅      |
+| `optimize/style_only`            | `4`                                   | `4 /* STYLE */`                       | no change           | ✅      |
+| `optimize/text_only`             | raw child, no flag                    | `toDisplayString(t)` + `1 /* TEXT */` | emit the raw child  | ❌      |
+| `optimize/class_and_props`       | `10, ["id"]`                          | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drop the TEXT child | ❌      |
+| `optimize/spread`                | `16`                                  | `16 /* FULL_PROPS */`                 | no change           | ✅      |
+| `optimize/ref`                   | `512`                                 | `512 /* NEED_PATCH */`                | no change           | ✅      |
+| `optimize/key`                   | no flag                               | no flag                               | no change           | ✅      |
+| `optimize/event`                 | `8, ["onClick"]`                      | same                                  | no change           | ✅      |
+| `optimize/component_props`       | `8, ["foo"]`                          | same                                  | no change           | ✅      |
+| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]`          | same                                  | no change           | ✅      |
+| `optimize/slots_stability`       | `_: 1`                                | `_: 1 /* STABLE */`                   | no change           | ✅      |
+| `optimize/scoped_slot_stability` | `_: 1`                                | `_: 1 /* STABLE */`                   | no change           | ✅      |
+| `optimize/v_slots_stability`     | slots object as children, no `_` flag | same, no `_` flag (#3467)             | no change           | ✅      |
+| `optimize/fragment`              | no flag                               | `64 /* STABLE_FRAGMENT */`            | no change           | ✅      |
+| `optimize/map_list`              | raw array child                       | `renderList` + `KEYED_FRAGMENT`       | no change           | ✅      |
 
 ## Inputs babel rejects
 
