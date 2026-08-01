@@ -24,6 +24,24 @@ function createContext(filename: string, extractedScript: string): Context {
   } as unknown as Context;
 }
 
+it("standalone scripts preserve native source locations", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-script-"));
+  const filename = path.join(root, "nuxt.config.ts");
+  const source = "export default { test: true };\n";
+
+  try {
+    fs.writeFileSync(filename, source);
+    const state = getFileState(createContext(filename, source));
+    assert.equal(state.usesOriginalLocations, true);
+    assert.equal(state.source, source);
+    assert.equal(state.filename, filename);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
 it("unchanged source reuses revision-safe file work", () => {
   clearFileStateCache();
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-file-state-reuse-"));

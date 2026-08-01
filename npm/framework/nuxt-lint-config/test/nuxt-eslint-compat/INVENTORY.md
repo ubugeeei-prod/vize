@@ -44,7 +44,7 @@ overrides an earlier one — so it is part of the contract.
 | `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported      |
 | `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | supported      |
 | `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | supported      |
-| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet |
+| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | supported      |
 | `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
 | `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported      |
 | `nuxt/import-globals`  | whole project                                             | — (Nuxt/Nitro auto-import globals)   | supported      |
@@ -83,6 +83,24 @@ the oracle.
 | `no-page-meta-runtime-values/eager-nested-structures`      | Computed keys, arrays, spreads, nested objects, and nested macro arguments stay eager.                |
 | `no-page-meta-runtime-values/function-parameters-are-lazy` | Function default parameters are lazy together with their bodies; an adjacent eager API still reports. |
 | `no-page-meta-runtime-values/optional-macro-call`          | Optional direct macro calls form a boundary; empty and identifier-only arguments stay valid.          |
+
+## `nuxt/no-nuxt-config-test-key` rule cases
+
+| Case                                                  | Behaviour                                                                                   |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `no-nuxt-config-test-key/direct-object-booleans`      | Boolean `true` and `false` values on direct identifier `test` keys both report.             |
+| `no-nuxt-config-test-key/call-first-argument`         | Any default-exported call inspects only its first argument when that argument is an object. |
+| `no-nuxt-config-test-key/member-call`                 | A member-expression callee qualifies because the rule does not constrain the callee.        |
+| `no-nuxt-config-test-key/computed-identifier-key`     | A computed `[test]` key reports because upstream does not inspect the computed flag.        |
+| `no-nuxt-config-test-key/property-key-near-misses`    | Quoted, computed-literal, differently cased, and longer property keys stay valid.           |
+| `no-nuxt-config-test-key/value-near-misses`           | Identifiers, numbers, strings, null, calls, shorthands, and methods stay valid.             |
+| `no-nuxt-config-test-key/export-shape-near-misses`    | Identifier-backed exports and non-exported wrapper calls are not traversed.                 |
+| `no-nuxt-config-test-key/nested-and-later-objects`    | Nested objects and object arguments after the first one stay valid.                         |
+| `no-nuxt-config-test-key/parenthesized-object`        | Parentheses preserve the direct default-exported object behaviour.                          |
+| `no-nuxt-config-test-key/parenthesized-call-argument` | Parentheses around the exported call and its first object argument are transparent.         |
+| `no-nuxt-config-test-key/parenthesized-key-and-value` | Parentheses around computed identifier keys and boolean values preserve matching.           |
+| `no-nuxt-config-test-key/escaped-identifier-key`      | Unicode escapes preserve the semantic `test` identifier and bypass no prefilter.            |
+| `no-nuxt-config-test-key/multiline-property-range`    | The diagnostic spans the complete property and remains non-fixable across a second pass.    |
 
 ## Dev-server checker
 

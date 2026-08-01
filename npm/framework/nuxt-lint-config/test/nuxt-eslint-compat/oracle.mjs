@@ -37,6 +37,7 @@ import { fileURLToPath } from "node:url";
 import { renderNuxtOxlintConfig } from "../../../nuxt/src/lint/emitter.ts";
 import { buildNuxtLintPlan } from "../../src/plan.ts";
 import { recordCheckerOptions } from "./checker-oracle.mjs";
+import { recordNoNuxtConfigTestKeyCases } from "./no-nuxt-config-test-key-oracle.mjs";
 import { recordNoPageMetaRuntimeValuesCases } from "./no-page-meta-runtime-values-oracle.mjs";
 import { recordPreferImportMetaCases } from "./prefer-import-meta-oracle.mjs";
 
@@ -218,12 +219,17 @@ export async function runOracle() {
   ]);
 
   const corpus = readCorpus();
-  const [preferImportMeta, noPageMetaRuntimeValues, checkerOptions] = await Promise.all([
-    recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
-    recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
-    recordCheckerOptions(moduleEntry, corpus.checkerCases),
-  ]);
-  if (preferImportMeta.pluginVersion !== noPageMetaRuntimeValues.pluginVersion) {
+  const [preferImportMeta, noPageMetaRuntimeValues, noNuxtConfigTestKey, checkerOptions] =
+    await Promise.all([
+      recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
+      recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
+      recordNoNuxtConfigTestKeyCases(moduleEntry, corpus, packageVersionFrom),
+      recordCheckerOptions(moduleEntry, corpus.checkerCases),
+    ]);
+  if (
+    preferImportMeta.pluginVersion !== noPageMetaRuntimeValues.pluginVersion ||
+    preferImportMeta.pluginVersion !== noNuxtConfigTestKey.pluginVersion
+  ) {
     throw new Error("Nuxt rule oracles resolved different @nuxt/eslint-plugin versions");
   }
 
@@ -283,7 +289,7 @@ export async function runOracle() {
   );
 
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
@@ -302,6 +308,7 @@ export async function runOracle() {
     },
     preferImportMetaCases: preferImportMeta.cases,
     noPageMetaRuntimeValuesCases: noPageMetaRuntimeValues.cases,
+    noNuxtConfigTestKeyCases: noNuxtConfigTestKey.cases,
     checkerOptions,
     dirDefaults,
     cases,

@@ -88,7 +88,11 @@ if (import.meta.vitest) {
     });
 
     it("enables Nuxt framework rules only in the Nuxt and all presets", () => {
-      for (const ruleName of ["prefer-import-meta", "no-page-meta-runtime-values"]) {
+      for (const ruleName of [
+        "prefer-import-meta",
+        "no-page-meta-runtime-values",
+        "no-nuxt-config-test-key",
+      ]) {
         const ruleId = `vize/nuxt/${ruleName}`;
         expect(configs.nuxt[ruleId]).toBe("error");
         expect(configs.all[ruleId]).toBe("error");

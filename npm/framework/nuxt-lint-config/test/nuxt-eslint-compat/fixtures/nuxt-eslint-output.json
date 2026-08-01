@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
@@ -944,6 +944,244 @@
       "secondPassMessageCount": 1,
       "secondPassMessagesMatch": true,
       "secondPassOutput": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })",
+      "secondPassFixed": false
+    }
+  },
+  "noNuxtConfigTestKeyCases": {
+    "no-nuxt-config-test-key/direct-object-booleans": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 2,
+          "column": 3,
+          "endLine": 2,
+          "endColumn": 13,
+          "range": [19, 29],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 4,
+          "column": 3,
+          "endLine": 4,
+          "endColumn": 14,
+          "range": [45, 56],
+          "fix": null
+        }
+      ],
+      "output": "export default {\n  test: true,\n  other: 1,\n  test: false\n}",
+      "fixed": false,
+      "secondPassMessageCount": 2,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default {\n  test: true,\n  other: 1,\n  test: false\n}",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/call-first-argument": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 32,
+          "endLine": 1,
+          "endColumn": 43,
+          "range": [31, 42],
+          "fix": null
+        }
+      ],
+      "output": "export default customWrapper({ test: false }, { test: true })",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default customWrapper({ test: false }, { test: true })",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/member-call": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 36,
+          "endLine": 1,
+          "endColumn": 46,
+          "range": [35, 45],
+          "fix": null
+        }
+      ],
+      "output": "export default Nuxt.defineConfig({ test: true })",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default Nuxt.defineConfig({ test: true })",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/computed-identifier-key": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 39,
+          "endLine": 1,
+          "endColumn": 51,
+          "range": [38, 50],
+          "fix": null
+        }
+      ],
+      "output": "const test = 'mode'; export default { [test]: true }",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "const test = 'mode'; export default { [test]: true }",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/property-key-near-misses": {
+      "messages": [],
+      "output": "export default { 'test': true, ['test']: false, testing: true, Test: false }",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default { 'test': true, ['test']: false, testing: true, Test: false }",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/value-near-misses": {
+      "messages": [],
+      "output": "const test = true; const enabled = true; export default { test, test: enabled, test: 1, test: 'true', test: null, test: Boolean(true), test() { return true } }",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "const test = true; const enabled = true; export default { test, test: enabled, test: 1, test: 'true', test: null, test: Boolean(true), test() { return true } }",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/export-shape-near-misses": {
+      "messages": [],
+      "output": "const config = { test: true }; defineNuxtConfig({ test: false }); export default config",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "const config = { test: true }; defineNuxtConfig({ test: false }); export default config",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/nested-and-later-objects": {
+      "messages": [],
+      "output": "export default defineNuxtConfig({ nested: { test: true }, values: [{ test: false }] }, { test: true })",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default defineNuxtConfig({ nested: { test: true }, values: [{ test: false }] }, { test: true })",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/parenthesized-object": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 19,
+          "endLine": 1,
+          "endColumn": 29,
+          "range": [18, 28],
+          "fix": null
+        }
+      ],
+      "output": "export default ({ test: true })",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default ({ test: true })",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/parenthesized-call-argument": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 38,
+          "endLine": 1,
+          "endColumn": 48,
+          "range": [37, 47],
+          "fix": null
+        }
+      ],
+      "output": "export default (defineNuxtConfig((({ test: true }))))",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default (defineNuxtConfig((({ test: true }))))",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/parenthesized-key-and-value": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 39,
+          "endLine": 1,
+          "endColumn": 64,
+          "range": [38, 63],
+          "fix": null
+        }
+      ],
+      "output": "const test = 'mode'; export default { [(((test)))]: (((false))) }",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "const test = 'mode'; export default { [(((test)))]: (((false))) }",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/escaped-identifier-key": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 1,
+          "column": 18,
+          "endLine": 1,
+          "endColumn": 33,
+          "range": [17, 32],
+          "fix": null
+        }
+      ],
+      "output": "export default { t\\u0065st: true }",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default { t\\u0065st: true }",
+      "secondPassFixed": false
+    },
+    "no-nuxt-config-test-key/multiline-property-range": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-nuxt-config-test-key",
+          "severity": 2,
+          "message": "Do not set `test` key in Nuxt config. The test environment is automatically detected.",
+          "line": 2,
+          "column": 17,
+          "endLine": 2,
+          "endColumn": 51,
+          "range": [50, 84],
+          "fix": null
+        }
+      ],
+      "output": "export default defineNuxtConfig({\n  /* leading */ test /* key */ : /* value */ false /* trailing */\n})",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "export default defineNuxtConfig({\n  /* leading */ test /* key */ : /* value */ false /* trailing */\n})",
       "secondPassFixed": false
     }
   },

@@ -86,6 +86,73 @@
       "source": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })"
     }
   ],
+  "noNuxtConfigTestKeyCases": [
+    {
+      "id": "no-nuxt-config-test-key/direct-object-booleans",
+      "description": "Both boolean values are rejected when direct identifier test keys occur in the default-exported object.",
+      "source": "export default {\n  test: true,\n  other: 1,\n  test: false\n}"
+    },
+    {
+      "id": "no-nuxt-config-test-key/call-first-argument",
+      "description": "The first object argument of any default-exported call is inspected, independent of the callee name; later arguments are ignored.",
+      "source": "export default customWrapper({ test: false }, { test: true })"
+    },
+    {
+      "id": "no-nuxt-config-test-key/member-call",
+      "description": "A member-expression callee also qualifies because upstream constrains only the first argument shape.",
+      "source": "export default Nuxt.defineConfig({ test: true })"
+    },
+    {
+      "id": "no-nuxt-config-test-key/computed-identifier-key",
+      "description": "A computed identifier key still matches because upstream checks its Identifier node and name without checking the computed flag.",
+      "source": "const test = 'mode'; export default { [test]: true }"
+    },
+    {
+      "id": "no-nuxt-config-test-key/property-key-near-misses",
+      "description": "Quoted, computed-literal, differently cased, and longer property keys remain valid.",
+      "source": "export default { 'test': true, ['test']: false, testing: true, Test: false }"
+    },
+    {
+      "id": "no-nuxt-config-test-key/value-near-misses",
+      "description": "Only boolean literal values match; identifiers, numbers, strings, null, calls, shorthands, and methods remain valid.",
+      "source": "const test = true; const enabled = true; export default { test, test: enabled, test: 1, test: 'true', test: null, test: Boolean(true), test() { return true } }"
+    },
+    {
+      "id": "no-nuxt-config-test-key/export-shape-near-misses",
+      "description": "An object behind an identifier and a non-exported wrapper call are not traversed as Nuxt config exports.",
+      "source": "const config = { test: true }; defineNuxtConfig({ test: false }); export default config"
+    },
+    {
+      "id": "no-nuxt-config-test-key/nested-and-later-objects",
+      "description": "Only direct properties of the first exported object argument are inspected; nested and later objects remain valid.",
+      "source": "export default defineNuxtConfig({ nested: { test: true }, values: [{ test: false }] }, { test: true })"
+    },
+    {
+      "id": "no-nuxt-config-test-key/parenthesized-object",
+      "description": "Parentheses do not change the default-exported object shape seen by the upstream parser.",
+      "source": "export default ({ test: true })"
+    },
+    {
+      "id": "no-nuxt-config-test-key/parenthesized-call-argument",
+      "description": "Parentheses around the exported call and its first object argument are transparent in the upstream ESTree shape.",
+      "source": "export default (defineNuxtConfig((({ test: true }))))"
+    },
+    {
+      "id": "no-nuxt-config-test-key/parenthesized-key-and-value",
+      "description": "Parentheses around a computed identifier key and boolean value remain transparent to the upstream parser.",
+      "source": "const test = 'mode'; export default { [(((test)))]: (((false))) }"
+    },
+    {
+      "id": "no-nuxt-config-test-key/escaped-identifier-key",
+      "description": "An escaped identifier spelling still has the semantic Identifier name test and must not be lost by the byte prefilter.",
+      "source": "export default { t\\u0065st: true }"
+    },
+    {
+      "id": "no-nuxt-config-test-key/multiline-property-range",
+      "description": "The diagnostic spans the complete property, including comments between its key, colon, and boolean value.",
+      "source": "export default defineNuxtConfig({\n  /* leading */ test /* key */ : /* value */ false /* trailing */\n})"
+    }
+  ],
   "importGlobals": {
     "id": "addons/import-globals",
     "description": "Nuxt and Nitro auto-import registries are merged, sorted by source then imported name, and aliases become readonly globals.",

@@ -1,7 +1,7 @@
 import type { Context } from "@oxlint/plugins";
 
 import type { HelpLevel, PatinaPreset, PatinaSettings } from "./model.js";
-export { isVueLikeFile } from "./file-kinds.js";
+export { isPatinaFile } from "./file-kinds.js";
 
 const HELP_LEVELS = new Set<HelpLevel>(["none", "short", "full"]);
 const TYPE_AWARE_RULE_PREFIX = "type/";

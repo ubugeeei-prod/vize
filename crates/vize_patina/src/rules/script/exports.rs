@@ -21,6 +21,7 @@ pub use super::no_import_compiler_macros::NoImportCompilerMacros;
 pub use super::no_internal_imports::NoInternalImports;
 pub use super::no_multiple_slot_args::NoMultipleSlotArgs;
 pub use super::no_next_tick::NoNextTick;
+pub use super::no_nuxt_config_test_key::NoNuxtConfigTestKey;
 pub use super::no_options_api::NoOptionsApi;
 pub use super::no_page_meta_runtime_values::NoPageMetaRuntimeValues;
 pub use super::no_potential_component_option_typo::NoPotentialComponentOptionTypo;

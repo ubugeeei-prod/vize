@@ -74,6 +74,7 @@ const corpus = readJson<{
   oracle: Record<string, string>;
   preferImportMetaCases: Array<{ id: string; description: string; source: string }>;
   noPageMetaRuntimeValuesCases: Array<{ id: string; description: string; source: string }>;
+  noNuxtConfigTestKeyCases: Array<{ id: string; description: string; source: string }>;
   dirDefaultCases: DirDefaultCase[];
   cases: CorpusCase[];
 }>("fixtures", "corpus.json");
@@ -95,6 +96,18 @@ const recording = readJson<{
     }
   >;
   noPageMetaRuntimeValuesCases: Record<
+    string,
+    {
+      messages: RecordedPageMetaMessage[];
+      output: string;
+      fixed: boolean;
+      secondPassMessageCount: number;
+      secondPassMessagesMatch: boolean;
+      secondPassOutput: string;
+      secondPassFixed: boolean;
+    }
+  >;
+  noNuxtConfigTestKeyCases: Record<
     string,
     {
       messages: RecordedPageMetaMessage[];
@@ -161,7 +174,7 @@ void test("corpus pins the package versions the recording was produced with", ()
 });
 
 void test("recording covers exactly the corpus cases", () => {
-  assert.equal(recording.schemaVersion, 5);
+  assert.equal(recording.schemaVersion, 6);
   assert.deepEqual(
     Object.keys(recording.cases).sort(),
     corpus.cases.map((entry) => entry.id).sort(),
@@ -198,6 +211,13 @@ void test("recording covers exactly the page-meta rule corpus", () => {
   );
 });
 
+void test("recording covers exactly the config test-key rule corpus", () => {
+  assert.deepEqual(
+    Object.keys(recording.noNuxtConfigTestKeyCases).sort(),
+    corpus.noNuxtConfigTestKeyCases.map((entry) => entry.id).sort(),
+  );
+});
+
 for (const entry of corpus.noPageMetaRuntimeValuesCases) {
   void test(`${entry.id}: recorded non-fixable diagnostics are stable`, () => {
     const recorded = recording.noPageMetaRuntimeValuesCases[entry.id];
@@ -210,6 +230,25 @@ for (const entry of corpus.noPageMetaRuntimeValuesCases) {
     assert.equal(recorded.secondPassMessagesMatch, true);
     for (const message of recorded.messages) {
       assert.equal(message.ruleId, "nuxt/no-page-meta-runtime-values");
+      assert.equal(message.severity, 2);
+      assert.equal(message.fix, null);
+      assert.ok(message.range[0] < message.range[1]);
+    }
+  });
+}
+
+for (const entry of corpus.noNuxtConfigTestKeyCases) {
+  void test(`${entry.id}: recorded non-fixable diagnostics are stable`, () => {
+    const recorded = recording.noNuxtConfigTestKeyCases[entry.id];
+    assert.ok(recorded);
+    assert.equal(recorded.fixed, false);
+    assert.equal(recorded.output, entry.source);
+    assert.equal(recorded.secondPassFixed, false);
+    assert.equal(recorded.secondPassOutput, entry.source);
+    assert.equal(recorded.secondPassMessageCount, recorded.messages.length);
+    assert.equal(recorded.secondPassMessagesMatch, true);
+    for (const message of recorded.messages) {
+      assert.equal(message.ruleId, "nuxt/no-nuxt-config-test-key");
       assert.equal(message.severity, 2);
       assert.equal(message.fix, null);
       assert.ok(message.range[0] < message.range[1]);

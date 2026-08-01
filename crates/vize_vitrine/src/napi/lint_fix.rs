@@ -31,6 +31,8 @@ pub(super) fn lint_source(
 ) -> vize_patina::LintResult {
     if is_standalone_html_filename(filename) {
         linter.lint_standalone_html(source, filename)
+    } else if is_script_filename(filename) {
+        linter.lint_script(source, filename)
     } else {
         linter.lint_sfc(source, filename)
     }
@@ -42,6 +44,18 @@ pub(super) fn is_standalone_html_filename(filename: &str) -> bool {
 
 pub(super) fn is_lintable_extension(extension: &str) -> bool {
     matches!(extension, "vue" | "html" | "htm")
+}
+
+fn is_script_filename(filename: &str) -> bool {
+    Path::new(filename)
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            matches!(
+                extension,
+                "js" | "jsx" | "mjs" | "cjs" | "ts" | "tsx" | "mts" | "cts"
+            )
+        })
 }
 
 fn apply_lint_fixes(source: &str, result: &vize_patina::LintResult) -> Option<String> {
@@ -84,4 +98,35 @@ fn apply_lint_fixes(source: &str, result: &vize_patina::LintResult) -> Option<St
         fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
     }
     Some(fixed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_lintable_extension, is_script_filename, lint_source};
+    use vize_patina::{LintPreset, Linter};
+
+    #[test]
+    fn standalone_typescript_is_linted_as_a_script() {
+        let linter = Linter::with_preset(LintPreset::Nuxt);
+        let result = lint_source(
+            &linter,
+            "export default defineNuxtConfig({ test: true })",
+            "nuxt.config.ts",
+        );
+
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| { diagnostic.rule_name == "nuxt/no-nuxt-config-test-key" })
+        );
+    }
+
+    #[test]
+    fn script_extensions_do_not_expand_directory_collection() {
+        for extension in ["js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts"] {
+            assert!(is_script_filename(&format!("nuxt.config.{extension}")));
+            assert!(!is_lintable_extension(extension));
+        }
+    }
 }

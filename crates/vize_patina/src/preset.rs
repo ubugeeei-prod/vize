@@ -65,6 +65,7 @@ const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] =
 const NUXT_SCRIPT_RULE_NAMES: &[&str] = &[
     "nuxt/prefer-import-meta",
     "nuxt/no-page-meta-runtime-values",
+    "nuxt/no-nuxt-config-test-key",
 ];
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {

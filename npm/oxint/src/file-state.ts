@@ -12,6 +12,7 @@ import {
   isIncrementalPreset,
   isTypeAwareRuleName,
 } from "./settings.js";
+import { isScriptLikeFile } from "./file-kinds.js";
 import { resolveWorkaroundSource } from "./workaround.js";
 
 export interface FileState {
@@ -73,7 +74,8 @@ export function getFileState(context: Context): FileState {
     filename: resolvedSource.filename,
     source: resolvedSource.source,
     extractedScript: context.sourceCode.text,
-    usesOriginalLocations: resolvedSource.usesOriginalLocations,
+    usesOriginalLocations:
+      resolvedSource.usesOriginalLocations || isScriptLikeFile(resolvedSource.filename),
     reportedRules: new Set(),
     sfcBlocks: undefined,
     scriptMap: undefined,

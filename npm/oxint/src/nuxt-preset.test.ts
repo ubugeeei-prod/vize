@@ -12,6 +12,7 @@ const configPath = path.join(fixtureDir, ".oxlintrc.json");
 const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
 const processFlagsVuePath = path.join(fixtureDir, "ProcessFlags.vue");
 const pageMetaVuePath = path.join(fixtureDir, "PageMeta.vue");
+const nuxtConfigPath = path.join(fixtureDir, "nuxt.config.ts");
 const ansiEscapePattern = new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu");
 const { configs } = await import(pathToFileURL(pluginEntry).href);
 
@@ -21,6 +22,8 @@ assert.equal(configs.nuxt["vize/nuxt/prefer-import-meta"], "error");
 assert.equal(configs.opinionated["vize/nuxt/prefer-import-meta"], undefined);
 assert.equal(configs.nuxt["vize/nuxt/no-page-meta-runtime-values"], "error");
 assert.equal(configs.opinionated["vize/nuxt/no-page-meta-runtime-values"], undefined);
+assert.equal(configs.nuxt["vize/nuxt/no-nuxt-config-test-key"], "error");
+assert.equal(configs.opinionated["vize/nuxt/no-nuxt-config-test-key"], undefined);
 
 fs.rmSync(fixtureDir, { force: true, recursive: true });
 fs.mkdirSync(fixtureDir, { recursive: true });
@@ -53,6 +56,14 @@ fs.writeFileSync(
   `<script setup lang="ts">
 definePageMeta({ title: useRoute().path })
 </script>
+`,
+);
+
+fs.writeFileSync(
+  nuxtConfigPath,
+  `export default defineNuxtConfig({
+  test: true,
+})
 `,
 );
 
@@ -99,6 +110,13 @@ assert.notEqual(pageMetaRun.exitCode, 0, "nuxt preset should reject eager runtim
 assert.match(
   pageMetaRun.output,
   /PageMeta\.vue[\s\S]*2:25[\s\S]*`useRoute\(\)` requires a Nuxt\/Vue runtime context[\s\S]*vize\(nuxt\/no-page-meta-runtime-values\)/u,
+);
+
+const nuxtConfigRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "nuxt.config.ts"]);
+assert.notEqual(nuxtConfigRun.exitCode, 0, "nuxt preset should reject the config test key");
+assert.match(
+  nuxtConfigRun.output,
+  /nuxt\.config\.ts[\s\S]*2:3[\s\S]*Do not set `test` key in Nuxt config[\s\S]*vize\(nuxt\/no-nuxt-config-test-key\)/u,
 );
 
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");

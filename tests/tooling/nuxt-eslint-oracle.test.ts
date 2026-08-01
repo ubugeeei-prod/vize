@@ -35,8 +35,8 @@ test("recorded output matches the installed @nuxt/eslint packages", async () => 
   const recomputed = await oracle.runOracle();
   const recorded = oracle.readRecorded();
 
-  assert.equal(recomputed.schemaVersion, 5);
-  assert.equal(recorded.schemaVersion, 5);
+  assert.equal(recomputed.schemaVersion, 6);
+  assert.equal(recorded.schemaVersion, 6);
   assert.equal(recomputed.moduleVersion, recorded.moduleVersion);
   assert.equal(recomputed.configVersion, recorded.configVersion);
   assert.equal(recomputed.pluginVersion, recorded.pluginVersion);
@@ -47,6 +47,7 @@ test("recorded output matches the installed @nuxt/eslint packages", async () => 
   assert.deepEqual(recomputed.dirDefaults, recorded.dirDefaults);
   assert.deepEqual(recomputed.preferImportMetaCases, recorded.preferImportMetaCases);
   assert.deepEqual(recomputed.noPageMetaRuntimeValuesCases, recorded.noPageMetaRuntimeValuesCases);
+  assert.deepEqual(recomputed.noNuxtConfigTestKeyCases, recorded.noNuxtConfigTestKeyCases);
   assert.deepEqual(recomputed.cases, recorded.cases);
 });
 
@@ -75,6 +76,7 @@ test("inventory markdown documents exactly the corpus cases", () => {
     ...corpus.checkerCases.map((entry: { id: string }) => entry.id),
     ...corpus.preferImportMetaCases.map((entry: { id: string }) => entry.id),
     ...corpus.noPageMetaRuntimeValuesCases.map((entry: { id: string }) => entry.id),
+    ...corpus.noNuxtConfigTestKeyCases.map((entry: { id: string }) => entry.id),
     ...corpus.dirDefaultCases.map((entry: { id: string }) => entry.id),
     ...corpus.cases.map((entry: { id: string }) => entry.id),
   ];

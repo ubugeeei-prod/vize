@@ -26,6 +26,7 @@ mod no_import_compiler_macros;
 mod no_internal_imports;
 mod no_multiple_slot_args;
 mod no_next_tick;
+mod no_nuxt_config_test_key;
 mod no_options_api;
 mod no_page_meta_runtime_values;
 mod no_potential_component_option_typo;
