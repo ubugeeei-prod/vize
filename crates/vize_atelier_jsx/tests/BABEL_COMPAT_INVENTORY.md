@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   72 |
-| divergent  |   24 |
+| equivalent |   75 |
+| divergent  |   21 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -197,20 +197,66 @@ it classifies as an intrinsic element but the DOM backend still resolves with
 | `slots/object_children`              | object child becomes the slots object | `withCtx` slots + `_: 1`                    | no change                             | ✅      |
 | `slots/render_prop_child`            | `{default: () => 'foo'}`              | `default: () => [createTextVNode("foo")]`   | no change                             | ✅      |
 | `slots/scoped_param`                 | `default: s => …`                     | `default: withCtx((s) => […])`              | no change                             | ✅      |
-| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
-| `slots/v_slots_only`                 | slots object passed as children       | diagnosed: opaque slots value (#3418)       | forward the object; needs #3467       | ❌      |
+| `slots/v_slots_with_children`        | `{default: () => […], ...slots}`      | same keys + `1024 /* DYNAMIC_SLOTS */` (#3467) | no change                          | ✅      |
+| `slots/v_slots_only`                 | slots object passed as children       | same + `1024 /* DYNAMIC_SLOTS */` (#3467)   | no change                             | ✅      |
 | `slots/v_slots_object_literal`       | object literal becomes the slots      | `withCtx` slots + `_: 1` (#3418)            | no change                             | ✅      |
 | `slots/v_slots_object_with_children` | `{default: () => […], bar: …}`        | same two slots, other literal order (#3418) | no change                             | ✅      |
 | `slots/element_children_default`     | `{default: () => […]}`                | `withCtx` default slot + `_: 1`             | no change                             | ✅      |
 | `slots/dynamic_slot_name`            | `{[n]: () => …}`                      | warns and drops the slot                    | deferred: needs dynamic-slot lowering | ⏸       |
 
+### Forwarding an opaque slots object (#3467)
+
+`v-slots={slots}` carries a value the compiler cannot see inside, so there are no
+entries to expand into slot templates. It lowers to a relief `slots` directive on
+the component, which `vize_atelier_core`'s slot codegen emits as a spread. Both
+babel shapes are reproduced exactly: the forwarded value **is** the children
+argument when nothing else contributes slots (`createVNode(B, null, slots)`), and
+otherwise closes the object literal (`{default: () => […], ...slots}`) so a
+forwarded entry overrides an authored one of the same name.
+
+The slot flag is the part that needed deciding, not the spread:
+
+- **No `_` flag is emitted beside a spread** — matching babel, and load-bearing.
+  Only the no-`_` path runs `normalizeObjectSlots`, which binds raw entries to
+  the owning instance and passes already-`withCtx`-wrapped ones through
+  untouched via `rawSlot._n`.
+- **Not `_: 2 /* DYNAMIC */`.** `updateSlots` then does a bare
+  `extend(slots, children)` with no normalization, so a forwarded entry that is
+  not already wrapped would render without the right instance context.
+- **Not `_: 1 /* STABLE */`.** The child would never re-render when the
+  forwarded slots change.
+- The vnode instead carries `1024 /* DYNAMIC_SLOTS */`, which is what forces
+  that update. Babel gets the same forced update for free by emitting no patch
+  flags at all: `shouldUpdateComponent` falls back to "any children means
+  update" for unoptimized vnodes, and Vize's output is always optimized.
+
+Like every other row, these three are asserted on the **emitted code** only:
+the compiled-output mount harness described above still does not exist, so the
+`equivalent` verdict here is review-checked in CI, not executed. The flag choice
+was confirmed once out of band by mounting both emitted shapes against
+`vue@3.5.35` under `happy-dom` — identical `innerHTML` after mount and after the
+forwarded slots changed, with `_: 1` and the no-patch-flag variants both going
+stale — but that check is not committed and does not run in CI (#3391).
+
+`v-slots` is therefore a compiler built-in
+(`vize_carton::BUILTIN_DIRECTIVES`), not a user directive: a component-level
+`v-slots` in a `.vue` template now spreads too, rather than compiling to the
+`resolveDirective("slots")` lookup #3418 removed. A user directive named `slots`
+collides with it exactly as one named `show` or `model` would.
+
 ### `v-slots` spellings Vize rejects and babel accepts
 
 Not corpus rows, because a compat mode is not expected to adopt them; recorded
-here so the choice is not implicit (#3418, `src/lower/v_slots.rs`):
+here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
 
-- `v-slots` with no value, and `v-slots="str"` — babel forwards `null` / `"str"`
-  as the component's children, which is meaningless for a component.
+- `v-slots` with no value, `v-slots="str"`, and any literal value
+  (`v-slots={1}`, `v-slots={[…]}`) — babel forwards these as the component's
+  children, which is meaningless for a component. A slots object is either an
+  object literal to expand or an opaque expression to forward, never a literal.
+- `v-slots={() => …}` — a lone function is the *default slot*, not a slots
+  object: babel forwards it as children and Vue wraps it as `{default: fn}`.
+  Spreading it would contribute nothing, so Vize names it and points at
+  `v-slots={{ default: … }}` (or the render-prop child form, which it supports).
 - `v-slots:arg={…}` — `v-slots` takes no argument; the slot names are the object's
   keys.
 - `v-slots` on a plain element — babel drops it silently and emits `[]` children.
@@ -253,7 +299,7 @@ Compared against Vize's default, which is already fully optimized.
 | `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]` | same                                  | no change                       | ✅      |
 | `optimize/slots_stability`       | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
 | `optimize/scoped_slot_stability` | `_: 1`                       | `_: 1 /* STABLE */`                   | no change                       | ✅      |
-| `optimize/v_slots_stability`     | slots object as children     | diagnosed: opaque slots value (#3418) | forward the object; needs #3467 | ❌      |
+| `optimize/v_slots_stability`     | slots object as children, no `_` flag | same, no `_` flag (#3467)    | no change                       | ✅      |
 | `optimize/fragment`              | no flag                      | `64 /* STABLE_FRAGMENT */`            | no change                       | ✅      |
 | `optimize/map_list`              | raw array child              | `renderList` + `KEYED_FRAGMENT`       | no change                       | ✅      |
 
@@ -268,4 +314,4 @@ accept it.
 | `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change      | ✅      |
 | `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change      | ✅      |
 | `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change      | ✅      |
-| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418)                    | keep rejecting | ❌      |
+| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418, #3467)             | keep rejecting | ❌      |

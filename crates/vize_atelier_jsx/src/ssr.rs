@@ -11,6 +11,7 @@ use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
+use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
@@ -62,12 +63,19 @@ pub fn compile_to_ssr(
     options: SsrCompileOptions,
 ) -> SsrOutput {
     let lowered = lower_source(bump, source, lang);
-    let diagnostics = lowered.diagnostics;
+    let mut diagnostics = lowered.diagnostics;
 
     let analysis: &Croquis = &*bump.alloc(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
+        // The server renderer inlines each slot's content, so a forwarded slots
+        // object has nowhere to go; report it rather than drop it (#3467).
+        reject_forwarded_slots(
+            &lowered_root.root,
+            SlotsForwardingBackend::Ssr,
+            &mut diagnostics,
+        );
         components.push(compile_lowered_root_to_ssr(
             bump,
             lowered_root,

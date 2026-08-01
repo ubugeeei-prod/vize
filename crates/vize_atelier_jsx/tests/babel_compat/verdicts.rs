@@ -123,16 +123,11 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("slots/object_children", Same),
     ("slots/render_prop_child", Same),
     ("slots/scoped_param", Same),
-    // #3418 lowers the object-literal form; an opaque slots value is diagnosed
-    // rather than forwarded, which needs the slots spread tracked by #3467.
-    (
-        "slots/v_slots_with_children",
-        Diff("opaque v-slots value diagnosed; needs #3467"),
-    ),
-    (
-        "slots/v_slots_only",
-        Diff("opaque v-slots value diagnosed; needs #3467"),
-    ),
+    // #3418 lowers the object-literal form; #3467 forwards an opaque slots
+    // value as a spread (or as the whole children argument when nothing else
+    // contributes slots), with no `_` flag and a DYNAMIC_SLOTS vnode flag.
+    ("slots/v_slots_with_children", Same),
+    ("slots/v_slots_only", Same),
     ("slots/v_slots_object_literal", Same),
     ("slots/v_slots_object_with_children", Same),
     ("slots/element_children_default", Same),
@@ -172,10 +167,9 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("optimize/v_model_input", Same),
     ("optimize/slots_stability", Same),
     ("optimize/scoped_slot_stability", Same),
-    (
-        "optimize/v_slots_stability",
-        Diff("opaque v-slots value diagnosed; needs #3467"),
-    ),
+    // Babel emits no `_` flag beside a forwarded slots object even under
+    // `optimize: true`, and neither does Vize (#3467).
+    ("optimize/v_slots_stability", Same),
     ("optimize/fragment", Same),
     ("optimize/map_list", Same),
     // -- errors ----------------------------------------------------------

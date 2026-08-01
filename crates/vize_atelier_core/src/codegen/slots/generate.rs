@@ -1,26 +1,57 @@
 //! Slots object generation for component children.
 
 use crate::steps::v_slot::{collect_slots, get_slot_name, has_v_slot};
-use crate::{
-    ElementNode, ExpressionNode, ForNode, IfNode, PropNode, RuntimeHelper, TemplateChildNode,
-};
-use vize_carton::{String, ToCompactString};
+use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
+use vize_carton::String;
 
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;
 use super::super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::super::node::generate_node;
+use super::create_slots::generate_create_slots;
 use super::detect::{
-    child_is_slot_template, has_conditional_or_loop_slots, has_forwarded_slot_outlet,
-    slot_children_have_meaningful_content,
+    has_conditional_or_loop_slots, has_forwarded_slot_outlet, slots_are_only_forwarded,
+    slots_spread,
 };
-use super::name::generate_slot_entry_name;
 use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
 
 /// Generate slots object for component
+///
+/// # Forwarded slots (`v-slots`)
+///
+/// A `v-slots` directive carries an object the compiler cannot see inside, so
+/// it is emitted as a spread rather than expanded into entries (#3467). Two
+/// shapes, both matching `@vue/babel-plugin-jsx`:
+///
+/// - nothing else contributes slots — the forwarded value *is* the children
+///   argument: `createBlock(B, null, slots, 1024 /* DYNAMIC_SLOTS */)`;
+/// - otherwise the authored slots come first and `...expr` closes the object,
+///   so a forwarded entry overrides an authored one of the same name.
+///
+/// **No `_` stability flag is emitted alongside a spread**, and that is
+/// load-bearing rather than an omission. `initSlots`/`updateSlots` only run
+/// `normalizeObjectSlots` — which binds each raw slot to the owning instance
+/// and passes already-`withCtx`-wrapped entries through untouched via
+/// `rawSlot._n` — when the children object carries no `_`. Under `_: 2
+/// /* DYNAMIC */` `updateSlots` does a bare `extend(slots, children)` with no
+/// normalization at all, so an entry arriving through the spread unwrapped
+/// would render without the right instance context; under `_: 1 /* STABLE */`
+/// the child would never re-render when the forwarded slots change. The vnode
+/// instead carries `1024 /* DYNAMIC_SLOTS */` (see
+/// [`has_dynamic_slots_flag`](super::detect::has_dynamic_slots_flag)) to force
+/// that update.
 pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
     // not here, to avoid importing it when slots don't actually use it.
+
+    // A `v-slots` value with nothing to merge it into is the children argument
+    // itself: `createVNode(B, null, slots)`, exactly as babel emits it.
+    if slots_are_only_forwarded(el)
+        && let Some(exp) = slots_spread(el)
+    {
+        generate_expression(ctx, exp);
+        return;
+    }
 
     // Check for v-slot on component root (shorthand for default slot)
     let root_slot = el.props.iter().find_map(|p| {
@@ -210,10 +241,16 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         }
     }
 
-    // Add slot stability flag
     ctx.push(",");
     ctx.newline();
-    if has_forwarded_slots && !forwarded_slots_are_dynamic {
+    if let Some(exp) = slots_spread(el) {
+        // The forwarded object closes the literal so its entries override the
+        // authored ones, matching babel's `{default: () => […], ...slots}`. No
+        // `_` flag: see this function's docs for why the raw-slots path is the
+        // only one that normalizes spread entries correctly.
+        ctx.push("...");
+        generate_expression(ctx, exp);
+    } else if has_forwarded_slots && !forwarded_slots_are_dynamic {
         ctx.push("_: 3 /* FORWARDED */");
     } else if has_dynamic_slots {
         ctx.push("_: 2 /* DYNAMIC */");
@@ -226,282 +263,8 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.push("}");
 }
 
-/// Generate slots using createSlots for conditional/looped slot templates
-fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    ctx.use_helper(RuntimeHelper::CreateSlots);
-    ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
-    ctx.push("(");
-    generate_create_slots_base(ctx, el);
-    ctx.push(", [");
-    ctx.indent();
-
-    let mut first = true;
-    for child in &el.children {
-        match child {
-            TemplateChildNode::If(if_node) => {
-                // v-if on slot template: generate conditional slot entry
-                if !first {
-                    ctx.push(",");
-                }
-                first = false;
-                ctx.newline();
-                generate_conditional_slot(ctx, if_node);
-            }
-            TemplateChildNode::For(for_node) => {
-                // v-for on slot template: generate looped slot entries
-                if !first {
-                    ctx.push(",");
-                }
-                first = false;
-                ctx.newline();
-                generate_looped_slot(ctx, for_node);
-            }
-            TemplateChildNode::Element(template_el)
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) =>
-            {
-                // Regular named slot (no v-if/v-for)
-                if !first {
-                    ctx.push(",");
-                }
-                first = false;
-                ctx.newline();
-                // Generate as static slot entry
-                generate_static_slot_entry(ctx, template_el);
-            }
-            _ => {}
-        }
-    }
-
-    ctx.deindent();
-    ctx.newline();
-    ctx.push("])");
-}
-
-fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    let default_children: Vec<_> = el
-        .children
-        .iter()
-        .filter(|child| !child_is_slot_template(child))
-        .collect();
-    let has_default_children = slot_children_have_meaningful_content(&default_children);
-
-    if !has_default_children {
-        ctx.push("{ _: 2 /* DYNAMIC */ }");
-        return;
-    }
-
-    ctx.push("{");
-    ctx.indent();
-
-    ctx.newline();
-    ctx.push("default: ");
-    ctx.use_helper(RuntimeHelper::WithCtx);
-    ctx.push(ctx.helper(RuntimeHelper::WithCtx));
-    ctx.push("(() => [");
-    ctx.indent();
-    for (i, child) in default_children.iter().enumerate() {
-        if i > 0 {
-            ctx.push(",");
-        }
-        ctx.newline();
-        generate_slot_child_node(ctx, child);
-    }
-    ctx.deindent();
-    ctx.newline();
-    ctx.push("]),");
-
-    ctx.newline();
-    ctx.push("_: 2 /* DYNAMIC */");
-
-    ctx.deindent();
-    ctx.newline();
-    ctx.push("}");
-}
-
-/// Generate a conditional slot entry (v-if on slot template)
-fn generate_conditional_slot(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
-    // For each branch: condition ? { name, fn, key } : undefined
-    for (i, branch) in if_node.branches.iter().enumerate() {
-        if i > 0 {
-            ctx.newline();
-            ctx.push(": ");
-        }
-
-        // Generate condition
-        if let Some(condition) = &branch.condition {
-            ctx.push("(");
-            generate_expression(ctx, condition);
-            ctx.push(")");
-            ctx.indent();
-            ctx.newline();
-            ctx.push("? ");
-        }
-
-        // Find the slot template in this branch
-        let slot_template = branch.children.iter().find_map(|child| {
-            if let TemplateChildNode::Element(el) = child
-                && el.tag.as_str() == "template"
-                && has_v_slot(el)
-            {
-                return Some(el.as_ref());
-            }
-            None
-        });
-
-        if let Some(template_el) = slot_template {
-            generate_slot_object_entry(ctx, template_el, Some(i));
-        } else {
-            ctx.push("undefined");
-        }
-
-        if branch.condition.is_some() {
-            ctx.deindent();
-        }
-    }
-    if if_node
-        .branches
-        .last()
-        .is_none_or(|branch| branch.condition.is_some())
-    {
-        ctx.newline();
-        ctx.push(": undefined");
-    }
-}
-
-/// Generate a looped slot entry (v-for on slot template)
-fn generate_looped_slot(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
-    ctx.use_helper(RuntimeHelper::RenderList);
-    ctx.push(ctx.helper(RuntimeHelper::RenderList));
-    ctx.push("(");
-    generate_expression(ctx, &for_node.source);
-    ctx.push(", (");
-
-    // Collect callback parameter names for scope registration
-    let mut callback_params: Vec<String> = Vec::new();
-
-    if let Some(value) = &for_node.value_alias {
-        generate_expression(ctx, value);
-        super::super::v_for::helpers::extract_for_params(value, &mut callback_params);
-    }
-    if let Some(key) = &for_node.key_alias {
-        ctx.push(", ");
-        generate_expression(ctx, key);
-        super::super::v_for::helpers::extract_for_params(key, &mut callback_params);
-    }
-    if let Some(index) = &for_node.object_index_alias {
-        ctx.push(", ");
-        generate_expression(ctx, index);
-        super::super::v_for::helpers::extract_for_params(index, &mut callback_params);
-    }
-
-    ctx.add_slot_params(&callback_params);
-
-    ctx.push(") => {");
-    ctx.indent();
-    ctx.newline();
-    ctx.push("return ");
-
-    // Find the slot template in the for body
-    let slot_template = for_node.children.iter().find_map(|child| {
-        if let TemplateChildNode::Element(el) = child
-            && el.tag.as_str() == "template"
-            && has_v_slot(el)
-        {
-            return Some(el.as_ref());
-        }
-        None
-    });
-
-    if let Some(template_el) = slot_template {
-        generate_slot_object_entry(ctx, template_el, None);
-    }
-
-    ctx.remove_slot_params(&callback_params);
-
-    ctx.deindent();
-    ctx.newline();
-    ctx.push("})");
-}
-
-/// Generate a slot object entry: { name: "slotName", fn: _withCtx(() => [...]), key: "N" }
-fn generate_slot_object_entry(
-    ctx: &mut CodegenContext,
-    template_el: &ElementNode<'_>,
-    key_index: Option<usize>,
-) {
-    let slot_dir = template_el.props.iter().find_map(|p| {
-        if let PropNode::Directive(dir) = p
-            && dir.name.as_str() == "slot"
-        {
-            return Some(dir.as_ref());
-        }
-        None
-    });
-
-    if let Some(dir) = slot_dir {
-        let slot_name = get_slot_name(dir);
-
-        ctx.push("{");
-        ctx.indent();
-        ctx.newline();
-
-        // name
-        ctx.push("name: ");
-        generate_slot_entry_name(ctx, dir, &slot_name);
-        ctx.push(",");
-        ctx.newline();
-
-        // fn
-        ctx.push("fn: ");
-        ctx.use_helper(RuntimeHelper::WithCtx);
-        ctx.push(ctx.helper(RuntimeHelper::WithCtx));
-        ctx.push("(");
-
-        // Slot props
-        let params = if let Some(props_str) = get_slot_props(dir) {
-            let processed = prefix_slot_defaults(&props_str);
-            ctx.push("(");
-            ctx.push(&processed);
-            ctx.push(")");
-            extract_slot_params(&props_str)
-        } else {
-            ctx.push("()");
-            vec![]
-        };
-
-        ctx.add_slot_params(&params);
-
-        ctx.push(" => [");
-        ctx.indent();
-        generate_slot_children(ctx, &template_el.children);
-        ctx.deindent();
-        ctx.newline();
-        ctx.push("])");
-
-        ctx.remove_slot_params(&params);
-
-        // key (for v-if branches)
-        if let Some(key) = key_index {
-            ctx.push(",");
-            ctx.newline();
-            ctx.push("key: \"");
-            ctx.push(&key.to_compact_string());
-            ctx.push("\"");
-        }
-
-        ctx.deindent();
-        ctx.newline();
-        ctx.push("}");
-    }
-}
-
-/// Generate a static slot entry for createSlots context
-fn generate_static_slot_entry(ctx: &mut CodegenContext, template_el: &ElementNode<'_>) {
-    generate_slot_object_entry(ctx, template_el, None);
-}
-
 /// Generate children for a slot
-fn generate_slot_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+pub(super) fn generate_slot_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
     // Check if all children are text/interpolation - if so, concatenate into single _createTextVNode
     let all_text_or_interp = children.iter().all(|child| {
         matches!(
@@ -567,7 +330,7 @@ fn generate_slot_children(ctx: &mut CodegenContext, children: &[TemplateChildNod
 }
 
 /// Generate a single child node for slot content
-fn generate_slot_child_node(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
+pub(super) fn generate_slot_child_node(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
     match child {
         TemplateChildNode::Text(text) => {
             ctx.use_helper(RuntimeHelper::CreateText);

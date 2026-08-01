@@ -43,6 +43,7 @@ pub mod vdom;
 
 mod analyze;
 mod finder;
+mod forwarded_slots;
 
 pub use analyze::analyze_program as analyze_jsx_program;
 

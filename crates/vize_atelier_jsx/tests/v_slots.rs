@@ -10,8 +10,10 @@
 //!
 //! The object-literal form is pinned against the real plugin by the differential
 //! oracle (rows `slots/v_slots_object_literal` and
-//! `slots/v_slots_object_with_children`); forwarding an opaque slots object is
-//! still diagnosed and is tracked by #3467.
+//! `slots/v_slots_object_with_children`). Forwarding an **opaque** slots object
+//! (`v-slots={slots}`, #3467) has its own suite in `v_slots_forwarding.rs`;
+//! what stays here is the object-literal path plus the shapes both files agree
+//! are not a slots object at all.
 
 mod common;
 
@@ -201,63 +203,38 @@ fn v_slots_is_never_a_prop() {
 }
 
 #[test]
-fn an_opaque_slots_value_is_rejected() {
-    // Vize builds the slots object at compile time and has no IR for spreading
-    // an opaque value into it; implementing that is #3467.
-    let message = "v-slots value `slots` is not an object literal: Vize builds the slots \
-                   object at compile time and cannot forward an opaque slots value. Write \
-                   the slots inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding \
-                   a slots object is tracked by #3467.";
-    assert_eq!(
-        errors("const A = () => <B v-slots={slots}/>;"),
-        vec![message.to_string()]
-    );
-    // No prop is contributed, so no `resolveDirective("slots")` is emitted.
-    assert_eq!(
-        render_code("const A = () => <B v-slots={slots}/>;"),
-        BARE_COMPONENT
-    );
-    // The element's own children are still lowered.
-    assert_eq!(
-        errors("const A = () => <B v-slots={slots}><div>A</div></B>;"),
-        vec![message.to_string()]
-    );
-    assert_eq!(
-        render_code("const A = () => <B v-slots={slots}><div>A</div></B>;"),
-        "export function render(_ctx, _cache) {\n  \
-         const _component_B = _resolveComponent(\"B\")\n  \n  \
-         return (_openBlock(), _createBlock(_component_B, null, {\n    \
-         default: _withCtx(() => [\n      \
-         _createElementVNode(\"div\", null, \"A\")\n    \
-         ]),\n    \
-         _: 1 /* STABLE */\n  \
-         }))\n}"
-    );
-}
-
-#[test]
-fn a_non_object_value_is_rejected() {
+fn a_literal_value_is_rejected() {
     // The corpus row `errors/v_slots_not_object`: babel forwards `1` as the
-    // component's children, which is meaningless.
+    // component's children, which is meaningless. An opaque *expression* is
+    // forwarded instead of rejected — see `v_slots_forwarding.rs` (#3467).
+    let suffix = "Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or \
+                  forward a slots object, e.g. v-slots={slots}.";
+    let not_slots = "is not a slots object: babel forwards it as the component's children, \
+                     which leaves the component with no slots.";
     assert_eq!(
         errors("const A = () => <B v-slots={1}/>;"),
-        vec![
-            "v-slots value `1` is not an object literal: Vize builds the slots object at \
-             compile time and cannot forward an opaque slots value. Write the slots \
-             inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding a slots object \
-             is tracked by #3467."
-                .to_string()
-        ]
+        vec![format!("v-slots value `1` {not_slots} {suffix}")]
     );
     assert_eq!(
         errors("const A = () => <B v-slots=\"str\"/>;"),
-        vec![
-            "v-slots value `\"str\"` is not an object literal: Vize builds the slots \
-             object at compile time and cannot forward an opaque slots value. Write the \
-             slots inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding a slots \
-             object is tracked by #3467."
-                .to_string()
-        ]
+        vec![format!("v-slots value `\"str\"` {not_slots} {suffix}")]
+    );
+    assert_eq!(
+        errors("const A = () => <B v-slots={[a, b]}/>;"),
+        vec![format!("v-slots value `[a, b]` {not_slots} {suffix}")]
+    );
+    assert_eq!(
+        render_code("const A = () => <B v-slots={1}/>;"),
+        BARE_COMPONENT
+    );
+    // A lone function is the default slot, not a slots object: spreading it
+    // would contribute nothing, so it is named rather than mis-lowered.
+    assert_eq!(
+        errors("const A = () => <B v-slots={() => <i/>}/>;"),
+        vec![format!(
+            "v-slots value `() => <i/>` is a function, not a slots object: a lone function \
+             is the default slot, so a spread of it contributes nothing. {suffix}"
+        )]
     );
 }
 

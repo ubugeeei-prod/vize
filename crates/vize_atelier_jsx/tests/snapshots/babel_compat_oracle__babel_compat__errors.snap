@@ -81,7 +81,7 @@ const A = () => <B v-slots={1}/>;
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, 1);
 ### vize (vdom, default config)
-<Error> v-slots value `1` is not an object literal: Vize builds the slots object at compile time and cannot forward an opaque slots value. Write the slots inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding a slots object is tracked by #3467.
+<Error> v-slots value `1` is not a slots object: babel forwards it as the component's children, which leaves the component with no slots. Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. v-slots={slots}.
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")

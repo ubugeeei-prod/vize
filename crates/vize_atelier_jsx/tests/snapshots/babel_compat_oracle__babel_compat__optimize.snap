@@ -268,7 +268,7 @@ export function render(_ctx, _cache) {
 
 ## optimize/v_slots_stability
 ### verdict
-divergent: opaque v-slots value diagnosed; needs #3467
+equivalent
 ### source (jsx)
 const A = () => <B v-slots={slots}/>;
 ### babel options
@@ -277,12 +277,11 @@ const A = () => <B v-slots={slots}/>;
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, slots);
 ### vize (vdom, default config)
-<Error> v-slots value `slots` is not an object literal: Vize builds the slots object at compile time and cannot forward an opaque slots value. Write the slots inline, e.g. v-slots={{ default: () => <div/> }}. Forwarding a slots object is tracked by #3467.
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
   
-  return (_openBlock(), _createBlock(_component_B))
+  return (_openBlock(), _createBlock(_component_B, null, slots, 1024 /* DYNAMIC_SLOTS */))
 }
 
 ## optimize/fragment

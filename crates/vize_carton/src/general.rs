@@ -17,9 +17,16 @@ pub static BUILTIN_TAGS: phf::Set<&'static str> = phf_set! {
 };
 
 /// Built-in directives
+///
+/// `slots` is the plural sibling of `slot`: it carries the object a component
+/// spreads into its slots object (`<B v-slots={slots}/>`, the
+/// `@vue/babel-plugin-jsx` spelling for slot forwarding, #3467).
+/// `vize_atelier_core`'s slot codegen consumes it, so — exactly like `slot` — it
+/// must never reach the custom-directive path and compile to a
+/// `resolveDirective("slots")` lookup for a directive that does not exist.
 pub static BUILTIN_DIRECTIVES: phf::Set<&'static str> = phf_set! {
     "bind", "cloak", "else-if", "else", "for", "html", "if",
-    "model", "on", "once", "pre", "show", "slot", "text", "memo"
+    "model", "on", "once", "pre", "show", "slot", "slots", "text", "memo"
 };
 
 /// Check if a property name is reserved

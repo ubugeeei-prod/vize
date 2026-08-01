@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::super::{
-    children::{generate_children, generate_children_force_array, is_directive_comment},
+    children::{generate_children, generate_children_force_array},
     context::CodegenContext,
     element::helpers::{child_namespace, is_dynamic_component, is_is_prop},
     element::{
@@ -22,12 +22,10 @@ use super::super::{
     patch_flag::{
         calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
     },
-    slots::{
-        generate_slot_outlet_name, generate_slot_outlet_props, generate_slots, has_slot_children,
-        has_slot_outlet_props,
-    },
+    slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
 };
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
+use super::slot_outlet::generate_for_slot_outlet;
 use vize_carton::ToCompactString;
 
 fn strip_need_patch_for_v_for_item(patch_flag: Option<i32>) -> Option<i32> {
@@ -261,9 +259,13 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
-                if !children_el.children.is_empty() {
+                // A component forwarding `v-slots` has slots without having any
+                // children of its own, so the slots argument is emitted on its
+                // own account rather than off the child list (#3467).
+                let component_slots = is_component && has_slot_children(children_el);
+                if !children_el.children.is_empty() || component_slots {
                     ctx.push(", ");
-                    if is_component && has_slot_children(children_el) {
+                    if component_slots {
                         // Component children must be compiled as slot functions,
                         // not raw children. Otherwise Vue warns:
                         // "Non-function value encountered for default slot"
@@ -328,12 +330,19 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     // slots inside v-for are dynamic by construction.
                     if matches!(el.tag.as_str(), "KeepAlive" | "keep-alive")
                         || (ctx.in_v_for && has_slot_children(el))
+                        || has_dynamic_slots_flag(el)
                     {
                         let dynamic_slots_flag = 1024;
                         patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);
                     }
                     patch_flag = strip_need_patch_for_v_for_item(patch_flag);
-                    if el.children.is_empty() && (patch_flag.is_some() || dynamic_props.is_some()) {
+                    // The slots argument already occupies the children slot, so
+                    // the `null` placeholder is only for a component that
+                    // emitted no children at all.
+                    if el.children.is_empty()
+                        && !component_slots
+                        && (patch_flag.is_some() || dynamic_props.is_some())
+                    {
                         ctx.push(", null");
                     }
                     if let Some(flag) = patch_flag {
@@ -435,47 +444,6 @@ fn unwrap_template_single_element<'a>(el: &'a ElementNode<'a>) -> Option<&'a Ele
         Some(child_el)
     } else {
         None
-    }
-}
-
-fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    ctx.use_helper(RuntimeHelper::RenderSlot);
-    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
-    ctx.push("(_ctx.$slots, ");
-    generate_slot_outlet_name(ctx, el);
-
-    let has_slot_props = has_slot_outlet_props(el);
-    let filtered: Vec<_> = el
-        .children
-        .iter()
-        .filter(|c| !is_directive_comment(c))
-        .collect();
-
-    if !filtered.is_empty() {
-        if has_slot_props {
-            ctx.push(", ");
-            generate_slot_outlet_props(ctx, el);
-        } else {
-            ctx.push(", {}");
-        }
-        ctx.push(", () => [");
-        ctx.indent();
-        for (i, child) in filtered.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.newline();
-            generate_node(ctx, child);
-        }
-        ctx.deindent();
-        ctx.newline();
-        ctx.push("])");
-    } else if has_slot_props {
-        ctx.push(", ");
-        generate_slot_outlet_props(ctx, el);
-        ctx.push(")");
-    } else {
-        ctx.push(")");
     }
 }
 

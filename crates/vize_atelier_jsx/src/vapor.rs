@@ -19,6 +19,7 @@ use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
+use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::scoped::{ScopedStyle, build_scoped_style};
 use crate::{ComponentSetupSpan, JsxLang, JsxOutputMode, LoweredRoot, lower_source};
 
@@ -75,13 +76,21 @@ pub fn compile_to_vapor(
     options: VaporCompileOptions,
 ) -> VaporOutput {
     let lowered = lower_source(bump, source, lang);
-    let diagnostics = lowered.diagnostics;
+    let mut diagnostics = lowered.diagnostics;
 
     // Move the analysis into the arena so the transform can borrow it.
     let analysis: &Croquis = &*bump.alloc(lowered.analysis);
 
+    let backend = if options.ssr {
+        SlotsForwardingBackend::Ssr
+    } else {
+        SlotsForwardingBackend::Vapor
+    };
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
+        // Vapor slots are built from the component's children, so a forwarded
+        // slots object has nowhere to go; report it rather than drop it (#3467).
+        reject_forwarded_slots(&lowered_root.root, backend, &mut diagnostics);
         components.push(compile_root_to_vapor(
             bump,
             lowered_root,

@@ -109,6 +109,45 @@ fn scoped_slot_default_expressions_prefix_context_only() {
 }
 
 #[test]
+fn v_slots_forwards_the_object_as_the_children_argument() {
+    // `v-slots` is a compiler built-in (#3467), so it never reaches the custom
+    // directive path: no `resolveDirective("slots")`, no `withDirectives`. With
+    // nothing else contributing slots the forwarded value *is* the children
+    // argument, matching `@vue/babel-plugin-jsx`.
+    let result = compile!(r#"<Comp v-slots="slots" />"#);
+    assert_eq!(
+        result_output(&result).as_str(),
+        "const { resolveComponent: _resolveComponent, openBlock: _openBlock, \
+         createBlock: _createBlock } = Vue\n\n\
+         function render(_ctx, _cache, $props, $setup, $data, $options) {\n  \
+         const _component_Comp = _resolveComponent(\"Comp\")\n  \n  \
+         return (_openBlock(), _createBlock(_component_Comp, null, slots, \
+         1024 /* DYNAMIC_SLOTS */))\n}"
+    );
+}
+
+#[test]
+fn v_slots_spreads_after_the_authored_slots() {
+    // The spread closes the object so a forwarded entry overrides an authored
+    // one of the same name, and no `_` stability flag is emitted beside it.
+    let result = compile!(r#"<Comp v-slots="slots"><span></span></Comp>"#);
+    assert_eq!(
+        result_output(&result).as_str(),
+        "const { resolveComponent: _resolveComponent, createElementVNode: \
+         _createElementVNode, openBlock: _openBlock, createBlock: _createBlock, \
+         withCtx: _withCtx } = Vue\n\n\
+         function render(_ctx, _cache, $props, $setup, $data, $options) {\n  \
+         const _component_Comp = _resolveComponent(\"Comp\")\n  \n  \
+         return (_openBlock(), _createBlock(_component_Comp, null, {\n    \
+         default: _withCtx(() => [\n      \
+         _createElementVNode(\"span\")\n    \
+         ]),\n    \
+         ...slots\n  \
+         }, 1024 /* DYNAMIC_SLOTS */))\n}"
+    );
+}
+
+#[test]
 fn slot_outlet_vbind_object_preserves_optional_chaining() {
     let result = compile!(
         r#"<slot v-bind="external ? { isActive: undefined } : { isActive: scope?.isActive }" />"#

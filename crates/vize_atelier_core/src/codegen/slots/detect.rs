@@ -1,20 +1,76 @@
 //! Slot detection predicates (which children form slots, dynamic/forwarded checks).
 
 use crate::steps::v_slot::{collect_slots, has_v_slot};
-use crate::{ElementNode, ElementType, PropNode, TemplateChildNode};
+use crate::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
+
+/// The expression a component spreads into its slots object, if it carries a
+/// `v-slots` directive (#3467).
+///
+/// `v-slots` is the `@vue/babel-plugin-jsx` spelling for slot forwarding:
+/// `<B v-slots={slots}/>` hands `B` a slots object the compiler cannot see
+/// inside. The JSX lowering keeps the object-literal form as synthetic
+/// `<template v-slot:name>` children (#3418) and only reaches here for a value
+/// that stays opaque at compile time.
+pub(super) fn slots_spread<'a, 'b>(el: &'b ElementNode<'a>) -> Option<&'b ExpressionNode<'a>> {
+    el.props.iter().find_map(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return None;
+        };
+        // `v-slots` takes no argument -- the slot names are the forwarded
+        // object's own keys -- so an argument spelling is not this construct.
+        if dir.name.as_str() != "slots" || dir.arg.is_some() {
+            return None;
+        }
+        dir.exp.as_ref()
+    })
+}
+
+/// Whether the component's slots object is built **only** from a forwarded
+/// `v-slots` value: no `v-slot` on the component root, no slot templates, and
+/// no children to become the default slot.
+///
+/// `@vue/babel-plugin-jsx` passes the forwarded value straight through as the
+/// children argument in that shape (`createVNode(B, null, slots)`) rather than
+/// wrapping it in an object literal, and Vize matches it.
+pub(super) fn slots_are_only_forwarded(el: &ElementNode<'_>) -> bool {
+    slots_spread(el).is_some() && !has_authored_slots(el)
+}
+
+/// Whether the element contributes slots of its own: a `v-slot` on the
+/// component root, or any child that is not whitespace/comment filler.
+fn has_authored_slots(el: &ElementNode<'_>) -> bool {
+    if el
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name.as_str() == "slot"))
+    {
+        return true;
+    }
+    el.children.iter().any(|child| match child {
+        TemplateChildNode::Text(t) => !t.content.trim().is_empty(),
+        TemplateChildNode::Comment(_) => false,
+        _ => true,
+    })
+}
 
 /// Check if component has slot children that need to be generated as slots object
 pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
-    if el.children.is_empty() {
-        return false;
-    }
-
     // Teleport and KeepAlive consume raw children rather than a slot object.
     // KeepAlive still gets DYNAMIC_SLOTS at the vnode patch-flag layer.
     if matches!(
         el.tag.as_str(),
         "Teleport" | "teleport" | "KeepAlive" | "keep-alive"
     ) {
+        return false;
+    }
+
+    // A forwarded `v-slots` value is the component's slots even when it has no
+    // children of its own (`<B v-slots={slots}/>`).
+    if slots_spread(el).is_some() {
+        return true;
+    }
+
+    if el.children.is_empty() {
         return false;
     }
 
@@ -45,6 +101,15 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 
 /// Check if component has dynamic slots (requires DYNAMIC_SLOTS patch flag)
 pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
+    // A forwarded slots object can change without anything on this vnode
+    // changing, and the emitted slots object carries no `_` stability flag (see
+    // `generate_slots`), so the child is only re-rendered if the parent forces
+    // it through DYNAMIC_SLOTS. `@vue/babel-plugin-jsx` gets the same forced
+    // update for free by emitting no patch flags at all: `shouldUpdateComponent`
+    // falls back to "any children means update" for unoptimized vnodes.
+    if slots_spread(el).is_some() {
+        return true;
+    }
     let collected_slots = collect_slots(el);
     if collected_slots.iter().any(|s| s.is_dynamic) {
         return true;
