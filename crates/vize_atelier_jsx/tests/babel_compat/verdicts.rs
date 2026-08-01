@@ -124,10 +124,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("children/text_interp_mix", Same),
     ("children/comment_only", Same),
     ("children/empty_expr", Same),
-    (
-        "children/spread_child",
-        Diff("spread child stringified, now reported"),
-    ),
+    ("children/spread_child", Same),
     ("children/logical_and", Same),
     ("children/ternary", Same),
     ("children/map_list", Same),

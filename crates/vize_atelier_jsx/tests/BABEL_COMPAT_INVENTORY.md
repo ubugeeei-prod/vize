@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   88 |
-| divergent  |    8 |
+| equivalent |   89 |
+| divergent  |    7 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -298,7 +298,7 @@ here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
 | `children/text_interp_mix` | three children                | one concatenated `TEXT` child      | no change                      | ✅      |
 | `children/comment_only`    | children `null`               | no children                        | no change                      | ✅      |
 | `children/empty_expr`      | children `null`               | no children                        | no change                      | ✅      |
-| `children/spread_child`    | `[...items]`                  | `toDisplayString(items)`, reported | spread into the children array | ❌      |
+| `children/spread_child`    | `[...items]`                  | `toDisplayString(items)`, reported | spread into the children array | ✅      |
 | `children/logical_and`     | `[c && vnode]`                | `v-if` with a comment placeholder  | no change                      | ✅      |
 | `children/ternary`         | `[c ? a : b]`                 | two-branch `v-if` with keys        | no change                      | ✅      |
 | `children/map_list`        | raw `list.map(…)` array child | `renderList` + `KEYED_FRAGMENT`    | no change                      | ✅      |
