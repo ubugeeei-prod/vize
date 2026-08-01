@@ -7,6 +7,7 @@
 //! allocator and outlives parsing.
 
 mod attr;
+mod babel_slot;
 mod child;
 mod control_flow;
 mod element;
@@ -33,6 +34,21 @@ use crate::compat::JsxCompatMode;
 use crate::diagnostics::JsxDiagnostic;
 use crate::span::SpanMapper;
 
+/// The `@vue/babel-plugin-jsx` options that change *lowering* rather than code
+/// generation (#3391).
+///
+/// Grouped into one value so adding a Babel option stays additive at every call
+/// site instead of widening three signatures each time.
+#[derive(Clone, Copy, Default)]
+pub(crate) struct BabelLoweringOptions<'m> {
+    /// Collision-free `_transformOn` binding, when `transformOn` is enabled.
+    pub transform_on_helper: Option<&'m str>,
+    /// Collision-free `_isSlot` binding, when `enableObjectSlots` is enabled.
+    pub object_slots_helper: Option<&'m str>,
+    /// Project-specific custom-element classifier from `isCustomElement`.
+    pub is_custom_element: Option<&'m BabelIsCustomElement>,
+}
+
 /// Lowers OXC JSX nodes into Vize IR against a single source text.
 pub struct Lowerer<'a, 'm, 's> {
     bump: &'a Bump,
@@ -42,6 +58,7 @@ pub struct Lowerer<'a, 'm, 's> {
     scoping: Option<Scoping>,
     custom_element_spans: std::vec::Vec<(u32, u32)>,
     transform_on_helper: Option<String>,
+    object_slots_helper: Option<String>,
     babel_vdom_compat_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
@@ -53,7 +70,13 @@ pub struct Lowerer<'a, 'm, 's> {
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Build a lowerer that allocates IR in `bump` and maps spans via `mapper`.
     pub fn new(bump: &'a Bump, mapper: &'m SpanMapper<'s>) -> Self {
-        Self::with_compat(bump, mapper, JsxCompatMode::Native, None, None, None)
+        Self::with_compat(
+            bump,
+            mapper,
+            JsxCompatMode::Native,
+            BabelLoweringOptions::default(),
+            None,
+        )
     }
 
     /// Build a lowerer using the requested project-level JSX semantics.
@@ -61,18 +84,18 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         bump: &'a Bump,
         mapper: &'m SpanMapper<'s>,
         compat: JsxCompatMode,
-        transform_on_helper: Option<&str>,
-        is_custom_element: Option<&'m BabelIsCustomElement>,
+        babel: BabelLoweringOptions<'m>,
         scoping: Option<Scoping>,
     ) -> Self {
         Self {
             bump,
             mapper,
             compat,
-            is_custom_element,
+            is_custom_element: babel.is_custom_element,
             scoping,
             custom_element_spans: std::vec::Vec::new(),
-            transform_on_helper: transform_on_helper.map(String::from),
+            transform_on_helper: babel.transform_on_helper.map(String::from),
+            object_slots_helper: babel.object_slots_helper.map(String::from),
             babel_vdom_compat_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
@@ -219,6 +242,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     pub(crate) fn transform_on_helper(&self) -> Option<&str> {
         if self.babel_vdom_compat_active {
             self.transform_on_helper.as_deref()
+        } else {
+            None
+        }
+    }
+
+    /// Collision-free helper binding for Babel's default object-slot check.
+    pub(crate) fn object_slots_helper(&self) -> Option<&str> {
+        if self.babel_vdom_compat_active {
+            self.object_slots_helper.as_deref()
         } else {
             None
         }

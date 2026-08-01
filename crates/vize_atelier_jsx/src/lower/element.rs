@@ -1,6 +1,6 @@
 //! Lowering JSX elements and fragments into [`ElementNode`]s.
 
-use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
+use oxc_ast::ast::{JSXAttributeItem, JSXElement, JSXElementName, JSXFragment};
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
@@ -57,6 +57,9 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         // classifies it as a component during lowering, matching the plugin.
         let on_component = !is_custom_element
             && (node.tag_type == ElementType::Component || node.tag.contains('-'));
+        let has_v_slots = opening.attributes.iter().any(|item| {
+            matches!(item, JSXAttributeItem::Attribute(attr) if self.is_v_slots_attribute(attr))
+        });
         node.props = self.lower_attributes(&opening.attributes, on_component);
         if let Some(span) = expression_tag {
             // First, so the emitted props object reads `<component :is="…" …>`
@@ -67,11 +70,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         // Components route through slot synthesis (object/render-prop children
         // become `<template v-slot>`s); intrinsic elements lower children
         // directly.
-        node.children = if node.tag_type == ElementType::Component && !is_custom_element {
-            self.lower_component_children(&element.children)
+        if node.tag_type == ElementType::Component && !is_custom_element {
+            self.lower_component_children_into(&mut node, &element.children, has_v_slots);
         } else {
-            self.lower_element_children(&element.children)
-        };
+            node.children = self.lower_element_children(&element.children);
+        }
         // `v-slots` contributes slot templates, appended after the element's own
         // children so those still become the `default` slot when the slots object
         // does not name one (#3418).

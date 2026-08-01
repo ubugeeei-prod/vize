@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   92 |
-| divergent  |    4 |
+| equivalent |   94 |
+| divergent  |    2 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -100,8 +100,8 @@ deliberate answer, recorded here so it is not relitigated.
 | `options/merge_props_false`         | one object literal with a duplicate key             | always merges via `mergeProps`               | object spread + duplicate-key semantics (#3391)      | ✅      |
 | `options/is_custom_element_default` | `<my-el/>` → `resolveComponent("my-el")`            | same                                         | no change                                            | ✅      |
 | `options/is_custom_element_fn`      | matching tag becomes a string tag                   | predicate-selected tag uses element lowering | additive `isCustomElement` predicate API             | ✅      |
-| `options/object_slots_default`      | `_isSlot(slots) ? slots : {default: () => [slots]}` | `toDisplayString(slots)` in the default slot | treat a lone expression child as a slot object       | ❌      |
-| `options/object_slots_false`        | `{default: () => [slots]}`                          | `toDisplayString(slots)` in the default slot | raw child, plus an `enableObjectSlots: false` option | ❌      |
+| `options/object_slots_default`      | `_isSlot(slots) ? slots : {default: () => [slots]}` | `toDisplayString(slots)` in the default slot | runtime slot-object check; calls evaluate once       | ✅      |
+| `options/object_slots_false`        | `{default: () => [slots]}`                          | `toDisplayString(slots)` in the default slot | additive option preserves the raw default-slot child | ✅      |
 | `options/resolve_type_off`          | JSX replaced, types untouched                       | equivalent render output                     | no change                                            | ✅      |
 | `options/resolve_type_on`           | appends `{props: {...}, name: "A"}`                 | no type-driven inference                     | deferred: needs #1497 / #1502                        | ⏸       |
 

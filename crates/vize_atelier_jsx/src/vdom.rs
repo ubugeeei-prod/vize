@@ -78,6 +78,7 @@ pub struct VdomOutput {
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct VdomCompatOptions<'a> {
     pub transform_on_helper: Option<&'a str>,
+    pub object_slots_helpers: Option<(&'a str, &'a str)>,
     pub vnode_factory: Option<&'a str>,
     pub merge_props: bool,
     pub allow_static_v_model_arg_on_element: bool,
@@ -88,6 +89,7 @@ impl Default for VdomCompatOptions<'_> {
     fn default() -> Self {
         Self {
             transform_on_helper: None,
+            object_slots_helpers: None,
             vnode_factory: None,
             merge_props: true,
             allow_static_v_model_arg_on_element: false,
@@ -215,6 +217,22 @@ pub(crate) fn compile_root_to_vdom(
         preamble.push_str("import ");
         preamble.push_str(helper);
         preamble.push_str(" from \"@vue/babel-helper-vue-transform-on\"\n");
+    }
+    if let Some((is_slot, is_vnode)) = compat.object_slots_helpers
+        && result.code.contains(is_slot)
+    {
+        if !preamble.is_empty() && !preamble.ends_with('\n') {
+            preamble.push('\n');
+        }
+        preamble.push_str("import { isVNode as ");
+        preamble.push_str(is_vnode);
+        preamble.push_str(" } from \"vue\"\n");
+        preamble.push_str("function ");
+        preamble.push_str(is_slot);
+        preamble.push_str("(s) {\n  return typeof s === 'function' || ");
+        preamble.push_str("Object.prototype.toString.call(s) === '[object Object]' && !");
+        preamble.push_str(is_vnode);
+        preamble.push_str("(s);\n}\n");
     }
 
     VdomComponent {

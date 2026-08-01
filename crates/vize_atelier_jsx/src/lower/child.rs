@@ -173,7 +173,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// JavaScript expressions as compound expressions; a single dynamic part
     /// is the narrowest existing IR shape that keeps this JSX-only distinction
     /// out of the public relief node surface.
-    fn raw_expression_child(
+    pub(crate) fn raw_expression_child(
         &self,
         expression_span: oxc_span::Span,
         container_span: oxc_span::Span,

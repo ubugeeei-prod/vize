@@ -19,14 +19,11 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("options/merge_props_false", Same),
     ("options/is_custom_element_default", Same),
     ("options/is_custom_element_fn", Same),
-    (
-        "options/object_slots_default",
-        Diff("lone expression child stringified"),
-    ),
-    (
-        "options/object_slots_false",
-        Diff("lone expression child stringified"),
-    ),
+    // Closed by #3391: Babel compat distinguishes possible slot objects at
+    // runtime by default, and preserves the lone expression as a raw
+    // default-slot child when `enableObjectSlots` is disabled.
+    ("options/object_slots_default", Same),
+    ("options/object_slots_false", Same),
     ("options/resolve_type_off", Same),
     (
         "options/resolve_type_on",

@@ -76,7 +76,7 @@ use oxc_ast::ast::{
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::Box;
-use vize_relief::{DirectiveNode, ElementNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 use super::Lowerer;
 use super::expr::container_expr_span;
@@ -192,9 +192,18 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// (#3467). Keeping it a directive rather than a synthesized child is what
     /// lets the value stay opaque: there are no entries to build templates from.
     fn forward_slots(&mut self, node: &mut ElementNode<'a>, span: Span) {
-        let loc = self.mapper().location(span);
+        let expression = self.dyn_expr(span);
+        self.forward_slots_expression(node, expression);
+    }
+
+    pub(crate) fn forward_slots_expression(
+        &self,
+        node: &mut ElementNode<'a>,
+        expression: ExpressionNode<'a>,
+    ) {
+        let loc = expression.loc().clone();
         let mut directive = DirectiveNode::new(self.bump(), "slots", loc);
-        directive.exp = Some(self.dyn_expr(span));
+        directive.exp = Some(expression);
         node.props
             .push(PropNode::Directive(Box::new_in(directive, self.bump())));
     }

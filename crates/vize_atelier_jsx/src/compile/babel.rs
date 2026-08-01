@@ -19,6 +19,10 @@ pub struct BabelJsxCustomizations<'a> {
     pub merge_props: bool,
     /// Project-specific custom-element classifier.
     pub is_custom_element: Option<&'a BabelIsCustomElement>,
+    /// Whether a lone identifier or call child of a component is checked at
+    /// runtime for already being a slots object, matching Babel's
+    /// `enableObjectSlots` (default `true`).
+    pub enable_object_slots: bool,
 }
 
 impl Default for BabelJsxCustomizations<'_> {
@@ -27,6 +31,7 @@ impl Default for BabelJsxCustomizations<'_> {
             pragma: None,
             merge_props: true,
             is_custom_element: None,
+            enable_object_slots: true,
         }
     }
 }
@@ -70,7 +75,7 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
         BabelJsxCustomizations {
             pragma,
             merge_props,
-            is_custom_element: None,
+            ..Default::default()
         },
     )
 }
@@ -137,6 +142,32 @@ pub fn compile_jsx_with_babel_merge_props(
     )
 }
 
+/// Compile JSX/TSX with an explicit Babel-compatible `enableObjectSlots` value.
+///
+/// The plugin defaults this option to `true`: a lone identifier or call child
+/// of a component may already be a slots object and is checked at runtime.
+/// Passing `false` always wraps that value as the raw default-slot child.
+pub fn compile_jsx_with_babel_object_slots(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    enable_object_slots: bool,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_customizations(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        BabelJsxCustomizations {
+            enable_object_slots,
+            ..Default::default()
+        },
+    )
+}
+
 pub(super) fn resolve_vnode_factory<'a>(
     pragma: Option<&'a str>,
     active: bool,
@@ -174,6 +205,27 @@ fn valid_pragma_expression(pragma: &str) -> bool {
 /// analysis pass.
 pub(super) fn collision_free_transform_on_helper(source: &str) -> String {
     let mut helper = String::from("_transformOn");
+    while source.contains(helper.as_str()) {
+        helper.push('_');
+    }
+    helper
+}
+
+/// Collision-free local bindings used by Babel's object-slot discriminator.
+pub(super) struct ObjectSlotHelpers {
+    pub is_slot: String,
+    pub is_vnode: String,
+}
+
+pub(super) fn collision_free_object_slot_helpers(source: &str) -> ObjectSlotHelpers {
+    ObjectSlotHelpers {
+        is_slot: collision_free_helper(source, "_isSlot"),
+        is_vnode: collision_free_helper(source, "_isVNode"),
+    }
+}
+
+fn collision_free_helper(source: &str, base: &str) -> String {
+    let mut helper = String::from(base);
     while source.contains(helper.as_str()) {
         helper.push('_');
     }

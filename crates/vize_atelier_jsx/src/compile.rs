@@ -5,27 +5,34 @@
 
 mod babel;
 mod component;
+mod preamble;
 mod render_exports;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Bump, FxHashSet, String};
+use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
 use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
+use crate::lower::BabelLoweringOptions;
 use crate::ssr::compile_lowered_root_to_ssr;
 use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
 use crate::vdom::{VdomCompatOptions, VdomCompileOptions, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
-use self::babel::{collision_free_transform_on_helper, resolve_vnode_factory};
+use self::preamble::merge_preambles;
+
+use self::babel::{
+    collision_free_object_slot_helpers, collision_free_transform_on_helper, resolve_vnode_factory,
+};
 
 pub use self::babel::{
     BabelIsCustomElement, BabelJsxCustomizations, compile_jsx_with_babel_customizations,
-    compile_jsx_with_babel_merge_props, compile_jsx_with_babel_options,
-    compile_jsx_with_babel_pragma, compile_jsx_with_babel_pragma_and_merge_props,
+    compile_jsx_with_babel_merge_props, compile_jsx_with_babel_object_slots,
+    compile_jsx_with_babel_options, compile_jsx_with_babel_pragma,
+    compile_jsx_with_babel_pragma_and_merge_props,
 };
 pub use component::JsxComponent;
 
@@ -113,106 +120,6 @@ impl JsxCompileOutput {
     }
 }
 
-/// Merge a sequence of per-component preambles into one deduplicated preamble.
-///
-/// Each VDOM preamble is a line-oriented block — typically a single
-/// `import { name as _alias, … } from "vue"` statement (default JSX options emit
-/// no hoists, but any extra lines are preserved verbatim). Concatenating several
-/// components' preambles as-is would redeclare the same `_alias` bindings, which
-/// is an ESM error, so this collapses every `import … from "<src>"` line into a
-/// single import per source carrying the union of its specifiers in first-seen
-/// order. Non-import lines (e.g. static hoists) are kept verbatim, deduplicated,
-/// and appended after the merged imports.
-fn merge_preambles<'a>(preambles: impl Iterator<Item = &'a str>) -> String {
-    // Imports grouped by source module, each preserving first-seen specifier
-    // order; sources themselves preserve first-seen order via `import_sources`.
-    let mut import_sources: Vec<&str> = Vec::new();
-    let mut import_specifiers: Vec<Vec<&str>> = Vec::new();
-    let mut seen_specifiers: FxHashSet<(&str, &str)> = FxHashSet::default();
-    let mut extra_lines: Vec<&str> = Vec::new();
-    let mut seen_extra: FxHashSet<&str> = FxHashSet::default();
-
-    for preamble in preambles {
-        for line in preamble.lines() {
-            let trimmed = line.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            match parse_named_import(trimmed) {
-                Some((specifiers, source)) => {
-                    let group = match import_sources.iter().position(|s| *s == source) {
-                        Some(index) => index,
-                        None => {
-                            import_sources.push(source);
-                            import_specifiers.push(Vec::new());
-                            import_sources.len() - 1
-                        }
-                    };
-                    for specifier in specifiers.split(',') {
-                        let specifier = specifier.trim();
-                        if specifier.is_empty() {
-                            continue;
-                        }
-                        if seen_specifiers.insert((source, specifier)) {
-                            import_specifiers[group].push(specifier);
-                        }
-                    }
-                }
-                None => {
-                    if seen_extra.insert(trimmed) {
-                        extra_lines.push(trimmed);
-                    }
-                }
-            }
-        }
-    }
-
-    let mut merged = String::default();
-    for (source, specifiers) in import_sources.iter().zip(import_specifiers.iter()) {
-        merged.push_str("import { ");
-        for (i, specifier) in specifiers.iter().enumerate() {
-            if i > 0 {
-                merged.push_str(", ");
-            }
-            merged.push_str(specifier);
-        }
-        merged.push_str(" } from \"");
-        merged.push_str(source);
-        merged.push_str("\"\n");
-    }
-    for line in extra_lines {
-        merged.push_str(line);
-        merged.push('\n');
-    }
-    merged
-}
-
-/// Parse a `import { a as _a, b as _b } from "src"` line into its
-/// specifier list (the text between the braces) and source module. Returns
-/// `None` for any line that is not a brace-style named import (so it is kept
-/// verbatim by [`merge_preambles`]).
-fn parse_named_import(line: &str) -> Option<(&str, &str)> {
-    let rest = line.strip_prefix("import")?;
-    let open = rest.find('{')?;
-    let close = rest.find('}')?;
-    if close < open {
-        return None;
-    }
-    let specifiers = &rest[open + 1..close];
-
-    let after = &rest[close + 1..];
-    let from = after.find("from")?;
-    let quoted = after[from + "from".len()..].trim();
-    let bytes = quoted.as_bytes();
-    let quote = *bytes.first()?;
-    if quote != b'"' && quote != b'\'' {
-        return None;
-    }
-    let inner = &quoted[1..];
-    let end = inner.find(quote as char)?;
-    Some((specifiers, &inner[..end]))
-}
-
 /// Resolve the effective output mode for a component: an explicit per-component
 /// directive wins, otherwise the configured default applies.
 pub fn resolve_mode(
@@ -244,6 +151,9 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     let transform_on_helper =
         (config.compat.is_babel() && babel_options.transform_on && !config.ssr)
             .then(|| collision_free_transform_on_helper(source));
+    let object_slot_helpers =
+        (config.compat.is_babel() && !config.ssr && customizations.enable_object_slots)
+            .then(|| collision_free_object_slot_helpers(source));
     let merge_props = !config.compat.is_babel() || config.ssr || customizations.merge_props;
     let is_custom_element = if config.compat.is_babel() && !config.ssr {
         customizations.is_custom_element
@@ -256,8 +166,13 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         lang,
         config.compat,
         config.default_mode,
-        transform_on_helper.as_deref(),
-        is_custom_element,
+        BabelLoweringOptions {
+            transform_on_helper: transform_on_helper.as_deref(),
+            object_slots_helper: object_slot_helpers
+                .as_ref()
+                .map(|helpers| helpers.is_slot.as_str()),
+            is_custom_element,
+        },
     );
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
@@ -317,6 +232,9 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                     &config.vdom,
                     VdomCompatOptions {
                         transform_on_helper: transform_on_helper.as_deref(),
+                        object_slots_helpers: object_slot_helpers
+                            .as_ref()
+                            .map(|helpers| (helpers.is_slot.as_str(), helpers.is_vnode.as_str())),
                         vnode_factory,
                         merge_props,
                         allow_static_v_model_arg_on_element: config.compat.is_babel(),

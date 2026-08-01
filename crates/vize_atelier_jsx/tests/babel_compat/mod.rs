@@ -238,6 +238,11 @@ pub fn vize_vdom_output(case: &Case) -> std::string::String {
                 .and_then(serde_json::Value::as_bool)
                 .unwrap_or(true),
             is_custom_element,
+            enable_object_slots: case
+                .babel_options
+                .get("enableObjectSlots")
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or(true),
         },
     );
 

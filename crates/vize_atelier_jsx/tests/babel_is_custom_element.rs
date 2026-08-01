@@ -225,6 +225,7 @@ fn captured_predicate_composes_with_other_babel_options() {
             pragma: Some("factory.h"),
             merge_props: false,
             is_custom_element: Some(&is_custom_element),
+            ..Default::default()
         },
     );
     let module = output.module_code();

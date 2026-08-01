@@ -10,11 +10,12 @@
 //! build the slots object from those templates.
 //!
 //! Plain element/text children of a component are left untouched: the backends
-//! already treat them as an implicit default slot.
+//! already treat them as an implicit default slot. Opt-in Babel VDOM mode
+//! instead routes a lone expression child through [`super::babel_slot`].
 
 use oxc_ast::ast::{
-    ArrowFunctionExpression, Expression, Function, JSXChild, JSXExpression, ObjectPropertyKind,
-    PropertyKey, Statement,
+    ArrowFunctionExpression, Expression, Function, JSXChild, ObjectPropertyKind, PropertyKey,
+    Statement,
 };
 use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, Vec};
@@ -22,6 +23,7 @@ use vize_relief::ElementType;
 use vize_relief::{DirectiveNode, ElementNode, PropNode, TemplateChildNode, TextNode};
 
 use super::Lowerer;
+use super::babel_slot::sole_expression_container;
 use crate::diagnostics::JsxDiagnostic;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
@@ -32,14 +34,30 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// arrow/function, synthesize `<template v-slot>` children. Otherwise fall
     /// back to ordinary child lowering (which becomes an implicit default slot
     /// in the backends).
-    pub(crate) fn lower_component_children(
+    pub(crate) fn lower_component_children_into(
         &mut self,
+        node: &mut ElementNode<'a>,
         children: &[JSXChild<'_>],
-    ) -> Vec<'a, TemplateChildNode<'a>> {
-        if let Some(slots) = self.try_lower_slot_idiom(children) {
-            return slots;
+        has_v_slots: bool,
+    ) {
+        if !(self.uses_babel_vdom_compat() && has_v_slots)
+            && let Some(slots) = self.try_lower_slot_idiom(children)
+        {
+            node.children = slots;
+            return;
         }
-        self.lower_children(children)
+
+        // Babel passes a component's lone expression child straight into the
+        // vnode's children argument rather than making it an implicit default
+        // slot; `babel_slot` owns that shape.
+        if self.uses_babel_vdom_compat()
+            && let Some(container) = sole_expression_container(children)
+            && self.lower_babel_sole_expression_child(node, container, has_v_slots)
+        {
+            return;
+        }
+
+        node.children = self.lower_children(children);
     }
 
     /// Detect and lower the slot idiom, returning `None` when the children are
@@ -57,25 +75,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let JSXChild::ExpressionContainer(container) = only else {
             return None;
         };
-        match &container.expression {
-            JSXExpression::ObjectExpression(object) => Some(self.lower_object_slots(object)),
-            JSXExpression::ArrowFunctionExpression(arrow) => {
+        let expression = container.expression.as_expression()?;
+        match expression.get_inner_expression() {
+            Expression::ObjectExpression(object) => Some(self.lower_object_slots(object)),
+            Expression::ArrowFunctionExpression(arrow) => {
                 Some(self.lower_default_scoped_slot(arrow.as_ref().into()))
             }
-            JSXExpression::FunctionExpression(func) => {
+            Expression::FunctionExpression(func) => {
                 Some(self.lower_default_scoped_slot(func.as_ref().into()))
-            }
-            JSXExpression::ParenthesizedExpression(paren) => {
-                match paren.expression.get_inner_expression() {
-                    Expression::ObjectExpression(object) => Some(self.lower_object_slots(object)),
-                    Expression::ArrowFunctionExpression(arrow) => {
-                        Some(self.lower_default_scoped_slot(arrow.as_ref().into()))
-                    }
-                    Expression::FunctionExpression(func) => {
-                        Some(self.lower_default_scoped_slot(func.as_ref().into()))
-                    }
-                    _ => None,
-                }
             }
             _ => None,
         }
@@ -313,6 +320,6 @@ fn static_key<'o>(key: &'o PropertyKey<'o>) -> Option<(&'o str, Span)> {
 }
 
 /// Whether a child is whitespace-only text (dropped before slot detection).
-fn is_whitespace_child(child: &JSXChild<'_>) -> bool {
+pub(super) fn is_whitespace_child(child: &JSXChild<'_>) -> bool {
     matches!(child, JSXChild::Text(text) if text.value.as_str().trim().is_empty())
 }
