@@ -46,6 +46,7 @@ module.exports.hasSfcScopedStyle = nativeBinding.hasSfcScopedStyle;
 module.exports.hasViteHmrChanges = nativeBinding.hasViteHmrChanges;
 module.exports.hasVitePrecompileFileMetadataChanged =
   nativeBinding.hasVitePrecompileFileMetadataChanged;
+module.exports.inspectLintPlan = nativeBinding.inspectLintPlan;
 module.exports.isBuiltinViteDefine = nativeBinding.isBuiltinViteDefine;
 module.exports.isSfcImportableAssetUrl = nativeBinding.isSfcImportableAssetUrl;
 module.exports.isViteBareSpecifier = nativeBinding.isViteBareSpecifier;

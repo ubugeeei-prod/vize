@@ -2,7 +2,9 @@
 
 #![allow(clippy::disallowed_types)]
 
+use napi::{Error, Result, Status};
 use napi_derive::napi;
+use std::path::Path;
 use vize_curator::inspector::{InspectorSourceFile, build_graph};
 
 #[napi(object)]
@@ -45,6 +47,19 @@ pub fn build_inspector_graph(files: Vec<InspectorSourceFileNapi>) -> InspectorGr
         .collect::<Vec<_>>();
 
     build_graph(&files).into()
+}
+
+/// Resolve lint severities and their winning config items with CLI-identical glob semantics.
+#[napi(js_name = "inspectLintPlan")]
+pub fn inspect_lint_plan(plan: String, root: String, files: Vec<String>) -> Result<String> {
+    let plan = serde_json::from_str::<vize::lint_plan::InspectorLintPlan>(&plan)
+        .map_err(|error| Error::new(Status::InvalidArg, format!("Invalid lint plan: {error}")))?;
+    serde_json::to_string(&vize::lint_plan::inspect_lint_plan(
+        &plan,
+        Path::new(&root),
+        &files.into_iter().map(Into::into).collect::<Vec<_>>(),
+    ))
+    .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))
 }
 
 impl From<vize_curator::inspector::InspectorGraph> for InspectorGraphNapi {

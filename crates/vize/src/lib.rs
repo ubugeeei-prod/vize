@@ -23,6 +23,9 @@ mod commands;
 mod config;
 mod profile_support;
 
+/// Ordered lint-plan resolution and provenance for inspector consumers.
+pub mod lint_plan;
+
 /// Shared native CLI entrypoint.
 pub mod cli;
 
