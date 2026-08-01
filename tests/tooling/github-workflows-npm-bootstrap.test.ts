@@ -151,7 +151,9 @@ test("npm bootstrap handoff documents the exact trusted publisher command", () =
     docs,
     /npm trust github @vizejs\/nuxt-lint-config --file release\.yml --repo ubugeeei-prod\/vize --env npm --allow-publish --yes/,
   );
-  assert.doesNotMatch(docs.slice(docs.indexOf("### First-publish bootstrap")), /v0\.314\.0/);
+  const bootstrapSectionStart = docs.indexOf("### First-publish bootstrap");
+  assert.notEqual(bootstrapSectionStart, -1, "docs must keep the First-publish bootstrap section");
+  assert.doesNotMatch(docs.slice(bootstrapSectionStart), /v0\.314\.0/);
   assert.match(docs, /90 days/);
   assert.match(docs, /short-lived Granular Access Token/);
   assert.match(docs, /revoke/i);
