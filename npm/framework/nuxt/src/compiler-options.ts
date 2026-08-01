@@ -10,6 +10,15 @@ export interface VizeNuxtCompilerCompatibilityOptions {
   webpackVersion?: 4 | 5;
 }
 
+export interface VizeNuxtInspectorLintPlanRequest {
+  files: string[];
+  fresh: boolean;
+}
+
+export interface VizeNuxtInspectorOptions {
+  lintPlan?: (request: VizeNuxtInspectorLintPlanRequest) => unknown;
+}
+
 /**
  * Nuxt-facing mirror of the public `@vizejs/vite-plugin` options.
  *
@@ -36,6 +45,8 @@ export interface VizeNuxtCompilerOptions {
   runtimeModuleName?: string;
   /** Global variable name for standalone/function mode. */
   runtimeGlobalName?: string;
+  /** Development inspector integrations forwarded to the Vite plugin. */
+  inspector?: VizeNuxtInspectorOptions;
   /** Override the public base used for dev-time asset URLs. */
   devUrlBase?: string;
   /** Files to include in compilation. */

@@ -711,6 +711,9 @@ importers:
       '@nuxt/kit':
         specifier: catalog:nuxt-module
         version: 3.11.2(magicast@0.5.2)(rollup@4.60.3)
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
       '@vizejs/nuxt-lint-config':
         specifier: workspace:*
         version: link:../nuxt-lint-config

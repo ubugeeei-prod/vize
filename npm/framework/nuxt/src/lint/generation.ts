@@ -43,8 +43,12 @@ export interface NuxtLintGenerationDependencies {
 
 export interface NuxtLintConfigGeneration {
   configFile: string;
+  root: string;
   regenerate(): Promise<boolean>;
+  resolvePlan(fresh?: boolean): Promise<readonly NuxtLintConfigItem[]>;
 }
+
+export { setupNuxtLintInspector } from "./inspector.ts";
 
 function isNotFound(error: unknown): boolean {
   return (error as NodeJS.ErrnoException).code === "ENOENT";
@@ -197,6 +201,8 @@ export async function setupNuxtLintConfigGeneration(
       ? setupNuxtLintConfigAddons(nuxt as NuxtLintGenerationNuxt & NuxtLintConfigAddonNuxt)
       : undefined);
 
+  let currentPlan: readonly NuxtLintConfigItem[] = [];
+
   const regenerate = async (): Promise<boolean> => {
     const features = resolveNuxtLintFeatures(featureOptions, () => hasTypeScriptProbe(planRoot));
     const project = toNuxtLintProjectState(nuxt.options as NuxtLintSourceOptions, {
@@ -204,16 +210,24 @@ export async function setupNuxtLintConfigGeneration(
     });
     const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(project));
     const addons = (await resolveAddons?.()) ?? [];
+    const nextPlan = [...plan, ...addons];
     const artifact = renderNuxtOxlintConfig(
-      [...plan, ...addons],
+      nextPlan,
       resolvePluginSpecifier(path.dirname(configFile)),
     );
-    return writeFileIfChanged(configFile, artifact);
+    const changed = await writeFileIfChanged(configFile, artifact);
+    currentPlan = nextPlan;
+    return changed;
+  };
+
+  const resolvePlan = async (fresh = false): Promise<readonly NuxtLintConfigItem[]> => {
+    if (fresh) await regenerate();
+    return currentPlan;
   };
 
   await regenerate();
   nuxt.hook("builder:generateApp", regenerate);
   if (autoInit) await initRootOxlintConfig(nuxtRoot, configFile);
 
-  return { configFile, regenerate };
+  return { configFile, root: planRoot, regenerate, resolvePlan };
 }

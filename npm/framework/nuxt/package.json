@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "catalog:nuxt-module",
+    "@vizejs/native": "workspace:*",
     "@vizejs/nuxt-lint-config": "workspace:*",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",

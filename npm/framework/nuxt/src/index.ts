@@ -1,7 +1,7 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
 import { setupNuxtLintChecker } from "./lint/checker/setup";
-import { setupNuxtLintConfigGeneration } from "./lint/generation";
+import { setupNuxtLintConfigGeneration, setupNuxtLintInspector } from "./lint/generation";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import "./schema";
@@ -347,7 +347,6 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
 
   if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
 
-  // Compiler
   const compilerOptions = resolveNuxtCompilerOptions(
     nuxt.options.rootDir,
     appBaseURL,
@@ -358,6 +357,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       vueVersion,
     },
   );
+  setupNuxtLintInspector(compilerOptions, lintGeneration, nuxt.options.dev !== false);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
     const { default: vize } = await import("@vizejs/vite-plugin");

@@ -128,6 +128,27 @@ void test("regeneration resolves addons afresh and rewrites same-length changes"
   assert.equal(await absent(path.join(root, "oxlint.config.mts")), true);
 });
 
+void test("resolved plans stay cached until an inspector requests a fresh plan", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt-lint-inspector-");
+  const { nuxt } = createNuxt(root);
+  let addonName = "nuxt/initial-addon";
+  let resolutions = 0;
+  const generation = await setupNuxtLintConfigGeneration({ autoInit: false }, nuxt, {
+    resolvePluginSpecifier: () => "../plugin.mjs",
+    resolveAddons() {
+      resolutions += 1;
+      return [{ name: addonName }];
+    },
+  });
+  assert.ok(generation);
+
+  addonName = "nuxt/fresh-addon";
+  assert.equal((await generation.resolvePlan()).at(-1)?.name, "nuxt/initial-addon");
+  assert.equal(resolutions, 1);
+  assert.equal((await generation.resolvePlan(true)).at(-1)?.name, "nuxt/fresh-addon");
+  assert.equal(resolutions, 2);
+});
+
 void test("auto-init preserves every supported existing root or ancestor config", async (t) => {
   for (const name of ROOT_OXLINT_CONFIG_NAMES) {
     const parent = await temporaryRoot(t, "vize-nuxt-lint-existing-");
