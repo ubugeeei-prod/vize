@@ -1,4 +1,6 @@
+use super::static_type::{has_only_native_element_descendants, has_only_static_nested_children};
 use super::{StaticType, get_static_type, is_static_node};
+use crate::TemplateChildNode;
 use crate::parser::parse;
 use bumpalo::Bump;
 
@@ -115,5 +117,52 @@ fn test_codegen_hoisted_nested_vnode_keeps_descendant() {
             "_createElementVNode(\"span\", { class: \"a\" }, [_createElementVNode(\"b\", null, \"x\")])"
         ),
         "nested <b> was dropped from hoisted subtree:\n{preamble}"
+    );
+}
+
+#[test]
+fn static_nested_predicates_accept_native_dynamic_text_subtrees() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(
+        &allocator,
+        r#"<div><span title="label">text</span>{{ value }}</div>"#,
+    );
+    assert!(errors.is_empty(), "unexpected parse errors: {errors:?}");
+    let TemplateChildNode::Element(root_element) = &root.children[0] else {
+        panic!("expected root element");
+    };
+
+    assert!(has_only_static_nested_children(root_element));
+    assert!(has_only_native_element_descendants(root_element));
+
+    let (empty_root, errors) = parse(&allocator, "<div></div>");
+    assert!(errors.is_empty(), "unexpected parse errors: {errors:?}");
+    let TemplateChildNode::Element(empty_element) = &empty_root.children[0] else {
+        panic!("expected empty root element");
+    };
+    assert!(!has_only_static_nested_children(empty_element));
+}
+
+#[test]
+fn constant_bind_modifiers_are_preserved_in_hoisted_props() {
+    let (preamble, code) = compile_hoisted(
+        r#"<div :data-id.camel="'x'" :value.prop="'y'" :role.attr="'z'">{{ message }}</div>"#,
+    );
+
+    assert!(
+        preamble.contains(r#"dataId: 'x'"#),
+        "camel modifier was not hoisted:\n{preamble}\n{code}"
+    );
+    assert!(
+        preamble.contains(r#"".value": 'y'"#),
+        "prop modifier was not hoisted:\n{preamble}\n{code}"
+    );
+    assert!(
+        preamble.contains(r#""^role": 'z'"#),
+        "attr modifier was not hoisted:\n{preamble}\n{code}"
+    );
+    assert!(
+        code.contains("_hoisted_1"),
+        "hoisted props were not used:\n{code}"
     );
 }
