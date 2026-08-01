@@ -1,7 +1,27 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+
+type ParsedWorkflow = {
+  jobs?: Record<
+    string,
+    { if?: string; steps?: Array<{ name?: string; with?: Record<string, string> }> }
+  >;
+};
+
+// Inputs of the step that owns a contract, read as parsed YAML values so the
+// assertions survive re-indentation, quoting, and block-scalar rewrites.
+function stepInputs(
+  workflow: ParsedWorkflow,
+  jobName: string,
+  stepName: string,
+): Record<string, string> {
+  const step = workflow.jobs?.[jobName]?.steps?.find((entry) => entry.name === stepName);
+  assert.ok(step, `missing step ${stepName}`);
+  return step.with ?? {};
+}
 
 function workflowStepBody(job: string, stepName: string): string {
   const marker = `\n      - name: ${stepName}\n`;
@@ -145,14 +165,14 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
   const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
-  const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
   const validateStep = workflowStepBody(benchmarkJob, "Validate benchmark SHAs");
   const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
   const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
   const provenanceStep = workflowStepBody(benchmarkJob, "Record benchmark build provenance");
-  const cacheBaseStep = workflowStepBody(benchmarkJob, "Cache base CLI");
-  const cacheHeadStep = workflowStepBody(benchmarkJob, "Cache head CLI");
-  const uploadStep = workflowStepBody(benchmarkJob, "Upload benchmark results");
+  const parsed = parse(workflow) as ParsedWorkflow;
+  const cacheBaseInputs = stepInputs(parsed, "pr-benchmark", "Cache base CLI");
+  const cacheHeadInputs = stepInputs(parsed, "pr-benchmark", "Cache head CLI");
+  const uploadInputs = stepInputs(parsed, "pr-benchmark", "Upload benchmark results");
 
   assert.match(workflow, /\n  schedule:\n\s+- cron:\s*"29 5 \* \* 2"/);
   assert.match(
@@ -172,21 +192,30 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
   // Each cached binary is keyed by runner platform, build profile, resolved
   // toolchain, and its own commit, so a stale artifact can never be reused.
-  assert.match(cacheBaseStep, /path:\s*base\/target\/ci-opt\/vize\n/);
-  assert.match(
-    cacheBaseStep,
-    /key:\s*\$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}-benchmark-base-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}-\$\{\{ env\.BENCHMARK_BASE_SHA \}\}\n/,
+  assert.equal(cacheBaseInputs.path, "base/target/ci-opt/vize");
+  assert.equal(
+    cacheBaseInputs.key,
+    "${{ runner.os }}-${{ runner.arch }}-benchmark-base-${{ env.VIZE_BENCH_BUILD_PROFILE_KEY }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ env.BENCHMARK_BASE_SHA }}",
   );
-  assert.match(cacheHeadStep, /path:\s*head\/target\/ci-opt\/vize\n/);
-  assert.match(
-    cacheHeadStep,
-    /key:\s*\$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}-benchmark-head-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}-\$\{\{ env\.BENCHMARK_HEAD_SHA \}\}\n/,
+  assert.equal(cacheHeadInputs.path, "head/target/ci-opt/vize");
+  assert.equal(
+    cacheHeadInputs.key,
+    "${{ runner.os }}-${{ runner.arch }}-benchmark-head-${{ env.VIZE_BENCH_BUILD_PROFILE_KEY }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ env.BENCHMARK_HEAD_SHA }}",
   );
   assert.match(provenanceStep, /rustc --version --verbose/);
   assert.match(provenanceStep, /printf 'profile=%s\\n' "\$VIZE_BENCH_BUILD_PROFILE_KEY"/);
   assert.match(provenanceStep, /sha256sum base\/target\/ci-opt\/vize head\/target\/ci-opt\/vize/);
-  assert.match(uploadStep, /name:\s*pr-benchmark\n/);
-  assert.match(uploadStep, /path:\s*\|\n[\s\S]*benchmark-provenance\.txt\n/);
+  // The provenance file only reaches the budget job if it is an entry of the
+  // uploaded artifact's own path list, so compare parsed entries exactly.
+  assert.equal(uploadInputs.name, "pr-benchmark");
+  const uploadPaths = String(uploadInputs.path ?? "")
+    .split("\n")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+  assert.ok(
+    uploadPaths.includes("benchmark-provenance.txt"),
+    `provenance must be uploaded: ${uploadPaths.join(", ")}`,
+  );
 
   // Scheduled runs cannot opt out of a missing or unbuildable baseline: the
   // label reader is PR-only and every other event supplies an empty label set.
@@ -199,10 +228,9 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   );
   // Commenting stays scoped to same-repo pull requests, so scheduled runs can
   // never reach the write-permission job regardless of how the guard is worded.
-  const commentHeader = commentJob.slice(0, commentJob.indexOf("\n    steps:"));
-  assert.match(
-    commentHeader,
-    /\n    if:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}\n/,
+  assert.equal(
+    parsed.jobs?.["pr-benchmark-comment"]?.if,
+    "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}",
   );
 });
 
