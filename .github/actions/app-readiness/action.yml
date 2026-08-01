@@ -84,7 +84,13 @@ runs:
       run: |
         set -o pipefail
         timeout --signal=TERM --kill-after=15s 3m \
-          env UPDATE_SNAPSHOTS=1 vp run --filter './tests' test:readiness:check 2>&1 \
+          env UPDATE_SNAPSHOTS=1 node --test --test-concurrency=1 \
+            tests/snapshots/check/compiler-macros.ts \
+            tests/snapshots/check/elk.ts \
+            tests/snapshots/check/misskey.ts \
+            tests/snapshots/check/npmx.ts \
+            tests/snapshots/check/nuxt-ui.ts \
+            tests/snapshots/check/reka-ui.ts 2>&1 \
           | tee target/app-readiness-logs/check.log
 
     - name: Lint CLI fixture
