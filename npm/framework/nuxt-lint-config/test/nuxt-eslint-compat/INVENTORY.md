@@ -37,17 +37,17 @@ boundary.
 The blocks the port owns, in emission order. Order is observable — a later item
 overrides an earlier one — so it is part of the contract.
 
-| Config item            | Applies to                                                | Rule                                 | Patina status  |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------ | -------------- |
-| `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported      |
-| `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported      |
-| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported      |
-| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | supported      |
-| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | supported      |
-| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | supported      |
-| `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
-| `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported      |
-| `nuxt/import-globals`  | whole project                                             | — (Nuxt/Nitro auto-import globals)   | supported      |
+| Config item            | Applies to                                                | Rule                                 | Patina status |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------ | ------------- |
+| `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported     |
+| `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported     |
+| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported     |
+| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | supported     |
+| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | supported     |
+| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | supported     |
+| `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | supported     |
+| `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported     |
+| `nuxt/import-globals`  | whole project                                             | — (Nuxt/Nitro auto-import globals)   | supported     |
 
 Items outside this table belong to `@nuxt/eslint-config`'s generic
 JavaScript/TypeScript/Vue/import/stylistic/tooling presets. They are a separate
@@ -101,6 +101,22 @@ the oracle.
 | `no-nuxt-config-test-key/parenthesized-key-and-value` | Parentheses around computed identifier keys and boolean values preserve matching.           |
 | `no-nuxt-config-test-key/escaped-identifier-key`      | Unicode escapes preserve the semantic `test` identifier and bypass no prefilter.            |
 | `no-nuxt-config-test-key/multiline-property-range`    | The diagnostic spans the complete property and remains non-fixable across a second pass.    |
+
+## `nuxt/nuxt-config-keys-order` rule cases
+
+| Case                                                 | Behaviour                                                                                                     |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `nuxt-config-keys-order/complete-reversed-order`     | The entire ~60-key table, `$` group, and both official-module groups are pinned as one complete fixed output. |
+| `nuxt-config-keys-order/already-ordered`             | Ordered properties produce no diagnostic and remain byte-identical.                                           |
+| `nuxt-config-keys-order/comments-and-trailing-comma` | Comments, indentation, newline ownership, and trailing-comma insertion match upstream exactly.                |
+| `nuxt-config-keys-order/environment-objects`         | Top-level and `$environment` objects report together and converge across repeated fix passes.                 |
+| `nuxt-config-keys-order/unknown-and-literal-keys`    | Known keys lead; unknown identifiers and raw literal keys follow upstream locale collation.                   |
+| `nuxt-config-keys-order/computed-and-method-keys`    | Computed identifiers, methods, shorthands, and computed literals retain upstream name extraction.             |
+| `nuxt-config-keys-order/spread-boundaries`           | Spreads stay fixed and bound independently sorted property segments.                                          |
+| `nuxt-config-keys-order/call-and-parentheses`        | A parenthesized first object argument of any default-exported call is inspected.                              |
+| `nuxt-config-keys-order/export-shape-near-misses`    | Identifier exports, local calls, and later object arguments are not traversed.                                |
+| `nuxt-config-keys-order/short-object-near-misses`    | Empty and single-property objects remain valid and byte-identical.                                            |
+| `nuxt-config-keys-order/case-collation`              | Unknown ASCII keys pin localeCompare's case-insensitive, lowercase-first order.                               |
 
 ## Dev-server checker
 

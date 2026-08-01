@@ -10,17 +10,27 @@ pub(super) fn lint_file_with_optional_fix(
 ) -> Option<(String, String, vize_patina::LintResult)> {
     let mut source: String = fs::read_to_string(path).ok()?.into();
     let filename = path.to_string_lossy().to_compact_string();
-    let initial_result = lint_source(linter, &source, &filename);
-    let result = if should_fix
-        && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
-        && fixed_source != source
-        && fs::write(path, fixed_source.as_bytes()).is_ok()
-    {
-        source = fixed_source;
-        lint_source(linter, &source, &filename)
-    } else {
-        initial_result
-    };
+    let original = source.clone();
+    let mut result = lint_source(linter, &source, &filename);
+    if should_fix {
+        // Match ESLint's repeated fix passes. This matters when an outer Nuxt
+        // config sort overlaps nested `$environment` sorts: the outer edit is
+        // selected first, then the nested objects converge on the next pass.
+        for _ in 0..10 {
+            let Some(fixed_source) = apply_lint_fixes(&source, &result) else {
+                break;
+            };
+            if fixed_source == source {
+                break;
+            }
+            source = fixed_source;
+            result = lint_source(linter, &source, &filename);
+        }
+        if source != original && fs::write(path, source.as_bytes()).is_err() {
+            source = original;
+            result = lint_source(linter, &source, &filename);
+        }
+    }
     Some((filename, source, result))
 }
 
@@ -102,7 +112,10 @@ fn apply_lint_fixes(source: &str, result: &vize_patina::LintResult) -> Option<St
 
 #[cfg(test)]
 mod tests {
-    use super::{is_lintable_extension, is_script_filename, lint_source};
+    use super::{
+        is_lintable_extension, is_script_filename, lint_file_with_optional_fix, lint_source,
+    };
+    use std::fs;
     use vize_patina::{LintPreset, Linter};
 
     #[test]
@@ -128,5 +141,29 @@ mod tests {
             assert!(is_script_filename(&format!("nuxt.config.{extension}")));
             assert!(!is_lintable_extension(extension));
         }
+    }
+
+    #[test]
+    fn overlapping_config_order_fixes_converge_before_writing() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("nuxt.config.ts");
+        fs::write(
+            &path,
+            "export default { ssr: true, $test: { ssr: true, modules: [] }, modules: [] }",
+        )
+        .unwrap();
+        let linter = Linter::with_preset(LintPreset::Nuxt);
+        let (_, source, result) = lint_file_with_optional_fix(&linter, &path, true).unwrap();
+        assert_eq!(
+            source,
+            "export default { modules: [], $test: { modules: [], ssr: true, }, ssr: true, }"
+        );
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "nuxt/nuxt-config-keys-order")
+        );
+        assert_eq!(fs::read_to_string(path).unwrap(), source);
     }
 }

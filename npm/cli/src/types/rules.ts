@@ -63,6 +63,7 @@ export const LINT_RULE_NAMES = [
   "html/no-empty-palpable-content",
   "html/require-datetime",
   "nuxt/no-nuxt-config-test-key",
+  "nuxt/nuxt-config-keys-order",
   "nuxt/no-page-meta-runtime-values",
   "nuxt/prefer-import-meta",
   "petite-vue/no-unsupported-directive",

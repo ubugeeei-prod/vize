@@ -39,6 +39,7 @@ import { buildNuxtLintPlan } from "../../src/plan.ts";
 import { recordCheckerOptions } from "./checker-oracle.mjs";
 import { recordNoNuxtConfigTestKeyCases } from "./no-nuxt-config-test-key-oracle.mjs";
 import { recordNoPageMetaRuntimeValuesCases } from "./no-page-meta-runtime-values-oracle.mjs";
+import { recordNuxtConfigKeysOrderCases } from "./nuxt-config-keys-order-oracle.mjs";
 import { recordPreferImportMetaCases } from "./prefer-import-meta-oracle.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -219,16 +220,23 @@ export async function runOracle() {
   ]);
 
   const corpus = readCorpus();
-  const [preferImportMeta, noPageMetaRuntimeValues, noNuxtConfigTestKey, checkerOptions] =
-    await Promise.all([
-      recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
-      recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
-      recordNoNuxtConfigTestKeyCases(moduleEntry, corpus, packageVersionFrom),
-      recordCheckerOptions(moduleEntry, corpus.checkerCases),
-    ]);
+  const [
+    preferImportMeta,
+    noPageMetaRuntimeValues,
+    noNuxtConfigTestKey,
+    nuxtConfigKeysOrder,
+    checkerOptions,
+  ] = await Promise.all([
+    recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
+    recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
+    recordNoNuxtConfigTestKeyCases(moduleEntry, corpus, packageVersionFrom),
+    recordNuxtConfigKeysOrderCases(moduleEntry, corpus, packageVersionFrom),
+    recordCheckerOptions(moduleEntry, corpus.checkerCases),
+  ]);
   if (
     preferImportMeta.pluginVersion !== noPageMetaRuntimeValues.pluginVersion ||
-    preferImportMeta.pluginVersion !== noNuxtConfigTestKey.pluginVersion
+    preferImportMeta.pluginVersion !== noNuxtConfigTestKey.pluginVersion ||
+    preferImportMeta.pluginVersion !== nuxtConfigKeysOrder.pluginVersion
   ) {
     throw new Error("Nuxt rule oracles resolved different @nuxt/eslint-plugin versions");
   }
@@ -289,7 +297,7 @@ export async function runOracle() {
   );
 
   return {
-    schemaVersion: 6,
+    schemaVersion: 7,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
@@ -309,6 +317,7 @@ export async function runOracle() {
     preferImportMetaCases: preferImportMeta.cases,
     noPageMetaRuntimeValuesCases: noPageMetaRuntimeValues.cases,
     noNuxtConfigTestKeyCases: noNuxtConfigTestKey.cases,
+    nuxtConfigKeysOrderCases: nuxtConfigKeysOrder.cases,
     checkerOptions,
     dirDefaults,
     cases,

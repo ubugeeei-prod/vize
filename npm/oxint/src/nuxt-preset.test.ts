@@ -24,6 +24,8 @@ assert.equal(configs.nuxt["vize/nuxt/no-page-meta-runtime-values"], "error");
 assert.equal(configs.opinionated["vize/nuxt/no-page-meta-runtime-values"], undefined);
 assert.equal(configs.nuxt["vize/nuxt/no-nuxt-config-test-key"], "error");
 assert.equal(configs.opinionated["vize/nuxt/no-nuxt-config-test-key"], undefined);
+assert.equal(configs.nuxt["vize/nuxt/nuxt-config-keys-order"], "error");
+assert.equal(configs.opinionated["vize/nuxt/nuxt-config-keys-order"], undefined);
 
 fs.rmSync(fixtureDir, { force: true, recursive: true });
 fs.mkdirSync(fixtureDir, { recursive: true });
@@ -62,6 +64,8 @@ definePageMeta({ title: useRoute().path })
 fs.writeFileSync(
   nuxtConfigPath,
   `export default defineNuxtConfig({
+  ssr: true,
+  modules: [],
   test: true,
 })
 `,
@@ -116,7 +120,11 @@ const nuxtConfigRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "nuxt.
 assert.notEqual(nuxtConfigRun.exitCode, 0, "nuxt preset should reject the config test key");
 assert.match(
   nuxtConfigRun.output,
-  /nuxt\.config\.ts[\s\S]*2:3[\s\S]*Do not set `test` key in Nuxt config[\s\S]*vize\(nuxt\/no-nuxt-config-test-key\)/u,
+  /nuxt\.config\.ts[\s\S]*4:3[\s\S]*Do not set `test` key in Nuxt config[\s\S]*vize\(nuxt\/no-nuxt-config-test-key\)/u,
+);
+assert.match(
+  nuxtConfigRun.output,
+  /nuxt\.config\.ts[\s\S]*Expected config key "modules" to come before "ssr"[\s\S]*vize\(nuxt\/nuxt-config-keys-order\)/u,
 );
 
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");

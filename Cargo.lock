@@ -3985,6 +3985,7 @@ dependencies = [
  "serde-wasm-bindgen",
  "serde_json",
  "sha2",
+ "tempfile",
  "vize",
  "vize_atelier_core",
  "vize_atelier_dom",

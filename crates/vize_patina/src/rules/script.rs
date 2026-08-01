@@ -41,6 +41,7 @@ mod no_top_level_ref_in_script;
 mod no_unstable_nested_components;
 mod no_use_computed_property_like_method;
 mod no_with_defaults;
+mod nuxt_config_keys_order;
 mod pinia_prefer_store_to_refs;
 mod prefer_computed;
 mod prefer_define_options;
@@ -309,8 +310,7 @@ impl ScriptLinter {
             profile!("patina.script_linter.rule.check", {
                 if rule.uses_ast() {
                     if let Some(program) = program {
-                        // Standalone script linting has no surrounding SFC, so
-                        // the cross-block context is empty.
+                        // Standalone script linting has no SFC, so cross-block context is empty.
                         rule.check_program_with_sfc(
                             program,
                             source,

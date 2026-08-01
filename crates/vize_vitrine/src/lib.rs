@@ -7,6 +7,12 @@
 #[cfg(feature = "napi")]
 pub mod napi;
 
+// Keep the pure lint/fix path covered without linking a standalone test binary
+// against Node's N-API symbols.
+#[cfg(all(test, not(feature = "napi")))]
+#[path = "napi/lint_fix.rs"]
+mod lint_fix_tests;
+
 #[cfg(feature = "wasm")]
 pub mod wasm;
 

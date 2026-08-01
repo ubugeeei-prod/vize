@@ -153,6 +153,63 @@
       "source": "export default defineNuxtConfig({\n  /* leading */ test /* key */ : /* value */ false /* trailing */\n})"
     }
   ],
+  "nuxtConfigKeysOrderCases": [
+    {
+      "id": "nuxt-config-keys-order/complete-reversed-order",
+      "description": "The complete pinned key table, all official modules, and three environment keys sort into the exact upstream order.",
+      "source": "export default { hooks: null, logLevel: null, debug: null, telemetry: null, test: null, postcss: null, typescript: null, webpack: null, vite: null, devServerHandlers: null, serverHandlers: null, hub: null, nitro: null, compatibilityDate: null, experimental: null, features: null, future: null, watchers: null, watch: null, devServer: null, dev: null, optimization: null, sourcemap: null, routeRules: null, generate: null, build: null, builder: null, ignorePrefix: null, ignoreOptions: null, ignore: null, extensions: null, alias: null, analyzeDir: null, modulesDir: null, buildDir: null, serverDir: null, workspaceDir: null, appDir: null, srcDir: null, rootDir: null, dir: null, runtimeConfig: null, appConfig: null, spaLoadingTemplate: null, ui: null, mdc: null, content: null, colorMode: null, site: null, unhead: null, router: null, vue: null, css: null, app: null, devtools: null, imports: null, components: null, pages: null, ssr: null, $test: true, $production: true, $development: true, plugins: null, modules: null, theme: null, extends: null, buildId: null, appId: null }"
+    },
+    {
+      "id": "nuxt-config-keys-order/already-ordered",
+      "description": "An ordered direct object stays byte-identical and produces no diagnostic or fix.",
+      "source": "export default defineNuxtConfig({ modules: [], $development: {}, ssr: true, app: {}, vite: {}, hooks: {} })"
+    },
+    {
+      "id": "nuxt-config-keys-order/comments-and-trailing-comma",
+      "description": "Multiline comments, indentation, and upstream's inserted trailing comma are preserved exactly.",
+      "source": "export default defineNuxtConfig({\n  ssr: true, // ssr\n  // modules\n  modules: []\n})"
+    },
+    {
+      "id": "nuxt-config-keys-order/environment-objects",
+      "description": "Top-level and identifier-keyed environment objects report together and converge across repeated fix passes.",
+      "source": "export default { ssr: true, $test: { ssr: true, modules: [] }, $production: { build: {}, app: {} }, modules: [] }"
+    },
+    {
+      "id": "nuxt-config-keys-order/unknown-and-literal-keys",
+      "description": "Known keys lead, while unknown identifier and raw literal keys use upstream locale collation.",
+      "source": "export default { zebra: 1, \"ssr\": true, modules: [], 'app': {}, css: [], alpha: 2 }"
+    },
+    {
+      "id": "nuxt-config-keys-order/computed-and-method-keys",
+      "description": "Computed identifiers, methods, and shorthands use their identifier names; computed literals retain raw-key ordering.",
+      "source": "export default { [ssr]: true, modules, [\"app\"]: {}, css, app() {} }"
+    },
+    {
+      "id": "nuxt-config-keys-order/spread-boundaries",
+      "description": "Spreads remain fixed and independently bound the sortable property segments around them.",
+      "source": "export default { modules: [], ssr: true, ...base, css: [], app: {}, ...tail, vite: {}, build: {} }"
+    },
+    {
+      "id": "nuxt-config-keys-order/call-and-parentheses",
+      "description": "A parenthesized object in the first argument of any default-exported call is inspected.",
+      "source": "export default (wrap(({ ssr: true, modules: [] })))"
+    },
+    {
+      "id": "nuxt-config-keys-order/export-shape-near-misses",
+      "description": "Identifier-backed exports, non-exported calls, and objects in later call arguments are not traversed.",
+      "source": "const config = { ssr: true, modules: [] }; const local = wrap({ ssr: true, modules: [] }); export default wrap(extra, { ssr: true, modules: [] })"
+    },
+    {
+      "id": "nuxt-config-keys-order/short-object-near-misses",
+      "description": "Empty and single-property exported objects need no sorting and remain byte-identical.",
+      "source": "const empty = {}; export default defineNuxtConfig({ ssr: true })"
+    },
+    {
+      "id": "nuxt-config-keys-order/case-collation",
+      "description": "Unknown ASCII keys use localeCompare's lowercase-first, case-insensitive primary ordering.",
+      "source": "export default { zebra: 1, Zebra: 2, alpha: 3, Alpha: 4 }"
+    }
+  ],
   "importGlobals": {
     "id": "addons/import-globals",
     "description": "Nuxt and Nitro auto-import registries are merged, sorted by source then imported name, and aliases become readonly globals.",

@@ -37,6 +37,7 @@ pub use super::no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use super::no_unstable_nested_components::NoUnstableNestedComponents;
 pub use super::no_use_computed_property_like_method::NoUseComputedPropertyLikeMethod;
 pub use super::no_with_defaults::NoWithDefaults;
+pub use super::nuxt_config_keys_order::NuxtConfigKeysOrder;
 pub use super::pinia_prefer_store_to_refs::PiniaPreferStoreToRefs;
 pub use super::prefer_computed::PreferComputed;
 pub use super::prefer_define_options::PreferDefineOptions;

@@ -92,6 +92,7 @@ if (import.meta.vitest) {
         "prefer-import-meta",
         "no-page-meta-runtime-values",
         "no-nuxt-config-test-key",
+        "nuxt-config-keys-order",
       ]) {
         const ruleId = `vize/nuxt/${ruleName}`;
         expect(configs.nuxt[ruleId]).toBe("error");

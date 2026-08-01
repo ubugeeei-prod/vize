@@ -174,7 +174,7 @@ void test("corpus pins the package versions the recording was produced with", ()
 });
 
 void test("recording covers exactly the corpus cases", () => {
-  assert.equal(recording.schemaVersion, 6);
+  assert.equal(recording.schemaVersion, 7);
   assert.deepEqual(
     Object.keys(recording.cases).sort(),
     corpus.cases.map((entry) => entry.id).sort(),

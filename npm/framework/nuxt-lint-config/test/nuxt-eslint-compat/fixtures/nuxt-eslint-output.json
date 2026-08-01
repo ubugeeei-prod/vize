@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
@@ -1182,6 +1182,244 @@
       "secondPassMessageCount": 1,
       "secondPassMessagesMatch": true,
       "secondPassOutput": "export default defineNuxtConfig({\n  /* leading */ test /* key */ : /* value */ false /* trailing */\n})",
+      "secondPassFixed": false
+    }
+  },
+  "nuxtConfigKeysOrderCases": {
+    "nuxt-config-keys-order/complete-reversed-order": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"appId\" to come before \"buildId\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 1081,
+          "range": [15, 1080],
+          "fix": {
+            "range": [16, 1078],
+            "text": " appId: null, buildId: null, extends: null, theme: null, modules: null, plugins: null, $development: true, $production: true, $test: true, ssr: null, pages: null, components: null, imports: null, devtools: null, app: null, css: null, vue: null, router: null, unhead: null, site: null, colorMode: null, content: null, mdc: null, ui: null, spaLoadingTemplate: null, appConfig: null, runtimeConfig: null, dir: null, rootDir: null, srcDir: null, appDir: null, workspaceDir: null, serverDir: null, buildDir: null, modulesDir: null, analyzeDir: null, alias: null, extensions: null, ignore: null, ignoreOptions: null, ignorePrefix: null, builder: null, build: null, generate: null, routeRules: null, sourcemap: null, optimization: null, dev: null, devServer: null, watch: null, watchers: null, future: null, features: null, experimental: null, compatibilityDate: null, nitro: null, hub: null, serverHandlers: null, devServerHandlers: null, vite: null, webpack: null, typescript: null, postcss: null, test: null, telemetry: null, debug: null, logLevel: null, hooks: null,"
+          }
+        }
+      ],
+      "output": "export default { appId: null, buildId: null, extends: null, theme: null, modules: null, plugins: null, $development: true, $production: true, $test: true, ssr: null, pages: null, components: null, imports: null, devtools: null, app: null, css: null, vue: null, router: null, unhead: null, site: null, colorMode: null, content: null, mdc: null, ui: null, spaLoadingTemplate: null, appConfig: null, runtimeConfig: null, dir: null, rootDir: null, srcDir: null, appDir: null, workspaceDir: null, serverDir: null, buildDir: null, modulesDir: null, analyzeDir: null, alias: null, extensions: null, ignore: null, ignoreOptions: null, ignorePrefix: null, builder: null, build: null, generate: null, routeRules: null, sourcemap: null, optimization: null, dev: null, devServer: null, watch: null, watchers: null, future: null, features: null, experimental: null, compatibilityDate: null, nitro: null, hub: null, serverHandlers: null, devServerHandlers: null, vite: null, webpack: null, typescript: null, postcss: null, test: null, telemetry: null, debug: null, logLevel: null, hooks: null, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { appId: null, buildId: null, extends: null, theme: null, modules: null, plugins: null, $development: true, $production: true, $test: true, ssr: null, pages: null, components: null, imports: null, devtools: null, app: null, css: null, vue: null, router: null, unhead: null, site: null, colorMode: null, content: null, mdc: null, ui: null, spaLoadingTemplate: null, appConfig: null, runtimeConfig: null, dir: null, rootDir: null, srcDir: null, appDir: null, workspaceDir: null, serverDir: null, buildDir: null, modulesDir: null, analyzeDir: null, alias: null, extensions: null, ignore: null, ignoreOptions: null, ignorePrefix: null, builder: null, build: null, generate: null, routeRules: null, sourcemap: null, optimization: null, dev: null, devServer: null, watch: null, watchers: null, future: null, features: null, experimental: null, compatibilityDate: null, nitro: null, hub: null, serverHandlers: null, devServerHandlers: null, vite: null, webpack: null, typescript: null, postcss: null, test: null, telemetry: null, debug: null, logLevel: null, hooks: null, }",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/already-ordered": {
+      "messages": [],
+      "output": "export default defineNuxtConfig({ modules: [], $development: {}, ssr: true, app: {}, vite: {}, hooks: {} })",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default defineNuxtConfig({ modules: [], $development: {}, ssr: true, app: {}, vite: {}, hooks: {} })",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/comments-and-trailing-comma": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"ssr\"",
+          "line": 1,
+          "column": 33,
+          "endLine": 5,
+          "endColumn": 2,
+          "range": [32, 82],
+          "fix": {
+            "range": [34, 81],
+            "text": " // ssr\n  // modules\n  modules: [],\n  ssr: true,"
+          }
+        }
+      ],
+      "output": "export default defineNuxtConfig({\n // ssr\n  // modules\n  modules: [],\n  ssr: true,})",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default defineNuxtConfig({\n // ssr\n  // modules\n  modules: [],\n  ssr: true,})",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/environment-objects": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"$production\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 114,
+          "range": [15, 113],
+          "fix": {
+            "range": [16, 111],
+            "text": " modules: [], $production: { build: {}, app: {} }, $test: { ssr: true, modules: [] }, ssr: true,"
+          }
+        },
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"ssr\"",
+          "line": 1,
+          "column": 36,
+          "endLine": 1,
+          "endColumn": 62,
+          "range": [35, 61],
+          "fix": {
+            "range": [36, 59],
+            "text": " modules: [], ssr: true,"
+          }
+        },
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"app\" to come before \"build\"",
+          "line": 1,
+          "column": 77,
+          "endLine": 1,
+          "endColumn": 99,
+          "range": [76, 98],
+          "fix": {
+            "range": [77, 96],
+            "text": " app: {}, build: {},"
+          }
+        }
+      ],
+      "output": "export default { modules: [], $production: { app: {}, build: {}, }, $test: { modules: [], ssr: true, }, ssr: true, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { modules: [], $production: { app: {}, build: {}, }, $test: { modules: [], ssr: true, }, ssr: true, }",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/unknown-and-literal-keys": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"css\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 84,
+          "range": [15, 83],
+          "fix": {
+            "range": [16, 81],
+            "text": " modules: [], css: [], 'app': {}, \"ssr\": true, alpha: 2, zebra: 1,"
+          }
+        }
+      ],
+      "output": "export default { modules: [], css: [], 'app': {}, \"ssr\": true, alpha: 2, zebra: 1, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { modules: [], css: [], 'app': {}, \"ssr\": true, alpha: 2, zebra: 1, }",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/computed-and-method-keys": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"ssr\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 68,
+          "range": [15, 67],
+          "fix": {
+            "range": [16, 65],
+            "text": " modules, [ssr]: true, app() {}, css, [\"app\"]: {},"
+          }
+        }
+      ],
+      "output": "export default { modules, [ssr]: true, app() {}, css, [\"app\"]: {}, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { modules, [ssr]: true, app() {}, css, [\"app\"]: {}, }",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/spread-boundaries": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"ssr\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 99,
+          "range": [15, 98],
+          "fix": {
+            "range": [16, 96],
+            "text": " modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {},"
+          }
+        }
+      ],
+      "output": "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {}, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {}, }",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/call-and-parentheses": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"modules\" to come before \"ssr\"",
+          "line": 1,
+          "column": 23,
+          "endLine": 1,
+          "endColumn": 49,
+          "range": [22, 48],
+          "fix": {
+            "range": [23, 46],
+            "text": " modules: [], ssr: true,"
+          }
+        }
+      ],
+      "output": "export default (wrap(({ modules: [], ssr: true, })))",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default (wrap(({ modules: [], ssr: true, })))",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/export-shape-near-misses": {
+      "messages": [],
+      "output": "const config = { ssr: true, modules: [] }; const local = wrap({ ssr: true, modules: [] }); export default wrap(extra, { ssr: true, modules: [] })",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "const config = { ssr: true, modules: [] }; const local = wrap({ ssr: true, modules: [] }); export default wrap(extra, { ssr: true, modules: [] })",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/short-object-near-misses": {
+      "messages": [],
+      "output": "const empty = {}; export default defineNuxtConfig({ ssr: true })",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "const empty = {}; export default defineNuxtConfig({ ssr: true })",
+      "secondPassFixed": false
+    },
+    "nuxt-config-keys-order/case-collation": {
+      "messages": [
+        {
+          "ruleId": "nuxt/nuxt-config-keys-order",
+          "severity": 2,
+          "message": "Expected config key \"alpha\" to come before \"Alpha\"",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 58,
+          "range": [15, 57],
+          "fix": {
+            "range": [16, 55],
+            "text": " alpha: 3, Alpha: 4, zebra: 1, Zebra: 2,"
+          }
+        }
+      ],
+      "output": "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2, }",
+      "fixed": true,
+      "secondPassMessageCount": 0,
+      "secondPassOutput": "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2, }",
       "secondPassFixed": false
     }
   },
