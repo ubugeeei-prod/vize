@@ -683,7 +683,6 @@ jobs:
       - name: Publish oxlint-plugin-vize
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/oxint --provenance
 
-  # Publish @vizejs/marquette (using Trusted Publishing / OIDC)
   release-npm-marquette:
     name: Release @vizejs/marquette to npm
     runs-on: ubuntu-24.04
@@ -704,7 +703,6 @@ jobs:
       - name: Publish @vizejs/marquette
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/marquette --provenance
 
-  # Publish @vizejs/composable (using Trusted Publishing / OIDC)
   release-npm-composable:
     name: Release @vizejs/composable to npm
     runs-on: ubuntu-24.04
@@ -725,7 +723,6 @@ jobs:
       - name: Publish @vizejs/composable
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/compose/core --provenance
 
-  # Publish @vizejs/ui (using Trusted Publishing / OIDC)
   release-npm-ui:
     name: Release @vizejs/ui to npm
     runs-on: ubuntu-24.04
@@ -965,6 +962,9 @@ jobs:
       - release-npm-cli
       - release-npm-vite-plugin
       - release-npm-oxlint-plugin
+      - release-npm-marquette
+      - release-npm-composable
+      - release-npm-ui
       - release-npm-unplugin
       - release-npm-fresco
       - release-npm-musea-mcp-server

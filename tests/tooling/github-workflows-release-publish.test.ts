@@ -25,11 +25,8 @@ function jobNeeds(job: ReleaseJob): string[] {
   return Array.isArray(job.needs) ? job.needs : [job.needs];
 }
 
-test("every publication edge waits for credential-free release preflight", () => {
-  const source = readRepoFile(".github", "workflows", "release.yml");
-  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
-  const jobs = workflow.jobs ?? {};
-  const publishJobs = Object.entries(jobs)
+function publicationJobNames(jobs: Record<string, ReleaseJob>): string[] {
+  return Object.entries(jobs)
     .filter(([, job]) => {
       const serialized = JSON.stringify(job);
       return (
@@ -41,6 +38,13 @@ test("every publication edge waits for credential-free release preflight", () =>
     })
     .map(([name]) => name)
     .sort();
+}
+
+test("every publication edge waits for credential-free release preflight", () => {
+  const source = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
+  const jobs = workflow.jobs ?? {};
+  const publishJobs = publicationJobNames(jobs);
 
   assert.deepEqual(publishJobs, [
     "create-github-release",
@@ -229,34 +233,27 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
 });
 
 test("release workflow creates GitHub Releases only after registry publishing succeeds", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const releaseJob = workflowJobBody(workflow, "create-github-release");
+  const source = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = parse(source) as { jobs?: Record<string, ReleaseJob> };
+  const jobs = workflow.jobs ?? {};
+  const releaseJob = jobs["create-github-release"];
+  assert.ok(releaseJob);
+  const releaseNeeds = jobNeeds(releaseJob);
 
-  for (const requiredNeed of [
-    "build-cli",
-    "release-vscode-extension",
-    "release-npm-native",
-    "release-npm-fresco-native",
-    "release-npm-wasm",
-    "smoke-release-packages",
-    "release-npm-cli",
-    "release-npm-vite-plugin",
-    "release-npm-oxlint-plugin",
-    "release-npm-unplugin",
-    "release-npm-fresco",
-    "release-npm-musea-mcp-server",
-    "release-npm-vite-plugin-musea",
-    "release-npm-rspack-plugin",
-    "release-npm-musea-nuxt",
-    "release-npm-nuxt-lint-config",
-    "release-npm-nuxt",
-    "release-crates",
-  ]) {
-    assert.match(releaseJob, new RegExp(`- ${requiredNeed}\\b`));
+  for (const requiredNeed of ["build-cli", "smoke-release-packages", "release-preflight"]) {
+    assert.ok(releaseNeeds.includes(requiredNeed), requiredNeed);
   }
 
-  const createRelease = releaseJob.indexOf("name: Create Release");
-  assert.notEqual(createRelease, -1);
+  const registryPublishJobs = publicationJobNames(jobs).filter(
+    (jobName) => jobName !== "create-github-release",
+  );
+  assert.deepEqual(
+    registryPublishJobs.filter((jobName) => !releaseNeeds.includes(jobName)),
+    [],
+    "GitHub Release must wait for every registry publish job",
+  );
+
+  assert.match(JSON.stringify(releaseJob), /softprops\/action-gh-release@/);
 });
 
 test("release workflow requires VS Code Marketplace publication", () => {
