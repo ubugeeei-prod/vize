@@ -29,16 +29,16 @@ prefix) is a later phase.
 The blocks the port owns, in emission order. Order is observable — a later item
 overrides an earlier one — so it is part of the contract.
 
-| Config item            | Applies to                                                | Rule                                 | Patina status                                  |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
-| `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported                                      |
-| `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported                                      |
-| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported                                      |
-| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | not ported yet                                 |
-| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | not ported yet                                 |
-| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet                                 |
-| `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet                                 |
-| `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported                                      |
+| Config item            | Applies to                                                | Rule                                 | Patina status  |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------ | -------------- |
+| `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported      |
+| `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported      |
+| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported      |
+| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | not ported yet |
+| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | not ported yet |
+| `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet |
+| `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
+| `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported      |
 
 Items outside this table belong to `@nuxt/eslint-config`'s generic
 JavaScript/TypeScript/Vue/import/stylistic/tooling presets. They are a separate
