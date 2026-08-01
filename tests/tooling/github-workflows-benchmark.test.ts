@@ -150,6 +150,9 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   const checkoutHeadStep = workflowStepBody(benchmarkJob, "Checkout head");
   const checkBaseStep = workflowStepBody(benchmarkJob, "Check base checkout");
   const provenanceStep = workflowStepBody(benchmarkJob, "Record benchmark build provenance");
+  const cacheBaseStep = workflowStepBody(benchmarkJob, "Cache base CLI");
+  const cacheHeadStep = workflowStepBody(benchmarkJob, "Cache head CLI");
+  const uploadStep = workflowStepBody(benchmarkJob, "Upload benchmark results");
 
   assert.match(workflow, /\n  schedule:\n\s+- cron:\s*"29 5 \* \* 2"/);
   assert.match(
@@ -167,18 +170,23 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
   assert.match(checkoutHeadStep, /github\.event_name != 'pull_request' && '0' \|\| '1'/);
   assert.match(checkBaseStep, /"\$EVENT_NAME" != "pull_request"/);
   assert.match(checkBaseStep, /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+  // Each cached binary is keyed by runner platform, build profile, resolved
+  // toolchain, and its own commit, so a stale artifact can never be reused.
+  assert.match(cacheBaseStep, /path:\s*base\/target\/ci-opt\/vize\n/);
   assert.match(
-    benchmarkJob,
-    /benchmark-base-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}/,
+    cacheBaseStep,
+    /key:\s*\$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}-benchmark-base-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}-\$\{\{ env\.BENCHMARK_BASE_SHA \}\}\n/,
   );
+  assert.match(cacheHeadStep, /path:\s*head\/target\/ci-opt\/vize\n/);
   assert.match(
-    benchmarkJob,
-    /benchmark-head-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}/,
+    cacheHeadStep,
+    /key:\s*\$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}-benchmark-head-\$\{\{ env\.VIZE_BENCH_BUILD_PROFILE_KEY \}\}-\$\{\{ steps\.rust-toolchain\.outputs\.cachekey \}\}-\$\{\{ env\.BENCHMARK_HEAD_SHA \}\}\n/,
   );
   assert.match(provenanceStep, /rustc --version --verbose/);
   assert.match(provenanceStep, /printf 'profile=%s\\n' "\$VIZE_BENCH_BUILD_PROFILE_KEY"/);
   assert.match(provenanceStep, /sha256sum base\/target\/ci-opt\/vize head\/target\/ci-opt\/vize/);
-  assert.match(benchmarkJob, /benchmark-provenance\.txt/);
+  assert.match(uploadStep, /name:\s*pr-benchmark\n/);
+  assert.match(uploadStep, /path:\s*\|\n[\s\S]*benchmark-provenance\.txt\n/);
 
   // Scheduled runs cannot opt out of a missing or unbuildable baseline: the
   // label reader is PR-only and every other event supplies an empty label set.
@@ -189,7 +197,13 @@ test("benchmark schedule gates long-term drift against a fixed commit", () => {
     budgetJob,
     /github\.event_name == 'pull_request' && steps\.pr-labels\.outputs\.labels \|\| '\[\]'/,
   );
-  assert.doesNotMatch(commentJob, /github\.event_name == 'schedule'/);
+  // Commenting stays scoped to same-repo pull requests, so scheduled runs can
+  // never reach the write-permission job regardless of how the guard is worded.
+  const commentHeader = commentJob.slice(0, commentJob.indexOf("\n    steps:"));
+  assert.match(
+    commentHeader,
+    /\n    if:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}\n/,
+  );
 });
 
 test("tool benchmark workflow produces docs artifacts, PR comments, and conventional commits", () => {
