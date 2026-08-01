@@ -3,6 +3,11 @@ import { execFileSync, execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createVizeSymlinks,
+  ensureLocalVizePackagesBuilt,
+  ensureSymlink,
+} from "./vize-local-packages.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,8 +17,6 @@ const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
 const MUTABLE_GIT_PROJECTS_DIR = path.join(PROJECTS_DIR, "_git-worktrees");
 const MUTABLE_GIT_WORKTREE_INSTANCE = process.env.VIZE_TEST_WORKTREE_ID ?? `pid-${process.pid}`;
-const NPM_DIR = path.resolve(__dirname, "../../npm");
-const REPO_ROOT = path.resolve(__dirname, "../..");
 
 export interface AppConfig {
   name: string;
@@ -51,46 +54,6 @@ export interface AppConfig {
 }
 
 // --- Setup helpers ---
-
-const VIZE_SYMLINK_TARGETS: Record<string, string> = {
-  native: path.join(NPM_DIR, "native"),
-  "vite-plugin": path.join(NPM_DIR, "builder/vite"),
-  nuxt: path.join(NPM_DIR, "framework/nuxt"),
-  "vite-plugin-musea": path.join(NPM_DIR, "builder/vite-musea"),
-  "musea-nuxt": path.join(NPM_DIR, "framework/musea-nuxt"),
-};
-const VIZE_LOCAL_BUILD_TARGETS = [
-  {
-    name: "vize",
-    filter: "vize",
-    dir: path.join(NPM_DIR, "cli"),
-    outputs: ["dist/index.mjs", "dist/config.mjs"],
-  },
-  {
-    name: "@vizejs/vite-plugin",
-    filter: "@vizejs/vite-plugin",
-    dir: path.join(NPM_DIR, "builder/vite"),
-    outputs: ["dist/index.mjs"],
-  },
-  {
-    name: "@vizejs/nuxt",
-    filter: "@vizejs/nuxt",
-    dir: path.join(NPM_DIR, "framework/nuxt"),
-    outputs: ["dist/index.mjs"],
-  },
-  {
-    name: "@vizejs/vite-plugin-musea",
-    filter: "@vizejs/vite-plugin-musea",
-    dir: path.join(NPM_DIR, "builder/vite-musea"),
-    outputs: ["dist/index.mjs", "dist/cli/index.mjs"],
-  },
-  {
-    name: "@vizejs/musea-nuxt",
-    filter: "@vizejs/musea-nuxt",
-    dir: path.join(NPM_DIR, "framework/musea-nuxt"),
-    outputs: ["dist/index.mjs"],
-  },
-] as const;
 const MISSKEY_FLUENT_EMOJI_RE = /\/fluent-emoji(?:s)?\/([0-9a-z-]+\.png)\b/g;
 const NPMX_E2E_ENV = {
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
@@ -120,31 +83,6 @@ const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
 );
-const BUILT_VIZE_PACKAGES = new Set<string>();
-
-function hasBuildOutputs(dir: string, outputs: readonly string[]): boolean {
-  return outputs.every((output) => fs.existsSync(path.join(dir, output)));
-}
-
-function ensureLocalVizePackagesBuilt(): void {
-  for (const target of VIZE_LOCAL_BUILD_TARGETS) {
-    if (BUILT_VIZE_PACKAGES.has(target.name) && hasBuildOutputs(target.dir, target.outputs)) {
-      continue;
-    }
-
-    if (!hasBuildOutputs(target.dir, target.outputs)) {
-      console.log(`[vize:setup] building ${target.name}...`);
-      execFileSync("npx", ["-y", "pnpm@10", "--filter", target.filter, "build"], {
-        cwd: REPO_ROOT,
-        stdio: "inherit",
-        timeout: 300_000,
-      });
-    }
-
-    BUILT_VIZE_PACKAGES.add(target.name);
-  }
-}
-
 interface PnpmInstallOptions {
   env?: NodeJS.ProcessEnv;
   ignoreScripts?: boolean;
@@ -170,33 +108,6 @@ export function installPnpmDependencies(cwd: string, options: PnpmInstallOptions
     stdio: "inherit",
     timeout: options.timeout ?? 600_000,
   });
-}
-
-function ensureSymlink(link: string, target: string): void {
-  try {
-    const stat = fs.lstatSync(link);
-    if (stat.isSymbolicLink()) {
-      try {
-        fs.statSync(link);
-        return; // valid symlink
-      } catch {
-        fs.unlinkSync(link); // broken symlink — recreate
-      }
-    } else {
-      return; // real dir/file
-    }
-  } catch {
-    // does not exist
-  }
-  fs.symlinkSync(target, link, "dir");
-}
-
-function createVizeSymlinks(nodeModulesDir: string): void {
-  const vizejsDir = path.join(nodeModulesDir, "@vizejs");
-  fs.mkdirSync(vizejsDir, { recursive: true });
-  for (const [name, target] of Object.entries(VIZE_SYMLINK_TARGETS)) {
-    ensureSymlink(path.join(vizejsDir, name), target);
-  }
 }
 
 function patchNuxtConfig(
