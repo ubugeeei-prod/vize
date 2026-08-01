@@ -1,6 +1,8 @@
 use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
-use crate::batch::runtime_deps::VUE_RUNTIME_DOM_STUB_TYPES;
+use crate::batch::runtime_deps::{
+    VUE_RUNTIME_DOM_STUB_TYPES, test_env_var_os, with_test_env_overrides,
+};
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ProjectSession},
@@ -2252,7 +2254,7 @@ fn package_link_source(source: &Path, package: &str) -> PathBuf {
 }
 
 fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {
-    let override_path = std::env::var_os("VIZE_TEST_WORKSPACE_NODE_MODULES");
+    let override_path = test_env_var_os("VIZE_TEST_WORKSPACE_NODE_MODULES");
     if let Some(override_path) = override_path {
         let override_path = PathBuf::from(override_path);
         if override_path.as_os_str() == "__none__" {
@@ -2268,30 +2270,8 @@ fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {
 }
 
 fn with_workspace_node_modules_override<T>(value: Option<&str>, run: impl FnOnce() -> T) -> T {
-    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-    struct EnvOverrideGuard {
-        previous: Option<std::ffi::OsString>,
-    }
-
-    impl Drop for EnvOverrideGuard {
-        fn drop(&mut self) {
-            if let Some(previous) = self.previous.take() {
-                unsafe { std::env::set_var("VIZE_TEST_WORKSPACE_NODE_MODULES", previous) };
-            } else {
-                unsafe { std::env::remove_var("VIZE_TEST_WORKSPACE_NODE_MODULES") };
-            }
-        }
-    }
-
-    let _lock = ENV_LOCK.lock().unwrap();
-    let previous = std::env::var_os("VIZE_TEST_WORKSPACE_NODE_MODULES");
-    match value {
-        Some(value) => unsafe { std::env::set_var("VIZE_TEST_WORKSPACE_NODE_MODULES", value) },
-        None => unsafe { std::env::remove_var("VIZE_TEST_WORKSPACE_NODE_MODULES") },
-    }
-    let _guard = EnvOverrideGuard { previous };
-    run()
+    let value = value.map(Path::new);
+    with_test_env_overrides(&[("VIZE_TEST_WORKSPACE_NODE_MODULES", value)], run)
 }
 
 fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {

@@ -9,6 +9,9 @@ mod stubs;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+pub(crate) use resolver::{test_env_var_os, with_test_env_overrides};
+
 use resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
 };

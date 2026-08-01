@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use super::resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
+    with_test_env_overrides,
 };
 
 #[test]
@@ -16,7 +17,7 @@ fn explicit_runtime_packages_override_project_packages() {
     let explicit_runtime_dom = create_package(&explicit, "@vue/runtime-dom");
     let explicit_vite = create_package(&explicit, "vite");
 
-    with_env_overrides(
+    with_test_env_overrides(
         &[
             ("VIZE_VUE_PACKAGE", Some(explicit_vue.as_path())),
             ("VIZE_VUE_NAMESPACE_PACKAGE", None),
@@ -54,7 +55,7 @@ fn explicit_vue_namespace_overrides_explicit_runtime_dom() {
     create_package(&namespace, "runtime-dom");
     let runtime_dom = create_package(&temp.path().join("explicit"), "@vue-runtime-dom");
 
-    with_env_overrides(
+    with_test_env_overrides(
         &[
             ("VIZE_VUE_PACKAGE", None),
             ("VIZE_VUE_NAMESPACE_PACKAGE", Some(namespace.as_path())),
@@ -84,7 +85,7 @@ fn runtime_node_modules_supply_vue_and_vite_fallbacks() {
     let runtime_dom = create_package(&runtime_node_modules, "@vue/runtime-dom");
     let runtime_vite = create_package(&runtime_node_modules, "vite");
 
-    with_env_overrides(
+    with_test_env_overrides(
         &[
             ("VIZE_VUE_PACKAGE", None),
             ("VIZE_VUE_NAMESPACE_PACKAGE", None),
@@ -118,37 +119,4 @@ fn create_package(root: &Path, relative: &str) -> PathBuf {
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("package.json"), "{}").unwrap();
     dir
-}
-
-fn with_env_overrides<T>(vars: &[(&str, Option<&Path>)], run: impl FnOnce() -> T) -> T {
-    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-    struct EnvGuard {
-        previous: Vec<(String, Option<std::ffi::OsString>)>,
-    }
-
-    impl Drop for EnvGuard {
-        fn drop(&mut self) {
-            for (name, value) in self.previous.drain(..).rev() {
-                match value {
-                    Some(value) => unsafe { std::env::set_var(name, value) },
-                    None => unsafe { std::env::remove_var(name) },
-                }
-            }
-        }
-    }
-
-    let _lock = ENV_LOCK.lock().unwrap();
-    let previous = vars
-        .iter()
-        .map(|(name, _)| ((*name).to_owned(), std::env::var_os(name)))
-        .collect();
-    for (name, value) in vars {
-        match value {
-            Some(value) => unsafe { std::env::set_var(name, value) },
-            None => unsafe { std::env::remove_var(name) },
-        }
-    }
-    let _guard = EnvGuard { previous };
-    run()
 }
