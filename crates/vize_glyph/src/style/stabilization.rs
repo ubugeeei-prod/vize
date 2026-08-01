@@ -1,8 +1,8 @@
 //! Selective lightningcss fixed-point passes.
 //!
-//! The real-project idempotence corpus found one construct whose first printed
-//! form is not stable: `background-position` shorthand (#3248). Re-parsing all
-//! other style blocks doubled their parse/print work to guard one property.
+//! The real-project idempotence corpus found a small set of constructs whose
+//! first printed form is not stable. Re-parsing all other style blocks doubled
+//! their parse/print work to guard those properties.
 
 use crate::error::FormatError;
 use memchr::memmem;
@@ -16,7 +16,7 @@ pub(super) fn format_to_fixed_point(
     mut format_once: impl FnMut(&str) -> Result<String, FormatError>,
 ) -> Result<String, FormatError> {
     let mut current = format_once(source)?;
-    if !may_need_another_pass(current.as_bytes()) {
+    if !may_need_another_pass(source.as_bytes(), current.as_bytes()) {
         return Ok(current);
     }
 
@@ -30,8 +30,21 @@ pub(super) fn format_to_fixed_point(
     Ok(current)
 }
 
-fn may_need_another_pass(printed: &[u8]) -> bool {
+fn may_need_another_pass(source: &[u8], printed: &[u8]) -> bool {
     memmem::find(printed, b"background-position").is_some()
+        // lightningcss drops the unsupported legacy rule on its first pass but
+        // leaves its surrounding whitespace behind until the second pass.
+        || contains_legacy_ms_keyframes(source)
+}
+
+fn contains_legacy_ms_keyframes(source: &[u8]) -> bool {
+    const NAME: &[u8] = b"@-ms-keyframes";
+
+    memchr::memchr_iter(b'@', source).any(|start| {
+        source
+            .get(start..start + NAME.len())
+            .is_some_and(|candidate| candidate.eq_ignore_ascii_case(NAME))
+    })
 }
 
 #[cfg(test)]
