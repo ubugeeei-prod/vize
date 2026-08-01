@@ -55,10 +55,40 @@ test("app fixture links include scoped and unscoped package names", () => {
 
   try {
     createVizeSymlinks(nodeModules);
-    for (const pkg of VIZE_LOCAL_PACKAGES.filter((candidate) => candidate.linkIntoFixture)) {
+    const linkedPackages = VIZE_LOCAL_PACKAGES.filter((candidate) => candidate.linkIntoFixture);
+    assert.ok(
+      linkedPackages.some((pkg) => pkg.packageName.startsWith("@")),
+      "expected at least one scoped linked package",
+    );
+    assert.ok(
+      linkedPackages.some((pkg) => !pkg.packageName.startsWith("@")),
+      "expected at least one unscoped linked package",
+    );
+
+    for (const pkg of linkedPackages) {
       const link = path.join(nodeModules, ...pkg.packageName.split("/"));
       assert.equal(fs.realpathSync(link), fs.realpathSync(pkg.dir), pkg.packageName);
     }
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test("app fixture links replace valid symlinks pointing elsewhere", () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-app-local-packages-"));
+  const nodeModules = path.join(fixtureRoot, "node_modules");
+  const decoy = path.join(fixtureRoot, "decoy");
+
+  try {
+    fs.mkdirSync(decoy, { recursive: true });
+    const [pkg] = VIZE_LOCAL_PACKAGES.filter((candidate) => candidate.linkIntoFixture);
+    const link = path.join(nodeModules, ...pkg.packageName.split("/"));
+    fs.mkdirSync(path.dirname(link), { recursive: true });
+    fs.symlinkSync(decoy, link, "dir");
+
+    createVizeSymlinks(nodeModules);
+
+    assert.equal(fs.realpathSync(link), fs.realpathSync(pkg.dir), pkg.packageName);
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }

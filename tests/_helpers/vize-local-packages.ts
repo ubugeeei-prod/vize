@@ -123,11 +123,13 @@ export function ensureSymlink(link: string, target: string): void {
     const stat = fs.lstatSync(link);
     if (stat.isSymbolicLink()) {
       try {
-        fs.statSync(link);
-        return;
+        if (fs.realpathSync(link) === fs.realpathSync(target)) {
+          return;
+        }
       } catch {
-        fs.unlinkSync(link);
+        // Replace a broken link.
       }
+      fs.unlinkSync(link);
     } else {
       return;
     }
