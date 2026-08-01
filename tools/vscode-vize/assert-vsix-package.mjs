@@ -110,7 +110,8 @@ assert.equal(packageJson.main, "./dist/extension.cjs");
 assert.equal(packageJson.engines?.vscode, "^1.75.0");
 assert.equal(packageJson.dependencies?.["vscode-languageclient"], "9.0.1");
 
-assertUniqueStrings(packageJson.activationEvents, "activationEvents");
+// VS Code 1.74+ derives activation events from contributed commands and languages.
+assert.equal(packageJson.activationEvents, undefined);
 assertUniqueStrings(
   packageJson.contributes?.commands?.map((command) => command.command),
   "contributes.commands",
@@ -119,14 +120,7 @@ assertUniqueStrings(
 for (const command of packageJson.contributes.commands) {
   assert.equal(command.category, "Vize", `${command.command} must stay in the Vize category`);
   assert.ok(command.title, `${command.command} must have a title`);
-  assert.ok(
-    packageJson.activationEvents.includes(`onCommand:${command.command}`),
-    `${command.command} must activate the extension when invoked directly`,
-  );
 }
-
-assert.ok(packageJson.activationEvents.includes("onLanguage:vue"));
-assert.ok(packageJson.activationEvents.includes("onLanguage:art-vue"));
 tsVueVsix.assertTypeScriptVuePluginPackage({
   packageJson,
   readJsonEntry: (name) => readJsonEntry(archive, name),
@@ -149,7 +143,6 @@ const configurationProperties = packageJson.contributes.configuration.properties
 assert.equal(configurationProperties["vize.enable"].default, true);
 assert.equal(configurationProperties["vize.serverPath"].default, "");
 assert.equal(configurationProperties["vize.trace.server"].default, "off");
-
 for (const [key, property] of Object.entries(configurationProperties)) {
   if (
     key === "vize.serverPath" ||
@@ -168,7 +161,6 @@ for (const [key, property] of Object.entries(configurationProperties)) {
       : true;
   assert.equal(property.default, expectedDefault, `${key} has an unexpected default`);
 }
-
 const extensionBundle = readTextEntry(archive, "extension/dist/extension.cjs");
 assert.match(extensionBundle, /exports\.activate=/);
 assert.match(extensionBundle, /exports\.deactivate=/);

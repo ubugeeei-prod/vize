@@ -517,23 +517,19 @@ async function startClient(
   });
   activeInitializationOptions = initializationOptions;
   updateStatusBar("starting", `Starting with ${describeCapabilities(initializationOptions)}`);
-
   if (Object.keys(initializationOptions).length === 0) {
     outputChannel.appendLine(
       "Vize server is enabled with no opt-in features. Enable lint, typecheck, editor assistance, and ecosystem helpers to activate diagnostics and navigation.",
     );
     void maybeOfferCapabilitySetup(context, config);
   }
-
   const serverPath = await findServerPath(context, config);
   if (!serverPath) {
     updateStatusBar("missing-server", "Language server executable was not found");
     await showServerNotFoundMessage(context);
     return;
   }
-
   outputChannel.appendLine(`Using server: ${serverPath}`);
-
   const serverOptions: ServerOptions = createServerOptions(serverPath);
   let nextClient: LanguageClient | undefined;
   nextClient = new LanguageClient(
@@ -542,7 +538,6 @@ async function startClient(
     serverOptions,
     createClientOptions(initializationOptions, () => nextClient, config),
   );
-
   applyTraceSetting(nextClient, config);
 
   try {

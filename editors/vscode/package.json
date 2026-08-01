@@ -345,21 +345,6 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "vize.showStatus"
-        },
-        {
-          "command": "vize.enableRecommendedProfile"
-        },
-        {
-          "command": "vize.enableLintOnlyProfile"
-        },
-        {
-          "command": "vize.selectServerPath"
-        },
-        {
-          "command": "vize.disable"
-        },
-        {
           "command": "vize.restartServer",
           "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
         },
@@ -414,19 +399,6 @@
       }
     ]
   },
-  "activationEvents": [
-    "onCommand:vize.disable",
-    "onCommand:vize.enableLintOnlyProfile",
-    "onCommand:vize.enableRecommendedProfile",
-    "onCommand:vize.findReferences",
-    "onCommand:vize.restartServer",
-    "onCommand:vize.selectServerPath",
-    "onCommand:vize.showOutput",
-    "onCommand:vize.showStatus",
-    "onLanguage:art-vue",
-    "onLanguage:html",
-    "onLanguage:vue"
-  ],
   "icon": "icons/logo.png",
   "engines": {
     "vscode": "^1.75.0"
