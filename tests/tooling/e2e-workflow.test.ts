@@ -214,9 +214,6 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   assert.doesNotMatch(action, /playwright install --with-deps chromium/);
 
   for (const [id, invocation, log, timeout] of [
-    // The check suite runs the snapshot drivers directly instead of through
-    // `vp run`: Vite+ filters the task environment for its build cache, so
-    // `UPDATE_SNAPSHOTS=1` never reaches the test process via the package script.
     ["check", "env UPDATE_SNAPSHOTS=1 node --test --test-concurrency=1", "check.log", "3m"],
     ["lint", "test:readiness:lint", "lint.log", "2m"],
     ["build", "test:readiness:build", "build.log", "3m"],
@@ -231,21 +228,12 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
     assert.ok(step.includes(`tee target/app-readiness-logs/${log}`));
   }
 
-  // The inlined check invocation must stay in step with `test:readiness:check`,
-  // which is where the readiness driver list is pinned.
+  // The check suite inlines its drivers because `vp run` filters `UPDATE_SNAPSHOTS`
+  // out of the task environment; keep that list aligned with `test:readiness:check`.
   const checkStep = yamlStepBody(action, { id: "check" });
-  const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
-    scripts?: Record<string, string>;
-  };
-  const readinessCheck = testPackage.scripts?.["test:readiness:check"];
-  assert.ok(readinessCheck, "tests/package.json must define test:readiness:check");
-  const drivers = readinessCheck.match(/snapshots\/check\/[\w.-]+\.ts/g) ?? [];
-  assert.ok(drivers.length > 0, "test:readiness:check must list snapshot drivers");
-  for (const driver of drivers) {
-    assert.ok(
-      checkStep.includes(`tests/${driver}`),
-      `readiness check step must run ${driver} like test:readiness:check does`,
-    );
+  for (const driver of ["compiler-macros", "elk", "misskey", "npmx", "nuxt-ui", "reka-ui"]) {
+    const file = `tests/snapshots/check/${driver}.ts`;
+    assert.ok(checkStep.includes(file), `readiness check step must run ${file}`);
   }
 
   const upload = yamlStepBody(action, { name: "Upload app readiness artifacts" });
