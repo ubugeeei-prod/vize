@@ -1,6 +1,13 @@
 import type { NuxtLintFeatures } from "@vizejs/nuxt-lint-config";
 export type { VizeNuxtLintCheckerOptions } from "./checker/options.ts";
 
+export interface VizeNuxtLintDevtoolsOptions {
+  /** Enable the inspector eagerly, lazily from its tab, or not at all. @default "lazy" */
+  enabled?: boolean | "lazy";
+  /** Localhost port for the in-process inspector UI. An available port is chosen by default. */
+  port?: number;
+}
+
 /** Options for the generated Nuxt-aware oxlint configuration. */
 export interface VizeNuxtLintOptions extends NuxtLintFeatures {
   /**
@@ -23,4 +30,7 @@ export interface VizeNuxtLintOptions extends NuxtLintFeatures {
    * @default nuxt.options.rootDir
    */
   rootDir?: string;
+
+  /** Expose the resolved plan in a Nuxt DevTools tab. @default { enabled: "lazy" } */
+  devtools?: VizeNuxtLintDevtoolsOptions;
 }

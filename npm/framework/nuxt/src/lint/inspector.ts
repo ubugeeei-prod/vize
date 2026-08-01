@@ -3,6 +3,8 @@ import type {
   VizeNuxtInspectorLintPlanRequest,
 } from "../compiler-options.ts";
 import type { NuxtLintConfigGeneration } from "./generation.ts";
+import { setupNuxtLintDevtools, type NuxtLintDevtoolsNuxt } from "./inspector-devtools.ts";
+import type { VizeNuxtLintOptions } from "./options.ts";
 
 type Awaitable<T> = T | Promise<T>;
 type InspectLintPlan = (plan: string, root: string, files: string[]) => Awaitable<string>;
@@ -28,14 +30,25 @@ export function createNuxtLintInspectorProvider(
   };
 }
 
-export function setupNuxtLintInspector(
+export async function setupLintInspector(
+  lint: boolean | VizeNuxtLintOptions | undefined,
+  nuxt: NuxtLintDevtoolsNuxt,
   compiler: false | VizeNuxtCompilerOptions,
   generation: NuxtLintConfigGeneration | undefined,
-  enabled: boolean,
-): void {
-  if (!enabled || compiler === false || !generation) return;
-  compiler.inspector ||= {};
-  compiler.inspector.lintPlan ||= createNuxtLintInspectorProvider(generation);
+  enabled: boolean | undefined,
+): Promise<void> {
+  if (enabled === false || !generation) return;
+  const provider = createNuxtLintInspectorProvider(generation);
+  if (compiler !== false) {
+    compiler.inspector ||= {};
+    compiler.inspector.lintPlan ||= provider;
+  }
+  const devtools = typeof lint === "object" && lint !== null ? lint.devtools : undefined;
+  await setupNuxtLintDevtools(
+    devtools,
+    nuxt,
+    compiler === false ? provider : compiler.inspector.lintPlan,
+  );
 }
 
 async function inspectWithNative(plan: string, root: string, files: string[]): Promise<string> {

@@ -48,7 +48,7 @@ export interface NuxtLintConfigGeneration {
   resolvePlan(fresh?: boolean): Promise<readonly NuxtLintConfigItem[]>;
 }
 
-export { setupNuxtLintInspector } from "./inspector.ts";
+export { setupLintInspector } from "./inspector.ts";
 
 function isNotFound(error: unknown): boolean {
   return (error as NodeJS.ErrnoException).code === "ENOENT";

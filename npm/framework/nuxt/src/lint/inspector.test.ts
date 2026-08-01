@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { VizeNuxtCompilerOptions } from "../compiler-options.ts";
-import { createNuxtLintInspectorProvider, setupNuxtLintInspector } from "./inspector.ts";
+import { createNuxtLintInspectorProvider, setupLintInspector } from "./inspector.ts";
 
 const payload = {
   schema: "vize.inspector.lint-plan",
@@ -60,7 +60,7 @@ void test("Nuxt lint inspector rejects malformed native payloads", async () => {
   await assert.rejects(wrongSchema({ files: [], fresh: false }), /returned an invalid payload/u);
 });
 
-void test("Nuxt lint inspector wiring is development-only and preserves explicit providers", () => {
+void test("Nuxt lint inspector wiring is development-only and preserves explicit providers", async () => {
   const generation = {
     configFile: "/project/.nuxt/oxlint.config.json",
     root: "/project",
@@ -71,16 +71,25 @@ void test("Nuxt lint inspector wiring is development-only and preserves explicit
       return [];
     },
   };
+  const hooks: string[] = [];
+  const nuxt = {
+    hook(name: string) {
+      hooks.push(name);
+    },
+  };
   const disabled: VizeNuxtCompilerOptions = {};
-  setupNuxtLintInspector(disabled, generation, false);
+  await setupLintInspector({ devtools: { enabled: false } }, nuxt, disabled, generation, false);
   assert.equal(disabled.inspector, undefined);
 
   const explicit = () => ({ explicit: true });
   const configured: VizeNuxtCompilerOptions = { inspector: { lintPlan: explicit } };
-  setupNuxtLintInspector(configured, generation, true);
+  await setupLintInspector({ devtools: { enabled: false } }, nuxt, configured, generation, true);
   assert.equal(configured.inspector?.lintPlan, explicit);
 
   const automatic: VizeNuxtCompilerOptions = {};
-  setupNuxtLintInspector(automatic, generation, true);
+  await setupLintInspector({ devtools: { enabled: false } }, nuxt, automatic, generation, true);
   assert.equal(typeof automatic.inspector?.lintPlan, "function");
+
+  await setupLintInspector({}, nuxt, false, generation, true);
+  assert.deepEqual(hooks, ["devtools:customTabs", "close"]);
 });
