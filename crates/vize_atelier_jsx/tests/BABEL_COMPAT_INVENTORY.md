@@ -145,25 +145,25 @@ Recorded so the verdicts are not read as byte equality (#3421,
 
 ## Props and attributes
 
-| Case                             | Babel                                       | Vize today                              | Compat mode            | Verdict |
-| -------------------------------- | ------------------------------------------- | --------------------------------------- | ---------------------- | ------- |
-| `props/static_attr`              | `{type: "email"}`                           | same                                    | no change              | ✅      |
-| `props/boolean_attr`             | `<input disabled/>` → `disabled: true`      | `disabled: ""`                          | emits `true` (#3391)   | ✅      |
-| `props/dynamic_attr`             | `{placeholder: p}`                          | same + `PROPS` flag                     | no change              | ✅      |
-| `props/dashed_attrs`             | `data-foo` / `aria-label` kept verbatim     | same                                    | no change              | ✅      |
-| `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrites it (#3391)    | ✅      |
-| `props/xlink_colon`              | `"xlink:href"`                              | same                                    | no change              | ✅      |
-| `props/class_dynamic`            | `{class: c}` (runtime normalizes)           | `normalizeClass(c)` + `CLASS`           | no change              | ✅      |
-| `props/class_static_and_dynamic` | `{class: ["a", c]}`                         | `normalizeClass(["a", c])`              | no change              | ✅      |
-| `props/style_dynamic`            | `{style: s}`                                | `normalizeStyle(s)` + `STYLE`           | no change              | ✅      |
-| `props/style_merge_with_spread`  | `mergeProps` in source order                | same                                    | no change              | ✅      |
-| `props/spread_only`              | props are the spread expression itself      | `normalizeProps(guardReactiveProps(p))` | no change              | ✅      |
-| `props/spread_then_static`       | `mergeProps(p, {id: "x"})`                  | same                                    | no change              | ✅      |
-| `props/on_merge_with_spread`     | `mergeProps({onClick: a}, p, {onClick: b})` | same                                    | no change              | ✅      |
-| `props/key`                      | `{key: k}`, no flag                         | same                                    | no change              | ✅      |
-| `props/ref`                      | `{ref: r}`                                  | same + `NEED_PATCH`                     | no change              | ✅      |
-| `props/ref_in_for`               | no `ref_for` emitted                        | no `ref_for` emitted                    | no change              | ✅      |
-| `props/dollar_prefixed`          | `{$foo: 1}`                                 | same                                    | no change              | ✅      |
+| Case                             | Babel                                       | Vize today                              | Compat mode          | Verdict |
+| -------------------------------- | ------------------------------------------- | --------------------------------------- | -------------------- | ------- |
+| `props/static_attr`              | `{type: "email"}`                           | same                                    | no change            | ✅      |
+| `props/boolean_attr`             | `<input disabled/>` → `disabled: true`      | `disabled: ""`                          | emits `true` (#3391) | ✅      |
+| `props/dynamic_attr`             | `{placeholder: p}`                          | same + `PROPS` flag                     | no change            | ✅      |
+| `props/dashed_attrs`             | `data-foo` / `aria-label` kept verbatim     | same                                    | no change            | ✅      |
+| `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrites it (#3391)  | ✅      |
+| `props/xlink_colon`              | `"xlink:href"`                              | same                                    | no change            | ✅      |
+| `props/class_dynamic`            | `{class: c}` (runtime normalizes)           | `normalizeClass(c)` + `CLASS`           | no change            | ✅      |
+| `props/class_static_and_dynamic` | `{class: ["a", c]}`                         | `normalizeClass(["a", c])`              | no change            | ✅      |
+| `props/style_dynamic`            | `{style: s}`                                | `normalizeStyle(s)` + `STYLE`           | no change            | ✅      |
+| `props/style_merge_with_spread`  | `mergeProps` in source order                | same                                    | no change            | ✅      |
+| `props/spread_only`              | props are the spread expression itself      | `normalizeProps(guardReactiveProps(p))` | no change            | ✅      |
+| `props/spread_then_static`       | `mergeProps(p, {id: "x"})`                  | same                                    | no change            | ✅      |
+| `props/on_merge_with_spread`     | `mergeProps({onClick: a}, p, {onClick: b})` | same                                    | no change            | ✅      |
+| `props/key`                      | `{key: k}`, no flag                         | same                                    | no change            | ✅      |
+| `props/ref`                      | `{ref: r}`                                  | same + `NEED_PATCH`                     | no change            | ✅      |
+| `props/ref_in_for`               | no `ref_for` emitted                        | no `ref_for` emitted                    | no change            | ✅      |
+| `props/dollar_prefixed`          | `{$foo: 1}`                                 | same                                    | no change            | ✅      |
 
 ## Events
 
