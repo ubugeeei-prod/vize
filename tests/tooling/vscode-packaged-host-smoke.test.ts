@@ -12,7 +12,7 @@ import {
   runVSCodeCommandWithTimeout,
 } from "../../editors/vscode/test/packaged-host-contract.mjs";
 import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
-import { root } from "./support/github-workflows.ts";
+import { readRepoFile, root } from "./support/github-workflows.ts";
 
 test("packaged VS Code host smoke installs the VSIX before launching its tests", () => {
   const installArgs = createPackagedHostInstallArgs({
@@ -50,6 +50,26 @@ test("packaged VS Code host smoke installs the VSIX before launching its tests",
   ]);
   assert.equal(launchArgs.includes("--extensionDevelopmentPath=/repo/editors/vscode"), false);
   assert.equal(launchArgs.includes("--disable-extensions"), false);
+});
+
+test("the real-server fixture workspace turns off the built-in AI code actions", () => {
+  // VS Code contributes "Fix"/"Explain" quick fixes of its own to every
+  // diagnostic span. The real-server scenario asserts the COMPLETE code-action
+  // list the language server answers with (#3457), so the fixture workspace has
+  // to keep the workbench's own AI actions out of that list.
+  const settings = JSON.parse(
+    readRepoFile(
+      "editors",
+      "vscode",
+      "test-fixtures",
+      "extension-host",
+      "real-vue",
+      ".vscode",
+      "settings.json",
+    ),
+  );
+
+  assert.deepEqual(settings, { "chat.disableAIFeatures": true, "vize.enable": false });
 });
 
 test("packaged host resolves exactly one installed Vize extension", () => {

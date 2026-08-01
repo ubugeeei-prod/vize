@@ -38,6 +38,8 @@ const requiredFiles = [
   "nvim/lua/vize/config.lua",
   "nvim/lua/vize/init.lua",
   "nvim/plugin/vize.lua",
+  "nvim/test/vize_e2e_expected.lua",
+  "nvim/test/vize_e2e_spec.lua",
   "nvim/test/vize_spec.lua",
 ];
 
@@ -58,6 +60,7 @@ const allowedEntries = [
   /^nvim\/plugin\/$/,
   /^nvim\/plugin\/vize\.lua$/,
   /^nvim\/test\/$/,
+  /^nvim\/test\/vize_e2e_(?:expected|spec)\.lua$/,
   /^nvim\/test\/vize_spec\.lua$/,
 ];
 
@@ -88,6 +91,7 @@ const configLua = readTextEntry(entryMap, "nvim/lua/vize/config.lua");
 const initLua = readTextEntry(entryMap, "nvim/lua/vize/init.lua");
 const ftdetectLua = readTextEntry(entryMap, "nvim/ftdetect/vize.lua");
 const specLua = readTextEntry(entryMap, "nvim/test/vize_spec.lua");
+const e2eSpecLua = readTextEntry(entryMap, "nvim/test/vize_e2e_spec.lua");
 
 assert.match(configLua, /cmd = \{ "vize", "lsp" \}/);
 assert.match(configLua, /filetypes = \{ "vue", "art-vue" \}/);
@@ -106,6 +110,13 @@ assert.match(ftdetectLua, /pattern = "\*\.art\.vue"/);
 assert.match(ftdetectLua, /filetype = "art-vue"/);
 assert.match(specLua, /config\.normalize/);
 assert.match(specLua, /vim\.lsp\.config\.vize/);
+// The packaged archive must be able to run the real-server scenario, not only
+// the in-process config unit spec (#3457).
+assert.match(e2eSpecLua, /vim\.lsp\.start/);
+assert.match(e2eSpecLua, /textDocument\/codeAction/);
+assert.match(e2eSpecLua, /textDocument\/formatting/);
+assert.match(e2eSpecLua, /textDocument\/semanticTokens\/full/);
+assert.match(e2eSpecLua, /textDocument\/rename/);
 
 console.log(
   `Neovim package smoke passed: ${path.relative(root, archivePath)} (${entryNames.length} entries)`,

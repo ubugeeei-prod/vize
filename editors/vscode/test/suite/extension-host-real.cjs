@@ -1,33 +1,18 @@
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
 const vscode = require("vscode");
 
+const { runRealServerScenario } = require("./real-scenario.cjs");
+const {
+  assertPackagedExtension,
+  assertStaysDiagnosticFree,
+  getRealServer,
+  openWorkspaceDocument,
+  positionAfter,
+  prepareConfiguredRealServer,
+  waitForDiagnostics,
+} = require("./real-server-support.cjs");
+
 const extensionId = "ubugeeei.vize";
-const featureSettingKeys = [
-  "lint.enable",
-  "diagnostics.enable",
-  "typecheck.enable",
-  "editor.enable",
-  "ecosystem.enable",
-  "optionsApi.enable",
-  "legacyVue2.enable",
-  "completion.enable",
-  "hover.enable",
-  "definition.enable",
-  "references.enable",
-  "documentSymbols.enable",
-  "workspaceSymbols.enable",
-  "codeActions.enable",
-  "rename.enable",
-  "codeLens.enable",
-  "formatting.enable",
-  "semanticTokens.enable",
-  "documentLinks.enable",
-  "foldingRanges.enable",
-  "inlayHints.enable",
-  "fileRename.enable",
-];
 // Derived from a raw LSP probe of `vize lsp` against this fixture: the prop
 // mismatch in `<Child :count="label" />` publishes exactly one TS 2322 error
 // anchored on the authored `count` attribute name.
@@ -65,7 +50,12 @@ exports.run = async function run() {
   await extension.activate();
   assert.equal(extension.isActive, true);
 
-  await prepareConfiguredRealServer(serverPath);
+  // `vize.formatting.enable` defaults to false on both the extension and the
+  // server, and `enableRecommendedProfile` does not turn it on. Opt in before
+  // the client starts so the whole suite runs against one server session: the
+  // real server is busy type checking, and a mid-suite restart races its
+  // shutdown.
+  await prepareConfiguredRealServer(serverPath, { "formatting.enable": true });
   await vscode.commands.executeCommand("vize.enableRecommendedProfile");
 
   const cleanDocument = await openWorkspaceDocument("src", "Clean.vue");
@@ -78,42 +68,11 @@ exports.run = async function run() {
   await runRealHoverSmoke(mismatchDocument);
   await runRealDidChangeRepairSmoke(mismatchDocument, extension);
 
+  await runRealServerScenario();
+
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
 };
-
-function assertPackagedExtension(extension) {
-  const extensionsPath = getRequiredPath(
-    "VIZE_TEST_PACKAGED_EXTENSIONS_DIR",
-    "packaged extension directory",
-  );
-  const sourceExtensionPath = getRequiredPath(
-    "VIZE_TEST_SOURCE_EXTENSION_PATH",
-    "source extension directory",
-  );
-  const installedPath = fs.realpathSync(extension.extensionPath);
-  const relativeToInstallRoot = path.relative(extensionsPath, installedPath);
-
-  assert.ok(
-    relativeToInstallRoot &&
-      !relativeToInstallRoot.startsWith(`..${path.sep}`) &&
-      !path.isAbsolute(relativeToInstallRoot),
-    `extension must load from the isolated install directory: ${installedPath}`,
-  );
-  assert.notEqual(installedPath, sourceExtensionPath, "extension must not load from repo source");
-  assert.equal(extension.packageJSON.main, "./dist/extension.cjs");
-  assert.ok(
-    fs.existsSync(path.resolve(installedPath, extension.packageJSON.main)),
-    "installed extension must contain its packaged entrypoint",
-  );
-}
-
-function getRequiredPath(environmentName, label) {
-  const value = process.env[environmentName];
-  assert.ok(value, `${environmentName} must be set`);
-  assert.ok(fs.existsSync(value), `missing ${label}: ${value}`);
-  return fs.realpathSync(value);
-}
 
 async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
   const diagnostics = await waitForDiagnostics(
@@ -216,71 +175,4 @@ async function runRealDidChangeRepairSmoke(mismatchDocument, extension) {
   // still dirty (never saved) and the same extension host instance is active.
   assert.equal(mismatchDocument.isDirty, true);
   assert.equal(extension.isActive, true);
-}
-
-async function prepareConfiguredRealServer(serverPath) {
-  await updateVizeConfiguration("enable", false);
-  await updateVizeConfiguration("trace.server", undefined);
-  for (const key of featureSettingKeys) {
-    await updateVizeConfiguration(key, undefined);
-  }
-  await updateVizeConfiguration("serverPath", serverPath);
-  await sleep(300);
-}
-
-async function updateVizeConfiguration(key, value) {
-  await vscode.workspace
-    .getConfiguration("vize")
-    .update(key, value, vscode.ConfigurationTarget.Workspace);
-}
-
-async function assertStaysDiagnosticFree(uri, label) {
-  const settleUntil = Date.now() + 2_000;
-
-  while (Date.now() < settleUntil) {
-    const diagnostics = vscode.languages.getDiagnostics(uri);
-    assert.deepEqual(diagnostics, [], `${label} must stay diagnostic-free`);
-    await sleep(100);
-  }
-}
-
-function positionAfter(document, needle, prefix) {
-  const offset = document.getText().indexOf(needle);
-  assert.notEqual(offset, -1, `fixture must contain ${JSON.stringify(needle)}`);
-  return document.positionAt(offset + prefix.length);
-}
-
-async function openWorkspaceDocument(...segments) {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  assert.ok(workspaceFolder, "expected a workspace folder");
-  return vscode.workspace.openTextDocument(
-    vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, ...segments)),
-  );
-}
-
-function getRealServer() {
-  const serverPath = process.env.VIZE_TEST_SERVER_PATH;
-  assert.ok(serverPath, "VIZE_TEST_SERVER_PATH must be set");
-  assert.ok(fs.existsSync(serverPath), `missing real server: ${serverPath}`);
-  return serverPath;
-}
-
-async function waitForDiagnostics(uri, predicate, label, timeoutMs) {
-  const timeoutAt = Date.now() + timeoutMs;
-  let diagnostics = [];
-
-  while (Date.now() < timeoutAt) {
-    diagnostics = vscode.languages.getDiagnostics(uri);
-    if (predicate(diagnostics)) {
-      return diagnostics;
-    }
-
-    await sleep(100);
-  }
-
-  assert.fail(`${label} did not happen. Last diagnostics: ${JSON.stringify(diagnostics)}`);
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

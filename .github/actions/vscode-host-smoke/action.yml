@@ -1,5 +1,5 @@
-name: VS Code host smoke
-description: Run the VS Code extension-host smoke against a real vize language server
+name: Editor real-server end-to-end
+description: Run the VS Code and Neovim editor scenarios against a real vize language server
 
 runs:
   using: composite
@@ -38,9 +38,36 @@ runs:
       shell: bash
       run: command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)
 
+    - name: Install Neovim
+      shell: bash
+      env:
+        NVIM_SHA256: a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c
+        NVIM_VERSION: v0.11.4
+      run: |
+        set -euo pipefail
+        curl -fsSL -o /tmp/nvim.tar.gz \
+          "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
+        echo "${NVIM_SHA256}  /tmp/nvim.tar.gz" | sha256sum --check --strict
+        sudo tar -C /opt -xzf /tmp/nvim.tar.gz
+        sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+        nvim --version | head -1
+
     - name: Run VS Code host smoke against the real server
       shell: bash
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+
+    - name: Run the packaged Neovim unit spec
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      run: vp run --workspace-root test:nvim-extension:headless
+
+    - name: Run the Neovim scenario against the real server
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+      run: vp run --workspace-root test:nvim-extension:real-server

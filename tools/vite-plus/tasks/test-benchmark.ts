@@ -125,6 +125,10 @@ export const testAndBenchmarkTasks = defineTasks({
     "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
+  // The headless Neovim end-to-end scenario against a real `vize lsp` (#3457).
+  // It needs a built server binary, so CI runs it in the same job that builds
+  // one for the VS Code host smoke.
+  "test:nvim-extension:real-server": noCacheTask("node tools/nvim-vize/run-real-server.mjs"),
   "test:vim-extension:headless": noCacheTask(
     "vim -Nu NONE -n -es -S editors/vim/test/vize_spec.vim",
   ),

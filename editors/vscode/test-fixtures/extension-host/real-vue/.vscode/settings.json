@@ -1,3 +1,4 @@
 {
+  "chat.disableAIFeatures": true,
   "vize.enable": false
 }

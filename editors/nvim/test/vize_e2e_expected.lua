@@ -1,0 +1,152 @@
+-- Expected real-server responses for `vize_e2e_spec.lua` (#3457).
+--
+-- Every table here is a COMPLETE response captured from a raw LSP probe of the
+-- real `vize lsp` binary against the `real-vue` fixture's `src/Scenario.vue`.
+-- They are compared with `vim.deep_equal`, so a capability that starts
+-- answering with more, fewer, or differently anchored results fails the
+-- scenario instead of quietly losing coverage.
+
+local authored_source = table.concat({
+  '<script setup lang="ts">',
+  'import Child from "./Child.vue";',
+  "",
+  'const total = "3";',
+  "</script>",
+  "",
+  "<template>",
+  '<Child  :count="total" />',
+  "</template>",
+  "",
+}, "\n")
+
+local quick_fixed_source = authored_source:gsub("<Child  :count", "<Child :count", 1)
+local formatted_source = quick_fixed_source:gsub(
+  '<Child :count="total" />',
+  '  <Child :count="total" />',
+  1
+)
+local renamed_source = formatted_source
+  :gsub("const total =", "const quantity =", 1)
+  :gsub(':count="total"', ':count="quantity"', 1)
+
+return {
+  authored_source = authored_source,
+  quick_fixed_source = quick_fixed_source,
+  formatted_source = formatted_source,
+  renamed_source = renamed_source,
+
+  -- The authored `<Child  :count="total" />` carries two independent authored
+  -- bugs on one line: two spaces after the tag name (a fixable lint warning)
+  -- and a string bound to a `number` prop (the type bug the #3224 scorecard
+  -- asks for). Both anchor on the authored span, never on virtual TS.
+  diagnostics = {
+    {
+      code = "vue/no-multi-spaces",
+      codeDescription = { href = "https://eslint.vuejs.org/rules/no-multi-spaces.html" },
+      message = "Multiple consecutive spaces",
+      range = {
+        ["end"] = { character = 8, line = 7 },
+        start = { character = 6, line = 7 },
+      },
+      severity = 2,
+      source = "vize/lint",
+    },
+    {
+      code = 2322,
+      message = "Type 'string' is not assignable to type 'number'.",
+      range = {
+        ["end"] = { character = 14, line = 7 },
+        start = { character = 9, line = 7 },
+      },
+      severity = 1,
+      source = "vize/types",
+    },
+  },
+
+  quick_fix_range = {
+    ["end"] = { character = 8, line = 7 },
+    start = { character = 6, line = 7 },
+  },
+
+  code_actions = function(uri)
+    return {
+      {
+        edit = {
+          changes = {
+            [uri] = {
+              {
+                newText = " ",
+                range = {
+                  ["end"] = { character = 8, line = 7 },
+                  start = { character = 6, line = 7 },
+                },
+              },
+            },
+          },
+        },
+        isPreferred = true,
+        kind = "quickfix",
+        title = "Fix: Replace multiple spaces with single space",
+      },
+      {
+        edit = {
+          changes = {
+            [uri] = {
+              {
+                newText = "<!-- @vize:forget vue/no-multi-spaces -->\n",
+                range = {
+                  ["end"] = { character = 0, line = 7 },
+                  start = { character = 0, line = 7 },
+                },
+              },
+            },
+          },
+        },
+        isPreferred = false,
+        kind = "quickfix",
+        title = "Suppress with @vize:forget (vue/no-multi-spaces)",
+      },
+    }
+  end,
+
+  -- The SFC formatter answers with one whole-document replacement.
+  formatting_edits = {
+    {
+      newText = formatted_source,
+      range = {
+        ["end"] = { character = 0, line = 9 },
+        start = { character = 0, line = 0 },
+      },
+    },
+  },
+
+  -- `{deltaLine, deltaStart, length, tokenType, tokenModifiers} * 2` against
+  -- the server legend: `:count` is a `property` (type 9) and `total` a
+  -- `variable` (type 8), both on the formatted template line.
+  semantic_tokens = { data = { 7, 9, 6, 9, 0, 0, 8, 5, 8, 0 } },
+
+  rename_new_name = "quantity",
+  rename_position = { character = 8, line = 3 },
+  rename_edit = function(uri)
+    return {
+      changes = {
+        [uri] = {
+          {
+            newText = "quantity",
+            range = {
+              ["end"] = { character = 11, line = 3 },
+              start = { character = 6, line = 3 },
+            },
+          },
+          {
+            newText = "quantity",
+            range = {
+              ["end"] = { character = 22, line = 7 },
+              start = { character = 17, line = 7 },
+            },
+          },
+        },
+      },
+    }
+  end,
+}
