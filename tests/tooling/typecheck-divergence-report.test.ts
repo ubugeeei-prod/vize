@@ -57,6 +57,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.deepEqual(Object.keys(artifact.baseline).sort(), [
       "command",
       "configSha256",
+      "configuration",
       "coverage",
       "durationMs",
       "exitCode",
@@ -73,6 +74,12 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
         .update(fs.readFileSync(path.join(fixture.fixtureRoot, ".generated/tsconfig.json")))
         .digest("hex"),
     );
+    assert.deepEqual(artifact.baseline.configuration, {
+      diagnostics: [],
+      errorCount: 0,
+      unusableReason: null,
+      verdict: "usable",
+    });
     assert.deepEqual(artifact.baseline.coverage, {
       baselineVueFileCount: 1,
       baselineVueFilesSha256: createHash("sha256").update("src/App.vue\n").digest("hex"),

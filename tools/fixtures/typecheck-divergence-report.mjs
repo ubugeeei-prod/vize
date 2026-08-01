@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import {
@@ -14,6 +15,7 @@ import {
   evaluateBudget,
   parseBudgetMode,
 } from "./typecheck-divergence-budget.mjs";
+import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -67,11 +69,12 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     throw new Error(`vue-tsc exited with unsupported status ${baseline.status}`);
   }
 
+  const baselineOutput = `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`;
   const divergence = compareTypecheckDiagnostics({
     projectId: project.id,
     cwd: fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
-    vueTscOutput: `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`,
+    vueTscOutput: baselineOutput,
     documentedDifferences: readDocumentedDifferences(),
   });
   const coverage = evaluateVueProgramCoverage(
@@ -79,7 +82,13 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     baseline.stdout ?? "",
     fixtureRoot,
   );
-  const budget = evaluateBudget(project.typecheckPerformance, divergence.summary, coverage);
+  const configuration = evaluateBaselineConfiguration(baselineOutput);
+  const budget = evaluateBudget(
+    project.typecheckPerformance,
+    divergence.summary,
+    coverage,
+    configuration,
+  );
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
     version: 3,
@@ -95,6 +104,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       version: vueTsc.version,
       durationMs,
       exitCode: baseline.status,
+      configuration,
       coverage,
       stdoutSha256: sha256(baseline.stdout ?? ""),
       stderrSha256: sha256(baseline.stderr ?? ""),
@@ -219,40 +229,6 @@ function validatePerformanceConfig(performance) {
   }
   ratio(performance.maxFalsePositiveRatio, "maxFalsePositiveRatio");
   ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
-}
-
-function renderMarkdown(artifact) {
-  const summary = artifact.divergence.summary;
-  return [
-    `## ${artifact.project} typecheck divergence`,
-    "",
-    `Commit: ${artifact.evidence.commitSha}`,
-    `Vize diagnostics: ${summary.vizeDiagnosticCount}`,
-    `vue-tsc diagnostics: ${summary.baselineDiagnosticCount}`,
-    `Shared: ${summary.sharedCount}`,
-    `Message mismatches: ${summary.messageMismatchCount}`,
-    `Documented differences: ${summary.documentedDifferenceCount}`,
-    `False positives: ${summary.falsePositiveCount} (${summary.falsePositiveRatio})`,
-    `False negatives: ${summary.falseNegativeCount} (${summary.falseNegativeRatio})`,
-    `Vize excluded non-Vue: ${summary.vizeExcludedNonVueCount}`,
-    `vue-tsc excluded non-Vue: ${summary.baselineExcludedNonVueCount}`,
-    `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
-    `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
-    `Vize Vue files: ${artifact.baseline.coverage.vizeVueFileCount}`,
-    `vue-tsc Vue files: ${artifact.baseline.coverage.baselineVueFileCount}`,
-    `Shared Vue files: ${artifact.baseline.coverage.sharedVueFileCount}`,
-    `Missing Vue files: ${artifact.baseline.coverage.missingVueFiles.length}`,
-    `Unexpected Vue files: ${artifact.baseline.coverage.unexpectedVueFiles.length}`,
-    `Ignored dependency Vue files: ${artifact.baseline.coverage.ignoredDependencyVueFileCount}`,
-    `Budget verdict: ${describeVerdict(artifact.budget)}`,
-    `Budget passed: ${artifact.budget.passed}`,
-    `Digest: ${artifact.divergence.sha256}`,
-    "",
-  ].join("\n");
-}
-
-function describeVerdict(budget) {
-  return budget.unusableReason == null ? budget.verdict : `unusable (${budget.unusableReason})`;
 }
 
 function resolveVueTsc(value) {

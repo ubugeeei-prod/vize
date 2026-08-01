@@ -6,8 +6,9 @@
  * Two rules live here, and they answer two different failures the ledger had:
  *
  * 1. `evaluateBudget` returns three verdicts, not two (#3513, the #3222 parity
- *    ledger). The baseline is unusable when `vue-tsc --listFiles` proves the
- *    two tools checked different Vue corpora, or when two non-empty diagnostic
+ *    ledger). The baseline is unusable when `vue-tsc` could not load the
+ *    fixture's project configuration, when `vue-tsc --listFiles` proves the two
+ *    tools checked different Vue corpora, or when two non-empty diagnostic
  *    streams have no mapped position in common.
  * 2. `assertBudgetPassed` enforces on the weekly sweep and records everywhere
  *    else — see `parseBudgetMode`.
@@ -31,10 +32,16 @@ export function parseBudgetMode(value) {
   return value;
 }
 
-export function evaluateBudget(performance, summary, coverage) {
+export function evaluateBudget(performance, summary, coverage, configuration) {
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
   const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
-  const unusableReason = coverage.unusableReason ?? diagnosticMappingUnusableReason(summary);
+  // Configuration first: it is the *cause* a coverage or mapping failure would
+  // only be a symptom of, and it is the one reason that survives a run where
+  // both other checks look clean.
+  const unusableReason =
+    configuration.unusableReason ??
+    coverage.unusableReason ??
+    diagnosticMappingUnusableReason(summary);
   const verdict =
     unusableReason != null
       ? "unusable"
