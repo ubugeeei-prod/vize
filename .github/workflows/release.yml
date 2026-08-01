@@ -1,16 +1,12 @@
 name: Release
-
 on:
   push:
     tags:
       - "v*"
-
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
-
 permissions: { contents: read }
-
 env:
   CARGO_INCREMENTAL: 0
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -19,7 +15,6 @@ env:
   PUBLISH_RESOLUTION_RETRY_LIMIT: 24
   PUBLISH_RESOLUTION_RETRY_DELAY: 10
   NPM_TAG: ${{ contains(github.ref_name, '-alpha') && 'alpha' || contains(github.ref_name, '-beta') && 'beta' || contains(github.ref_name, '-rc') && 'rc' || 'latest' }}
-
 jobs:
   plan-release-platforms:
     name: Plan release platforms
@@ -32,11 +27,9 @@ jobs:
       native_matrix: ${{ steps.platforms.outputs.native_matrix }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Select release platforms
         id: platforms
         run: node tools/github/release-platforms.mjs github-output "${{ github.ref_name }}"
-
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     needs: plan-release-platforms
@@ -49,44 +42,35 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
-
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: ${{ matrix.settings.target }}
-
       - name: Install Rust target
         run: rustup target add ${{ matrix.settings.target }}
-
       - name: Setup Wild linker (Linux)
         if: runner.os == 'Linux' && !endsWith(matrix.settings.target, '-musl')
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
         run: moon run --target native tools/moon/cmd/github/install_cross_compile_tools --
-
       - name: Setup Zig (Linux musl CLI)
         if: endsWith(matrix.settings.target, '-musl')
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
-
       - name: Configure Zig linker (Linux musl CLI)
         if: endsWith(matrix.settings.target, '-musl')
         run: bash tools/github/configure-zig-musl-linkers.sh
-
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-cli-${{ matrix.settings.target }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -94,30 +78,25 @@ jobs:
           shared-key: release-cli-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
           save-if: "false"
-
       - name: Tune Windows release profile
         if: runner.os == 'Windows'
         shell: bash
         run: |
           echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
           echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-
       - name: Build CLI
         shell: bash
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         run: cargo build --release -p vize --target ${{ matrix.settings.target }}
-
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
         shell: bash
         run: if [[ "${{ matrix.settings.target }}" == *-musl ]]; then bash tools/github/verify-musl-cli-binary.sh "${{ matrix.settings.target }}"; fi; moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize
-
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: moon run --target native tools/moon/cmd/github/create_cli_archive -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe
-
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -125,7 +104,6 @@ jobs:
           path: ${{ matrix.settings.archive }}
           if-no-files-found: error
           compression-level: 0
-
   build-editor-extensions:
     name: Build Editor Extensions
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -135,16 +113,12 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
-
       - name: Install JS dependencies
         run: vp install --workspace-root --frozen-lockfile --prefer-offline
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: release-tools, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-
       # upload-artifact only fails when NO path matches, so every path it uploads needs a task here.
       - name: Package editor extensions
         run: |
@@ -155,7 +129,6 @@ jobs:
           vp run --workspace-root package:vim-extension
           vp run --workspace-root package:helix-extension
           vp run --workspace-root package:emacs-extension
-
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -169,7 +142,6 @@ jobs:
             zed-vize-extension.tar.gz
           if-no-files-found: error
           compression-level: 0
-
   release-vscode-extension:
     name: Release VS Code extension
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -180,7 +152,6 @@ jobs:
     env: { PUBLISH_RESOLUTION_RETRY_LIMIT: "90", VSCE_PAT: "${{ secrets.VSCE_PAT }}" }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
@@ -202,81 +173,146 @@ jobs:
           fi
       - name: Publish VS Code extension
         run: moon run --target native tools/moon/cmd/publish_vscode_extension -- editor-extension-artifacts/editors/vscode/dist/vize.vsix
-
   build-release-packages:
     name: Build release npm packages
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Install package build dependencies
         run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/oxint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/ui/core...'
-
       - name: Build release npm packages
         run: moon run --target native tools/moon/cmd/github/run_many -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/oxint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/ui/core' build
-
       - name: Upload vize CLI package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-vize, path: npm/cli, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-vize,
+            path: npm/cli,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Vite plugin artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-vite-plugin-vize, path: npm/builder/vite, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-vite-plugin-vize,
+            path: npm/builder/vite,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Oxlint plugin artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-oxlint-plugin-vize, path: npm/oxint, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-oxlint-plugin-vize,
+            path: npm/oxint,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload unplugin artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-unplugin-vize, path: npm/builder/unplugin, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-unplugin-vize,
+            path: npm/builder/unplugin,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Fresco artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-fresco, path: npm/fresco, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-fresco,
+            path: npm/fresco,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Musea MCP server artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-musea-mcp-server, path: npm/mcp-musea, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-musea-mcp-server,
+            path: npm/mcp-musea,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Musea Vite plugin artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-vite-plugin-musea,
+            path: npm/builder/vite-musea,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Rspack plugin artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-rspack-vize-plugin,
+            path: npm/builder/rspack,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Musea Nuxt artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-musea-nuxt,
+            path: npm/framework/musea-nuxt,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Nuxt lint config artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-nuxt-lint-config,
+            path: npm/framework/nuxt-lint-config,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload Nuxt artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-nuxt, path: npm/framework/nuxt, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-nuxt,
+            path: npm/framework/nuxt,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload marquette package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-marquette, path: npm/marquette, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-marquette,
+            path: npm/marquette,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload compose core package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-composable, path: npm/compose/core, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-composable,
+            path: npm/compose/core,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
       - name: Upload ui core package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with: { name: release-package-ui, path: npm/ui/core, if-no-files-found: error, compression-level: 0 }
-
+        with:
+          {
+            name: release-package-ui,
+            path: npm/ui/core,
+            if-no-files-found: error,
+            compression-level: 0,
+          }
   build-wasm-package:
     name: Build @vizejs/wasm package
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -284,41 +320,33 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       - name: Cache WASM package build
         id: cache-wasm
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/wasm
           key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/wasm/package.json', 'npm/wasm/index.js', 'npm/wasm/index.d.ts', 'npm/wasm/lint-format.d.ts', 'tools/moon/cmd/build_vize_wasm_package') }}
-
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.121
-
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         run: moon run --target native tools/moon/cmd/build_vize_wasm_package --
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
-
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/wasm
-
       - name: Upload WASM package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -326,7 +354,6 @@ jobs:
           path: npm/wasm
           if-no-files-found: error
           compression-level: 0
-
   build-native-all:
     name: Build Native - ${{ matrix.settings.target }}
     needs: plan-release-platforms
@@ -338,40 +365,32 @@ jobs:
         settings: ${{ fromJSON(needs.plan-release-platforms.outputs.native_matrix) }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: ${{ matrix.settings.target }}
-
       - name: Install Rust target
         run: rustup target add ${{ matrix.settings.target }}
-
       - name: Setup Wild linker (Linux)
         if: runner.os == 'Linux'
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-
       - name: Mount Rust sticky disks (Linux)
         if: runner.os == 'Linux'
         uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: release-native-${{ matrix.settings.target }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       - name: Cache Rust (non-Linux)
         if: runner.os != 'Linux'
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -379,30 +398,24 @@ jobs:
           shared-key: release-native-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
           save-if: "false"
-
       - name: Tune Windows release profile
         if: runner.os == 'Windows'
         shell: bash
         run: |
           echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
           echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-
       - name: Setup Zig
         if: matrix.settings.cross_compile
         uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
-
       - name: Clean native build outputs
         shell: bash
         run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/native npm/fresco-native
-
       - name: Build vize-native
         shell: bash
         run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }}
-
       - name: Collect vize-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/native .artifacts/vize-native vize-native
-
       - name: Upload vize-native artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -410,15 +423,12 @@ jobs:
           path: .artifacts/vize-native/*.node
           if-no-files-found: error
           compression-level: 0
-
       - name: Build fresco-native
         shell: bash
         run: moon run --target native tools/moon/cmd/github/build_napi_package -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }}
-
       - name: Collect fresco-native artifact
         shell: bash
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native .artifacts/fresco-native fresco-native
-
       - name: Upload fresco-native artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -426,7 +436,6 @@ jobs:
           path: .artifacts/fresco-native/*.node
           if-no-files-found: error
           compression-level: 0
-
   smoke-release-packages:
     name: Smoke release npm package installs
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -434,94 +443,72 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Install native package tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'
-
       - name: Download vize CLI package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize, path: npm/cli }
-
       - name: Download Vite plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
-
       - name: Download Oxlint plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-oxlint-plugin-vize, path: npm/oxint }
-
       - name: Download unplugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
-
       - name: Download Fresco artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-fresco, path: npm/fresco }
-
       - name: Download Musea MCP server artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
-
       - name: Download Musea Vite plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
-
       - name: Download Rspack plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
-
       - name: Download Musea Nuxt artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
-
       - name: Download Nuxt lint config artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config }
-
       - name: Download Nuxt artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt, path: npm/framework/nuxt }
-
       - name: Download marquette package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-marquette, path: npm/marquette }
-
       - name: Download compose core package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-composable, path: npm/compose/core }
-
       - name: Download ui core package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-ui, path: npm/ui/core }
-
       - name: Download vize native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: bindings-*, path: npm/native/artifacts }
-
       - name: Download fresco native artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { pattern: fresco-bindings-*, path: npm/fresco-native/artifacts }
-
       - name: Apply slow platform release cadence
         run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/native/package.json npm/oxint/package.json
-
       - name: Prepare native package tarballs
         working-directory: npm/native
         run: |
           vp exec napi create-npm-dirs
           vp exec napi artifacts --output-dir artifacts
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-
       - name: Prepare Fresco native package tarball
         run: |
           moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
           moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
-
       - name: Smoke install release package tarballs
         run: |
           node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks \
@@ -541,11 +528,12 @@ jobs:
             npm/marquette \
             npm/compose/core \
             npm/ui/core
-
   release-preflight:
     permissions: { actions: write, contents: read, issues: read }
     uses: ./.github/workflows/release-preflight.yml
+
   # npm Trusted Publishing/provenance currently rejects self-hosted runners.
+
   # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
   release-npm-native:
     name: Release @vizejs/native to npm
@@ -560,43 +548,32 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
-
       - name: Download all artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: bindings-*
           path: npm/native/artifacts
-
       - name: Apply slow platform release cadence
         run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/native/package.json
-
       - name: Create npm platform directories
         working-directory: npm/native
         run: vp exec napi create-npm-dirs
-
       - name: Move artifacts
         working-directory: npm/native
         run: vp exec napi artifacts --output-dir artifacts
-
       - name: Prepare for publish
         working-directory: npm/native
         run: vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-
       - name: List packages
         run: ls -R npm/native/npm/
-
       - name: Smoke install native package tarballs
         run: node tools/npm/smoke-release-install.mjs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
-
       - name: Publish platform packages
         run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance
-
       - name: Publish
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/native --provenance
-
   release-npm-fresco-native:
     name: Release @vizejs/fresco-native to npm
     runs-on: ubuntu-24.04
@@ -610,25 +587,19 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
-
       - name: Download all artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
-
       - name: Clean bundled native binaries
         run: moon run --target native tools/moon/cmd/github/clean_node_binaries -- npm/fresco-native
-
       - name: Stage bundled native binaries
         run: moon run --target native tools/moon/cmd/github/collect_native_artifacts -- npm/fresco-native/artifacts npm/fresco-native fresco-native
-
       - name: Smoke install Fresco native package tarball
         run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/fresco-native
-
       - name: Publish
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco-native --provenance
 
@@ -646,20 +617,15 @@ jobs:
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
-
       - name: Download prebuilt WASM package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize-wasm, path: npm/wasm }
-
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/wasm
-
       - name: Smoke install WASM package tarball
         run: node tools/npm/smoke-release-install.mjs npm/wasm
-
       - name: Publish @vizejs/wasm
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/wasm --provenance
-
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-24.04
@@ -681,14 +647,11 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
-
       - name: Publish @vizejs/vite-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite --provenance
-
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
@@ -710,17 +673,13 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-oxlint-plugin-vize, path: npm/oxint }
-
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/oxint/package.json npm/native/package.json --print
-
       - name: Apply slow platform release cadence
         run: node tools/github/release-platforms.mjs apply-cadence "${{ github.ref_name }}" npm/oxint/package.json
-
       - name: Publish oxlint-plugin-vize
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/oxint --provenance
 
@@ -739,11 +698,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-marquette, path: npm/marquette }
-
       - name: Publish @vizejs/marquette
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/marquette --provenance
 
@@ -762,11 +719,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-composable, path: npm/compose/core }
-
       - name: Publish @vizejs/composable
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/compose/core --provenance
 
@@ -785,11 +740,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt package
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-ui, path: npm/ui/core }
-
       - name: Publish @vizejs/ui
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui/core --provenance
 
@@ -808,11 +761,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-unplugin-vize, path: npm/builder/unplugin }
-
       - name: Publish @vizejs/unplugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/unplugin --provenance
 
@@ -832,11 +783,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-fresco, path: npm/fresco }
-
       - name: Publish @vizejs/fresco
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco --provenance
 
@@ -855,11 +804,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-mcp-server, path: npm/mcp-musea }
-
       - name: Publish @vizejs/musea-mcp-server
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/mcp-musea --provenance
 
@@ -878,11 +825,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vite-plugin-musea, path: npm/builder/vite-musea }
-
       - name: Publish @vizejs/vite-plugin-musea
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite-musea --provenance
 
@@ -901,11 +846,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-rspack-vize-plugin, path: npm/builder/rspack }
-
       - name: Publish @vizejs/rspack-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/rspack --provenance
 
@@ -924,11 +867,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-musea-nuxt, path: npm/framework/musea-nuxt }
-
       - name: Publish @vizejs/musea-nuxt
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/musea-nuxt --provenance
 
@@ -947,11 +888,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt-lint-config, path: npm/framework/nuxt-lint-config }
-
       - name: Publish @vizejs/nuxt-lint-config
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/nuxt-lint-config --provenance
 
@@ -981,11 +920,9 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-nuxt, path: npm/framework/nuxt }
-
       - name: Publish @vizejs/nuxt
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/framework/nuxt --provenance
 
@@ -1052,17 +989,13 @@ jobs:
           pattern: cli-*
           path: cli-artifacts
           merge-multiple: true
-
       - name: Download editor extension artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: editor-extensions, path: editor-extension-artifacts }
-
       - name: List CLI artifacts
         run: ls -la cli-artifacts/
-
       - name: List editor extension artifacts
         run: find editor-extension-artifacts -maxdepth 5 -type f | sort
-
       # SBOM: generate one SBOM per source-of-truth artifact set so adopters
       # can audit transitive dependencies for a release tag without rebuilding.
       # CycloneDX 1.5 JSON is the lingua franca for SCA tooling (Snyk, Trivy,
@@ -1075,7 +1008,6 @@ jobs:
           format: cyclonedx-json
           output-file: vize-${{ github.ref_name }}-cyclonedx.sbom.json
           upload-artifact: false
-
       - name: Generate workspace SBOM (SPDX)
         uses: anchore/sbom-action@61119d458adab75f756bc0b9e4bde25725f86a7a # v0.17.8
         with:
@@ -1083,7 +1015,6 @@ jobs:
           format: spdx-json
           output-file: vize-${{ github.ref_name }}-spdx.sbom.json
           upload-artifact: false
-
       # Cosign keyless signing via Sigstore. The OIDC token issued to the
       # workflow stands in for a long-lived private key, and the resulting
       # certificate + signature live in the public Rekor transparency log.
@@ -1093,7 +1024,6 @@ jobs:
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
         with:
           cosign-release: v2.4.1
-
       # SHA-256 sums are the simplest integrity check downstream tools
       # (the VS Code extension's pre-execution download) can verify
       # without pulling in cosign or sigstore-verify libraries. Cosign
@@ -1111,7 +1041,6 @@ jobs:
               ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "${artifact}.sha256"
             fi
           done
-
       - name: Sign release artifacts (keyless)
         env:
           COSIGN_YES: "true"
@@ -1132,7 +1061,6 @@ jobs:
                 "$artifact"
             fi
           done
-
       - name: Create Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
@@ -1161,6 +1089,7 @@ jobs:
             vize-${{ github.ref_name }}-*.cosign.bundle
 
   # Publish vize CLI npm package (using Trusted Publishing / OIDC)
+
   # Native bindings are distributed via @vizejs/native-* optionalDependencies (NAPI-RS)
   release-npm-cli:
     name: Release vize CLI to npm
@@ -1176,13 +1105,10 @@ jobs:
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: ".node-version", run-install: false }
       - uses: ./.github/actions/setup-moonbit
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: release-package-vize, path: npm/cli }
-
       - name: Inject native binding package versions
         run: moon run --target native tools/moon/cmd/inject_native_optional_deps -- npm/cli/package.json --print
-
       - name: Publish vize CLI package
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/cli --provenance
