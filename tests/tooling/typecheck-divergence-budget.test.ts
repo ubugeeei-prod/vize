@@ -94,6 +94,7 @@ test("a false-positive budget breach fails the divergence report", () => {
         "Shared Vue files: 1",
         "Missing Vue files: 0",
         "Unexpected Vue files: 0",
+        "Ignored dependency Vue files: 0",
         "Budget verdict: breached",
         "Budget passed: false",
         `Digest: ${artifact.divergence.sha256}`,
