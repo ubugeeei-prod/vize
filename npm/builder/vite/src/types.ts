@@ -3,6 +3,13 @@ import type {
   ExperimentalCompileFlags,
   ExperimentalPluginOptions,
 } from "./experimental-options.ts";
+import type { VizeInspectorOptions } from "./inspector-types.ts";
+
+export type {
+  VizeInspectorLintPlanProvider,
+  VizeInspectorLintPlanRequest,
+  VizeInspectorOptions,
+} from "./inspector-types.ts";
 
 export type {
   VizeConfig,
@@ -105,6 +112,9 @@ export interface VizeOptions extends ExperimentalPluginOptions {
    * Direct plugin options still take precedence over these values.
    */
   config?: UserConfigExport;
+
+  /** Development inspector integrations exposed through Vite's dev server. */
+  inspector?: VizeInspectorOptions;
 
   /**
    * Vue major version for the host project.

@@ -21,6 +21,9 @@ export type {
   LoadConfigOptions,
   VizeVueVersion,
   VizeCompatibilityOptions,
+  VizeInspectorLintPlanProvider,
+  VizeInspectorLintPlanRequest,
+  VizeInspectorOptions,
 } from "./types.ts";
 
 // Test-only export for snapshot coverage (re-exported for backward compat).

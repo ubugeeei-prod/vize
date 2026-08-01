@@ -6,6 +6,7 @@ import { buildInspectorGraph, normalizeViteDevMiddlewareUrl } from "@vizejs/nati
 import { glob } from "tinyglobby";
 
 import type { VizePluginState } from "./state.ts";
+import { installInspectorLintPlanMiddleware } from "./inspector-lint-plan.ts";
 
 export const VIZE_INSPECTOR_GRAPH_ENDPOINT = "/__vize/inspector/graph";
 
@@ -28,10 +29,14 @@ export interface VizeInspectorGraphPayload {
 
 export function installDevMiddleware(
   devServer: ViteDevServer,
-  state: Pick<VizePluginState, "ignorePatterns" | "logger" | "root" | "scanPatterns">,
+  state: Pick<
+    VizePluginState,
+    "clientViteBase" | "ignorePatterns" | "logger" | "mergedOptions" | "root" | "scanPatterns"
+  >,
 ): void {
   installVirtualAssetMiddleware(devServer, state);
   installInspectorGraphMiddleware(devServer, state);
+  installInspectorLintPlanMiddleware(devServer, state);
 }
 
 export function installVirtualAssetMiddleware(
