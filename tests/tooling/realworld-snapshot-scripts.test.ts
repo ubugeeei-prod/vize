@@ -20,6 +20,8 @@ const realworldSnapshotApps = [
   "vuefes",
 ] as const;
 
+const serialTestConcurrency = /(?:^|\s)--test-concurrency=1(?:\s|$)/;
+
 function readJsonFile<T>(...segments: string[]): T {
   return JSON.parse(fs.readFileSync(path.join(root, ...segments), "utf8")) as T;
 }
@@ -27,9 +29,9 @@ function readJsonFile<T>(...segments: string[]): T {
 test("real-world check and lint snapshots are wired into e2e scripts", () => {
   const pkg = readJsonFile<{ scripts: Record<string, string> }>("tests", "package.json");
 
-  assert.match(pkg.scripts["test:build"], /--test-concurrency=1/);
-  assert.match(pkg.scripts["test:check"], /--test-concurrency=1/);
-  assert.match(pkg.scripts["test:check:fixtures"], /--test-concurrency=1/);
+  assert.match(pkg.scripts["test:build"], serialTestConcurrency);
+  assert.match(pkg.scripts["test:check"], serialTestConcurrency);
+  assert.match(pkg.scripts["test:check:fixtures"], serialTestConcurrency);
 
   for (const app of realworldSnapshotApps) {
     assert.match(
