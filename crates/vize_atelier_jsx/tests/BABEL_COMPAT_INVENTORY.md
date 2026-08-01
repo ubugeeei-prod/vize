@@ -307,24 +307,24 @@ here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
 
 Compared against Vize's default, which is already fully optimized.
 
-| Case                             | Babel                                 | Vize today                            | Compat mode         | Verdict |
-| -------------------------------- | ------------------------------------- | ------------------------------------- | ------------------- | ------- |
-| `optimize/static`                | no flag                               | no flag                               | no change           | ✅      |
-| `optimize/class_only`            | `2`                                   | `2 /* CLASS */`                       | no change           | ✅      |
-| `optimize/style_only`            | `4`                                   | `4 /* STYLE */`                       | no change           | ✅      |
-| `optimize/text_only`             | raw child, no flag                    | `toDisplayString(t)` + `1 /* TEXT */` | raw child, no flag  | ✅      |
-| `optimize/class_and_props`       | `10, ["id"]`                          | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drops `TEXT`        | ✅      |
-| `optimize/spread`                | `16`                                  | `16 /* FULL_PROPS */`                 | no change           | ✅      |
-| `optimize/ref`                   | `512`                                 | `512 /* NEED_PATCH */`                | no change           | ✅      |
-| `optimize/key`                   | no flag                               | no flag                               | no change           | ✅      |
-| `optimize/event`                 | `8, ["onClick"]`                      | same                                  | no change           | ✅      |
-| `optimize/component_props`       | `8, ["foo"]`                          | same                                  | no change           | ✅      |
-| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]`          | same                                  | no change           | ✅      |
-| `optimize/slots_stability`       | `_: 1`                                | `_: 1 /* STABLE */`                   | no change           | ✅      |
-| `optimize/scoped_slot_stability` | `_: 1`                                | `_: 1 /* STABLE */`                   | no change           | ✅      |
-| `optimize/v_slots_stability`     | slots object as children, no `_` flag | same, no `_` flag (#3467)             | no change           | ✅      |
-| `optimize/fragment`              | no flag                               | `64 /* STABLE_FRAGMENT */`            | no change           | ✅      |
-| `optimize/map_list`              | raw array child                       | `renderList` + `KEYED_FRAGMENT`       | no change           | ✅      |
+| Case                             | Babel                                 | Vize today                            | Compat mode        | Verdict |
+| -------------------------------- | ------------------------------------- | ------------------------------------- | ------------------ | ------- |
+| `optimize/static`                | no flag                               | no flag                               | no change          | ✅      |
+| `optimize/class_only`            | `2`                                   | `2 /* CLASS */`                       | no change          | ✅      |
+| `optimize/style_only`            | `4`                                   | `4 /* STYLE */`                       | no change          | ✅      |
+| `optimize/text_only`             | raw child, no flag                    | `toDisplayString(t)` + `1 /* TEXT */` | raw child, no flag | ✅      |
+| `optimize/class_and_props`       | `10, ["id"]`                          | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drops `TEXT`       | ✅      |
+| `optimize/spread`                | `16`                                  | `16 /* FULL_PROPS */`                 | no change          | ✅      |
+| `optimize/ref`                   | `512`                                 | `512 /* NEED_PATCH */`                | no change          | ✅      |
+| `optimize/key`                   | no flag                               | no flag                               | no change          | ✅      |
+| `optimize/event`                 | `8, ["onClick"]`                      | same                                  | no change          | ✅      |
+| `optimize/component_props`       | `8, ["foo"]`                          | same                                  | no change          | ✅      |
+| `optimize/v_model_input`         | `8, ["onUpdate:modelValue"]`          | same                                  | no change          | ✅      |
+| `optimize/slots_stability`       | `_: 1`                                | `_: 1 /* STABLE */`                   | no change          | ✅      |
+| `optimize/scoped_slot_stability` | `_: 1`                                | `_: 1 /* STABLE */`                   | no change          | ✅      |
+| `optimize/v_slots_stability`     | slots object as children, no `_` flag | same, no `_` flag (#3467)             | no change          | ✅      |
+| `optimize/fragment`              | no flag                               | `64 /* STABLE_FRAGMENT */`            | no change          | ✅      |
+| `optimize/map_list`              | raw array child                       | `renderList` + `KEYED_FRAGMENT`       | no change          | ✅      |
 
 ## Inputs babel rejects
 
