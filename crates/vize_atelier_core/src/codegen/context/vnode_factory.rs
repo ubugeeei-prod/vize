@@ -25,7 +25,7 @@ impl CodegenContext {
             indent_level: 0,
             ssr: options.ssr,
             helper_alias: default_helper_alias,
-            vnode_factory: vnode_factory.map(String::from),
+            vnode_factory: vnode_factory.map(normalize_vnode_factory),
             runtime_global_name: options.runtime_global_name.to_compact_string(),
             runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,
@@ -85,6 +85,29 @@ impl CodegenContext {
     pub(in crate::codegen) fn needs_open_block_shim(&self) -> bool {
         self.vnode_factory.is_some() && self.used_helpers.contains(RuntimeHelper::OpenBlock)
     }
+}
+
+/// Store a JSX factory pragma so it can be emitted directly as a call callee.
+///
+/// The pragma may be any valid JavaScript expression, so anything that is not a
+/// plain identifier or dotted member chain is parenthesized once here to keep
+/// callee precedence: `a || b` must emit `(a || b)("div")`.
+fn normalize_vnode_factory(factory: &str) -> String {
+    if is_member_expression_chain(factory) {
+        return String::from(factory);
+    }
+    let mut wrapped = String::with_capacity(factory.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(factory);
+    wrapped.push(')');
+    wrapped
+}
+
+fn is_member_expression_chain(factory: &str) -> bool {
+    !factory.is_empty()
+        && factory
+            .split('.')
+            .all(crate::codegen::helpers::is_valid_js_identifier)
 }
 
 fn is_vnode_factory_helper(helper: RuntimeHelper) -> bool {

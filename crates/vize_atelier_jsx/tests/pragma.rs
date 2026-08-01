@@ -109,6 +109,40 @@ fn babel_pragma_routes_every_vnode_shape_through_the_custom_factory() {
 }
 
 #[test]
+fn babel_pragma_keeps_callee_precedence_for_non_identifier_expressions() {
+    // The pragma accepts any valid JavaScript expression, so anything that is
+    // not a plain identifier or dotted member chain has to stay parenthesized
+    // to remain the callee of the vnode call.
+    for (pragma, callee) in [
+        ("left || right", "(left || right)("),
+        ("cond ? a : b", "(cond ? a : b)("),
+        ("(setup(), h)", "((setup(), h))("),
+    ] {
+        let bump = Bump::new();
+        let output = compile(
+            &bump,
+            "const A = () => <div>{ok ? <i/> : <b/>}</div>;",
+            &JsxCompileConfig {
+                compat: JsxCompatMode::Babel,
+                ..Default::default()
+            },
+            Some(pragma),
+        );
+        let module = output.module_code();
+
+        assert!(output.diagnostics.is_empty(), "{:?}", output.diagnostics);
+        assert!(module.contains(callee), "{pragma}: {module}");
+        let allocator = Allocator::default();
+        let parsed = parse_module(&allocator, module.as_str(), JsxLang::Jsx);
+        assert!(
+            parsed.diagnostics.is_empty(),
+            "{pragma}: {:?}\n{module}",
+            parsed.diagnostics
+        );
+    }
+}
+
+#[test]
 fn babel_pragma_removes_the_vue_import_when_no_other_helper_is_needed() {
     let bump = Bump::new();
     let output = compile(
