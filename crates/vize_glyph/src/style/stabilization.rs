@@ -50,6 +50,7 @@ fn contains_legacy_ms_keyframes(source: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
     use super::format_to_fixed_point;
+    use crate::{options::FormatOptions, style::format_style_content};
     use std::cell::Cell;
     use vize_carton::ToCompactString;
 
@@ -86,5 +87,30 @@ mod tests {
             3,
             "the stable result must be observed, not assumed"
         );
+    }
+
+    #[test]
+    fn legacy_keyframes_reach_fixed_point_in_one_pass() {
+        let options = FormatOptions::default();
+        for source in [
+            concat!(
+                "@-moz-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
+                "@-ms-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
+                "@keyframes orbit { 0% { transform: rotate(0deg); } }",
+            ),
+            concat!(
+                "@-moz-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
+                "@-MS-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
+                "@keyframes orbit { 0% { transform: rotate(0deg); } }",
+            ),
+        ] {
+            let result = format_style_content(source, &options).unwrap();
+            let again = format_style_content(&result, &options).unwrap();
+
+            assert_eq!(
+                result, again,
+                "legacy keyframe normalization must be idempotent after one format"
+            );
+        }
     }
 }

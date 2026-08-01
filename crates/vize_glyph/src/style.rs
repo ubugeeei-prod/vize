@@ -248,31 +248,6 @@ mod tests {
     }
 
     #[test]
-    fn test_legacy_keyframes_reach_fixed_point_in_one_pass() {
-        let options = FormatOptions::default();
-        for source in [
-            concat!(
-                "@-moz-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
-                "@-ms-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
-                "@keyframes orbit { 0% { transform: rotate(0deg); } }",
-            ),
-            concat!(
-                "@-moz-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
-                "@-MS-keyframes orbit { 0% { transform: rotate(0deg); } }\n",
-                "@keyframes orbit { 0% { transform: rotate(0deg); } }",
-            ),
-        ] {
-            let result = format_style_content(source, &options).unwrap();
-            let again = format_style_content(&result, &options).unwrap();
-
-            assert_eq!(
-                result, again,
-                "legacy keyframe normalization must be idempotent after one format"
-            );
-        }
-    }
-
-    #[test]
     fn test_format_simple_css() {
         let source = ".container{color:red;display:flex;gap:8px}";
         let options = FormatOptions::default();
