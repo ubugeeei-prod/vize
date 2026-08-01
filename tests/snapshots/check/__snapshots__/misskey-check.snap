@@ -1935,7 +1935,9 @@
     },
     {
       "file": "src/pages/settings/statusbar.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:11:4 [TS2345] Argument of type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' is not assignable to parameter of type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[] | undefined; isPublic: boolean; }[] | null; } & Omit<Props, \"userLists\"> & Partial<Pick<Props, \"userLists\">> & Partial<...> & __VizeFallthroughAttrs'.\nProperty '_id' is missing in type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' but required in type 'Omit<Props, \"userLists\">'."
+      ]
     },
     {
       "file": "src/pages/settings/theme.install.vue",
@@ -2386,7 +2388,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 35,
+  "errorCount": 36,
   "warningCount": 0,
   "fileCount": 583
 }

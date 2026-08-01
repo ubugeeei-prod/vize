@@ -216,7 +216,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox-group' or its corresponding type declarations.",
-        "error:83:46 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:83:46 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:168:4 [TS2345] Argument of type '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to parameter of type '{ required: boolean | undefined; loop: boolean | undefined; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; }'.\nType '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; orientation?: Orientation$1 | undefined; ... 6 more ...; \"onUpdate:modelValue\"?: ((value: AcceptableValue[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'Orientation$1 | undefined'.\nType 'string' is not assignable to type 'Orientation$1 | undefined'."
       ]
     },
     {
@@ -576,7 +577,8 @@
         "error:228:133 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:228:164 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
         "error:228:275 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:274:74 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'."
+        "error:274:74 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:575:4 [TS2345] Argument of type '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to parameter of type '{ highlightOnHover: boolean | undefined; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean | undefined; defaultOpen: boolean | undefined; openOnFocus: boolean | undefined; ... 11 more ...; resetSearchTermOnSelect?: boolean | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & {...'.\nType '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; modelValue?: AcceptableValue[] | AcceptableValue | undefined; ... 16 more ...; \"onUpdate:open\"?: ((value: boolean) => any) | undefined; }'.\nTypes of property 'by' are incompatible.\nType 'string | ((a: T, b: T) => boolean) | undefined' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type '(a: AcceptableValue, b: AcceptableValue) => boolean'.\nTypes of parameters 'a' and 'a' are incompatible.\nType 'AcceptableValue' is not assignable to type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'AcceptableValue'."
       ]
     },
     {
@@ -593,6 +595,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
         "error:73:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:157:4 [TS2345] Argument of type '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ required: boolean | undefined; addOnPaste: boolean | undefined; addOnTab: boolean | undefined; addOnBlur: boolean | undefined; duplicate: boolean | undefined; delimiter: string | ... 1 more ... | undefined; ... 10 more ...; disabled: boolean | undefined; } & ...'.\nType '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '[{ required: boolean | undefined; addOnPaste: boolean | undefined; addOnTab: boolean | undefined; addOnBlur: boolean | undefined; duplicate: boolean | undefined; delimiter: string | ... 1 more ... | undefined; ... 10 more ...; disabled: boolean | undefined; }] extends [...] ? VNodeProps & ... 2 more ... & { ...; } :...'.",
         "error:167:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => unknown'.\nTypes of parameters 'value' and 'args' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
       ]
     },
@@ -888,7 +891,7 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/separator' or its corresponding type declarations.",
         "error:55:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:81:4 [TS2345] Argument of type '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to parameter of type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.\nType '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:81:4 [TS2345] Argument of type '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to parameter of type '{ decorative: boolean | undefined; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; } & { readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; } & VNodeProps & ...'.\nType '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -912,7 +915,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/slider' or its corresponding type declarations.",
-        "error:49:2 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:49:2 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:110:4 [TS2345] Argument of type '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to parameter of type '{ inverted: boolean | undefined; minStepsBetweenThumbs: number | undefined; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; ... 6 more ...; step: number; } & { ...; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'.\nType '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to type '{ readonly name?: string | undefined; readonly required?: boolean | undefined; readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; ... 12 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -1535,7 +1539,7 @@
       ]
     }
   ],
-  "errorCount": 642,
+  "errorCount": 646,
   "warningCount": 0,
   "fileCount": 180
 }
