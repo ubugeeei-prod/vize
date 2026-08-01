@@ -12,7 +12,9 @@ use std::fmt;
 use std::path::PathBuf;
 
 use serde::Deserialize;
-use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx};
+use vize_atelier_jsx::{
+    BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx_with_babel_options,
+};
 use vize_carton::Bump;
 
 /// The relationship between Vize's default output and babel's for one case.
@@ -171,13 +173,20 @@ pub fn load_recording() -> Recording {
 /// diagnosing case is a legitimate, recordable outcome.
 pub fn vize_vdom_output(case: &Case) -> std::string::String {
     let bump = Bump::new();
-    let out = compile_jsx(
+    let out = compile_jsx_with_babel_options(
         &bump,
         &case.source,
         case.jsx_lang(),
         &JsxCompileConfig {
             compat: JsxCompatMode::Babel,
             ..Default::default()
+        },
+        &BabelJsxOptions {
+            transform_on: case
+                .babel_options
+                .get("transformOn")
+                .and_then(serde_json::Value::as_bool)
+                .unwrap_or_default(),
         },
     );
 

@@ -1,12 +1,52 @@
 //! Attribute lowering specific to Babel JSX compatibility mode.
 
-use oxc_span::Span;
+use oxc_ast::ast::{JSXAttribute, JSXAttributeName, JSXAttributeValue};
+use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String};
 use vize_relief::{DirectiveNode, PropNode, SourceLocation};
 
 use crate::lower::Lowerer;
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+    /// Apply Babel's `transformOn: true` option to the two exact prop names the
+    /// real plugin recognizes. The generated no-argument `v-bind` keeps this
+    /// listener object in authored merge order while the helper performs the
+    /// runtime key rewrite (`click` -> `onClick`).
+    pub(super) fn transform_on_attribute(
+        &self,
+        attr: &JSXAttribute<'_>,
+        loc: SourceLocation,
+    ) -> Option<PropNode<'a>> {
+        let helper = self.transform_on_helper()?;
+        let JSXAttributeName::Identifier(name) = &attr.name else {
+            return None;
+        };
+        if name.name != "on" && name.name != "nativeOn" {
+            return None;
+        }
+
+        let value = match attr.value.as_ref() {
+            None => "true",
+            Some(JSXAttributeValue::StringLiteral(string)) => self.mapper().slice(string.span),
+            Some(JSXAttributeValue::ExpressionContainer(container)) => {
+                super::container_expr_span(container)
+                    .map(|span| self.mapper().slice(span))
+                    .unwrap_or("true")
+            }
+            Some(JSXAttributeValue::Element(element)) => self.mapper().slice(element.span()),
+            Some(JSXAttributeValue::Fragment(fragment)) => self.mapper().slice(fragment.span()),
+        };
+
+        let mut expression = String::from(helper);
+        expression.push('(');
+        expression.push_str(value);
+        expression.push(')');
+
+        let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
+        directive.exp = Some(self.constant_expr(&expression, attr.span));
+        Some(PropNode::Directive(Box::new_in(directive, self.bump())))
+    }
+
     /// Normalize the camel-cased SVG prop exactly as Babel does (#3391).
     pub(super) fn compat_attribute_name(&self, name_span: Span) -> String {
         let authored = self.mapper().slice(name_span);

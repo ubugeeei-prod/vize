@@ -36,6 +36,8 @@ pub struct Lowerer<'a, 'm, 's> {
     bump: &'a Bump,
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
+    transform_on_helper: Option<String>,
+    transform_on_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
     /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
@@ -46,7 +48,7 @@ pub struct Lowerer<'a, 'm, 's> {
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Build a lowerer that allocates IR in `bump` and maps spans via `mapper`.
     pub fn new(bump: &'a Bump, mapper: &'m SpanMapper<'s>) -> Self {
-        Self::with_compat(bump, mapper, JsxCompatMode::Native)
+        Self::with_compat(bump, mapper, JsxCompatMode::Native, None)
     }
 
     /// Build a lowerer using the requested project-level JSX semantics.
@@ -54,11 +56,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         bump: &'a Bump,
         mapper: &'m SpanMapper<'s>,
         compat: JsxCompatMode,
+        transform_on_helper: Option<&str>,
     ) -> Self {
         Self {
             bump,
             mapper,
             compat,
+            transform_on_helper: transform_on_helper.map(String::from),
+            transform_on_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
         }
@@ -160,5 +165,19 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Whether the project opted into `@vue/babel-plugin-jsx` semantics.
     pub(crate) fn uses_babel_compat(&self) -> bool {
         self.compat.is_babel()
+    }
+
+    /// Select whether the current render root may use VDOM-only Babel options.
+    pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
+        self.transform_on_active = mode == crate::JsxOutputMode::Vdom;
+    }
+
+    /// Collision-free helper binding for Babel's opt-in `transformOn` lowering.
+    pub(crate) fn transform_on_helper(&self) -> Option<&str> {
+        if self.transform_on_active {
+            self.transform_on_helper.as_deref()
+        } else {
+            None
+        }
     }
 }

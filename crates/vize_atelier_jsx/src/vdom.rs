@@ -104,6 +104,7 @@ pub fn compile_to_vdom(
             analysis,
             is_ts,
             &options,
+            None,
             &mut diagnostics,
         ));
     }
@@ -123,6 +124,7 @@ pub(crate) fn compile_root_to_vdom(
     analysis: &Croquis,
     is_ts: bool,
     options: &VdomCompileOptions,
+    transform_on_helper: Option<&str>,
     diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> VdomComponent {
     let LoweredRoot {
@@ -170,13 +172,24 @@ pub(crate) fn compile_root_to_vdom(
         ..Default::default()
     };
     let result = generate(&root, codegen_opts);
+    let mut preamble = result.preamble;
+    if let Some(helper) = transform_on_helper
+        && result.code.contains(helper)
+    {
+        if !preamble.is_empty() && !preamble.ends_with('\n') {
+            preamble.push('\n');
+        }
+        preamble.push_str("import ");
+        preamble.push_str(helper);
+        preamble.push_str(" from \"@vue/babel-helper-vue-transform-on\"\n");
+    }
 
     VdomComponent {
         component_name,
         component_setup,
         mode: mode.unwrap_or(JsxOutputMode::Vdom),
         code: result.code,
-        preamble: result.preamble,
+        preamble,
         map: result.map,
         scoped_style,
     }

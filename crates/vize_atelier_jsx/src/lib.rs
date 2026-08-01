@@ -53,7 +53,10 @@ use vize_croquis::croquis::BindingMetadata;
 use vize_relief::RootNode;
 
 pub use compat::JsxCompatMode;
-pub use compile::{JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx, resolve_mode};
+pub use compile::{
+    BabelJsxOptions, JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx,
+    compile_jsx_with_babel_options, resolve_mode,
+};
 pub use diagnostics::{JsxDiagnostic, Severity};
 pub use lang::JsxLang;
 pub use lower::Lowerer;
@@ -163,7 +166,14 @@ impl<'a> LowerOutput<'a> {
 /// allocator used for parsing is dropped before returning, so the result only
 /// borrows `bump`.
 pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
-    lower_source_with_compat(bump, source, lang, JsxCompatMode::Native)
+    lower_source_with_compat(
+        bump,
+        source,
+        lang,
+        JsxCompatMode::Native,
+        JsxOutputMode::Vdom,
+        None,
+    )
 }
 
 /// Lower a module with project-level compatibility semantics.
@@ -176,16 +186,18 @@ fn lower_source_with_compat<'a>(
     source: &str,
     lang: JsxLang,
     compat: JsxCompatMode,
+    default_mode: JsxOutputMode,
+    transform_on_helper: Option<&str>,
 ) -> LowerOutput<'a> {
     let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
     let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::with_compat(bump, &mapper, compat);
+    let mut lowerer = Lowerer::with_compat(bump, &mapper, compat, transform_on_helper);
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }
-    let roots = finder::lower_program_roots(&parsed.program, &mut lowerer);
+    let roots = finder::lower_program_roots(&parsed.program, &mut lowerer, default_mode);
     let analysis = analyze::analyze_program(&parsed.program, source);
     LowerOutput {
         roots,

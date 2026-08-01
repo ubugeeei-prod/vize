@@ -96,6 +96,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             DirectiveAttributeLowering::NotDirective => {}
         }
 
+        if let Some(prop) = self.transform_on_attribute(attr, loc.clone()) {
+            return Some(prop);
+        }
+
         let name = self.compat_attribute_name(attr.name.span());
         let name_loc = self.mapper().location(attr.name.span());
         let prop = match attr.value.as_ref() {

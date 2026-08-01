@@ -24,7 +24,7 @@ export function render(_ctx, _cache) {
 
 ## options/transform_on_on
 ### verdict
-divergent: no transformOn option
+equivalent
 ### source (jsx)
 const A = () => <button on={{click: h}}/>;
 ### babel options
@@ -36,9 +36,10 @@ const A = () => _createVNode("button", _transformOn({
   click: h
 }), null);
 ### vize (vdom, babel compat)
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import _transformOn from "@vue/babel-helper-vue-transform-on"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("button", { on: {click: h} }, null, 8 /* PROPS */, ["on"]))
+  return (_openBlock(), _createElementBlock("button", _normalizeProps(_guardReactiveProps(_transformOn({click: h}))), null, 16 /* FULL_PROPS */))
 }
 
 ## options/pragma

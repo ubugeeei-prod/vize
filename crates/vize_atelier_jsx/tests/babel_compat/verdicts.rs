@@ -13,7 +13,7 @@ use super::Verdict::{Deferred as Todo, Divergent as Diff, Equivalent as Same};
 pub const VERDICTS: &[(&str, Verdict)] = &[
     // -- options ---------------------------------------------------------
     ("options/transform_on_off", Same),
-    ("options/transform_on_on", Diff("no transformOn option")),
+    ("options/transform_on_on", Same),
     ("options/pragma", Diff("no pragma option")),
     ("options/merge_props_default", Same),
     ("options/merge_props_false", Diff("no mergeProps option")),

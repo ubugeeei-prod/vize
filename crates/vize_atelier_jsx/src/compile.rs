@@ -21,6 +21,19 @@ use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
 pub use component::JsxComponent;
 
+/// Options matching the opt-in switches exposed by `@vue/babel-plugin-jsx`.
+///
+/// These are intentionally separate from [`JsxCompileConfig`] so adding Babel
+/// compatibility options remains additive for callers that construct that
+/// configuration with a struct literal. They only take effect when
+/// [`JsxCompileConfig::compat`] is [`JsxCompatMode::Babel`].
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct BabelJsxOptions {
+    /// Transform `on={{ click: handler }}` and `nativeOn={listeners}` objects
+    /// into Vue listener props, matching Babel's `transformOn: true` option.
+    pub transform_on: bool,
+}
+
 /// Configuration for mode-aware JSX compilation.
 #[derive(Debug, Clone, Default)]
 pub struct JsxCompileConfig {
@@ -209,7 +222,33 @@ pub fn compile_jsx(
     lang: JsxLang,
     config: &JsxCompileConfig,
 ) -> JsxCompileOutput {
-    let lowered = lower_source_with_compat(bump, source, lang, config.compat);
+    compile_jsx_with_babel_options(bump, source, lang, config, &BabelJsxOptions::default())
+}
+
+/// Compile JSX/TSX with explicit `@vue/babel-plugin-jsx` option compatibility.
+///
+/// The Babel-specific options are inert unless [`JsxCompileConfig::compat`] is
+/// [`JsxCompatMode::Babel`]. Existing [`compile_jsx`] callers therefore retain
+/// byte-for-byte output while Babel-compatible consumers can opt in one option
+/// at a time.
+pub fn compile_jsx_with_babel_options(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+) -> JsxCompileOutput {
+    let transform_on_helper =
+        (config.compat.is_babel() && babel_options.transform_on && !config.ssr)
+            .then(|| collision_free_transform_on_helper(source));
+    let lowered = lower_source_with_compat(
+        bump,
+        source,
+        lang,
+        config.compat,
+        config.default_mode,
+        transform_on_helper.as_deref(),
+    );
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 
@@ -256,6 +295,7 @@ pub fn compile_jsx(
                     analysis,
                     is_ts,
                     &config.vdom,
+                    transform_on_helper.as_deref(),
                     &mut diagnostics,
                 )),
                 JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
@@ -274,4 +314,16 @@ pub fn compile_jsx(
         source: String::from(source),
         diagnostics,
     }
+}
+
+/// Babel allocates a fresh helper binding when the source already declares
+/// `_transformOn`. A conservative source-text check gives the generated module
+/// the same collision safety without coupling this option to a second semantic
+/// analysis pass.
+fn collision_free_transform_on_helper(source: &str) -> String {
+    let mut helper = String::from("_transformOn");
+    while source.contains(helper.as_str()) {
+        helper.push('_');
+    }
+    helper
 }

@@ -7,7 +7,11 @@
 //! The "default output is unchanged" test is the important one — flipping the
 //! default would be a silent compatibility break for every existing Vize user.
 
-use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
+use oxc_allocator::Allocator;
+use vize_atelier_jsx::{
+    BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx,
+    compile_jsx_with_babel_options, parse_module,
+};
 use vize_carton::Bump;
 
 /// A representative module touching elements, props, interpolation, control
@@ -47,6 +51,23 @@ fn diagnostics(compat: JsxCompatMode, mode: JsxOutputMode) -> Vec<String> {
         .iter()
         .map(|diagnostic| format!("{:?}: {}", diagnostic.severity, diagnostic.message))
         .collect()
+}
+
+fn compile_with_transform_on(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> String {
+    let bump = Bump::new();
+    compile_jsx_with_babel_options(
+        &bump,
+        source,
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            default_mode: mode,
+            compat,
+            ..Default::default()
+        },
+        &BabelJsxOptions { transform_on: true },
+    )
+    .module_code()
+    .to_string()
 }
 
 #[test]
@@ -129,6 +150,102 @@ fn babel_compat_rewrites_xlink_href_across_prop_shapes_only_when_opted_in() {
     assert!(babel.contains("\"xlink:href\": \"#d\""), "{babel}");
     assert!(babel.contains("\"xlink:href\": id"), "{babel}");
     assert_ne!(native, babel);
+}
+
+#[test]
+fn transform_on_is_off_by_default_and_inert_in_native_mode() {
+    let source = "const A = () => <button on={{ click: h }}/>;";
+    let native = compile_module(source, JsxCompatMode::Native, JsxOutputMode::Vdom);
+    let native_with_option =
+        compile_with_transform_on(source, JsxCompatMode::Native, JsxOutputMode::Vdom);
+    let babel_without_option = compile_module(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert!(!BabelJsxOptions::default().transform_on);
+    assert_eq!(native_with_option, native);
+    assert!(
+        !native.contains("@vue/babel-helper-vue-transform-on"),
+        "{native}"
+    );
+    assert!(
+        babel_without_option.contains("on: { click: h }"),
+        "{babel_without_option}"
+    );
+    assert!(
+        !babel_without_option.contains("@vue/babel-helper-vue-transform-on"),
+        "{babel_without_option}"
+    );
+}
+
+#[test]
+fn babel_transform_on_wraps_exact_on_props_in_authored_merge_order() {
+    let source = concat!(
+        "const A = () => <button id=\"first\" ",
+        "on={{ click: h }} {...attrs} nativeOn={native} ",
+        "only={other} nativeon={lower} onClick={direct} on-call={dashed}/>;",
+    );
+    let output = compile_with_transform_on(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert_eq!(
+        output.matches("@vue/babel-helper-vue-transform-on").count(),
+        1
+    );
+    assert_eq!(output.matches("_transformOn(").count(), 2, "{output}");
+    assert!(output.contains("_transformOn({ click: h })"), "{output}");
+    assert!(output.contains("_transformOn(native)"), "{output}");
+    assert!(output.contains("only: other"), "{output}");
+    assert!(output.contains("nativeon: lower"), "{output}");
+    assert!(output.contains("onClick: direct"), "{output}");
+    assert!(output.contains("\"on-call\": dashed"), "{output}");
+
+    let first = output.find("id: \"first\"").unwrap();
+    let on = output.find("_transformOn({ click: h })").unwrap();
+    let spread = output.find("attrs").unwrap();
+    let native_on = output.find("_transformOn(native)").unwrap();
+    let near_misses = output.find("only: other").unwrap();
+    assert!(first < on && on < spread && spread < native_on && native_on < near_misses);
+}
+
+#[test]
+fn babel_transform_on_keeps_generated_modules_parseable_and_helper_bindings_unique() {
+    let source = concat!(
+        "const _transformOn = existing; ",
+        "const A = () => <button on/>; ",
+        "const B = () => <button nativeOn={{}}/>; ",
+        "const C = () => <button on=\"tap\"/>; ",
+        "const D = () => <button on={}/>;",
+    );
+    let output = compile_with_transform_on(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert!(
+        output.contains("import _transformOn_ from \"@vue/babel-helper-vue-transform-on\""),
+        "{output}"
+    );
+    assert!(output.contains("_transformOn_(true)"), "{output}");
+    assert!(output.contains("_transformOn_({})"), "{output}");
+    assert!(output.contains("_transformOn_(\"tap\")"), "{output}");
+    assert_eq!(
+        output.matches("@vue/babel-helper-vue-transform-on").count(),
+        1
+    );
+
+    let allocator = Allocator::default();
+    let parsed = parse_module(&allocator, &output, JsxLang::Jsx);
+    assert!(
+        parsed.diagnostics.is_empty(),
+        "{:?}\n{output}",
+        parsed.diagnostics
+    );
+}
+
+#[test]
+fn babel_transform_on_does_not_leak_into_vapor_output() {
+    let source = "const A = () => { 'use vue:vapor'; return <button on={{ click: h }}/>; };";
+    let output = compile_with_transform_on(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+    assert!(!output.contains("_transformOn"), "{output}");
+    assert!(
+        !output.contains("@vue/babel-helper-vue-transform-on"),
+        "{output}"
+    );
 }
 
 #[test]

@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   80 |
-| divergent  |   16 |
+| equivalent |   81 |
+| divergent  |   15 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -94,7 +94,7 @@ deliberate answer, recorded here so it is not relitigated.
 | Case                                | Babel                                               | Vize today                                   | Compat mode                                          | Verdict |
 | ----------------------------------- | --------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------- | ------- |
 | `options/transform_on_off`          | `on` object passed through as a prop                | same                                         | no change                                            | ✅      |
-| `options/transform_on_on`           | wraps props in `_transformOn(...)`                  | no such option; `on` stays a prop            | add `transformOn`                                    | ❌      |
+| `options/transform_on_on`           | wraps props in `_transformOn(...)`                  | `on` stays a prop by default                  | `BabelJsxOptions::transform_on` wraps via the helper | ✅      |
 | `options/pragma`                    | emits `h("div", …)`, no `vue` import                | always emits Vue runtime helpers             | add `pragma`                                         | ❌      |
 | `options/merge_props_default`       | `mergeProps({class:"a"}, p, {class:c})`             | same                                         | no change                                            | ✅      |
 | `options/merge_props_false`         | one object literal with a duplicate key             | always merges via `mergeProps`               | add `mergeProps: false`                              | ❌      |

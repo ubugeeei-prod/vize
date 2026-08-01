@@ -30,6 +30,7 @@ use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan};
 pub(crate) fn lower_program_roots<'a>(
     program: &Program<'_>,
     lowerer: &mut Lowerer<'a, '_, '_>,
+    default_mode: JsxOutputMode,
 ) -> std::vec::Vec<LoweredRoot<'a>> {
     let mut collector = RootLowerer {
         lowerer,
@@ -37,6 +38,7 @@ pub(crate) fn lower_program_roots<'a>(
         scopes: std::vec::Vec::new(),
         pending_name: None,
         pending_declaration_span: None,
+        default_mode,
     };
     collector.visit_program(program);
     collector.roots
@@ -57,6 +59,7 @@ struct RootLowerer<'l, 'a, 'm, 's> {
     /// function/arrow we enter.
     pending_name: Option<String>,
     pending_declaration_span: Option<Span>,
+    default_mode: JsxOutputMode,
 }
 
 impl RootLowerer<'_, '_, '_, '_> {
@@ -243,11 +246,14 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
     fn visit_jsx_element(&mut self, element: &JSXElement<'ast>) {
         // Lower this root and intentionally do NOT descend: nested JSX is
         // lowered as part of this root's children, not as separate roots.
+        let mode = self.current_mode();
+        self.lowerer
+            .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_element_root(element);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
-            mode: self.current_mode(),
+            mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(element.span),
             scoped_css,
@@ -256,11 +262,14 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
+        let mode = self.current_mode();
+        self.lowerer
+            .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_fragment_root(fragment);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
-            mode: self.current_mode(),
+            mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(fragment.span),
             scoped_css,
