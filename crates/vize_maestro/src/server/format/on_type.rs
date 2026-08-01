@@ -82,9 +82,17 @@ pub(crate) fn format_on_type(
 
     let (authored_start, authored_end) = authored[index];
     let (target_start, target_end) = target[index];
-    let authored_lines: Vec<&str> = content[authored_start..authored_end].split('\n').collect();
+    // Splitting on '\n' leaves the '\r' of a CRLF pair on the line. The
+    // formatter writes the configured newline, which need not be the authored
+    // one, so a surviving '\r' would make every CRLF line look rewritten and
+    // silence the handler on CRLF documents.
+    let authored_lines: Vec<&str> = content[authored_start..authored_end]
+        .split('\n')
+        .map(strip_cr)
+        .collect();
     let target_lines: Vec<&str> = formatted.code[target_start..target_end]
         .split('\n')
+        .map(strip_cr)
         .collect();
     // Line N of this block must still be line N after formatting.
     if authored_lines.len() != target_lines.len() {
@@ -123,6 +131,12 @@ pub(crate) fn format_on_type(
         #[allow(clippy::disallowed_methods)]
         new_text: target_indent.to_string(),
     }])
+}
+
+/// The line without the `'\r'` a CRLF pair leaves behind when splitting on
+/// `'\n'`. Only the trailing one: a lone `'\r'` mid-line is authored content.
+fn strip_cr(line: &str) -> &str {
+    line.strip_suffix('\r').unwrap_or(line)
 }
 
 /// The leading run of spaces and tabs. Deliberately not `trim_start`, which

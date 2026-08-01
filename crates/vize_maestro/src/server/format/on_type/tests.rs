@@ -109,6 +109,15 @@ fn a_block_the_formatter_reflows_declines_without_silencing_its_neighbours() {
 }
 
 #[test]
+fn a_crlf_document_is_re_indented_like_an_lf_one() {
+    // The formatter writes LF by default, so the authored line keeps a '\r'
+    // the formatted line does not have. That difference is the line ending,
+    // not content the formatter wants rewritten.
+    let source = SOURCE.replace('\n', "\r\n");
+    assert_eq!(edits_at(&source, 4), dedent(4, 2));
+}
+
+#[test]
 fn a_line_the_document_does_not_have_is_not_answerable() {
     assert_eq!(edits_at(SOURCE, 900), None);
 }
