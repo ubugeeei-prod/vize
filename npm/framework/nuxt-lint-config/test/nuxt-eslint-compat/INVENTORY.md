@@ -44,6 +44,7 @@ overrides an earlier one — so it is part of the contract.
 | `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet |
 | `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
 | `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported      |
+| `nuxt/import-globals`  | whole project                                             | — (Nuxt/Nitro auto-import globals)   | supported      |
 
 Items outside this table belong to `@nuxt/eslint-config`'s generic
 JavaScript/TypeScript/Vue/import/stylistic/tooling presets. They are a separate
@@ -53,11 +54,12 @@ the oracle.
 
 ## Intentional divergences
 
-| Difference                                                           | Why                                                                                                                                                                                                    |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The ignore block is named `nuxt/ignores`; upstream leaves it unnamed | Every block needs a stable identity for the emitter to address and for users to override. Applied in exactly one place in `oracle.test.ts`.                                                            |
-| `features` carries only feature keys                                 | Upstream serialises the whole module option object into `features`, so `configFile`, `autoInit`, `rootDir` and `devtools` leak into it. Vize keeps module options and feature flags separate.          |
-| Auto-init creates an `oxlint.config.mts` loader                      | Oxlint 1.64 does not inherit `globals` from a JSON config in `extends`. The loader returns the current generated object directly and rebases its JS plugin URL, preserving `$fetch` and addon globals. |
+| Difference                                                                              | Why                                                                                                                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The ignore block is named `nuxt/ignores`; upstream leaves it unnamed                    | Every block needs a stable identity for the emitter to address and for users to override. Applied in exactly one place in `oracle.test.ts`.                                                                                                                                            |
+| `features` carries only feature keys                                                    | Upstream serialises the whole module option object into `features`, so `configFile`, `autoInit`, `rootDir` and `devtools` leak into it. Vize keeps module options and feature flags separate.                                                                                          |
+| Auto-init creates an `oxlint.config.mts` loader                                         | Oxlint 1.64 does not inherit `globals` from a JSON config in `extends`. The loader returns the current generated object directly and rebases its JS plugin URL, preserving `$fetch` and addon globals.                                                                                 |
+| The addon hook is `vize:lint:config:addons` and contributes engine-neutral config items | Upstream's `eslint:config:addons` contributes raw JavaScript and import statements. Those are ESLint implementation details and cannot be represented safely in an oxlint config; the Vize hook preserves ordered, async addon composition without accepting executable config source. |
 
 ## Directory defaults
 
@@ -65,13 +67,13 @@ Defaults for a hand-written config, where directory lists may be absent.
 A generated config always supplies every list, so these only apply to the
 standalone entry point.
 
-| Case                    | Behaviour                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------ | --- | ------------------------------------------------------------------------------------ |
-| `defaults/empty`        | No dirs at all: `root` becomes `[".", "./app"]` and everything else derives from it. |
-| `defaults/src-only`     | Declaring `src` derives every per-feature directory from it.                         |
-| `defaults/root-only`    | Declaring `root` makes `src` follow `root` rather than the built-in pair.            |
-| `defaults/empty-arrays` | Present-but-empty lists stay empty: an empty array is truthy, so the `               |     | =`defaults never fire. This is why a generated config keeps`servers`and`root` empty. |
-| `defaults/partial`      | Only missing lists are defaulted; declared ones pass through untouched.              |
+| Case                    | Behaviour                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `defaults/empty`        | No dirs at all: `root` becomes `[".", "./app"]` and everything else derives from it.              |
+| `defaults/src-only`     | Declaring `src` derives every per-feature directory from it.                                      |
+| `defaults/root-only`    | Declaring `root` makes `src` follow `root` rather than the built-in pair.                         |
+| `defaults/empty-arrays` | Present-but-empty lists stay empty: an empty array is truthy, so the `\|\|=` defaults never fire. |
+| `defaults/partial`      | Only missing lists are defaulted; declared ones pass through untouched.                           |
 
 Derived paths are built by interpolation (`` `${src}/pages` ``), not by joining,
 so a `.` or `./app` source directory keeps its leading segment.
@@ -103,6 +105,12 @@ How Nuxt project state reduces to the directory lists every glob is built from.
 | `features/typescript-false`       | Drops the TypeScript blocks from the baseline.                                                       |
 | `features/typescript-true`        | Adds them regardless of package detection.                                                           |
 | `features/tooling`                | Adds the module-author rule blocks (jsdoc, unicorn, regexp).                                         |
+
+## Addons
+
+| Case                    | Behaviour                                                                                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addons/import-globals` | Nuxt and Nitro registries are combined, sorted by `from` then imported `name`, and emitted in full order as readonly globals using each import's alias when set. |
 
 `features.typescript` defaults to whether the `typescript` package resolves from
 `@nuxt/eslint-config`. The recording stores that probe's answer as

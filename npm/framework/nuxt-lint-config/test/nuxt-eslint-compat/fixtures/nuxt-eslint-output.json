@@ -1,9 +1,26 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
   "typeScriptDetected": false,
+  "importGlobals": {
+    "globals": [
+      "constructor",
+      "toString",
+      "useAsyncData",
+      "fetchData",
+      "useRoute",
+      "defineNitroPlugin",
+      "computed",
+      "__proto__",
+      "observe"
+    ],
+    "artifacts": {
+      "initial": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n",
+      "regenerated": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\",\n    \"constructor\": \"readonly\",\n    \"toString\": \"readonly\",\n    \"useAsyncData\": \"readonly\",\n    \"fetchData\": \"readonly\",\n    \"useRoute\": \"readonly\",\n    \"defineNitroPlugin\": \"readonly\",\n    \"computed\": \"readonly\",\n    \"__proto__\": \"readonly\",\n    \"observe\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
+    }
+  },
   "dirDefaults": {
     "defaults/empty": {
       "root": [".", "./app"],

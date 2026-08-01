@@ -9,7 +9,7 @@
  * `tests/tooling/nuxt-eslint-oracle.test.ts` re-runs this script in CI and
  * fails if the recording has drifted from the installed packages.
  *
- * Two upstream contracts are recorded per case, because the port splits along
+ * Three upstream contracts are recorded, because the port splits along
  * the same seam:
  *
  *   1. `dirs` — the Nuxt project state (layers, `srcDir`, `dir` overrides,
@@ -17,6 +17,8 @@
  *      built from. Produced by `@nuxt/eslint`'s module.
  *   2. `features` + the resolved config items — which named rule blocks exist,
  *      in what order, over which globs. Produced by `@nuxt/eslint-config`.
+ *   3. `importGlobals` — the complete ordered globals list emitted after both
+ *      Nuxt and Nitro publish their auto-import registries.
  *
  * Usage:
  *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --check
@@ -72,6 +74,7 @@ export const NUXT_OWNED_CONFIG_NAMES = [
   "nuxt/nuxt-config",
   "nuxt/sort-config",
   "nuxt/disables/routes",
+  "nuxt/import-globals",
 ];
 
 export function readCorpus() {
@@ -131,6 +134,33 @@ async function recordDirs(setupConfigGen, entry) {
     await setupConfigGen({ config: { autoInit: false } }, nuxt);
     const generated = await import(join(rootDir, ".nuxt", "eslint.config.mjs"));
     return generated.options.dirs;
+  } finally {
+    rmSync(rootDir, { force: true, recursive: true });
+  }
+}
+
+/** Record the full globals object emitted from Nuxt and Nitro's registries. */
+async function recordImportGlobals(setupConfigGen, entry, importGlobals) {
+  mkdirSync(scratchRoot, { recursive: true });
+  const rootDir = mkdtempSync(join(scratchRoot, "globals-"));
+  try {
+    mkdirSync(join(rootDir, ".nuxt"), { recursive: true });
+    const nuxt = createNuxtStub(rootDir, entry);
+    await setupConfigGen({ config: { autoInit: false } }, nuxt);
+    await nuxt.callHook("imports:context", {
+      getImports: async () => structuredClone(importGlobals.nuxt),
+    });
+    await nuxt.callHook("nitro:init", {
+      unimport: { getImports: async () => structuredClone(importGlobals.nitro) },
+    });
+    await nuxt.callHook("builder:generateApp");
+
+    const generated = await import(join(rootDir, ".nuxt", "eslint.config.mjs"));
+    const configs = await generated.configs;
+    const globals = configs.find((item) => item.name === "nuxt/import-globals")?.languageOptions
+      ?.globals;
+    if (!globals) throw new Error("@nuxt/eslint did not emit nuxt/import-globals");
+    return globals;
   } finally {
     rmSync(rootDir, { force: true, recursive: true });
   }
@@ -210,8 +240,33 @@ export async function runOracle() {
     };
   }
 
+  const importGlobalsEntry = corpus.cases[0];
+  if (!importGlobalsEntry) throw new Error("the import-globals oracle requires a project case");
+  const recordedImportGlobals = await recordImportGlobals(
+    setupConfigGen,
+    importGlobalsEntry,
+    corpus.importGlobals,
+  );
+  const importGlobalsCase = cases[importGlobalsEntry.id];
+  if (!importGlobalsCase) throw new Error("the import-globals oracle case was not recorded");
+  const importGlobalsPlan = buildNuxtLintPlan(importGlobalsCase.features, importGlobalsCase.dirs);
+  const initialOxlintConfig = renderNuxtOxlintConfig(
+    importGlobalsPlan,
+    RECORDED_VIZE_PLUGIN_SPECIFIER,
+  );
+  const regeneratedOxlintConfig = renderNuxtOxlintConfig(
+    [
+      ...importGlobalsPlan,
+      {
+        name: "nuxt/import-globals",
+        globals: recordedImportGlobals,
+      },
+    ],
+    RECORDED_VIZE_PLUGIN_SPECIFIER,
+  );
+
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
@@ -220,6 +275,13 @@ export async function runOracle() {
     // `typescript` package resolves. Recording the probe's answer keeps the
     // offline test honest about which branch the rest of the recording is on.
     typeScriptDetected: resolveOptions({ features: {}, dirs: {} }).features.typescript,
+    importGlobals: {
+      globals: Object.keys(recordedImportGlobals),
+      artifacts: {
+        initial: initialOxlintConfig,
+        regenerated: regeneratedOxlintConfig,
+      },
+    },
     dirDefaults,
     cases,
   };

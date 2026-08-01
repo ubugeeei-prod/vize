@@ -1,6 +1,15 @@
 /** Nuxt runtime integration plus the shared `@vizejs/nuxt-lint-config` API. */
 export * from "@vizejs/nuxt-lint-config";
 export {
+  setupNuxtLintConfigAddons,
+  VIZE_NUXT_LINT_CONFIG_ADDONS_HOOK,
+  type NuxtLintAwaitable,
+  type NuxtLintConfigAddon,
+  type NuxtLintConfigAddonNuxt,
+  type NuxtLintImport,
+  type ResolveNuxtLintConfigAddons,
+} from "./addons.ts";
+export {
   toNuxtLintProjectState,
   type NuxtLintSourceOptions,
   type NuxtLintStateOverrides,

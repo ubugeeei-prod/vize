@@ -13,6 +13,7 @@ import {
 } from "@vizejs/nuxt-lint-config";
 
 import type { VizeNuxtLintOptions } from "../options.ts";
+import { setupNuxtLintConfigAddons, type NuxtLintConfigAddonNuxt } from "./addons.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 import { toNuxtLintProjectState, type NuxtLintSourceOptions } from "./nuxt-state.ts";
 
@@ -190,6 +191,11 @@ export async function setupNuxtLintConfigGeneration(
   );
   const hasTypeScriptProbe = dependencies.hasTypeScript ?? hasTypeScript;
   const resolvePluginSpecifier = dependencies.resolvePluginSpecifier ?? resolveVizePluginSpecifier;
+  const resolveAddons =
+    dependencies.resolveAddons ??
+    ("callHook" in nuxt
+      ? setupNuxtLintConfigAddons(nuxt as NuxtLintGenerationNuxt & NuxtLintConfigAddonNuxt)
+      : undefined);
 
   const regenerate = async (): Promise<boolean> => {
     const features = resolveNuxtLintFeatures(featureOptions, () => hasTypeScriptProbe(planRoot));
@@ -197,7 +203,7 @@ export async function setupNuxtLintConfigGeneration(
       rootDir: planRoot,
     });
     const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(project));
-    const addons = (await dependencies.resolveAddons?.()) ?? [];
+    const addons = (await resolveAddons?.()) ?? [];
     const artifact = renderNuxtOxlintConfig(
       [...plan, ...addons],
       resolvePluginSpecifier(path.dirname(configFile)),

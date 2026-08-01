@@ -12,6 +12,11 @@ import {
   type NuxtLintProjectState,
 } from "@vizejs/nuxt-lint-config";
 
+import {
+  setupNuxtLintConfigAddons,
+  type NuxtLintConfigAddonNuxt,
+  type NuxtLintImport,
+} from "./addons.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 
 const compatDir = join(
@@ -40,11 +45,38 @@ function readJson<T>(...segments: string[]): T {
   return JSON.parse(readFileSync(join(compatDir, ...segments), "utf8")) as T;
 }
 
-const corpus = readJson<{ cases: CorpusCase[] }>("fixtures", "corpus.json");
+const corpus = readJson<{
+  importGlobals: {
+    id: string;
+    description: string;
+    nuxt: NuxtLintImport[];
+    nitro: NuxtLintImport[];
+  };
+  cases: CorpusCase[];
+}>("fixtures", "corpus.json");
 const recording = readJson<{
   typeScriptDetected: boolean;
+  importGlobals: {
+    globals: string[];
+    artifacts: { initial: string; regenerated: string };
+  };
   cases: Record<string, RecordedCase>;
 }>("fixtures", "nuxt-eslint-output.json");
+
+function createAddonNuxtStub(): NuxtLintConfigAddonNuxt & {
+  callRegisteredHook(name: string, value: unknown): Promise<void>;
+} {
+  const hooks = new Map<string, Array<(value: unknown) => unknown>>();
+  return {
+    hook(name, callback) {
+      hooks.set(name, [...(hooks.get(name) ?? []), callback]);
+    },
+    callHook() {},
+    async callRegisteredHook(name, value) {
+      for (const callback of hooks.get(name) ?? []) await callback(value);
+    },
+  };
+}
 
 function projectState(entry: CorpusCase): NuxtLintProjectState {
   return {
@@ -56,6 +88,38 @@ function projectState(entry: CorpusCase): NuxtLintProjectState {
     })),
   };
 }
+
+void test(`${corpus.importGlobals.id}: globals and artifacts match @nuxt/eslint byte for byte`, async () => {
+  const nuxt = createAddonNuxtStub();
+  const resolveAddons = setupNuxtLintConfigAddons(nuxt);
+  await nuxt.callRegisteredHook("imports:context", {
+    getImports: async () => corpus.importGlobals.nuxt,
+  });
+  await nuxt.callRegisteredHook("nitro:init", {
+    unimport: { getImports: async () => corpus.importGlobals.nitro },
+  });
+
+  const addons = await resolveAddons();
+  const globals = addons[0]?.globals ?? {};
+  assert.deepEqual(Object.keys(globals), recording.importGlobals.globals);
+  assert.deepEqual(new Set(Object.values(globals)), new Set(["readonly"]));
+  for (const hostileName of ["__proto__", "constructor", "toString"]) {
+    assert.equal(Object.hasOwn(globals, hostileName), true);
+  }
+
+  const entry = corpus.cases[0];
+  assert.ok(entry, "the import-globals oracle requires a base project case");
+  const features = resolveNuxtLintFeatures(entry.config, () => recording.typeScriptDetected);
+  const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(projectState(entry)));
+  assert.equal(
+    renderNuxtOxlintConfig(plan, RECORDED_VIZE_PLUGIN_SPECIFIER),
+    recording.importGlobals.artifacts.initial,
+  );
+  assert.equal(
+    renderNuxtOxlintConfig([...plan, ...addons], RECORDED_VIZE_PLUGIN_SPECIFIER),
+    recording.importGlobals.artifacts.regenerated,
+  );
+});
 
 for (const entry of corpus.cases) {
   void test(`${entry.id}: whole generated oxlint artifact matches upstream`, () => {

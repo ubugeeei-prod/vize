@@ -6,6 +6,23 @@
     "configVersion": "1.16.0"
   },
   "description": "Nuxt project states whose generated lint config @vizejs/nuxt-lint-config must reproduce. Each case is materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "importGlobals": {
+    "id": "addons/import-globals",
+    "description": "Nuxt and Nitro auto-import registries are merged, sorted by source then imported name, and aliases become readonly globals.",
+    "nuxt": [
+      { "from": "vue", "name": "watch", "as": "observe" },
+      { "from": "#app", "name": "useRoute" },
+      { "from": "vue", "name": "computed" },
+      { "from": "#app", "name": "useFetch", "as": "fetchData" },
+      { "from": "#app", "name": "alpha", "as": "constructor" },
+      { "from": "vue", "name": "ref", "as": "__proto__" }
+    ],
+    "nitro": [
+      { "from": "nitropack/runtime", "name": "defineNitroPlugin" },
+      { "from": "#app", "name": "useAsyncData" },
+      { "from": "#app", "name": "beta", "as": "toString" }
+    ]
+  },
   "dirDefaultCases": [
     {
       "id": "defaults/empty",
