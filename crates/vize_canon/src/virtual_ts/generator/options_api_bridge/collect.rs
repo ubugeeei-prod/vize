@@ -14,6 +14,7 @@ use super::super::options_api::{
     component_options_from_program, option_object_property, property_key_name, safe_identifier,
     source_slice,
 };
+use super::inherited::collect_inherited_components;
 use super::{BridgeSpans, MappedType, OptionsApiBridge, OptionsFunction, OptionsFunctionKind};
 use vize_carton::{CompactString, FxHashSet, String, append};
 
@@ -45,6 +46,7 @@ pub(super) fn collect_options_api_bridge(script: &str) -> Option<OptionsApiBridg
         &mut bridge.methods,
         &mut bridge.mapped_types,
     );
+    collect_inherited_components(options, &mut bridge.inherited);
     Some(bridge)
 }
 

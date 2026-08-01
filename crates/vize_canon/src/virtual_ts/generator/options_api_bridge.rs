@@ -10,9 +10,10 @@
 //! against the approximate `__VizeThis` shape adds no coverage, and now that
 //! the copies anchor on authored bytes it would publish findings vue-tsc never
 //! reports: implicit `any` callback parameters off `any`-typed members, plus
-//! every member the shape cannot see (mixins, `extends`, `$emit`, plugin
-//! globals). The Vue 2 `defineComponent` shim types no receiver at all, which
-//! is where the bridge remains the only checker.
+//! every member the shape cannot see (`$emit`, plugin globals, and mixins that
+//! are not component constructors — see [`inherited`]). The Vue 2
+//! `defineComponent` shim types no receiver at all, which is where the bridge
+//! remains the only checker.
 //!
 //! Because those bodies are verbatim copies of authored bytes, every copy is
 //! published as a [`VizeMapping`]. Without them a diagnostic raised inside a
@@ -22,12 +23,14 @@
 //! (#3582 moved them by exactly the number of bytes it added to the preamble).
 
 mod collect;
+mod inherited;
 
 use std::ops::Range;
 
 use vize_croquis::{BindingType, Croquis};
 
 use self::collect::collect_options_api_bridge;
+use self::inherited::{INHERITED_MEMBER_HELPERS, InheritedComponent};
 use super::options_api_support::{extend_options_api_descriptor_names, is_safe_value_identifier};
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{CompactString, String, append, profile};
@@ -100,6 +103,7 @@ fn emit_options_api_bridge(
             sub_spans: Vec::new(),
         });
     }
+    emit_inherited_aliases(ts, mappings, &bridge.inherited, script_offset);
     ts.push_str("  type __VizeThis = {\n");
     for name in names {
         append!(ts, "    {name}: any;\n");
@@ -107,6 +111,9 @@ fn emit_options_api_bridge(
     ts.push_str("  }");
     for index in 0..bridge.mapped_types.len() {
         append!(ts, " & __VizeOptionsMap{index}");
+    }
+    for index in 0..bridge.inherited.len() {
+        append!(ts, " & __VizeInherited{index}");
     }
     ts.push_str(";\n");
 
@@ -132,6 +139,38 @@ fn emit_options_api_bridge(
         ts.push('\n');
     }
     ts.push('\n');
+}
+
+/// Emit one `__VizeInherited{index}` alias per `mixins:` / `extends:` entry.
+///
+/// Each alias is anchored on the authored reference it was derived from: a
+/// finding raised by the `typeof` query (an unresolved import, say) must land
+/// on the author's `mixins: [base]` instead of escaping as an unmapped
+/// generated offset, which `CompositeSourceMap` would then report as if it
+/// were an authored one.
+fn emit_inherited_aliases(
+    mut ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    inherited: &[InheritedComponent],
+    script_offset: usize,
+) {
+    if inherited.is_empty() {
+        return;
+    }
+    ts.push_str(INHERITED_MEMBER_HELPERS);
+    for (index, component) in inherited.iter().enumerate() {
+        let gen_start = ts.len();
+        append!(
+            ts,
+            "  type __VizeInherited{index} = __VizeInheritedMembers<typeof {}>;\n",
+            component.reference
+        );
+        mappings.push(VizeMapping {
+            gen_range: gen_start..ts.len(),
+            src_range: shift(script_offset, &component.src),
+            sub_spans: Vec::new(),
+        });
+    }
 }
 
 fn emit_bridge_function(
@@ -194,6 +233,8 @@ struct OptionsApiBridge {
     computed: Vec<OptionsFunction>,
     methods: Vec<OptionsFunction>,
     mapped_types: Vec<MappedType>,
+    /// `mixins:` / `extends:` references whose members `__VizeThis` inherits.
+    inherited: Vec<InheritedComponent>,
 }
 
 /// One `...mapState(store, [...])` spread lowered to a mapped type, paired with
