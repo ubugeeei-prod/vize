@@ -3,15 +3,12 @@
 //! This module provides formatting for CSS/SCSS/Less content
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
+mod stabilization;
+
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
 use vize_carton::{String, ToCompactString};
-
-/// Upper bound on lightningcss re-format passes when reaching a fixed point.
-/// A single extra pass fixes the known shorthand-normalization cases; the
-/// bound guards against a pathological non-converging value. (#3248)
-const MAX_STYLE_STABILIZATION_PASSES: usize = 4;
 
 /// Format CSS content using lightningcss.
 ///
@@ -72,20 +69,7 @@ fn format_with_preserved_top_level_comments(
 }
 
 fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
-    let mut current = format_chunk_once(trimmed, options)?;
-    // lightningcss normalization is not always a fixed point: parsing its own
-    // output can normalize a value further (e.g. collapsing the CSS shorthand
-    // `background-position: 1em 50%` to `1em`, since a missing y-position
-    // defaults to center). Re-run to a fixed point so one `vize fmt` pass
-    // already emits the normal form and the formatter stays idempotent. (#3248)
-    for _ in 1..MAX_STYLE_STABILIZATION_PASSES {
-        let next = format_chunk_once(current.as_str(), options)?;
-        if next.as_str() == current.as_str() {
-            return Ok(next);
-        }
-        current = next;
-    }
-    Ok(current)
+    stabilization::format_to_fixed_point(trimmed, |source| format_chunk_once(source, options))
 }
 
 fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {

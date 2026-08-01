@@ -5,13 +5,13 @@
 mod block_indent;
 mod custom_block;
 mod raw_mask;
+mod template_indent;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::script;
 use crate::style;
 use crate::template;
-use raw_mask::compute_raw_line_mask;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
@@ -257,15 +257,12 @@ impl<'a> GlyphFormatter<'a> {
         let trimmed = formatted_content
             .trim_end_matches('\n')
             .trim_end_matches('\r');
-        let lines: Vec<&[u8]> = trimmed.as_bytes().split(|&b| b == b'\n').collect();
-        let raw_mask = compute_raw_line_mask(&lines);
-        for (i, line) in lines.iter().enumerate() {
-            if !line.is_empty() && line != b"\r" && !raw_mask[i] {
-                output.extend_from_slice(indent);
-            }
-            output.extend_from_slice(line);
-            output.extend_from_slice(self.options.newline_bytes());
-        }
+        template_indent::write_indented_template(
+            output,
+            trimmed,
+            indent,
+            self.options.newline_bytes(),
+        );
 
         output.extend_from_slice(b"</template>");
 

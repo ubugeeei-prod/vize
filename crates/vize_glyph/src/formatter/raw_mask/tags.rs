@@ -52,7 +52,7 @@ fn is_tag_name_byte(byte: u8) -> bool {
 /// The byte before the name must be a separator, so `data-v-pre` and
 /// `:title="v-pre"` never match. A cursor at column 0 is a separator too: the
 /// attribute then opens a continuation line of the tag.
-pub(super) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) -> bool {
+pub(in crate::formatter) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) -> bool {
     const NAME: &[u8] = b"v-pre";
     if !bytes[cursor..]
         .get(..NAME.len())
@@ -63,7 +63,7 @@ pub(super) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) -> bool {
     let terminated = bytes
         .get(cursor + NAME.len())
         .is_none_or(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'=' | b'/' | b'>'));
-    let separated = cursor == 0 || matches!(bytes[cursor - 1], b' ' | b'\t');
+    let separated = cursor == 0 || matches!(bytes[cursor - 1], b' ' | b'\t' | b'\n');
     terminated && separated
 }
 

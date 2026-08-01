@@ -6,6 +6,8 @@ mod tests;
 use interpolation::InterpolationScan;
 use tags::{RawRegion, starts_v_pre_attribute, tag_name_at};
 
+pub(super) use tags::starts_v_pre_attribute as starts_v_pre_attribute_at;
+
 /// Per-line "this line is inside a whitespace-significant block" mask.
 ///
 /// Lines inside `<pre>`, `<textarea>`, `v-pre`, multi-line comments,

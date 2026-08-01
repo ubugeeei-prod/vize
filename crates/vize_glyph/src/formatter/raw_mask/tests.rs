@@ -85,6 +85,12 @@ fn a_v_pre_directive_on_a_later_line_of_the_opening_tag_still_opens_the_region()
 }
 
 #[test]
+fn a_flush_left_v_pre_continuation_still_opens_the_region() {
+    let source = "<code\nv-pre\n>\n  {{ variable }}\n</code>\n<span>y</span>";
+    assert_eq!(mask(source), [false, false, false, true, true, false]);
+}
+
+#[test]
 fn a_same_name_element_nested_in_a_v_pre_region_does_not_end_it() {
     let source = "<div v-pre>\n  <div>x</div>\n  y\n</div>\n<span>z</span>";
     assert_eq!(mask(source), [false, true, true, true, false]);
