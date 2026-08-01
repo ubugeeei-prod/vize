@@ -243,6 +243,7 @@ function renderMarkdown(artifact) {
     `Shared Vue files: ${artifact.baseline.coverage.sharedVueFileCount}`,
     `Missing Vue files: ${artifact.baseline.coverage.missingVueFiles.length}`,
     `Unexpected Vue files: ${artifact.baseline.coverage.unexpectedVueFiles.length}`,
+    `Ignored dependency Vue files: ${artifact.baseline.coverage.ignoredDependencyVueFileCount}`,
     `Budget verdict: ${describeVerdict(artifact.budget)}`,
     `Budget passed: ${artifact.budget.passed}`,
     `Digest: ${artifact.divergence.sha256}`,

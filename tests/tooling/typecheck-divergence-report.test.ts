@@ -76,6 +76,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.deepEqual(artifact.baseline.coverage, {
       baselineVueFileCount: 1,
       baselineVueFilesSha256: createHash("sha256").update("src/App.vue\n").digest("hex"),
+      ignoredDependencyVueFileCount: 0,
+      ignoredDependencyVueFilesSha256: createHash("sha256").update("").digest("hex"),
       missingVueFiles: [],
       sharedVueFileCount: 1,
       unexpectedVueFiles: [],

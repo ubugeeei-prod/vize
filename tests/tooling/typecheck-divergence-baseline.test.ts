@@ -74,6 +74,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "Shared Vue files: 0",
         "Missing Vue files: 1",
         "Unexpected Vue files: 0",
+        "Ignored dependency Vue files: 0",
         `Budget verdict: unusable (${emptyBaselineReason})`,
         "Budget passed: false",
         `Digest: ${artifact.divergence.sha256}`,
@@ -216,6 +217,24 @@ test("same-sized but different Vue corpora are unusable", () => {
     const coverage = readJson(artifactPath(fixture, "json")).baseline.coverage;
     assert.deepEqual(coverage.missingVueFiles, ["src/App.vue"]);
     assert.deepEqual(coverage.unexpectedVueFiles, ["src/Other.vue"]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("transitive Vue dependencies do not expand the authored fixture corpus", () => {
+  const fixture = setup({
+    baselineFiles: ["src/App.vue", "node_modules/pkg/RuntimeComponent.vue"],
+  });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const coverage = readJson(artifactPath(fixture, "json")).baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.baselineVueFileCount, 1);
+    assert.equal(coverage.ignoredDependencyVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
   } finally {
     cleanup(fixture);
   }

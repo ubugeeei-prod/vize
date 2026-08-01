@@ -12,7 +12,8 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
     .slice(0, vizeReport.fileCount)
     .map((entry) => entry.file)
     .sort(byteOrder);
-  const baselineVueFiles = collectVueTscProgramFiles(vueTscOutput, cwd);
+  const { authoredFiles: baselineVueFiles, dependencyFiles: baselineDependencyVueFiles } =
+    collectVueTscProgramFiles(vueTscOutput, cwd);
   const vizeSet = new Set(vizeVueFiles);
   const baselineSet = new Set(baselineVueFiles);
   const missingVueFiles = vizeVueFiles.filter((file) => !baselineSet.has(file));
@@ -27,6 +28,8 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
   return {
     baselineVueFileCount: baselineVueFiles.length,
     baselineVueFilesSha256: fileListHash(baselineVueFiles),
+    ignoredDependencyVueFileCount: baselineDependencyVueFiles.length,
+    ignoredDependencyVueFilesSha256: fileListHash(baselineDependencyVueFiles),
     missingVueFiles,
     sharedVueFileCount,
     unexpectedVueFiles,
@@ -39,6 +42,7 @@ export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
 
 function collectVueTscProgramFiles(output, cwd) {
   const files = new Set();
+  const dependencyFiles = new Set();
   for (const rawLine of output.replaceAll("\r\n", "\n").split("\n")) {
     const line = rawLine.trimEnd();
     // `--listFiles` paths are absolute. Requiring that shape keeps diagnostic
@@ -53,9 +57,16 @@ function collectVueTscProgramFiles(output, cwd) {
     ) {
       continue;
     }
-    files.add(file);
+    if (file.split("/").includes("node_modules")) {
+      dependencyFiles.add(file);
+    } else {
+      files.add(file);
+    }
   }
-  return [...files].sort(byteOrder);
+  return {
+    authoredFiles: [...files].sort(byteOrder),
+    dependencyFiles: [...dependencyFiles].sort(byteOrder),
+  };
 }
 
 function fileListHash(files) {
