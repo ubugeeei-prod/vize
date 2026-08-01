@@ -84,7 +84,7 @@ runs:
       run: |
         set -o pipefail
         timeout --signal=TERM --kill-after=15s 3m \
-          vp run --filter './tests' test:readiness:check 2>&1 \
+          env UPDATE_SNAPSHOTS=1 vp run --filter './tests' test:readiness:check 2>&1 \
           | tee target/app-readiness-logs/check.log
 
     - name: Lint CLI fixture
@@ -118,12 +118,13 @@ runs:
           | tee target/app-readiness-logs/dev.log
 
     - name: Upload app readiness artifacts
-      if: ${{ cancelled() || failure() || steps.check.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.build.outcome == 'failure' || steps.dev.outcome == 'failure' }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: app-readiness-artifacts
         path: |
           target/app-readiness-logs/
+          tests/snapshots/check/__snapshots__/{elk,misskey,nuxt-ui,reka-ui}-check.snap
           tests/app/results/
           tests/app/screenshots/
           tests/app/playwright-report/
