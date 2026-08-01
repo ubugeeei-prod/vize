@@ -93,6 +93,15 @@ export interface BatchCompileOptionsNapi {
   includeMacroArtifacts?: boolean;
   /** Include template/style/script content hashes (for HMR). Default OFF. */
   includeHashes?: boolean;
+  /**
+   * Emit a Source Map v3 document per file (`map`). Default OFF.
+   *
+   * The pre-compile batch is the path every build takes, so a production
+   * build with `build.sourcemap` on has to be able to ask for maps here or
+   * the bundle's maps point at the virtual module instead of the `.vue`
+   * file (#3399).
+   */
+  includeSourceMap?: boolean;
 }
 
 export interface BatchCompileResultNapi {
@@ -118,6 +127,9 @@ export interface BatchFileInputNapi {
 export interface BatchFileResultNapi {
   path: string;
   code: string;
+  /** Source Map v3 document (JSON) describing `code`, present only when
+   * `includeSourceMap` was requested and a line could be anchored (#3399). */
+  map?: string;
   css?: string;
   scopeId: string;
   hasScoped: boolean;
@@ -919,6 +931,10 @@ export interface SfcCompileOptionsNapi {
 
 export interface SfcCompileResultNapi {
   code: string;
+  /** Source Map v3 document (JSON) describing `code`, present only when
+   * `sourceMap` was requested and at least one authored line could be
+   * anchored (#3399). Its single `sources` entry is the authored `.vue` path. */
+  map?: string;
   css?: string;
   errors: Array<string>;
   warnings: Array<string>;

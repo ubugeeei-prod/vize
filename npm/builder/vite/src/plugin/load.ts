@@ -12,7 +12,8 @@ import {
 } from "./state.ts";
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
-import { embedsInlineCss, generateOutput, hasDelegatedStyles } from "../utils/index.ts";
+import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
+import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
 import {
   resolveCssImports,
   scopeCssForPipeline,
@@ -30,6 +31,9 @@ import {
   rewriteStaticAssetUrls,
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
+
+/** What `load` hands Vite: emitted code plus its map, when one was produced. */
+type LoadResult = { code: string; map: SourceMapV3 | null };
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -90,14 +94,11 @@ function loadCompiledSfcModule(
   isSsr: boolean,
   currentBase: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
-): { code: string; map: null } | string | null {
+): LoadResult | string | null {
   const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
   if (placeholderCode) {
     state.logger.log(`load: using boundary placeholder for ${realPath}`);
-    return {
-      code: placeholderCode,
-      map: null,
-    };
+    return { code: placeholderCode, map: null };
   }
 
   const cache = getEnvironmentCache(state, isSsr);
@@ -142,22 +143,20 @@ function loadCompiledSfcModule(
       ),
     };
   }
-  const generatedOutput = generateOutput(compiled, outputOptions);
-  const output = rewriteStaticAssetUrls(
-    rewriteDynamicTemplateImports(
-      isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,
-      state.dynamicImportAliasRules,
-    ),
-    state.dynamicImportAliasRules,
+  const emitted = generateOutputWithMap(compiled, outputOptions);
+  // Each rewrite below substitutes inside a single line, but they go through
+  // `MappedModule` anyway so the map cannot silently drift if one ever does not.
+  const rewritten = new MappedModule(
+    isSsr ? normalizeVueServerRendererImport(emitted.code) : emitted.code,
+    emitted.map,
   );
-  const normalizedOutput = rewriteImportMetaGlobBase(output, realPath, state.root);
+  rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
+  rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
+  rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
   if (!loadOptions?.ssr) {
     state.pendingHmrUpdateTypes.delete(realPath);
   }
-  return {
-    code: normalizedOutput,
-    map: null,
-  };
+  return { code: rewritten.code, map: rewritten.map };
 }
 
 function loadDefinePageArtifact(
@@ -185,7 +184,7 @@ export function loadHook(
   state: VizePluginState,
   id: string,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
-): string | { code: string; map: null } | null {
+): string | LoadResult | null {
   if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0") && !id.includes(".vue")) return null;
 
   const request = classifyVitePluginRequest(id);

@@ -471,9 +471,9 @@ fn compile_sfc_inner(
         trim_trailing_newlines(&mut code);
 
         return Ok(SfcCompileResult {
+            map: crate::source_map::sfc_source_map(&code, descriptor, filename, &codegen_options),
             code,
             css,
-            map: None,
             errors,
             warnings,
             bindings: None,
@@ -843,9 +843,9 @@ fn compile_sfc_inner(
     trim_trailing_newlines(&mut code);
 
     Ok(SfcCompileResult {
+        map: crate::source_map::sfc_source_map(&code, descriptor, filename, &codegen_options),
         code,
         css,
-        map: None,
         errors,
         warnings,
         bindings: script_result.bindings,

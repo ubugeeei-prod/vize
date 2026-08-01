@@ -98,6 +98,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     pendingHmrUpdateTypes: new Map(),
     viteResolveCache: new Map(),
     isProduction: false,
+    viteBuildSourcemap: false,
     root: "",
     clientViteBase: "/",
     serverViteBase: "/",
@@ -141,6 +142,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     async configResolved(resolvedConfig: ResolvedConfig) {
       state.root = options.root ?? resolvedConfig.root;
       state.isProduction = options.isProduction ?? resolvedConfig.isProduction;
+      state.viteBuildSourcemap = !!resolvedConfig.build?.sourcemap;
 
       const isSsrBuild = !!resolvedConfig.build?.ssr;
       const currentBase =

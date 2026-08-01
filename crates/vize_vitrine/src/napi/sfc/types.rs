@@ -119,6 +119,10 @@ impl ModuleShapeNapi {
 #[napi(object)]
 pub struct SfcCompileResultNapi {
     pub code: String,
+    /// Source Map v3 document (JSON) describing `code`, present only when
+    /// `sourceMap` was requested and at least one authored line could be
+    /// anchored (#3399). Its single `sources` entry is the authored `.vue` path.
+    pub map: Option<String>,
     pub css: Option<String>,
     pub errors: Vec<String>,
     pub warnings: Vec<String>,
@@ -165,6 +169,13 @@ pub struct BatchCompileOptionsNapi {
     pub include_macro_artifacts: Option<bool>,
     /// Include template/style/script content hashes (for HMR). Default OFF.
     pub include_hashes: Option<bool>,
+    /// Emit a Source Map v3 document per file (`map`). Default OFF.
+    ///
+    /// The pre-compile batch is the path every build takes, so a production
+    /// build with `build.sourcemap` on has to be able to ask for maps here or
+    /// the bundle's maps point at the virtual module instead of the `.vue`
+    /// file (#3399).
+    pub include_source_map: Option<bool>,
 }
 
 #[napi(object)]
@@ -186,6 +197,9 @@ pub struct BatchFileInputNapi {
 pub struct BatchFileResultNapi {
     pub path: String,
     pub code: String,
+    /// Source Map v3 document (JSON) describing `code`, present only when
+    /// `includeSourceMap` was requested and a line could be anchored (#3399).
+    pub map: Option<String>,
     pub css: Option<String>,
     pub scope_id: String,
     pub has_scoped: bool,

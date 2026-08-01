@@ -36,6 +36,17 @@ export interface VizePluginState {
   pendingHmrUpdateTypes: Map<string, HmrUpdateType>;
   viteResolveCache?: Map<string, Promise<{ id: string; external?: boolean } | null>>;
   isProduction: boolean;
+  /**
+   * Whether Vite's own `build.sourcemap` asks for source maps (#3399).
+   *
+   * The documented compiler default is "development on, production off", but a
+   * production build that turns `build.sourcemap` on is asking for exactly the
+   * maps that default would suppress, so it overrides the production half.
+   *
+   * Optional so a caller that builds a state literal without it keeps the
+   * previous behaviour (dev on, production off) rather than failing to compile.
+   */
+  viteBuildSourcemap?: boolean;
   root: string;
   clientViteBase: string;
   serverViteBase: string;
@@ -80,11 +91,12 @@ export type CompileOptionsForRequest = {
 >;
 
 export function getCompileOptionsForRequest(
-  state: Pick<VizePluginState, "isProduction" | "mergedOptions">,
+  state: Pick<VizePluginState, "isProduction" | "mergedOptions" | "viteBuildSourcemap">,
   ssr: boolean,
 ): CompileOptionsForRequest {
   const options: CompileOptionsForRequest = {
-    sourceMap: state.mergedOptions?.sourceMap ?? !state.isProduction,
+    sourceMap:
+      state.mergedOptions?.sourceMap ?? (!state.isProduction || !!state.viteBuildSourcemap),
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),

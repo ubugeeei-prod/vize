@@ -17,6 +17,7 @@ export interface CompileFileOptions {
 }
 
 export interface CompileBatchOptions {
+  sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
   mode?: "module" | "function";
@@ -70,6 +71,9 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     includeStyles: true,
     includeMacroArtifacts: true,
     includeHashes: true,
+    // Also part of the pre-compile cache key, so a run that wants maps cannot
+    // be served entries compiled without them (#3399).
+    includeSourceMap: options.sourceMap,
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined

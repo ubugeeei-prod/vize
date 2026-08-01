@@ -181,8 +181,9 @@ interface VizeNativeOptions {
   ssr?: boolean;
 
   /**
-   * Enable source map generation
-   * @default true in development, false in production
+   * Enable source map generation. The emitted map's `sources` names the
+   * authored `.vue` file, not the virtual `.vue.ts` module.
+   * @default true in development, false in production unless `build.sourcemap` is set
    */
   sourceMap?: boolean;
 

@@ -59,7 +59,7 @@ struct Segment {
 /// Lives in the codegen context as an `Option`; it is `Some` only when the
 /// `source_map` codegen flag is enabled, so the no-map path pays nothing.
 #[derive(Debug, Default)]
-pub(crate) struct SourceMapBuilder {
+pub struct SourceMapBuilder {
     segments: Vec<Segment>,
     /// The v3 `names` array, in insertion order. A segment's `name` is an index
     /// into this vector.
@@ -71,7 +71,7 @@ pub(crate) struct SourceMapBuilder {
 
 impl SourceMapBuilder {
     /// Create an empty builder.
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             segments: Vec::new(),
             names: Vec::new(),
@@ -85,7 +85,7 @@ impl SourceMapBuilder {
     /// Call this *immediately before* writing the mapped token to the code
     /// buffer, passing the buffer's current length as `generated_offset` and the
     /// originating AST node's `loc.start.offset` as `source_offset`.
-    pub(crate) fn add_raw(&mut self, generated_offset: usize, source_offset: u32) {
+    pub fn add_raw(&mut self, generated_offset: usize, source_offset: u32) {
         self.segments.push(Segment {
             generated_offset: generated_offset as u32,
             source_offset,
@@ -100,7 +100,7 @@ impl SourceMapBuilder {
     /// the generated token back to the original identifier. Otherwise identical
     /// to [`add_raw`](Self::add_raw): call it immediately before writing the
     /// mapped token.
-    pub(crate) fn add_named(&mut self, generated_offset: usize, source_offset: u32, name: &str) {
+    pub fn add_named(&mut self, generated_offset: usize, source_offset: u32, name: &str) {
         let index = self.intern_name(name);
         self.segments.push(Segment {
             generated_offset: generated_offset as u32,
@@ -135,12 +135,7 @@ impl SourceMapBuilder {
     /// document and generated column reset per line). Segments that carry a
     /// source symbol add a 5th field: the name-index delta (relative to the
     /// previous named segment across the whole document).
-    pub(crate) fn finish(
-        mut self,
-        generated_code: &str,
-        filename: &str,
-        source_content: &str,
-    ) -> String {
+    pub fn finish(mut self, generated_code: &str, filename: &str, source_content: &str) -> String {
         // Resolve byte offsets to (line, col). Sort by generated offset first so
         // the generated-side scan cursor advances monotonically; the source side
         // is resolved with an independent binary search over precomputed line

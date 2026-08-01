@@ -6,6 +6,7 @@ import {
   insertBeforeSfcMainDefaultExport,
   rewriteDefaultExportToSfcMain,
 } from "./module-output.ts";
+import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
 
 // Re-export CSS utilities for backward compatibility
 export { resolveCssImports, type CssAliasRule } from "./css.ts";
@@ -145,56 +146,73 @@ export function embedsInlineCss(compiled: CompiledModule, options: GenerateOutpu
 }
 
 export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
+  return generateOutputWithMap(compiled, options).code;
+}
+
+/**
+ * `generateOutput` plus the source map that describes the module it returns.
+ *
+ * The compiler's map (`compiled.map`) describes `compiled.code`; every rewrite
+ * below goes through {@link MappedModule}, which realigns the map to the lines
+ * it inserts, so the returned map describes the returned code (#3399). `map` is
+ * `null` when the compiler produced none.
+ */
+export function generateOutputWithMap(
+  compiled: CompiledModule,
+  options: GenerateOutputOptions,
+): { code: string; map: SourceMapV3 | null } {
   const { isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
 
-  let output = compiled.code;
+  const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
 
   // The native compiler already parsed this module and reports its shape, so
   // the oxc parse here is redundant (#3425). `??` rather than a required field:
   // a `.vpc` cache entry written before this existed reads back without it and
   // simply pays the parse it always paid, so no cache-format bump is needed and
   // the fallback stays exercised.
-  const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(output);
+  const moduleInfo = compiled.moduleShape ?? analyzeModuleOutput(emitted.code);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasNamedRenderExport = moduleInfo.hasNamedRenderExport;
   const hasNamedSsrRenderExport = moduleInfo.hasNamedSsrRenderExport;
   const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    output = rewriteDefaultExportToSfcMain(output, moduleInfo);
+    emitted.edit(rewriteDefaultExportToSfcMain(emitted.code, moduleInfo));
     // Add __scopeId for scoped CSS support
     if (compiled.hasScoped && compiled.scopeId) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
     }
-    output += "\nexport default _sfc_main;";
+    emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
   } else if (hasExportDefault && hasSfcMainDefined) {
     // _sfc_main already defined, just add scopeId if needed
     if (compiled.hasScoped && compiled.scopeId) {
-      // `output` is still `compiled.code` on this branch -- nothing above it
-      // rewrote the module -- so `moduleInfo`'s offsets describe it exactly and
+      // `emitted.code` is still `compiled.code` on this branch -- nothing above
+      // it rewrote the module -- so `moduleInfo`'s offsets describe it exactly and
       // the insertion can reuse them instead of parsing the module again
       // (#3425). The later CSS-modules insertion below cannot: by then the
       // module has been rewritten and the offsets are stale.
-      output = insertBeforeSfcMainDefaultExport(
-        output,
-        `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
-        { moduleInfo },
+      emitted.edit(
+        insertBeforeSfcMainDefaultExport(
+          emitted.code,
+          `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
+          { moduleInfo },
+        ),
       );
     }
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
-    output += "\nconst _sfc_main = {};";
+    emitted.edit(`${emitted.code}\nconst _sfc_main = {};`);
     if (compiled.hasScoped && compiled.scopeId) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
     }
-    output += "\n_sfc_main.render = render;";
-    output += "\nexport default _sfc_main;";
+    emitted.edit(`${emitted.code}\n_sfc_main.render = render;`);
+    emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedSsrRenderExport) {
-    output += "\nconst _sfc_main = {};";
+    emitted.edit(`${emitted.code}\nconst _sfc_main = {};`);
     if (compiled.hasScoped && compiled.scopeId) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
     }
-    output += "\n_sfc_main.ssrRender = ssrRender;";
-    output += "\nexport default _sfc_main;";
+    emitted.edit(`${emitted.code}\n_sfc_main.ssrRender = ssrRender;`);
+    emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
   }
 
   // Determine whether to use style imports or inline CSS injection.
@@ -236,7 +254,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
     // override child component defaults.
     const allImports = [...styleImports, ...cssModuleImports].join("\n");
     if (allImports) {
-      output = insertAfterStaticImports(output, allImports);
+      emitted.edit(insertAfterStaticImports(emitted.code, allImports));
     }
 
     // Inject CSS module bindings into the component
@@ -258,25 +276,27 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
             `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(m.name)}] = ${m.bindingName};`,
         )
         .join("\n");
-      output = insertBeforeSfcMainDefaultExport(output, cssModuleSetup, {
-        normalizeSemicolon: true,
-      });
+      emitted.edit(
+        insertBeforeSfcMainDefaultExport(emitted.code, cssModuleSetup, {
+          normalizeSemicolon: true,
+        }),
+      );
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Inline CSS injection (original behavior for plain CSS) ---
-    output = prependInlineStyleInjection(output, compiled.css, compiled.scopeId);
+    emitted.edit(prependInlineStyleInjection(emitted.code, compiled.css, compiled.scopeId));
   }
 
   // Add HMR support in development (skip in production)
   if (!isProduction && isDev && hasExportDefault) {
     const effectiveHmrUpdateType =
-      hmrUpdateType === "template-only" && !supportsTemplateOnlyHmr(output)
+      hmrUpdateType === "template-only" && !supportsTemplateOnlyHmr(emitted.code)
         ? "full-reload"
         : (hmrUpdateType ?? "full-reload");
-    output += generateHmrCode(compiled.scopeId, effectiveHmrUpdateType);
+    emitted.edit(`${emitted.code}${generateHmrCode(compiled.scopeId, effectiveHmrUpdateType)}`);
   }
 
-  return output;
+  return { code: emitted.code, map: emitted.map };
 }
 
 /**

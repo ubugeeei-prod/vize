@@ -163,7 +163,7 @@ assert.match(
 const hoistedScopedBatch = compileBatch(
   [{ path: "/src/HoistedScoped.vue", source: hoistedScopedSource }],
   new Map(),
-  { ssr: false, vapor: false },
+  { sourceMap: false, ssr: false, vapor: false },
 );
 
 assert.match(
@@ -291,7 +291,7 @@ const batchResult = compileBatch(
     },
   ],
   new Map(),
-  { ssr: true, vapor: true },
+  { sourceMap: false, ssr: true, vapor: true },
 );
 
 assert.equal(
@@ -354,7 +354,7 @@ const styleBatchCache = new Map();
 const styleBatchResult = compileBatch(
   [{ path: "/src/Styled.vue", source: styleMetadataSource }],
   styleBatchCache,
-  { ssr: false, vapor: false },
+  { sourceMap: false, ssr: false, vapor: false },
 );
 
 assert.equal(styleBatchResult.failedCount, 0, "Batch style metadata compilation should succeed");
@@ -430,7 +430,7 @@ const srcImportBatchCache = new Map();
 const srcImportBatchResult = compileBatch(
   [{ path: srcImportFile, source: srcImportSource }],
   srcImportBatchCache,
-  { ssr: false, vapor: false },
+  { sourceMap: false, ssr: false, vapor: false },
 );
 
 assert.equal(srcImportBatchResult.failedCount, 0, "Batch src import compilation should succeed");

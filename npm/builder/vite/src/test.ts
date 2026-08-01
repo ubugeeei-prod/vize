@@ -30,6 +30,7 @@ import "./plugin/resolve-vue-runtime.test.ts";
 import "./plugin/resolve-dependency-style.test.ts";
 import "./plugin/resolve-relative-vue.test.ts";
 import "./plugin/resolve.test.ts";
+import "./plugin/source-map.test.ts";
 import "./plugin/precompile.test.ts";
 import "./plugin/precompile-cache.test.ts";
 import "./plugin/precompile-cache-corrupt.test.ts";

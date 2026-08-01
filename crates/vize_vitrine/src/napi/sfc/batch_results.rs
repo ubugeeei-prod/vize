@@ -5,6 +5,7 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
     time::Instant,
 };
+use vize_atelier_sfc::build_sfc_source_map;
 use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
@@ -58,6 +59,7 @@ fn compile_sfc_batch_with_results_inner(
     let include_custom_blocks = opts.include_custom_blocks.unwrap_or(false);
     let include_macro_artifacts = opts.include_macro_artifacts.unwrap_or(false);
     let include_hashes = opts.include_hashes.unwrap_or(false);
+    let include_source_map = opts.include_source_map.unwrap_or(false);
     let start = Instant::now();
     // Snapshot the filesystem for this batch: imported-type resolution treats
     // every file it stats as stable for the batch's duration, so the second and
@@ -86,6 +88,7 @@ fn compile_sfc_batch_with_results_inner(
                     return BatchFileResultNapi {
                         path: file.path,
                         code: String::new(),
+                        map: None,
                         css: None,
                         scope_id: scope_id.into(),
                         has_scoped: false,
@@ -200,10 +203,17 @@ fn compile_sfc_batch_with_results_inner(
                     // after every rewriting pass, so the offsets cannot be
                     // stale (#3425).
                     let module_shape = ModuleShapeNapi::of(&code);
+                    // Same reason as `module_shape`: the map has to describe
+                    // the post-strip bytes the bundler receives (#3399).
+                    let map = include_source_map
+                        .then(|| build_sfc_source_map(&code, &descriptor, &file.path))
+                        .flatten()
+                        .map(Into::into);
                     BatchFileResultNapi {
                         path: file.path,
                         module_shape,
                         code,
+                        map,
                         css: result.css.map(Into::into),
                         scope_id: scope_id.into(),
                         has_scoped,
@@ -220,6 +230,7 @@ fn compile_sfc_batch_with_results_inner(
                 Err(error) => BatchFileResultNapi {
                     path: file.path,
                     code: String::new(),
+                    map: None,
                     css: None,
                     scope_id: scope_id.into(),
                     has_scoped,

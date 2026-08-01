@@ -24,7 +24,11 @@ import {
   openPrecompileCache,
   type PrecompileCache,
 } from "./precompile-cache.ts";
-import { syncCollectedCssForFile, type VizePluginState } from "./state.ts";
+import {
+  getCompileOptionsForRequest,
+  syncCollectedCssForFile,
+  type VizePluginState,
+} from "./state.ts";
 
 /**
  * The options the pre-compile batch actually compiles with.
@@ -34,6 +38,9 @@ import { syncCollectedCssForFile, type VizePluginState } from "./state.ts";
  */
 function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOptions {
   return {
+    // The batch fills the same caches `load` serves from, so it has to make the
+    // same source-map decision the on-demand path makes (#3399).
+    sourceMap: getCompileOptionsForRequest(state, false).sourceMap,
     ssr: false,
     vapor: state.mergedOptions.vapor ?? false,
     mode: state.mergedOptions.mode,

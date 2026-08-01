@@ -25,8 +25,16 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 
-/** Bump when the persisted entry shape changes; abandons every old manifest. */
-export const PRECOMPILE_CACHE_FORMAT = 2;
+/**
+ * Bump when the persisted entry shape changes; abandons every old manifest.
+ *
+ * 3: entries carry the compiled module's source map (#3399). The container
+ * persists it automatically (it stores "everything but `code`/`css`" by rest
+ * destructuring), but a format-2 manifest holds mapless entries, and serving
+ * those to a build that asked for maps is exactly the silent regression this
+ * gate exists to prevent.
+ */
+export const PRECOMPILE_CACHE_FORMAT = 3;
 
 /**
  * SHA-256 of the exact source text handed to the compiler.

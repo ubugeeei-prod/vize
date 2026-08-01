@@ -1,5 +1,6 @@
 use napi::{Result, Status};
 use napi_derive::napi;
+use vize_atelier_sfc::build_sfc_source_map;
 use vize_atelier_sfc::compile_script::typescript::ensure_javascript_output;
 use vize_carton::cstr;
 
@@ -38,6 +39,7 @@ pub fn compile_sfc(
         Err(e) => {
             return Ok(SfcCompileResultNapi {
                 code: String::new(),
+                map: None,
                 css: None,
                 errors: vec![e.message.into()],
                 warnings: vec![],
@@ -61,6 +63,7 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let source_map = opts.source_map.unwrap_or(false);
     let experimentals = ExperimentalTemplateOptions::from_compile(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
@@ -129,8 +132,19 @@ pub fn compile_sfc(
             // Analyzed from the very bytes that cross the boundary, after every
             // rewriting pass, so the offsets cannot be stale (#3425).
             let module_shape = ModuleShapeNapi::of(&code);
+            // Built from those same bytes for the same reason: stripping
+            // TypeScript above re-prints the module, so a map produced before
+            // that pass would describe code nobody receives (#3399).
+            let map = source_map
+                .then(|| {
+                    let path = opts.filename.as_deref().unwrap_or("anonymous.vue");
+                    build_sfc_source_map(&code, &descriptor, path)
+                })
+                .flatten()
+                .map(Into::into);
             Ok(SfcCompileResultNapi {
                 code,
+                map,
                 css: result.css.map(Into::into),
                 errors: result
                     .errors
@@ -154,6 +168,7 @@ pub fn compile_sfc(
         }
         Err(e) => Ok(SfcCompileResultNapi {
             code: String::new(),
+            map: None,
             css: None,
             errors: vec![e.message.into()],
             warnings: vec![],

@@ -109,6 +109,12 @@ export async function transformVizeVirtualModule(
     if (transformed.includes("import.meta.")) {
       transformed = applyDefineReplacements(transformed, getVirtualModuleDefines(state, ssr));
     }
+    // `map: null` is Rollup's "this transform did not move code, keep the map
+    // the load hook produced" signal, which is what both branches above do:
+    // `applyDefineReplacements` substitutes within a line, and the TypeScript
+    // strip only runs for modules the emitter did not produce (`?macro=true`
+    // artifacts and hand-written virtual modules), which never carried a map to
+    // begin with (#3399).
     return transformed === code ? null : { code: transformed, map: null };
   } catch (e: unknown) {
     state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
