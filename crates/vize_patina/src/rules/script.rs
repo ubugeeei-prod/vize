@@ -27,6 +27,7 @@ mod no_internal_imports;
 mod no_multiple_slot_args;
 mod no_next_tick;
 mod no_options_api;
+mod no_page_meta_runtime_values;
 mod no_potential_component_option_typo;
 mod no_reactive_destructure;
 mod no_ref_as_operand;
@@ -227,6 +228,7 @@ impl ScriptLinter {
                 Box::new(VueRouterPreferNamedPush),
                 Box::new(VueTestUtilsNoHtmlSnapshot),
                 Box::new(PreferImportMeta),
+                Box::new(NoPageMetaRuntimeValues),
                 Box::new(PreferComputed),
                 Box::new(NoAsyncInComputed),
                 Box::new(NoReactiveDestructure),

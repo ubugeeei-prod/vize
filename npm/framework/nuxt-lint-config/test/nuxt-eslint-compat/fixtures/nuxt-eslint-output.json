@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
@@ -282,6 +282,668 @@
       "fixed": true,
       "secondPassMessages": [],
       "secondPassOutput": "if (import.meta.client) {\n  console.log(import.meta.prerender)\n}",
+      "secondPassFixed": false
+    }
+  },
+  "noPageMetaRuntimeValuesCases": {
+    "no-page-meta-runtime-values/eager-context-apis": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `ref()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 27,
+          "endLine": 1,
+          "endColumn": 32,
+          "range": [26, 31],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `shallowRef()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 34,
+          "endLine": 1,
+          "endColumn": 46,
+          "range": [33, 45],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `customRef()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 48,
+          "endLine": 1,
+          "endColumn": 59,
+          "range": [47, 58],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `computed()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 61,
+          "endLine": 1,
+          "endColumn": 71,
+          "range": [60, 70],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `reactive()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 73,
+          "endLine": 1,
+          "endColumn": 83,
+          "range": [72, 82],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `shallowReactive()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 85,
+          "endLine": 1,
+          "endColumn": 102,
+          "range": [84, 101],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `readonly()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 104,
+          "endLine": 1,
+          "endColumn": 114,
+          "range": [103, 113],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `shallowReadonly()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 116,
+          "endLine": 1,
+          "endColumn": 133,
+          "range": [115, 132],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `toRef()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 135,
+          "endLine": 1,
+          "endColumn": 142,
+          "range": [134, 141],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `toRefs()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 144,
+          "endLine": 1,
+          "endColumn": 152,
+          "range": [143, 151],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `watch()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 154,
+          "endLine": 1,
+          "endColumn": 161,
+          "range": [153, 160],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `watchEffect()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 163,
+          "endLine": 1,
+          "endColumn": 176,
+          "range": [162, 175],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `watchPostEffect()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 178,
+          "endLine": 1,
+          "endColumn": 195,
+          "range": [177, 194],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `watchSyncEffect()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 197,
+          "endLine": 1,
+          "endColumn": 214,
+          "range": [196, 213],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `effectScope()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 216,
+          "endLine": 1,
+          "endColumn": 229,
+          "range": [215, 228],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onScopeDispose()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 231,
+          "endLine": 1,
+          "endColumn": 247,
+          "range": [230, 246],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onBeforeMount()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 249,
+          "endLine": 1,
+          "endColumn": 264,
+          "range": [248, 263],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onMounted()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 266,
+          "endLine": 1,
+          "endColumn": 277,
+          "range": [265, 276],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onBeforeUpdate()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 279,
+          "endLine": 1,
+          "endColumn": 295,
+          "range": [278, 294],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onUpdated()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 297,
+          "endLine": 1,
+          "endColumn": 308,
+          "range": [296, 307],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onBeforeUnmount()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 310,
+          "endLine": 1,
+          "endColumn": 327,
+          "range": [309, 326],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onUnmounted()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 329,
+          "endLine": 1,
+          "endColumn": 342,
+          "range": [328, 341],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onActivated()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 344,
+          "endLine": 1,
+          "endColumn": 357,
+          "range": [343, 356],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onDeactivated()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 359,
+          "endLine": 1,
+          "endColumn": 374,
+          "range": [358, 373],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onErrorCaptured()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 376,
+          "endLine": 1,
+          "endColumn": 393,
+          "range": [375, 392],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onRenderTracked()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 395,
+          "endLine": 1,
+          "endColumn": 412,
+          "range": [394, 411],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onRenderTriggered()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 414,
+          "endLine": 1,
+          "endColumn": 433,
+          "range": [413, 432],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `onServerPrefetch()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 435,
+          "endLine": 1,
+          "endColumn": 453,
+          "range": [434, 452],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `inject()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 455,
+          "endLine": 1,
+          "endColumn": 463,
+          "range": [454, 462],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `getCurrentInstance()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 465,
+          "endLine": 1,
+          "endColumn": 485,
+          "range": [464, 484],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ values: [ref(), shallowRef(), customRef(), computed(), reactive(), shallowReactive(), readonly(), shallowReadonly(), toRef(), toRefs(), watch(), watchEffect(), watchPostEffect(), watchSyncEffect(), effectScope(), onScopeDispose(), onBeforeMount(), onMounted(), onBeforeUpdate(), onUpdated(), onBeforeUnmount(), onUnmounted(), onActivated(), onDeactivated(), onErrorCaptured(), onRenderTracked(), onRenderTriggered(), onServerPrefetch(), inject(), getCurrentInstance()] })",
+      "fixed": false,
+      "secondPassMessageCount": 30,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ values: [ref(), shallowRef(), customRef(), computed(), reactive(), shallowReactive(), readonly(), shallowReadonly(), toRef(), toRefs(), watch(), watchEffect(), watchPostEffect(), watchSyncEffect(), effectScope(), onScopeDispose(), onBeforeMount(), onMounted(), onBeforeUpdate(), onUpdated(), onBeforeUnmount(), onUnmounted(), onActivated(), onDeactivated(), onErrorCaptured(), onRenderTracked(), onRenderTriggered(), onServerPrefetch(), inject(), getCurrentInstance()] })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/composable-name-boundaries": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 27,
+          "endLine": 1,
+          "endColumn": 37,
+          "range": [26, 36],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useFetch()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 39,
+          "endLine": 1,
+          "endColumn": 49,
+          "range": [38, 48],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useA()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 51,
+          "endLine": 1,
+          "endColumn": 57,
+          "range": [50, 56],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useURL()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 59,
+          "endLine": 1,
+          "endColumn": 67,
+          "range": [58, 66],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ values: [useRoute(), useFetch(), useA(), useURL(), usefoo(), use_Foo(), UseFoo(), abuseFoo(), use1(), useÅ()] })",
+      "fixed": false,
+      "secondPassMessageCount": 4,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ values: [useRoute(), useFetch(), useA(), useURL(), usefoo(), use_Foo(), UseFoo(), abuseFoo(), use1(), useÅ()] })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/this-and-await": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `this` is not available in the extracted context.",
+          "line": 1,
+          "column": 25,
+          "endLine": 1,
+          "endColumn": 29,
+          "range": [24, 28],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time. `await` is not supported inside `definePageMeta`.",
+          "line": 1,
+          "column": 38,
+          "endLine": 1,
+          "endColumn": 56,
+          "range": [37, 55],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time. `await` is not supported inside `definePageMeta`.",
+          "line": 1,
+          "column": 65,
+          "endLine": 1,
+          "endColumn": 81,
+          "range": [64, 80],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 71,
+          "endLine": 1,
+          "endColumn": 81,
+          "range": [70, 80],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ owner: this, title: await fetchTitle(), route: await useRoute() })",
+      "fixed": false,
+      "secondPassMessageCount": 4,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ owner: this, title: await fetchTitle(), route: await useRoute() })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/callbacks-are-lazy": {
+      "messages": [],
+      "output": "definePageMeta({ middleware: () => useRoute(), validate: async function () { await ref(); return this }, method() { return computed() } })",
+      "fixed": false,
+      "secondPassMessageCount": 0,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ middleware: () => useRoute(), validate: async function () { await ref(); return this }, method() { return computed() } })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/direct-callee-only": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 94,
+          "endLine": 1,
+          "endColumn": 106,
+          "range": [93, 105],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useFetch()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 119,
+          "endLine": 1,
+          "endColumn": 129,
+          "range": [118, 128],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ a: Vue.ref(), b: nuxt.useRoute(), c: (0, useRoute)(), d: new useRoute(), e: useRoute?.(), f: wrapper(useFetch()) })",
+      "fixed": false,
+      "secondPassMessageCount": 2,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ a: Vue.ref(), b: nuxt.useRoute(), c: (0, useRoute)(), d: new useRoute(), e: useRoute?.(), f: wrapper(useFetch()) })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/shadowed-identifiers": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `ref()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 59,
+          "endLine": 1,
+          "endColumn": 64,
+          "range": [58, 63],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 69,
+          "endLine": 1,
+          "endColumn": 79,
+          "range": [68, 78],
+          "fix": null
+        }
+      ],
+      "output": "function page(ref, useRoute) { return definePageMeta({ a: ref(), b: useRoute() }) }",
+      "fixed": false,
+      "secondPassMessageCount": 2,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "function page(ref, useRoute) { return definePageMeta({ a: ref(), b: useRoute() }) }",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/macro-boundaries": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `ref()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 44,
+          "endLine": 1,
+          "endColumn": 49,
+          "range": [43, 48],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 74,
+          "endLine": 1,
+          "endColumn": 84,
+          "range": [73, 83],
+          "fix": null
+        }
+      ],
+      "output": "const outside = ref(); definePageMeta({ a: ref() }); definePageMeta({ b: useRoute() }); Nuxt.definePageMeta({ c: computed() }); _definePageMeta({ d: useFetch() })",
+      "fixed": false,
+      "secondPassMessageCount": 2,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "const outside = ref(); definePageMeta({ a: ref() }); definePageMeta({ b: useRoute() }); Nuxt.definePageMeta({ c: computed() }); _definePageMeta({ d: useFetch() })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/eager-nested-structures": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useRoute()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 19,
+          "endLine": 1,
+          "endColumn": 29,
+          "range": [18, 28],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `computed()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 43,
+          "endLine": 1,
+          "endColumn": 53,
+          "range": [42, 52],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `this` is not available in the extracted context.",
+          "line": 1,
+          "column": 64,
+          "endLine": 1,
+          "endColumn": 68,
+          "range": [63, 67],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `useState()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 88,
+          "endLine": 1,
+          "endColumn": 98,
+          "range": [87, 97],
+          "fix": null
+        },
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `watchEffect()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 133,
+          "endLine": 1,
+          "endColumn": 146,
+          "range": [132, 145],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ [useRoute()]: { nested: [computed(), { value: this }] }, spread: { ...useState() }, inner: definePageMeta({ value: watchEffect() }) })",
+      "fixed": false,
+      "secondPassMessageCount": 5,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ [useRoute()]: { nested: [computed(), { value: this }] }, spread: { ...useState() }, inner: definePageMeta({ value: watchEffect() }) })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/function-parameters-are-lazy": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `shallowRef()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 132,
+          "endLine": 1,
+          "endColumn": 144,
+          "range": [131, 143],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta({ middleware: (value = useRoute()) => computed(value), validate: function (value = ref()) { return this }, outside: shallowRef() })",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta({ middleware: (value = useRoute()) => computed(value), validate: function (value = ref()) { return this }, outside: shallowRef() })",
+      "secondPassFixed": false
+    },
+    "no-page-meta-runtime-values/optional-macro-call": {
+      "messages": [
+        {
+          "ruleId": "nuxt/no-page-meta-runtime-values",
+          "severity": 2,
+          "message": "`definePageMeta()` is extracted at build time and runs before component setup. `ref()` requires a Nuxt/Vue runtime context that is not available here. Move it inside a `middleware` or `validate` function.",
+          "line": 1,
+          "column": 74,
+          "endLine": 1,
+          "endColumn": 79,
+          "range": [73, 78],
+          "fix": null
+        }
+      ],
+      "output": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })",
+      "fixed": false,
+      "secondPassMessageCount": 1,
+      "secondPassMessagesMatch": true,
+      "secondPassOutput": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })",
       "secondPassFixed": false
     }
   },

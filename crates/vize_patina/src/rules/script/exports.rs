@@ -22,6 +22,7 @@ pub use super::no_internal_imports::NoInternalImports;
 pub use super::no_multiple_slot_args::NoMultipleSlotArgs;
 pub use super::no_next_tick::NoNextTick;
 pub use super::no_options_api::NoOptionsApi;
+pub use super::no_page_meta_runtime_values::NoPageMetaRuntimeValues;
 pub use super::no_potential_component_option_typo::NoPotentialComponentOptionTypo;
 pub use super::no_reactive_destructure::NoReactiveDestructure;
 pub use super::no_ref_as_operand::NoRefAsOperand;

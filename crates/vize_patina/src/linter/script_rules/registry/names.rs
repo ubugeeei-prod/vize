@@ -14,6 +14,7 @@ pub(crate) const RULE_VUE_ROUTER_PREFER_NAMED_PUSH: &str = "ecosystem/vue-router
 pub(crate) const RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT: &str =
     "ecosystem/vue-test-utils-no-html-snapshot";
 pub(crate) const RULE_NUXT_PREFER_IMPORT_META: &str = "nuxt/prefer-import-meta";
+pub(crate) const RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES: &str = "nuxt/no-page-meta-runtime-values";
 pub(crate) const RULE_PREFER_COMPUTED: &str = "script/prefer-computed";
 pub(crate) const RULE_NO_ASYNC_IN_COMPUTED: &str = "script/no-async-in-computed";
 pub(crate) const RULE_NO_REACTIVE_DESTRUCTURE: &str = "script/no-reactive-destructure";
@@ -90,6 +91,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
     RULE_NUXT_PREFER_IMPORT_META,
+    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,
     RULE_PREFER_COMPUTED,
     RULE_NO_ASYNC_IN_COMPUTED,
     RULE_NO_REACTIVE_DESTRUCTURE,
@@ -158,6 +160,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
     RULE_NUXT_PREFER_IMPORT_META,
+    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,
     RULE_PREFER_COMPUTED,
     RULE_NO_ASYNC_IN_COMPUTED,
     RULE_NO_REACTIVE_DESTRUCTURE,

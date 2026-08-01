@@ -17,7 +17,8 @@ use super::names::{
     RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS,
     RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
     RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,
-    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WITH_DEFAULTS, RULE_NUXT_PREFER_IMPORT_META,
+    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WITH_DEFAULTS,
+    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,
     RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_OPTIONS,
     RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS,
     RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,
@@ -40,17 +41,17 @@ use crate::rules::script::{
     NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
     NoDeprecatedPropsDefaultThis, NoDupeKeys, NoDuplicateAttrInheritance, NoExportInScriptSetup,
     NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoMultipleSlotArgs,
-    NoNextTick, NoOptionsApi, NoPotentialComponentOptionTypo, NoReactiveDestructure,
-    NoRefAsOperand, NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys,
-    NoReservedProps, NoRestrictedGlobals, NoRestrictedMembers, NoSideEffectsInComputed,
-    NoTopLevelRefInScript, NoUnstableNestedComponents, NoUnusedEmitDeclarations,
-    NoUseComputedPropertyLikeMethod, NoWithDefaults, PiniaPreferStoreToRefs, PreferComputed,
-    PreferDefineOptions, PreferImportFromVue, PreferImportMeta, PreferRefOverReactive,
-    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp,
-    RequireExplicitEmits, RequireExplicitSlots, RequireFunctionReturnType,
-    RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide, RequireTypedObjectProp,
-    RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator,
-    ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,
+    NoNextTick, NoOptionsApi, NoPageMetaRuntimeValues, NoPotentialComponentOptionTypo,
+    NoReactiveDestructure, NoRefAsOperand, NoRequiredPropWithDefault, NoReservedIdentifiers,
+    NoReservedKeys, NoReservedProps, NoRestrictedGlobals, NoRestrictedMembers,
+    NoSideEffectsInComputed, NoTopLevelRefInScript, NoUnstableNestedComponents,
+    NoUnusedEmitDeclarations, NoUseComputedPropertyLikeMethod, NoWithDefaults,
+    PiniaPreferStoreToRefs, PreferComputed, PreferDefineOptions, PreferImportFromVue,
+    PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId, PreferUseSlots,
+    PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits, RequireExplicitSlots,
+    RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes, RequireSymbolProvide,
+    RequireTypedObjectProp, RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty,
+    ReturnInEmitsValidator, ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,
     VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
@@ -63,7 +64,7 @@ static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
 static NO_RESTRICTED_GLOBALS_RULE: NoRestrictedGlobals = NoRestrictedGlobals::new();
 static NO_RESTRICTED_MEMBERS_RULE: NoRestrictedMembers = NoRestrictedMembers::new();
 
-/// The full ordered set of built-in script rules. The first 7 engine-reachable
+/// The full ordered set of built-in script rules. The first 8 engine-reachable
 /// rules stay first to preserve default diagnostic ordering; the rest are opt-in.
 #[rustfmt::skip]
 pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScriptRuleEntry] = &[
@@ -74,6 +75,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_VUE_ROUTER_PREFER_NAMED_PUSH, profile_name: "patina.script_rule.vue_router_prefer_named_push", category: "Ecosystem", fixable: false, presets: ECOSYSTEM_SCRIPT_PRESETS, rule: &VueRouterPreferNamedPush },
     BuiltinScriptRuleEntry { rule_name: RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT, profile_name: "patina.script_rule.vue_test_utils_no_html_snapshot", category: "Ecosystem", fixable: false, presets: ECOSYSTEM_SCRIPT_PRESETS, rule: &VueTestUtilsNoHtmlSnapshot },
     BuiltinScriptRuleEntry { rule_name: RULE_NUXT_PREFER_IMPORT_META, profile_name: "patina.script_rule.nuxt_prefer_import_meta", category: "Nuxt", fixable: true, presets: NUXT_SCRIPT_PRESETS, rule: &PreferImportMeta },
+    BuiltinScriptRuleEntry { rule_name: RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, profile_name: "patina.script_rule.nuxt_no_page_meta_runtime_values", category: "Nuxt", fixable: false, presets: NUXT_SCRIPT_PRESETS, rule: &NoPageMetaRuntimeValues },
     BuiltinScriptRuleEntry { rule_name: RULE_PREFER_COMPUTED, profile_name: "patina.script_rule.prefer_computed", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferComputed },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_ASYNC_IN_COMPUTED, profile_name: "patina.script_rule.no_async_in_computed", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoAsyncInComputed },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_REACTIVE_DESTRUCTURE, profile_name: "patina.script_rule.no_reactive_destructure", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoReactiveDestructure },

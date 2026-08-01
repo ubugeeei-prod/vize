@@ -8,6 +8,58 @@
     "pluginVersion": "1.16.0"
   },
   "description": "Nuxt project states and rule cases whose @nuxt/eslint behaviour @vizejs/nuxt-lint-config, the Nuxt runtime emitter, and Vize Patina must reproduce. Project cases are materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "noPageMetaRuntimeValuesCases": [
+    {
+      "id": "no-page-meta-runtime-values/eager-context-apis",
+      "description": "Every direct Vue context API pinned by upstream is rejected at definePageMeta's eager level.",
+      "source": "definePageMeta({ values: [ref(), shallowRef(), customRef(), computed(), reactive(), shallowReactive(), readonly(), shallowReadonly(), toRef(), toRefs(), watch(), watchEffect(), watchPostEffect(), watchSyncEffect(), effectScope(), onScopeDispose(), onBeforeMount(), onMounted(), onBeforeUpdate(), onUpdated(), onBeforeUnmount(), onUnmounted(), onActivated(), onDeactivated(), onErrorCaptured(), onRenderTracked(), onRenderTriggered(), onServerPrefetch(), inject(), getCurrentInstance()] })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/composable-name-boundaries",
+      "description": "Only direct identifiers matching /^use[A-Z]/ are treated as composables beyond the fixed context API list.",
+      "source": "definePageMeta({ values: [useRoute(), useFetch(), useA(), useURL(), usefoo(), use_Foo(), UseFoo(), abuseFoo(), use1(), useÅ()] })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/this-and-await",
+      "description": "Eager this and the complete await expression are rejected; a context call under await also keeps its own diagnostic.",
+      "source": "definePageMeta({ owner: this, title: await fetchTitle(), route: await useRoute() })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/callbacks-are-lazy",
+      "description": "Arrow, function-expression, and object-method bodies form lazy boundaries where context values, this, and await are valid.",
+      "source": "definePageMeta({ middleware: () => useRoute(), validate: async function () { await ref(); return this }, method() { return computed() } })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/direct-callee-only",
+      "description": "Member, sequence, and new-expression callees stay valid; optional direct calls and direct calls nested in other arguments are rejected.",
+      "source": "definePageMeta({ a: Vue.ref(), b: nuxt.useRoute(), c: (0, useRoute)(), d: new useRoute(), e: useRoute?.(), f: wrapper(useFetch()) })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/shadowed-identifiers",
+      "description": "The upstream rule is syntax-only, so parameters shadowing a context API or composable remain diagnostics.",
+      "source": "function page(ref, useRoute) { return definePageMeta({ a: ref(), b: useRoute() }) }"
+    },
+    {
+      "id": "no-page-meta-runtime-values/macro-boundaries",
+      "description": "Only direct definePageMeta calls create a boundary, each sequential macro is visited, and values outside or under member callees stay valid.",
+      "source": "const outside = ref(); definePageMeta({ a: ref() }); definePageMeta({ b: useRoute() }); Nuxt.definePageMeta({ c: computed() }); _definePageMeta({ d: useFetch() })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/eager-nested-structures",
+      "description": "Computed keys, arrays, object spreads, this, and nested macro arguments remain at the enclosing eager level.",
+      "source": "definePageMeta({ [useRoute()]: { nested: [computed(), { value: this }] }, spread: { ...useState() }, inner: definePageMeta({ value: watchEffect() }) })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/function-parameters-are-lazy",
+      "description": "Function boundaries cover default parameters as well as bodies, while an adjacent eager value is still rejected.",
+      "source": "definePageMeta({ middleware: (value = useRoute()) => computed(value), validate: function (value = ref()) { return this }, outside: shallowRef() })"
+    },
+    {
+      "id": "no-page-meta-runtime-values/optional-macro-call",
+      "description": "An optional direct definePageMeta call still forms the macro boundary, while empty and identifier-only arguments stay valid.",
+      "source": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })"
+    }
+  ],
   "importGlobals": {
     "id": "addons/import-globals",
     "description": "Nuxt and Nitro auto-import registries are merged, sorted by source then imported name, and aliases become readonly globals.",

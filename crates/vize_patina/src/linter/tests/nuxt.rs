@@ -59,6 +59,55 @@ fn prefer_import_meta_can_be_enabled_explicitly() {
 }
 
 #[test]
+fn nuxt_preset_reports_eager_page_meta_runtime_values() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    let source = r#"<script setup lang="ts">
+definePageMeta({ title: useRoute().path, middleware: () => useRoute() })
+</script>
+"#;
+    let result = linter.lint_sfc(source, "pages/index.vue");
+    let diagnostics = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "nuxt/no-page-meta-runtime-values")
+        .collect::<Vec<_>>();
+
+    assert_eq!(diagnostics.len(), 1, "{:#?}", result.diagnostics);
+    assert_eq!(
+        &source[diagnostics[0].start as usize..diagnostics[0].end as usize],
+        "useRoute()"
+    );
+    assert!(diagnostics[0].fix.is_none());
+}
+
+#[test]
+fn non_nuxt_presets_keep_page_meta_runtime_rule_disabled() {
+    for preset in [LintPreset::Ecosystem, LintPreset::Opinionated] {
+        let result = Linter::with_preset(preset)
+            .lint_script("definePageMeta({ title: useRoute() })", "pages/index.ts");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "nuxt/no-page-meta-runtime-values"),
+            "{preset:?} unexpectedly enabled the Nuxt-only rule"
+        );
+    }
+}
+
+#[test]
+fn page_meta_runtime_rule_can_be_enabled_explicitly() {
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_additional_rules(vec!["nuxt/no-page-meta-runtime-values".into()]);
+    let result = linter.lint_script("definePageMeta({ title: useRoute() })", "pages/index.ts");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "nuxt/no-page-meta-runtime-values"
+    );
+}
+
+#[test]
 fn test_lint_standalone_html_does_not_warn_custom_block() {
     // Regression for https://github.com/ubugeeei-prod/vize/issues/2245:
     // running `vize lint --preset nuxt` on a standalone `.html` file (e.g.

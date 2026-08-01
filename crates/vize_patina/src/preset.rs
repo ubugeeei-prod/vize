@@ -62,7 +62,10 @@ const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
 ];
 const OPINIONATED_SCRIPT_RULE_NAMES: &[&str] =
     &["script/no-options-api", "script/no-get-current-instance"];
-const NUXT_SCRIPT_RULE_NAMES: &[&str] = &["nuxt/prefer-import-meta"];
+const NUXT_SCRIPT_RULE_NAMES: &[&str] = &[
+    "nuxt/prefer-import-meta",
+    "nuxt/no-page-meta-runtime-values",
+];
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
@@ -225,6 +228,10 @@ mod tests {
         );
         assert!(
             super::builtin_script_rule_names(LintPreset::Nuxt).contains(&"nuxt/prefer-import-meta")
+        );
+        assert!(
+            super::builtin_script_rule_names(LintPreset::Nuxt)
+                .contains(&"nuxt/no-page-meta-runtime-values")
         );
         assert!(
             super::builtin_script_rule_names(LintPreset::Opinionated)

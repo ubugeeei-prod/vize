@@ -3,8 +3,8 @@
 Ground truth for the Nuxt lint config port. The corpus in `fixtures/corpus.json`
 is run through the real `@nuxt/eslint` and `@nuxt/eslint-config` by `oracle.mjs`,
 which records the result in `fixtures/nuxt-eslint-output.json`. Rule cases run
-through the real `@nuxt/eslint-plugin` rule and record diagnostics, fixed output,
-and the second fix pass.
+through the real `@nuxt/eslint-plugin` rule and record diagnostics, output, and
+a second pass proving fix convergence or non-fixable stability.
 
 - `npm/framework/nuxt-lint-config/src/oracle.test.ts` reads the plan recording offline and
   holds Vize's implementation to it.
@@ -43,7 +43,7 @@ overrides an earlier one — so it is part of the contract.
 | `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported      |
 | `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported      |
 | `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | supported      |
-| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | not ported yet |
+| `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | supported      |
 | `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet |
 | `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
 | `nuxt/disables/routes` | app/error, layouts, pages, nested and prefixed components | `vue/multi-word-component-names` off | supported      |
@@ -68,6 +68,21 @@ the oracle.
 | `prefer-import-meta/computed-and-object-near-misses` | String keys, unknown properties, and non-root `process` members stay valid.        |
 | `prefer-import-meta/lexical-near-misses`             | Strings, comments, other identifier spellings, and object keys stay valid.         |
 | `prefer-import-meta/multiple-lines`                  | Multiple findings retain exact non-overlapping ranges and fix together.            |
+
+## `nuxt/no-page-meta-runtime-values` rule cases
+
+| Case                                                           | Behaviour                                                                                                  |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `no-page-meta-runtime-values/eager-context-apis`               | All 30 direct context APIs pinned by upstream report at the eager macro level.                             |
+| `no-page-meta-runtime-values/composable-name-boundaries`       | Only direct identifiers matching `/^use[A-Z]/` report beyond the fixed API list.                           |
+| `no-page-meta-runtime-values/this-and-await`                    | Eager `this` and complete `await` expressions report; a context call below `await` also reports.           |
+| `no-page-meta-runtime-values/callbacks-are-lazy`                | Arrow, function-expression, and object-method bodies admit runtime values, `this`, and `await`.            |
+| `no-page-meta-runtime-values/direct-callee-only`                | Member, sequence, and `new` callees stay valid; optional and nested direct calls retain diagnostics.       |
+| `no-page-meta-runtime-values/shadowed-identifiers`              | Shadowed API and composable identifiers still report because the upstream rule is syntax-only.            |
+| `no-page-meta-runtime-values/macro-boundaries`                  | Direct sequential macros form boundaries; outside values and member/misspelled macro callees do not.      |
+| `no-page-meta-runtime-values/eager-nested-structures`           | Computed keys, arrays, spreads, nested objects, and nested macro arguments stay eager.                     |
+| `no-page-meta-runtime-values/function-parameters-are-lazy`      | Function default parameters are lazy together with their bodies; an adjacent eager API still reports.     |
+| `no-page-meta-runtime-values/optional-macro-call`               | Optional direct macro calls form a boundary; empty and identifier-only arguments stay valid.              |
 
 ## Intentional divergences
 

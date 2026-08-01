@@ -21,8 +21,8 @@
  *   3. `importGlobals` — the complete ordered globals list emitted after both
  *      Nuxt and Nitro publish their auto-import registries.
  *
- * Rule cases separately record the real plugin's exact diagnostics and fixed
- * output, plus a second application proving the fix has converged.
+ * Rule cases separately record the real plugin's exact diagnostics and output,
+ * plus a second application proving fix convergence or non-fixable stability.
  *
  * Usage:
  *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --check
@@ -34,6 +34,7 @@ import { fileURLToPath } from "node:url";
 
 import { renderNuxtOxlintConfig } from "../../../nuxt/src/lint/emitter.ts";
 import { buildNuxtLintPlan } from "../../src/plan.ts";
+import { recordNoPageMetaRuntimeValuesCases } from "./no-page-meta-runtime-values-oracle.mjs";
 import { recordPreferImportMetaCases } from "./prefer-import-meta-oracle.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -214,11 +215,13 @@ export async function runOracle() {
   ]);
 
   const corpus = readCorpus();
-  const preferImportMeta = await recordPreferImportMetaCases(
-    moduleEntry,
-    corpus,
-    packageVersionFrom,
-  );
+  const [preferImportMeta, noPageMetaRuntimeValues] = await Promise.all([
+    recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
+    recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
+  ]);
+  if (preferImportMeta.pluginVersion !== noPageMetaRuntimeValues.pluginVersion) {
+    throw new Error("Nuxt rule oracles resolved different @nuxt/eslint-plugin versions");
+  }
 
   // The directory defaults only apply to hand-written configs — a config
   // generated from a Nuxt instance always supplies every list — so they are
@@ -276,7 +279,7 @@ export async function runOracle() {
   );
 
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
@@ -294,6 +297,7 @@ export async function runOracle() {
       },
     },
     preferImportMetaCases: preferImportMeta.cases,
+    noPageMetaRuntimeValuesCases: noPageMetaRuntimeValues.cases,
     dirDefaults,
     cases,
   };

@@ -88,11 +88,14 @@ if (import.meta.vitest) {
     });
 
     it("enables Nuxt framework rules only in the Nuxt and all presets", () => {
-      expect(configs.nuxt["vize/nuxt/prefer-import-meta"]).toBe("error");
-      expect(configs.all["vize/nuxt/prefer-import-meta"]).toBe("error");
-      expect(configs.ecosystem["vize/nuxt/prefer-import-meta"]).toBeUndefined();
-      expect(configs.opinionated["vize/nuxt/prefer-import-meta"]).toBeUndefined();
-      expect(configs.recommended["vize/nuxt/prefer-import-meta"]).toBeUndefined();
+      for (const ruleName of ["prefer-import-meta", "no-page-meta-runtime-values"]) {
+        const ruleId = `vize/nuxt/${ruleName}`;
+        expect(configs.nuxt[ruleId]).toBe("error");
+        expect(configs.all[ruleId]).toBe("error");
+        expect(configs.ecosystem[ruleId]).toBeUndefined();
+        expect(configs.opinionated[ruleId]).toBeUndefined();
+        expect(configs.recommended[ruleId]).toBeUndefined();
+      }
     });
 
     it("keeps ecosystem rules out of non-ecosystem presets until explicitly selected", () => {

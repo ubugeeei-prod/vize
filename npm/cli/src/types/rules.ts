@@ -62,6 +62,7 @@ export const LINT_RULE_NAMES = [
   "html/no-duplicate-dt",
   "html/no-empty-palpable-content",
   "html/require-datetime",
+  "nuxt/no-page-meta-runtime-values",
   "nuxt/prefer-import-meta",
   "petite-vue/no-unsupported-directive",
   "petite-vue/valid-v-effect",
