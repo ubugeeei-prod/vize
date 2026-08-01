@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: dom_output(V_MATCH)
+---
+errors=[]
+components=[]
+preamble=
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("li", null, "Plain")
+
+code=
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    [((status) === ('ready'))
+      ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+      : _createCommentVNode("v-if", true), _hoisted_1],
+    _createElementVNode("span", null, _toDisplayString(x), 1 /* TEXT */)
+  ]))
+}

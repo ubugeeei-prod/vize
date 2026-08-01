@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: vapor_output(SEPARATED_TEXT_RUNS)
+---
+errors=[]
+templates=["<li>Ready</li>", "<div>Before  <em>mid</em>After  </div>"]
+code=
+import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, nthChild as _nthChild, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<li>Ready</li>", true)
+const t1 = _template("<div>Before  <em>mid</em>After  </div>", true)
+
+export function render(_ctx) {
+  const n0 = t1()
+  const n1 = _nthChild(n0, 2)
+  const x0 = _txt(n0)
+  _setInsertionState(n0, null, true)
+  const n2 = _createIf(() => ((_ctx.status) === ('ready')), () => {
+    const n4 = t0()
+    return n4
+  })
+  _renderEffect(() => {
+    _setText(x0, "Before " + _toDisplayString(_ctx.a))
+    _setText(n1, "After " + _toDisplayString(_ctx.b))
+  })
+  return n0
+}

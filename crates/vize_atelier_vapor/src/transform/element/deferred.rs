@@ -1,6 +1,7 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
 use crate::ir::{ForIRNode, IfIRNode, InsertNodeIRNode, NegativeBranch};
+use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
 use super::template::{
@@ -26,13 +27,10 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     let template = generate_element_template(el);
-    let dynamic_child_indices = collect_dynamic_child_indices(el);
-    let child_ids: std::vec::Vec<usize> = dynamic_child_indices
-        .iter()
-        .map(|_| ctx.next_id())
-        .collect();
+    let dynamic_child_count = count_dynamic_element_children(&el.children);
+    let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
 
-    if dynamic_child_indices.is_empty() {
+    if child_ids.is_empty() {
         transform_element_with_deferred_control_flow_parent(ctx, el, block, template);
         return;
     }
@@ -53,31 +51,10 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
 
     transform_template_ref(ctx, el, element_id, block);
 
-    // Handle text content if needed
-    let has_text_or_interpolation = el.children.iter().any(|c| {
-        matches!(
-            c,
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        )
-    });
-    let has_interpolation = el
-        .children
-        .iter()
-        .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
+    transform_text_children(ctx, &el.children, element_id, block);
 
-    if has_interpolation && has_text_or_interpolation {
-        transform_text_children(ctx, &el.children, element_id, block);
-    }
-
-    if !dynamic_child_indices.is_empty() {
-        transform_dynamic_children_with_ids(
-            ctx,
-            el,
-            element_id,
-            block,
-            &dynamic_child_indices,
-            &child_ids,
-        );
+    if !child_ids.is_empty() {
+        transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
     }
 
     transform_existing_element_control_flow_children(ctx, el, element_id, block);
@@ -110,20 +87,7 @@ fn transform_element_with_deferred_control_flow_parent<'a>(
 
     transform_template_ref(ctx, el, element_id, block);
 
-    let has_text_or_interpolation = el.children.iter().any(|c| {
-        matches!(
-            c,
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        )
-    });
-    let has_interpolation = el
-        .children
-        .iter()
-        .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
-    if has_interpolation && has_text_or_interpolation {
-        transform_text_children(ctx, &el.children, element_id, block);
-    }
+    transform_text_children(ctx, &el.children, element_id, block);
 
     append_deferred_control_flow_children(block, deferred_children, element_id);
 
@@ -140,11 +104,8 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let dynamic_child_indices = collect_dynamic_child_indices(el);
-    let child_ids: std::vec::Vec<usize> = dynamic_child_indices
-        .iter()
-        .map(|_| ctx.next_id())
-        .collect();
+    let dynamic_child_count = count_dynamic_element_children(&el.children);
+    let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
 
     // Now allocate parent ID (will be higher than all child IDs)
     let parent_id = ctx.next_id();
@@ -163,15 +124,10 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     }
 
     transform_template_ref(ctx, el, parent_id, block);
+    transform_text_children(ctx, &el.children, parent_id, block);
 
-    transform_dynamic_children_with_ids(
-        ctx,
-        el,
-        parent_id,
-        block,
-        &dynamic_child_indices,
-        &child_ids,
-    );
+    transform_dynamic_children_with_ids(ctx, el, parent_id, block, &child_ids);
+    transform_existing_element_control_flow_children(ctx, el, parent_id, block);
 
     // Register template for parent
     ctx.add_template(parent_id, template);
@@ -179,16 +135,17 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     block.returns.push(parent_id);
 }
 
-fn collect_dynamic_child_indices(el: &ElementNode<'_>) -> std::vec::Vec<usize> {
-    let mut dynamic_child_indices = std::vec::Vec::new();
-    for (i, child) in el.children.iter().enumerate() {
-        if let TemplateChildNode::Element(child_el) = child
-            && !is_static_element(child_el)
-        {
-            dynamic_child_indices.push(i);
-        }
-    }
-    dynamic_child_indices
+fn count_dynamic_element_children(children: &[TemplateChildNode<'_>]) -> usize {
+    children
+        .iter()
+        .map(|child| match child {
+            TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
+                ensure_sufficient_stack(|| count_dynamic_element_children(&child_el.children))
+            }
+            TemplateChildNode::Element(child_el) if !is_static_element(child_el) => 1,
+            _ => 0,
+        })
+        .sum()
 }
 
 fn transform_dynamic_children_with_ids<'a>(
@@ -196,50 +153,113 @@ fn transform_dynamic_children_with_ids<'a>(
     el: &ElementNode<'a>,
     parent_id: usize,
     block: &mut BlockIRNode<'a>,
-    dynamic_child_indices: &[usize],
     child_ids: &[usize],
 ) {
     // (child id, absolute rendered index within the parent)
     let mut prev_template_backed_child: Option<(usize, usize)> = None;
+    let mut child_id_index = 0usize;
+    let mut rendered_index = 0usize;
+    let mut in_text_run = false;
+    transform_dynamic_children_in_slice(
+        ctx,
+        &el.children,
+        parent_id,
+        block,
+        child_ids,
+        &mut child_id_index,
+        &mut rendered_index,
+        &mut in_text_run,
+        &mut prev_template_backed_child,
+    );
+    debug_assert_eq!(child_id_index, child_ids.len());
+}
 
-    for (idx, &child_index) in dynamic_child_indices.iter().enumerate() {
-        let child_id = child_ids[idx];
-        let TemplateChildNode::Element(child_el) = &el.children[child_index] else {
+#[allow(clippy::too_many_arguments)]
+fn transform_dynamic_children_in_slice<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+    parent_id: usize,
+    block: &mut BlockIRNode<'a>,
+    child_ids: &[usize],
+    child_id_index: &mut usize,
+    rendered_index: &mut usize,
+    in_text_run: &mut bool,
+    prev_template_backed_child: &mut Option<(usize, usize)>,
+) {
+    for child in children {
+        let TemplateChildNode::Element(child_el) = child else {
+            if matches!(
+                child,
+                TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+            ) && !*in_text_run
+            {
+                *rendered_index += 1;
+                *in_text_run = true;
+            }
             continue;
         };
 
-        if is_template_backed_element(child_el) {
-            let index = count_rendered_child_nodes(&el.children, 0, child_index).saturating_sub(1);
-            if let Some((prev_child_id, prev_index)) = prev_template_backed_child {
-                block.operation.push(OperationNode::NextRef(NextRefIRNode {
-                    child_id,
-                    prev_id: prev_child_id,
-                    offset: index.saturating_sub(prev_index),
-                }));
-            } else {
-                block
-                    .operation
-                    .push(OperationNode::ChildRef(ChildRefIRNode {
-                        child_id,
-                        parent_id,
-                        offset: index,
-                    }));
-            }
+        if child_el.tag_type == ElementType::Template {
+            ensure_sufficient_stack(|| {
+                transform_dynamic_children_in_slice(
+                    ctx,
+                    &child_el.children,
+                    parent_id,
+                    block,
+                    child_ids,
+                    child_id_index,
+                    rendered_index,
+                    in_text_run,
+                    prev_template_backed_child,
+                );
+            });
+            continue;
+        }
 
-            prev_template_backed_child = Some((child_id, index));
-            transform_existing_element(ctx, child_el, child_id, block);
-        } else if child_el.tag_type == ElementType::Slot {
-            transform_slot_outlet_child(ctx, child_el, child_id, parent_id, block);
-        } else {
-            transform_component(
-                ctx,
-                child_el,
-                block,
-                Some(child_id),
-                Some(parent_id),
-                None,
-                false,
-            );
+        if !is_static_element(child_el) {
+            let child_id = child_ids[*child_id_index];
+            *child_id_index += 1;
+
+            if is_template_backed_element(child_el) {
+                let index = *rendered_index;
+                if let Some((prev_child_id, prev_index)) = *prev_template_backed_child {
+                    block.operation.push(OperationNode::NextRef(NextRefIRNode {
+                        child_id,
+                        prev_id: prev_child_id,
+                        offset: index.saturating_sub(prev_index),
+                    }));
+                } else {
+                    block
+                        .operation
+                        .push(OperationNode::ChildRef(ChildRefIRNode {
+                            child_id,
+                            parent_id,
+                            offset: index,
+                        }));
+                }
+
+                *prev_template_backed_child = Some((child_id, index));
+                ensure_sufficient_stack(|| {
+                    transform_existing_element(ctx, child_el, child_id, block);
+                });
+            } else if child_el.tag_type == ElementType::Slot {
+                transform_slot_outlet_child(ctx, child_el, child_id, parent_id, block);
+            } else {
+                transform_component(
+                    ctx,
+                    child_el,
+                    block,
+                    Some(child_id),
+                    Some(parent_id),
+                    None,
+                    false,
+                );
+            }
+        }
+
+        if is_template_backed_element(child_el) {
+            *rendered_index += 1;
+            *in_text_run = false;
         }
     }
 }
@@ -277,14 +297,7 @@ fn transform_existing_element<'a>(
     element_id: usize,
     block: &mut BlockIRNode<'a>,
 ) {
-    let has_control_flow_children = el
-        .children
-        .iter()
-        .any(|c| matches!(c, TemplateChildNode::If(_) | TemplateChildNode::For(_)));
-    let has_dynamic_element_children = el
-        .children
-        .iter()
-        .any(|c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)));
+    let dynamic_child_count = count_dynamic_element_children(&el.children);
 
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
@@ -294,39 +307,43 @@ fn transform_existing_element<'a>(
 
     transform_template_ref(ctx, el, element_id, block);
 
-    let has_text_or_interpolation = el.children.iter().any(|c| {
-        matches!(
-            c,
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        )
-    });
-    let has_interpolation = el
-        .children
-        .iter()
-        .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
+    transform_text_children(ctx, &el.children, element_id, block);
 
-    if has_interpolation && has_text_or_interpolation {
-        transform_text_children(ctx, &el.children, element_id, block);
+    if dynamic_child_count != 0 {
+        let child_ids: std::vec::Vec<usize> =
+            (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
+        transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
     }
 
-    if has_dynamic_element_children {
-        let dynamic_child_indices = collect_dynamic_child_indices(el);
-        let child_ids: std::vec::Vec<usize> = dynamic_child_indices
-            .iter()
-            .map(|_| ctx.next_id())
-            .collect();
-        transform_dynamic_children_with_ids(
-            ctx,
-            el,
-            element_id,
-            block,
-            &dynamic_child_indices,
-            &child_ids,
-        );
-    }
+    transform_existing_element_control_flow_children(ctx, el, element_id, block);
+}
 
-    if has_control_flow_children {
-        transform_existing_element_control_flow_children(ctx, el, element_id, block);
+fn transform_control_flow_children_into_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+    parent_id: usize,
+    block: &mut BlockIRNode<'a>,
+) {
+    for child in children {
+        match child {
+            TemplateChildNode::If(if_node) => {
+                transform_if_node_into_parent(ctx, if_node, block, parent_id);
+            }
+            TemplateChildNode::For(for_node) => {
+                transform_for_node_into_parent(ctx, for_node, block, parent_id);
+            }
+            TemplateChildNode::Element(template) if template.tag_type == ElementType::Template => {
+                ensure_sufficient_stack(|| {
+                    transform_control_flow_children_into_parent(
+                        ctx,
+                        &template.children,
+                        parent_id,
+                        block,
+                    );
+                });
+            }
+            _ => {}
+        }
     }
 }
 
@@ -336,17 +353,7 @@ fn transform_existing_element_control_flow_children<'a>(
     element_id: usize,
     block: &mut BlockIRNode<'a>,
 ) {
-    for child in el.children.iter() {
-        match child {
-            TemplateChildNode::If(if_node) => {
-                transform_if_node_into_parent(ctx, if_node, block, element_id);
-            }
-            TemplateChildNode::For(for_node) => {
-                transform_for_node_into_parent(ctx, for_node, block, element_id);
-            }
-            _ => {}
-        }
-    }
+    transform_control_flow_children_into_parent(ctx, &el.children, element_id, block);
 }
 
 fn transform_deferred_parent_control_flow_children<'a>(
@@ -361,6 +368,11 @@ fn transform_deferred_parent_control_flow_children<'a>(
             }
             TemplateChildNode::For(for_node) => {
                 transform_for_node_deferred_parent(ctx, for_node, block);
+            }
+            TemplateChildNode::Element(template) if template.tag_type == ElementType::Template => {
+                ensure_sufficient_stack(|| {
+                    transform_deferred_parent_control_flow_children(ctx, template, block);
+                });
             }
             _ => {}
         }
@@ -398,45 +410,4 @@ fn set_if_parent(if_node: &mut IfIRNode<'_>, parent_id: usize) {
 
 fn set_for_parent(for_node: &mut ForIRNode<'_>, parent_id: usize) {
     for_node.parent = Some(parent_id);
-}
-
-fn count_rendered_child_nodes(
-    children: &[TemplateChildNode<'_>],
-    start: usize,
-    end: usize,
-) -> usize {
-    let mut count = 0usize;
-    let mut in_text_run = false;
-    for child in &children[start..=end] {
-        count += count_rendered_nodes_for_child(child, &mut in_text_run);
-    }
-    count
-}
-
-fn count_rendered_nodes_for_child(child: &TemplateChildNode<'_>, in_text_run: &mut bool) -> usize {
-    match child {
-        TemplateChildNode::Element(child_el) => {
-            if child_el.tag_type == ElementType::Template {
-                child_el
-                    .children
-                    .iter()
-                    .map(|child| count_rendered_nodes_for_child(child, in_text_run))
-                    .sum()
-            } else if is_template_backed_element(child_el) {
-                *in_text_run = false;
-                1
-            } else {
-                0
-            }
-        }
-        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
-            if *in_text_run {
-                0
-            } else {
-                *in_text_run = true;
-                1
-            }
-        }
-        _ => 0,
-    }
 }

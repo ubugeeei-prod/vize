@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: dom_output(DYNAMIC_SIBLING)
+---
+errors=[]
+components=[]
+preamble=
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue
+
+code=
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    [((status) === ('ready'))
+      ? (_openBlock(), _createElementBlock("li", { key: 0 }, "Ready"))
+      : _createCommentVNode("v-if", true), _createElementVNode("li", { id: plainId }, [
+      _createElementVNode("span", null, _toDisplayString(label), 1 /* TEXT */)
+    ], 8 /* PROPS */, ["id"])],
+    _createElementVNode("footer", {
+      class: _normalizeClass(cls)
+    }, "Tail", 2 /* CLASS */)
+  ]))
+}

@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: dom_output(NESTED)
+---
+errors=[]
+components=[]
+preamble=
+const { createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode } = Vue
+
+code=
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    ((outer) === ('open'))
+      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+        ((inner) === ('x'))
+          ? (_openBlock(), _createElementBlock("li", { key: 0 }, "X"))
+          : (_openBlock(), _createElementBlock("li", { key: 1 }, "Inner fallback"))
+      ], 64 /* STABLE_FRAGMENT */))
+      : (_openBlock(), _createElementBlock("p", { key: 1 }, "Outer fallback")),
+    _createElementVNode("footer", {
+      class: _normalizeClass(cls)
+    }, "tail", 2 /* CLASS */)
+  ]))
+}

@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: dom_output(CONTROL_FLOW)
+---
+errors=[]
+components=[]
+preamble=
+const { toDisplayString: _toDisplayString, createElementVNode: _createElementVNode, normalizeClass: _normalizeClass, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
+
+code=
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (aside)
+      ? (_openBlock(), _createElementBlock("aside", { key: 0 }, "Aside"))
+      : _createCommentVNode("v-if", true),
+    ((status) === ('ready'))
+      ? (_openBlock(true), _createElementBlock(_Fragment, { key: 1 }, _renderList(items, (item) => {
+        return (_openBlock(), _createElementBlock("li", {
+          key: item.id,
+          class: _normalizeClass(item.kind)
+        }, _toDisplayString(item.label), 3 /* TEXT, CLASS */))
+      }), 128 /* KEYED_FRAGMENT */))
+      : (_openBlock(), _createElementBlock("li", { key: 2 }, "Empty")),
+    _createElementVNode("p", null, "Last")
+  ]))
+}

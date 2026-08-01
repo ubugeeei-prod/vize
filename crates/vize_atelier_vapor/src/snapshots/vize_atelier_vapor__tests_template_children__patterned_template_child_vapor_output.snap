@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: vapor_output(V_MATCH)
+---
+errors=[]
+templates=["<li>Ready</li>", "<div><li>Plain</li><span> </span></div>"]
+code=
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<li>Ready</li>", true)
+const t1 = _template("<div><li>Plain</li><span> </span></div>", true)
+
+export function render(_ctx) {
+  const n1 = t1()
+  const n0 = _next(_child(n1), 1)
+  const x0 = _txt(n0)
+  _setInsertionState(n1, null, true)
+  const n2 = _createIf(() => ((_ctx.status) === ('ready')), () => {
+    const n4 = t0()
+    return n4
+  })
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.x)))
+  return n1
+}

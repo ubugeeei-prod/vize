@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: vapor_output(CONTROL_FLOW)
+---
+errors=[]
+templates=["<aside>Aside</aside>", "<li> </li>", "<li>Empty</li>", "<div><p>Last</p></div>"]
+code=
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<aside>Aside</aside>", true)
+const t1 = _template("<li> </li>")
+const t2 = _template("<li>Empty</li>", true)
+const t3 = _template("<div><p>Last</p></div>", true)
+
+export function render(_ctx) {
+  const n10 = t3()
+  _setInsertionState(n10, null, true)
+  const n0 = _createIf(() => (_ctx.aside), () => {
+    const n2 = t0()
+    return n2
+  })
+  _setInsertionState(n10, null, true)
+  const n3 = _createIf(() => ((_ctx.status) === ('ready')), () => {
+    _setInsertionState(n10, null, true)
+    const n5 = _createFor(() => (_ctx.items), (_for_item0) => {
+      const n7 = t1()
+      const x7 = _txt(n7)
+      _renderEffect(() => {
+        _setClass(n7, _for_item0.value.kind)
+        _setText(x7, _toDisplayString(_for_item0.value.label))
+      })
+      return n7
+    }, (item) => (item.id), 1)
+    return n5
+  }, () => {
+    const n9 = t2()
+    return n9
+  })
+  return n10
+}

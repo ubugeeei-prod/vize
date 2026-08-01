@@ -1,0 +1,29 @@
+---
+source: crates/vize_atelier_vapor/src/tests_template_children.rs
+expression: vapor_output(DYNAMIC_SIBLING)
+---
+errors=[]
+templates=["<li>Ready</li>", "<div><li><span> </span></li><footer>Tail</footer></div>"]
+code=
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setProp as _setProp, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<li>Ready</li>", true)
+const t1 = _template("<div><li><span> </span></li><footer>Tail</footer></div>", true)
+
+export function render(_ctx) {
+  const n2 = t1()
+  const n0 = _child(n2)
+  const n3 = _child(n0)
+  const n1 = _next(n0, 1)
+  const x3 = _txt(n3)
+  _setInsertionState(n2, null, true)
+  const n4 = _createIf(() => ((_ctx.status) === ('ready')), () => {
+    const n6 = t0()
+    return n6
+  })
+  _renderEffect(() => {
+    _setProp(n0, "id", _ctx.plainId)
+    _setText(x3, _toDisplayString(_ctx.label))
+    _setClass(n1, _ctx.cls)
+  })
+  return n2
+}

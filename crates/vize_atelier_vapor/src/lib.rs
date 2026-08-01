@@ -28,6 +28,8 @@ mod tests_sibling_navigation;
 #[cfg(test)]
 mod tests_slot_outlets;
 #[cfg(test)]
+mod tests_template_children;
+#[cfg(test)]
 mod tests_valueless_attr;
 
 pub use compile::{

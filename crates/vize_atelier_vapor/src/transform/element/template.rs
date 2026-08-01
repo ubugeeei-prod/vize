@@ -5,6 +5,7 @@ use super::{
     SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
     append, cstr,
 };
+use vize_carton::ensure_sufficient_stack;
 
 /// Generate element template string (recursively includes static children)
 pub(crate) fn generate_element_template(el: &ElementNode<'_>) -> String {
@@ -50,29 +51,38 @@ pub(crate) fn generate_element_template(el: &ElementNode<'_>) -> String {
     } else {
         template.push('>');
 
-        // Recursively add template-backed children. Interpolations contribute a
-        // text placeholder while control-flow nodes are inserted at runtime.
-        for child in el.children.iter() {
-            match child {
-                TemplateChildNode::Text(text) => {
-                    template.push_str(&escape_html_text(&text.content));
-                }
-                TemplateChildNode::Interpolation(_) => {
-                    template.push(' ');
-                }
-                TemplateChildNode::Element(child_el) => {
-                    if is_template_backed_element(child_el) {
-                        template.push_str(&generate_element_template(child_el));
-                    }
-                }
-                _ => {}
-            }
-        }
+        // Recursively add template-backed children. `<template>` is a
+        // transparent wrapper in Vapor just as it is in the main element
+        // dispatcher, so its children contribute directly to the enclosing
+        // element's static template instead of producing a component lookup.
+        append_child_templates(&mut template, &el.children);
 
         append!(template, "</{}>", el.tag);
     }
 
     template
+}
+
+fn append_child_templates(template: &mut String, children: &[TemplateChildNode<'_>]) {
+    for child in children {
+        match child {
+            TemplateChildNode::Text(text) => {
+                template.push_str(&escape_html_text(&text.content));
+            }
+            TemplateChildNode::Interpolation(_) => {
+                template.push(' ');
+            }
+            TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
+                ensure_sufficient_stack(|| append_child_templates(template, &child_el.children));
+            }
+            TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
+                let child_template =
+                    ensure_sufficient_stack(|| generate_element_template(child_el));
+                template.push_str(&child_template);
+            }
+            _ => {}
+        }
+    }
 }
 
 /// Escape HTML special characters in text content (vuejs/core #14310)
@@ -112,7 +122,7 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
         match child {
             TemplateChildNode::Interpolation(_) => return false,
             TemplateChildNode::Element(child_el) => {
-                if !is_static_element(child_el) {
+                if !ensure_sufficient_stack(|| is_static_element(child_el)) {
                     return false;
                 }
             }

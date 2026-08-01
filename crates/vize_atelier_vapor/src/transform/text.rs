@@ -2,12 +2,12 @@
 //!
 //! Handles `TextNode`, `InterpolationNode`, and mixed text/interpolation children.
 
-use vize_carton::{Box, Vec};
+use vize_carton::{Box, Vec, ensure_sufficient_stack};
 
-use crate::ir::{BlockIRNode, OperationNode, SetTextIRNode};
+use crate::ir::{BlockIRNode, ChildRefIRNode, OperationNode, SetTextIRNode};
 use vize_atelier_core::{
-    ExpressionNode, InterpolationNode, SimpleExpressionNode, SourceLocation, TemplateChildNode,
-    TextNode,
+    ElementType, ExpressionNode, InterpolationNode, SimpleExpressionNode, SourceLocation,
+    TemplateChildNode, TextNode,
 };
 
 use super::context::TransformContext;
@@ -70,20 +70,50 @@ pub(crate) fn transform_text_children<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     let mut values = Vec::new_in(ctx.allocator);
+    let mut has_interpolation = false;
+    let mut run_index = None;
+    let mut rendered_index = 0usize;
+    collect_text_runs(
+        ctx,
+        children,
+        parent_element_id,
+        block,
+        &mut values,
+        &mut has_interpolation,
+        &mut run_index,
+        &mut rendered_index,
+    );
+    flush_text_run(
+        ctx,
+        parent_element_id,
+        block,
+        &mut values,
+        &mut has_interpolation,
+        &mut run_index,
+    );
+}
 
-    // Collect all text parts and interpolations
-    for child in children.iter() {
+#[allow(clippy::too_many_arguments)]
+fn collect_text_runs<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+    parent_element_id: usize,
+    block: &mut BlockIRNode<'a>,
+    values: &mut Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
+    has_interpolation: &mut bool,
+    run_index: &mut Option<usize>,
+    rendered_index: &mut usize,
+) {
+    for child in children {
         match child {
             TemplateChildNode::Text(text) => {
-                // Static text part
-                let exp = SimpleExpressionNode::new(
-                    text.content.clone(),
-                    true, // is_static = true
-                    SourceLocation::STUB,
-                );
+                begin_text_run(run_index, rendered_index);
+                let exp =
+                    SimpleExpressionNode::new(text.content.clone(), true, SourceLocation::STUB);
                 values.push(Box::new_in(exp, ctx.allocator));
             }
             TemplateChildNode::Interpolation(interp) => {
+                begin_text_run(run_index, rendered_index);
                 // Dynamic interpolation
                 if let ExpressionNode::Simple(simple) = &interp.content {
                     let exp = SimpleExpressionNode::new(
@@ -92,18 +122,82 @@ pub(crate) fn transform_text_children<'a>(
                         simple.loc.clone(),
                     );
                     values.push(Box::new_in(exp, ctx.allocator));
+                    *has_interpolation = true;
                 }
+            }
+            TemplateChildNode::Element(template) if template.tag_type == ElementType::Template => {
+                ensure_sufficient_stack(|| {
+                    collect_text_runs(
+                        ctx,
+                        &template.children,
+                        parent_element_id,
+                        block,
+                        values,
+                        has_interpolation,
+                        run_index,
+                        rendered_index,
+                    );
+                });
+            }
+            TemplateChildNode::Element(element) if element.tag_type == ElementType::Element => {
+                flush_text_run(
+                    ctx,
+                    parent_element_id,
+                    block,
+                    values,
+                    has_interpolation,
+                    run_index,
+                );
+                *rendered_index += 1;
             }
             _ => {}
         }
     }
+}
 
-    if !values.is_empty() {
-        let set_text = SetTextIRNode {
-            element: parent_element_id,
-            values,
-        };
-
-        ctx.push_dynamic_operation(block, OperationNode::SetText(set_text));
+fn begin_text_run(run_index: &mut Option<usize>, rendered_index: &mut usize) {
+    if run_index.is_none() {
+        *run_index = Some(*rendered_index);
+        *rendered_index += 1;
     }
+}
+
+fn flush_text_run<'a>(
+    ctx: &mut TransformContext<'a>,
+    parent_element_id: usize,
+    block: &mut BlockIRNode<'a>,
+    values: &mut Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
+    has_interpolation: &mut bool,
+    run_index: &mut Option<usize>,
+) {
+    let Some(offset) = run_index.take() else {
+        return;
+    };
+    if *has_interpolation {
+        let text_id = if offset == 0 {
+            parent_element_id
+        } else {
+            let text_id = ctx.next_id();
+            block
+                .operation
+                .push(OperationNode::ChildRef(ChildRefIRNode {
+                    child_id: text_id,
+                    parent_id: parent_element_id,
+                    offset,
+                }));
+            ctx.standalone_text_elements.insert(text_id);
+            text_id
+        };
+        let run_values = std::mem::replace(values, Vec::new_in(ctx.allocator));
+        ctx.push_dynamic_operation(
+            block,
+            OperationNode::SetText(SetTextIRNode {
+                element: text_id,
+                values: run_values,
+            }),
+        );
+    } else {
+        values.clear();
+    }
+    *has_interpolation = false;
 }

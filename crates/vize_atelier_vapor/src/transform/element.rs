@@ -7,7 +7,7 @@ mod deferred;
 #[path = "element/template.rs"]
 mod template;
 
-use vize_carton::{Box, String, Vec, append, cstr};
+use vize_carton::{Box, String, Vec, append, cstr, ensure_sufficient_stack};
 
 use crate::ir::{
     BlockIRNode, ChildRefIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot,
@@ -57,7 +57,7 @@ pub(crate) fn transform_element<'a>(
         for child in el.children.iter() {
             match child {
                 TemplateChildNode::Element(child_el) => {
-                    transform_element(ctx, child_el, block);
+                    ensure_sufficient_stack(|| transform_element(ctx, child_el, block));
                 }
                 TemplateChildNode::Text(text) => {
                     transform_text(ctx, text, block);
@@ -143,22 +143,7 @@ pub(crate) fn transform_element<'a>(
 
             transform_template_ref(ctx, el, element_id, block);
 
-            // Check if we have mixed text and interpolation children
-            let has_text_or_interpolation = el.children.iter().any(|c| {
-                matches!(
-                    c,
-                    TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-                )
-            });
-            let has_interpolation = el
-                .children
-                .iter()
-                .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
-            if has_interpolation && has_text_or_interpolation {
-                // Collect all text parts and interpolations together
-                transform_text_children(ctx, &el.children, element_id, block);
-            }
+            transform_text_children(ctx, &el.children, element_id, block);
 
             // Register template (no deferred children to process)
             ctx.add_template(element_id, template);

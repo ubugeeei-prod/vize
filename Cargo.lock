@@ -3678,6 +3678,7 @@ dependencies = [
  "serde",
  "thiserror 2.0.18",
  "vize_atelier_core",
+ "vize_atelier_dom",
  "vize_carton",
  "vize_croquis",
 ]
