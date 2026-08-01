@@ -200,6 +200,7 @@ test("the type-check summary renders separate engine classes and no cross ratio"
       checkFileCount: 500,
       viteFileCount: 0,
       nuxtFileCount: 0,
+      museaFileCount: 0,
       largeBlocks: 0,
       largeSfcBytes: 0,
     },

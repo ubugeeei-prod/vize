@@ -19,6 +19,10 @@ on:
         description: Generated SFC files imported by the Nuxt benchmark app
         required: true
         default: "500"
+      musea_file_count:
+        description: Generated art files measured by the Musea plugin benchmark
+        required: true
+        default: "240"
       large_blocks:
         description: Repeated template blocks in the large single-SFC benchmark
         required: true
@@ -57,6 +61,7 @@ env:
   VIZE_TOOL_BENCH_CHECK_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.check_file_count || '500' }}
   VIZE_TOOL_BENCH_VITE_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.vite_file_count || '1000' }}
   VIZE_TOOL_BENCH_NUXT_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.nuxt_file_count || '250' }}
+  VIZE_TOOL_BENCH_MUSEA_FILE_COUNT: ${{ github.event_name == 'workflow_dispatch' && inputs.musea_file_count || '240' }}
   VIZE_TOOL_BENCH_LARGE_BLOCKS: ${{ github.event_name == 'workflow_dispatch' && inputs.large_blocks || '300' }}
   VIZE_TOOL_BENCH_RUNS: ${{ github.event_name == 'workflow_dispatch' && inputs.runs || '3' }}
   VIZE_TOOL_BENCH_WARMUPS: ${{ github.event_name == 'workflow_dispatch' && inputs.warmups || '1' }}
@@ -177,6 +182,7 @@ jobs:
             --check-file-count "$VIZE_TOOL_BENCH_CHECK_FILE_COUNT" \
             --vite-file-count "$VIZE_TOOL_BENCH_VITE_FILE_COUNT" \
             --nuxt-file-count "$VIZE_TOOL_BENCH_NUXT_FILE_COUNT" \
+            --musea-file-count "$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT" \
             --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
             --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \

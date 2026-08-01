@@ -13,6 +13,8 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(workflow, /commit_results:[\s\S]*type:\s*boolean[\s\S]*default:\s*false/);
   assert.match(workflow, /VIZE_TOOL_BENCH_FILE_COUNT:/);
   assert.match(workflow, /VIZE_TOOL_BENCH_NUXT_FILE_COUNT:/);
+  assert.match(workflow, /musea_file_count:[\s\S]*default:\s*"240"/);
+  assert.match(workflow, /VIZE_TOOL_BENCH_MUSEA_FILE_COUNT:/);
   assert.match(workflow, /VIZE_TOOL_BENCH_LARGE_BLOCKS:/);
   assert.match(benchmarkJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
   assert.match(benchmarkJob, /contents:\s*read/);
@@ -25,6 +27,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(benchmarkJob, /node bench\/generate\.mjs "\$VIZE_TOOL_BENCH_FILE_COUNT"/);
   assert.match(benchmarkJob, /node bench\/compare-tools\.mjs/);
   assert.match(benchmarkJob, /--nuxt-file-count "\$VIZE_TOOL_BENCH_NUXT_FILE_COUNT"/);
+  assert.match(benchmarkJob, /--musea-file-count "\$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT"/);
   assert.match(benchmarkJob, /--large-blocks "\$VIZE_TOOL_BENCH_LARGE_BLOCKS"/);
   assert.match(benchmarkJob, /--runner-label "blacksmith-32vcpu-ubuntu-2404"/);
   assert.match(benchmarkJob, /--doc performance-blacksmith\.md/);

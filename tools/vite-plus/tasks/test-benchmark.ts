@@ -173,11 +173,17 @@ export const testAndBenchmarkTasks = defineTasks({
   "bench:fmt": noCacheTask(moonScript("bench", "fmt")),
   "bench:check": noCacheTask(moonScript("bench", "check")),
   "bench:vite": noCacheTask(moonScript("bench", "vite")),
+  // Published, not enforcing: reports what @vizejs/vite-plugin-musea and
+  // @vizejs/musea-nuxt cost a gallery build, and carries no baseline of its
+  // own so benchmark.yml's fixed-baseline schedule (#3586) stays the repo's
+  // single drift gate. Needs build:native:test, build:vite-plugin and
+  // build:nuxt-stack, and says so when they are missing.
+  "bench:musea": noCacheTask(moonScript("bench", "musea")),
   "bench:compare-tools": noCacheTask(
     "node bench/compare-tools.mjs --input bench/__in__ --out target/tool-benchmark-summary.md --json target/tool-benchmark-results.json --doc target/performance-blacksmith.md",
   ),
   "bench:all": noCacheTask(
-    runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
+    runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"),
   ),
   "bench:rust": noCacheTask("cargo bench -p vize_atelier_sfc"),
 });

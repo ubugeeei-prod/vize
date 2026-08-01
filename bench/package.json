@@ -5,6 +5,7 @@
   "scripts": {
     "generate": "node generate.mjs",
     "bench:vite": "node vite.ts",
+    "bench:musea": "node musea.mjs",
     "bench:scale": "node scale.mjs",
     "bench:scale:cache": "node scale/cache-equivalence.mjs",
     "bench:lint": "node lint.ts",

@@ -7,6 +7,7 @@ fn bench_script(task : String) -> String? {
     "fmt" => Some("bench/fmt.ts")
     "check" => Some("bench/check.ts")
     "vite" => Some("bench/vite.ts")
+    "musea" => Some("bench/musea.mjs")
     "compare-tools" => Some("bench/compare-tools.mjs")
     _ => None
   }
@@ -16,7 +17,7 @@ async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.is_empty() {
     println(
-      "Usage: moon run --target native tools/moon/cmd/bench -- <run|generate|lint|fmt|check|vite|compare-tools> [args...]",
+      "Usage: moon run --target native tools/moon/cmd/bench -- <run|generate|lint|fmt|check|vite|musea|compare-tools> [args...]",
     )
     return 1
   }

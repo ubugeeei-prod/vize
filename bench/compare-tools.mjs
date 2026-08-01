@@ -23,7 +23,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
 import { renderProvenanceLines, resolveBackend } from "./benchmark-provenance.mjs";
+import { createLargeSfcSource } from "./compare-tools-large-sfc.mjs";
 import { buildMetadata } from "./compare-tools-metadata.mjs";
+import { DEFAULT_MUSEA_FILE_COUNT, measureMuseaSurface } from "./compare-tools-musea.mjs";
 import {
   createSurface,
   ENGINE_CLASSES_BY_SURFACE,
@@ -48,7 +50,7 @@ const DEFAULT_CHECK_FILE_COUNT = 500;
 const DEFAULT_VITE_FILE_COUNT = 1000;
 const DEFAULT_NUXT_FILE_COUNT = 500;
 const DEFAULT_LARGE_BLOCKS = 900;
-const DEFAULT_TASKS = ["compile", "large", "lint", "fmt", "check", "vite", "nuxt"];
+export const DEFAULT_TASKS = ["compile", "large", "lint", "fmt", "check", "vite", "nuxt", "musea"];
 
 function parseArgs(argv) {
   const args = {};
@@ -311,108 +313,6 @@ app.mount('#app')
   );
 
   return { workDir: outputDir, entryFile };
-}
-
-function createLargeSfcSource(blockCount) {
-  const blocks = [];
-  for (let i = 0; i < blockCount; i++) {
-    const metricIndex = i % 64;
-    blocks.push(`    <article class="metric-card metric-card-${i}" :class="{ active: selectedId === ${metricIndex} }" :data-index="${i}">
-      <header>
-        <p>{{ labels[${metricIndex}] }}</p>
-        <h2>{{ formatMetric(metrics[${metricIndex}], ${i}) }}</h2>
-      </header>
-      <dl>
-        <div>
-          <dt>Score</dt>
-          <dd>{{ metrics[${metricIndex}].score }}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{{ metrics[${metricIndex}].active ? "active" : "idle" }}</dd>
-        </div>
-      </dl>
-      <ul>
-        <li v-for="point in metrics[${metricIndex}].points" :key="'${i}-' + point.id">
-          <span>{{ point.label }}</span>
-          <strong>{{ point.value + ${i} }}</strong>
-        </li>
-      </ul>
-      <button type="button" @click="selectMetric(${metricIndex})">Select {{ labels[${metricIndex}] }}</button>
-    </article>`);
-  }
-
-  return `<template>
-  <main class="large-dashboard">
-    <section class="summary">
-      <h1>{{ title }}</h1>
-      <p>{{ activeCount }} active metrics across {{ metrics.length }} tracked rows.</p>
-    </section>
-${blocks.join("\n")}
-  </main>
-</template>
-
-<script setup lang="ts">
-import { computed, ref } from 'vue'
-
-type Point = {
-  id: string
-  label: string
-  value: number
-}
-
-type Metric = {
-  id: number
-  title: string
-  score: number
-  active: boolean
-  points: Point[]
-}
-
-const title = ref('Large synthetic dashboard')
-const selectedId = ref(0)
-const metrics = ref<Metric[]>(Array.from({ length: 64 }, (_, index) => ({
-  id: index,
-  title: 'Metric ' + index,
-  score: (index * 13) % 100,
-  active: index % 3 === 0,
-  points: Array.from({ length: 4 }, (__, pointIndex) => ({
-    id: index + '-' + pointIndex,
-    label: 'Point ' + pointIndex,
-    value: index * pointIndex,
-  })),
-})))
-
-const labels = computed(() => metrics.value.map((metric) => metric.title + ' / ' + metric.score))
-const activeCount = computed(() => metrics.value.filter((metric) => metric.active).length)
-
-function formatMetric(metric: Metric, offset: number): string {
-  return metric.title + ' #' + offset + ' (' + metric.score + ')'
-}
-
-function selectMetric(index: number): void {
-  selectedId.value = index
-}
-</script>
-
-<style scoped>
-.large-dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-.summary {
-  grid-column: 1 / -1;
-}
-.metric-card {
-  border: 1px solid #d4d4d8;
-  padding: 12px;
-}
-.metric-card.active {
-  border-color: #2563eb;
-}
-</style>
-`;
 }
 
 function prepareLargeSfcDir(blockCount) {
@@ -1270,6 +1170,7 @@ async function runBenchmarks(args) {
   const checkFileCount = parsePositiveInt(args["check-file-count"], DEFAULT_CHECK_FILE_COUNT);
   const viteFileCount = parsePositiveInt(args["vite-file-count"], DEFAULT_VITE_FILE_COUNT);
   const nuxtFileCount = parsePositiveInt(args["nuxt-file-count"], DEFAULT_NUXT_FILE_COUNT);
+  const museaFileCount = parsePositiveInt(args["musea-file-count"], DEFAULT_MUSEA_FILE_COUNT);
   const largeBlocks = parsePositiveInt(args["large-blocks"], DEFAULT_LARGE_BLOCKS);
   const taskList = selectedTasks(args.tasks);
 
@@ -1295,6 +1196,9 @@ async function runBenchmarks(args) {
     checkFileCount: Math.min(checkFileCount, allFiles.length),
     viteFileCount: Math.min(viteFileCount, allFiles.length),
     nuxtFileCount: Math.min(nuxtFileCount, allFiles.length),
+    // Not clamped to `allFiles`: the Musea surface generates its own `.art.vue`
+    // corpus rather than reusing the plain-SFC input directory.
+    museaFileCount,
     largeBlocks,
     backend: resolveBackend(),
   };
@@ -1344,6 +1248,9 @@ async function runBenchmarks(args) {
     data.surfaces.push(
       await measureNuxt(inputDir, allFiles.slice(0, options.nuxtFileCount), options),
     );
+  }
+  if (taskList.includes("musea")) {
+    data.surfaces.push(await measureMuseaSurface(rootDir, options));
   }
 
   return data;
