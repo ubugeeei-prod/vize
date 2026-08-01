@@ -5,6 +5,7 @@ mod directive_values;
 mod empty_required_props;
 mod exact_optional_props;
 mod native_prop_anchors;
+mod options_api_bridge_anchors;
 mod sequence_prop_expressions;
 mod spread_props;
 mod spread_scope_bindings;

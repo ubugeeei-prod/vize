@@ -7,6 +7,7 @@ mod global_components;
 mod imports;
 mod legacy_vue2;
 mod options_api;
+mod options_api_bridge;
 mod options_api_props_identifiers;
 mod options_api_support;
 mod props_anchors;
@@ -27,9 +28,8 @@ use self::imports::{
     extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
-use self::options_api::{
-    find_default_export_targets, generate_options_api_bridge, generate_options_api_variables,
-};
+use self::options_api::{find_default_export_targets, generate_options_api_variables};
+use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::props_anchors::emit_setup_scope_prop_anchors;
@@ -727,7 +727,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if options_api {
                 profile!(
                     "canon.virtual_ts.generate_options_api_bridge",
-                    generate_options_api_bridge(&mut ts, summary, script)
+                    generate_options_api_bridge(
+                        &mut ts,
+                        &mut mappings,
+                        summary,
+                        script,
+                        script_offset as usize,
+                    )
                 );
             }
         });
