@@ -8,10 +8,9 @@
 //! down and cannot be turned into a diagnostic. 256 was simply the depth a debug
 //! build survived on Rust's default 2 MiB thread stack, which put Vize below
 //! `@vue/compiler-dom`, whose own recursion reaches ~1092 levels of `<div>` on a
-//! default Node stack and then raises a *catchable* `RangeError`.
-//!
-//! Those descents now grow onto the heap when the stack runs low
-//! (`vize_carton::recursion`), so the limit is chosen for output size instead.
+//! default Node stack and then raises a *catchable* `RangeError`. Those descents
+//! now grow onto the heap when the stack runs low (`vize_carton::recursion`), so
+//! the limit is chosen for output size instead.
 //!
 //! Every case here runs on a thread with a deliberately small fixed stack. That
 //! is the whole point: on a stack this size the pre-fix compiler could not reach
@@ -19,8 +18,7 @@
 //! It also keeps the test honest in a release build, where frames are ~8x
 //! smaller and a default-sized stack would hide the bug.
 //!
-//! Test-only: `std::string::String` builds the deeply nested sources and the
-//! expected output.
+//! Test-only: `std::string::String` builds the sources and expected output.
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
 use vize_atelier_core::{ErrorCode, errors::CompilerError};
@@ -48,6 +46,8 @@ const SMALL_STACK: usize = 256 * 1024;
 const EXPECTED_PREAMBLE: &str = "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n";
 
 const EXPECTED_STRUCTURAL_PREAMBLE: &str = "const { resolveComponent: _resolveComponent, renderSlot: _renderSlot, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, withCtx: _withCtx } = Vue\n";
+
+const EXPECTED_V_FOR_PREAMBLE: &str = "const { resolveComponent: _resolveComponent, renderSlot: _renderSlot, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList, withCtx: _withCtx } = Vue\n";
 
 /// `(code, message, start, end, source)` where the positions are
 /// `(offset, line, column)`.
@@ -279,14 +279,47 @@ fn structural_recursion_paths_compile_on_a_small_stack() {
     assert_eq!(compiled.code, expected_structural_code(STRUCTURAL_DEPTH));
 }
 
+/// The render function Vize emits for [`nested_v_for_templates`] at `depth`.
+///
+/// Each level is a `renderList` fragment whose callback opens another fragment
+/// around the next level; the innermost one renders the slot.
+fn expected_v_for_code(depth: usize) -> String {
+    const LIST_OPEN: &str =
+        "(_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n";
+    const BLOCK_OPEN: &str = "return (_openBlock(), _createElementBlock(_Fragment, null, [\n";
+
+    let mut out = String::new();
+    out.push_str("function render(_ctx, _cache, $props, $setup, $data, $options) {\n");
+    out.push_str("  const _component_Comp = _resolveComponent(\"Comp\")\n");
+    out.push_str("  \n");
+    out.push_str("  return (_openBlock(), _createBlock(_component_Comp, null, {\n");
+    out.push_str("    default: _withCtx(() => [\n");
+    for level in 1..=depth {
+        indent(&mut out, 2 * level + 1);
+        out.push_str(LIST_OPEN);
+        indent(&mut out, 2 * level + 2);
+        out.push_str(BLOCK_OPEN);
+    }
+    indent(&mut out, 2 * depth + 3);
+    out.push_str("_renderSlot(_ctx.$slots, \"default\")\n");
+    for level in (1..=depth).rev() {
+        indent(&mut out, 2 * level + 2);
+        out.push_str("], 64 /* STABLE_FRAGMENT */))\n");
+        indent(&mut out, 2 * level + 1);
+        out.push_str("}), 256 /* UNKEYED_FRAGMENT */))\n");
+    }
+    out.push_str("    ]),\n    _: 3 /* FORWARDED */\n  }))\n}");
+    out
+}
+
 #[test]
 fn nested_for_nodes_compile_and_drop_on_a_small_stack() {
     let compiled = compile_source_on_small_stack(nested_v_for_templates(PAST_OLD_LIMIT), true);
 
     assert_eq!(compiled.diagnostics, Vec::new());
     assert!(!compiled.has_source_map);
-    assert!(compiled.preamble.contains("renderList: _renderList"));
-    assert!(compiled.code.contains("_renderSlot"));
+    assert_eq!(compiled.preamble, EXPECTED_V_FOR_PREAMBLE);
+    assert_eq!(compiled.code, expected_v_for_code(PAST_OLD_LIMIT));
 }
 
 #[test]
