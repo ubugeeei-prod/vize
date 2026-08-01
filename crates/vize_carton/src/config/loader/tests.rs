@@ -1,10 +1,13 @@
 use super::{
-    load_compiler_host_compiler, load_compiler_jsx_compat, load_compiler_jsx_mode,
-    load_compiler_template_syntax, load_compiler_vue_version, load_config_and_linter_with_source,
+    load_compiler_host_compiler, load_compiler_template_syntax, load_compiler_vue_version,
+    load_config_and_linter_plan_with_lint_features_and_source, load_config_and_linter_with_source,
     load_config_entry_files_with_source, load_config_entry_ignores_with_source,
     load_config_with_source, load_linter_config, validate_explicit_config_path,
 };
-use crate::config::{JsxCompat, JsxMode, VueVersion};
+use crate::config::{LintRuleSeverity, VueVersion};
+
+#[path = "linter_plan_tests.rs"]
+mod linter_plan_tests;
 
 #[test]
 fn validate_explicit_config_path_missing_errors() {

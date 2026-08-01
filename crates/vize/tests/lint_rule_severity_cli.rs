@@ -119,3 +119,101 @@ emit("update:current-step-index", 1)
     let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert!(stderr.contains("Too many warnings (2 > max 0)"), "{stderr}");
 }
+
+#[test]
+fn lint_applies_entry_rule_severity_only_to_matching_files() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_file(
+        project_root.path(),
+        "vize.config.json",
+        r#"{
+  "linter": {
+    "preset": "ecosystem",
+    "rules": { "script/custom-event-name-casing": "error" }
+  },
+  "entries": [{
+    "files": ["src/pages/**/*.vue"],
+    "ignores": ["src/pages/ignored.vue"],
+    "linter": { "rules": { "script/custom-event-name-casing": "warn" } }
+  }]
+}"#,
+    );
+    let source = r#"<script setup lang="ts">
+const emit = defineEmits(["update:current-step-index"])
+emit("update:current-step-index", 1)
+</script>
+"#;
+    write_file(project_root.path(), "src/components/Card.vue", source);
+    write_file(project_root.path(), "src/pages/ignored.vue", source);
+    write_file(project_root.path(), "src/pages/index.vue", source);
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "src/**/*.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let actual = serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap();
+    assert_eq!(
+        actual,
+        serde_json::json!([
+          {
+            "file": "src/components/Card.vue",
+            "messages": [{
+              "ruleId": "script/custom-event-name-casing",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "line": 3,
+              "column": 6,
+              "endLine": 3,
+              "endColumn": 33,
+              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+            }],
+            "errorCount": 1,
+            "warningCount": 0
+          },
+          {
+            "file": "src/pages/ignored.vue",
+            "messages": [{
+              "ruleId": "script/custom-event-name-casing",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "line": 3,
+              "column": 6,
+              "endLine": 3,
+              "endColumn": 33,
+              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+            }],
+            "errorCount": 1,
+            "warningCount": 0
+          },
+          {
+            "file": "src/pages/index.vue",
+            "messages": [{
+              "ruleId": "script/custom-event-name-casing",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
+              "line": 3,
+              "column": 6,
+              "endLine": 3,
+              "endColumn": 33,
+              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+            }],
+            "errorCount": 0,
+            "warningCount": 1
+          }
+        ]),
+        "{}",
+        output_details(&output),
+    );
+}

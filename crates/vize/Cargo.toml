@@ -52,6 +52,7 @@ ignore.workspace = true
 
 # Glob pattern matching
 glob.workspace = true
+globset.workspace = true
 
 # Multithreading
 rayon.workspace = true

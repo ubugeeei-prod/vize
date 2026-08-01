@@ -4,6 +4,7 @@ mod aggregate;
 mod args;
 mod collect;
 mod cross_file;
+mod entry_rules;
 mod fix;
 mod patterns;
 mod stdout;
@@ -17,6 +18,7 @@ use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{collect_lint_files, load_lint_ignore_set, resolve_lint_config_path};
 use cross_file::apply_sfc_cross_file_lint;
+use entry_rules::LinterRuleResolver;
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
 use std::fs;
@@ -25,13 +27,11 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::{
-    String, ToCompactString, config::LintRuleSeverity, cstr, profile, profiler::global_profiler,
-};
+use vize_carton::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_patina::{HelpLevel, LintPreset, Linter, OutputFormat, Severity, format_results};
+use vize_patina::{HelpLevel, LintPreset, OutputFormat, format_results};
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
@@ -52,27 +52,26 @@ pub fn run(args: LintArgs) {
     let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_config, linter_features) = if args.no_config {
+    let (loaded_config, linter_plan, linter_features) = if args.no_config {
         (
             crate::config::LoadedConfigWithFeatures::default(),
-            crate::config::LinterConfig::default(),
+            crate::config::LinterConfigPlan::default(),
             crate::config::LinterFeatureFlags::default(),
         )
     } else {
-        crate::config::load_config_and_linter_with_lint_features_and_source(args.config.as_deref())
+        crate::config::load_config_and_linter_plan_with_lint_features_and_source(
+            args.config.as_deref(),
+        )
     };
-    let rule_options = if args.no_config {
-        crate::config::LintRuleOptions::default()
-    } else {
-        crate::config::load_linter_rule_options(args.config.as_deref())
-    };
+    let linter_enabled = linter_plan.base.enabled;
+    let rule_options = linter_plan.rule_options.clone();
     let config_dir = loaded_config
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
     let config = loaded_config.config;
-    if !linter_config.enabled {
+    if !linter_enabled {
         eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
         return;
     }
@@ -80,7 +79,7 @@ pub fn run(args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-    let ignore_set = load_lint_ignore_set(&args, config_dir);
+    let ignore_set = load_lint_ignore_set(&linter_plan.global_ignores, config_dir);
     let collect_start = Instant::now();
     let files = collect_lint_files(&args.patterns, ignore_set.as_ref());
     let collect_time = collect_start.elapsed();
@@ -94,38 +93,23 @@ pub fn run(args: LintArgs) {
         "short" => HelpLevel::Short,
         _ => HelpLevel::Full,
     };
-    let preset_name = args
+    let preset_name: String = args
         .preset
         .as_deref()
-        .or(linter_config.preset.as_deref())
-        .unwrap_or("ecosystem");
-    let preset = LintPreset::parse(preset_name).unwrap_or_default();
-    let type_aware_enabled =
-        args.type_aware || args.strict_reactivity || linter_config.type_aware_lint_enabled();
-    let mut linter = Linter::with_preset(preset)
-        .with_additional_rules(linter_config.enabled_rules())
-        .with_disabled_rules(linter_config.disabled_rules())
-        .with_disabled_categories(linter_config.disabled_categories())
-        .with_category_severity_overrides(severity_overrides(
-            linter_config.category_severity_overrides(),
-        ))
-        .with_rule_severity_overrides(severity_overrides(linter_config.rule_severity_overrides()))
-        .with_help_level(help_level)
-        .with_type_aware_lint(type_aware_enabled)
-        .with_vue_version(linter_features.vue_version)
-        .with_vapor_mode(linter_features.vapor)
-        .with_restricted_globals(rule_options.restricted_globals())
-        .with_restricted_members(rule_options.restricted_members());
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        linter = linter.with_corsa_path(configured_corsa_path);
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    if args.strict_reactivity {
-        linter = linter.with_rule(Box::new(
-            vize_patina::rules::type_aware::NoReactivityLoss::new(),
-        ));
-    }
+        .or(linter_plan.base.preset.as_deref())
+        .unwrap_or("ecosystem")
+        .into();
+    let preset = LintPreset::parse(preset_name.as_str()).unwrap_or_default();
+    let resolved_rules =
+        LinterRuleResolver::new(linter_plan, config_dir, &cwd).resolve_files(&files, &cwd);
+    let linters = resolved_rules.build_linters(
+        preset,
+        help_level,
+        &args,
+        linter_features,
+        &rule_options,
+        configured_corsa_path,
+    );
     let write_failures = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
     if args.profile {
@@ -139,7 +123,9 @@ pub fn run(args: LintArgs) {
     let retain_file_results = should_retain_file_results(render_details, cross_file_enabled);
     let lint_run = files
         .par_iter()
-        .filter_map(|path| {
+        .zip(resolved_rules.file_config_indices.par_iter())
+        .filter_map(|(path, config_index)| {
+            let linter = &linters[*config_index];
             let file_start = args.profile.then(Instant::now);
             let read_start = args.profile.then(Instant::now);
             let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
@@ -160,7 +146,7 @@ pub fn run(args: LintArgs) {
             let filename = path.to_string_lossy().to_compact_string();
             let lint_file_start = args.profile.then(Instant::now);
             let result = profile!("cli.lint.file.lint", {
-                lint_source_with_optional_fix(&linter, path, source, &filename, args.fix)
+                lint_source_with_optional_fix(linter, path, source, &filename, args.fix)
             });
             let (source, result, fixed) = result
                 .inspect_err(|_| {
@@ -395,17 +381,4 @@ pub fn run(args: LintArgs) {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
     }
-}
-
-/// Map configured `(name, severity)` entries to linter severity overrides,
-/// dropping any explicitly turned off.
-fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, Severity)> {
-    entries
-        .into_iter()
-        .filter_map(|(name, severity)| match severity {
-            LintRuleSeverity::Off => None,
-            LintRuleSeverity::Warn => Some((name, Severity::Warning)),
-            LintRuleSeverity::Error => Some((name, Severity::Error)),
-        })
-        .collect()
 }

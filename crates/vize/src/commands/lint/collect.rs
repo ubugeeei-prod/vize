@@ -5,7 +5,6 @@ use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 use vize_carton::{FxHashSet, String};
 
-use super::LintArgs;
 use super::patterns::{is_lint_extension, is_plain_script_extension, is_standalone_html_extension};
 use crate::config;
 
@@ -28,12 +27,11 @@ impl LintIgnoreSet {
     }
 }
 
-pub(super) fn load_lint_ignore_set(args: &LintArgs, config_dir: &Path) -> Option<LintIgnoreSet> {
-    if args.no_config {
-        return None;
-    }
-    let loaded_ignores = config::load_config_entry_ignores_with_source(args.config.as_deref());
-    LintIgnoreSet::new(&loaded_ignores.ignores, config_dir)
+pub(super) fn load_lint_ignore_set(
+    ignores: &[config::ConfigEntryIgnore],
+    config_dir: &Path,
+) -> Option<LintIgnoreSet> {
+    LintIgnoreSet::new(ignores, config_dir)
 }
 
 pub(super) fn collect_lint_files(

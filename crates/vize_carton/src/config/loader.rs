@@ -29,7 +29,7 @@ use super::model::{
     VizeConfig,
 };
 
-pub use lint_features::load_config_and_linter_with_lint_features_and_source;
+pub use lint_features::*;
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 
 #[derive(Debug, Clone)]
