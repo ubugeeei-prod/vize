@@ -48,7 +48,7 @@ export function resolveNuxtLintCheckerOptions(
 ): ResolvedVizeNuxtLintCheckerOptions | false {
   if (checker !== true && (checker === false || checker == null)) return false;
 
-  const overrides = typeof checker === "object" && checker !== null ? checker : {};
+  const overrides = typeof checker === "object" ? checker : {};
   return {
     cache: overrides.cache ?? true,
     include: [...(overrides.include ?? [`${project.srcDir}/**/*.{js,jsx,ts,tsx,vue}`])],
