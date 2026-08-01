@@ -81,7 +81,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const syntaxHighlighter = steps.find(
     (step) => step.name === "Check real-project syntax highlighting",
   );
-  const syntaxHighlighterIndex = steps.indexOf(syntaxHighlighter!);
+  assert.ok(syntaxHighlighter, "Missing 'Check real-project syntax highlighting' step");
+  const syntaxHighlighterIndex = steps.indexOf(syntaxHighlighter);
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
   );

@@ -125,14 +125,15 @@ export async function loadVueTextMateGrammar(scopeName = "source.vue") {
     },
   });
 
-  let grammar: TextMateGrammar | null;
+  let grammar: TextMateGrammar;
   try {
-    grammar = registry.loadGrammar(scopeName) as TextMateGrammar | null;
+    const loaded = registry.loadGrammar(scopeName) as TextMateGrammar | null;
+    assert.ok(loaded, `failed to load TextMate grammar ${scopeName}`);
+    grammar = loaded;
   } catch (error) {
     registry.dispose();
     throw error;
   }
-  assert.ok(grammar, `failed to load TextMate grammar ${scopeName}`);
   return {
     getEvidence: (): TextMateGrammarEvidence => ({
       configuredGrammarSha256,
