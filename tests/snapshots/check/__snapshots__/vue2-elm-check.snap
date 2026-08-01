@@ -6,19 +6,31 @@
     },
     {
       "file": "src/components/common/alertTip.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:28:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'."
+      ]
     },
     {
       "file": "src/components/common/buyCart.vue",
       "diagnostics": [
         "error:35:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:62:37 [TS2339] Property 'num' does not exist on type 'unknown'."
+        "error:53:46 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
+        "error:62:37 [TS2339] Property 'num' does not exist on type 'unknown'.",
+        "error:78:26 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
+        "error:83:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
+        "error:87:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
+        "error:92:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
+        "error:96:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/components/common/computeTime.vue",
       "diagnostics": [
         "error:6:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
+        "error:31:22 [TS2339] Property '$emit' does not exist on type '__VizeThis'.",
+        "error:35:36 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
+        "error:36:22 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
+        "error:39:44 [TS2551] Property 'timer' does not exist on type '__VizeThis'. Did you mean 'time'?",
         "error:53:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:54:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:56:21 [TS2322] Type 'string' is not assignable to type 'number'.",
@@ -46,11 +58,11 @@
     {
       "file": "src/components/footer/footGuide.vue",
       "diagnostics": [
-        "error:23:31 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
         "error:23:65 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
         "error:23:65 [TS2304] Cannot find name 'geohash'.",
         "error:29:58 [TS2304] Cannot find name 'geohash'.",
-        "error:51:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:51:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:71:16 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -80,9 +92,9 @@
         "error:7:70 [TS2588] Cannot assign to 'categoryType' because it is a constant.",
         "error:77:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:87:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:214:18 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:215:36 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:216:15 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:121:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:122:40 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:122:65 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -102,7 +114,10 @@
       "file": "src/page/benefit/children/exchange.vue",
       "diagnostics": [
         "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:24:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:57:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:63:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:63:58 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -116,12 +131,18 @@
       "file": "src/page/benefit/children/hbHistory.vue",
       "diagnostics": [
         "error:36:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:39:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
+        "error:39:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
+        "error:68:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:69:40 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:69:62 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:71:26 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/city/city.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:103:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+      ]
     },
     {
       "file": "src/page/confirmOrder/children/children/addAddress.vue",
@@ -130,13 +151,25 @@
         "error:38:127 [TS2304] Cannot find name 'searchAddress'.",
         "error:38:142 [TS2304] Cannot find name 'searchAddress'.",
         "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:102:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:102:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:111:32 [TS2339] Property 'searchAddress' does not exist on type '__VizeThis'.",
+        "error:125:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:125:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:125:76 [TS2339] Property 'searchAddress' does not exist on type '__VizeThis'.",
+        "error:125:122 [TS2339] Property 'geohash' does not exist on type '__VizeThis'.",
+        "error:131:26 [TS2339] Property 'CONFIRM_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:132:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/children/children/searchAddress.vue",
       "diagnostics": [
-        "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:47:39 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:52:22 [TS2339] Property 'CHOOSE_SEARCH_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:53:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -144,13 +177,23 @@
       "diagnostics": [
         "error:51:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:60:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:63:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
+        "error:63:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
+        "error:92:26 [TS2339] Property 'addressIndex' does not exist on type '__VizeThis'.",
+        "error:93:33 [TS2339] Property 'addressIndex' does not exist on type '__VizeThis'.",
+        "error:109:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:109:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:110:40 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:110:66 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:136:22 [TS2551] Property 'CHOOSE_ADDRESS' does not exist on type '__VizeThis'. Did you mean 'chooseAddress'?",
+        "error:137:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/invoice.vue",
       "diagnostics": [
-        "error:16:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:16:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:38:19 [TS2551] Property 'CONFIRM_INVOICE' does not exist on type '__VizeThis'. Did you mean 'confrimInvoice'?",
+        "error:39:19 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -164,20 +207,40 @@
         "error:85:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
         "error:87:21 [TS2322] Type 'string' is not assignable to type 'number'.",
         "error:89:39 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
-        "error:91:21 [TS2322] Type 'string' is not assignable to type 'number'."
+        "error:91:21 [TS2322] Type 'string' is not assignable to type 'number'.",
+        "error:102:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:102:53 [TS2339] Property 'orderMessage' does not exist on type '__VizeThis'.",
+        "error:102:81 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:111:36 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:112:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:115:44 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:131:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/remark.vue",
       "diagnostics": [
-        "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:27:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:59:35 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:69:22 [TS2551] Property 'CONFIRM_REMARK' does not exist on type '__VizeThis'. Did you mean 'confirmRemark'?",
+        "error:70:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/confirmOrder/children/userValidation.vue",
       "diagnostics": [
         "error:20:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:26:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:70:36 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:71:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:74:44 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:92:37 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:92:61 [TS2339] Property 'cart_id' does not exist on type '__VizeThis'.",
+        "error:100:22 [TS2339] Property 'CHANGE_ORDER_PARAM' does not exist on type '__VizeThis'.",
+        "error:101:32 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:101:58 [TS2339] Property 'orderParam' does not exist on type '__VizeThis'.",
+        "error:108:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
+        "error:109:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -199,6 +262,10 @@
         "error:88:62 [TS2304] Cannot find name 'inputText'.",
         "error:126:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:134:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:188:26 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
+        "error:189:40 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
+        "error:194:26 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
+        "error:195:39 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
         "error:214:42 [TS2339] Property 'id' does not exist on type 'unknown'.",
         "error:215:44 [TS2339] Property 'name' does not exist on type 'unknown'.",
         "error:216:51 [TS2339] Property 'packing_fee' does not exist on type 'unknown'.",
@@ -207,38 +274,26 @@
         "error:219:46 [TS2339] Property 'sku_id' does not exist on type 'unknown'.",
         "error:220:46 [TS2339] Property 'specs' does not exist on type 'unknown'.",
         "error:221:45 [TS2339] Property 'stock' does not exist on type 'unknown'.",
-        "error:332:2 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
-        "error:333:12 [TS2339] Property 'remarkText' does not exist on type '__VizeThis'.",
-        "error:340:13 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
-        "error:342:4 [TS2339] Property 'inputText' does not exist on type '__VizeThis'.",
-        "error:357:40 [TS2339] Property 'id' does not exist on type 'unknown'.",
-        "error:359:1 [TS2339] Property 'name' does not exist on type 'unknown'.",
-        "error:360:12 [TS2339] Property 'packing_fee' does not exist on type 'unknown'.",
-        "error:362:24 [TS2339] Property 'price' does not exist on type 'unknown'.",
-        "error:364:5 [TS2339] Property 'num' does not exist on type 'unknown'.",
-        "error:368:7 [TS2339] Property 'sku_id' does not exist on type 'unknown'.",
-        "error:369:34 [TS2339] Property 'specs' does not exist on type 'unknown'.",
-        "error:373:4 [TS2339] Property 'stock' does not exist on type 'unknown'.",
-        "error:379:19 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:382:19 [TS2339] Property 'SAVE_CART_ID_SIG' does not exist on type '__VizeThis'.",
-        "error:390:39 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:391:14 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:393:1 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:393:27 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:397:8 [TS2339] Property 'CHOOSE_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:428:10 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:428:27 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:437:5 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:448:3 [TS2339] Property 'SAVE_ORDER_PARAM' does not exist on type '__VizeThis'.",
-        "error:449:5 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:452:14 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:465:26 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:466:6 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:468:18 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
-        "error:479:16 [TS2339] Property 'NEED_VALIDATION' does not exist on type '__VizeThis'.",
-        "error:480:46 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:486:8 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
-        "error:488:18 [TS2339] Property '$router' does not exist on type '__VizeThis'."
+        "error:227:37 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:228:22 [TS2339] Property 'SAVE_CART_ID_SIG' does not exist on type '__VizeThis'.",
+        "error:234:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:234:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:235:40 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:235:66 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:237:30 [TS2339] Property 'CHOOSE_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:262:28 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:262:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:267:32 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
+        "error:273:22 [TS2339] Property 'SAVE_ORDER_PARAM' does not exist on type '__VizeThis'.",
+        "error:274:35 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:276:38 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
+        "error:283:32 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:283:55 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:283:105 [TS2339] Property 'choosedAddress' does not exist on type '__VizeThis'.",
+        "error:286:26 [TS2339] Property 'NEED_VALIDATION' does not exist on type '__VizeThis'.",
+        "error:287:26 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
+        "error:289:26 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
+        "error:290:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -265,27 +320,34 @@
         "error:172:233 [TS2304] Cannot find name 'latitude'.",
         "error:172:251 [TS2304] Cannot find name 'latitude'.",
         "error:178:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:359:11 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:363:1 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:367:13 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
-        "error:373:1 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:375:11 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:378:21 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:383:18 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:384:12 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:384:27 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:405:1 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:405:25 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:406:13 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:410:13 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:411:20 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:412:11 [TS2339] Property 'longitude' does not exist on type '__VizeThis'."
+        "error:225:27 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
+        "error:226:29 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
+        "error:228:42 [TS2339] Property '$route' does not exist on type '__VizeThis'.",
+        "error:230:17 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:232:19 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:234:14 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:237:23 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:237:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:237:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
+        "error:245:23 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:245:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:245:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
+        "error:247:23 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:247:47 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:247:62 [TS2339] Property 'longitude' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/forget/forget.vue",
       "diagnostics": [
-        "error:54:17 [TS1117] An object literal cannot have multiple properties with the same name."
+        "error:54:17 [TS1117] An object literal cannot have multiple properties with the same name.",
+        "error:78:26 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:81:48 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:85:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:97:35 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:103:26 [TS2339] Property 'validate_token' does not exist on type '__VizeThis'.",
+        "error:107:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:138:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules."
       ]
     },
     {
@@ -302,7 +364,16 @@
         "error:55:13 [TS2305] Module '\"src/config/env\"' has no exported member 'localapi'.",
         "error:55:23 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'.",
         "error:56:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:57:37 [TS2459] Module '\"../../service/getData\"' declares 'sendLogin' locally, but it is not exported."
+        "error:57:37 [TS2459] Module '\"../../service/getData\"' declares 'sendLogin' locally, but it is not exported.",
+        "error:104:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:111:26 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:114:48 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:118:33 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:129:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:151:37 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:167:37 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:175:26 [TS2339] Property 'RECORD_USERINFO' does not exist on type '__VizeThis'.",
+        "error:176:26 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -332,12 +403,12 @@
         "error:77:34 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:90:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:95:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
-        "error:266:16 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:267:2 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:270:9 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:271:10 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:272:1 [TS2551] Property 'orderDetail' does not exist on type '__VizeThis'. Did you mean 'orderData'?",
-        "error:275:13 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'."
+        "error:123:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:123:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:124:38 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:124:64 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:124:87 [TS2551] Property 'orderDetail' does not exist on type '__VizeThis'. Did you mean 'orderData'?",
+        "error:126:26 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -345,7 +416,15 @@
       "diagnostics": [
         "error:30:67 [TS18004] No value exists in scope for the shorthand property 'geohash'. Either declare one or provide an initializer.",
         "error:30:67 [TS2304] Cannot find name 'geohash'.",
-        "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:47:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:89:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:89:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:90:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:90:55 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:106:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:106:51 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:116:22 [TS2339] Property 'SAVE_ORDER' does not exist on type '__VizeThis'.",
+        "error:118:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -365,7 +444,15 @@
       "diagnostics": [
         "error:38:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:49:9 [TS2300] Duplicate identifier 'mounted'.",
-        "error:53:9 [TS2300] Duplicate identifier 'mounted'."
+        "error:53:9 [TS2300] Duplicate identifier 'mounted'.",
+        "error:72:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:72:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:73:25 [TS2339] Property 'saveAddress' does not exist on type '__VizeThis'.",
+        "error:88:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:88:43 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:89:21 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:89:46 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:90:23 [TS2339] Property 'removeAddress' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -373,19 +460,31 @@
       "diagnostics": [
         "error:13:87 [TS2304] Cannot find name 'addAddress'.",
         "error:37:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:44:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:139:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:139:53 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:139:91 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
+        "error:139:108 [TS2339] Property 'geohash' does not exist on type '__VizeThis'.",
+        "error:145:20 [TS2339] Property 'ADD_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:148:46 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
+        "error:152:35 [TS2339] Property 'addAddress' does not exist on type '__VizeThis'.",
+        "error:155:20 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/profile/children/children/children/children/addDetail.vue",
       "diagnostics": [
-        "error:31:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:31:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:89:19 [TS2339] Property 'SAVE_ADDDETAIL' does not exist on type '__VizeThis'.",
+        "error:90:19 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/profile/children/children/setusername.vue",
       "diagnostics": [
-        "error:22:41 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:22:41 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:72:22 [TS2551] Property 'RETSET_NAME' does not exist on type '__VizeThis'. Did you mean 'resetName'?",
+        "error:73:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -396,19 +495,18 @@
         "error:9:62 [TS2304] Cannot find name 'userInfo'.",
         "error:98:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
         "error:106:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:154:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:157:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:158:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:164:22 [TS2551] Property 'OUT_LOGIN' does not exist on type '__VizeThis'. Did you mean 'outLogin'?",
+        "error:166:22 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
+        "error:168:17 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:176:26 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
         "error:179:47 [TS2339] Property 'files' does not exist on type 'Element'.",
-        "error:323:6 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:327:4 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:329:16 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:334:23 [TS2551] Property 'OUT_LOGIN' does not exist on type '__VizeThis'. Did you mean 'outLogin'?",
-        "error:336:8 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:338:10 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:347:21 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:354:7 [TS2339] Property 'files' does not exist on type 'Element'.",
-        "error:356:19 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:357:12 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:366:18 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:368:33 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:181:40 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:181:76 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:186:35 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:188:34 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -422,21 +520,23 @@
         "error:7:89 [TS2304] Cannot find name 'userInfo'.",
         "error:7:99 [TS2304] Cannot find name 'userInfo'.",
         "error:142:38 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
-        "error:245:16 [TS2551] Property 'getImgPath' does not exist on type '__VizeThis'. Did you mean 'imgpath'?",
-        "error:246:35 [TS2339] Property 'SAVE_AVANDER' does not exist on type '__VizeThis'.",
-        "error:250:40 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:251:12 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:252:35 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:253:36 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:254:44 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:256:31 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:257:45 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
-        "error:260:5 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
+        "error:179:29 [TS2551] Property 'getImgPath' does not exist on type '__VizeThis'. Did you mean 'imgpath'?",
+        "error:181:18 [TS2339] Property 'SAVE_AVANDER' does not exist on type '__VizeThis'.",
+        "error:191:22 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:191:39 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:192:36 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:193:38 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:194:36 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:195:37 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:196:35 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'.",
+        "error:197:41 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/search/search.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:101:35 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules."
+      ]
     },
     {
       "file": "src/page/service/children/questionDetail.vue",
@@ -444,13 +544,17 @@
         "error:3:32 [TS2304] Cannot find name 'question'.",
         "error:12:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:13:26 [TS2307] Cannot find module 'showdown' or its corresponding type declarations.",
-        "error:14:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations."
+        "error:14:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
+        "error:42:45 [TS2339] Property 'question' does not exist on type '__VizeThis'."
       ]
     },
     {
       "file": "src/page/service/service.vue",
       "diagnostics": [
-        "error:38:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:38:32 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:63:36 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:82:22 [TS2339] Property 'SAVE_QUESTION' does not exist on type '__VizeThis'.",
+        "error:83:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -481,7 +585,9 @@
         "error:104:28 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:107:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
         "error:108:14 [TS2305] Module '\"src/config/env\"' has no exported member 'localapi'.",
-        "error:108:24 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'."
+        "error:108:24 [TS2305] Module '\"src/config/env\"' has no exported member 'proapi'.",
+        "error:140:22 [TS2339] Property 'licenseImg' does not exist on type '__VizeThis'.",
+        "error:141:22 [TS2551] Property 'showlicenseImg' does not exist on type '__VizeThis'. Did you mean 'showLicenseImg'?"
       ]
     },
     {
@@ -516,37 +622,36 @@
         "error:272:101 Template parse error: Missing whitespace between attributes; inferred a new attribute boundary.",
         "error:321:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:328:25 [TS2307] Cannot find module 'better-scroll' or its corresponding type declarations.",
+        "error:413:33 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
+        "error:430:27 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:432:31 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:434:26 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
+        "error:437:39 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:437:75 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
+        "error:437:90 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
+        "error:439:33 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:441:35 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:443:41 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:445:39 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:446:22 [TS2339] Property 'RECORD_SHOPDETAIL' does not exist on type '__VizeThis'.",
+        "error:452:44 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
         "error:456:54 [TS2339] Property 'offsetTop' does not exist on type 'unknown'.",
-        "error:463:1 [TS2339] Property 'cartList' does not exist on type '__VizeThis'.",
-        "error:472:27 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:475:56 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:477:41 [TS2339] Property 'RECORD_ADDRESS' does not exist on type '__VizeThis'.",
-        "error:480:51 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:481:23 [TS2339] Property 'latitude' does not exist on type '__VizeThis'.",
-        "error:481:38 [TS2339] Property 'longitude' does not exist on type '__VizeThis'.",
-        "error:482:34 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:483:76 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:485:52 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:488:13 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:490:21 [TS2339] Property 'RECORD_SHOPDETAIL' does not exist on type '__VizeThis'.",
-        "error:495:26 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:499:75 [TS2339] Property 'offsetTop' does not exist on type 'unknown'.",
-        "error:512:69 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:514:8 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:517:94 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:536:36 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
-        "error:539:16 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
-        "error:595:32 [TS2551] Property 'CLEAR_CART' does not exist on type '__VizeThis'. Did you mean 'clearCart'?",
-        "error:599:6 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:602:8 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
-        "error:614:48 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:618:19 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'.",
-        "error:626:17 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
-        "error:648:7 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
-        "error:651:69 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:652:26 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:653:41 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:692:26 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
+        "error:475:45 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:477:31 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:483:49 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:513:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
+        "error:517:22 [TS2339] Property 'REDUCE_CART' does not exist on type '__VizeThis'.",
+        "error:565:22 [TS2551] Property 'CLEAR_CART' does not exist on type '__VizeThis'. Did you mean 'clearCart'?",
+        "error:571:26 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:574:26 [TS2339] Property '$refs' does not exist on type '__VizeThis'.",
+        "error:584:27 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:586:22 [TS2339] Property '$nextTick' does not exist on type '__VizeThis'.",
+        "error:598:34 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:623:22 [TS2551] Property 'ADD_CART' does not exist on type '__VizeThis'. Did you mean 'addToCart'?",
+        "error:629:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:630:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:631:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
+        "error:661:22 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
         "error:1365:10 [TS2304] Cannot find name 'attribute'."
       ]
     },
@@ -561,7 +666,9 @@
       "diagnostics": [
         "error:4:51 [TS2304] Cannot find name 'userInfo'.",
         "error:18:48 [TS2588] Cannot assign to 'showAlert' because it is a constant.",
-        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:24:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:55:25 [TS1308] 'await' expressions are only allowed within async functions and at the top levels of modules.",
+        "error:55:44 [TS2339] Property 'userInfo' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -576,11 +683,14 @@
         "error:4:24 [TS2304] Cannot find name 'userInfo'.",
         "error:5:44 [TS2304] Cannot find name 'userInfo'.",
         "error:5:45 [TS2304] Cannot find name 'userInfo'.",
-        "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+        "error:76:42 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
+        "error:101:22 [TS2339] Property 'ORDER_SUCCESS' does not exist on type '__VizeThis'.",
+        "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '__VizeThis'. Did you mean 'buyCart'?",
+        "error:103:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     }
   ],
-  "errorCount": 313,
+  "errorCount": 420,
   "warningCount": 0,
   "fileCount": 55
 }
