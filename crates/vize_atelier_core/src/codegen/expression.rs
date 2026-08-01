@@ -8,7 +8,9 @@ mod generate;
 pub(crate) mod helpers;
 pub(crate) mod scope_prefix;
 
-use crate::{CompoundExpressionChild, ExpressionNode, SimpleExpressionNode};
+use crate::{
+    CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, SimpleExpressionNode,
+};
 
 use super::{context::CodegenContext, helpers::escape_js_string};
 
@@ -30,20 +32,30 @@ pub fn generate_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) 
             generate_simple_expression(ctx, exp);
         }
         ExpressionNode::Compound(comp) => {
-            for child in comp.children.iter() {
-                match child {
-                    CompoundExpressionChild::Simple(exp) => {
-                        generate_simple_expression(ctx, exp);
-                    }
-                    CompoundExpressionChild::String(s) => {
-                        ctx.push(s);
-                    }
-                    CompoundExpressionChild::Symbol(helper) => {
-                        ctx.push(ctx.helper(*helper));
-                    }
-                    _ => {}
-                }
+            generate_compound_expression(ctx, comp);
+        }
+    }
+}
+
+/// Generate a compound expression used directly in child position.
+pub fn generate_compound_expression(
+    ctx: &mut CodegenContext,
+    compound: &CompoundExpressionNode<'_>,
+) {
+    for child in compound.children.iter() {
+        match child {
+            CompoundExpressionChild::Simple(exp) => {
+                generate_simple_expression(ctx, exp);
             }
+            CompoundExpressionChild::String(s) => {
+                ctx.push(s);
+            }
+            CompoundExpressionChild::Symbol(helper) => {
+                ctx.push(ctx.helper(*helper));
+            }
+            CompoundExpressionChild::Compound(_)
+            | CompoundExpressionChild::Interpolation(_)
+            | CompoundExpressionChild::Text(_) => {}
         }
     }
 }

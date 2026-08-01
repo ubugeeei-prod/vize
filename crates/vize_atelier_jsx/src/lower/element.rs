@@ -52,7 +52,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         node.children = if node.tag_type == ElementType::Component {
             self.lower_component_children(&element.children)
         } else {
-            self.lower_children(&element.children)
+            self.lower_element_children(&element.children)
         };
         // `v-slots` contributes slot templates, appended after the element's own
         // children so those still become the `default` slot when the slots object

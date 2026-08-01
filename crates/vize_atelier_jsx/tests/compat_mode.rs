@@ -172,6 +172,44 @@ fn babel_compat_rewrites_xlink_href_across_prop_shapes_only_when_opted_in() {
 }
 
 #[test]
+fn babel_compat_keeps_lone_element_expressions_raw_without_a_text_flag() {
+    let source = concat!(
+        "const A = () => <div>{t}</div>;\n",
+        "const B = () => <div class={c} id={i}>{t}</div>;",
+    );
+    let bump = Bump::new();
+    let implicit_native = compile_jsx(&bump, source, JsxLang::Jsx, &JsxCompileConfig::default())
+        .module_code()
+        .to_string();
+    let explicit_native = compile_module(source, JsxCompatMode::Native, JsxOutputMode::Vdom);
+    let babel = compile_module(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert_eq!(implicit_native, explicit_native);
+    assert_eq!(explicit_native.matches("_toDisplayString(t)").count(), 2);
+    assert!(
+        explicit_native.contains("1 /* TEXT */"),
+        "{explicit_native}"
+    );
+    assert!(
+        explicit_native.contains("11 /* TEXT, CLASS, PROPS */, [\"id\"]"),
+        "{explicit_native}"
+    );
+
+    assert_eq!(babel.matches("[\n    t\n  ]").count(), 2, "{babel}");
+    assert!(!babel.contains("toDisplayString"), "{babel}");
+    assert!(!babel.contains("1 /* TEXT */"), "{babel}");
+    assert!(babel.contains("10 /* CLASS, PROPS */, [\"id\"]"), "{babel}");
+
+    let allocator = Allocator::default();
+    let parsed = parse_module(&allocator, &babel, JsxLang::Jsx);
+    assert!(
+        parsed.diagnostics.is_empty(),
+        "{:?}\n{babel}",
+        parsed.diagnostics
+    );
+}
+
+#[test]
 fn transform_on_is_off_by_default_and_inert_in_native_mode() {
     let source = "const A = () => <button on={{ click: h }}/>;";
     let native = compile_module(source, JsxCompatMode::Native, JsxOutputMode::Vdom);

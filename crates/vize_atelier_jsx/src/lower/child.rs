@@ -3,7 +3,10 @@
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
 use vize_carton::{Box, Vec};
-use vize_relief::{InterpolationNode, TemplateChildNode, TextNode};
+use vize_relief::{
+    CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, InterpolationNode,
+    TemplateChildNode, TextNode,
+};
 
 use super::Lowerer;
 
@@ -13,6 +16,42 @@ use super::Lowerer;
 const SPREAD_CHILD_UNSUPPORTED: &str = "spread children (`{...items}`) are not supported; the value would be stringified instead of spread";
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
+    /// Lower children of an intrinsic element, preserving Babel's raw value
+    /// semantics for a lone expression child in opt-in VDOM compatibility mode.
+    ///
+    /// Vize's native template-shaped output stringifies `{value}` and marks the
+    /// vnode with `TEXT`. Babel passes the value as a child array entry instead,
+    /// so it contributes no text patch flag. Component children deliberately do
+    /// not use this path because they are lowered through slot synthesis.
+    pub(crate) fn lower_element_children(
+        &mut self,
+        children: &[JSXChild<'_>],
+    ) -> Vec<'a, TemplateChildNode<'a>> {
+        if !self.uses_babel_vdom_compat() {
+            return self.lower_children(children);
+        }
+
+        let [JSXChild::ExpressionContainer(container)] = children else {
+            return self.lower_children(children);
+        };
+        match &container.expression {
+            JSXExpression::EmptyExpression(_) | JSXExpression::StringLiteral(_) => {
+                self.lower_children(children)
+            }
+            expression => {
+                let mut out = Vec::new_in(self.bump());
+                if let Some(control_flow) =
+                    self.lower_control_flow_child(expression, container.span)
+                {
+                    out.push(control_flow);
+                } else {
+                    out.push(self.raw_expression_child(expression.span(), container.span));
+                }
+                out
+            }
+        }
+    }
+
     /// Lower a list of JSX children, dropping whitespace-only text.
     pub(crate) fn lower_children(
         &mut self,
@@ -112,5 +151,26 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             raw: false,
         };
         TemplateChildNode::Interpolation(Box::new_in(node, self.bump()))
+    }
+
+    /// Represent a JSX child value as an unescaped expression rather than a
+    /// template interpolation. The core code generator already models mixed
+    /// JavaScript expressions as compound expressions; a single dynamic part
+    /// is the narrowest existing IR shape that keeps this JSX-only distinction
+    /// out of the public relief node surface.
+    fn raw_expression_child(
+        &self,
+        expression_span: oxc_span::Span,
+        container_span: oxc_span::Span,
+    ) -> TemplateChildNode<'a> {
+        let ExpressionNode::Simple(expression) = self.dyn_expr(expression_span) else {
+            unreachable!("span-backed JSX expressions are always simple expressions")
+        };
+        let mut compound =
+            CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
+        compound
+            .children
+            .push(CompoundExpressionChild::Simple(expression));
+        TemplateChildNode::CompoundExpression(Box::new_in(compound, self.bump()))
     }
 }

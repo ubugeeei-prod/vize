@@ -62,7 +62,7 @@ export function render(_ctx, _cache) {
 
 ## optimize/text_only
 ### verdict
-divergent: interpolated child becomes a TEXT child
+equivalent
 ### source (jsx)
 const A = () => <div>{t}</div>;
 ### babel options
@@ -71,14 +71,16 @@ const A = () => <div>{t}</div>;
 import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [t]);
 ### vize (vdom, babel compat)
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(t), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, [
+    t
+  ]))
 }
 
 ## optimize/class_and_props
 ### verdict
-divergent: interpolated child becomes a TEXT child
+equivalent
 ### source (jsx)
 const A = () => <div class={c} id={i}>{t}</div>;
 ### babel options
@@ -90,12 +92,14 @@ const A = () => _createVNode("div", {
   "id": i
 }, [t], 10, ["id"]);
 ### vize (vdom, babel compat)
-import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", {
     class: _normalizeClass(c),
     id: i
-  }, _toDisplayString(t), 11 /* TEXT, CLASS, PROPS */, ["id"]))
+  }, [
+    t
+  ], 10 /* CLASS, PROPS */, ["id"]))
 }
 
 ## optimize/spread
@@ -254,13 +258,15 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   _: 1
 });
 ### vize (vdom, babel compat)
-import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
 
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx((s) => [
-      _createElementVNode("i", null, _toDisplayString(s.x), 1 /* TEXT */)
+      _createElementVNode("i", null, [
+        s.x
+      ])
     ]),
     _: 1 /* STABLE */
   }))
@@ -316,11 +322,13 @@ const A = () => _createVNode("div", null, [list.map(i => _createVNode("span", {
   "key": i
 }, [i]))]);
 ### vize (vdom, babel compat)
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, [
     (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (i) => {
-      return (_openBlock(), _createElementBlock("span", { key: i }, _toDisplayString(i), 1 /* TEXT */))
+      return (_openBlock(), _createElementBlock("span", { key: i }, [
+        i
+      ]))
     }), 128 /* KEYED_FRAGMENT */))
   ]))
 }

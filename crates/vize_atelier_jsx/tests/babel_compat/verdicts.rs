@@ -135,14 +135,8 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("optimize/static", Same),
     ("optimize/class_only", Same),
     ("optimize/style_only", Same),
-    (
-        "optimize/text_only",
-        Diff("interpolated child becomes a TEXT child"),
-    ),
-    (
-        "optimize/class_and_props",
-        Diff("interpolated child becomes a TEXT child"),
-    ),
+    ("optimize/text_only", Same),
+    ("optimize/class_and_props", Same),
     ("optimize/spread", Same),
     ("optimize/ref", Same),
     ("optimize/key", Same),

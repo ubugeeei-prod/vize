@@ -37,7 +37,7 @@ pub struct Lowerer<'a, 'm, 's> {
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
     transform_on_helper: Option<String>,
-    transform_on_active: bool,
+    babel_vdom_compat_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
     /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
@@ -63,7 +63,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             mapper,
             compat,
             transform_on_helper: transform_on_helper.map(String::from),
-            transform_on_active: false,
+            babel_vdom_compat_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
         }
@@ -167,14 +167,19 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         self.compat.is_babel()
     }
 
+    /// Whether Babel-only VDOM child semantics apply to the current render root.
+    pub(crate) fn uses_babel_vdom_compat(&self) -> bool {
+        self.uses_babel_compat() && self.babel_vdom_compat_active
+    }
+
     /// Select whether the current render root may use VDOM-only Babel options.
     pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
-        self.transform_on_active = mode == crate::JsxOutputMode::Vdom;
+        self.babel_vdom_compat_active = mode == crate::JsxOutputMode::Vdom;
     }
 
     /// Collision-free helper binding for Babel's opt-in `transformOn` lowering.
     pub(crate) fn transform_on_helper(&self) -> Option<&str> {
-        if self.transform_on_active {
+        if self.babel_vdom_compat_active {
             self.transform_on_helper.as_deref()
         } else {
             None

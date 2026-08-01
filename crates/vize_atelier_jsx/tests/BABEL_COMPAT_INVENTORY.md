@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   86 |
-| divergent  |   10 |
+| equivalent |   88 |
+| divergent  |    8 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -312,8 +312,8 @@ Compared against Vize's default, which is already fully optimized.
 | `optimize/static`                | no flag                               | no flag                               | no change           | ✅      |
 | `optimize/class_only`            | `2`                                   | `2 /* CLASS */`                       | no change           | ✅      |
 | `optimize/style_only`            | `4`                                   | `4 /* STYLE */`                       | no change           | ✅      |
-| `optimize/text_only`             | raw child, no flag                    | `toDisplayString(t)` + `1 /* TEXT */` | emit the raw child  | ❌      |
-| `optimize/class_and_props`       | `10, ["id"]`                          | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drop the TEXT child | ❌      |
+| `optimize/text_only`             | raw child, no flag                    | `toDisplayString(t)` + `1 /* TEXT */` | raw child, no flag  | ✅      |
+| `optimize/class_and_props`       | `10, ["id"]`                          | `11 /* TEXT, CLASS, PROPS */, ["id"]` | drops `TEXT`        | ✅      |
 | `optimize/spread`                | `16`                                  | `16 /* FULL_PROPS */`                 | no change           | ✅      |
 | `optimize/ref`                   | `512`                                 | `512 /* NEED_PATCH */`                | no change           | ✅      |
 | `optimize/key`                   | no flag                               | no flag                               | no change           | ✅      |

@@ -210,9 +210,11 @@ const A = defineComponent((props: {
   foo: string;
 }) => () => _createVNode("div", null, [props.foo]));
 ### vize (vdom, babel compat)
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(props.foo), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, [
+    props.foo
+  ]))
 }
 
 ## options/resolve_type_on
@@ -237,7 +239,9 @@ const A = defineComponent((props: {
   name: "A"
 });
 ### vize (vdom, babel compat)
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(props.foo), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, [
+    props.foo
+  ]))
 }
