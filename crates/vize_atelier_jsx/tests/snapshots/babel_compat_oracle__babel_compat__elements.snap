@@ -50,7 +50,7 @@ const A = () => _createVNode(_resolveComponent("foo"), null, null);
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_foo = _resolveComponent("foo")
-  
+
   return (_openBlock(), _createBlock(_component_foo))
 }
 
@@ -106,7 +106,7 @@ const A = () => _createVNode(_resolveComponent("mi"), null, {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_mi = _resolveComponent("mi")
-  
+
   return (_openBlock(), _createBlock(_component_mi, null, {
     default: _withCtx(() => [
       _createTextVNode("x")
