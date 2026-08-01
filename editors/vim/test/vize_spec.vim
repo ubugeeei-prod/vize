@@ -139,6 +139,25 @@ execute 'edit ' . fnameescape(tempname() . '.vue')
 call assert_equal('vue', &filetype)
 execute 'edit ' . fnameescape(tempname() . '.art.vue')
 call assert_equal('art-vue', &filetype)
+call assert_equal('vue', &syntax)
+
+let s:syntax_root = tempname()
+call mkdir(s:syntax_root . '/syntax', 'p')
+call writefile(["let b:current_syntax = 'art-vue'"], s:syntax_root . '/syntax/art-vue.vim')
+execute 'set runtimepath^=' . fnameescape(s:syntax_root)
+syntax on
+execute 'edit ' . fnameescape(tempname() . '.art.vue')
+call assert_equal('art-vue', &syntax)
+call assert_equal('art-vue', b:current_syntax)
+execute 'set runtimepath-=' . fnameescape(s:syntax_root)
+call delete(s:syntax_root, 'rf')
+
+augroup vize_test_custom_art_syntax
+  autocmd!
+  autocmd FileType art-vue setlocal syntax=custom-art
+augroup END
+execute 'edit ' . fnameescape(tempname() . '.art.vue')
+call assert_equal('custom-art', &syntax)
 
 if !empty(v:errors)
   cquit

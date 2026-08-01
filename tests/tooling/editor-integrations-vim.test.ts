@@ -26,8 +26,10 @@ test("vim ftdetect maps *.vue -> vue and *.art.vue -> art-vue inside an augroup"
   // *.art.vue files override to the "art-vue" filetype.
   assert.match(
     ftdetect,
-    /autocmd\s+BufNewFile,BufRead\s+\*\.art\.vue\s+setlocal\s+filetype=art-vue/,
+    /autocmd\s+BufNewFile,BufRead\s+\*\.art\.vue\s+call\s+<SID>detect_art_vue\(\)/,
   );
+  assert.match(ftdetect, /if\s+empty\(&l:syntax\)/);
+  assert.doesNotMatch(ftdetect, /&l:syntax\s+==#\s+&l:filetype/);
 });
 
 test("vim ftdetect autocommands are scoped only to *.vue / *.art.vue (no clobbering)", () => {

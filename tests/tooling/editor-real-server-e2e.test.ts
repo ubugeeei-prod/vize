@@ -32,13 +32,25 @@ test("CI runs both real-server editor scenarios from one built server binary", (
     ],
   );
   assert.match(action, /vp run --workspace-root test:vscode-extension:host-real/);
-  assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
   assert.match(action, /vp run --workspace-root test:nvim-extension:real-server/);
 
   // The scenario needs a Neovim with a Lua LSP client, pinned and checksummed.
   assert.match(action, /NVIM_VERSION: v\d+\.\d+\.\d+/);
   assert.match(action, /NVIM_SHA256: [0-9a-f]{64}/);
   assert.match(action, /sha256sum --check --strict/);
+});
+
+test("CI runs both headless editor specs", () => {
+  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+
+  assert.match(taskCommand("test:nvim-extension:headless"), /VIZE_TEST_ART_VUE_NATIVE_PARSER=1/);
+  assert.match(
+    action,
+    /^description: Run VS Code and Neovim real-server scenarios plus Neovim and Vim headless specs$/m,
+  );
+  assert.match(action, /vp run --workspace-root test:nvim-extension:headless/);
+  assert.match(action, /vp run --workspace-root test:vim-extension:headless/);
+  assert.match(action, /command -v vim/);
 });
 
 test("check.yml keeps the editor real-server job in the required set", () => {

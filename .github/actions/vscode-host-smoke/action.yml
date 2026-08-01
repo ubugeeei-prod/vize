@@ -1,5 +1,5 @@
 name: Editor real-server end-to-end
-description: Run the VS Code and Neovim editor scenarios against a real vize language server
+description: Run VS Code and Neovim real-server scenarios plus Neovim and Vim headless specs
 
 runs:
   using: composite
@@ -52,6 +52,10 @@ runs:
         sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
         nvim --version | head -1
 
+    - name: Ensure Vim is available
+      shell: bash
+      run: command -v vim || (sudo apt-get update && sudo apt-get install -y vim)
+
     - name: Run VS Code host smoke against the real server
       shell: bash
       env:
@@ -64,6 +68,12 @@ runs:
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       run: vp run --workspace-root test:nvim-extension:headless
+
+    - name: Run the packaged Vim unit spec
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      run: vp run --workspace-root test:vim-extension:headless
 
     - name: Run the Neovim scenario against the real server
       shell: bash

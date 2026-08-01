@@ -1,6 +1,24 @@
 local plugin_root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
 vim.opt.runtimepath:prepend(plugin_root)
 
+if vim.env.VIZE_TEST_ART_VUE_NATIVE_PARSER == "1" then
+  -- Reuse a bundled parser binary to exercise Neovim's real loaded-parser path
+  -- under the otherwise unavailable Art Vue language name.
+  local parser_path = vim.api.nvim_get_runtime_file("parser/vim.*", false)[1]
+  assert(parser_path, "finds Neovim's bundled Vim parser")
+  local loaded, err = vim.treesitter.language.add("art-vue", {
+    path = parser_path,
+    symbol_name = "vim",
+  })
+  assert(loaded, err)
+  vim.cmd("runtime! ftdetect/vize.lua")
+  assert(
+    vim.treesitter.language.get_lang("art-vue") == "art-vue",
+    "preserves a loaded parser under the Art Vue language name"
+  )
+  return
+end
+
 local config = require("vize.config")
 
 local function assert_eq(actual, expected, label)
@@ -165,3 +183,42 @@ vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".vue"))
 assert(vim.bo.filetype == "vue", "detects .vue")
 vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".art.vue"))
 assert(vim.bo.filetype == "art-vue", "detects .art.vue")
+assert(vim.bo.syntax == "vue", "reuses Vue syntax for .art.vue")
+assert(
+  vim.treesitter.language.get_lang(vim.bo.filetype) == "vue",
+  "reuses the Vue tree-sitter parser for .art.vue"
+)
+
+vim.treesitter.language.register("art-vue", "art-vue")
+vim.cmd("runtime! ftdetect/vize.lua")
+assert(
+  vim.treesitter.language.get_lang("art-vue") == "art-vue",
+  "preserves an explicit identity Art Vue parser mapping"
+)
+
+vim.treesitter.language.register("custom-art", "art-vue")
+vim.cmd("runtime! ftdetect/vize.lua")
+assert(
+  vim.treesitter.language.get_lang("art-vue") == "custom-art",
+  "preserves an explicit Art Vue tree-sitter parser mapping"
+)
+
+local syntax_root = vim.fn.tempname()
+vim.fn.mkdir(syntax_root .. "/syntax", "p")
+vim.fn.writefile({ 'let b:current_syntax = "art-vue"' }, syntax_root .. "/syntax/art-vue.vim")
+vim.opt.runtimepath:prepend(syntax_root)
+vim.cmd("syntax on")
+vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".art.vue"))
+assert(vim.bo.syntax == "art-vue", "preserves a standard Art Vue syntax file")
+assert(vim.b.current_syntax == "art-vue", "loads the standard Art Vue syntax file")
+vim.opt.runtimepath:remove(syntax_root)
+vim.fn.delete(syntax_root, "rf")
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "art-vue",
+  callback = function()
+    vim.bo.syntax = "custom-art"
+  end,
+})
+vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.tempname() .. ".art.vue"))
+assert(vim.bo.syntax == "custom-art", "preserves an explicit Art Vue syntax override")

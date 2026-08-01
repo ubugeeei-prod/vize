@@ -108,6 +108,10 @@ assert.match(initLua, /vim\.lsp\.enable\("vize"\)/);
 assert.match(ftdetectLua, /pattern = "\*\.vue"/);
 assert.match(ftdetectLua, /pattern = "\*\.art\.vue"/);
 assert.match(ftdetectLua, /filetype = "art-vue"/);
+assert.match(ftdetectLua, /if vim\.bo\.syntax == "" then\s+vim\.bo\.syntax = "vue"\s+end/);
+assert.doesNotMatch(ftdetectLua, /syntax == vim\.bo\.filetype/);
+assert.match(ftdetectLua, /vim\.treesitter\.language\.add\("art-vue"\)/);
+assert.match(ftdetectLua, /vim\.treesitter\.language\.register\("vue", "art-vue"\)/);
 assert.match(specLua, /config\.normalize/);
 assert.match(specLua, /vim\.lsp\.config\.vize/);
 // The packaged archive must be able to run the real-server scenario, not only

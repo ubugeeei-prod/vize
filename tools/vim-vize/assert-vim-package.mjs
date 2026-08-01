@@ -92,7 +92,9 @@ assert.match(autoload, /'initialization_options': s:profiles\.recommended/);
 assert.match(autoload, /function! vize#vim_lsp_config/);
 assert.match(autoload, /lsp#register_server/);
 assert.match(ftdetect, /\*\.vue setlocal filetype=vue/);
-assert.match(ftdetect, /\*\.art\.vue setlocal filetype=art-vue/);
+assert.match(ftdetect, /\*\.art\.vue call <SID>detect_art_vue\(\)/);
+assert.match(ftdetect, /setlocal filetype=art-vue/);
+assert.match(ftdetect, /if empty\(&l:syntax\)/);
 assert.match(spec, /vize#vim_lsp_config/);
 assert.match(spec, /assert_equal\(\['vize', 'lsp'\]/);
 
