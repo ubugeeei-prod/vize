@@ -11,10 +11,14 @@ const RECORDING: &str = include_str!(
     "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
 );
 
-fn lint(source: &str) -> ScriptLintResult {
+fn lint_at(source: &str, offset: usize) -> ScriptLintResult {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(NuxtConfigKeysOrder));
-    linter.lint(source, 0)
+    linter.lint(source, offset)
+}
+
+fn lint(source: &str) -> ScriptLintResult {
+    lint_at(source, 0)
 }
 
 fn apply_non_overlapping_fixes(source: &str, result: &ScriptLintResult) -> String {
@@ -55,10 +59,13 @@ fn fix_until_stable(source: &str) -> String {
 fn line_column(source: &str, offset: usize) -> (u64, u64) {
     let prefix = &source[..offset];
     let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u64 + 1;
+    // ESLint columns count UTF-16 code units, not bytes.
     let column = prefix
         .rsplit_once('\n')
         .map_or(prefix, |(_, tail)| tail)
-        .len() as u64
+        .chars()
+        .map(char::len_utf16)
+        .sum::<usize>() as u64
         + 1;
     (line, column)
 }
@@ -247,8 +254,7 @@ fn only_direct_default_export_shapes_are_inspected() {
 #[test]
 fn diagnostic_and_fix_offsets_include_the_sfc_block_offset() {
     let source = "export default { ssr: true, modules: [] }";
-    let mut result = ScriptLintResult::default();
-    NuxtConfigKeysOrder.check(source, 41, &mut result);
+    let result = lint_at(source, 41);
     let diagnostic = &result.diagnostics[0];
     assert_eq!((diagnostic.start, diagnostic.end), (56, 82));
     let edit = &diagnostic.fix.as_ref().unwrap().edits[0];

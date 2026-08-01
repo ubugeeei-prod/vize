@@ -13,7 +13,7 @@ use tempfile::NamedTempFile;
 /// existing file or symlink can never redirect writes. Its persist operation
 /// uses an overwriting rename on Unix and `MoveFileExW(REPLACE_EXISTING)` on
 /// Windows, without deleting the destination first.
-pub(super) fn atomic_write(path: &Path, contents: &[u8]) -> io::Result<()> {
+pub fn atomic_write(path: &Path, contents: &[u8]) -> io::Result<()> {
     atomic_write_with(path, contents, &mut OsOperations)
 }
 

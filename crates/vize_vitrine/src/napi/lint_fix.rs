@@ -26,7 +26,11 @@ pub(super) fn lint_file_with_optional_fix(
             source = fixed_source;
             result = lint_source(linter, &source, &filename);
         }
-        if source != original && fs::write(path, source.as_bytes()).is_err() {
+        // Replace the file only once its successor is fully written, so a
+        // failed write leaves the original config on disk instead of a
+        // truncated one.
+        if source != original && vize::source_write::atomic_write(path, source.as_bytes()).is_err()
+        {
             source = original;
             result = lint_source(linter, &source, &filename);
         }

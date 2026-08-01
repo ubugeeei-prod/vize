@@ -29,6 +29,11 @@ pub mod lint_plan;
 /// Shared native CLI entrypoint.
 pub mod cli;
 
+/// Failure-safe source replacement shared with the native bindings.
+pub mod source_write {
+    pub use crate::commands::atomic_write::atomic_write;
+}
+
 /// Shared allocator, string, hash, and utility types.
 pub use vize_carton as carton;
 
