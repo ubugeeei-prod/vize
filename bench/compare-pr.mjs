@@ -12,6 +12,8 @@ import { basename, delimiter, dirname, join, parse, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 
+import { laneEnvironment, makeTasks } from "./compare-pr-lanes.mjs";
+
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
 const DEFAULT_THRESHOLD_PERCENT = 5;
@@ -117,13 +119,12 @@ function runCommand(binary, commandArgs, options) {
   const start = performance.now();
   const result = spawnSync(binary, commandArgs, {
     cwd: options.cwd,
-    env: {
+    env: laneEnvironment(options.threads ?? 1, {
       ...process.env,
       NO_COLOR: "1",
       PATH: options.path,
-      RAYON_NUM_THREADS: "1",
       VIZE_BENCH: "1",
-    },
+    }),
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024,
   });
@@ -200,74 +201,6 @@ export function createBenchmarkBudget(results) {
     regressionCount: regressions.length,
     regressions,
   };
-}
-
-export function makeTasks(inputDir, taskFilter) {
-  const tsconfig = join(inputDir, "tsconfig.json");
-  const pattern = ".";
-  const allTasks = [
-    {
-      id: "compile",
-      label: "Compile SFC",
-      args: ["build", pattern, "--format", "stats", "--threads", "1", "--continue-on-error"],
-      allowNonZeroExit: false,
-    },
-    {
-      id: "lint",
-      label: "Lint",
-      args: ["lint", pattern, "--quiet"],
-      allowNonZeroExit: true,
-    },
-    {
-      id: "fmt",
-      label: "Format",
-      // `*.vue` instead of `.`: fmt expands `.` into a gitignore-aware walk
-      // and bench/__in__ is gitignored, so that walk finds zero files; the
-      // plain glob matches the corpus directly (same invocation as
-      // bench/fmt.ts and compare-tools.mjs). `--check` formats in memory and
-      // never writes, so the corpus stays byte-identical between the
-      // alternating base/head runs. The generated corpus is intentionally
-      // unformatted, so the non-zero "would reformat" exit is expected.
-      // fmt has no --threads flag; the RAYON_NUM_THREADS=1 set by runCommand
-      // pins it to a single thread like the other lanes.
-      args: ["fmt", "*.vue", "--check"],
-      allowNonZeroExit: true,
-    },
-    {
-      id: "check",
-      label: "Type check (1T)",
-      // --servers 1 pins the lane to a single Corsa server so it isolates
-      // single-program performance and stays deterministic on shared CI
-      // runners. Keep this id stable so `--tasks check` still selects the
-      // single-program lane.
-      args: ["check", pattern, "--quiet", "--servers", "1", "--tsconfig", tsconfig],
-      allowNonZeroExit: true,
-      enabled: existsSync(tsconfig),
-    },
-    {
-      id: "check-max",
-      label: "Type check (max)",
-      // Omit --servers so vize uses the same auto-tuned Corsa sharding path
-      // measured by the tool benchmark. This catches regressions hidden by the
-      // single-server lane without weakening the single-program signal above.
-      args: ["check", pattern, "--quiet", "--tsconfig", tsconfig],
-      allowNonZeroExit: true,
-      enabled: existsSync(tsconfig),
-    },
-  ];
-
-  const requested = new Set(
-    taskFilter
-      .split(",")
-      .map((task) => task.trim())
-      .filter(Boolean),
-  );
-  return allTasks.filter((task) => {
-    if (task.enabled === false) {
-      return false;
-    }
-    return requested.size === 0 || requested.has(task.id);
-  });
 }
 
 export function renderMarkdown(data) {
@@ -360,6 +293,7 @@ export function main(argv = process.argv.slice(2)) {
     measureTask(task, baseBin, headBin, {
       ...options,
       allowNonZeroExit: task.allowNonZeroExit,
+      threads: task.threads ?? 1,
     }),
   );
 

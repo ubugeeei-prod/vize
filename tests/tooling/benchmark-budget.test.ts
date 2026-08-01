@@ -4,11 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { createBenchmarkBudget, makeTasks, renderMarkdown } from "../../bench/compare-pr.mjs";
+import { laneEnvironment, makeTasks } from "../../bench/compare-pr-lanes.mjs";
+import { createBenchmarkBudget, renderMarkdown } from "../../bench/compare-pr.mjs";
 import {
   DEFAULT_SKIP_OVERRIDE_LABEL,
   enforceBenchmarkBudget,
 } from "../../bench/enforce-pr-budget.mjs";
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const stableResult = {
   id: "compile",
@@ -93,6 +95,103 @@ test("benchmark tasks gate the formatter without mutating the corpus", () => {
     onlyFmt.map((task) => task.id),
     ["fmt"],
   );
+});
+
+// #3460: the published lint and fmt medians that regressed 20-27% were the
+// `max` variants. Both PR-gate lanes ran pinned to one Rayon worker, where the
+// same window measured lint at +2.6% and fmt at -35% — so the gate would have
+// reported the window as neutral-to-better. Every parallel-path regression on
+// these two surfaces was invisible to CI until these lanes existed.
+test("benchmark tasks gate lint and fmt at max parallelism as well as single-threaded", () => {
+  const tasks = makeTasks("/nonexistent-input-dir", "");
+
+  assert.deepEqual(
+    tasks.map((task) => [task.id, task.label, task.args, task.threads ?? 1]),
+    [
+      [
+        "compile",
+        "Compile SFC",
+        ["build", ".", "--format", "stats", "--threads", "1", "--continue-on-error"],
+        1,
+      ],
+      ["lint", "Lint (1T)", ["lint", ".", "--quiet"], 1],
+      ["lint-max", "Lint (max)", ["lint", ".", "--quiet"], "max"],
+      ["fmt", "Format (1T)", ["fmt", "*.vue", "--check"], 1],
+      ["fmt-max", "Format (max)", ["fmt", "*.vue", "--check"], "max"],
+    ],
+  );
+
+  // The parallel lanes must stay non-destructive for the same reason the
+  // single-threaded fmt lane does: base and head alternate over one corpus.
+  // Asserting the whole argv is what pins that -- `fmt-max` reformats in
+  // memory under `--check` and never gains a `--write`.
+  assert.deepEqual(
+    tasks
+      .filter((task) => task.threads === "max")
+      .map((task) => [task.id, task.args, task.allowNonZeroExit]),
+    [
+      ["lint-max", ["lint", ".", "--quiet"], true],
+      ["fmt-max", ["fmt", "*.vue", "--check"], true],
+    ],
+  );
+
+  assert.deepEqual(
+    makeTasks("/nonexistent-input-dir", "lint-max,fmt-max").map((task) => task.id),
+    ["lint-max", "fmt-max"],
+  );
+});
+
+// #3586 pinned the weekly Benchmark run to a fixed historical base SHA, so the
+// lanes `makeTasks` returns are also the lanes that gate long-term drift. That
+// only reaches the parallel lint and fmt paths while the workflow keeps passing
+// no `--tasks` filter; a filter added later would silently drop them again.
+test("the benchmark workflow gates every lane on both the PR and the fixed-baseline run", () => {
+  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const job = workflowJobBody(workflow, "pr-benchmark");
+  const step = job.slice(job.indexOf("\n      - name: Compare base and head\n"));
+  const compare = step.slice(0, step.indexOf("\n      - name: ", 1));
+
+  assert.deepEqual(
+    [...compare.matchAll(/--([a-z-]+)/g)].map((match) => match[1]),
+    [
+      "input",
+      "base-bin",
+      "head-bin",
+      "base-label",
+      "head-label",
+      "runs",
+      "warmups",
+      "threshold",
+      "out",
+      "json",
+    ],
+  );
+
+  // The weekly run reuses this job, so the fixed historical base is compared
+  // over the same full lane set rather than a subset.
+  assert.deepEqual(
+    [
+      /BENCHMARK_BASE_SHA:[^\n]*github\.event_name == 'schedule' && '[0-9a-f]{40}'/.test(workflow),
+      /BENCHMARK_HEAD_SHA:[^\n]*github\.event_name == 'schedule' && github\.sha/.test(workflow),
+    ],
+    [true, true],
+  );
+});
+
+test("lane environment pins Rayon per lane and unpins it for the max lanes", () => {
+  const base = { PATH: "/usr/bin", RAYON_NUM_THREADS: "leaked-from-parent" };
+
+  assert.deepEqual(laneEnvironment(1, base), {
+    PATH: "/usr/bin",
+    RAYON_NUM_THREADS: "1",
+  });
+
+  // `max` deletes the variable rather than writing a core count, so Rayon
+  // sizes its own pool exactly as it does under `bench/compare-tools.mjs`.
+  assert.deepEqual(laneEnvironment("max", base), { PATH: "/usr/bin" });
+
+  // The caller's environment is never mutated in place.
+  assert.deepEqual(base, { PATH: "/usr/bin", RAYON_NUM_THREADS: "leaked-from-parent" });
 });
 
 test("benchmark tasks gate both single-server and sharded typecheck paths", () => {
