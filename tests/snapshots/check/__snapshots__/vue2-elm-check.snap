@@ -606,7 +606,7 @@
         "error:630:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:631:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:661:22 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:1365:10 [TS2304] Cannot find name 'attribute'."
+        "error:1365:28 [TS2304] Cannot find name 'attribute'."
       ]
     },
     {
