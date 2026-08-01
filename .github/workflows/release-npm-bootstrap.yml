@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: npm
+    # actions: read downloads the Release run artifact; id-token: write signs npm provenance.
     permissions: { actions: read, contents: read, id-token: write }
     steps:
       - name: Checkout bootstrap controls from main

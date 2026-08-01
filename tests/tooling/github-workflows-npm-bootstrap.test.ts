@@ -133,10 +133,20 @@ test("npm bootstrap exposes NPM_TOKEN only to the provenance publish step", () =
 
 test("npm bootstrap handoff documents the exact trusted publisher command", () => {
   const docs = readRepoFile("docs", "release", "supply-chain.md");
-  assert.match(
-    docs,
-    /FRESH_TAG=vX\.Y\.Z[\s\S]*RELEASE_RUN_ID=[0-9]+[\s\S]*gh api repos\/ubugeeei-prod\/vize\/dispatches[\s\S]*-f event_type=npm-bootstrap[\s\S]*client_payload\[tag_name\]=\$FRESH_TAG[\s\S]*client_payload\[release_run_id\]=\$RELEASE_RUN_ID[\s\S]*client_payload\[package_path\]=npm\/framework\/nuxt-lint-config/,
-  );
+  const dispatchBlock = docs
+    .split(/```bash\n|\n```/)
+    .find((block) => block.includes("gh api repos/ubugeeei-prod/vize/dispatches"));
+  assert.ok(dispatchBlock, "docs must document the npm-bootstrap dispatch command");
+  for (const token of [
+    "FRESH_TAG=vX.Y.Z",
+    "-f event_type=npm-bootstrap",
+    "client_payload[tag_name]=$FRESH_TAG",
+    "client_payload[release_run_id]=$RELEASE_RUN_ID",
+    "client_payload[package_path]=npm/framework/nuxt-lint-config",
+  ]) {
+    assert.ok(dispatchBlock.includes(token), `dispatch command must contain ${token}`);
+  }
+  assert.match(dispatchBlock, /RELEASE_RUN_ID=[0-9]+/);
   assert.match(
     docs,
     /npm trust github @vizejs\/nuxt-lint-config --file release\.yml --repo ubugeeei-prod\/vize --env npm --allow-publish --yes/,
