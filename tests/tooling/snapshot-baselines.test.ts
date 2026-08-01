@@ -69,6 +69,8 @@ const assertionOnlyCheckTests = {
   "naive-ui": "real-world smoke lane is too large for a deterministic complete baseline",
   "nuxt-parity": "parity lane asserts focused framework behavior",
   "options-api": "options-api fixture asserts focused parity behavior",
+  "options-api-inherited-members":
+    "inherited-members fixture asserts exact mixins/extends diagnostics and vue-tsc agreement",
   primevue: "covered by the complete ecosystem-products baseline",
   "toolchain-parity": "parity lane asserts focused vue-tsc agreement",
   "typecheck-vue-imports": "fixture asserts focused import-resolution behavior",

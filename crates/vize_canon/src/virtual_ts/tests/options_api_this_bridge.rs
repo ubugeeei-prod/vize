@@ -5,6 +5,8 @@ use super::super::{
 };
 use super::analyze_options_api_script;
 
+mod mixin_members;
+
 /// The typed-instance bridge is the Vue 2 dialect's only `this` checker: its
 /// `defineComponent` shim types no receiver, so the authored copy of a
 /// `methods`/`computed` body checks nothing on its own.

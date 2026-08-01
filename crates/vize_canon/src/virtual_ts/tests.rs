@@ -13,7 +13,6 @@ mod define_props_scope;
 mod generic_module_type_exports;
 mod legacy_nuxt2_page_context;
 mod no_check_template_bindings;
-mod options_api_mixin_members;
 mod options_api_props_spread;
 mod options_api_setup_spread;
 mod options_api_this_bridge;

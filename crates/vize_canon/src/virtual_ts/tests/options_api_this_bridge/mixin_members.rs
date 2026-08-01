@@ -5,8 +5,8 @@
 //! member reported `TS2339 Property 'x' does not exist on type '__VizeThis'`
 //! on code `vue-tsc` accepts.
 
-use super::super::generate_virtual_ts_with_offsets_legacy_vue2;
-use super::analyze_options_api_script;
+use super::super::super::generate_virtual_ts_with_offsets_legacy_vue2;
+use super::super::analyze_options_api_script;
 use vize_carton::{String, cstr};
 
 /// The generated bridge from `// Options API typed instance bridge` through
