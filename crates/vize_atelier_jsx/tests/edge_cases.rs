@@ -45,14 +45,23 @@ fn fragment_preserves_mixed_child_order_exactly() {
         other => panic!("expected interpolation, got {:?}", other.node_type()),
     }
 
+    // `Widget.Panel` is a component *value*, so it lowers to a dynamic
+    // component whose `:is` binding is the member expression, ahead of the
+    // element's own props (#3421).
     let panel = as_element(&root.children[2]);
-    assert_eq!(panel.tag.as_str(), "Widget.Panel");
+    assert_eq!(panel.tag.as_str(), "component");
     assert_eq!(panel.tag_type, ElementType::Component);
-    assert_eq!(panel.props.len(), 2);
-    assert_eq!(as_attribute(&panel.props[0]).name.as_str(), "active");
-    assert_eq!(as_attribute(&panel.props[1]).name.as_str(), "data-id");
+    assert_eq!(panel.props.len(), 3);
+    let is_binding = as_directive(&panel.props[0]);
+    assert_eq!(simple_content(is_binding.arg.as_ref().unwrap()), "is");
     assert_eq!(
-        as_attribute(&panel.props[1])
+        simple_content(is_binding.exp.as_ref().unwrap()),
+        "Widget.Panel"
+    );
+    assert_eq!(as_attribute(&panel.props[1]).name.as_str(), "active");
+    assert_eq!(as_attribute(&panel.props[2]).name.as_str(), "data-id");
+    assert_eq!(
+        as_attribute(&panel.props[2])
             .value
             .as_ref()
             .unwrap()

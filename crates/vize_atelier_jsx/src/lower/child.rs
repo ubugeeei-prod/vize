@@ -7,13 +7,6 @@ use vize_relief::{InterpolationNode, TemplateChildNode, TextNode};
 
 use super::Lowerer;
 
-/// `<div><><i/></></div>`. A nested fragment is lowered as an element tagged
-/// `Fragment`, and the DOM backend turns a component tag into
-/// `resolveComponent("Fragment")`, which resolves to nothing at runtime.
-/// A fragment used as the whole render root is fine — its children become the
-/// root children — so only the nested case reports.
-const NESTED_FRAGMENT_UNSUPPORTED: &str = "a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component";
-
 /// `<div>{...items}</div>`. `@vue/babel-plugin-jsx` spreads the value into the
 /// children array; the lowering has no spread child, so the array used to be
 /// stringified into a single text node through `toDisplayString`.
@@ -27,37 +20,46 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     ) -> Vec<'a, TemplateChildNode<'a>> {
         let mut out = Vec::new_in(self.bump());
         for child in children {
-            if let Some(node) = self.lower_child(child) {
-                out.push(node);
-            }
+            self.push_child(child, &mut out);
         }
         out
     }
 
-    fn lower_child(&mut self, child: &JSXChild<'_>) -> Option<TemplateChildNode<'a>> {
+    /// Lower one JSX child, appending zero or more nodes to `out`. A child is
+    /// not one-to-one with a node: `<style scoped>` and `{}` contribute none,
+    /// and a fragment contributes its whole child list.
+    fn push_child(&mut self, child: &JSXChild<'_>, out: &mut Vec<'a, TemplateChildNode<'a>>) {
         match child {
-            JSXChild::Text(text) => self.lower_text(text),
+            // `<div><><i/><b/></></div>`. A fragment in child position carries
+            // no props and cannot be keyed, so its children *are* the parent's
+            // children at that position, in every backend. Splicing them in is
+            // therefore equivalent to the nested `Fragment` vnode
+            // `@vue/babel-plugin-jsx` emits, and it removes the node the DOM
+            // backend used to resolve by name as `resolveComponent("Fragment")`
+            // — an unresolvable component (#3421).
+            JSXChild::Fragment(fragment) => {
+                for nested in &fragment.children {
+                    self.push_child(nested, out);
+                }
+            }
+            JSXChild::Text(text) => out.extend(self.lower_text(text)),
             JSXChild::Element(element) => {
                 // A `<style scoped>` block is extracted at compile time (#1495)
                 // and must not become an element vnode; drop it from the
                 // rendered children once captured.
                 if self.try_extract_scoped_style(element) {
-                    return None;
+                    return;
                 }
-                Some(TemplateChildNode::Element(Box::new_in(
-                    self.lower_element_node(element),
-                    self.bump(),
-                )))
+                let node = self.lower_element_node(element);
+                out.push(TemplateChildNode::Element(Box::new_in(node, self.bump())));
             }
-            JSXChild::Fragment(fragment) => {
-                self.reject(fragment.span, NESTED_FRAGMENT_UNSUPPORTED);
-                Some(TemplateChildNode::Element(Box::new_in(
-                    self.lower_fragment_node(fragment),
-                    self.bump(),
-                )))
+            JSXChild::ExpressionContainer(container) => {
+                out.extend(self.lower_child_container(container));
             }
-            JSXChild::ExpressionContainer(container) => self.lower_child_container(container),
-            JSXChild::Spread(spread) => Some(self.lower_spread_child(spread)),
+            JSXChild::Spread(spread) => {
+                let node = self.lower_spread_child(spread);
+                out.push(node);
+            }
         }
     }
 

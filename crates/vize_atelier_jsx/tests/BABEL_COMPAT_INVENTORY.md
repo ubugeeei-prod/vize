@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   75 |
-| divergent  |   21 |
+| equivalent |   78 |
+| divergent  |   18 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -107,18 +107,41 @@ deliberate answer, recorded here so it is not relitigated.
 
 ## Elements and tags
 
-| Case                             | Babel                                                            | Vize today                                               | Compat mode                                  | Verdict |
-| -------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------- | ------- |
-| `elements/intrinsic`             | `createVNode("div", …)`                                          | `createElementBlock("div")`                              | no change                                    | ✅      |
-| `elements/component_pascal`      | `resolveComponent("B")`                                          | same                                                     | no change                                    | ✅      |
-| `elements/unknown_lowercase`     | `<foo/>` → `resolveComponent("foo")`                             | stays an intrinsic element                               | classify any non-HTML/SVG tag as a component | ❌      |
-| `elements/dashed_lowercase`      | `resolveComponent("my-el")`                                      | same                                                     | no change                                    | ✅      |
-| `elements/svg_tag`               | `createVNode("circle", …)`                                       | same                                                     | no change                                    | ✅      |
-| `elements/mathml_tag`            | `<mi/>` → `resolveComponent("mi")` (only HTML+SVG are intrinsic) | stays an intrinsic element                               | same fix as `unknown_lowercase`              | ❌      |
-| `elements/member_tag`            | `createVNode(a.b.c, …)`                                          | `resolveComponent("a.b.c")` — a name string              | emit the member expression                   | ❌      |
-| `elements/namespaced_tag`        | rejects: `getTag: JSXNamespacedName is not supported`            | silently emits tag `a:b`                                 | reject with a diagnostic                     | ❌      |
-| `elements/fragment`              | `createVNode(Fragment, null, […])`                               | `createElementBlock(Fragment, …, STABLE_FRAGMENT)`       | no change                                    | ✅      |
-| `elements/nested_fragment_child` | nested `Fragment` vnode                                          | `resolveComponent("Fragment")`, now reported as an error | use the `Fragment` symbol                    | ❌      |
+| Case                             | Babel                                                            | Vize today                                         | Compat mode                                  | Verdict |
+| -------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------- | ------- |
+| `elements/intrinsic`             | `createVNode("div", …)`                                          | `createElementBlock("div")`                        | no change                                    | ✅      |
+| `elements/component_pascal`      | `resolveComponent("B")`                                          | same                                               | no change                                    | ✅      |
+| `elements/unknown_lowercase`     | `<foo/>` → `resolveComponent("foo")`                             | stays an intrinsic element                         | classify any non-HTML/SVG tag as a component | ❌      |
+| `elements/dashed_lowercase`      | `resolveComponent("my-el")`                                      | same                                               | no change                                    | ✅      |
+| `elements/svg_tag`               | `createVNode("circle", …)`                                       | same                                               | no change                                    | ✅      |
+| `elements/mathml_tag`            | `<mi/>` → `resolveComponent("mi")` (only HTML+SVG are intrinsic) | stays an intrinsic element                         | same fix as `unknown_lowercase`              | ❌      |
+| `elements/member_tag`            | `createVNode(a.b.c, …)`                                          | `resolveDynamicComponent(a.b.c)` (#3421)           | no change                                    | ✅      |
+| `elements/namespaced_tag`        | rejects: `getTag: JSXNamespacedName is not supported`            | rejects it too, naming the namespace (#3421)       | no change                                    | ✅      |
+| `elements/fragment`              | `createVNode(Fragment, null, […])`                               | `createElementBlock(Fragment, …, STABLE_FRAGMENT)` | no change                                    | ✅      |
+| `elements/nested_fragment_child` | nested `Fragment` vnode                                          | children spliced into the parent (#3421)           | no change                                    | ✅      |
+
+### Tag shapes: what the three ✅ above are equivalent _up to_
+
+Recorded so the verdicts are not read as byte equality (#3421,
+`src/lower/element.rs`, `src/lower/name.rs`):
+
+- **Member tags.** `resolveDynamicComponent` returns a non-string argument
+  unchanged, so `<a.b.c/>` mounts exactly what babel's `createVNode(a.b.c, …)`
+  mounts. The two differ only when the member expression evaluates to a
+  **string**: babel makes it an element tag, Vize looks it up as a registered
+  component and falls back to the string. That is what `<component :is>` means
+  in a Vue template, so the divergence is Vue's own semantics rather than a
+  lowering gap.
+- **Nested fragments.** A JSX fragment in child position carries no props and
+  cannot be keyed, so Vize splices its children into the parent instead of
+  emitting a wrapper. Same DOM, same patch order, one vnode level fewer than
+  babel's nested `Fragment`.
+- **Namespaced tags.** Babel rejects _every_ `<ns:tag/>`. Vize rejects every
+  namespace except `svg:` and `math:`, the two that name a real element
+  namespace; `<svg:circle/>` stays a verbatim tag (pinned by
+  `elements.rs::known_namespaced_element_names_are_preserved`). This is the one
+  place Vize is deliberately more permissive than babel, and a compat mode is
+  not expected to narrow it.
 
 ## Props and attributes
 

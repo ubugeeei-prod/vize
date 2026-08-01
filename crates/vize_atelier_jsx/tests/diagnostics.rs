@@ -85,33 +85,61 @@ fn diagnostic_texts<'d>(
         .collect()
 }
 
+/// `<a:b/>` names a namespace nothing downstream resolves, and the tag used to
+/// reach codegen verbatim as `createElementBlock("a:b")` with no signal.
+/// `@vue/babel-plugin-jsx` rejects every namespaced tag outright; Vize keeps the
+/// two prefixes that name a real element namespace and rejects the rest (#3421).
 #[test]
-fn nested_fragment_child_is_reported() {
+fn unsupported_tag_namespace_is_reported() {
     let bump = Bump::new();
-    let src = "const a = <div><><i/></></div>;";
+    let src = "const a = <a:b foo={1}/>;";
     let out = lower_all(&bump, src);
 
     assert_eq!(
         diagnostic_texts(&out),
         vec![(
             true,
-            "a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component"
+            "unsupported JSX tag namespace `a:`; only `svg:` and `math:` name a real element \
+             namespace, so `a:b` would be emitted verbatim as a tag name nothing resolves \
+             (`@vue/babel-plugin-jsx` rejects every namespaced tag)"
         )]
     );
-    // The span covers exactly the nested fragment.
+    // The span covers exactly the tag name.
     let diagnostic = &out.diagnostics[0];
     assert_eq!(
         &src[diagnostic.start as usize..diagnostic.end as usize],
-        "<><i/></>"
+        "a:b"
     );
 }
 
 #[test]
-fn a_fragment_used_as_the_whole_root_is_not_reported() {
-    let bump = Bump::new();
-    let out = lower_all(&bump, "const a = <><i/><b/></>;");
+fn svg_and_math_namespaced_tags_are_not_reported() {
+    for source in [
+        "const a = <svg:circle/>;",
+        "const a = <math:mi/>;",
+        "const a = <div><svg:circle/></div>;",
+    ] {
+        let bump = Bump::new();
+        let out = lower_all(&bump, source);
+        assert_eq!(diagnostic_texts(&out), vec![], "for {source}");
+    }
+}
 
-    assert_eq!(diagnostic_texts(&out), vec![]);
+/// A fragment is lowered faithfully wherever it appears, so none of these
+/// positions reports. The nested case used to report because it produced an
+/// unresolvable `Fragment` component; it is now spliced into its parent.
+#[test]
+fn fragments_are_not_reported_at_any_depth() {
+    for source in [
+        "const a = <><i/><b/></>;",
+        "const a = <div><><i/></></div>;",
+        "const a = <B>{() => <><i/></>}</B>;",
+        "const a = <div>{cond ? <><i/></> : <b/>}</div>;",
+    ] {
+        let bump = Bump::new();
+        let out = lower_all(&bump, source);
+        assert_eq!(diagnostic_texts(&out), vec![], "for {source}");
+    }
 }
 
 #[test]

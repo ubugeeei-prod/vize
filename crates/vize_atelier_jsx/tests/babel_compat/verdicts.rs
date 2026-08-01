@@ -45,19 +45,15 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("elements/dashed_lowercase", Same),
     ("elements/svg_tag", Same),
     ("elements/mathml_tag", Diff("unknown tag stays intrinsic")),
-    (
-        "elements/member_tag",
-        Diff("member tag resolved as a name string"),
-    ),
-    (
-        "elements/namespaced_tag",
-        Diff("namespaced tag accepted, babel rejects"),
-    ),
+    // Closed by #3421: a member tag names a component value, so it lowers to
+    // `resolveDynamicComponent`, which passes a non-string through unchanged.
+    ("elements/member_tag", Same),
+    // Closed by #3421: an unknown tag namespace is rejected, as babel does.
+    ("elements/namespaced_tag", Same),
     ("elements/fragment", Same),
-    (
-        "elements/nested_fragment_child",
-        Diff("nested fragment resolved by name, now reported"),
-    ),
+    // Closed by #3421: the nested fragment's children are spliced into the
+    // parent, mounting the same DOM as babel's nested `Fragment` vnode.
+    ("elements/nested_fragment_child", Same),
     // -- props -----------------------------------------------------------
     ("props/static_attr", Same),
     (

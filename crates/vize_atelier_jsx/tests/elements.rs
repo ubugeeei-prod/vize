@@ -2,7 +2,8 @@
 
 mod common;
 
-use common::{as_element, lower_one, root_element};
+use common::{as_directive, as_element, lower_one, root_element, simple_content, vdom_code};
+use vize_atelier_jsx::JsxLang;
 use vize_carton::Bump;
 use vize_relief::ElementType;
 
@@ -40,22 +41,67 @@ fn capitalized_tag_is_a_component() {
     assert_eq!(element.tag_type, ElementType::Component);
 }
 
+/// `<Foo.Bar.Baz/>` names a component **value**. It used to lower to the tag
+/// string `"Foo.Bar.Baz"`, which the DOM backend emitted as
+/// `resolveComponent("Foo.Bar.Baz")` — a lookup of a component name nobody
+/// registers, so the element rendered as nothing with no diagnostic (#3421).
 #[test]
-fn member_expression_tag_keeps_dotted_path() {
+fn member_expression_tag_lowers_to_a_dynamic_component() {
     let bump = Bump::new();
     let root = lower_one(&bump, "const a = <Foo.Bar.Baz/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "Foo.Bar.Baz");
+    assert_eq!(element.tag.as_str(), "component");
     assert_eq!(element.tag_type, ElementType::Component);
+    assert_eq!(element.props.len(), 1);
+    let is_binding = as_directive(&element.props[0]);
+    assert_eq!(is_binding.name.as_str(), "bind");
+    assert_eq!(simple_content(is_binding.arg.as_ref().unwrap()), "is");
+    assert_eq!(
+        simple_content(is_binding.exp.as_ref().unwrap()),
+        "Foo.Bar.Baz"
+    );
 }
 
 #[test]
-fn this_member_tag_is_a_component() {
+fn this_member_tag_lowers_to_a_dynamic_component() {
     let bump = Bump::new();
     let root = lower_one(&bump, "const a = <this.Dynamic/>;");
     let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "this.Dynamic");
+    assert_eq!(element.tag.as_str(), "component");
     assert_eq!(element.tag_type, ElementType::Component);
+    assert_eq!(element.props.len(), 1);
+    assert_eq!(
+        simple_content(as_directive(&element.props[0]).exp.as_ref().unwrap()),
+        "this.Dynamic"
+    );
+}
+
+/// The whole emitted module for a member-expression tag. `resolveDynamicComponent`
+/// returns a non-string argument unchanged, so this mounts exactly what
+/// `@vue/babel-plugin-jsx`'s `createVNode(a.b.c, {"foo": 1}, null)` mounts.
+#[test]
+fn member_expression_tag_emits_resolve_dynamic_component() {
+    assert_eq!(
+        vdom_code("const A = () => <a.b.c foo={1}/>;", JsxLang::Jsx).as_str(),
+        "export function render(_ctx, _cache) {\n  \
+         return (_openBlock(), _createBlock(_resolveDynamicComponent(a.b.c), { foo: 1 }))\n}"
+    );
+}
+
+/// The member expression keeps its own props, and the `is` binding it is
+/// lowered through never leaks into the emitted props object.
+#[test]
+fn member_expression_tag_with_children_keeps_props_and_slots() {
+    assert_eq!(
+        vdom_code("const A = () => <a.b.c foo={1}>hi</a.b.c>;", JsxLang::Jsx).as_str(),
+        "export function render(_ctx, _cache) {\n  \
+         return (_openBlock(), _createBlock(_resolveDynamicComponent(a.b.c), { foo: 1 }, {\n    \
+         default: _withCtx(() => [\n      \
+         _createTextVNode(\"hi\")\n    \
+         ]),\n    \
+         _: 1 /* STABLE */\n  \
+         }))\n}"
+    );
 }
 
 #[test]
@@ -85,14 +131,22 @@ fn deeply_nested_tree_preserves_structure() {
     assert!(span.is_self_closing);
 }
 
+/// `svg:` and `math:` are the qualified spellings of the two foreign-content
+/// namespaces, and stay verbatim. Every other prefix is diagnosed instead — see
+/// `diagnostics.rs::unsupported_tag_namespace_is_reported` (#3421).
 #[test]
-fn namespaced_element_name_is_preserved() {
-    let bump = Bump::new();
-    let root = lower_one(&bump, "const a = <svg:circle/>;");
-    let element = root_element(&root);
-    assert_eq!(element.tag.as_str(), "svg:circle");
-    // `circle` starts lowercase -> intrinsic.
-    assert_eq!(element.tag_type, ElementType::Element);
+fn known_namespaced_element_names_are_preserved() {
+    for (source, tag) in [
+        ("const a = <svg:circle/>;", "svg:circle"),
+        ("const a = <math:mi/>;", "math:mi"),
+    ] {
+        let bump = Bump::new();
+        let root = lower_one(&bump, source);
+        let element = root_element(&root);
+        assert_eq!(element.tag.as_str(), tag);
+        // The local name starts lowercase -> intrinsic.
+        assert_eq!(element.tag_type, ElementType::Element);
+    }
 }
 
 #[test]

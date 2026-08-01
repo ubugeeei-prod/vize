@@ -202,11 +202,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     self.bump(),
                 )));
             }
+            // A slot body is already a child *list*, so a fragment body splices
+            // into it exactly as it does in element child position (#3421).
             Expression::JSXFragment(fragment) => {
-                out.push(TemplateChildNode::Element(Box::new_in(
-                    self.lower_fragment_node(fragment),
-                    self.bump(),
-                )));
+                out = self.lower_children(&fragment.children);
             }
             // `&&` / ternary / `.map(...)` slot bodies lower to the same
             // If/For relief children as control-flow expression children.

@@ -1,16 +1,35 @@
 //! Lowering JSX elements and fragments into [`ElementNode`]s.
 
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
-use vize_relief::ElementNode;
-use vize_relief::ElementType;
+use oxc_span::Span;
+use vize_carton::{Box, String};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
 
 use super::{Lowerer, name};
+
+/// Vue's dynamic-component tag.
+///
+/// `<a.b.c/>` names a component **value**, not a component name, so it lowers
+/// to `<component :is="a.b.c">`: the backends turn that into
+/// `resolveDynamicComponent(a.b.c)`, which passes a non-string straight
+/// through and so mounts exactly what `@vue/babel-plugin-jsx`'s
+/// `createVNode(a.b.c, …)` mounts. Emitting the dotted path as a *name*
+/// instead (`resolveComponent("a.b.c")`) looks up a component nobody
+/// registered, which resolves to nothing at runtime (#3421).
+const DYNAMIC_COMPONENT_TAG: &str = "component";
 
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Lower a JSX element into an [`ElementNode`] (tag, kind, props, children).
     pub(crate) fn lower_element_node(&mut self, element: &JSXElement<'_>) -> ElementNode<'a> {
         let opening = &element.opening_element;
-        let tag = name::element_tag(&opening.name);
+        self.reject_unsupported_namespace(&opening.name);
+        // A member-expression tag is a value, so it becomes the `:is` binding of
+        // a dynamic component rather than a tag string.
+        let expression_tag = name::expression_tag_span(&opening.name);
+        let tag = match expression_tag {
+            Some(_) => String::from(DYNAMIC_COMPONENT_TAG),
+            None => name::element_tag(&opening.name),
+        };
         let loc = self.mapper().location(element.span);
         let mut node = ElementNode::new(self.bump(), tag, loc);
         node.tag_type = element_type(&opening.name);
@@ -22,6 +41,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         // `@vue/babel-plugin-jsx`.
         let on_component = node.tag_type == ElementType::Component || node.tag.contains('-');
         node.props = self.lower_attributes(&opening.attributes, on_component);
+        if let Some(span) = expression_tag {
+            // First, so the emitted props object reads `<component :is="…" …>`
+            // like the template spelling it stands for. Codegen filters `is`
+            // out of the props object for a dynamic component.
+            node.props.insert(0, self.is_binding(span));
+        }
         // Components route through slot synthesis (object/render-prop children
         // become `<template v-slot>`s); intrinsic elements lower children
         // directly.
@@ -37,14 +62,50 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         node
     }
 
-    /// Lower a JSX fragment (`<>...</>`) used as a child into an [`ElementNode`]
-    /// tagged `Fragment`, matching `@vue/babel-plugin-jsx` semantics.
+    /// Lower a JSX fragment (`<>...</>`) that has to become a **single** node:
+    /// a `v-if` branch or a `v-for` body (`cond ? <><a/><b/></> : <c/>`).
+    /// Fragments in a child list or a slot body are spliced into that list
+    /// instead and never reach here.
+    ///
+    /// Lowered as an [`ElementType::Template`] node — Vize's IR for "these
+    /// children, with no element of their own", i.e. the `<template v-if>` /
+    /// `<template v-for>` shape every backend already handles, which the VDOM
+    /// backend emits as `createElementBlock(Fragment, …, STABLE_FRAGMENT)`.
+    /// Tagging it `Fragment` as a *component* instead produced
+    /// `resolveComponent("Fragment")`, a component nobody registers, so the
+    /// branch rendered nothing (#3421).
     pub(crate) fn lower_fragment_node(&mut self, fragment: &JSXFragment<'_>) -> ElementNode<'a> {
         let loc = self.mapper().location(fragment.span);
-        let mut node = ElementNode::new(self.bump(), "Fragment", loc);
-        node.tag_type = ElementType::Component;
+        let mut node = ElementNode::new(self.bump(), "template", loc);
+        node.tag_type = ElementType::Template;
         node.children = self.lower_children(&fragment.children);
         node
+    }
+
+    /// `:is="<source text of span>"`, the dynamic-component binding standing in
+    /// for a member-expression tag.
+    fn is_binding(&self, span: Span) -> PropNode<'a> {
+        let loc = self.mapper().location(span);
+        let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
+        directive.arg = Some(self.static_expr("is", span));
+        directive.exp = Some(self.dyn_expr(span));
+        PropNode::Directive(Box::new_in(directive, self.bump()))
+    }
+
+    /// Report a JSX tag carrying a namespace no backend can resolve.
+    fn reject_unsupported_namespace(&mut self, name: &JSXElementName<'_>) {
+        let Some((namespace, span)) = name::unsupported_namespace(name) else {
+            return;
+        };
+        let tag = self.mapper().slice(span);
+        self.reject_at(
+            span,
+            format_args!(
+                "unsupported JSX tag namespace `{namespace}:`; only `svg:` and `math:` name a real \
+                 element namespace, so `{tag}` would be emitted verbatim as a tag name nothing \
+                 resolves (`@vue/babel-plugin-jsx` rejects every namespaced tag)"
+            ),
+        );
     }
 }
 

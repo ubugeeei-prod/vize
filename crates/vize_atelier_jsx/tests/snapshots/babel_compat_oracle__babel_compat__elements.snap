@@ -108,7 +108,7 @@ export function render(_ctx, _cache) {
 
 ## elements/member_tag
 ### verdict
-divergent: member tag resolved as a name string
+equivalent
 ### source (jsx)
 const A = () => <a.b.c foo={1}/>;
 ### babel options
@@ -119,16 +119,14 @@ const A = () => _createVNode(a.b.c, {
   "foo": 1
 }, null);
 ### vize (vdom, default config)
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
-  const _component_a46b46c = _resolveComponent("a.b.c")
-  
-  return (_openBlock(), _createBlock(_component_a46b46c, { foo: 1 }))
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(a.b.c), { foo: 1 }))
 }
 
 ## elements/namespaced_tag
 ### verdict
-divergent: namespaced tag accepted, babel rejects
+equivalent
 ### source (jsx)
 const A = () => <a:b foo={1}/>;
 ### babel options
@@ -136,6 +134,7 @@ const A = () => <a:b foo={1}/>;
 ### babel
 <error> getTag: JSXNamespacedName is not supported
 ### vize (vdom, default config)
+<Error> unsupported JSX tag namespace `a:`; only `svg:` and `math:` name a real element namespace, so `a:b` would be emitted verbatim as a tag name nothing resolves (`@vue/babel-plugin-jsx` rejects every namespaced tag)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("a:b", { foo: 1 }))
@@ -162,7 +161,7 @@ export function render(_ctx, _cache) {
 
 ## elements/nested_fragment_child
 ### verdict
-divergent: nested fragment resolved by name, now reported
+equivalent
 ### source (jsx)
 const A = () => <div><><i/></></div>;
 ### babel options
@@ -171,17 +170,9 @@ const A = () => <div><><i/></></div>;
 import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [_createVNode(_Fragment, null, [_createVNode("i", null, null)])]);
 ### vize (vdom, default config)
-<Error> a JSX fragment nested inside an element is not supported; it lowers to an unresolvable `Fragment` component
-import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from "vue"
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  const _component_Fragment = _resolveComponent("Fragment")
-  
   return (_openBlock(), _createElementBlock("div", null, [
-    _createVNode(_component_Fragment, null, {
-      default: _withCtx(() => [
-        _createElementVNode("i")
-      ]),
-      _: 1 /* STABLE */
-    })
+    _createElementVNode("i")
   ]))
 }
