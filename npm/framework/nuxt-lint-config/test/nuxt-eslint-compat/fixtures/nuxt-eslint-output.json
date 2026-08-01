@@ -3,6 +3,7 @@
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
+  "pluginVersion": "1.16.0",
   "typeScriptDetected": false,
   "importGlobals": {
     "globals": [
@@ -19,6 +20,269 @@
     "artifacts": {
       "initial": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n",
       "regenerated": "{\n  \"plugins\": [\n    \"vue\"\n  ],\n  \"jsPlugins\": [\n    {\n      \"name\": \"vize\",\n      \"specifier\": \"../node_modules/oxlint-plugin-vize/dist/index.mjs\"\n    }\n  ],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"incremental\"\n    }\n  },\n  \"ignorePatterns\": [\n    \"**/dist\",\n    \"**/node_modules\",\n    \"**/.nuxt\",\n    \"**/.output\",\n    \"**/.vercel\",\n    \"**/.netlify\",\n    \"**/public\"\n  ],\n  \"globals\": {\n    \"$fetch\": \"readonly\",\n    \"constructor\": \"readonly\",\n    \"toString\": \"readonly\",\n    \"useAsyncData\": \"readonly\",\n    \"fetchData\": \"readonly\",\n    \"useRoute\": \"readonly\",\n    \"defineNitroPlugin\": \"readonly\",\n    \"computed\": \"readonly\",\n    \"__proto__\": \"readonly\",\n    \"observe\": \"readonly\"\n  },\n  \"rules\": {\n    \"vize/nuxt/prefer-import-meta\": \"error\"\n  },\n  \"overrides\": [\n    {\n      \"files\": [\n        \"app/components/**/*.server.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/no-multiple-template-root\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-page-meta-runtime-values\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"**/.config/nuxt.?([cm])[jt]s?(x)\",\n        \"**/nuxt.config.?([cm])[jt]s?(x)\"\n      ],\n      \"rules\": {\n        \"vize/nuxt/no-nuxt-config-test-key\": \"error\"\n      }\n    },\n    {\n      \"files\": [\n        \"app/app.{js,ts,jsx,tsx,vue}\",\n        \"app/components/*/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/error.{js,ts,jsx,tsx,vue}\",\n        \"app/layouts/**/*.{js,ts,jsx,tsx,vue}\",\n        \"app/pages/**/*.{js,ts,jsx,tsx,vue}\"\n      ],\n      \"rules\": {\n        \"vize/vue/multi-word-component-names\": \"off\"\n      }\n    }\n  ]\n}\n"
+    }
+  },
+  "preferImportMetaCases": {
+    "prefer-import-meta/static-suffixes": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.client` with `import.meta.client`.",
+          "line": 1,
+          "column": 16,
+          "endLine": 1,
+          "endColumn": 30,
+          "fix": {
+            "range": [15, 29],
+            "text": "import.meta.client"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.browser` with `import.meta.browser`.",
+          "line": 1,
+          "column": 32,
+          "endLine": 1,
+          "endColumn": 47,
+          "fix": {
+            "range": [31, 46],
+            "text": "import.meta.browser"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.server` with `import.meta.server`.",
+          "line": 1,
+          "column": 49,
+          "endLine": 1,
+          "endColumn": 63,
+          "fix": {
+            "range": [48, 62],
+            "text": "import.meta.server"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.nitro` with `import.meta.nitro`.",
+          "line": 1,
+          "column": 65,
+          "endLine": 1,
+          "endColumn": 78,
+          "fix": {
+            "range": [64, 77],
+            "text": "import.meta.nitro"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.dev` with `import.meta.dev`.",
+          "line": 1,
+          "column": 80,
+          "endLine": 1,
+          "endColumn": 91,
+          "fix": {
+            "range": [79, 90],
+            "text": "import.meta.dev"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.test` with `import.meta.test`.",
+          "line": 1,
+          "column": 93,
+          "endLine": 1,
+          "endColumn": 105,
+          "fix": {
+            "range": [92, 104],
+            "text": "import.meta.test"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.prerender` with `import.meta.prerender`.",
+          "line": 1,
+          "column": 107,
+          "endLine": 1,
+          "endColumn": 124,
+          "fix": {
+            "range": [106, 123],
+            "text": "import.meta.prerender"
+          }
+        }
+      ],
+      "output": "const flags = [import.meta.client, import.meta.browser, import.meta.server, import.meta.nitro, import.meta.dev, import.meta.test, import.meta.prerender]",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "const flags = [import.meta.client, import.meta.browser, import.meta.server, import.meta.nitro, import.meta.dev, import.meta.test, import.meta.prerender]",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/computed-identifier": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.client` with `import.meta.client`.",
+          "line": 1,
+          "column": 39,
+          "endLine": 1,
+          "endColumn": 54,
+          "fix": {
+            "range": [38, 53],
+            "text": "import.meta.client"
+          }
+        }
+      ],
+      "output": "const client = 'client'; const flag = import.meta.client",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "const client = 'client'; const flag = import.meta.client",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/optional-chain": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.server` with `import.meta.server`.",
+          "line": 1,
+          "column": 14,
+          "endLine": 1,
+          "endColumn": 29,
+          "fix": {
+            "range": [13, 28],
+            "text": "import.meta.server"
+          }
+        }
+      ],
+      "output": "const flag = import.meta.server",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "const flag = import.meta.server",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/nested-member": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.nitro` with `import.meta.nitro`.",
+          "line": 1,
+          "column": 17,
+          "endLine": 1,
+          "endColumn": 30,
+          "fix": {
+            "range": [16, 29],
+            "text": "import.meta.nitro"
+          }
+        }
+      ],
+      "output": "const runtime = import.meta.nitro.runtime",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "const runtime = import.meta.nitro.runtime",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/shadowed-process": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.dev` with `import.meta.dev`.",
+          "line": 1,
+          "column": 36,
+          "endLine": 1,
+          "endColumn": 47,
+          "fix": {
+            "range": [35, 46],
+            "text": "import.meta.dev"
+          }
+        }
+      ],
+      "output": "function enabled(process) { return import.meta.dev }",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "function enabled(process) { return import.meta.dev }",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/assignment-target": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.test` with `import.meta.test`.",
+          "line": 1,
+          "column": 1,
+          "endLine": 1,
+          "endColumn": 13,
+          "fix": {
+            "range": [0, 12],
+            "text": "import.meta.test"
+          }
+        }
+      ],
+      "output": "import.meta.test = false",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "import.meta.test = false",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/computed-and-object-near-misses": {
+      "messages": [],
+      "output": "const values = [process['client'], process[mode], state.process.client, process.production, import.meta.client]",
+      "fixed": false,
+      "secondPassMessages": [],
+      "secondPassOutput": "const values = [process['client'], process[mode], state.process.client, process.production, import.meta.client]",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/lexical-near-misses": {
+      "messages": [],
+      "output": "const text = 'process.server'; /* process.dev */ const values = [PROCESS.client, myprocess.server, { process: { client: true } }]",
+      "fixed": false,
+      "secondPassMessages": [],
+      "secondPassOutput": "const text = 'process.server'; /* process.dev */ const values = [PROCESS.client, myprocess.server, { process: { client: true } }]",
+      "secondPassFixed": false
+    },
+    "prefer-import-meta/multiple-lines": {
+      "messages": [
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.client` with `import.meta.client`.",
+          "line": 1,
+          "column": 5,
+          "endLine": 1,
+          "endColumn": 19,
+          "fix": {
+            "range": [4, 18],
+            "text": "import.meta.client"
+          }
+        },
+        {
+          "ruleId": "nuxt/prefer-import-meta",
+          "severity": 2,
+          "message": "Replace `process.prerender` with `import.meta.prerender`.",
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 32,
+          "fix": {
+            "range": [36, 53],
+            "text": "import.meta.prerender"
+          }
+        }
+      ],
+      "output": "if (import.meta.client) {\n  console.log(import.meta.prerender)\n}",
+      "fixed": true,
+      "secondPassMessages": [],
+      "secondPassOutput": "if (import.meta.client) {\n  console.log(import.meta.prerender)\n}",
+      "secondPassFixed": false
     }
   },
   "dirDefaults": {

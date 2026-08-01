@@ -43,6 +43,7 @@ mod pinia_prefer_store_to_refs;
 mod prefer_computed;
 mod prefer_define_options;
 mod prefer_import_from_vue;
+mod prefer_import_meta;
 mod prefer_ref_over_reactive;
 mod prefer_use_attrs;
 mod prefer_use_id;
@@ -225,6 +226,7 @@ impl ScriptLinter {
                 Box::new(PiniaPreferStoreToRefs),
                 Box::new(VueRouterPreferNamedPush),
                 Box::new(VueTestUtilsNoHtmlSnapshot),
+                Box::new(PreferImportMeta),
                 Box::new(PreferComputed),
                 Box::new(NoAsyncInComputed),
                 Box::new(NoReactiveDestructure),

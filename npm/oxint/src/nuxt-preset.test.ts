@@ -10,11 +10,14 @@ const pluginEntry = path.join(workspaceRoot, "npm/oxint/dist/index.mjs");
 const fixtureDir = path.join(workspaceRoot, "target", "vize-tests", "oxlint-plugin-vize-nuxt-test");
 const configPath = path.join(fixtureDir, ".oxlintrc.json");
 const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
+const processFlagsVuePath = path.join(fixtureDir, "ProcessFlags.vue");
 const ansiEscapePattern = new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu");
 const { configs } = await import(pathToFileURL(pluginEntry).href);
 
 assert.equal(configs.nuxt["vize/script/no-options-api"], undefined);
 assert.equal(configs.opinionated["vize/script/no-options-api"], "error");
+assert.equal(configs.nuxt["vize/nuxt/prefer-import-meta"], "error");
+assert.equal(configs.opinionated["vize/nuxt/prefer-import-meta"], undefined);
 
 fs.rmSync(fixtureDir, { force: true, recursive: true });
 fs.mkdirSync(fixtureDir, { recursive: true });
@@ -32,6 +35,7 @@ fs.writeFileSync(
         },
       },
       rules: {
+        ...configs.nuxt,
         "no-unused-vars": "off",
         "vize/script/no-options-api": "error",
       },
@@ -59,10 +63,25 @@ export default defineComponent({
 `,
 );
 
+fs.writeFileSync(
+  processFlagsVuePath,
+  `<script setup lang="ts">
+const enabled = process.client
+</script>
+`,
+);
+
 const run = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "OptionsApi.vue"]);
 
 assert.equal(run.exitCode, 0, "nuxt preset should allow Options API components");
 assert.doesNotMatch(run.output, /vize\(script\/no-options-api\)/);
+
+const processFlagsRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "ProcessFlags.vue"]);
+assert.notEqual(processFlagsRun.exitCode, 0, "nuxt preset should reject legacy process flags");
+assert.match(
+  processFlagsRun.output,
+  /ProcessFlags\.vue[\s\S]*2:17[\s\S]*Replace `process\.client` with `import\.meta\.client`\.[\s\S]*vize\(nuxt\/prefer-import-meta\)/u,
+);
 
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");
 await import("./type-aware.test.ts");

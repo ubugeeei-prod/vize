@@ -60,13 +60,27 @@ interface DirDefaultCase {
 
 const corpus = readJson<{
   oracle: Record<string, string>;
+  preferImportMetaCases: Array<{ id: string; description: string; source: string }>;
   dirDefaultCases: DirDefaultCase[];
   cases: CorpusCase[];
 }>("fixtures", "corpus.json");
 const recording = readJson<{
+  schemaVersion: number;
   moduleVersion: string;
   configVersion: string;
+  pluginVersion: string;
   typeScriptDetected: boolean;
+  preferImportMetaCases: Record<
+    string,
+    {
+      messages: Array<{ ruleId: string; severity: number; message: string }>;
+      output: string;
+      fixed: boolean;
+      secondPassMessages: unknown[];
+      secondPassOutput: string;
+      secondPassFixed: boolean;
+    }
+  >;
   dirDefaults: Record<string, NuxtLintDirs>;
   cases: Record<string, RecordedCase>;
 }>("fixtures", "nuxt-eslint-output.json");
@@ -117,9 +131,12 @@ void test("corpus pins the package versions the recording was produced with", ()
   assert.equal(corpus.oracle.config, "@nuxt/eslint-config");
   assert.equal(corpus.oracle.moduleVersion, recording.moduleVersion);
   assert.equal(corpus.oracle.configVersion, recording.configVersion);
+  assert.equal(corpus.oracle.plugin, "@nuxt/eslint-plugin");
+  assert.equal(corpus.oracle.pluginVersion, recording.pluginVersion);
 });
 
 void test("recording covers exactly the corpus cases", () => {
+  assert.equal(recording.schemaVersion, 3);
   assert.deepEqual(
     Object.keys(recording.cases).sort(),
     corpus.cases.map((entry) => entry.id).sort(),
@@ -128,7 +145,26 @@ void test("recording covers exactly the corpus cases", () => {
     Object.keys(recording.dirDefaults).sort(),
     corpus.dirDefaultCases.map((entry) => entry.id).sort(),
   );
+  assert.deepEqual(
+    Object.keys(recording.preferImportMetaCases).sort(),
+    corpus.preferImportMetaCases.map((entry) => entry.id).sort(),
+  );
 });
+
+for (const entry of corpus.preferImportMetaCases) {
+  void test(`${entry.id}: recorded fix converges after one application`, () => {
+    const recorded = recording.preferImportMetaCases[entry.id];
+    assert.ok(recorded);
+    assert.equal(recorded.fixed, recorded.messages.length > 0);
+    assert.equal(recorded.secondPassOutput, recorded.output);
+    assert.equal(recorded.secondPassFixed, false);
+    assert.deepEqual(recorded.secondPassMessages, []);
+    for (const message of recorded.messages) {
+      assert.equal(message.ruleId, "nuxt/prefer-import-meta");
+      assert.equal(message.severity, 2);
+    }
+  });
+}
 
 for (const entry of corpus.dirDefaultCases) {
   void test(`${entry.id}: directory defaults match @nuxt/eslint-config`, () => {

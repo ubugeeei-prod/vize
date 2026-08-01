@@ -39,10 +39,12 @@ test("recorded output matches the installed @nuxt/eslint packages", async () => 
   assert.equal(recorded.schemaVersion, 3);
   assert.equal(recomputed.moduleVersion, recorded.moduleVersion);
   assert.equal(recomputed.configVersion, recorded.configVersion);
+  assert.equal(recomputed.pluginVersion, recorded.pluginVersion);
   assert.equal(recomputed.typeScriptDetected, recorded.typeScriptDetected);
   assert.deepEqual(recomputed.importGlobals, recorded.importGlobals);
   assert.deepEqual(Object.keys(recomputed.cases).sort(), Object.keys(recorded.cases).sort());
   assert.deepEqual(recomputed.dirDefaults, recorded.dirDefaults);
+  assert.deepEqual(recomputed.preferImportMetaCases, recorded.preferImportMetaCases);
   assert.deepEqual(recomputed.cases, recorded.cases);
 });
 
@@ -53,6 +55,8 @@ test("corpus pins the package versions the recording was produced with", () => {
   assert.equal(corpus.oracle.config, "@nuxt/eslint-config");
   assert.equal(corpus.oracle.moduleVersion, recorded.moduleVersion);
   assert.equal(corpus.oracle.configVersion, recorded.configVersion);
+  assert.equal(corpus.oracle.plugin, "@nuxt/eslint-plugin");
+  assert.equal(corpus.oracle.pluginVersion, recorded.pluginVersion);
 });
 
 test("inventory markdown documents exactly the corpus cases", () => {
@@ -66,6 +70,7 @@ test("inventory markdown documents exactly the corpus cases", () => {
   // exist — so a missing *or* an extra case row still fails.
   const ids = [
     corpus.importGlobals.id,
+    ...corpus.preferImportMetaCases.map((entry: { id: string }) => entry.id),
     ...corpus.dirDefaultCases.map((entry: { id: string }) => entry.id),
     ...corpus.cases.map((entry: { id: string }) => entry.id),
   ];

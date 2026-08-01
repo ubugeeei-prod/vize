@@ -2,9 +2,10 @@
  * Differential oracle for the shareable Nuxt lint preset and its Nuxt emitter.
  *
  * Runs every case in `fixtures/corpus.json` through the real `@nuxt/eslint`
- * module and `@nuxt/eslint-config`, and records what they produce in
- * `fixtures/nuxt-eslint-output.json`. That recorded file is the committed
- * ground truth: `src/oracle.test.ts` reads the preset portion with no `@nuxt/*` dependency
+ * module, `@nuxt/eslint-config`, and `@nuxt/eslint-plugin`, and records what
+ * they produce in `fixtures/nuxt-eslint-output.json`. That recorded file is the committed
+ * ground truth: `src/oracle.test.ts` reads the preset and rule recordings with
+ * no `@nuxt/*` dependency
  * at all, so the package's own suite stays offline and fast, while
  * `tests/tooling/nuxt-eslint-oracle.test.ts` re-runs this script in CI and
  * fails if the recording has drifted from the installed packages.
@@ -20,6 +21,9 @@
  *   3. `importGlobals` — the complete ordered globals list emitted after both
  *      Nuxt and Nitro publish their auto-import registries.
  *
+ * Rule cases separately record the real plugin's exact diagnostics and fixed
+ * output, plus a second application proving the fix has converged.
+ *
  * Usage:
  *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --check
  *   node npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/oracle.mjs --write
@@ -30,6 +34,7 @@ import { fileURLToPath } from "node:url";
 
 import { renderNuxtOxlintConfig } from "../../../nuxt/src/lint/emitter.ts";
 import { buildNuxtLintPlan } from "../../src/plan.ts";
+import { recordPreferImportMetaCases } from "./prefer-import-meta-oracle.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const RECORDED_VIZE_PLUGIN_SPECIFIER = "../node_modules/oxlint-plugin-vize/dist/index.mjs";
@@ -209,6 +214,11 @@ export async function runOracle() {
   ]);
 
   const corpus = readCorpus();
+  const preferImportMeta = await recordPreferImportMetaCases(
+    moduleEntry,
+    corpus,
+    packageVersionFrom,
+  );
 
   // The directory defaults only apply to hand-written configs — a config
   // generated from a Nuxt instance always supplies every list — so they are
@@ -271,6 +281,7 @@ export async function runOracle() {
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
     configVersion: packageVersionFrom(configEntry),
+    pluginVersion: preferImportMeta.pluginVersion,
     // `@nuxt/eslint-config` defaults `features.typescript` to whether the
     // `typescript` package resolves. Recording the probe's answer keeps the
     // offline test honest about which branch the rest of the recording is on.
@@ -282,6 +293,7 @@ export async function runOracle() {
         regenerated: regeneratedOxlintConfig,
       },
     },
+    preferImportMetaCases: preferImportMeta.cases,
     dirDefaults,
     cases,
   };

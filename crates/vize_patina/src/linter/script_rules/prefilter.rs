@@ -9,9 +9,9 @@ use memchr::memmem;
 use vize_atelier_sfc::SfcDescriptor;
 
 use super::registry::{
-    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_NUXT_PREFER_IMPORT_META,
+    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{Linter, active_builtin_script_rule_entries};
 
@@ -31,6 +31,7 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         }
         RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
         RULE_PREFER_IMPORT_FROM_VUE => memmem::find(bytes, b"@vue/").is_some(),
+        RULE_NUXT_PREFER_IMPORT_META => memmem::find(bytes, b"process").is_some(),
         RULE_NO_RESTRICTED_GLOBALS => {
             memmem::find(bytes, b"process").is_some()
                 || memmem::find(bytes, b"localStorage").is_some()

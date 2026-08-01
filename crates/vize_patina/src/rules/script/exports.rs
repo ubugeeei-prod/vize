@@ -39,6 +39,7 @@ pub use super::pinia_prefer_store_to_refs::PiniaPreferStoreToRefs;
 pub use super::prefer_computed::PreferComputed;
 pub use super::prefer_define_options::PreferDefineOptions;
 pub use super::prefer_import_from_vue::PreferImportFromVue;
+pub use super::prefer_import_meta::PreferImportMeta;
 pub use super::prefer_ref_over_reactive::PreferRefOverReactive;
 pub use super::prefer_use_attrs::PreferUseAttrs;
 pub use super::prefer_use_id::PreferUseId;

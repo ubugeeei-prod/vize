@@ -2,7 +2,9 @@
 
 Ground truth for the Nuxt lint config port. The corpus in `fixtures/corpus.json`
 is run through the real `@nuxt/eslint` and `@nuxt/eslint-config` by `oracle.mjs`,
-which records the result in `fixtures/nuxt-eslint-output.json`.
+which records the result in `fixtures/nuxt-eslint-output.json`. Rule cases run
+through the real `@nuxt/eslint-plugin` rule and record diagnostics, fixed output,
+and the second fix pass.
 
 - `npm/framework/nuxt-lint-config/src/oracle.test.ts` reads the plan recording offline and
   holds Vize's implementation to it.
@@ -16,8 +18,9 @@ complete oxlint artifact Vize emits from them. The offline suite compares that
 artifact as one byte string, including item order, rule-id mapping, whitespace,
 and the trailing newline.
 
-Pinned upstream: `@nuxt/eslint@1.16.0`, `@nuxt/eslint-config@1.16.0` (catalog
-`nuxt-eslint-oracle` in `pnpm-workspace.yaml`).
+Pinned upstream: `@nuxt/eslint@1.16.0`, `@nuxt/eslint-config@1.16.0`, and
+`@nuxt/eslint-plugin@1.16.0` (catalog `nuxt-eslint-oracle` in
+`pnpm-workspace.yaml`; the plugin is the module's exact transitive dependency).
 
 ## Engine
 
@@ -39,7 +42,7 @@ overrides an earlier one — so it is part of the contract.
 | `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported      |
 | `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported      |
 | `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported      |
-| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | not ported yet |
+| `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | supported      |
 | `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | not ported yet |
 | `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet |
 | `nuxt/sort-config`     | `nuxt.config`                                             | `nuxt/nuxt-config-keys-order`        | not ported yet |
@@ -51,6 +54,20 @@ JavaScript/TypeScript/Vue/import/stylistic/tooling presets. They are a separate
 phase, so the recording captures their **names and order** (`configNames`) but
 not their rule bodies — a preset appearing, disappearing, or moving still fails
 the oracle.
+
+## `nuxt/prefer-import-meta` rule cases
+
+| Case                                                       | Behaviour                                                                                         |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `prefer-import-meta/static-suffixes`                       | All seven upstream suffixes diagnose and preserve their suffix in `import.meta.*`.                |
+| `prefer-import-meta/computed-identifier`                   | `process[client]` matches the upstream property-node predicate.                                   |
+| `prefer-import-meta/optional-chain`                        | The complete optional member expression is replaced.                                             |
+| `prefer-import-meta/nested-member`                         | Only the inner `process.*` member is replaced in a longer chain.                                  |
+| `prefer-import-meta/shadowed-process`                      | The syntax-only upstream rule reports a shadowed `process` parameter.                             |
+| `prefer-import-meta/assignment-target`                     | Assignment targets are diagnosed and fixed.                                                      |
+| `prefer-import-meta/computed-and-object-near-misses`       | String keys, unknown properties, and non-root `process` members stay valid.                       |
+| `prefer-import-meta/lexical-near-misses`                   | Strings, comments, other identifier spellings, and object keys stay valid.                        |
+| `prefer-import-meta/multiple-lines`                        | Multiple findings retain exact non-overlapping ranges and fix together.                           |
 
 ## Intentional divergences
 

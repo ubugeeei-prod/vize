@@ -2,10 +2,12 @@
   "oracle": {
     "module": "@nuxt/eslint",
     "config": "@nuxt/eslint-config",
+    "plugin": "@nuxt/eslint-plugin",
     "moduleVersion": "1.16.0",
-    "configVersion": "1.16.0"
+    "configVersion": "1.16.0",
+    "pluginVersion": "1.16.0"
   },
-  "description": "Nuxt project states whose generated lint config @vizejs/nuxt-lint-config must reproduce. Each case is materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "description": "Nuxt project states and rule cases whose @nuxt/eslint behaviour @vizejs/nuxt-lint-config, the Nuxt runtime emitter, and Vize Patina must reproduce. Project cases are materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
   "importGlobals": {
     "id": "addons/import-globals",
     "description": "Nuxt and Nitro auto-import registries are merged, sorted by source then imported name, and aliases become readonly globals.",
@@ -23,6 +25,53 @@
       { "from": "#app", "name": "beta", "as": "toString" }
     ]
   },
+  "preferImportMetaCases": [
+    {
+      "id": "prefer-import-meta/static-suffixes",
+      "description": "Every suffix accepted by @nuxt/eslint-plugin is diagnosed and preserves its name in the replacement.",
+      "source": "const flags = [process.client, process.browser, process.server, process.nitro, process.dev, process.test, process.prerender]"
+    },
+    {
+      "id": "prefer-import-meta/computed-identifier",
+      "description": "A computed identifier property matches because upstream checks the property node type and name, not the computed flag.",
+      "source": "const client = 'client'; const flag = process[client]"
+    },
+    {
+      "id": "prefer-import-meta/optional-chain",
+      "description": "Optional member access is reported and the whole optional expression is replaced.",
+      "source": "const flag = process?.server"
+    },
+    {
+      "id": "prefer-import-meta/nested-member",
+      "description": "Only the inner process member is replaced when another member is chained after it.",
+      "source": "const runtime = process.nitro.runtime"
+    },
+    {
+      "id": "prefer-import-meta/shadowed-process",
+      "description": "Upstream intentionally remains syntax-only and reports a lexically shadowed process parameter.",
+      "source": "function enabled(process) { return process.dev }"
+    },
+    {
+      "id": "prefer-import-meta/assignment-target",
+      "description": "A matching member used as an assignment target is still reported and fixed.",
+      "source": "process.test = false"
+    },
+    {
+      "id": "prefer-import-meta/computed-and-object-near-misses",
+      "description": "String keys, unknown identifiers, and process below another receiver do not satisfy the upstream AST predicate.",
+      "source": "const values = [process['client'], process[mode], state.process.client, process.production, import.meta.client]"
+    },
+    {
+      "id": "prefer-import-meta/lexical-near-misses",
+      "description": "Comments, strings, differently cased identifiers, and object keys are not member expressions rooted at process.",
+      "source": "const text = 'process.server'; /* process.dev */ const values = [PROCESS.client, myprocess.server, { process: { client: true } }]"
+    },
+    {
+      "id": "prefer-import-meta/multiple-lines",
+      "description": "Multiple findings keep exact non-overlapping ranges and are fixed together.",
+      "source": "if (process.client) {\n  console.log(process.prerender)\n}"
+    }
+  ],
   "dirDefaultCases": [
     {
       "id": "defaults/empty",

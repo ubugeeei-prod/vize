@@ -1,4 +1,62 @@
 use super::{LintPreset, Linter};
+use vize_carton::ToCompactString;
+
+#[test]
+fn nuxt_preset_reports_and_fixes_legacy_process_flags() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    let source = r#"<script setup lang="ts">
+const enabled = process.client && process.prerender
+</script>
+"#;
+    let result = linter.lint_sfc(source, "app.vue");
+    let diagnostics = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "nuxt/prefer-import-meta")
+        .collect::<Vec<_>>();
+    assert_eq!(diagnostics.len(), 2, "{:#?}", result.diagnostics);
+
+    let mut edits = diagnostics
+        .iter()
+        .flat_map(|diagnostic| diagnostic.fix.as_ref().unwrap().edits.iter())
+        .collect::<Vec<_>>();
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
+    let mut fixed = source.to_compact_string();
+    for edit in edits {
+        fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
+    }
+    assert!(fixed.contains("import.meta.client && import.meta.prerender"));
+    assert!(
+        linter
+            .lint_sfc(&fixed, "app.vue")
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "nuxt/prefer-import-meta")
+    );
+}
+
+#[test]
+fn non_nuxt_presets_keep_prefer_import_meta_disabled() {
+    for preset in [LintPreset::Ecosystem, LintPreset::Opinionated] {
+        let result = Linter::with_preset(preset).lint_script("process.client", "runtime.ts");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "nuxt/prefer-import-meta"),
+            "{preset:?} unexpectedly enabled the Nuxt-only rule"
+        );
+    }
+}
+
+#[test]
+fn prefer_import_meta_can_be_enabled_explicitly() {
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_additional_rules(vec!["nuxt/prefer-import-meta".into()]);
+    let result = linter.lint_script("process.server", "runtime.ts");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "nuxt/prefer-import-meta");
+}
 
 #[test]
 fn test_lint_standalone_html_does_not_warn_custom_block() {

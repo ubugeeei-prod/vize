@@ -1,9 +1,10 @@
 //! The growable built-in script-rule registry.
 //!
-//! All per-rule data lives in this module so a new `script/*` (or `ecosystem/*`)
-//! rule can be added by editing only small, data-only files here, leaving the
-//! larger dispatch logic in `script_rules.rs` untouched. Each file is kept well
-//! under the repository source-length guard so it has room to grow.
+//! All per-rule data lives in this module so a new script rule, including an
+//! ecosystem or framework-specific rule, can be added by editing only small,
+//! data-only files here, leaving the larger dispatch logic in `script_rules.rs`
+//! untouched. Each file is kept well under the repository source-length guard
+//! so it has room to grow.
 //!
 //! ## Adding a script rule
 //!
@@ -26,9 +27,9 @@ pub(in crate::linter::script_rules) use names::ALL_BUILTIN_SCRIPT_RULE_NAMES;
 #[cfg(test)]
 pub(in crate::linter::script_rules) use names::OPT_IN_SCRIPT_RULE_NAMES;
 pub(crate) use names::{
-    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_PINIA_PREFER_STORE_TO_REFS,
-    RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
-    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_NUXT_PREFER_IMPORT_META,
+    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_IMPORT_FROM_VUE,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 pub(in crate::linter::script_rules) use rules::BUILTIN_SCRIPT_RULES;
 
@@ -74,4 +75,5 @@ pub struct BuiltinScriptRuleMeta {
 const OPINIONATED_ONLY_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
+const NUXT_SCRIPT_PRESETS: &[&str] = &["nuxt"];
 const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];

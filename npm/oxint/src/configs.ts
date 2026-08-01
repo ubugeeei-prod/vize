@@ -87,6 +87,14 @@ if (import.meta.vitest) {
       expect(configs.opinionated["vize/script/no-options-api"]).toBe("error");
     });
 
+    it("enables Nuxt framework rules only in the Nuxt and all presets", () => {
+      expect(configs.nuxt["vize/nuxt/prefer-import-meta"]).toBe("error");
+      expect(configs.all["vize/nuxt/prefer-import-meta"]).toBe("error");
+      expect(configs.ecosystem["vize/nuxt/prefer-import-meta"]).toBeUndefined();
+      expect(configs.opinionated["vize/nuxt/prefer-import-meta"]).toBeUndefined();
+      expect(configs.recommended["vize/nuxt/prefer-import-meta"]).toBeUndefined();
+    });
+
     it("keeps ecosystem rules out of non-ecosystem presets until explicitly selected", () => {
       expect(configs.recommended["vize/ecosystem/router-link-require-to"]).toBeUndefined();
       expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();
