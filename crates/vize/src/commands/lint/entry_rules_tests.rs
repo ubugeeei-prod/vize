@@ -52,6 +52,26 @@ fn file_globs_preserve_ordered_repeats_and_fail_closed_when_all_are_invalid() {
 }
 
 #[test]
+fn directory_form_file_globs_select_their_whole_subtree() {
+    let directory = GlobSequence::new(&["src/pages".into()]);
+    assert!(directory.matches_files("src/pages/index.vue"));
+    assert!(directory.matches_files("src/pages/nested/index.vue"));
+    assert!(!directory.matches_files("src/components/Card.vue"));
+}
+
+#[test]
+fn negated_globs_keep_their_marker_when_relative_prefixes_are_stripped() {
+    for pattern in ["!./src/generated/**", "!.\\src\\generated\\**"] {
+        let sequence = GlobSequence::new(&["src/**/*.vue".into(), pattern.into()]);
+        assert!(sequence.matches_files("src/App.vue"), "{pattern}");
+        assert!(
+            !sequence.matches_files("src/generated/drop.vue"),
+            "{pattern}"
+        );
+    }
+}
+
+#[test]
 fn resolves_whole_rule_maps_for_each_distinct_glob_set_once() {
     let project = tempfile::tempdir().unwrap();
     for file in [

@@ -13,7 +13,7 @@ pub(super) struct LintIgnoreSet {
 }
 
 impl LintIgnoreSet {
-    fn new(ignores: &[config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
+    pub(super) fn new(ignores: &[config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
         let patterns = ignores
             .iter()
             .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
@@ -25,13 +25,6 @@ impl LintIgnoreSet {
     fn is_ignored(&self, path: &Path) -> bool {
         self.patterns.iter().any(|pattern| pattern.matches(path))
     }
-}
-
-pub(super) fn load_lint_ignore_set(
-    ignores: &[config::ConfigEntryIgnore],
-    config_dir: &Path,
-) -> Option<LintIgnoreSet> {
-    LintIgnoreSet::new(ignores, config_dir)
 }
 
 pub(super) fn collect_lint_files(

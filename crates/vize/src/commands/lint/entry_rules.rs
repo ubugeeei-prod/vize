@@ -123,11 +123,15 @@ impl LinterRuleResolver {
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
             let signature = self.matching_entries(file, cwd);
-            let index = *signatures.entry(signature.clone()).or_insert_with(|| {
-                let index = configs.len();
-                configs.push(self.plan.resolve_matching_entries(&signature));
-                index
-            });
+            let index = match signatures.get(&signature) {
+                Some(index) => *index,
+                None => {
+                    let index = configs.len();
+                    configs.push(self.plan.resolve_matching_entries(&signature));
+                    signatures.insert(signature, index);
+                    index
+                }
+            };
             file_config_indices.push(index);
         }
         ResolvedLinterRuleGroups {
@@ -163,26 +167,32 @@ impl GlobSequence {
     fn new(patterns: &[String]) -> Self {
         let steps = patterns
             .iter()
-            .filter_map(|pattern| {
-                let normalized = normalize_pattern(pattern);
-                if normalized.is_empty() {
-                    return None;
-                }
-                let (negated, pattern) = normalized
+            .filter_map(|source| {
+                // Split the negation marker before stripping `./`, otherwise
+                // `!./src/generated/**` keeps the `./` and silently stops
+                // matching the relative paths it is meant to exclude.
+                let slashed = source.replace('\\', "/");
+                let (negated, rest) = slashed
                     .strip_prefix('!')
-                    .map_or((false, normalized.as_str()), |pattern| (true, pattern));
+                    .map_or((false, slashed.as_str()), |rest| (true, rest));
+                let pattern = strip_leading_current_dir(rest);
                 if pattern.is_empty() {
                     return None;
                 }
-                GlobBuilder::new(pattern)
+                match GlobBuilder::new(pattern)
                     .literal_separator(true)
                     .backslash_escape(false)
                     .build()
-                    .ok()
-                    .map(|glob| GlobStep {
+                {
+                    Ok(glob) => Some(GlobStep {
                         negated,
                         matcher: glob.compile_matcher(),
-                    })
+                    }),
+                    Err(error) => {
+                        eprintln!("[vize] Ignoring invalid entry glob '{source}': {error}");
+                        None
+                    }
+                }
             })
             .collect::<Vec<_>>();
         let has_positive_source = steps.iter().any(|step| !step.negated);
@@ -199,7 +209,7 @@ impl GlobSequence {
         }
         let mut matched = !self.has_positive_source;
         for step in &self.steps {
-            if step.matcher.is_match(file) {
+            if matches_file_or_parent(&step.matcher, file) {
                 matched = !step.negated;
             }
         }
@@ -217,16 +227,22 @@ impl GlobSequence {
     }
 }
 
+/// Match `file` or any of its parent directories, so a directory-form pattern
+/// such as `src` or `src/pages` covers the whole subtree. `file` is already
+/// `/`-normalized, so ancestors are plain string slices.
 fn matches_file_or_parent(matcher: &GlobMatcher, file: &str) -> bool {
     if matcher.is_match(file) {
         return true;
     }
-    let mut parent = Path::new(file).parent();
-    while let Some(path) = parent.filter(|path| !path.as_os_str().is_empty()) {
-        if matcher.is_match(normalize_path(path).as_str()) {
+    let mut parent = file;
+    while let Some((head, _)) = parent.rsplit_once('/') {
+        if head.is_empty() {
+            break;
+        }
+        if matcher.is_match(head) {
             return true;
         }
-        parent = path.parent();
+        parent = head;
     }
     false
 }
@@ -266,12 +282,12 @@ fn normalize_lexically(path: &Path) -> PathBuf {
     normalized
 }
 
-fn normalize_pattern(pattern: &str) -> String {
-    let mut normalized: String = pattern.replace('\\', "/").into();
-    while let Some(stripped) = normalized.strip_prefix("./") {
-        normalized = stripped.into();
+fn strip_leading_current_dir(pattern: &str) -> &str {
+    let mut stripped = pattern;
+    while let Some(rest) = stripped.strip_prefix("./") {
+        stripped = rest;
     }
-    normalized
+    stripped
 }
 
 fn normalize_path(path: &Path) -> String {

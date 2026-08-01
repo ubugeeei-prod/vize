@@ -160,6 +160,7 @@ emit("update:current-step-index", 1)
         .output()
         .unwrap();
 
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
     let actual = serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap();
     assert_eq!(
         actual,
