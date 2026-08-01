@@ -42,7 +42,7 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Generate the element content
     if el.tag_type == ElementType::Component {
         ctx.use_helper(RuntimeHelper::CreateVNode);
-        ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
+        ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
         ctx.push("(");
         if !ctx.push_component_binding_tag(&el.tag) {
             ctx.use_helper(RuntimeHelper::ResolveComponent);
@@ -51,7 +51,7 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push(")");
     } else {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);
-        ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+        ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
         ctx.push("(\"");
         ctx.push(&el.tag);
         ctx.push("\"");

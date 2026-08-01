@@ -14,7 +14,7 @@ pub(super) fn generate_static_element_to_bytes(
     el: &ElementNode<'_>,
     out: &mut String,
 ) {
-    out.push_str(ctx.helper(RuntimeHelper::CreateElementVNode));
+    out.push_str(ctx.vnode_helper(RuntimeHelper::CreateElementVNode));
     out.push_str("(\"");
     out.push_str(el.tag.as_str());
     out.push('"');

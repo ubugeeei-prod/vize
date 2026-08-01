@@ -146,14 +146,14 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
         // Open block wrapper
         ctx.push("(");
-        ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
     }
 
     match el.tag_type {
         ElementType::Element => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
-            ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(\"");
             // Anchor the generated tag-name string back to the element's source
             // position (the `<` of the open tag). No-op without `source_map`.
@@ -256,10 +256,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ElementType::Component => {
             if is_memo_component {
                 ctx.use_helper(RuntimeHelper::CreateVNode);
-                ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
+                ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
             } else {
                 ctx.use_helper(RuntimeHelper::CreateBlock);
-                ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
+                ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
             }
             ctx.push("(");
 
@@ -485,7 +485,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ElementType::Template => {
             ctx.use_helper(RuntimeHelper::CreateElementBlock);
             ctx.use_helper(RuntimeHelper::Fragment);
-            ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
             ctx.push("(");
             ctx.push(ctx.helper(RuntimeHelper::Fragment));
             ctx.push(", null, ");

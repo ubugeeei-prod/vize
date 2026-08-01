@@ -115,9 +115,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
 
             ctx.push_pure();
-            let helper = ctx.helper(RuntimeHelper::CreateElementVNode);
             ctx.use_helper(RuntimeHelper::CreateElementVNode);
-            ctx.push(helper);
+            ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
             ctx.push("(\"");
             // Anchor the generated tag-name string back to the element's source
             // position (the `<` of the open tag). No-op without `source_map`.
@@ -218,9 +217,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
 
             ctx.push_pure();
-            let helper = ctx.helper(RuntimeHelper::CreateVNode);
             ctx.use_helper(RuntimeHelper::CreateVNode);
-            ctx.push(helper);
+            ctx.push_vnode_helper(RuntimeHelper::CreateVNode);
             ctx.push("(");
 
             // Check for dynamic component (<component :is="..."> or <Component is="...">)

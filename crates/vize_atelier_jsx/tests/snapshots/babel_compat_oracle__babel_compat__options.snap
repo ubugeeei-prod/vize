@@ -44,7 +44,7 @@ export function render(_ctx, _cache) {
 
 ## options/pragma
 ### verdict
-divergent: no pragma option
+equivalent
 ### source (jsx)
 const A = () => <div/>;
 ### babel options
@@ -52,9 +52,9 @@ const A = () => <div/>;
 ### babel
 const A = () => h("div", null, null);
 ### vize (vdom, babel compat)
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+const _openBlock = () => {}
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div"))
+  return (_openBlock(), h("div"))
 }
 
 ## options/merge_props_default

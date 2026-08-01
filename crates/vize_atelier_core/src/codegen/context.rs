@@ -1,5 +1,7 @@
 //! Code generation context and result types.
 
+mod vnode_factory;
+
 use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, Position, RuntimeHelper};
@@ -21,6 +23,9 @@ pub struct CodegenContext {
     pub(super) ssr: bool,
     /// Helper function alias map
     pub(super) helper_alias: fn(RuntimeHelper) -> &'static str,
+    /// Custom JSX vnode factory. When present, all vnode creation helpers are
+    /// emitted through this expression and omitted from the runtime import.
+    pub(super) vnode_factory: Option<String>,
     /// Runtime global name
     pub(super) runtime_global_name: String,
     /// Runtime module name
@@ -131,12 +136,21 @@ impl CodegenResultWithSections {
 impl CodegenContext {
     /// Create a new codegen context
     pub fn new(options: CodegenOptions) -> Self {
+        Self::new_with_vnode_factory(options, None)
+    }
+
+    /// Create a context that emits vnode creation through a custom factory.
+    pub(super) fn new_with_vnode_factory(
+        options: CodegenOptions,
+        vnode_factory: Option<&str>,
+    ) -> Self {
         let map_builder = options.source_map.then(SourceMapBuilder::new);
         Self {
             code: String::with_capacity(4096),
             indent_level: 0,
             ssr: options.ssr,
             helper_alias: default_helper_alias,
+            vnode_factory: vnode_factory.map(String::from),
             runtime_global_name: options.runtime_global_name.to_compact_string(),
             runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,

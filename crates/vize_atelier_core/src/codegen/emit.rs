@@ -21,12 +21,30 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     generate_with_sections(root, options).into_result()
 }
 
+/// Generate code while routing vnode creation through a caller-provided JSX
+/// factory expression instead of Vue's vnode/block helpers.
+pub fn generate_with_vnode_factory(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    vnode_factory: &str,
+) -> CodegenResult {
+    generate_with_sections_and_vnode_factory(root, options, Some(vnode_factory)).into_result()
+}
+
 /// Generate code from root AST and return emission-recorded section boundaries.
 pub fn generate_with_sections(
     root: &RootNode<'_>,
     options: CodegenOptions,
 ) -> CodegenResultWithSections {
-    let mut ctx = CodegenContext::new(options);
+    generate_with_sections_and_vnode_factory(root, options, None)
+}
+
+fn generate_with_sections_and_vnode_factory(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    vnode_factory: Option<&str>,
+) -> CodegenResultWithSections {
+    let mut ctx = CodegenContext::new_with_vnode_factory(options, vnode_factory);
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
@@ -68,9 +86,9 @@ pub fn generate_with_sections(
         ctx.use_helper(RuntimeHelper::CreateElementBlock);
         ctx.use_helper(RuntimeHelper::Fragment);
         ctx.push("(");
-        ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+        ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
         ctx.push("(), ");
-        ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+        ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
         ctx.push("(");
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
         ctx.push(", null, [");
@@ -121,6 +139,7 @@ pub fn generate_with_sections(
         "atelier.codegen.collect_hoist_helpers",
         collect_hoist_helpers(root, &mut all_helpers)
     );
+    all_helpers.retain(|helper| ctx.should_import_helper(*helper));
     all_helper_bits = retain_unique_helpers(&mut all_helpers);
 
     let mut ordered_helpers = Vec::with_capacity(all_helpers.len());
@@ -140,6 +159,9 @@ pub fn generate_with_sections(
         generate_preamble_from_helpers(&ctx, &ordered_helpers)
     );
     let imports_len = preamble.len();
+    if ctx.needs_open_block_shim() {
+        preamble.push_str("const _openBlock = () => {}\n");
+    }
 
     // Generate hoisted variable declarations (appended to preamble)
     let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));

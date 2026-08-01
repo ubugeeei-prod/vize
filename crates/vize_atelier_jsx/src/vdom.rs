@@ -11,7 +11,7 @@
 //! `_ctx.`. Static hoisting and handler caching default off for predictable,
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
-use vize_atelier_core::codegen::generate;
+use vize_atelier_core::codegen::{generate, generate_with_vnode_factory};
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
@@ -75,6 +75,12 @@ pub struct VdomOutput {
     pub diagnostics: Vec<JsxDiagnostic>,
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct VdomCompatOptions<'a> {
+    pub transform_on_helper: Option<&'a str>,
+    pub vnode_factory: Option<&'a str>,
+}
+
 impl VdomOutput {
     /// Whether any error-severity diagnostic was produced.
     pub fn has_errors(&self) -> bool {
@@ -104,7 +110,7 @@ pub fn compile_to_vdom(
             analysis,
             is_ts,
             &options,
-            None,
+            VdomCompatOptions::default(),
             &mut diagnostics,
         ));
     }
@@ -124,7 +130,7 @@ pub(crate) fn compile_root_to_vdom(
     analysis: &Croquis,
     is_ts: bool,
     options: &VdomCompileOptions,
-    transform_on_helper: Option<&str>,
+    compat: VdomCompatOptions<'_>,
     diagnostics: &mut Vec<JsxDiagnostic>,
 ) -> VdomComponent {
     let LoweredRoot {
@@ -171,9 +177,12 @@ pub(crate) fn compile_root_to_vdom(
         scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..Default::default()
     };
-    let result = generate(&root, codegen_opts);
+    let result = match compat.vnode_factory {
+        Some(factory) => generate_with_vnode_factory(&root, codegen_opts, factory),
+        None => generate(&root, codegen_opts),
+    };
     let mut preamble = result.preamble;
-    if let Some(helper) = transform_on_helper
+    if let Some(helper) = compat.transform_on_helper
         && result.code.contains(helper)
     {
         if !preamble.is_empty() && !preamble.ends_with('\n') {

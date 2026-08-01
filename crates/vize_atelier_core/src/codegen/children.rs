@@ -279,7 +279,7 @@ fn generate_cached_static_element(ctx: &mut CodegenContext, el: &ElementNode<'_>
 /// whose children are plain recursive `createElementVNode` calls.
 fn generate_cached_static_vnode(ctx: &mut CodegenContext, el: &ElementNode<'_>, cached: bool) {
     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-    ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
     ctx.push("(\"");
     ctx.push(&el.tag);
     ctx.push("\"");

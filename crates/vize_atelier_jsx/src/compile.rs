@@ -8,6 +8,7 @@ mod render_exports;
 #[cfg(test)]
 mod tests;
 
+use oxc_allocator::Allocator;
 use vize_carton::{Bump, FxHashSet, String};
 use vize_croquis::Croquis;
 
@@ -16,7 +17,7 @@ use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::ssr::compile_lowered_root_to_ssr;
 use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
-use crate::vdom::{VdomCompileOptions, compile_root_to_vdom};
+use crate::vdom::{VdomCompatOptions, VdomCompileOptions, compile_root_to_vdom};
 use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
 pub use component::JsxComponent;
@@ -238,6 +239,23 @@ pub fn compile_jsx_with_babel_options(
     config: &JsxCompileConfig,
     babel_options: &BabelJsxOptions,
 ) -> JsxCompileOutput {
+    compile_jsx_with_babel_pragma(bump, source, lang, config, babel_options, None)
+}
+
+/// Compile JSX/TSX with an optional Babel-compatible vnode factory pragma.
+///
+/// This additive entry point keeps [`BabelJsxOptions`] constructible for
+/// existing callers while exposing Babel's string-valued `pragma` option. An
+/// empty pragma has the same meaning as Babel's default. The option is inert in
+/// native compatibility mode, SSR, and Vapor output.
+pub fn compile_jsx_with_babel_pragma(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    pragma: Option<&str>,
+) -> JsxCompileOutput {
     let transform_on_helper =
         (config.compat.is_babel() && babel_options.transform_on && !config.ssr)
             .then(|| collision_free_transform_on_helper(source));
@@ -251,6 +269,27 @@ pub fn compile_jsx_with_babel_options(
     );
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
+    let has_vdom_root = !config.ssr
+        && lowered
+            .roots
+            .iter()
+            .any(|root| resolve_mode(root.mode, config.default_mode) == JsxOutputMode::Vdom);
+    let vnode_factory = pragma
+        .map(str::trim)
+        .filter(|pragma| !pragma.is_empty())
+        .filter(|_| config.compat.is_babel() && has_vdom_root)
+        .and_then(|pragma| {
+            if valid_pragma_expression(pragma) {
+                Some(pragma)
+            } else {
+                diagnostics.push(JsxDiagnostic::error(
+                    "Babel JSX pragma must be a valid JavaScript expression",
+                    0,
+                    0,
+                ));
+                None
+            }
+        });
 
     // Move the analysis into the arena so the transforms can borrow it.
     let analysis: &Croquis = &*bump.alloc(lowered.analysis);
@@ -295,7 +334,10 @@ pub fn compile_jsx_with_babel_options(
                     analysis,
                     is_ts,
                     &config.vdom,
-                    transform_on_helper.as_deref(),
+                    VdomCompatOptions {
+                        transform_on_helper: transform_on_helper.as_deref(),
+                        vnode_factory,
+                    },
                     &mut diagnostics,
                 )),
                 JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
@@ -314,6 +356,14 @@ pub fn compile_jsx_with_babel_options(
         source: String::from(source),
         diagnostics,
     }
+}
+
+fn valid_pragma_expression(pragma: &str) -> bool {
+    let mut probe = String::from("const __vize_pragma = (");
+    probe.push_str(pragma);
+    probe.push_str(");");
+    let allocator = Allocator::default();
+    !crate::parse_module(&allocator, probe.as_str(), JsxLang::Jsx).has_errors()
 }
 
 /// Babel allocates a fresh helper binding when the source already declares

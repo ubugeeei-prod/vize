@@ -69,13 +69,13 @@ fn generate_for_inner(
     };
 
     ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     if is_stable {
         ctx.push("(), ");
     } else {
         ctx.push("(true), ");
     }
-    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     if let Some(generate_key) = generate_fragment_key {

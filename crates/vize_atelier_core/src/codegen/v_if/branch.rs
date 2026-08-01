@@ -166,9 +166,9 @@ fn generate_if_branch_component(
     let prev_skip_scope_id = ctx.skip_scope_id;
     ctx.use_helper(RuntimeHelper::CreateBlock);
     ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
-    ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
+    ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
     ctx.push("(");
     // Generate component name
     // Handle dynamic component (<component :is="..."> / <Component :is="...">)
@@ -341,9 +341,9 @@ fn generate_if_branch_element(
 
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
-    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(\"");
     ctx.push(el.tag.as_str());
     ctx.push("\"");
@@ -418,9 +418,9 @@ fn generate_if_branch_template_fragment(
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
-    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     ctx.push(", { key: ");
@@ -439,9 +439,9 @@ fn generate_if_branch_fragment(
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
     ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
     ctx.push("(), ");
-    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
     ctx.push(", { key: ");

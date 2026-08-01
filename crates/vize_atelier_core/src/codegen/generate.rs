@@ -105,17 +105,17 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
     // Block nodes use openBlock + createBlock/createElementBlock
     if vnode.is_block {
         out.push('(');
-        out.push_str(ctx.helper(RuntimeHelper::OpenBlock));
+        out.push_str(ctx.vnode_helper(RuntimeHelper::OpenBlock));
         out.push_str("(), ");
         if vnode.is_component {
-            out.push_str(ctx.helper(RuntimeHelper::CreateBlock));
+            out.push_str(ctx.vnode_helper(RuntimeHelper::CreateBlock));
         } else {
-            out.push_str(ctx.helper(RuntimeHelper::CreateElementBlock));
+            out.push_str(ctx.vnode_helper(RuntimeHelper::CreateElementBlock));
         }
     } else if vnode.is_component {
-        out.push_str(ctx.helper(RuntimeHelper::CreateVNode));
+        out.push_str(ctx.vnode_helper(RuntimeHelper::CreateVNode));
     } else {
-        out.push_str(ctx.helper(RuntimeHelper::CreateElementVNode));
+        out.push_str(ctx.vnode_helper(RuntimeHelper::CreateElementVNode));
     }
     out.push('(');
 

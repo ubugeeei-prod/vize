@@ -92,15 +92,15 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.use_helper(RuntimeHelper::Fragment);
                     ctx.push("(");
-                    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
                     ctx.push("(), ");
-                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
                 } else {
                     // Stable fragment: use createElementVNode without block wrapper
                     ctx.use_helper(RuntimeHelper::CreateElementVNode);
-                    ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateElementVNode);
                     ctx.push("(\"");
                     let node_el = unwrapped_child.unwrap_or(el);
                     ctx.push(&node_el.tag);
@@ -179,13 +179,13 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Dynamic list: wrap in block
                 ctx.use_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(");
-                ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+                ctx.push_vnode_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(), ");
 
                 if is_component {
                     // Component: use createBlock
                     ctx.use_helper(RuntimeHelper::CreateBlock);
-                    ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateBlock);
                     ctx.push("(");
                     // Handle dynamic component
                     if is_dynamic {
@@ -233,20 +233,20 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     // Template with multiple children: use Fragment
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
                     ctx.use_helper(RuntimeHelper::Fragment);
-                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(");
                     ctx.push(ctx.helper(RuntimeHelper::Fragment));
                 } else if let Some(child_el) = unwrapped_child {
                     // Template with single child: unwrap to child element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
-                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
                     ctx.push(&child_el.tag);
                     ctx.push("\"");
                 } else {
                     // Regular element
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
-                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
                     ctx.push("(\"");
                     ctx.push(&el.tag);
                     ctx.push("\"");
