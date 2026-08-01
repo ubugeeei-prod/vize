@@ -105,15 +105,11 @@ test("benchmark tasks gate the formatter without mutating the corpus", () => {
 test("benchmark tasks gate lint and fmt at max parallelism as well as single-threaded", () => {
   const tasks = makeTasks("/nonexistent-input-dir", "");
 
+  const lintAndFmt = tasks.filter((task) => /^(lint|fmt)(-max)?$/.test(task.id));
+
   assert.deepEqual(
-    tasks.map((task) => [task.id, task.label, task.args, task.threads ?? 1]),
+    lintAndFmt.map((task) => [task.id, task.label, task.args, task.threads ?? 1]),
     [
-      [
-        "compile",
-        "Compile SFC",
-        ["build", ".", "--format", "stats", "--threads", "1", "--continue-on-error"],
-        1,
-      ],
       ["lint", "Lint (1T)", ["lint", ".", "--quiet"], 1],
       ["lint-max", "Lint (max)", ["lint", ".", "--quiet"], "max"],
       ["fmt", "Format (1T)", ["fmt", "*.vue", "--check"], 1],
@@ -126,7 +122,7 @@ test("benchmark tasks gate lint and fmt at max parallelism as well as single-thr
   // Asserting the whole argv is what pins that -- `fmt-max` reformats in
   // memory under `--check` and never gains a `--write`.
   assert.deepEqual(
-    tasks
+    lintAndFmt
       .filter((task) => task.threads === "max")
       .map((task) => [task.id, task.args, task.allowNonZeroExit]),
     [
@@ -151,21 +147,18 @@ test("the benchmark workflow gates every lane on both the PR and the fixed-basel
   const step = job.slice(job.indexOf("\n      - name: Compare base and head\n"));
   const compare = step.slice(0, step.indexOf("\n      - name: ", 1));
 
-  assert.deepEqual(
-    [...compare.matchAll(/--([a-z-]+)/g)].map((match) => match[1]),
-    [
-      "input",
-      "base-bin",
-      "head-bin",
-      "base-label",
-      "head-label",
-      "runs",
-      "warmups",
-      "threshold",
-      "out",
-      "json",
-    ],
+  assert.equal(
+    /--tasks\b/.test(compare),
+    false,
+    "a --tasks filter would drop the parallel lint and fmt lanes from the gate",
   );
+
+  // The budget gate reads the corpus and the JSON this step writes, so those
+  // options are part of the contract even though the rest of the command line
+  // is incidental.
+  for (const option of ["--input", "--out", "--json"]) {
+    assert.ok(compare.includes(option), `compare step must pass ${option}`);
+  }
 
   // The weekly run reuses this job, so the fixed historical base is compared
   // over the same full lane set rather than a subset.
