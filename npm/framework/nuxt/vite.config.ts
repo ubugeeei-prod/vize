@@ -11,11 +11,7 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: [
-      "src/index.ts",
-      "src/lint/index.ts",
-      "src/runtime/server/dev-stylesheet-links.ts",
-    ],
+    entry: ["src/index.ts", "src/lint/index.ts", "src/runtime/server/dev-stylesheet-links.ts"],
     format: "esm",
     dts: true,
     clean: true,

@@ -182,8 +182,5 @@ allowBuilds:
   core-js: false
   esbuild: true
   puppeteer: false
-  # Pulled in by the @nuxt/eslint oracle through eslint-plugin-import-x. Only
-  # the plugin's config shape is read, never its module resolution, so the
-  # native binding is not needed.
   unrs-resolver: false
   vue-demi: false

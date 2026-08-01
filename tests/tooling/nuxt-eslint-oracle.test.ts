@@ -71,5 +71,6 @@ test("inventory markdown documents exactly the corpus cases", () => {
     }
   }
 
-  assert.deepEqual([...documented].sort(), [...ids].sort());
+  const byId = (left: string, right: string) => left.localeCompare(right);
+  assert.deepEqual([...documented].sort(byId), [...ids].sort(byId));
 });

@@ -257,7 +257,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   assert.match(pnpmWorkspace, /^overrides:\n/m);
   assert.match(
     pnpmWorkspace,
-    /^allowBuilds:\n  "@parcel\/watcher": false\n  core-js: false\n  esbuild: true\n  puppeteer: false\n  vue-demi: false$/m,
+    /^allowBuilds:\n  "@parcel\/watcher": false\n  core-js: false\n  esbuild: true\n  puppeteer: false\n  unrs-resolver: false\n  vue-demi: false$/m,
   );
   assert.match(jsPackageJob, /vp run --workspace-root test:js/);
   assert.match(jsPackageJob, /key:\s*test-js-packages/);
