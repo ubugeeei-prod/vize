@@ -475,9 +475,8 @@ jobs:
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
-    # Nightly Rust branch coverage on the core compiler crates. Same trend
-    # rationale as source-coverage, so push-to-main + schedule, never per-PR.
-    if: ${{ github.event_name != 'pull_request' }}
+    # Run the strict nightly gate before merge as well as on main. A main-only
+    # gate allowed generic instrumentation growth to hide across many PRs.
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
