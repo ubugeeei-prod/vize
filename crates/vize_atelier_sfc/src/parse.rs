@@ -8,6 +8,8 @@ mod parse_sfc;
 mod template_boundary;
 
 #[cfg(test)]
+mod block_location_tests;
+#[cfg(test)]
 mod tests;
 
 pub use parse_sfc::parse_sfc;

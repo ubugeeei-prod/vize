@@ -114,6 +114,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         mut pos,
         content_start,
         start_line,
+        start_column,
         initial_last_newline,
         attrs,
     } = search;
@@ -137,7 +138,11 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
             &mut line,
             &mut last_newline,
         );
-        let col = content_end - last_newline + (end_pos - content_end);
+        let col = if line == start_line {
+            start_column + content_end - content_start
+        } else {
+            content_end - last_newline
+        };
         let content = Cow::Borrowed(&source[content_start..content_end]);
         return Ok(Some((
             tag_name,
@@ -261,7 +266,11 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
             depth -= 1;
             if depth == 0 {
                 let content_end = pos;
-                let col = pos - last_newline + (end_tag_pos - pos);
+                let col = if line == start_line {
+                    start_column + content_end - content_start
+                } else {
+                    content_end - last_newline
+                };
                 let content = Cow::Borrowed(&source[content_start..content_end]);
                 return Ok(Some((
                     tag_name,

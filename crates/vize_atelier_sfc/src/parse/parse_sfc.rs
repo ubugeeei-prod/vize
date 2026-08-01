@@ -101,7 +101,7 @@ pub fn parse_sfc<'a>(
         }
 
         // Parse block starting at '<'
-        match parse_block_fast(bytes, source, pos, line) {
+        match parse_block_fast(bytes, source, pos, line, column) {
             Ok(Some(block_result)) => {
                 let (
                     tag_name,
@@ -110,19 +110,27 @@ pub fn parse_sfc<'a>(
                     content_start,
                     content_end,
                     end_pos,
-                    end_line,
-                    end_col,
+                    content_end_line,
+                    content_end_column,
                 ) = block_result;
+
+                let mut content_start_line = line;
+                let mut content_start_column = column;
+                advance_line_column(
+                    &bytes[pos..content_start],
+                    &mut content_start_line,
+                    &mut content_start_column,
+                );
 
                 let loc = BlockLocation {
                     start: content_start,
                     end: content_end,
                     tag_start: pos,
                     tag_end: end_pos,
-                    start_line: line,
-                    start_column: column,
-                    end_line,
-                    end_column: end_col,
+                    start_line: content_start_line,
+                    start_column: content_start_column,
+                    end_line: content_end_line,
+                    end_column: content_end_column,
                 };
 
                 // Match tag name using byte comparison
@@ -220,8 +228,9 @@ pub fn parse_sfc<'a>(
                 }
 
                 pos = end_pos;
-                line = end_line;
-                column = end_col;
+                line = content_end_line;
+                column = content_end_column;
+                advance_line_column(&bytes[content_end..end_pos], &mut line, &mut column);
             }
             Ok(None) => {
                 pos += 1;

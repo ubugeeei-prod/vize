@@ -53,6 +53,35 @@ fn document_symbols_list_sfc_blocks_with_editor_labels() {
 }
 
 #[test]
+fn document_symbol_ranges_still_cover_multiline_block_tags() {
+    let service = service_with_options(options(&[("documentSymbols", true)]));
+    let server = service.inner();
+    let uri = uri("MultilineSymbol.vue");
+    open_vue(
+        server,
+        &uri,
+        "<template\n  lang=\"html\"\n>\nx\n</template>\n",
+    );
+
+    let response =
+        futures::executor::block_on(server.document_symbol(document_symbol_params(&uri)))
+            .unwrap()
+            .expect("document symbols should be available");
+    let DocumentSymbolResponse::Nested(symbols) = response else {
+        panic!("expected nested document symbols");
+    };
+
+    assert_eq!(symbols.len(), 1);
+    assert_eq!(
+        (symbols[0].range, symbols[0].selection_range),
+        (
+            Range::new(Position::new(0, 0), Position::new(4, 11)),
+            Range::new(Position::new(0, 1), Position::new(0, 9)),
+        )
+    );
+}
+
+#[test]
 fn folding_ranges_cover_multiline_sfc_blocks() {
     let service = service_with_options(options(&[("foldingRanges", true)]));
     let server = service.inner();

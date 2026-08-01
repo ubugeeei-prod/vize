@@ -395,16 +395,16 @@ pub struct BlockLocation {
     #[serde(default)]
     pub tag_end: usize,
 
-    /// Start line (1-based)
+    /// Line of `start`, the first content byte (1-based)
     pub start_line: usize,
 
-    /// Start column (1-based)
+    /// Column of `start`, the first content byte (1-based, byte-oriented)
     pub start_column: usize,
 
-    /// End line (1-based)
+    /// Line of `end`, the byte just after the content (1-based)
     pub end_line: usize,
 
-    /// End column (1-based)
+    /// Column of `end`, the byte just after the content (1-based, byte-oriented)
     pub end_column: usize,
 }
 

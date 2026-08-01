@@ -1,10 +1,12 @@
 mod compat;
+mod end;
 
 use memchr::{memchr, memchr_iter, memmem};
 use std::borrow::Cow;
 use vize_carton::{FxHashMap, String, cstr};
 
 use compat::{can_start_string_literal, is_void_block};
+use end::find_block_end;
 
 // Tag name bytes for fast comparison
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
@@ -19,8 +21,8 @@ pub(super) type BlockParseOutput<'a> = (
     usize,          // content start
     usize,          // content end
     usize,          // end position
-    usize,          // end line
-    usize,          // end column
+    usize,          // content end line
+    usize,          // content end column
 );
 pub(super) type BlockParseError = (&'static str, String);
 pub(super) type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
@@ -32,6 +34,7 @@ pub(super) struct BlockEndSearch<'a> {
     pub(super) pos: usize,
     pub(super) content_start: usize,
     pub(super) start_line: usize,
+    pub(super) start_column: usize,
     pub(super) initial_last_newline: usize,
     pub(super) attrs: BlockAttrs<'a>,
 }
@@ -74,6 +77,34 @@ pub(super) fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_new
     for offset in memchr_iter(b'\n', bytes) {
         *line += 1;
         *last_newline = base + offset;
+    }
+}
+
+#[inline]
+fn position_after(bytes: &[u8], line: usize, column: usize) -> (usize, usize) {
+    let mut end_line = line;
+    let mut last_newline = None;
+    for offset in memchr_iter(b'\n', bytes) {
+        end_line += 1;
+        last_newline = Some(offset);
+    }
+    let end_column = last_newline.map_or(column + bytes.len(), |offset| bytes.len() - offset);
+    (end_line, end_column)
+}
+
+#[inline]
+fn content_end_column(
+    content_start: usize,
+    start_line: usize,
+    start_column: usize,
+    content_end: usize,
+    end_line: usize,
+    last_newline: usize,
+) -> usize {
+    if end_line == start_line {
+        start_column + content_end - content_start
+    } else {
+        content_end - last_newline
     }
 }
 
@@ -339,6 +370,7 @@ pub(super) fn parse_block_fast<'a>(
     source: &'a str,
     start: usize,
     start_line: usize,
+    start_column: usize,
 ) -> BlockParseResult<'a> {
     // This parser intentionally works on byte slices and returns borrowed `Cow`
     // values. SFC parsing sits on every compile/lint/check path, so avoiding
@@ -474,6 +506,8 @@ pub(super) fn parse_block_fast<'a>(
             ));
         }
         pos += 1;
+        let (content_line, content_column) =
+            position_after(&bytes[start..pos], start_line, start_column);
         return Ok(Some((
             tag_name,
             attrs,
@@ -481,8 +515,8 @@ pub(super) fn parse_block_fast<'a>(
             pos,
             pos,
             pos,
-            start_line,
-            pos - start,
+            content_line,
+            content_column,
         )));
     }
 
@@ -497,6 +531,8 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     let content_start = pos;
+    let (content_start_line, content_start_column) =
+        position_after(&bytes[start..content_start], start_line, start_column);
 
     if is_void_block(tag_name) {
         return Ok(Some((
@@ -506,14 +542,14 @@ pub(super) fn parse_block_fast<'a>(
             content_start,
             content_start,
             pos,
-            start_line,
-            pos - start,
+            content_start_line,
+            content_start_column,
         )));
     }
 
     // Find closing tag based on tag type
-    let mut line = start_line;
-    let mut last_newline = start;
+    let mut line = content_start_line;
+    let mut last_newline = content_start;
 
     // Handle known tags with static closing tags
     if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
@@ -523,8 +559,9 @@ pub(super) fn parse_block_fast<'a>(
             tag_name,
             pos,
             content_start,
-            start_line,
-            initial_last_newline: start,
+            start_line: content_start_line,
+            start_column: content_start_column,
+            initial_last_newline: content_start,
             attrs,
         });
     }
@@ -536,8 +573,9 @@ pub(super) fn parse_block_fast<'a>(
             tag_name,
             pos,
             content_start,
-            start_line,
-            initial_last_newline: start,
+            start_line: content_start_line,
+            start_column: content_start_column,
+            initial_last_newline: content_start,
             attrs,
         });
     }
@@ -550,7 +588,8 @@ pub(super) fn parse_block_fast<'a>(
             tag_name,
             pos,
             content_start,
-            start_line,
+            start_line: content_start_line,
+            start_column: content_start_column,
             initial_last_newline: content_start,
             attrs,
         });
@@ -643,7 +682,14 @@ pub(super) fn parse_block_fast<'a>(
             && let Some(end_tag_pos) = find_closing_tag_end(bytes, pos, len, tag_name)
         {
             let content_end = pos;
-            let col = pos - last_newline + (end_tag_pos - pos);
+            let col = content_end_column(
+                content_start,
+                content_start_line,
+                content_start_column,
+                content_end,
+                line,
+                last_newline,
+            );
             let content = Cow::Borrowed(&source[content_start..content_end]);
             return Ok(Some((
                 tag_name,
@@ -659,63 +705,6 @@ pub(super) fn parse_block_fast<'a>(
 
         prev_significant_char = b;
         pos += 1;
-    }
-
-    Err(build_malformed_error(
-        tag_name,
-        "the closing tag is missing",
-    ))
-}
-
-/// Find the end of a raw block by jumping between `<` bytes.
-fn find_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
-    let BlockEndSearch {
-        bytes,
-        source,
-        tag_name,
-        mut pos,
-        content_start,
-        start_line,
-        initial_last_newline,
-        attrs,
-    } = search;
-    let len = bytes.len();
-    let mut line = start_line;
-    let mut last_newline = initial_last_newline;
-
-    while pos < len {
-        if let Some(lt_offset) = memchr(b'<', &bytes[pos..]) {
-            // Count newlines
-            advance_line(
-                &bytes[pos..pos + lt_offset],
-                pos,
-                &mut line,
-                &mut last_newline,
-            );
-            pos += lt_offset;
-
-            // Check for closing tag (allows optional whitespace before '>')
-            if bytes[pos] == b'<'
-                && let Some(end_tag_pos) = find_closing_tag_end(bytes, pos, len, tag_name)
-            {
-                let content_end = pos;
-                let col = pos - last_newline + (end_tag_pos - pos);
-                let content = Cow::Borrowed(&source[content_start..content_end]);
-                return Ok(Some((
-                    tag_name,
-                    attrs,
-                    content,
-                    content_start,
-                    content_end,
-                    end_tag_pos,
-                    line,
-                    col,
-                )));
-            }
-            pos += 1;
-        } else {
-            break;
-        }
     }
 
     Err(build_malformed_error(
