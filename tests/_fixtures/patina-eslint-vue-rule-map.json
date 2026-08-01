@@ -6,8 +6,8 @@
     "ruleCount": 252
   },
   "summary": {
-    "mapped": 120,
-    "unimplemented": 132
+    "mapped": 121,
+    "unimplemented": 131
   },
   "entries": {
     "vue/array-bracket-newline": {
@@ -439,8 +439,8 @@
       "patinaRule": "script/no-multiple-slot-args"
     },
     "vue/no-multiple-template-root": {
-      "status": "unimplemented",
-      "issue": 3223
+      "status": "mapped",
+      "patinaRule": "vue/no-multiple-template-root"
     },
     "vue/no-mutating-props": {
       "status": "mapped",

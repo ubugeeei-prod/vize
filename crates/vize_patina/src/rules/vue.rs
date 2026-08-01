@@ -62,6 +62,7 @@ mod html_quotes;
 mod mustache_interpolation_spacing;
 mod no_lone_template;
 mod no_multi_spaces;
+mod no_multiple_template_root;
 mod sfc_element_order;
 mod v_on_style;
 mod v_slot_style;
@@ -145,6 +146,7 @@ pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
 pub use mustache_interpolation_spacing::MustacheInterpolationSpacing;
 pub use no_multi_spaces::NoMultiSpaces;
+pub use no_multiple_template_root::NoMultipleTemplateRoot;
 pub use prop_name_casing::PropNameCasing;
 pub use v_on_style::{VOnStyle, VOnStyleOption};
 pub use v_slot_style::VSlotStyle;
@@ -225,13 +227,15 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
     registry.register(Box::new(NoInvalidHtmlAttribute));
 }
 
-/// Register Vue migration rules as explicit opt-in rules.
+/// Register Vue rules that require explicit opt-in.
 ///
-/// These flag deprecated Vue 2 template syntax that Vue 3 removed. They are
-/// opt-in (not part of any preset) so they only run when a project adopting the
-/// migration pack asks for them, and each rule gates itself on the default Vue 3
-/// dialect.
+/// This includes contextual contracts such as Nuxt's single-root pages and
+/// migration checks for deprecated Vue 2 syntax. Keeping them outside every
+/// preset avoids imposing those narrower contracts on general Vue 3 projects.
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    if !registry.has_rule("vue/no-multiple-template-root") {
+        registry.register(Box::new(NoMultipleTemplateRoot));
+    }
     if !registry.has_rule("vue/no-deprecated-v-on-native-modifier") {
         registry.register(Box::new(NoDeprecatedVOnNativeModifier));
     }

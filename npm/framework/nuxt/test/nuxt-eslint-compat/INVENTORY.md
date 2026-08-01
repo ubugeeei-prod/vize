@@ -33,7 +33,7 @@ overrides an earlier one — so it is part of the contract.
 | ---------------------- | --------------------------------------------------------- | ------------------------------------ | ---------------------------------------------- |
 | `nuxt/ignores`         | whole project                                             | — (7 ignore globs)                   | supported                                      |
 | `nuxt/setup`           | every linted file                                         | — (declares the `$fetch` global)     | supported                                      |
-| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | **unimplemented in Patina** (tracked by #3223) |
+| `nuxt/vue/single-root` | layouts, pages, server components                         | `vue/no-multiple-template-root`      | supported                                      |
 | `nuxt/rules`           | every linted file                                         | `nuxt/prefer-import-meta`            | not ported yet                                 |
 | `nuxt/pages`           | pages                                                     | `nuxt/no-page-meta-runtime-values`   | not ported yet                                 |
 | `nuxt/nuxt-config`     | `nuxt.config`                                             | `nuxt/no-nuxt-config-test-key`       | not ported yet                                 |

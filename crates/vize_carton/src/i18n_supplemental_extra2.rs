@@ -15,6 +15,37 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
 
 /// Extra supplemental translation entries: `(key, en, ja, zh)`.
 static ENTRIES: &[(&str, &str, &str, &str)] = &[
+    // vue/no-multiple-template-root
+    (
+        "vue/no-multiple-template-root.multiple_root",
+        "The template root requires exactly one element.",
+        "テンプレートのルートには要素が1つだけ必要です。",
+        "模板根节点必须恰好包含一个元素。",
+    ),
+    (
+        "vue/no-multiple-template-root.text_root",
+        "The template root requires an element rather than texts.",
+        "テンプレートのルートにはテキストではなく要素が必要です。",
+        "模板根节点需要元素而不是文本。",
+    ),
+    (
+        "vue/no-multiple-template-root.disallowed_element",
+        "The template root disallows '<{tag}>' elements.",
+        "テンプレートのルートでは '<{tag}>' 要素を使用できません。",
+        "模板根节点不允许 '<{tag}>' 元素。",
+    ),
+    (
+        "vue/no-multiple-template-root.disallowed_directive",
+        "The template root disallows 'v-for' directives.",
+        "テンプレートのルートでは 'v-for' ディレクティブを使用できません。",
+        "模板根节点不允许 'v-for' 指令。",
+    ),
+    (
+        "vue/no-multiple-template-root.help",
+        "Wrap the template in one rendered element; keep conditional branches in one v-if chain.",
+        "テンプレートを1つの描画要素で囲み、条件分岐は1つのv-ifチェーンにまとめてください。",
+        "请用一个渲染元素包裹模板，并将条件分支保留在同一个v-if链中。",
+    ),
     // vue/no-invalid-html-attribute
     (
         "vue/no-invalid-html-attribute.description",
