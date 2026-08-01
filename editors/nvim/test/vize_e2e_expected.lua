@@ -19,15 +19,21 @@ local authored_source = table.concat({
   "",
 }, "\n")
 
-local quick_fixed_source = authored_source:gsub("<Child  :count", "<Child :count", 1)
-local formatted_source = quick_fixed_source:gsub(
-  '<Child :count="total" />',
-  '  <Child :count="total" />',
-  1
-)
-local renamed_source = formatted_source
-  :gsub("const total =", "const quantity =", 1)
-  :gsub(':count="total"', ':count="quantity"', 1)
+-- Each derived source is one authored edit away from the previous stage. A
+-- silent zero-replacement `gsub` would leave the expectation equal to the
+-- previous stage and fail later under a misleading label, so every step
+-- asserts it actually matched the fixture text.
+local function replace_once(source, pattern, replacement)
+  local result, count = source:gsub(pattern, replacement, 1)
+  assert(count == 1, "expected fixture text not found: " .. pattern)
+  return result
+end
+
+local quick_fixed_source = replace_once(authored_source, "<Child  :count", "<Child :count")
+local formatted_source =
+  replace_once(quick_fixed_source, '<Child :count="total" />', '  <Child :count="total" />')
+local renamed_source = replace_once(formatted_source, "const total =", "const quantity =")
+renamed_source = replace_once(renamed_source, ':count="total"', ':count="quantity"')
 
 return {
   authored_source = authored_source,
