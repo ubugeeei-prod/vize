@@ -1,5 +1,6 @@
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
+import { setupNuxtLintChecker } from "./lint/checker/setup";
 import { setupNuxtLintConfigGeneration } from "./lint/generation";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
@@ -68,13 +69,12 @@ type NuxtWithBuilderOptions = {
     [key: string]: unknown;
   };
 };
-type VizeNuxtModuleContext = {
-  nuxt?: NuxtWithBuilderOptions;
-};
+type VizeNuxtModuleContext = { nuxt?: NuxtWithBuilderOptions };
 
 const moduleMeta = { name: "@vizejs/nuxt", configKey: "vize" } as const;
 
 const moduleDefaults = {
+  checker: false,
   lint: true,
   musea: false,
   nuxtMusea: { route: { path: "/" } },
@@ -88,13 +88,11 @@ function loadNuxtKit(): Promise<NuxtKit> {
 }
 
 async function addNuxtServerPlugin(plugin: string): Promise<void> {
-  const { addServerPlugin } = await loadNuxtKit();
-  addServerPlugin(plugin);
+  (await loadNuxtKit()).addServerPlugin(plugin);
 }
 
 async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
-  const { addVitePlugin } = await loadNuxtKit();
-  addVitePlugin(plugin as never);
+  (await loadNuxtKit()).addVitePlugin(plugin as never);
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
@@ -333,7 +331,8 @@ function patchNuxtAutoImportTransformPlugin(
 }
 
 async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuilderOptions) {
-  await setupNuxtLintConfigGeneration(options.lint, nuxt);
+  const lintGeneration = await setupNuxtLintConfigGeneration(options.lint, nuxt);
+  await setupNuxtLintChecker(options.checker, nuxt, lintGeneration);
   const resolver = createNuxtModuleResolver();
   const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
   const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
@@ -672,6 +671,7 @@ export type {
   VizeNuxtCompatibilityOptions,
   VizeNuxtCompilerOptions,
   VizeNuxtDevOptions,
+  VizeNuxtLintCheckerOptions,
   VizeNuxtLintOptions,
   VizeNuxtMajorVersion,
   VizeNuxtOptions,

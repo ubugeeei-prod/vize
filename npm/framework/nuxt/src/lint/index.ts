@@ -10,6 +10,18 @@ export {
   type ResolveNuxtLintConfigAddons,
 } from "./addons.ts";
 export {
+  setupNuxtLintChecker,
+  type NuxtLintCheckerSetup,
+  type NuxtLintCheckerSetupDependencies,
+} from "./checker/setup.ts";
+export {
+  resolveNuxtLintCheckerOptions,
+  type ResolvedVizeNuxtLintCheckerOptions,
+  type VizeNuxtLintCheckerOptions,
+} from "./checker/options.ts";
+export { createNuxtLintCheckerVitePlugin } from "./checker/vite.ts";
+export { createNuxtLintCheckerWebpackPlugin } from "./checker/webpack.ts";
+export {
   toNuxtLintProjectState,
   type NuxtLintSourceOptions,
   type NuxtLintStateOverrides,

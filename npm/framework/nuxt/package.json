@@ -48,7 +48,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "pnpm --filter @vizejs/nuxt-lint-config build && pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "test": "pnpm --filter @vizejs/nuxt-lint-config build && pnpm build && node --test src/*.test.ts src/**/*.test.ts src/lint/checker/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
@@ -70,7 +70,13 @@
   },
   "peerDependencies": {
     "nuxt": "^2.16.0 || ^3.0.0 || ^4.0.0",
+    "oxlint": "^1.64.0",
     "vite": "^7.3.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "oxlint": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22"

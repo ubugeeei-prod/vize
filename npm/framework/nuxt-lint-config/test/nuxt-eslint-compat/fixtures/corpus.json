@@ -8,6 +8,32 @@
     "pluginVersion": "1.16.0"
   },
   "description": "Nuxt project states and rule cases whose @nuxt/eslint behaviour @vizejs/nuxt-lint-config, the Nuxt runtime emitter, and Vize Patina must reproduce. Project cases are materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "checkerCases": [
+    {
+      "id": "checker/default",
+      "description": "An empty checker object takes every portable upstream default.",
+      "checker": {}
+    },
+    {
+      "id": "checker/true",
+      "description": "checker: true is identical to an empty checker object.",
+      "checker": true
+    },
+    {
+      "id": "checker/all-explicit",
+      "description": "Every portable checker option passes through without being widened or dropped.",
+      "checker": {
+        "cache": false,
+        "include": ["src/**/*.vue", "server/**/*.ts"],
+        "exclude": ["vendor/**", "generated/**"],
+        "formatter": "json",
+        "lintOnStart": false,
+        "emitWarning": false,
+        "emitError": false,
+        "fix": true
+      }
+    }
+  ],
   "noPageMetaRuntimeValuesCases": [
     {
       "id": "no-page-meta-runtime-values/eager-context-apis",

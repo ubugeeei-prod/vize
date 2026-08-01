@@ -78,6 +78,7 @@ void test("Nuxt module entry runs in a Nuxt 2 webpack-style context", async () =
     name: "@vizejs/nuxt",
     configKey: "vize",
   });
+  assert.equal(nuxtModule.defaults.checker, false);
   assert.deepEqual(
     {
       hookNames,

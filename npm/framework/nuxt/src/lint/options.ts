@@ -1,4 +1,5 @@
 import type { NuxtLintFeatures } from "@vizejs/nuxt-lint-config";
+export type { VizeNuxtLintCheckerOptions } from "./checker/options.ts";
 
 /** Options for the generated Nuxt-aware oxlint configuration. */
 export interface VizeNuxtLintOptions extends NuxtLintFeatures {

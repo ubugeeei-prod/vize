@@ -84,6 +84,14 @@ the oracle.
 | `no-page-meta-runtime-values/function-parameters-are-lazy` | Function default parameters are lazy together with their bodies; an adjacent eager API still reports. |
 | `no-page-meta-runtime-values/optional-macro-call`          | Optional direct macro calls form a boundary; empty and identifier-only arguments stay valid.          |
 
+## Dev-server checker
+
+| Case                   | Behaviour                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `checker/default`      | An empty object resolves every portable upstream default, including `fix: false`, and always runs outside the main thread.      |
+| `checker/true`         | Boolean opt-in resolves identically to the empty object.                                                                        |
+| `checker/all-explicit` | `cache`, globs, formatter, startup, warning/error emission and fixing all pass through exactly; worker execution stays enabled. |
+
 ## Intentional divergences
 
 | Difference                                                                              | Why                                                                                                                                                                                                                                                                                    |
@@ -92,6 +100,9 @@ the oracle.
 | `features` carries only feature keys                                                    | Upstream serialises the whole module option object into `features`, so `configFile`, `autoInit`, `rootDir` and `devtools` leak into it. Vize keeps module options and feature flags separate.                                                                                          |
 | Auto-init creates an `oxlint.config.mts` loader                                         | Oxlint 1.64 does not inherit `globals` from a JSON config in `extends`. The loader returns the current generated object directly and rebases its JS plugin URL, preserving `$fetch` and addon globals.                                                                                 |
 | The addon hook is `vize:lint:config:addons` and contributes engine-neutral config items | Upstream's `eslint:config:addons` contributes raw JavaScript and import statements. Those are ESLint implementation details and cannot be represented safely in an oxlint config; the Vize hook preserves ordered, async addon composition without accepting executable config source. |
+| `configType` and `eslintPath` are absent from checker options                           | They choose an ESLint implementation. Vize always runs oxlint + Patina, so neither setting has a meaningful equivalent.                                                                                                                                                                |
+| Checker `cache` means incremental target selection                                      | Oxlint needs no ESLint cache file. `true` lints only watched changes after startup; `false` reruns the full include set.                                                                                                                                                               |
+| Checker `formatter` output is engine-native                                             | Vize renders filtered oxlint diagnostics (`json`, `unix`, or a concise readable form) instead of loading ESLint formatter modules.                                                                                                                                                     |
 
 ## Directory defaults
 
@@ -148,3 +159,11 @@ How Nuxt project state reduces to the directory lists every glob is built from.
 `@nuxt/eslint-config`. The recording stores that probe's answer as
 `typeScriptDetected` so the offline test stays on the same branch as the
 recording rather than guessing.
+
+## Dev-server checker
+
+| Case                   | Behaviour                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `checker/default`      | An empty object resolves every portable upstream default, including `fix: false`, and always runs outside the main thread.      |
+| `checker/true`         | Boolean opt-in resolves identically to the empty object.                                                                        |
+| `checker/all-explicit` | `cache`, globs, formatter, startup, warning/error emission and fixing all pass through exactly; worker execution stays enabled. |

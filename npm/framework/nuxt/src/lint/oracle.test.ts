@@ -17,6 +17,10 @@ import {
   type NuxtLintConfigAddonNuxt,
   type NuxtLintImport,
 } from "./addons.ts";
+import {
+  resolveNuxtLintCheckerOptions,
+  type VizeNuxtLintCheckerOptions,
+} from "./checker/options.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 
 const compatDir = join(
@@ -45,6 +49,12 @@ function readJson<T>(...segments: string[]): T {
   return JSON.parse(readFileSync(join(compatDir, ...segments), "utf8")) as T;
 }
 
+interface CheckerCase {
+  id: string;
+  description: string;
+  checker: true | VizeNuxtLintCheckerOptions;
+}
+
 const corpus = readJson<{
   importGlobals: {
     id: string;
@@ -52,6 +62,7 @@ const corpus = readJson<{
     nuxt: NuxtLintImport[];
     nitro: NuxtLintImport[];
   };
+  checkerCases: CheckerCase[];
   cases: CorpusCase[];
 }>("fixtures", "corpus.json");
 const recording = readJson<{
@@ -60,6 +71,7 @@ const recording = readJson<{
     globals: string[];
     artifacts: { initial: string; regenerated: string };
   };
+  checkerOptions: Record<string, Record<string, unknown>>;
   cases: Record<string, RecordedCase>;
 }>("fixtures", "nuxt-eslint-output.json");
 
@@ -87,6 +99,17 @@ function projectState(entry: CorpusCase): NuxtLintProjectState {
       srcDir: join(ROOT_DIR, layer.srcDir),
     })),
   };
+}
+
+for (const entry of corpus.checkerCases) {
+  void test(`${entry.id}: resolved checker options match @nuxt/eslint in full`, () => {
+    const resolved = resolveNuxtLintCheckerOptions(entry.checker, {
+      buildDir: "/project/.nuxt",
+      srcDir: "/project/app",
+    });
+    assert.notEqual(resolved, false);
+    assert.deepEqual({ ...resolved, worker: true }, recording.checkerOptions[entry.id]);
+  });
 }
 
 void test(`${corpus.importGlobals.id}: globals and artifacts match @nuxt/eslint byte for byte`, async () => {

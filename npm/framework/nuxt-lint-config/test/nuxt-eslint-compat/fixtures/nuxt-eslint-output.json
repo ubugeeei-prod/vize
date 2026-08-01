@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
   "moduleVersion": "1.16.0",
   "configVersion": "1.16.0",
@@ -945,6 +945,41 @@
       "secondPassMessagesMatch": true,
       "secondPassOutput": "definePageMeta(); definePageMeta(runtimeMeta); definePageMeta?.({ title: ref() })",
       "secondPassFixed": false
+    }
+  },
+  "checkerOptions": {
+    "checker/default": {
+      "cache": true,
+      "include": ["/project/app/**/*.{js,jsx,ts,tsx,vue}"],
+      "exclude": ["**/node_modules/**", "/project/.nuxt"],
+      "formatter": "stylish",
+      "lintOnStart": true,
+      "emitWarning": true,
+      "emitError": true,
+      "fix": false,
+      "worker": true
+    },
+    "checker/true": {
+      "cache": true,
+      "include": ["/project/app/**/*.{js,jsx,ts,tsx,vue}"],
+      "exclude": ["**/node_modules/**", "/project/.nuxt"],
+      "formatter": "stylish",
+      "lintOnStart": true,
+      "emitWarning": true,
+      "emitError": true,
+      "fix": false,
+      "worker": true
+    },
+    "checker/all-explicit": {
+      "cache": false,
+      "include": ["src/**/*.vue", "server/**/*.ts"],
+      "exclude": ["vendor/**", "generated/**"],
+      "formatter": "json",
+      "lintOnStart": false,
+      "emitWarning": false,
+      "emitError": false,
+      "fix": true,
+      "worker": true
     }
   },
   "dirDefaults": {

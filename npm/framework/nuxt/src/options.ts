@@ -4,7 +4,7 @@ import type {
   VizeNuxtCompilerOptions,
   VizeNuxtVueVersion,
 } from "./compiler-options.ts";
-import type { VizeNuxtLintOptions } from "./lint/options.ts";
+import type { VizeNuxtLintCheckerOptions, VizeNuxtLintOptions } from "./lint/options.ts";
 import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, buildNuxtCompilerOptions } from "./utils.ts";
 
 export type {
@@ -12,7 +12,7 @@ export type {
   VizeNuxtCompilerOptions,
   VizeNuxtVueVersion,
 } from "./compiler-options.ts";
-export type { VizeNuxtLintOptions } from "./lint/options.ts";
+export type { VizeNuxtLintCheckerOptions, VizeNuxtLintOptions } from "./lint/options.ts";
 export { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE };
 
 export type VizeNuxtMajorVersion = 2 | 3 | 4;
@@ -184,6 +184,9 @@ export interface VizeNuxtOptions {
    * @default true
    */
   lint?: boolean | VizeNuxtLintOptions;
+
+  /** Run oxlint + Patina beside the dev server. @default false */
+  checker?: boolean | VizeNuxtLintCheckerOptions;
 
   /**
    * Musea gallery options.

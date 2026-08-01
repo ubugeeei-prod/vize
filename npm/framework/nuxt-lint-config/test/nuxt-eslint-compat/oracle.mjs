@@ -20,6 +20,8 @@
  *      in what order, over which globs. Produced by `@nuxt/eslint-config`.
  *   3. `importGlobals` — the complete ordered globals list emitted after both
  *      Nuxt and Nitro publish their auto-import registries.
+ *   4. `checkerOptions` — every engine-neutral checker option after upstream
+ *      defaults, plus its mandatory worker invariant.
  *
  * Rule cases separately record the real plugin's exact diagnostics and output,
  * plus a second application proving fix convergence or non-fixable stability.
@@ -34,6 +36,7 @@ import { fileURLToPath } from "node:url";
 
 import { renderNuxtOxlintConfig } from "../../../nuxt/src/lint/emitter.ts";
 import { buildNuxtLintPlan } from "../../src/plan.ts";
+import { recordCheckerOptions } from "./checker-oracle.mjs";
 import { recordNoPageMetaRuntimeValuesCases } from "./no-page-meta-runtime-values-oracle.mjs";
 import { recordPreferImportMetaCases } from "./prefer-import-meta-oracle.mjs";
 
@@ -215,9 +218,10 @@ export async function runOracle() {
   ]);
 
   const corpus = readCorpus();
-  const [preferImportMeta, noPageMetaRuntimeValues] = await Promise.all([
+  const [preferImportMeta, noPageMetaRuntimeValues, checkerOptions] = await Promise.all([
     recordPreferImportMetaCases(moduleEntry, corpus, packageVersionFrom),
     recordNoPageMetaRuntimeValuesCases(moduleEntry, corpus, packageVersionFrom),
+    recordCheckerOptions(moduleEntry, corpus.checkerCases),
   ]);
   if (preferImportMeta.pluginVersion !== noPageMetaRuntimeValues.pluginVersion) {
     throw new Error("Nuxt rule oracles resolved different @nuxt/eslint-plugin versions");
@@ -279,7 +283,7 @@ export async function runOracle() {
   );
 
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     description:
       "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
     moduleVersion: packageVersionFrom(moduleEntry),
@@ -298,6 +302,7 @@ export async function runOracle() {
     },
     preferImportMetaCases: preferImportMeta.cases,
     noPageMetaRuntimeValuesCases: noPageMetaRuntimeValues.cases,
+    checkerOptions,
     dirDefaults,
     cases,
   };

@@ -35,13 +35,14 @@ test("recorded output matches the installed @nuxt/eslint packages", async () => 
   const recomputed = await oracle.runOracle();
   const recorded = oracle.readRecorded();
 
-  assert.equal(recomputed.schemaVersion, 4);
-  assert.equal(recorded.schemaVersion, 4);
+  assert.equal(recomputed.schemaVersion, 5);
+  assert.equal(recorded.schemaVersion, 5);
   assert.equal(recomputed.moduleVersion, recorded.moduleVersion);
   assert.equal(recomputed.configVersion, recorded.configVersion);
   assert.equal(recomputed.pluginVersion, recorded.pluginVersion);
   assert.equal(recomputed.typeScriptDetected, recorded.typeScriptDetected);
   assert.deepEqual(recomputed.importGlobals, recorded.importGlobals);
+  assert.deepEqual(recomputed.checkerOptions, recorded.checkerOptions);
   assert.deepEqual(Object.keys(recomputed.cases).sort(), Object.keys(recorded.cases).sort());
   assert.deepEqual(recomputed.dirDefaults, recorded.dirDefaults);
   assert.deepEqual(recomputed.preferImportMetaCases, recorded.preferImportMetaCases);
@@ -71,6 +72,7 @@ test("inventory markdown documents exactly the corpus cases", () => {
   // exist — so a missing *or* an extra case row still fails.
   const ids = [
     corpus.importGlobals.id,
+    ...corpus.checkerCases.map((entry: { id: string }) => entry.id),
     ...corpus.preferImportMetaCases.map((entry: { id: string }) => entry.id),
     ...corpus.noPageMetaRuntimeValuesCases.map((entry: { id: string }) => entry.id),
     ...corpus.dirDefaultCases.map((entry: { id: string }) => entry.id),
