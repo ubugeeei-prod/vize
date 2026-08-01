@@ -116,6 +116,8 @@ jobs:
         run: |
           node --test --test-concurrency=1 \
             tests/tooling/real-project-syntax-highlighting.test.ts
+          test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.json"
+          test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
 
       - name: Check glyph formatter corpus properties
         env:
@@ -157,6 +159,12 @@ jobs:
               "$syntax_report" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No syntax-highlighter report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          syntax_divergence="$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
+          if [[ -f "$syntax_divergence" ]]; then
+            cat "$syntax_divergence" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No syntax-highlighter divergence report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
           mapfile -t divergence_reports < <(
             find "$FIXTURE_REPORT_DIR" -maxdepth 1 -type f \
