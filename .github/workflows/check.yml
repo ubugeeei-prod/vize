@@ -476,7 +476,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     # Run the strict nightly gate before merge as well as on main. A main-only
-    # gate allowed generic instrumentation growth to hide across many PRs.
+    # gate allowed stale instrumented artifacts to distort metrics across many PRs.
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:

@@ -66,7 +66,7 @@ const rustSourceCoverageCommand = [
 ].join(" && ");
 const rustBranchCoverageCommand = [
   "mkdir -p target/llvm-cov",
-  "cargo +nightly llvm-cov clean --workspace",
+  "cargo clean --target-dir target/llvm-cov-target",
   [
     "cargo +nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core",
     "--branch --json --summary-only",

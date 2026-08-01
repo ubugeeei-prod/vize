@@ -82,7 +82,7 @@ test("workspace build, test, and lint default to their local task graphs", () =>
 
 test("branch coverage reports every metric before enforcing thresholds", () => {
   const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
-  const cleanIndex = command.indexOf("cargo +nightly llvm-cov clean --workspace");
+  const cleanIndex = command.indexOf("cargo clean --target-dir target/llvm-cov-target");
   const reportIndex = command.indexOf("cargo +nightly llvm-cov -p vize_carton");
   const enforcementIndex = command.indexOf("enforce_rust_source_coverage");
 
