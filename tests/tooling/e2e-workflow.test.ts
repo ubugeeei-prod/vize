@@ -229,12 +229,18 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   }
 
   const upload = yamlStepBody(action, { name: "Upload app readiness artifacts" });
-  assert.match(upload, /if:\s*\$\{\{\s*cancelled\(\)\s*\|\|\s*failure\(\)/);
-  for (const id of ["check", "lint", "build", "dev"]) {
-    assert.match(upload, new RegExp(`steps\\.${id}\\.outcome\\s*==\\s*['"]failure['"]`));
-  }
+  // The upload is unconditional so green runs still export the regenerated readiness
+  // snapshots; `always()` subsumes the cancelled/failed suite paths it replaced.
+  assert.match(upload, /if:\s*\$\{\{\s*always\(\)\s*\}\}/);
   assert.match(upload, /name:\s*app-readiness-artifacts/);
   assert.match(upload, /target\/app-readiness-logs\//);
+  // upload-artifact globs have no brace expansion, so each snapshot is listed outright.
+  for (const app of ["elk", "misskey", "nuxt-ui", "reka-ui"]) {
+    assert.ok(
+      upload.includes(`tests/snapshots/check/__snapshots__/${app}-check.snap`),
+      `readiness artifacts must export the ${app} check snapshot`,
+    );
+  }
   assert.match(upload, /if-no-files-found:\s*ignore/);
   assert.match(action, /## Fast app readiness/);
   for (const [outcome, step] of [

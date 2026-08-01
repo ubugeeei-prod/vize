@@ -124,7 +124,10 @@ runs:
         name: app-readiness-artifacts
         path: |
           target/app-readiness-logs/
-          tests/snapshots/check/__snapshots__/{elk,misskey,nuxt-ui,reka-ui}-check.snap
+          tests/snapshots/check/__snapshots__/elk-check.snap
+          tests/snapshots/check/__snapshots__/misskey-check.snap
+          tests/snapshots/check/__snapshots__/nuxt-ui-check.snap
+          tests/snapshots/check/__snapshots__/reka-ui-check.snap
           tests/app/results/
           tests/app/screenshots/
           tests/app/playwright-report/
