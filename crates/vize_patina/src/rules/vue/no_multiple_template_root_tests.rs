@@ -2,8 +2,9 @@
 //!
 //! Each fragment was wrapped in an SFC `<template>`, linted through ESLint's
 //! flat `Linter` API with `vue-eslint-parser@10.4.1`, then translated back to
-//! template-local byte offsets. The ASCII fixtures make that translation
-//! exact and keep the expected upstream messages and spans reviewable offline.
+//! template-local byte offsets. Mostly ASCII fixtures make that translation
+//! exact and keep the expected upstream messages and spans reviewable offline;
+//! a multi-byte fixture pins the byte offsets real templates produce.
 
 use super::NoMultipleTemplateRoot;
 use crate::linter::{LintResult, Linter};
@@ -12,6 +13,7 @@ use crate::rule::RuleRegistry;
 use vize_carton::String;
 
 const RULE: &str = "vue/no-multiple-template-root";
+const PARSER: &str = "parser/template";
 const MULTIPLE_ROOT: &str = "The template root requires exactly one element.";
 const TEXT_ROOT: &str = "The template root requires an element rather than texts.";
 const V_FOR_ROOT: &str = "The template root disallows 'v-for' directives.";
@@ -80,6 +82,19 @@ fn eslint_vue_10_9_2_differential_roots() {
         (
             r#"<div></div><div v-else-if="a"></div>"#,
             &[(RULE, MULTIPLE_ROOT, 11, 36)],
+        ),
+        // Multi-byte attribute and text content must not shift the span.
+        (
+            r#"<div title="日本語">あ</div><section>x</section>"#,
+            &[(RULE, MULTIPLE_ROOT, 32, 52)],
+        ),
+        // An unclosed extra root falls back to its start-tag span.
+        (
+            "<div></div><section>",
+            &[
+                (PARSER, "Element is missing end tag.", 11, 20),
+                (RULE, MULTIPLE_ROOT, 11, 20),
+            ],
         ),
     ];
 
