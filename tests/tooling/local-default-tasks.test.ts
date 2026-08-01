@@ -82,16 +82,18 @@ test("workspace build, test, and lint default to their local task graphs", () =>
 
 test("branch coverage reports every metric before enforcing thresholds", () => {
   const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
-  const [reportCommand, enforcementCommand] = command.split(" && ").slice(1);
 
-  assert.match(reportCommand, /cargo \+nightly llvm-cov/);
-  assert.match(reportCommand, /--branch(?:\s|$)/);
-  assert.doesNotMatch(reportCommand, /--fail-under-/);
-  assert.match(enforcementCommand, /enforce_rust_source_coverage/);
-  assert.match(enforcementCommand, /--min-lines 55/);
-  assert.match(enforcementCommand, /--min-functions 70/);
-  assert.match(enforcementCommand, /--min-regions 55/);
-  assert.match(enforcementCommand, /--min-branches 40/);
+  assert.match(command, /cargo \+nightly llvm-cov/);
+  assert.match(command, /--branch(?:\s|$)/);
+  assert.doesNotMatch(command, /--fail-under-/);
+  assert.match(command, /enforce_rust_source_coverage/);
+  assert.match(command, /--min-lines 55/);
+  assert.match(command, /--min-functions 70/);
+  assert.match(command, /--min-regions 55/);
+  assert.match(command, /--min-branches 40/);
+  assert.ok(
+    command.indexOf("cargo +nightly llvm-cov") < command.indexOf("enforce_rust_source_coverage"),
+  );
 });
 
 test("Testbox commands fail with an actionable lifecycle when the box id is absent", () => {
