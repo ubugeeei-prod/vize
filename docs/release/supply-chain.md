@@ -119,7 +119,7 @@ The secret is exposed only to the final publish step. Never place the token in a
 workflow-level or job-level environment.
 
 Immediately after the first publish of `@vizejs/nuxt-lint-config`, configure the
-normal release workflow as its trusted publisher. Use npm CLI 11.10.0 or newer
+normal release workflow as its trusted publisher. Use npm CLI 11.17.0 or newer
 and authenticate as an npm owner with settings 2FA:
 
 ```bash
