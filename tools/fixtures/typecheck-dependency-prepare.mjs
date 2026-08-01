@@ -76,9 +76,12 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
     throw new Error(`${manager} install modified frozen lockfile ${performance.lockfile}`);
   }
   requireCleanFixture(fixtureRoot, "after dependency installation");
+  const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs);
+  validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
+  requireCleanFixture(fixtureRoot, "after baseline preparation");
   const artifact = {
     schema: "vize.fixtureTypecheckDependencyInstall",
-    version: 1,
+    version: 2,
     project: project.id,
     revision: project.revision,
     evidence: {
@@ -98,11 +101,39 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
       stdoutSha256: sha256(install.stdout ?? ""),
       stderrSha256: sha256(install.stderr ?? ""),
     },
+    baselinePrepare,
   };
   const artifactPath = join(args.outputDir, `${project.id}-typecheck-dependencies.json`);
   writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   process.stdout.write(`Wrote ${relative(repoRoot, artifactPath)}\n`);
   return artifact;
+}
+
+function runBaselinePrepare(project, fixtureRoot, timeoutMs) {
+  const command = project.typecheckPerformance.baseline?.prepare;
+  if (command == null) return null;
+  const startedAt = Date.now();
+  const prepared = spawnSync(command[0], command.slice(1), {
+    cwd: fixtureRoot,
+    encoding: "utf8",
+    env: { ...process.env, CI: "true", NUXT_TELEMETRY_DISABLED: "1" },
+    maxBuffer: 1024 * 1024 * 1024,
+    timeout: timeoutMs,
+  });
+  const durationMs = Date.now() - startedAt;
+  if (prepared.error != null) {
+    throw new Error(`baseline prepare failed to run: ${errorMessage(prepared.error)}`);
+  }
+  if (prepared.status !== 0) {
+    throw new Error(`baseline prepare exited with status ${prepared.status}`);
+  }
+  return {
+    command,
+    durationMs,
+    exitCode: prepared.status,
+    stdoutSha256: sha256(prepared.stdout ?? ""),
+    stderrSha256: sha256(prepared.stderr ?? ""),
+  };
 }
 
 function installArguments(manager) {

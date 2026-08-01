@@ -1,7 +1,11 @@
 import { statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
-export function validateTypecheckPerformanceTarget(project, fixtureRoot) {
+export function validateTypecheckPerformanceTarget(
+  project,
+  fixtureRoot,
+  { requireBaseline = false } = {},
+) {
   if (project.typecheckPerformance?.enabled !== true) return;
   if (project.typecheckPerformance.compareTo !== "vue-tsc") {
     invalid(project, "compareTo must be vue-tsc");
@@ -23,9 +27,40 @@ export function validateTypecheckPerformanceTarget(project, fixtureRoot) {
     invalid(project, `lockfile must be ${lockfiles[manager]} for ${manager}`);
   }
   requireFile(project, fixtureRoot, project.typecheckPerformance.lockfile, "lockfile");
+  const baseline = project.typecheckPerformance.baseline;
+  if (baseline == null) return;
+  requireRelativePath(project, baseline.tsconfig, "baseline tsconfig");
+  if (baseline.prepare == null) {
+    requireFile(project, fixtureRoot, baseline.tsconfig, "baseline tsconfig");
+    return;
+  }
+  if (requireBaseline) requireFile(project, fixtureRoot, baseline.tsconfig, "baseline tsconfig");
+  if (
+    !Array.isArray(baseline.prepare) ||
+    baseline.prepare.length < 2 ||
+    baseline.prepare[0] !== manager ||
+    baseline.prepare.some(
+      (argument) =>
+        typeof argument !== "string" || argument.length === 0 || argument.includes("\0"),
+    )
+  ) {
+    invalid(project, `baseline prepare must be a ${manager} command argument array`);
+  }
 }
 
 function requireFile(project, fixtureRoot, target, label) {
+  requireRelativePath(project, target, label);
+  const resolved = resolve(fixtureRoot, target);
+  let metadata;
+  try {
+    metadata = statSync(resolved);
+  } catch {
+    invalid(project, `${label} does not exist: ${target}`);
+  }
+  if (!metadata.isFile()) invalid(project, `${label} is not a file: ${target}`);
+}
+
+function requireRelativePath(project, target, label) {
   if (
     typeof target !== "string" ||
     target.length === 0 ||
@@ -37,14 +72,6 @@ function requireFile(project, fixtureRoot, target, label) {
   ) {
     invalid(project, `${label} must be a normalized relative path`);
   }
-  const resolved = resolve(fixtureRoot, target);
-  let metadata;
-  try {
-    metadata = statSync(resolved);
-  } catch {
-    invalid(project, `${label} does not exist: ${target}`);
-  }
-  if (!metadata.isFile()) invalid(project, `${label} is not a file: ${target}`);
 }
 
 function invalid(project, message) {

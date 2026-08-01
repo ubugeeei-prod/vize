@@ -11,8 +11,9 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
   const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
   const configDir = dirname(outputPath);
+  const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
   const config = {
-    extends: configRelativePath(configDir, resolve(fixtureRoot, project.tsconfig)),
+    extends: configRelativePath(configDir, resolve(fixtureRoot, sourceProject)),
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
@@ -21,7 +22,7 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   };
   const source = `${JSON.stringify(config, null, 2)}\n`;
   writeFileSync(outputPath, source);
-  return { path: outputPath, source };
+  return { path: outputPath, source, sourceProject };
 }
 
 function configRelativePath(from, to) {

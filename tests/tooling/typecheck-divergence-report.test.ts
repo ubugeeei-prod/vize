@@ -19,6 +19,18 @@ import {
 test("typecheck divergence report binds baseline evidence to the matrix artifact", () => {
   const fixture = setup();
   try {
+    fs.mkdirSync(path.join(fixture.fixtureRoot, ".generated"));
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, ".generated/tsconfig.json"),
+      '{"compilerOptions":{"strict":true}}\n',
+    );
+    updateJson(
+      fixture.registryPath,
+      (registry) =>
+        (registry.projects[0].typecheckPerformance.baseline = {
+          tsconfig: ".generated/tsconfig.json",
+        }),
+    );
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
     const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
@@ -35,14 +47,32 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 2);
+    assert.equal(artifact.version, 3);
+    assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
     assert.deepEqual(artifact.source, {
       payloadSha256: createHash("sha256").update(fs.readFileSync(fixture.outputPath)).digest("hex"),
       fileCount: 1,
     });
+    assert.deepEqual(Object.keys(artifact.baseline).sort(), [
+      "command",
+      "configSha256",
+      "coverage",
+      "durationMs",
+      "exitCode",
+      "sourceConfigSha256",
+      "stderrSha256",
+      "stdoutSha256",
+      "version",
+    ]);
     assert.equal(artifact.baseline.exitCode, 2);
     assert.equal(artifact.baseline.version, "3.3.4");
+    assert.equal(
+      artifact.baseline.sourceConfigSha256,
+      createHash("sha256")
+        .update(fs.readFileSync(path.join(fixture.fixtureRoot, ".generated/tsconfig.json")))
+        .digest("hex"),
+    );
     assert.deepEqual(artifact.baseline.coverage, {
       baselineVueFileCount: 1,
       baselineVueFilesSha256: createHash("sha256").update("src/App.vue\n").digest("hex"),
@@ -76,7 +106,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     });
     assert.deepEqual(readJson(baselineProject), {
       extends: path
-        .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "tsconfig.json"))
+        .relative(fixture.reportDir, path.join(fixture.fixtureRoot, ".generated/tsconfig.json"))
         .replaceAll("\\", "/"),
       files: [
         path

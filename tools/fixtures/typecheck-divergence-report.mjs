@@ -41,7 +41,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const project = selected[0];
   validatePerformanceConfig(project.typecheckPerformance);
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
-  validateTypecheckPerformanceTarget(project, fixtureRoot);
+  validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   const summary = readAndValidateSummary(args.reportDir, project);
   const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
   const vueTsc = resolveVueTsc(args.vueTscBin);
@@ -82,15 +82,16 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const budget = evaluateBudget(project.typecheckPerformance, divergence.summary, coverage);
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 2,
+    version: 3,
     project: project.id,
     revision: project.revision,
-    tsconfig: project.tsconfig,
+    tsconfig: baselineProject.sourceProject,
     evidence: summary.evidence,
     source: vizeRun.source,
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
       configSha256: sha256(baselineProject.source),
+      sourceConfigSha256: sha256(readFileSync(resolve(fixtureRoot, baselineProject.sourceProject))),
       version: vueTsc.version,
       durationMs,
       exitCode: baseline.status,

@@ -153,6 +153,7 @@ test("dependency prepare uses each pinned manager's immutable install command", 
       assert.equal(result.status, 0, result.stderr);
       const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
       assert.deepEqual(Object.keys(artifact).sort(), [
+        "baselinePrepare",
         "evidence",
         "install",
         "lockfile",
@@ -163,6 +164,8 @@ test("dependency prepare uses each pinned manager's immutable install command", 
         "version",
       ]);
       assert.equal(artifact.schema, "vize.fixtureTypecheckDependencyInstall");
+      assert.equal(artifact.version, 2);
+      assert.equal(artifact.baselinePrepare, null);
       assert.equal(artifact.evidence.commitSha, commitSha);
       assert.deepEqual(artifact.packageManager, {
         name: packageManager.name,
@@ -200,6 +203,49 @@ test("dependency prepare rejects a mismatched detected package manager version",
     assert.match(result.stderr, /Detected pnpm version 9.0.0 does not match 10.0.0/);
     assert.equal(fs.existsSync(fixture.invocationPath), false);
     assert.equal(fs.existsSync(artifactPath(fixture)), false);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("dependency prepare materializes and records an explicit generated baseline config", () => {
+  const fixture = setup();
+  try {
+    const project = {
+      ...fixture.project,
+      typecheckPerformance: {
+        ...fixture.project.typecheckPerformance,
+        baseline: {
+          tsconfig: ".generated/tsconfig.json",
+          prepare: ["pnpm", "exec", "fixture", "prepare"],
+        },
+      },
+    };
+    writeJson(fixture.registryPath, { projects: [project] });
+    git(fixture.fixtureRoot, ["add", "registry.json"]);
+    git(fixture.fixtureRoot, ["commit", "-qm", "configure generated baseline"]);
+    writeManager(
+      fixture.manager,
+      fixture.invocationPath,
+      "10.0.0",
+      `if (process.argv[2] === "install") { ${successBody} } else process.exit(9);`,
+    );
+    const failed = run(fixture);
+    assert.equal(failed.status, 1);
+    assert.match(failed.stderr, /baseline prepare exited with status 9/);
+    writeManager(
+      fixture.manager,
+      fixture.invocationPath,
+      "10.0.0",
+      `if (process.argv[2] === "install") { ${successBody} } else { fs.mkdirSync(".generated", { recursive: true }); fs.writeFileSync(".generated/tsconfig.json", "{}\\n"); process.stdout.write("prepared"); }`,
+    );
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
+    assert.deepEqual(artifact.baselinePrepare.command, ["pnpm", "exec", "fixture", "prepare"]);
+    assert.equal(artifact.baselinePrepare.exitCode, 0);
+    assert.match(artifact.baselinePrepare.stdoutSha256, /^[0-9a-f]{64}$/);
+    assert.equal(fs.existsSync(path.join(fixture.fixtureRoot, ".generated/tsconfig.json")), true);
   } finally {
     cleanup(fixture);
   }

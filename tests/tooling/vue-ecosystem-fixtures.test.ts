@@ -7,10 +7,8 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
-
 type FixtureKind = "application" | "component-library" | "library" | "tooling";
 type FixtureDiff = "e2e-vrt" | "curator-compare";
-
 interface FixtureProject {
   id: string;
   displayName: string;
@@ -18,10 +16,7 @@ interface FixtureProject {
   fixturePath: string;
   repository: string;
   revision: string;
-  license: {
-    spdx: string;
-    files: string[];
-  };
+  license: { spdx: string; files: string[] };
   vueGlobs: string[];
   expectedVueFileCount?: 0;
   tsconfig?: string;
@@ -33,6 +28,7 @@ interface FixtureProject {
     packageManager: "npm" | "pnpm" | "yarn";
     packageManagerVersion: string;
     lockfile: "pnpm-lock.yaml" | "yarn.lock";
+    baseline?: { tsconfig: string; prepare?: string[] };
     hangTimeoutMs: number;
     maxFalsePositiveRatio: number;
     maxFalseNegativeRatio: number;
@@ -168,7 +164,7 @@ test("Vue ecosystem registry covers the requested projects", () => {
   const registry = readRegistry();
   const ids = new Set(registry.projects.map((project) => project.id));
 
-  assert.equal(registry.schemaVersion, 3);
+  assert.equal(registry.schemaVersion, 4);
   for (const id of requestedFixtures) {
     assert.ok(ids.has(id), `${id} should be registered`);
   }
@@ -347,4 +343,8 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
     assert.ok((project?.typecheckPerformance?.maxFalseNegativeRatio ?? Infinity) <= 0.02);
     assert.match(benchCheck, new RegExp(`name:\\s*"${id}"`), `${id} should be in bench/check.ts`);
   }
+  const baseline = registry.projects.find((project) => project.id === "elk")?.typecheckPerformance
+    ?.baseline;
+  assert.equal(baseline?.tsconfig, ".nuxt/tsconfig.app.json");
+  assert.deepEqual(baseline?.prepare, ["pnpm", "exec", "nuxt", "prepare"]);
 });
