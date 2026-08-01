@@ -159,11 +159,7 @@ export declare function buildInspectorGraph(
 ): InspectorGraphNapi;
 
 /** Resolve effective lint rules and provenance using Vize's execution matcher. */
-export declare function inspectLintPlan(
-  plan: string,
-  root: string,
-  files: Array<string>,
-): string;
+export declare function inspectLintPlan(plan: string, root: string, files: Array<string>): string;
 
 /** Catalog entry for NAPI */
 export interface CatalogEntryNapi {
