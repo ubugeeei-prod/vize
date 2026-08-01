@@ -135,6 +135,9 @@ const onSave = (_value: string) => {}
   <UnionChild kind="text" />
   <UnionChild kind="wrong" />
   <UnionChild kind="text" text="ok" />
+
+  <!-- Multibyte text before the tag must not shift the reported column. -->
+  <span title="🎉✅" /><Child :count="1" />
 </template>
 "#,
             ),
@@ -185,6 +188,7 @@ const onSave = (_value: string) => {}
             ("src/Parent.vue", Some(2345), "44:4".to_string()),
             ("src/Parent.vue", Some(2345), "46:4".to_string()),
             ("src/Parent.vue", Some(2345), "49:4".to_string()),
+            ("src/Parent.vue", Some(2345), "54:24".to_string()),
         ],
         "exact vue-tsc positions: {snapshot:#?}"
     );
@@ -207,15 +211,14 @@ const onSave = (_value: string) => {}
             .contains("not assignable to type 'number'"),
         "the wrong spread prop must be a value mismatch: {snapshot:#?}"
     );
-    for line in [18, 27, 39] {
+    for (line, expected) in [
+        (18, "Property 'label' is missing"),
+        (27, "Property 'label' is missing"),
+        (39, "Property 'count' is missing"),
+    ] {
         assert!(
-            diagnostic_at(line)
-                .2
-                .contains("Property 'label' is missing")
-                || diagnostic_at(line)
-                    .2
-                    .contains("Property 'count' is missing"),
-            "line {line} must report its missing required prop: {snapshot:#?}"
+            diagnostic_at(line).2.contains(expected),
+            "line {line} must report `{expected}`: {snapshot:#?}"
         );
     }
     for line in [23, 31, 32, 33, 36, 37, 38, 40, 41, 42, 43, 44, 46] {
@@ -235,5 +238,13 @@ const onSave = (_value: string) => {}
     assert!(
         diagnostic_at(50).2.contains("not assignable") && !diagnostic_at(50).2.contains("missing"),
         "an invalid discriminant must remain the sole value diagnostic: {snapshot:#?}"
+    );
+    // Multibyte text before the tag must not shift the column: `🎉` is two UTF-16
+    // code units and `✅` is one, so the `Child` tag name sits at UTF-16 column 24
+    // (byte column 28, code-point column 23). Only the UTF-16 value is correct.
+    assert!(
+        diagnostic_at(54).2.starts_with("54:24:")
+            && diagnostic_at(54).2.contains("Property 'label' is missing"),
+        "a multibyte prefix must keep the reported column in UTF-16 units: {snapshot:#?}"
     );
 }
