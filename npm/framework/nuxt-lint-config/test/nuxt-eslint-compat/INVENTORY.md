@@ -71,18 +71,18 @@ the oracle.
 
 ## `nuxt/no-page-meta-runtime-values` rule cases
 
-| Case                                                           | Behaviour                                                                                                  |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `no-page-meta-runtime-values/eager-context-apis`               | All 30 direct context APIs pinned by upstream report at the eager macro level.                             |
-| `no-page-meta-runtime-values/composable-name-boundaries`       | Only direct identifiers matching `/^use[A-Z]/` report beyond the fixed API list.                           |
-| `no-page-meta-runtime-values/this-and-await`                    | Eager `this` and complete `await` expressions report; a context call below `await` also reports.           |
-| `no-page-meta-runtime-values/callbacks-are-lazy`                | Arrow, function-expression, and object-method bodies admit runtime values, `this`, and `await`.            |
-| `no-page-meta-runtime-values/direct-callee-only`                | Member, sequence, and `new` callees stay valid; optional and nested direct calls retain diagnostics.       |
-| `no-page-meta-runtime-values/shadowed-identifiers`              | Shadowed API and composable identifiers still report because the upstream rule is syntax-only.            |
-| `no-page-meta-runtime-values/macro-boundaries`                  | Direct sequential macros form boundaries; outside values and member/misspelled macro callees do not.      |
-| `no-page-meta-runtime-values/eager-nested-structures`           | Computed keys, arrays, spreads, nested objects, and nested macro arguments stay eager.                     |
-| `no-page-meta-runtime-values/function-parameters-are-lazy`      | Function default parameters are lazy together with their bodies; an adjacent eager API still reports.     |
-| `no-page-meta-runtime-values/optional-macro-call`               | Optional direct macro calls form a boundary; empty and identifier-only arguments stay valid.              |
+| Case                                                       | Behaviour                                                                                             |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `no-page-meta-runtime-values/eager-context-apis`           | All 30 direct context APIs pinned by upstream report at the eager macro level.                        |
+| `no-page-meta-runtime-values/composable-name-boundaries`   | Only direct identifiers matching `/^use[A-Z]/` report beyond the fixed API list.                      |
+| `no-page-meta-runtime-values/this-and-await`               | Eager `this` and complete `await` expressions report; a context call below `await` also reports.      |
+| `no-page-meta-runtime-values/callbacks-are-lazy`           | Arrow, function-expression, and object-method bodies admit runtime values, `this`, and `await`.       |
+| `no-page-meta-runtime-values/direct-callee-only`           | Member, sequence, and `new` callees stay valid; optional and nested direct calls retain diagnostics.  |
+| `no-page-meta-runtime-values/shadowed-identifiers`         | Shadowed API and composable identifiers still report because the upstream rule is syntax-only.        |
+| `no-page-meta-runtime-values/macro-boundaries`             | Direct sequential macros form boundaries; outside values and member/misspelled macro callees do not.  |
+| `no-page-meta-runtime-values/eager-nested-structures`      | Computed keys, arrays, spreads, nested objects, and nested macro arguments stay eager.                |
+| `no-page-meta-runtime-values/function-parameters-are-lazy` | Function default parameters are lazy together with their bodies; an adjacent eager API still reports. |
+| `no-page-meta-runtime-values/optional-macro-call`          | Optional direct macro calls form a boundary; empty and identifier-only arguments stay valid.          |
 
 ## Intentional divergences
 
