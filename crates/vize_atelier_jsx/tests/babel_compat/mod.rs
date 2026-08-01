@@ -12,7 +12,7 @@ use std::fmt;
 use std::path::PathBuf;
 
 use serde::Deserialize;
-use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
+use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx};
 use vize_carton::Bump;
 
 /// The relationship between Vize's default output and babel's for one case.
@@ -22,13 +22,12 @@ use vize_carton::Bump;
 /// emits bare `createVNode` calls, so identical bytes are never the goal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Verdict {
-    /// Vize's default output is semantically equivalent to babel's: it mounts to
-    /// the same DOM and patches the same way, even where the emitted call shape
+    /// Vize's Babel-compat output is semantically equivalent to babel's: it mounts
+    /// to the same DOM and patches the same way, even where the emitted call shape
     /// differs.
     Equivalent,
-    /// Vize's default output differs observably from babel's. The payload names
-    /// the difference; the matching `BABEL_COMPAT_INVENTORY.md` row records what
-    /// compat mode is expected to do about it.
+    /// Vize's Babel-compat output still differs observably from babel's. The
+    /// payload names the remaining difference.
     Divergent(&'static str),
     /// Vize does not implement this case at all yet. The payload names the
     /// reason and the tracking issue.
@@ -159,8 +158,8 @@ pub fn load_recording() -> Recording {
     serde_json::from_str(&text).unwrap_or_else(|error| panic!("parse {}: {error}", path.display()))
 }
 
-/// Compile one corpus case with Vize's **default** configuration and render the
-/// result for the snapshot.
+/// Compile one corpus case with Vize's opt-in Babel compatibility mode and
+/// render the result for the snapshot.
 ///
 /// This uses [`compile_jsx`] + `module_code()` rather than the lower-level
 /// per-component render code, because that is the module Vize's bundler
@@ -176,7 +175,10 @@ pub fn vize_vdom_output(case: &Case) -> std::string::String {
         &bump,
         &case.source,
         case.jsx_lang(),
-        &JsxCompileConfig::default(),
+        &JsxCompileConfig {
+            compat: JsxCompatMode::Babel,
+            ..Default::default()
+        },
     );
 
     let mut rendered = std::string::String::new();

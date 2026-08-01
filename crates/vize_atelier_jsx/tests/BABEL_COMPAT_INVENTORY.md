@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   78 |
-| divergent  |   18 |
+| equivalent |   79 |
+| divergent  |   17 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -148,7 +148,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | Case                             | Babel                                       | Vize today                              | Compat mode            | Verdict |
 | -------------------------------- | ------------------------------------------- | --------------------------------------- | ---------------------- | ------- |
 | `props/static_attr`              | `{type: "email"}`                           | same                                    | no change              | ✅      |
-| `props/boolean_attr`             | `<input disabled/>` → `disabled: true`      | `disabled: ""`                          | emit `true`            | ❌      |
+| `props/boolean_attr`             | `<input disabled/>` → `disabled: true`      | `disabled: ""`                          | emits `true` (#3391)    | ✅      |
 | `props/dynamic_attr`             | `{placeholder: p}`                          | same + `PROPS` flag                     | no change              | ✅      |
 | `props/dashed_attrs`             | `data-foo` / `aria-label` kept verbatim     | same                                    | no change              | ✅      |
 | `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrite the camel form | ❌      |

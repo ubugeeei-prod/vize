@@ -27,6 +27,7 @@ use oxc_span::Span;
 use vize_carton::{Box, Bump, String, ToCompactString};
 use vize_relief::{RootNode, TemplateChildNode};
 
+use crate::compat::JsxCompatMode;
 use crate::diagnostics::JsxDiagnostic;
 use crate::span::SpanMapper;
 
@@ -34,6 +35,7 @@ use crate::span::SpanMapper;
 pub struct Lowerer<'a, 'm, 's> {
     bump: &'a Bump,
     mapper: &'m SpanMapper<'s>,
+    compat: JsxCompatMode,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
     /// lowered, in source order. Drained by [`Self::take_scoped_styles`] once
@@ -44,9 +46,19 @@ pub struct Lowerer<'a, 'm, 's> {
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Build a lowerer that allocates IR in `bump` and maps spans via `mapper`.
     pub fn new(bump: &'a Bump, mapper: &'m SpanMapper<'s>) -> Self {
+        Self::with_compat(bump, mapper, JsxCompatMode::Native)
+    }
+
+    /// Build a lowerer using the requested project-level JSX semantics.
+    pub(crate) fn with_compat(
+        bump: &'a Bump,
+        mapper: &'m SpanMapper<'s>,
+        compat: JsxCompatMode,
+    ) -> Self {
         Self {
             bump,
             mapper,
+            compat,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
         }
@@ -143,5 +155,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Shared accessor used by sibling lowering modules.
     pub(crate) fn mapper(&self) -> &'m SpanMapper<'s> {
         self.mapper
+    }
+
+    /// Whether the project opted into `@vue/babel-plugin-jsx` semantics.
+    pub(crate) fn uses_babel_compat(&self) -> bool {
+        self.compat.is_babel()
     }
 }

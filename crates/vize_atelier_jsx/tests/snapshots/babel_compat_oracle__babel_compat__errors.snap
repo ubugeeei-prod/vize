@@ -11,7 +11,7 @@ const A = () => <input v-model={{a:1}}/>;
 (defaults)
 ### babel
 <error> Property left of AssignmentExpression expected node to be of a type ["LVal","OptionalMemberExpression"] but instead got "ObjectExpression"
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> v-model target `{a:1}` cannot be assigned to; v-model needs a variable or property reference.
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
@@ -27,7 +27,7 @@ const A = () => <input v-model/>;
 (defaults)
 ### babel
 <error> You have to use JSX Expression inside your v-model
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> v-model is missing expression.
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
@@ -43,7 +43,7 @@ const A = () => <B v-models={foo}/>;
 (defaults)
 ### babel
 <error> Property key of ObjectProperty expected node to be of a type ["Identifier","StringLiteral","NumericLiteral","BigIntLiteral","DecimalLiteral","PrivateName"] but instead got undefined
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> v-models expects a two-dimensional array of `[value, arg?, modifiers?]` entries, e.g. v-models={[[foo], [bar, "bar"]]}.
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
@@ -61,7 +61,7 @@ const A = () => <B v-models={[foo]}/>;
 (defaults)
 ### babel
 <error> You should pass a Two-dimensional Arrays to v-models
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> v-models entry `foo` is not an array; each entry must be `[value, arg?, modifiers?]`.
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
@@ -80,7 +80,7 @@ const A = () => <B v-slots={1}/>;
 ### babel
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, 1);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> v-slots value `1` is not a slots object: babel forwards it as the component's children, which leaves the component with no slots. Write the slots inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. v-slots={slots}.
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {

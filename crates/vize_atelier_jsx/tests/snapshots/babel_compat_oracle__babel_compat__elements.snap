@@ -12,7 +12,7 @@ const A = () => <div/>;
 ### babel
 import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div"))
@@ -28,7 +28,7 @@ const A = () => <B/>;
 ### babel
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -46,7 +46,7 @@ const A = () => <foo/>;
 ### babel
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("foo"), null, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("foo"))
@@ -62,7 +62,7 @@ const A = () => <my-el/>;
 ### babel
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("my-el"), null, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_my_el = _resolveComponent("my-el")
@@ -82,7 +82,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("circle", {
   "cx": 1
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("circle", { cx: 1 }))
@@ -100,7 +100,7 @@ import { createTextVNode as _createTextVNode, resolveComponent as _resolveCompon
 const A = () => _createVNode(_resolveComponent("mi"), null, {
   default: () => [_createTextVNode("x")]
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("mi", null, "x"))
@@ -118,7 +118,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode(a.b.c, {
   "foo": 1
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent(a.b.c), { foo: 1 }))
@@ -133,7 +133,7 @@ const A = () => <a:b foo={1}/>;
 (defaults)
 ### babel
 <error> getTag: JSXNamespacedName is not supported
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Error> unsupported JSX tag namespace `a:`; only `svg:` and `math:` name a real element namespace, so `a:b` would be emitted verbatim as a tag name nothing resolves (`@vue/babel-plugin-jsx` rejects every namespaced tag)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
@@ -150,7 +150,7 @@ const A = () => <><span>I</span><span>F</span></>;
 ### babel
 import { Fragment as _Fragment, createTextVNode as _createTextVNode, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_Fragment, null, [_createVNode("span", null, [_createTextVNode("I")]), _createVNode("span", null, [_createTextVNode("F")])]);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
@@ -169,7 +169,7 @@ const A = () => <div><><i/></></div>;
 ### babel
 import { Fragment as _Fragment, createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [_createVNode(_Fragment, null, [_createVNode("i", null, null)])]);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, [

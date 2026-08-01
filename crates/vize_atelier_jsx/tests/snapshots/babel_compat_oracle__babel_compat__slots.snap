@@ -15,7 +15,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => _createVNode("i", null, null),
   bar: () => _createVNode("b", null, null)
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -43,7 +43,7 @@ import { resolveComponent as _resolveComponent, createVNode as _createVNode } fr
 const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => 'foo'
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -68,7 +68,7 @@ import { createVNode as _createVNode, resolveComponent as _resolveComponent } fr
 const A = () => _createVNode(_resolveComponent("B"), null, {
   default: s => _createVNode("i", null, [s.x])
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -94,7 +94,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => [_createVNode("div", null, [_createTextVNode("A")])],
   ...slots
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -117,7 +117,7 @@ const A = () => <B v-slots={slots}/>;
 ### babel
 import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
 const A = () => _createVNode(_resolveComponent("B"), null, slots);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -138,7 +138,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => _createVNode("i", null, null),
   bar: () => _createVNode("b", null, null)
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -167,7 +167,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => [_createVNode("div", null, [_createTextVNode("A")])],
   bar: () => _createVNode("b", null, null)
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -195,7 +195,7 @@ import { createVNode as _createVNode, resolveComponent as _resolveComponent } fr
 const A = () => _createVNode(_resolveComponent("B"), null, {
   default: () => [_createVNode("i", null, null)]
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
@@ -220,7 +220,7 @@ import { createVNode as _createVNode, resolveComponent as _resolveComponent } fr
 const A = () => _createVNode(_resolveComponent("B"), null, {
   [n]: () => _createVNode("i", null, null)
 });
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 <Warning> computed JSX slot names are not supported and were ignored
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {

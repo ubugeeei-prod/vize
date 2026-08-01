@@ -1,9 +1,8 @@
 //! The opt-in `@vue/babel-plugin-jsx` compatibility switch (#3391).
 //!
-//! These tests pin the switch's *contract* rather than any particular compat
-//! behavior: the mode is off by default, turning it on never changes VDOM
-//! output yet (behaviors land one PR per inventory row), and asking for it under
-//! Vapor output is rejected with a diagnostic rather than silently ignored.
+//! These tests pin the switch's contract and each compatibility behavior: the
+//! mode is off by default, behaviors land one inventory row at a time, and
+//! asking for it under Vapor output is rejected rather than silently ignored.
 //!
 //! The "default output is unchanged" test is the important one — flipping the
 //! default would be a silent compatibility break for every existing Vize user.
@@ -69,19 +68,35 @@ fn default_config_output_equals_explicit_native() {
 }
 
 #[test]
-fn babel_compat_vdom_output_is_unchanged_for_now() {
-    // No inventory row has been closed yet, so compat mode is still a no-op on
-    // VDOM output. This test is what the first behavioral PR flips: when a
-    // divergence is closed, these two stop being equal and the assertion here
-    // becomes the pin for the new compat-only output.
-    assert_eq!(
-        module_code(JsxCompatMode::Babel, JsxOutputMode::Vdom),
-        module_code(JsxCompatMode::Native, JsxOutputMode::Vdom)
-    );
+fn babel_compat_vdom_remains_error_free() {
     assert_eq!(
         diagnostics(JsxCompatMode::Babel, JsxOutputMode::Vdom),
         Vec::<String>::new()
     );
+}
+
+#[test]
+fn babel_compat_emits_true_for_a_valueless_attribute_only_when_opted_in() {
+    let compile = |compat| {
+        let bump = Bump::new();
+        compile_jsx(
+            &bump,
+            "const A = () => <input disabled/>;",
+            JsxLang::Jsx,
+            &JsxCompileConfig {
+                compat,
+                ..Default::default()
+            },
+        )
+        .module_code()
+        .to_string()
+    };
+
+    let native = compile(JsxCompatMode::Native);
+    let babel = compile(JsxCompatMode::Babel);
+    assert!(native.contains("{ disabled: \"\" }"), "{native}");
+    assert!(babel.contains("{ disabled: true }"), "{babel}");
+    assert_ne!(native, babel);
 }
 
 #[test]

@@ -1,13 +1,13 @@
-//! Lowering JSX attributes into Vize props (attributes, binds, directives).
-//!
-//! The mapping is backend-neutral; richer `v-on`/`v-model` semantics belong to
-//! the VDOM/Vapor backends (#1493/#1494). Here we faithfully classify:
+//! Lowering JSX attributes into backend-neutral Vize props leaves richer `v-on`/`v-model` semantics to the
+//! VDOM/Vapor backends (#1493/#1494):
 //!
 //! - `name="str"`      -> static [`AttributeNode`]
 //! - `name` (no value) -> boolean [`AttributeNode`]
 //! - `name={expr}`     -> `v-bind:name` [`DirectiveNode`]
 //! - `{...obj}`        -> `v-bind="obj"` [`DirectiveNode`]
 //! - `v-x` / `v-x:arg` -> [`DirectiveNode`] named `x`
+
+mod compat;
 
 use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
@@ -99,7 +99,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let name = String::from(self.mapper().slice(attr.name.span()));
         let name_loc = self.mapper().location(attr.name.span());
         let prop = match attr.value.as_ref() {
-            None => self.boolean_attr(name, name_loc, loc),
+            None => self.valueless_attr(name, attr.name.span(), name_loc, loc),
             Some(JSXAttributeValue::StringLiteral(string)) => {
                 let value =
                     TextNode::new(string.value.as_str(), self.mapper().location(string.span));

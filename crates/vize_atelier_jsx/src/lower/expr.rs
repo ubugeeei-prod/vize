@@ -29,6 +29,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             self.bump(),
         ))
     }
+
+    /// A generated JavaScript constant anchored to an authored token.
+    pub(crate) fn constant_expr(&self, content: &str, span: Span) -> ExpressionNode<'a> {
+        let loc = self.mapper().location(span);
+        ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode::new(content, false, loc),
+            self.bump(),
+        ))
+    }
 }
 
 /// The span of the expression inside a container, or `None` for an empty

@@ -14,7 +14,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("input", {
   "type": "email"
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input", { type: "email" }))
@@ -22,7 +22,7 @@ export function render(_ctx, _cache) {
 
 ## props/boolean_attr
 ### verdict
-divergent: valueless attribute lowers to "" not true
+equivalent
 ### source (jsx)
 const A = () => <input disabled/>;
 ### babel options
@@ -32,10 +32,10 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("input", {
   "disabled": true
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("input", { disabled: "" }))
+  return (_openBlock(), _createElementBlock("input", { disabled: true }))
 }
 
 ## props/dynamic_attr
@@ -50,7 +50,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("input", {
   "placeholder": p
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input", { placeholder: p }, null, 8 /* PROPS */, ["placeholder"]))
@@ -69,7 +69,7 @@ const A = () => _createVNode("div", {
   "data-foo": "1",
   "aria-label": l
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", {
@@ -90,7 +90,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("svg", null, [_createVNode("use", {
   "xlink:href": "#a"
 }, null)]);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("svg", null, [
@@ -110,7 +110,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("svg", null, [_createVNode("use", {
   "xlink:href": "#a"
 }, null)]);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("svg", null, [
@@ -130,7 +130,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "class": c
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", {
@@ -150,7 +150,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "class": ["a", c]
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", {
@@ -170,7 +170,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "style": s
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", {
@@ -192,7 +192,7 @@ const A = () => _createVNode("div", _mergeProps({
 }, p, {
   "style": s
 }), null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _mergeProps({ style: "color:red" }, p, {
@@ -210,7 +210,7 @@ const A = () => <div {...p}/>;
 ### babel
 import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", p, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(p)), null, 16 /* FULL_PROPS */))
@@ -228,7 +228,7 @@ import { mergeProps as _mergeProps, createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", _mergeProps(p, {
   "id": "x"
 }), null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _mergeProps(p, { id: "x" }), null, 16 /* FULL_PROPS */))
@@ -248,7 +248,7 @@ const A = () => _createVNode("div", _mergeProps({
 }, p, {
   "onClick": b
 }), null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _mergeProps({ onClick: a }, p, { onClick: b }), null, 16 /* FULL_PROPS */, ["onClick"]))
@@ -266,7 +266,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "key": k
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { key: k }))
@@ -284,7 +284,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "ref": r
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { ref: r }, null, 512 /* NEED_PATCH */))
@@ -302,7 +302,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", null, [list.map(i => _createVNode("span", {
   "ref": r
 }, null))]);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, [
@@ -324,7 +324,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "$foo": 1
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { $foo: 1 }))

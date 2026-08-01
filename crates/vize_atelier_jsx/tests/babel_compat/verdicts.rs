@@ -56,10 +56,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("elements/nested_fragment_child", Same),
     // -- props -----------------------------------------------------------
     ("props/static_attr", Same),
-    (
-        "props/boolean_attr",
-        Diff("valueless attribute lowers to \"\" not true"),
-    ),
+    ("props/boolean_attr", Same),
     ("props/dynamic_attr", Same),
     ("props/dashed_attrs", Same),
     (

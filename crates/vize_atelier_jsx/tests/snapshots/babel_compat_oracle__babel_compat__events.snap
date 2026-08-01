@@ -14,7 +14,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "onClick": h
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onClick: h }, null, 8 /* PROPS */, ["onClick"]))
@@ -32,7 +32,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "onClickCapture": h
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onClickCapture: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapture"]))
@@ -50,7 +50,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "onClickOnce": h
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onClickOnce: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickOnce"]))
@@ -68,7 +68,7 @@ import { createVNode as _createVNode } from "vue";
 const A = () => _createVNode("div", {
   "onClickCapturePassive": h
 }, null);
-### vize (vdom, default config)
+### vize (vdom, babel compat)
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onClickCapturePassive: h }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapturePassive"]))

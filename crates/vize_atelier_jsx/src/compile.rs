@@ -17,7 +17,7 @@ use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::ssr::compile_lowered_root_to_ssr;
 use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
 use crate::vdom::{VdomCompileOptions, compile_root_to_vdom};
-use crate::{JsxLang, JsxOutputMode, lower_source};
+use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
 pub use component::JsxComponent;
 
@@ -209,7 +209,7 @@ pub fn compile_jsx(
     lang: JsxLang,
     config: &JsxCompileConfig,
 ) -> JsxCompileOutput {
-    let lowered = lower_source(bump, source, lang);
+    let lowered = lower_source_with_compat(bump, source, lang, config.compat);
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 

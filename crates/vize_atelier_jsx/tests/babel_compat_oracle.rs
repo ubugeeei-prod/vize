@@ -80,7 +80,7 @@ fn babel_compat_verdict_totals() {
             Verdict::Deferred(_) => deferred += 1,
         }
     }
-    assert_eq!((equivalent, divergent, deferred), (78, 18, 2));
+    assert_eq!((equivalent, divergent, deferred), (79, 17, 2));
     assert_eq!(VERDICTS.len(), 98);
 }
 
@@ -113,7 +113,7 @@ fn babel_compat_matrix_snapshot() {
             writeln!(body, "{}", case.babel_options_display()).unwrap();
             writeln!(body, "### babel").unwrap();
             writeln!(body, "{}", babel.display()).unwrap();
-            writeln!(body, "### vize (vdom, default config)").unwrap();
+            writeln!(body, "### vize (vdom, babel compat)").unwrap();
             writeln!(body, "{}", vize_vdom_output(case)).unwrap();
             body.push('\n');
         }

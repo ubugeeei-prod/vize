@@ -163,11 +163,25 @@ impl<'a> LowerOutput<'a> {
 /// allocator used for parsing is dropped before returning, so the result only
 /// borrows `bump`.
 pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
+    lower_source_with_compat(bump, source, lang, JsxCompatMode::Native)
+}
+
+/// Lower a module with project-level compatibility semantics.
+///
+/// This stays crate-private so analysis, LSP, and direct backend entry points
+/// retain native semantics; the configured compatibility switch is consumed by
+/// the mode-aware compiler.
+fn lower_source_with_compat<'a>(
+    bump: &'a Bump,
+    source: &str,
+    lang: JsxLang,
+    compat: JsxCompatMode,
+) -> LowerOutput<'a> {
     let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
     let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::new(bump, &mapper);
+    let mut lowerer = Lowerer::with_compat(bump, &mapper, compat);
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }
