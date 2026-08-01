@@ -246,7 +246,7 @@
         "vize.formatting.enable": {
           "type": "boolean",
           "default": false,
-          "description": "Enable Vize document formatting. Keep off when Prettier, Volar, or another formatter owns Vue formatting."
+          "description": "Enable Vize formatting: Format Document, Format Selection, and re-indenting the line as you type. Keep off when Prettier, Volar, or another formatter owns Vue formatting."
         },
         "vize.semanticTokens.enable": {
           "type": "boolean",

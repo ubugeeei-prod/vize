@@ -24,10 +24,8 @@
 
 use tower_lsp::lsp_types::{Position, Range, TextEdit};
 
+use super::blocks::block_spans;
 use crate::ide::position_to_offset;
-
-/// Byte span of one block's content, in discovery order.
-type BlockSpan = (usize, usize);
 
 pub(crate) fn format_range(
     content: &str,
@@ -83,43 +81,6 @@ pub(crate) fn format_range(
     // the list non-overlapping and ascending, which is what clients apply.
     edits.sort_by_key(|edit| (edit.range.start.line, edit.range.start.character));
     Some(edits)
-}
-
-/// Content spans of every SFC block, in a fixed discovery order so the authored
-/// and formatted documents pair up positionally.
-fn block_spans(source: &str, filename: &str) -> Option<Vec<BlockSpan>> {
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: filename.into(),
-        ..Default::default()
-    };
-    let descriptor = vize_atelier_sfc::parse_sfc(source, options).ok()?;
-
-    Some(
-        descriptor
-            .template
-            .as_ref()
-            .map(|block| (block.loc.start, block.loc.end))
-            .into_iter()
-            .chain(
-                descriptor
-                    .script_setup
-                    .as_ref()
-                    .map(|block| (block.loc.start, block.loc.end)),
-            )
-            .chain(
-                descriptor
-                    .script
-                    .as_ref()
-                    .map(|block| (block.loc.start, block.loc.end)),
-            )
-            .chain(
-                descriptor
-                    .styles
-                    .iter()
-                    .map(|block| (block.loc.start, block.loc.end)),
-            )
-            .collect(),
-    )
 }
 
 fn offset_position(content: &str, offset: usize) -> Position {

@@ -3,8 +3,14 @@
 //! Provides SFC document formatting via the vize_glyph formatter.
 
 #[cfg(feature = "glyph")]
+mod blocks;
+#[cfg(feature = "glyph")]
+mod on_type;
+#[cfg(feature = "glyph")]
 mod range;
 
+#[cfg(feature = "glyph")]
+pub(crate) use on_type::format_on_type;
 #[cfg(feature = "glyph")]
 pub(crate) use range::format_range;
 

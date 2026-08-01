@@ -77,6 +77,10 @@ export type ServerCapabilities = {
   documentHighlightProvider?: unknown;
   documentFormattingProvider?: unknown;
   documentLinkProvider?: { resolveProvider?: boolean };
+  documentOnTypeFormattingProvider?: {
+    firstTriggerCharacter?: string;
+    moreTriggerCharacter?: string[];
+  };
   documentRangeFormattingProvider?: unknown;
   documentSymbolProvider?: unknown;
   foldingRangeProvider?: unknown;

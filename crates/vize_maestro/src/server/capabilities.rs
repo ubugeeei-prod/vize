@@ -3,11 +3,12 @@
 
 use tower_lsp::lsp_types::{
     CodeActionKind, CodeActionOptions, CodeActionProviderCapability, CodeLensOptions,
-    ColorProviderCapability, CompletionOptions, DocumentLinkOptions, FileOperationFilter,
-    FileOperationPattern, FileOperationPatternKind, FileOperationRegistrationOptions,
-    FoldingRangeProviderCapability, HoverProviderCapability, LinkedEditingRangeServerCapabilities,
-    OneOf, RenameOptions, SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier,
-    SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
+    ColorProviderCapability, CompletionOptions, DocumentLinkOptions,
+    DocumentOnTypeFormattingOptions, FileOperationFilter, FileOperationPattern,
+    FileOperationPatternKind, FileOperationRegistrationOptions, FoldingRangeProviderCapability,
+    HoverProviderCapability, LinkedEditingRangeServerCapabilities, OneOf, RenameOptions,
+    SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
+    SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
     WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
@@ -95,6 +96,18 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // whole-document format back onto the SFC blocks the selection
         // intersects, so the two commands can never disagree.
         document_range_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
+
+        // On-type formatting re-indents the line as a `;`, `}` or newline is
+        // typed. Same trigger set as `@vue/language-server` so an editor
+        // configured for one server behaves identically under the other. Rides
+        // the `formatting` flag with its two siblings above: it is the same
+        // formatter again, narrowed to the line under the caret.
+        document_on_type_formatting_provider: features.formatting.then(|| {
+            DocumentOnTypeFormattingOptions {
+                first_trigger_character: ";".to_string(),
+                more_trigger_character: Some(vec!["}".to_string(), "\n".to_string()]),
+            }
+        }),
 
         // Signature help is not implemented yet.
         signature_help_provider: None,
@@ -197,7 +210,6 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         type_definition_provider: None,
         implementation_provider: None,
         declaration_provider: None,
-        document_on_type_formatting_provider: None,
         execute_command_provider: None,
         call_hierarchy_provider: None,
         moniker_provider: None,

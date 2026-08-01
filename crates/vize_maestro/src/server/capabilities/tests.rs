@@ -109,11 +109,12 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "formatting",
             |features| features.formatting = false,
-            // Range formatting rides the same flag: "Format Selection" is the
-            // same formatter scoped to the blocks a selection touches.
+            // All three formatting commands ride the same flag: they are one
+            // formatter scoped to the document, to a selection, and to a line.
             |capabilities| {
                 capabilities.document_formatting_provider.is_some()
                     && capabilities.document_range_formatting_provider.is_some()
+                    && capabilities.document_on_type_formatting_provider.is_some()
             },
         ),
         (
@@ -251,6 +252,22 @@ fn default_features_advertise_non_opinionated_providers() {
     assert!(capabilities.document_link_provider.is_some());
     assert!(capabilities.document_formatting_provider.is_none());
     assert!(capabilities.document_range_formatting_provider.is_none());
+    assert!(capabilities.document_on_type_formatting_provider.is_none());
+}
+
+/// The trigger set is `@vue/language-server`'s, character for character, so an
+/// editor configured for one server behaves the same under the other (#3456).
+#[test]
+fn on_type_formatting_advertises_the_vue_language_server_trigger_set() {
+    let options = server_capabilities(all_features())
+        .document_on_type_formatting_provider
+        .expect("on-type formatting rides the formatting flag");
+
+    assert_eq!(options.first_trigger_character, ";");
+    assert_eq!(
+        options.more_trigger_character,
+        Some(vec!["}".to_string(), "\n".to_string()])
+    );
 }
 
 #[test]

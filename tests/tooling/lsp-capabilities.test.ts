@@ -39,45 +39,43 @@ async function withCapabilities(
   }
 }
 
-test("vize lsp advertises the full editor-feature provider set with exact shapes", async () => {
-  await withCapabilities("editor-full", { editor: true, lint: true }, (capabilities) => {
-    // Boolean providers advertised as plain `true`.
-    assert.equal(capabilities.documentSymbolProvider, true);
-    assert.equal(capabilities.foldingRangeProvider, true);
-    assert.equal(capabilities.inlayHintProvider, true);
-    assert.equal(capabilities.documentHighlightProvider, true);
-    assert.equal(capabilities.workspaceSymbolProvider, true);
-    assert.equal(capabilities.hoverProvider, true);
-    assert.equal(capabilities.definitionProvider, true);
-    assert.equal(capabilities.referencesProvider, true);
+/** Declaration shims, the only files type checking has to watch itself. */
+const DECLARATION_FILTERS = [
+  { scheme: "file", pattern: { glob: "**/*.d.{ts,mts,cts}", matches: "file" } },
+];
+/** Everything a rename can move, plus folders. */
+const RENAME_FILTERS = [
+  {
+    scheme: "file",
+    pattern: { glob: "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}", matches: "file" },
+  },
+  { scheme: "file", pattern: { glob: "**/*", matches: "folder" } },
+];
 
-    // Resolve-provider shapes.
-    assert.equal(capabilities.codeLensProvider?.resolveProvider, false);
-    assert.equal(capabilities.documentLinkProvider?.resolveProvider, false);
-
-    // Rename advertises prepareRename support, and carries linked editing
-    // (rename-as-you-type over tag names) with it.
-    assert.equal(capabilities.renameProvider?.prepareProvider, true);
-    assert.equal(capabilities.linkedEditingRangeProvider, true);
-
-    // Code actions: kinds plus no resolve step.
-    assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, [
-      "quickfix",
-      "refactor",
-      "source",
-    ]);
-    assert.equal(capabilities.codeActionProvider?.resolveProvider, false);
-
-    // Document sync: incremental (2), open/close on, save without text.
-    assert.equal(capabilities.textDocumentSync?.change, 2);
-    assert.equal(capabilities.textDocumentSync?.openClose, true);
-    assert.equal(capabilities.textDocumentSync?.save?.includeText, false);
-
-    // Completion trigger characters, exact ordered set: `@vue/language-server`
-    // 3.3.8's list in its order, plus `'` (a single-quoted attribute value is
-    // legal Vue and Maestro answers inside one). Space is deliberately absent —
-    // it opened the list on every space typed in a template (#3458).
-    assert.deepEqual(capabilities.completionProvider?.triggerCharacters, [
+/**
+ * The COMPLETE capability set for the default editor bundle, pinned as one
+ * value rather than field by field: adding, dropping or reshaping any provider
+ * then shows up in this diff instead of slipping past a spot check (#3456).
+ */
+const EDITOR_BUNDLE_CAPABILITIES = {
+  // Incremental (2) sync, open/close on, save without the text.
+  textDocumentSync: {
+    openClose: true,
+    change: 2,
+    willSave: false,
+    willSaveWaitUntil: false,
+    save: { includeText: false },
+  },
+  // Selection ranges ship with the document-structure group.
+  selectionRangeProvider: true,
+  hoverProvider: true,
+  completionProvider: {
+    resolveProvider: true,
+    // `@vue/language-server` 3.3.8's list in its order, plus `'` (a
+    // single-quoted attribute value is legal Vue and Maestro answers inside
+    // one). Space is deliberately absent — it opened the list on every space
+    // typed in a template (#3458).
+    triggerCharacters: [
       '"',
       "'",
       ":",
@@ -99,21 +97,90 @@ test("vize lsp advertises the full editor-feature provider set with exact shapes
       "-",
       "{",
       "}",
-    ]);
+    ],
+  },
+  definitionProvider: true,
+  referencesProvider: true,
+  documentHighlightProvider: true,
+  documentSymbolProvider: true,
+  workspaceSymbolProvider: true,
+  codeActionProvider: {
+    codeActionKinds: ["quickfix", "refactor", "source"],
+    resolveProvider: false,
+  },
+  codeLensProvider: { resolveProvider: false },
+  documentLinkProvider: { resolveProvider: false },
+  // Colour swatches ship with document links: both decorate a literal in the
+  // authored text and make it interactive (#3456).
+  colorProvider: true,
+  foldingRangeProvider: true,
+  // Rename advertises prepareRename, and carries linked editing
+  // (rename-as-you-type over tag names) with it.
+  renameProvider: { prepareProvider: true },
+  linkedEditingRangeProvider: true,
+  semanticTokensProvider: {
+    legend: {
+      tokenTypes: [
+        "namespace",
+        "type",
+        "class",
+        "enum",
+        "interface",
+        "struct",
+        "typeParameter",
+        "parameter",
+        "variable",
+        "property",
+        "enumMember",
+        "event",
+        "function",
+        "method",
+        "macro",
+        "keyword",
+        "modifier",
+        "comment",
+        "string",
+        "number",
+        "regexp",
+        "operator",
+        "decorator",
+      ],
+      tokenModifiers: [
+        "declaration",
+        "definition",
+        "readonly",
+        "static",
+        "deprecated",
+        "abstract",
+        "async",
+        "modification",
+        "documentation",
+        "defaultLibrary",
+      ],
+    },
+    range: true,
+    full: true,
+  },
+  inlayHintProvider: true,
+  workspace: {
+    workspaceFolders: { supported: true, changeNotifications: true },
+    fileOperations: {
+      didCreate: { filters: DECLARATION_FILTERS },
+      didRename: { filters: RENAME_FILTERS },
+      willRename: { filters: RENAME_FILTERS },
+      didDelete: { filters: DECLARATION_FILTERS },
+    },
+  },
+  // Absent on purpose, and therefore absent from this object: the three
+  // formatting providers (opt-in, see below), `signatureHelpProvider`,
+  // `typeDefinitionProvider`, `implementationProvider`, `declarationProvider`,
+  // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
+  // `experimental` — none of which has a handler behind it.
+};
 
-    // Selection ranges ship with the document-structure group.
-    assert.equal(capabilities.selectionRangeProvider, true);
-
-    // Formatting is opt-in, so neither formatting provider is here.
-    assert.equal(capabilities.documentFormattingProvider, undefined);
-    assert.equal(capabilities.documentRangeFormattingProvider, undefined);
-
-    // Colour swatches ship with document links: both decorate a literal in the
-    // authored text and make it interactive (#3456).
-    assert.equal(capabilities.colorProvider, true);
-
-    // Providers that are intentionally not yet advertised stay absent.
-    assert.equal(capabilities.signatureHelpProvider, undefined);
+test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
+  await withCapabilities("editor-full", { editor: true, lint: true }, (capabilities) => {
+    assert.deepEqual(capabilities, EDITOR_BUNDLE_CAPABILITIES);
   });
 });
 
@@ -217,10 +284,18 @@ test("vize lsp per-feature init flags toggle individual providers independently"
     "granular-formatting-on",
     { editor: true, formatting: true },
     (capabilities) => {
-      // Opting into formatting brings both commands: "Format Selection" is the
-      // same formatter scoped to the SFC blocks a selection touches (#3456).
+      // Opting into formatting brings all three commands: one formatter scoped
+      // to the document, to the SFC blocks a selection touches, and to the line
+      // under the caret (#3456).
       assert.equal(capabilities.documentFormattingProvider, true);
       assert.equal(capabilities.documentRangeFormattingProvider, true);
+      // The on-type trigger set is `@vue/language-server`'s, character for
+      // character, so an editor configured for one behaves the same under the
+      // other.
+      assert.deepEqual(capabilities.documentOnTypeFormattingProvider, {
+        firstTriggerCharacter: ";",
+        moreTriggerCharacter: ["}", "\n"],
+      });
     },
   );
 });

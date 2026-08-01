@@ -14,15 +14,15 @@ use tower_lsp::{
         DidChangeTextDocumentParams, DidChangeWatchedFilesParams, DidChangeWorkspaceFoldersParams,
         DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
         DocumentColorParams, DocumentFormattingParams, DocumentHighlight, DocumentHighlightParams,
-        DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams, DocumentSymbolParams,
-        DocumentSymbolResponse, FoldingRange, FoldingRangeParams, GotoDefinitionParams,
-        GotoDefinitionResponse, Hover, HoverParams, InitializeParams, InitializeResult,
-        InitializedParams, InlayHint, InlayHintParams, LinkedEditingRangeParams,
-        LinkedEditingRanges, Location, PrepareRenameResponse, ReferenceParams, RenameFilesParams,
-        RenameParams, SelectionRange, SelectionRangeParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        DocumentLink, DocumentLinkParams, DocumentOnTypeFormattingParams,
+        DocumentRangeFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
+        FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams,
+        InitializeParams, InitializeResult, InitializedParams, InlayHint, InlayHintParams,
+        LinkedEditingRangeParams, LinkedEditingRanges, Location, PrepareRenameResponse,
+        ReferenceParams, RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
+        WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -777,6 +777,39 @@ impl LanguageServer for MaestroServer {
         #[cfg(not(feature = "glyph"))]
         Ok(None)
     }
+
+    /// Re-indent the line being typed on — see `server::format::on_type` for
+    /// why this never rewrites content.
+    async fn on_type_formatting(
+        &self,
+        params: DocumentOnTypeFormattingParams,
+    ) -> Result<Option<Vec<TextEdit>>> {
+        if !self.state.lsp_features().formatting {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document_position.text_document.uri;
+
+        // See `formatting`: standalone HTML must not go through the SFC formatter.
+        if crate::utils::is_standalone_html_path(uri.path()) {
+            return Ok(None);
+        }
+
+        let Some(_content) = self.state.documents.text(uri) else {
+            return Ok(None);
+        };
+        #[cfg(feature = "glyph")]
+        {
+            let options = self.state.get_format_options();
+            let position = params.text_document_position.position;
+            let path = uri.path();
+            return Ok(super::format::format_on_type(
+                &_content, path, position, &options,
+            ));
+        }
+        #[cfg(not(feature = "glyph"))]
+        Ok(None)
+    }
 }
 
 #[cfg(test)]
@@ -787,67 +820,11 @@ mod tests {
         lsp_types::{FormattingOptions, TextDocumentIdentifier, Url, WorkDoneProgressParams},
     };
 
-    fn formatting_params(uri: Url) -> DocumentFormattingParams {
-        DocumentFormattingParams {
-            text_document: TextDocumentIdentifier { uri },
-            options: FormattingOptions::default(),
-            work_done_progress_params: WorkDoneProgressParams::default(),
-        }
-    }
-
-    #[test]
-    fn formatting_returns_no_edits_for_standalone_html() {
-        let (service, _socket) = LspService::new(MaestroServer::new);
-        let server = service.inner();
-        server
-            .state
-            .apply_lsp_initialization_options(Some(&serde_json::json!({ "formatting": true })));
-
-        let uri = Url::parse("file:///index.html").unwrap();
-        let source = "<!DOCTYPE html>\n<html><body>\n<div   v-scope=\"{ count: 0 }\" >{{ count }}</div>\n</body></html>\n";
-        server
-            .state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "html".to_string());
-
-        let edits =
-            futures::executor::block_on(server.formatting(formatting_params(uri.clone()))).unwrap();
-        assert!(
-            edits.is_none(),
-            "the SFC formatter must not touch standalone HTML documents"
-        );
-
-        let range_params = DocumentRangeFormattingParams {
-            text_document: TextDocumentIdentifier { uri },
-            range: Range::new(Position::new(0, 0), Position::new(0, 1)),
-            options: FormattingOptions::default(),
-            work_done_progress_params: WorkDoneProgressParams::default(),
-        };
-        let edits = futures::executor::block_on(server.range_formatting(range_params)).unwrap();
-        assert!(
-            edits.is_none(),
-            "range formatting must not touch standalone HTML documents"
-        );
-
-        // Guard against the gate over-matching: SFC formatting must still work.
-        #[cfg(feature = "glyph")]
-        {
-            let vue_uri = Url::parse("file:///App.vue").unwrap();
-            let vue_source = "<template>\n<div>hello</div>\n</template>\n";
-            server.state.documents.open(
-                vue_uri.clone(),
-                vue_source.to_string(),
-                1,
-                "vue".to_string(),
-            );
-            let edits =
-                futures::executor::block_on(server.formatting(formatting_params(vue_uri))).unwrap();
-            assert!(edits.is_some(), "Vue SFC formatting must keep working");
-        }
-    }
-
+    mod formatting;
     mod lifecycle;
     mod requests;
+
+    use formatting::formatting_params;
 
     use tower_lsp::lsp_types::{
         CodeActionContext, CodeActionParams, DocumentSymbolParams, PartialResultParams,
