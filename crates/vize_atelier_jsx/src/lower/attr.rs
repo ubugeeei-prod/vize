@@ -96,7 +96,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             DirectiveAttributeLowering::NotDirective => {}
         }
 
-        let name = String::from(self.mapper().slice(attr.name.span()));
+        let name = self.compat_attribute_name(attr.name.span());
         let name_loc = self.mapper().location(attr.name.span());
         let prop = match attr.value.as_ref() {
             None => self.valueless_attr(name, attr.name.span(), name_loc, loc),

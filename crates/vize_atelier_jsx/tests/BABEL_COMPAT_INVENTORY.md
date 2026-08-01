@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   79 |
-| divergent  |   17 |
+| equivalent |   80 |
+| divergent  |   16 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -151,7 +151,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | `props/boolean_attr`             | `<input disabled/>` → `disabled: true`      | `disabled: ""`                          | emits `true` (#3391)   | ✅      |
 | `props/dynamic_attr`             | `{placeholder: p}`                          | same + `PROPS` flag                     | no change              | ✅      |
 | `props/dashed_attrs`             | `data-foo` / `aria-label` kept verbatim     | same                                    | no change              | ✅      |
-| `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrite the camel form | ❌      |
+| `props/xlink_camel`              | `xlinkHref` → `"xlink:href"`                | keeps `xlinkHref`                       | rewrites it (#3391)    | ✅      |
 | `props/xlink_colon`              | `"xlink:href"`                              | same                                    | no change              | ✅      |
 | `props/class_dynamic`            | `{class: c}` (runtime normalizes)           | `normalizeClass(c)` + `CLASS`           | no change              | ✅      |
 | `props/class_static_and_dynamic` | `{class: ["a", c]}`                         | `normalizeClass(["a", c])`              | no change              | ✅      |

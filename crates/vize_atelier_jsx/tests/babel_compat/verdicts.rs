@@ -59,10 +59,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("props/boolean_attr", Same),
     ("props/dynamic_attr", Same),
     ("props/dashed_attrs", Same),
-    (
-        "props/xlink_camel",
-        Diff("xlinkHref not rewritten to xlink:href"),
-    ),
+    ("props/xlink_camel", Same),
     ("props/xlink_colon", Same),
     ("props/class_dynamic", Same),
     ("props/class_static_and_dynamic", Same),

@@ -80,7 +80,7 @@ export function render(_ctx, _cache) {
 
 ## props/xlink_camel
 ### verdict
-divergent: xlinkHref not rewritten to xlink:href
+equivalent
 ### source (jsx)
 const A = () => <svg><use xlinkHref="#a"/></svg>;
 ### babel options
@@ -94,7 +94,7 @@ const A = () => _createVNode("svg", null, [_createVNode("use", {
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("svg", null, [
-    _createElementVNode("use", { xlinkHref: "#a" })
+    _createElementVNode("use", { "xlink:href": "#a" })
   ]))
 }
 

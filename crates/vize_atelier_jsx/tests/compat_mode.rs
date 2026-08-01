@@ -21,13 +21,17 @@ const SOURCE: &str = concat!(
 );
 
 fn module_code(compat: JsxCompatMode, mode: JsxOutputMode) -> String {
+    compile_module(SOURCE, compat, mode)
+}
+
+fn compile_module(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> String {
     let bump = Bump::new();
     let config = JsxCompileConfig {
         default_mode: mode,
         compat,
         ..Default::default()
     };
-    let out = compile_jsx(&bump, SOURCE, JsxLang::Jsx, &config);
+    let out = compile_jsx(&bump, source, JsxLang::Jsx, &config);
     out.module_code().to_string()
 }
 
@@ -96,6 +100,32 @@ fn babel_compat_emits_true_for_a_valueless_attribute_only_when_opted_in() {
     let babel = compile(JsxCompatMode::Babel);
     assert!(native.contains("{ disabled: \"\" }"), "{native}");
     assert!(babel.contains("{ disabled: true }"), "{babel}");
+    assert_ne!(native, babel);
+}
+
+#[test]
+fn babel_compat_rewrites_xlink_href_across_prop_shapes_only_when_opted_in() {
+    let source = concat!(
+        "const A = () => <svg>",
+        "<use xlinkHref=\"#a\"/>",
+        "<use xlinkHref={href}/>",
+        "<use xlink:href=\"#b\"/>",
+        "</svg>;\n",
+        "const C = () => <Comp xlinkHref=\"#c\"/>;\n",
+        "const B = () => <svg>{ok ? <use xlinkHref=\"#d\"/> : ",
+        "items.map(id => <use xlinkHref={id}/>)}</svg>;",
+    );
+    let native = compile_module(source, JsxCompatMode::Native, JsxOutputMode::Vdom);
+    let babel = compile_module(source, JsxCompatMode::Babel, JsxOutputMode::Vdom);
+
+    assert!(native.contains("{ xlinkHref: \"#a\" }"), "{native}");
+    assert!(native.contains("{ xlinkHref: href }"), "{native}");
+    assert!(babel.contains("{ \"xlink:href\": \"#a\" }"), "{babel}");
+    assert!(babel.contains("{ \"xlink:href\": href }"), "{babel}");
+    assert!(babel.contains("{ \"xlink:href\": \"#b\" }"), "{babel}");
+    assert!(babel.contains("{ \"xlink:href\": \"#c\" }"), "{babel}");
+    assert!(babel.contains("\"xlink:href\": \"#d\""), "{babel}");
+    assert!(babel.contains("\"xlink:href\": id"), "{babel}");
     assert_ne!(native, babel);
 }
 
