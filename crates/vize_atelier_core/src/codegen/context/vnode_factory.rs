@@ -96,9 +96,11 @@ fn normalize_vnode_factory(factory: &str) -> String {
     if is_member_expression_chain(factory) {
         return String::from(factory);
     }
-    let mut wrapped = String::with_capacity(factory.len() + 2);
+    let mut wrapped = String::with_capacity(factory.len() + 3);
     wrapped.push('(');
     wrapped.push_str(factory);
+    // Keep the closing parenthesis outside a trailing line comment.
+    wrapped.push('\n');
     wrapped.push(')');
     wrapped
 }

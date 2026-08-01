@@ -92,7 +92,7 @@ pub(super) fn resolve_vnode_factory<'a>(
 fn valid_pragma_expression(pragma: &str) -> bool {
     let mut probe = String::from("const __vize_pragma = (");
     probe.push_str(pragma);
-    probe.push_str(");");
+    probe.push_str("\n);");
     let allocator = Allocator::default();
     !crate::parse_module(&allocator, probe.as_str(), JsxLang::Jsx).has_errors()
 }

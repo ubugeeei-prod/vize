@@ -114,9 +114,13 @@ fn babel_pragma_keeps_callee_precedence_for_non_identifier_expressions() {
     // not a plain identifier or dotted member chain has to stay parenthesized
     // to remain the callee of the vnode call.
     for (pragma, callee) in [
-        ("left || right", "(left || right)("),
-        ("cond ? a : b", "(cond ? a : b)("),
-        ("(setup(), h)", "((setup(), h))("),
+        ("left || right", "(left || right\n)("),
+        ("cond ? a : b", "(cond ? a : b\n)("),
+        ("(setup(), h)", "((setup(), h)\n)("),
+        (
+            "left || right // fallback",
+            "(left || right // fallback\n)(",
+        ),
     ] {
         let bump = Bump::new();
         let output = compile(
