@@ -267,27 +267,31 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
 
         await t.test("document symbols and folding ranges follow the authored blocks", async () => {
           const symbols = await ask("textDocument/documentSymbol", {});
+          // `range` spans the whole authored block, from `<` of the opening
+          // tag to the `>` of the closing one, and `selectionRange` is the tag
+          // name inside the opening tag.
           assert.deepEqual(symbols, [
             {
               kind: 2,
               name: "template",
-              range: { start: position(7, 0), end: position(14, 0) },
-              selectionRange: range(7, 0, 10),
+              // `</template>` on line 14 is 11 characters wide.
+              range: { start: position(7, 0), end: position(14, 11) },
+              selectionRange: range(7, 1, 9),
             },
             {
               detail: "ts",
               kind: 2,
               name: "script setup",
-              range: { start: position(0, 0), end: position(5, 0) },
-              selectionRange: range(0, 0, 14),
+              // `</script>` on line 5 is 9 characters wide.
+              range: { start: position(0, 0), end: position(5, 9) },
+              selectionRange: range(0, 1, 7),
             },
             {
-              // Single-line blocks collapse: `<style scoped>` and `</style>`
-              // share line 16, so the block range is zero-width.
               kind: 2,
               name: "style scoped",
-              range: { start: position(16, 0), end: position(16, 0) },
-              selectionRange: range(16, 0, 7),
+              // `<style scoped></style>` is a single line, 22 characters wide.
+              range: { start: position(16, 0), end: position(16, 22) },
+              selectionRange: range(16, 1, 6),
             },
           ]);
 
