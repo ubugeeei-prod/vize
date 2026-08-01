@@ -113,7 +113,7 @@ export function resolveVuePackagePath() {
   } catch (error) {
     throw new Error(
       "could not resolve the repository vue install for the fixture workspace. " +
-        `Run \`vp install\` at the repository root first. (${error})`,
+        `Run \`vp install\` at the repository root first. (${String(error)})`,
     );
   }
 }
