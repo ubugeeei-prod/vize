@@ -401,6 +401,7 @@
           "initialize": 1000,
           "coldOpen": 8000,
           "cycle": 9000,
+          "fileLifecycle": 9000,
           "phaseFence": 1500,
           "cancellationConverge": 6000,
           "closeClear": 3000

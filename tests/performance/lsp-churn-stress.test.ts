@@ -16,6 +16,7 @@ import {
   assertStreamOrdering,
   recordPublishes,
 } from "./support/churn-oracle.ts";
+import { runFileLifecycleChurn } from "./support/file-lifecycle-churn.ts";
 import { countFiles } from "./support/incremental-metrics.ts";
 import {
   assertSingleInjectedMismatch,
@@ -236,6 +237,13 @@ test(
             expectedByVersion,
             leafVersion,
           );
+          await runFileLifecycleChurn({
+            session,
+            metrics,
+            workspaceDir,
+            cycles,
+            publishes,
+          });
         } catch (error) {
           failure = error;
           // A hang or divergence is only diagnosable from the publish stream

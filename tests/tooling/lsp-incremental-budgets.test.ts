@@ -164,6 +164,7 @@ test("the churn budget resolves from the registry and unknown suites are rejecte
     "closeClear",
     "coldOpen",
     "cycle",
+    "fileLifecycle",
     "initialize",
     "phaseFence",
   ]);
