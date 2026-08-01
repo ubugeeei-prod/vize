@@ -35,148 +35,89 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
     })
 }
 
-/// Authored names that might be declared component props.
+/// The target the usage's whole props object literal is checked against: the
+/// child's props type **unmodified**, for every usage.
 ///
-/// `class` and `style` are always fallthrough attributes in Vize's component
-/// surface. Other names stay in the union: the generated type decides whether
-/// they are actual props or merely arbitrary attributes.
-fn authored_prop_key_union(usage: &ComponentUsage) -> String {
-    let mut seen = FxHashSet::default();
-    let mut keys = String::default();
-    for prop in &usage.props {
-        if prop.name_is_dynamic
-            || matches!(prop.name.as_str(), "key" | "ref" | "class" | "style")
-            || (prop.is_dynamic && prop.value.is_none())
-        {
-            continue;
-        }
-        let name = to_camel_case(prop.name.as_str());
-        if !seen.insert(name.clone()) {
-            continue;
-        }
-        if !keys.is_empty() {
-            keys.push_str(" | ");
-        }
-        keys.push('"');
-        for ch in name.chars() {
-            match ch {
-                '\\' => keys.push_str("\\\\"),
-                '"' => keys.push_str("\\\""),
-                '\n' => keys.push_str("\\n"),
-                '\r' => keys.push_str("\\r"),
-                '\t' => keys.push_str("\\t"),
-                _ => keys.push(ch),
-            }
-        }
-        keys.push('"');
-    }
-    if keys.is_empty() {
-        keys.push_str("never");
-    }
-    keys
-}
-
-/// The target the usage's whole props object literal is checked against.
+/// That single target is what makes an unbound required prop visible (#3569).
+/// TypeScript's own object-literal elaboration then supplies the rest of the
+/// contract for free, and it is worth spelling out because the whole design
+/// rests on it:
 ///
-/// `__VizeWholePropChecker` infers the authored object as `A` and chooses one
-/// of two targets. If every authored declared value is compatible with the
-/// corresponding child prop, the target is the complete `P`; missing required
-/// siblings are then reported (#3569). If any such value is already wrong, the
-/// target is `__VizeRelaxedProps<P>` so that the per-prop check remains the only
-/// diagnostic, anchored at the offending value. A union child is matched
-/// against a distributive union of its authored prop projections, so a valid
-/// discriminant selects the complete union contract while an invalid value
-/// still takes the relaxed path.
+/// * a literal that satisfies every property it *does* pass, but omits a
+///   required one, is rejected as a whole — `TS2345`, anchored at the argument,
+///   which the mapping puts on the element name.
+/// * a literal that passes a *wrong* value is elaborated instead: TypeScript
+///   reports the offending property and stops, so the missing sibling is **not**
+///   reported a second time. `{ count: 'bad' }` against
+///   `{ count: number; label: string }` is exactly one `TS2322` on `count`,
+///   which is the one-error behavior `vue-tsc` shows and #3569 requires.
 ///
-/// The relaxed target makes every property optional and widens it *with*
-/// `{} | null`, a union that accepts any value except `undefined`. An ordinary
-/// mismatch therefore stays the per-prop check's to report. Checking every
-/// authored object against the child type unmodified would report a wrong prop
-/// twice, at different positions that `dedup_diagnostics` cannot collapse.
+/// The elaborated `TS2322` lands on the literal's key, which maps back to the
+/// authored attribute name — the same position, code and message the per-prop
+/// check produces for that prop, so `dedup_diagnostics` collapses the pair. That
+/// is why no widening is needed to keep a wrong prop from being reported twice.
 ///
-/// The declared type stays in the union rather than being replaced by `{} | null`
-/// because it is the only thing that contextually types an inline callback prop.
-/// Against a bare `{} | null` the parameters of `:textConverter="(value) => …"`
-/// have no contextual signature to draw from and become implicit `any`, a
-/// `TS7006` on correct code, which is what `check_function_props_cli` guards.
-/// Since a function is assignable to `{}`, keeping the declared member adds
-/// contextual typing without adding a single rejection.
-///
-/// `null` has to be in the widened type, not just `{}`: a child prop declared
-/// `LinkBehavior | null` is legitimately passed `null`, and `{}` alone rejects
-/// it. Only `undefined` is this check's business.
-///
-/// `Required<Pick<P, K>>[K]` rather than `P[K]` keeps the
-/// `exactOptionalPropertyTypes` distinction intact in the relaxed constraint.
-/// Indexed access on an optional property includes `undefined`; stripping the
-/// modifier first leaves it only when the child explicitly declared it. The
-/// authored-value compatibility projection intentionally uses `P[K]` instead:
-/// an authored `undefined` must select the complete target, where TypeScript can
-/// reject it under the exact-optional option (#3450), rather than escape through
-/// the relaxed mismatch path.
+/// Checking against the unmodified type is also the cheapest thing that can be
+/// generated, which is a correctness property of its own here. An earlier
+/// attempt at #3569 inferred the authored object as a generic `A` and picked
+/// between a complete and a relaxed target by testing `A` against a projection
+/// of the child's declared prop keys. On real projects that machinery both blew
+/// past TypeScript's union-complexity limit (`TS2590`) and widened authored
+/// string literals through the `A extends Record<string, unknown>` constraint,
+/// turning `align="start"` into `string` and reporting correct code as wrong.
+/// A checker that only works on toy inputs is worse than the bug it fixes, so
+/// the whole-props target carries no conditional types, no mapped types and no
+/// inference variable.
 ///
 /// Consequences, covered by the component-props and project tests:
 ///
-/// * a correct declared binding keeps unbound required props active; a wrong
-///   declared binding produces its single per-prop diagnostic instead.
-/// * when no authored key is a declared prop, the target is always the complete
-///   `P`, preserving the fallthrough-only behavior from #3566.
 /// * `class`, `style`, `data-*`, `aria-*` and anything else the child does not
 ///   declare are absorbed by the `Record<string, unknown>` intersection
 ///   `__VizePropChecker` applies, which also suppresses object-literal excess
-///   property checking.
+///   property checking. Fallthrough-only, spread-only and empty usages keep the
+///   behavior they had (#3566, #3444, #3527) because their target never changed.
+/// * Vue's `PublicProps` and the listener props synthesized from `emits` are
+///   part of the child's props type, so authoring one is accepted without any
+///   key-set subtraction — and it does not satisfy the child's own required
+///   props, which the same check still reports.
 /// * the alias does not have to agree with the literal's key set. The literal
 ///   skips props whose value does not generate; a `Pick<>` over the authored
 ///   names would have had to reproduce that filtering exactly or report phantom
 ///   missing properties.
-/// * with `exactOptionalPropertyTypes` off the check is inert, because an
-///   optional property accepts `undefined` implicitly — which is also what
-///   `vue-tsc` does.
-///
-/// The extracted `$props` type also contains Vue's `PublicProps` and listener
-/// props synthesized from `emits`. Those are accepted at a component boundary,
-/// but authoring one does not satisfy the component's own props contract. The
-/// helper therefore subtracts both key sets before deciding that an authored
-/// name is declared. Vize-generated components expose exact listener keys via
-/// `__vizeEmitProps`. External Vue components expose them through their typed
-/// `$emit`; the generic-event guard rejects Vue's untyped `(event: string)`
-/// fallback before mapping listener props. Listener suffixes try both the raw
-/// spelling and its uncapitalized form: Vue maps both `XML` and `xML` to
-/// `onXML`, so reversing that key through `Uncapitalize` alone is lossy. Their
-/// static typed `emits` option is retained as a second source for component
-/// constructors that expose it directly. Vue 2 does not export `PublicProps`,
-/// so that import deliberately degrades to `any`, which the tuple-guard
-/// converts to an empty key set.
+/// * the declared property types stay intact, which is what contextually types
+///   an inline callback prop: the parameters of `:textConverter="(value) => …"`
+///   draw their signature from the target, so they are not implicit `any`
+///   (`TS7006`), which is what `check_function_props_cli` guards.
+/// * the `exactOptionalPropertyTypes` distinction between "absent" and "present
+///   and `undefined`" survives, because it only exists when a whole object
+///   literal is assigned at once (#3450). With the option off the check is inert
+///   there, because an optional property accepts `undefined` implicitly — which
+///   is also what `vue-tsc` does.
 ///
 /// Only the **non-generic** branch of `__VizePropChecker` uses this type; a
 /// generic child resolves through its own `__vizeCheck` signature and ignores
 /// it, so the generic inference path is untouched.
 ///
-/// Note the code divergence. TypeScript 6, which `vue-tsc` pins, reports this as
-/// `TS2379`; the `@typescript/native-preview` build vize runs reports the
-/// identical code against the identical target as `TS2345` with the same
-/// explanation nested one level down. Confirmed by running both compilers over
-/// the same file across five target shapes, including `vue-tsc`'s own. It is a
-/// compiler-version difference, not something the generated code can steer.
+/// Note the code divergence. TypeScript 6, which `vue-tsc` pins, reports the
+/// exact-optional rejection as `TS2379`; the `@typescript/native-preview` build
+/// vize runs reports the identical code against the identical target as `TS2345`
+/// with the same explanation nested one level down. Confirmed by running both
+/// compilers over the same file across five target shapes, including
+/// `vue-tsc`'s own. It is a compiler-version difference, not something the
+/// generated code can steer.
 pub(super) fn append_prop_checker_alias(
     ts: &mut String,
-    usage: &ComponentUsage,
     component_type_name: &str,
     component_ref: &str,
     idx: usize,
 ) {
-    let keys = if has_inference_props(usage) {
-        authored_prop_key_union(usage)
-    } else {
-        cstr!("never")
-    };
     append!(
         *ts,
         "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx};\n",
     );
     append!(
         *ts,
-        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}, {keys}>;\n",
+        "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}, __{component_type_name}_CheckProps_{idx}>;\n",
     );
 }
 
@@ -184,64 +125,22 @@ pub(super) fn append_prop_checker_alias(
 /// once per template scope that has at least one checkable component usage.
 ///
 /// They live here rather than at the call site because
-/// [`append_prop_checker_alias`] is what names them, and the reasoning for
-/// `__VizeExactOptionalProps` in particular belongs beside the alias it builds.
+/// [`append_prop_checker_alias`] is what names them.
+///
+/// The set is deliberately tiny: three aliases, none of them mapped types, none
+/// of them recursive, and none of them growing with the size of the child's
+/// props type. Everything the whole-props check needs is already expressed by
+/// the child's own props type — see [`append_prop_checker_alias`] for why the
+/// key-set arithmetic an earlier #3569 attempt emitted here is neither needed
+/// nor affordable.
 pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
-    let has_whole_prop_inference = usages.iter().any(|(_, usage)| has_inference_props(usage));
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
-    if has_whole_prop_inference {
-        ts.push_str(
-            "  type __VizePropChecker<C, P, K extends PropertyKey> = __VizeIsAny<C> extends true ? __VizeWholePropChecker<C, P, K> : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : __VizeWholePropChecker<C, P, K>) : __VizeWholePropChecker<C, P, K>;\n",
-        );
-    } else {
-        ts.push_str(
-            "  type __VizePropChecker<C, P, _K extends PropertyKey> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
-        );
-    }
+    ts.push_str(
+        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
+    );
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",
     );
-    if has_whole_prop_inference {
-        ts.push_str(
-            "  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };\n",
-        );
-        ts.push_str("  type __VizeRelaxedProps<P> = __VizeExactOptionalProps<P>;\n");
-        ts.push_str(
-            "  // @ts-ignore TS2694/TS2307: Vue 2 has no PublicProps; an unresolved alias degrades to any and therefore contributes no keys.\n",
-        );
-        ts.push_str("  type __VizeVuePublicProps = import('vue').PublicProps;\n");
-        ts.push_str(
-            "  type __VizeVuePublicPropKeys = [__VizeIsAny<__VizeVuePublicProps>] extends [true] ? never : keyof __VizeVuePublicProps;\n",
-        );
-        ts.push_str(
-            "  type __VizeUsageCamelize<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeUsageCamelize<T>>}` : S;\n",
-        );
-        ts.push_str(
-            "  type __VizeUsageEventProp<K extends string> = `on${Capitalize<__VizeUsageCamelize<K>>}`;\n",
-        );
-        ts.push_str(
-            "  type __VizeComponentEmitPropKeys<C> = '__vizeEmitProps' extends keyof C ? C extends { __vizeEmitProps?: infer P } ? keyof P : never : C extends { emits?: infer E } ? [__VizeIsAny<E>] extends [true] ? never : __VizeUsageEventProp<E extends readonly (infer N extends string)[] ? N : keyof NonNullable<E> & string> : never;\n",
-        );
-        ts.push_str(
-            "  type __VizeEventNameForProp<K> = K extends `on${infer N}` ? Uncapitalize<N> : never;\n",
-        );
-        ts.push_str("  type __VizeEventSuffixForProp<K> = K extends `on${infer N}` ? N : never;\n");
-        ts.push_str(
-            "  type __VizeInstanceEmitPropKeys<C, K extends PropertyKey> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never : never;\n",
-        );
-        ts.push_str(
-            "  type __VizeDeclaredAuthoredPropKeys<C, P, K extends PropertyKey> = P extends unknown ? Exclude<Extract<keyof P, K>, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, K>> : never;\n",
-        );
-        ts.push_str(
-            "  type __VizeAuthoredProps<C, P, K extends PropertyKey> = P extends unknown ? [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? never : { [Q in __VizeDeclaredAuthoredPropKeys<C, P, K>]-?: P[Q] } : never;\n",
-        );
-        ts.push_str(
-            "  type __VizeWholeProps<C, P, K extends PropertyKey, A> = [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? P : [A] extends [__VizeAuthoredProps<C, P, K>] ? P : __VizeRelaxedProps<P>;\n",
-        );
-        ts.push_str(
-            "  type __VizeWholePropChecker<C, P, K extends PropertyKey> = [K] extends [never] ? (props: P & Record<string, unknown>) => void : <A extends Record<string, unknown>>(props: A & __VizeWholeProps<C, P, K, A>) => void;\n",
-        );
-    }
     // Emitted only when a usage actually binds an inline callback, because
     // nothing else references these aliases and an unreferenced one is
     // `TS6196`. That reaches

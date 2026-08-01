@@ -6,3 +6,5 @@ mod attribute_only_required_props_edges;
 mod generic_emit_guard;
 #[path = "runtime_mixin_props.rs"]
 mod runtime_mixin_props;
+#[path = "wide_props_type_complexity.rs"]
+mod wide_props_type_complexity;
