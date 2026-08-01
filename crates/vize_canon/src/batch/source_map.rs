@@ -130,16 +130,16 @@ impl CompositeSourceMap {
     ///
     /// The mapping order is:
     /// 1. Import rewrite mapping (materialized TS -> original TS with `.vue` specifiers)
-    /// 2. SFC mapping (virtual TS -> SFC source)
+    /// 2. SFC mapping (virtual TS -> SFC source); unmapped SFC positions are rejected
     pub fn get_original_position(
         &self,
         virtual_offset: u32,
     ) -> Option<(u32, u32, Option<SfcBlockType>)> {
         let after_import = self.import_map.get_original_offset(virtual_offset);
-        if let Some(ref sfc_map) = self.sfc_map
-            && let Some((offset, column, block)) = sfc_map.get_original_position(after_import)
-        {
-            return Some((offset, column, Some(block)));
+        if let Some(ref sfc_map) = self.sfc_map {
+            return sfc_map
+                .get_original_position(after_import)
+                .map(|(offset, column, block)| (offset, column, Some(block)));
         }
         Some((after_import, 0, None))
     }
@@ -333,13 +333,16 @@ mod tests {
     }
 
     #[test]
-    fn test_composite_source_map() {
-        let sfc_map = SfcSourceMap::empty();
+    fn composite_source_map_only_uses_identity_fallback_for_plain_scripts() {
         let import_map = ImportSourceMap::empty();
-        let composite = CompositeSourceMap::new_vue(sfc_map, import_map);
-
-        // Should return position even without mappings
-        let result = composite.get_original_position(50);
-        assert!(result.is_some());
+        assert_eq!(
+            CompositeSourceMap::new_script(import_map).get_original_position(50),
+            Some((50, 0, None))
+        );
+        assert_eq!(
+            CompositeSourceMap::new_vue(SfcSourceMap::empty(), ImportSourceMap::empty())
+                .get_original_position(50),
+            None
+        );
     }
 }

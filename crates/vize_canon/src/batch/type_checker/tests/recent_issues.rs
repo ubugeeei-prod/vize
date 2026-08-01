@@ -11,6 +11,7 @@ mod sequence_prop_expressions;
 mod spread_props;
 mod spread_scope_bindings;
 mod ts_extension_substitution;
+mod unmapped_template_fallback;
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {
     if resolve_test_tsgo_binary().is_none() {

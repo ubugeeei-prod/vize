@@ -605,8 +605,7 @@
         "error:629:35 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:630:22 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
         "error:631:39 [TS2339] Property 'timer' does not exist on type '__VizeThis'.",
-        "error:661:22 [TS2339] Property '$router' does not exist on type '__VizeThis'.",
-        "error:1365:28 [TS2304] Cannot find name 'attribute'."
+        "error:661:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
     },
     {
@@ -643,7 +642,7 @@
       ]
     }
   ],
-  "errorCount": 374,
+  "errorCount": 373,
   "warningCount": 0,
   "fileCount": 55
 }

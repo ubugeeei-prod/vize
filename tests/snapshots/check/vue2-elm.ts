@@ -66,6 +66,7 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
       assert.equal(first.report.fileCount, 55, "every pinned vue2-elm SFC must be checked");
       assert.equal(first.report.warningCount, 0);
       assert.ok(first.report.errorCount > 0, "the legacy surface is intentionally not clean");
+      assertDiagnosticsStayInAuthoredBlocks(fixture.workspaceDir, first.report.files);
 
       assertSnapshot(SNAPSHOT_DIR, "vue2-elm-check", `${JSON.stringify(first.report, null, 2)}\n`);
     },
@@ -80,4 +81,30 @@ test(
 
 function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+function assertDiagnosticsStayInAuthoredBlocks(
+  workspaceDir: string,
+  files: Array<{ diagnostics: string[]; file: string }>,
+): void {
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(workspaceDir, file.file), "utf8");
+    const ranges = [...source.matchAll(/<(template|script)\b[^>]*>[\s\S]*?<\/\1>/g)].map(
+      (match) => {
+        const start = source.slice(0, match.index ?? 0).split("\n").length;
+        const end = start + match[0].split("\n").length - 1;
+        return { end, start };
+      },
+    );
+
+    for (const diagnostic of file.diagnostics) {
+      const match = /^(?:error|warning|info|hint):(\d+):(\d+) /.exec(diagnostic);
+      assert.ok(match, `diagnostic must include an authored location: ${file.file}: ${diagnostic}`);
+      const line = Number(match[1]);
+      assert.ok(
+        ranges.some((range) => line >= range.start && line <= range.end),
+        `diagnostic escaped template/script blocks: ${file.file}: ${diagnostic}`,
+      );
+    }
+  }
 }
