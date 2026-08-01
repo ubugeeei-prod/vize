@@ -55,7 +55,8 @@ use vize_relief::RootNode;
 pub use compat::JsxCompatMode;
 pub use compile::{
     BabelJsxOptions, JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx,
-    compile_jsx_with_babel_options, compile_jsx_with_babel_pragma, resolve_mode,
+    compile_jsx_with_babel_merge_props, compile_jsx_with_babel_options,
+    compile_jsx_with_babel_pragma, compile_jsx_with_babel_pragma_and_merge_props, resolve_mode,
 };
 pub use diagnostics::{JsxDiagnostic, Severity};
 pub use lang::JsxLang;

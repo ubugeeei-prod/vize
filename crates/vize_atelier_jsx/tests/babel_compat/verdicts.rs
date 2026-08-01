@@ -16,7 +16,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("options/transform_on_on", Same),
     ("options/pragma", Same),
     ("options/merge_props_default", Same),
-    ("options/merge_props_false", Diff("no mergeProps option")),
+    ("options/merge_props_false", Same),
     ("options/is_custom_element_default", Same),
     (
         "options/is_custom_element_fn",

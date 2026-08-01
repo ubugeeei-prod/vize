@@ -30,6 +30,11 @@ pub struct CodegenContext {
     pub(super) runtime_module_name: String,
     /// Options
     pub(super) options: CodegenOptions,
+    /// Whether object-valued props are combined through Vue's `mergeProps`
+    /// helper. JSX Babel compatibility can disable this internally to emit
+    /// JavaScript object spreads instead; the public core codegen entry points
+    /// keep the existing `true` behavior.
+    pub(super) merge_props: bool,
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen

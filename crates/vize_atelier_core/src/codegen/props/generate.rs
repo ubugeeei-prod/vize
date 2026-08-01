@@ -12,6 +12,7 @@ use super::{
     directives::{generate_directive_prop_with_static, is_supported_directive},
     events::{generate_merged_event_handlers, get_von_event_key},
     generate_vbind_object_exp, generate_von_object_exp,
+    object_spread::try_generate_without_merge_props,
     scan::PropsScan,
 };
 use vize_carton::{FxHashSet, String};
@@ -46,6 +47,10 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
 
     // Handle cases with object spreads (v-bind="obj" or v-on="obj")
     if scan.has_vbind_obj || scan.has_von_obj {
+        if try_generate_without_merge_props(ctx, props, scope_id.as_deref(), &scan) {
+            return;
+        }
+
         if scan.has_other || (scan.has_vbind_obj && scan.has_von_obj) {
             // Multiple spreads or spread with other props: _mergeProps(...).
             // Vue walks props in source order, accumulating non-spread props into
@@ -219,7 +224,7 @@ fn try_generate_static_attrs(
     props: &[PropNode<'_>],
     scope_id: Option<&str>,
 ) -> bool {
-    if ctx.skip_is_prop || ctx.options.inline {
+    if !ctx.merge_props || ctx.skip_is_prop || ctx.options.inline {
         return false;
     }
     if ctx.in_v_for
@@ -332,7 +337,7 @@ fn try_generate_static_attrs(
 }
 
 /// Generate props as a regular object { key: value, ... }
-fn generate_props_object(
+pub(super) fn generate_props_object(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     skip_object_spreads: bool,
@@ -353,7 +358,7 @@ fn generate_props_object_inner(
 ) {
     // When inside mergeProps, skip normalizeClass/normalizeStyle wrappers
     let prev_skip = ctx.skip_normalize;
-    if inside_merge_props {
+    if inside_merge_props || !ctx.merge_props {
         ctx.skip_normalize = true;
     }
 
@@ -504,7 +509,8 @@ fn generate_props_object_inner(
                 // Only add comma if directive produces valid output
                 if is_supported_directive(dir) {
                     // Check for duplicate v-on events that should be merged into arrays
-                    if dir.name == "on"
+                    if ctx.merge_props
+                        && dir.name == "on"
                         && let Some(event_key) = get_von_event_key(dir, ctx.props_is_plain_element)
                     {
                         let count = scan.event_counts.count(&event_key);
@@ -546,16 +552,7 @@ fn generate_props_object_inner(
                         ctx.push(" ");
                     }
                     first = false;
-                    generate_directive_prop_with_static(
-                        ctx,
-                        dir,
-                        super::directives::StaticMerge {
-                            class: scan.static_class,
-                            class_before: scan.static_class_before_dynamic,
-                            style: scan.static_style,
-                            style_before: scan.static_style_before_dynamic,
-                        },
-                    );
+                    generate_directive_prop_with_static(ctx, dir, scan.static_merge());
                 }
             }
         }

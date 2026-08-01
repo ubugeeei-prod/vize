@@ -81,7 +81,7 @@ export function render(_ctx, _cache) {
 
 ## options/merge_props_false
 ### verdict
-divergent: no mergeProps option
+equivalent
 ### source (jsx)
 const A = () => <div class="a" {...p} class={c}/>;
 ### babel options
@@ -94,11 +94,13 @@ const A = () => _createVNode("div", {
   "class": c
 }, null);
 ### vize (vdom, babel compat)
-import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", _mergeProps({ class: "a" }, p, {
+  return (_openBlock(), _createElementBlock("div", {
+    class: "a",
+    ...p,
     class: c
-  }), null, 16 /* FULL_PROPS */))
+  }, null, 16 /* FULL_PROPS */))
 }
 
 ## options/is_custom_element_default

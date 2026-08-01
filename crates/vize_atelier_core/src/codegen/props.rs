@@ -3,18 +3,21 @@
 mod directives;
 mod events;
 mod generate;
+mod object_spread;
 mod scan;
+mod static_merge;
 
 use crate::{PropNode, RuntimeHelper};
 
 use super::{context::CodegenContext, expression::generate_expression};
 
 pub use directives::{
-    StaticMerge, generate_directive_prop_with_static,
-    generate_slot_outlet_directive_prop_with_static, is_supported_directive,
+    generate_directive_prop_with_static, generate_slot_outlet_directive_prop_with_static,
+    is_supported_directive,
 };
 pub use events::von_event_key_for;
 pub use generate::generate_props;
+pub use static_merge::StaticMerge;
 
 /// Check if there's a v-bind without argument (object spread)
 pub(crate) fn has_vbind_object(props: &[PropNode<'_>]) -> bool {

@@ -10,6 +10,8 @@ use super::super::{
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
+use super::StaticMerge;
+
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
 /// that don't reference any runtime variables (no `_ctx.` after processing).
@@ -33,53 +35,6 @@ pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
         });
     }
     matches!(dir.name.as_str(), "bind" | "on" | "html" | "text")
-}
-
-/// A static class/style attribute that will be merged with a dynamic
-/// `:class`/`:style` binding, plus whether the static value appears before
-/// the dynamic one in source order (Vue preserves source order in the merged
-/// array).
-#[derive(Clone, Copy, Default)]
-pub struct StaticMerge<'a> {
-    pub class: Option<&'a str>,
-    pub class_before: bool,
-    pub style: Option<&'a str>,
-    pub style_before: bool,
-}
-
-impl<'a> StaticMerge<'a> {
-    /// Build the merge metadata from an element's props in source order.
-    pub fn from_props(props: &'a [crate::PropNode<'a>]) -> Self {
-        let mut merge = StaticMerge::default();
-        let mut class_index = None;
-        let mut style_index = None;
-        for (index, prop) in props.iter().enumerate() {
-            match prop {
-                crate::PropNode::Attribute(attr) => {
-                    if attr.name == "class" && merge.class.is_none() {
-                        merge.class = attr.value.as_ref().map(|v| v.content.as_str());
-                        class_index = Some(index);
-                    } else if attr.name == "style" && merge.style.is_none() {
-                        merge.style = attr.value.as_ref().map(|v| v.content.as_str());
-                        style_index = Some(index);
-                    }
-                }
-                crate::PropNode::Directive(dir) => {
-                    if dir.name == "bind"
-                        && let Some(ExpressionNode::Simple(exp)) = &dir.arg
-                        && exp.is_static
-                    {
-                        if exp.content == "class" && class_index.is_some_and(|i| i < index) {
-                            merge.class_before = true;
-                        } else if exp.content == "style" && style_index.is_some_and(|i| i < index) {
-                            merge.style_before = true;
-                        }
-                    }
-                }
-            }
-        }
-        merge
-    }
 }
 
 /// Generate directive as prop with optional static class/style merging
@@ -170,6 +125,16 @@ fn generate_vbind_prop(
     static_merge: StaticMerge<'_>,
     static_key_casing: StaticBindKeyCasing,
 ) {
+    if dir.arg.is_none() && !ctx.merge_props {
+        ctx.push("...");
+        if let Some(exp) = &dir.exp {
+            generate_expression(ctx, exp);
+        } else {
+            ctx.push("undefined");
+        }
+        return;
+    }
+
     let static_class = static_merge.class;
     let static_style = static_merge.style;
     let mut is_class = false;
@@ -407,6 +372,20 @@ fn split_style_declarations(value: &str) -> Vec<&str> {
 
 /// Generate v-on directive as a prop
 fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
+    if dir.arg.is_none() && !ctx.merge_props {
+        ctx.use_helper(RuntimeHelper::ToHandlers);
+        ctx.push("...");
+        ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
+        ctx.push("(");
+        if let Some(exp) = &dir.exp {
+            generate_expression(ctx, exp);
+        } else {
+            ctx.push("undefined");
+        }
+        ctx.push(", true)");
+        return;
+    }
+
     let is_dynamic_event = if let Some(ExpressionNode::Simple(exp)) = &dir.arg {
         !exp.is_static
     } else {

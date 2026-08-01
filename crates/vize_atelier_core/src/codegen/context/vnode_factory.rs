@@ -11,13 +11,13 @@ use super::CodegenContext;
 impl CodegenContext {
     /// Create a new codegen context.
     pub fn new(options: CodegenOptions) -> Self {
-        Self::new_with_vnode_factory(options, None)
+        Self::new_with_vnode_factory_and_merge_props(options, None, true)
     }
 
-    /// Create a context that emits vnode creation through a custom factory.
-    pub(in crate::codegen) fn new_with_vnode_factory(
+    pub(in crate::codegen) fn new_with_vnode_factory_and_merge_props(
         options: CodegenOptions,
         vnode_factory: Option<&str>,
+        merge_props: bool,
     ) -> Self {
         let map_builder = options.source_map.then(SourceMapBuilder::new);
         Self {
@@ -29,6 +29,7 @@ impl CodegenContext {
             runtime_global_name: options.runtime_global_name.to_compact_string(),
             runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,
+            merge_props,
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,

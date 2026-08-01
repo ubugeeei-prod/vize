@@ -22,6 +22,10 @@ use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 
 use self::babel::{collision_free_transform_on_helper, resolve_vnode_factory};
 
+pub use self::babel::{
+    compile_jsx_with_babel_merge_props, compile_jsx_with_babel_options,
+    compile_jsx_with_babel_pragma,
+};
 pub use component::JsxComponent;
 
 /// Options matching the opt-in switches exposed by `@vue/babel-plugin-jsx`.
@@ -228,39 +232,21 @@ pub fn compile_jsx(
     compile_jsx_with_babel_options(bump, source, lang, config, &BabelJsxOptions::default())
 }
 
-/// Compile JSX/TSX with explicit `@vue/babel-plugin-jsx` option compatibility.
-///
-/// The Babel-specific options are inert unless [`JsxCompileConfig::compat`] is
-/// [`JsxCompatMode::Babel`]. Existing [`compile_jsx`] callers therefore retain
-/// byte-for-byte output while Babel-compatible consumers can opt in one option
-/// at a time.
-pub fn compile_jsx_with_babel_options(
-    bump: &Bump,
-    source: &str,
-    lang: JsxLang,
-    config: &JsxCompileConfig,
-    babel_options: &BabelJsxOptions,
-) -> JsxCompileOutput {
-    compile_jsx_with_babel_pragma(bump, source, lang, config, babel_options, None)
-}
-
-/// Compile JSX/TSX with an optional Babel-compatible vnode factory pragma.
-///
-/// This additive entry point keeps [`BabelJsxOptions`] constructible for
-/// existing callers while exposing Babel's string-valued `pragma` option. An
-/// empty pragma has the same meaning as Babel's default. The option is inert in
-/// native compatibility mode, SSR, and Vapor output.
-pub fn compile_jsx_with_babel_pragma(
+/// Compile with the two additive Babel options combined.
+#[doc(hidden)]
+pub fn compile_jsx_with_babel_pragma_and_merge_props(
     bump: &Bump,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
     babel_options: &BabelJsxOptions,
     pragma: Option<&str>,
+    merge_props: bool,
 ) -> JsxCompileOutput {
     let transform_on_helper =
         (config.compat.is_babel() && babel_options.transform_on && !config.ssr)
             .then(|| collision_free_transform_on_helper(source));
+    let merge_props = !config.compat.is_babel() || config.ssr || merge_props;
     let lowered = lower_source_with_compat(
         bump,
         source,
@@ -328,6 +314,7 @@ pub fn compile_jsx_with_babel_pragma(
                     VdomCompatOptions {
                         transform_on_helper: transform_on_helper.as_deref(),
                         vnode_factory,
+                        merge_props,
                     },
                     &mut diagnostics,
                 )),

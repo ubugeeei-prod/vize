@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   82 |
-| divergent  |   14 |
+| equivalent |   83 |
+| divergent  |   13 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -97,7 +97,7 @@ deliberate answer, recorded here so it is not relitigated.
 | `options/transform_on_on`           | wraps props in `_transformOn(...)`                  | `on` stays a prop by default                 | `BabelJsxOptions::transform_on` wraps via the helper | ✅      |
 | `options/pragma`                    | emits `h("div", …)`, no `vue` import                | always emits Vue runtime helpers             | custom factory via additive pragma API               | ✅      |
 | `options/merge_props_default`       | `mergeProps({class:"a"}, p, {class:c})`             | same                                         | no change                                            | ✅      |
-| `options/merge_props_false`         | one object literal with a duplicate key             | always merges via `mergeProps`               | add `mergeProps: false`                              | ❌      |
+| `options/merge_props_false`         | one object literal with a duplicate key             | always merges via `mergeProps`               | object spread + duplicate-key semantics (#3391)      | ✅      |
 | `options/is_custom_element_default` | `<my-el/>` → `resolveComponent("my-el")`            | same                                         | no change                                            | ✅      |
 | `options/is_custom_element_fn`      | matching tag becomes a string tag                   | always resolved as a component               | add `isCustomElement`                                | ❌      |
 | `options/object_slots_default`      | `_isSlot(slots) ? slots : {default: () => [slots]}` | `toDisplayString(slots)` in the default slot | treat a lone expression child as a slot object       | ❌      |

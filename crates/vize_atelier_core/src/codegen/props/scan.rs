@@ -60,6 +60,7 @@ impl EventNameCounts {
 }
 
 pub(super) struct PropsScan<'props> {
+    pub(super) merge_props: bool,
     pub(super) static_class: Option<&'props str>,
     pub(super) static_style: Option<&'props str>,
     pub(super) has_vbind_obj: bool,
@@ -96,6 +97,7 @@ impl<'props> PropsScan<'props> {
         skip_is: bool,
     ) -> Self {
         let mut scan = Self {
+            merge_props: ctx.merge_props,
             static_class: None,
             static_style: None,
             has_vbind_obj: false,
@@ -186,12 +188,12 @@ impl<'props> PropsScan<'props> {
 
     #[inline]
     pub(super) fn skip_static_class(&self) -> bool {
-        self.static_class.is_some() && self.has_dynamic_class
+        self.merge_props && self.static_class.is_some() && self.has_dynamic_class
     }
 
     #[inline]
     pub(super) fn skip_static_style(&self) -> bool {
-        self.static_style.is_some() && self.has_dynamic_style
+        self.merge_props && self.static_style.is_some() && self.has_dynamic_style
     }
 
     #[inline]

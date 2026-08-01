@@ -11,7 +11,7 @@
 //! `_ctx.`. Static hoisting and handler caching default off for predictable,
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
-use vize_atelier_core::codegen::{generate, generate_with_vnode_factory};
+use vize_atelier_core::codegen::generate_with_vnode_factory_and_merge_props;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
@@ -75,10 +75,21 @@ pub struct VdomOutput {
     pub diagnostics: Vec<JsxDiagnostic>,
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct VdomCompatOptions<'a> {
     pub transform_on_helper: Option<&'a str>,
     pub vnode_factory: Option<&'a str>,
+    pub merge_props: bool,
+}
+
+impl Default for VdomCompatOptions<'_> {
+    fn default() -> Self {
+        Self {
+            transform_on_helper: None,
+            vnode_factory: None,
+            merge_props: true,
+        }
+    }
 }
 
 impl VdomOutput {
@@ -177,10 +188,12 @@ pub(crate) fn compile_root_to_vdom(
         scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..Default::default()
     };
-    let result = match compat.vnode_factory {
-        Some(factory) => generate_with_vnode_factory(&root, codegen_opts, factory),
-        None => generate(&root, codegen_opts),
-    };
+    let result = generate_with_vnode_factory_and_merge_props(
+        &root,
+        codegen_opts,
+        compat.vnode_factory,
+        compat.merge_props,
+    );
     let mut preamble = result.preamble;
     if let Some(helper) = compat.transform_on_helper
         && result.code.contains(helper)

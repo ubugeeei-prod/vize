@@ -18,7 +18,21 @@ use super::root::{
 
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
-    generate_with_sections(root, options).into_result()
+    generate_with_vnode_factory_and_merge_props(root, options, None, true)
+}
+
+/// Generate code with an explicit `mergeProps` policy.
+///
+/// This is an additive internal integration point for JSX Babel compatibility.
+/// Template compilation and existing callers continue through [`generate`],
+/// which always preserves Vue template compiler `mergeProps` behavior.
+#[doc(hidden)]
+pub fn generate_with_merge_props(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    merge_props: bool,
+) -> CodegenResult {
+    generate_with_vnode_factory_and_merge_props(root, options, None, merge_props)
 }
 
 /// Generate code while routing vnode creation through a caller-provided JSX
@@ -28,7 +42,18 @@ pub fn generate_with_vnode_factory(
     options: CodegenOptions,
     vnode_factory: &str,
 ) -> CodegenResult {
-    generate_with_sections_and_vnode_factory(root, options, Some(vnode_factory)).into_result()
+    generate_with_vnode_factory_and_merge_props(root, options, Some(vnode_factory), true)
+}
+
+/// Generate code with optional custom vnode creation and `mergeProps` policy.
+#[doc(hidden)]
+pub fn generate_with_vnode_factory_and_merge_props(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    vnode_factory: Option<&str>,
+    merge_props: bool,
+) -> CodegenResult {
+    generate_with_sections_and_options(root, options, vnode_factory, merge_props).into_result()
 }
 
 /// Generate code from root AST and return emission-recorded section boundaries.
@@ -36,15 +61,17 @@ pub fn generate_with_sections(
     root: &RootNode<'_>,
     options: CodegenOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_vnode_factory(root, options, None)
+    generate_with_sections_and_options(root, options, None, true)
 }
 
-fn generate_with_sections_and_vnode_factory(
+fn generate_with_sections_and_options(
     root: &RootNode<'_>,
     options: CodegenOptions,
     vnode_factory: Option<&str>,
+    merge_props: bool,
 ) -> CodegenResultWithSections {
-    let mut ctx = CodegenContext::new_with_vnode_factory(options, vnode_factory);
+    let mut ctx =
+        CodegenContext::new_with_vnode_factory_and_merge_props(options, vnode_factory, merge_props);
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children

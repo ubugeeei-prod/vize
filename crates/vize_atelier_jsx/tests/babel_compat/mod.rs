@@ -13,7 +13,8 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 use vize_atelier_jsx::{
-    BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx_with_babel_pragma,
+    BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang,
+    compile_jsx_with_babel_pragma_and_merge_props,
 };
 use vize_carton::Bump;
 
@@ -173,7 +174,7 @@ pub fn load_recording() -> Recording {
 /// diagnosing case is a legitimate, recordable outcome.
 pub fn vize_vdom_output(case: &Case) -> std::string::String {
     let bump = Bump::new();
-    let out = compile_jsx_with_babel_pragma(
+    let out = compile_jsx_with_babel_pragma_and_merge_props(
         &bump,
         &case.source,
         case.jsx_lang(),
@@ -191,6 +192,10 @@ pub fn vize_vdom_output(case: &Case) -> std::string::String {
         case.babel_options
             .get("pragma")
             .and_then(serde_json::Value::as_str),
+        case.babel_options
+            .get("mergeProps")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(true),
     );
 
     let mut rendered = std::string::String::new();

@@ -1,7 +1,70 @@
 use oxc_allocator::Allocator;
-use vize_carton::String;
+use vize_carton::{Bump, String};
 
+use super::{
+    BabelJsxOptions, JsxCompileConfig, JsxCompileOutput,
+    compile_jsx_with_babel_pragma_and_merge_props,
+};
 use crate::{JsxDiagnostic, JsxLang};
+
+/// Compile JSX/TSX with explicit `@vue/babel-plugin-jsx` option compatibility.
+pub fn compile_jsx_with_babel_options(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_pragma_and_merge_props(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        None,
+        true,
+    )
+}
+
+/// Compile JSX/TSX with an optional Babel-compatible vnode factory pragma.
+pub fn compile_jsx_with_babel_pragma(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    pragma: Option<&str>,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_pragma_and_merge_props(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        pragma,
+        true,
+    )
+}
+
+/// Compile JSX/TSX with an explicit Babel-compatible `mergeProps` value.
+pub fn compile_jsx_with_babel_merge_props(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    merge_props: bool,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_pragma_and_merge_props(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        None,
+        merge_props,
+    )
+}
 
 pub(super) fn resolve_vnode_factory<'a>(
     pragma: Option<&'a str>,

@@ -30,6 +30,9 @@ pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, Code
 pub(crate) use helpers::is_constant_simple_expression;
 // Shared with the dialect-gated Vue 2 filter transform, which builds the same
 // `_filter_<name>` asset id the codegen preamble declares.
-pub use emit::{generate, generate_with_sections, generate_with_vnode_factory};
+pub use emit::{
+    generate, generate_with_merge_props, generate_with_sections, generate_with_vnode_factory,
+    generate_with_vnode_factory_and_merge_props,
+};
 #[cfg(feature = "legacy")]
 pub(crate) use helpers::to_valid_asset_identifier;
