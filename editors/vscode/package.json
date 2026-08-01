@@ -8,16 +8,6 @@
     "Linters",
     "Programming Languages"
   ],
-  "keywords": [
-    "language-server",
-    "lsp",
-    "sfc",
-    "vue"
-  ],
-  "homepage": "https://github.com/ubugeeei-prod/vize",
-  "bugs": {
-    "url": "https://github.com/ubugeeei-prod/vize/issues"
-  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -399,6 +389,19 @@
       }
     ]
   },
+  "activationEvents": [
+    "onCommand:vize.disable",
+    "onCommand:vize.enableLintOnlyProfile",
+    "onCommand:vize.enableRecommendedProfile",
+    "onCommand:vize.findReferences",
+    "onCommand:vize.restartServer",
+    "onCommand:vize.selectServerPath",
+    "onCommand:vize.showOutput",
+    "onCommand:vize.showStatus",
+    "onLanguage:art-vue",
+    "onLanguage:html",
+    "onLanguage:vue"
+  ],
   "icon": "icons/logo.png",
   "engines": {
     "vscode": "^1.75.0"

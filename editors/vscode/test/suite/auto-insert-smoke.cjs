@@ -3,6 +3,32 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vscode = require("vscode");
 
+const featureSettingKeys = [
+  "lint.enable",
+  "diagnostics.enable",
+  "typecheck.enable",
+  "editor.enable",
+  "ecosystem.enable",
+  "optionsApi.enable",
+  "legacyVue2.enable",
+  "completion.enable",
+  "hover.enable",
+  "definition.enable",
+  "references.enable",
+  "documentSymbols.enable",
+  "workspaceSymbols.enable",
+  "codeActions.enable",
+  "rename.enable",
+  "codeLens.enable",
+  "formatting.enable",
+  "semanticTokens.enable",
+  "documentLinks.enable",
+  "foldingRanges.enable",
+  "inlayHints.enable",
+  "fileRename.enable",
+  "autoInsert.enable",
+];
+
 exports.runAutoInsertSmoke = async function runAutoInsertSmoke() {
   const { logPath, serverPath } = getFakeServer();
 
@@ -60,6 +86,11 @@ async function prepareConfiguredFakeServer({ logPath, serverPath }) {
   fs.writeFileSync(logPath, "");
   const config = vscode.workspace.getConfiguration("vize");
   await config.update("enable", false, vscode.ConfigurationTarget.Workspace);
+  await config.update("serverPath", undefined, vscode.ConfigurationTarget.Workspace);
+  await config.update("trace.server", undefined, vscode.ConfigurationTarget.Workspace);
+  for (const key of featureSettingKeys) {
+    await config.update(key, undefined, vscode.ConfigurationTarget.Workspace);
+  }
   await config.update("serverPath", serverPath, vscode.ConfigurationTarget.Workspace);
   await sleep(300);
   assert.equal(initializeMessages(readLogEntries(logPath)).length, 0);

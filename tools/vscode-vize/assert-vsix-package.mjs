@@ -110,8 +110,7 @@ assert.equal(packageJson.main, "./dist/extension.cjs");
 assert.equal(packageJson.engines?.vscode, "^1.75.0");
 assert.equal(packageJson.dependencies?.["vscode-languageclient"], "9.0.1");
 
-// VS Code 1.74+ derives activation events from contributed commands and languages.
-assert.equal(packageJson.activationEvents, undefined);
+assertUniqueStrings(packageJson.activationEvents, "activationEvents");
 assertUniqueStrings(
   packageJson.contributes?.commands?.map((command) => command.command),
   "contributes.commands",
@@ -120,7 +119,11 @@ assertUniqueStrings(
 for (const command of packageJson.contributes.commands) {
   assert.equal(command.category, "Vize", `${command.command} must stay in the Vize category`);
   assert.ok(command.title, `${command.command} must have a title`);
+  assert.ok(packageJson.activationEvents.includes(`onCommand:${command.command}`));
 }
+
+assert.ok(packageJson.activationEvents.includes("onLanguage:vue"));
+assert.ok(packageJson.activationEvents.includes("onLanguage:art-vue"));
 tsVueVsix.assertTypeScriptVuePluginPackage({
   packageJson,
   readJsonEntry: (name) => readJsonEntry(archive, name),
