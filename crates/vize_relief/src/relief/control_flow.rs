@@ -3,7 +3,7 @@
 //! Contains if (v-if/v-else-if/v-else), for (v-for),
 //! and text call node definitions.
 
-use vize_carton::{Box, Bump, Vec};
+use vize_carton::{Box, Bump, Vec, ensure_sufficient_stack};
 
 use super::{
     core::{NodeType, SourceLocation},
@@ -62,6 +62,16 @@ impl<'a> IfBranchNode<'a> {
     }
 }
 
+/// Keep teardown of nested structural nodes under the same stack guard as the
+/// compiler passes that traverse them.
+impl Drop for IfBranchNode<'_> {
+    fn drop(&mut self) {
+        if !self.children.is_empty() {
+            ensure_sufficient_stack(|| self.children.clear());
+        }
+    }
+}
+
 /// For node (v-for)
 #[derive(Debug)]
 pub struct ForNode<'a> {
@@ -77,6 +87,16 @@ pub struct ForNode<'a> {
 impl<'a> ForNode<'a> {
     pub fn node_type(&self) -> NodeType {
         NodeType::For
+    }
+}
+
+/// A transformed `v-for` can directly contain another control-flow node, so
+/// its compiler-generated field drop would otherwise recurse without a guard.
+impl Drop for ForNode<'_> {
+    fn drop(&mut self) {
+        if !self.children.is_empty() {
+            ensure_sufficient_stack(|| self.children.clear());
+        }
     }
 }
 

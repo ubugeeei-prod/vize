@@ -3,7 +3,8 @@
 //! Elements nested deeper than [`MAX_ELEMENT_NESTING_DEPTH`] are attached to the
 //! tree as leaves instead of being pushed onto the open-element stack, so the
 //! AST the recursive later passes (transform, codegen, semantic analysis) walk
-//! stays within a predictable amount of stack space regardless of the input.
+//! stays bounded regardless of the input, and the limit is reported as an
+//! ordinary diagnostic instead of aborting the process.
 //!
 //! That recovery used to leak into the diagnostics. Because the over-limit
 //! elements never reached the stack, their end tags found nothing to close and
@@ -22,10 +23,24 @@ use super::super::Parser;
 
 /// Maximum element nesting depth retained by the parser.
 ///
-/// The limit is far beyond any realistic template while still cheap to enforce.
-pub(super) const MAX_ELEMENT_NESTING_DEPTH: usize = 256;
+/// This used to be 256, chosen for the stack the recursive later passes needed:
+/// 256 was exactly the depth a debug build survived on Rust's default 2 MiB
+/// thread stack, and one level past whatever the constant said, the failure mode
+/// was `fatal runtime error: stack overflow` — `SIGABRT`, not a diagnostic
+/// (#3480). Those passes now grow onto the heap when the stack runs low
+/// (`vize_carton::recursion`), so nesting depth no longer costs stack and the
+/// limit is free to be chosen for what it actually bounds: output size.
+///
+/// 4096 is that choice. It is ~3.7x the representative element-only nesting
+/// depth `@vue/compiler-dom` reaches before its own recursion raises
+/// `RangeError: Maximum call stack size exceeded` (measured at 1092 levels of
+/// `<div>` on a default Node stack, 3.6.0-beta.10), leaving ample headroom over
+/// upstream's practical depth. Past it, generated code grows quadratically in
+/// depth — indentation adds two bytes per level per line, so depth 4096 is
+/// already tens of megabytes of output — which is the real reason to stop.
+pub(super) const MAX_ELEMENT_NESTING_DEPTH: usize = 4096;
 
-/// Message attached to the recoverable error raised when the nesting limit is hit.
+/// Message attached to the diagnostic raised when the nesting limit is hit.
 const NESTING_TOO_DEEP_MESSAGE: &str = "Element nesting is too deep.";
 
 impl<'a> Parser<'a> {

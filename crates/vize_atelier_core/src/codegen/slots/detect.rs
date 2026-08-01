@@ -2,6 +2,7 @@
 
 use crate::steps::v_slot::{collect_slots, has_v_slot};
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
+use vize_carton::ensure_sufficient_stack;
 
 /// The expression a component spreads into its slots object, if it carries a
 /// `v-slots` directive (#3467).
@@ -130,16 +131,17 @@ fn child_contains_slot_outlet(child: &TemplateChildNode<'_>) -> bool {
             if el.tag_type == ElementType::Slot || el.tag.as_str() == "slot" {
                 return true;
             }
-            el.children.iter().any(child_contains_slot_outlet)
+            ensure_sufficient_stack(|| el.children.iter().any(child_contains_slot_outlet))
         }
         TemplateChildNode::If(if_node) => if_node
             .branches
             .iter()
             .flat_map(|branch| branch.children.iter())
-            .any(child_contains_slot_outlet),
-        TemplateChildNode::For(for_node) => {
-            for_node.children.iter().any(child_contains_slot_outlet)
-        }
+            .any(|child| ensure_sufficient_stack(|| child_contains_slot_outlet(child))),
+        TemplateChildNode::For(for_node) => for_node
+            .children
+            .iter()
+            .any(|child| ensure_sufficient_stack(|| child_contains_slot_outlet(child))),
         _ => false,
     }
 }

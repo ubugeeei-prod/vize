@@ -43,7 +43,7 @@
 //! dialect (its call site is guarded by `supports_v2_event_sugar`).
 
 use vize_armature::legacy::LegacyDialectCapabilities;
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{Box, Bump, String, Vec, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
@@ -73,7 +73,7 @@ fn desugar_children<'a>(allocator: &'a Bump, children: &mut Vec<'a, TemplateChil
     for child in children.iter_mut() {
         if let TemplateChildNode::Element(el) = child {
             desugar_element(allocator, el);
-            desugar_children(allocator, &mut el.children);
+            ensure_sufficient_stack(|| desugar_children(allocator, &mut el.children));
         }
     }
 }

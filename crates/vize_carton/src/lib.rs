@@ -56,6 +56,7 @@ pub mod line_index;
 pub mod lsp;
 pub mod path;
 pub mod profiler;
+pub mod recursion;
 pub mod source_range;
 pub mod string_builder;
 pub mod telegraph;
@@ -65,6 +66,9 @@ pub use allocator::Allocator;
 pub use boxed::Box;
 pub use clone_in::CloneIn;
 pub use vec::Vec;
+
+// Re-export the recursion guard the recursive compiler passes wrap themselves in
+pub use recursion::ensure_sufficient_stack;
 
 // Re-export bumpalo types for convenience
 pub use bumpalo::Bump;

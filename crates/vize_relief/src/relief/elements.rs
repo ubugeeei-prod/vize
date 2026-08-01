@@ -3,7 +3,7 @@
 //! Contains element, attribute, directive, text, comment,
 //! and interpolation node definitions.
 
-use vize_carton::{Box, Bump, String, Vec, directive::DirectiveKind};
+use vize_carton::{Box, Bump, String, Vec, directive::DirectiveKind, ensure_sufficient_stack};
 
 use super::{
     control_flow::ForParseResult,
@@ -43,6 +43,29 @@ impl<'a> ElementNode<'a> {
 
     pub fn node_type(&self) -> NodeType {
         NodeType::Element
+    }
+}
+
+/// Tearing an element down is itself a recursive walk of its subtree.
+///
+/// Without this, the compiler-generated drop glue chains
+/// `Vec<TemplateChildNode>` -> `Box<ElementNode>` -> `Vec<TemplateChildNode>`
+/// once per nesting level, on the machine stack, with no guard — so a template
+/// deep enough would abort the process on the way *out* of a compile that had
+/// just succeeded. Dropping the children here, inside a checked frame, puts the
+/// teardown under the same stack-growth guarantee as the passes that built the
+/// tree (`vize_carton::recursion`).
+///
+/// Leaf elements — the overwhelming majority — pay one branch and nothing else.
+impl Drop for ElementNode<'_> {
+    fn drop(&mut self) {
+        if self.children.is_empty() {
+            return;
+        }
+        // `clear` runs the children's destructors here; the implicit field drop
+        // that follows this function then sees an empty vector and recurses no
+        // further.
+        ensure_sufficient_stack(|| self.children.clear());
     }
 }
 

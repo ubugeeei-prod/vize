@@ -733,25 +733,25 @@ fn test_parse_extreme_nesting_is_bounded() {
 
     let (root, errors) = parse(&allocator, &source);
 
-    // The nesting limit was reported.
-    assert!(
+    // The nesting limit was reported, once, and nothing else was.
+    assert_eq!(
         errors
             .iter()
-            .any(|e| e.message.contains("nesting is too deep")),
-        "expected a nesting-depth error for deeply nested input"
+            .map(|e| (e.code, e.message.as_str()))
+            .collect::<std::vec::Vec<_>>(),
+        vec![(ErrorCode::ExtendPoint, "Element nesting is too deep.")]
     );
 
-    // The retained tree depth is bounded by the cap, not by the input depth.
+    // The retained tree depth is bounded by the cap, not by the input depth:
+    // the first over-limit element is kept as a leaf on the deepest retained
+    // parent, so the tree is exactly one level deeper than the cap.
     let mut node = root.children.first();
     let mut measured = 0usize;
     while let Some(TemplateChildNode::Element(el)) = node {
         measured += 1;
         node = el.children.first();
     }
-    assert!(
-        measured <= 257,
-        "tree depth should stay bounded near the cap, got {measured}"
-    );
+    assert_eq!(measured, 4097);
 }
 
 #[test]

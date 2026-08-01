@@ -20,7 +20,7 @@ use vize_relief::{
 };
 
 /// Mirrors `MAX_ELEMENT_NESTING_DEPTH` in `parser::element::nesting`.
-const NESTING_LIMIT: usize = 256;
+const NESTING_LIMIT: usize = 4096;
 
 const TOO_DEEP: &str = "Element nesting is too deep.";
 
@@ -65,7 +65,7 @@ fn nesting_at_the_limit_parses_without_diagnostics() {
 
 #[test]
 fn nesting_past_the_limit_reports_the_limit_once_without_inventing_end_tag_errors() {
-    for depth in [NESTING_LIMIT + 1, NESTING_LIMIT + 2, 300, 1000] {
+    for depth in [NESTING_LIMIT + 1, NESTING_LIMIT + 2, 5_000, 10_000] {
         let allocator = Bump::new();
         let source = nested_divs(depth);
         let (_, errors) = parse(&allocator, &source);
@@ -100,7 +100,7 @@ fn each_over_limit_region_is_reported_at_its_own_location() {
 #[test]
 fn retained_tree_depth_stays_bounded_past_the_limit() {
     let allocator = Bump::new();
-    let source = nested_divs(5000);
+    let source = nested_divs(5_000);
     let (root, errors) = parse(&allocator, &source);
 
     assert_eq!(

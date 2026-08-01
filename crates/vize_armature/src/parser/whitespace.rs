@@ -6,7 +6,7 @@
 //! whitespace alphabet is the ASCII set `[ \t\n\f\r]`, so this module uses
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
-use vize_carton::{String, Vec};
+use vize_carton::{String, Vec, ensure_sufficient_stack};
 use vize_relief::TemplateChildNode;
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
@@ -58,6 +58,11 @@ fn condense_internal_whitespace(text: &str) -> Option<String> {
 }
 
 /// Condense whitespace in children
+///
+/// Tokenizing is iterative — the parser keeps its own open-element stack — but
+/// this post-pass walks the finished tree with the call stack, so it is the one
+/// place where parsing costs a frame per nesting level. Its descent is therefore
+/// guarded (`vize_carton::recursion`).
 pub(super) fn condense_whitespace<'a>(
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_pre_tag: fn(&str) -> bool,
@@ -146,7 +151,7 @@ pub(super) fn condense_whitespace<'a>(
         if let TemplateChildNode::Element(ref mut el) = children[i]
             && !is_pre_tag(el.tag.as_str())
         {
-            condense_whitespace(&mut el.children, is_pre_tag);
+            ensure_sufficient_stack(|| condense_whitespace(&mut el.children, is_pre_tag));
         }
 
         i += 1;

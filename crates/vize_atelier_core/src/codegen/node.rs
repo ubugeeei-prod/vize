@@ -7,11 +7,17 @@ use super::context::CodegenContext;
 use super::element::generate_element;
 use super::v_for::generate_for;
 use super::v_if::generate_if;
-use vize_carton::ToCompactString;
+use vize_carton::{ToCompactString, ensure_sufficient_stack};
 
 /// Generate node code
+///
+/// Every codegen path that emits a child funnels back through here, so this is
+/// the one point whose call depth tracks template nesting depth. The guard moves
+/// the descent onto a fresh stack before the thread stack runs out, because a
+/// stack overflow aborts the process instead of producing a diagnostic
+/// (`vize_carton::recursion`).
 pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
-    match node {
+    ensure_sufficient_stack(|| match node {
         TemplateChildNode::Element(el) => generate_element(ctx, el),
         TemplateChildNode::Text(text) => generate_text(ctx, text),
         TemplateChildNode::Comment(comment) => generate_comment(ctx, comment),
@@ -26,5 +32,5 @@ pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
         _ => {
             ctx.push("null /* unsupported node */");
         }
-    }
+    });
 }

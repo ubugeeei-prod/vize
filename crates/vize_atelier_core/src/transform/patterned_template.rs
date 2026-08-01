@@ -1,6 +1,6 @@
 //! Experimental patterned template desugaring (`v-match` / `v-case`).
 
-use vize_carton::{Box, Bump, String, Vec, cstr};
+use vize_carton::{Box, Bump, String, Vec, cstr, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RootNode,
@@ -19,7 +19,7 @@ fn rewrite_children<'a>(allocator: &'a Bump, children: &mut Vec<'a, TemplateChil
             continue;
         };
 
-        rewrite_children(allocator, &mut el.children);
+        ensure_sufficient_stack(|| rewrite_children(allocator, &mut el.children));
         rewrite_match_element(allocator, el);
     }
 }

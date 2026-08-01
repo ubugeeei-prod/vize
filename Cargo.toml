@@ -131,6 +131,10 @@ xxhash-rust = { version = "=0.8.15", features = ["xxh3"] }
 sha2 = "=0.11.0"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
 libc = "=0.2.186"
+# Moves a recursive AST pass onto a heap-allocated stack when the thread stack
+# runs low, so template nesting depth costs heap instead of stack. See
+# `vize_carton::recursion` for why the compiler needs it.
+stacker = "=0.1.24"
 
 # Allocator
 mimalloc = "=0.1.52"

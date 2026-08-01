@@ -2,19 +2,23 @@
 //!
 //! Transforms v-slot (# shorthand) directives for slot content.
 
-use vize_carton::{String, is_builtin_directive};
+use vize_carton::{String, ensure_sufficient_stack};
 
-use crate::errors::ErrorCode;
 use crate::lane::TransformContext;
 use crate::{
-    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper,
-    SourceLocation, TemplateChildNode,
+    DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
 };
 
 #[path = "v_slot/params.rs"]
 mod params;
+#[cfg(test)]
+#[path = "v_slot/tests.rs"]
+mod tests;
+#[path = "v_slot/validate.rs"]
+mod validate;
 
 pub use params::extract_slot_prop_names;
+pub(crate) use validate::validate_v_slot_usage;
 
 /// Check if element has v-slot directive
 pub fn has_v_slot(el: &ElementNode<'_>) -> bool {
@@ -97,10 +101,16 @@ fn has_implicit_child(child: &TemplateChildNode<'_>) -> bool {
         TemplateChildNode::If(if_node) => if_node
             .branches
             .iter()
-            .any(|branch| branch.children.iter().any(has_implicit_child)),
-        TemplateChildNode::For(for_node) => for_node.children.iter().any(has_implicit_child),
+            .any(|branch| any_implicit_child(&branch.children)),
+        TemplateChildNode::For(for_node) => any_implicit_child(&for_node.children),
         _ => true,
     }
+}
+
+/// Guarded: `v-if`/`v-for` nodes nest, so this descends once per nesting level
+/// and its depth is bounded by the input (`vize_carton::recursion`).
+fn any_implicit_child(children: &[TemplateChildNode<'_>]) -> bool {
+    ensure_sufficient_stack(|| children.iter().any(has_implicit_child))
 }
 
 fn slot_name_is_static(dir: &DirectiveNode<'_>) -> bool {
@@ -108,93 +118,6 @@ fn slot_name_is_static(dir: &DirectiveNode<'_>) -> bool {
         ExpressionNode::Simple(exp) => exp.is_static,
         ExpressionNode::Compound(_) => false,
     })
-}
-
-/// Validate v-slot placement and slot-template structure.
-pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &ElementNode<'_>) {
-    let own_slot = find_v_slot(el);
-
-    if let Some(dir) = own_slot
-        && el.tag_type != ElementType::Component
-        && el.tag.as_str() != "template"
-    {
-        ctx.on_error(ErrorCode::VSlotMisplaced, Some(dir.loc.clone()));
-    }
-
-    if el.tag_type == ElementType::Slot || el.tag.as_str() == "slot" {
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && !is_builtin_directive(dir.name.as_str())
-            {
-                ctx.on_error(
-                    ErrorCode::VSlotUnexpectedDirectiveOnSlotOutlet,
-                    Some(dir.loc.clone()),
-                );
-            }
-        }
-    }
-
-    if el.tag_type != ElementType::Component || el.children.is_empty() {
-        return;
-    }
-
-    let mut seen_static_slots: std::vec::Vec<String> = std::vec::Vec::new();
-    let mut has_template_slots = false;
-    let mut has_named_default_slot = false;
-    let mut first_implicit_default_loc: Option<SourceLocation> = None;
-
-    for child in el.children.iter() {
-        let TemplateChildNode::Element(child_el) = child else {
-            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
-                first_implicit_default_loc = Some(child.loc().clone());
-            }
-            continue;
-        };
-
-        let Some(slot_dir) = find_v_slot(child_el) else {
-            if first_implicit_default_loc.is_none() && has_implicit_child(child) {
-                first_implicit_default_loc = Some(child.loc().clone());
-            }
-            continue;
-        };
-
-        if child_el.tag.as_str() != "template" {
-            continue;
-        }
-
-        if own_slot.is_some() {
-            ctx.on_error(ErrorCode::VSlotMixedSlotUsage, Some(slot_dir.loc.clone()));
-            break;
-        }
-
-        has_template_slots = true;
-
-        if !has_structural_slot_directive(child_el) && slot_name_is_static(slot_dir) {
-            let slot_name = get_slot_name(slot_dir);
-            if seen_static_slots
-                .iter()
-                .any(|seen| seen.as_str() == slot_name.as_str())
-            {
-                ctx.on_error(
-                    ErrorCode::VSlotDuplicateSlotNames,
-                    Some(slot_dir.loc.clone()),
-                );
-                continue;
-            }
-            if slot_name.as_str() == "default" {
-                has_named_default_slot = true;
-            }
-            seen_static_slots.push(slot_name);
-        }
-    }
-
-    if own_slot.is_none()
-        && has_template_slots
-        && has_named_default_slot
-        && let Some(loc) = first_implicit_default_loc
-    {
-        ctx.on_error(ErrorCode::VSlotExtraneousDefaultSlotChildren, Some(loc));
-    }
 }
 
 /// Slot outlet info for codegen
@@ -313,168 +236,4 @@ pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
         }
     }
     false
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::errors::{CompilerError, ErrorCode};
-    use crate::lane::traverse::traverse_children;
-    use crate::lane::{ParentNode, TransformContext};
-    use crate::options::TransformOptions;
-    use crate::parser::parse;
-    use bumpalo::Bump;
-
-    fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
-        let allocator = Bump::new();
-        let (mut root, errors) = parse(&allocator, source);
-        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
-        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
-        ctx.errors
-    }
-
-    #[test]
-    fn test_has_v_slot() {
-        let allocator = Bump::new();
-        let (root, _) = parse(&allocator, r#"<template v-slot:header>content</template>"#);
-
-        if let TemplateChildNode::Element(el) = &root.children[0] {
-            assert!(has_v_slot(el));
-        }
-    }
-
-    #[test]
-    fn test_default_slot_name() {
-        let allocator = Bump::new();
-        let dir = DirectiveNode::new(&allocator, "slot", SourceLocation::STUB);
-        assert_eq!(get_slot_name(&dir).as_str(), "default");
-    }
-
-    #[test]
-    fn test_collect_slots() {
-        let allocator = Bump::new();
-        let (root, _) = parse(
-            &allocator,
-            r#"<Comp><template #header>H</template><template #footer>F</template></Comp>"#,
-        );
-
-        if let TemplateChildNode::Element(el) = &root.children[0] {
-            let slots = collect_slots(el);
-            assert_eq!(slots.len(), 2);
-            assert!(slots.iter().any(|s| s.name == "header"));
-            assert!(slots.iter().any(|s| s.name == "footer"));
-        }
-    }
-
-    #[test]
-    fn test_collect_slots_dedupes_static_duplicate_slot_names() {
-        let allocator = Bump::new();
-        let (root, _) = parse(
-            &allocator,
-            r#"<Comp><template #header>H1</template><template #header>H2</template></Comp>"#,
-        );
-
-        if let TemplateChildNode::Element(el) = &root.children[0] {
-            let slots = collect_slots(el);
-            assert_eq!(slots.len(), 1);
-            assert_eq!(slots[0].name, "header");
-        }
-    }
-
-    #[test]
-    fn test_v_slot_on_plain_element_reports_misplaced() {
-        let errors = transform_errors(r#"<div v-slot="{ item }">Text</div>"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VSlotMisplaced);
-    }
-
-    #[test]
-    fn test_v_slot_on_empty_plain_element_reports_misplaced() {
-        let errors = transform_errors(r#"<div v-slot></div>"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VSlotMisplaced);
-    }
-
-    #[test]
-    fn test_duplicate_slot_names_report_error() {
-        let errors = transform_errors(
-            r#"<Comp><template #header>H1</template><template #header>H2</template></Comp>"#,
-        );
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VSlotDuplicateSlotNames);
-    }
-
-    #[test]
-    fn test_mixed_component_and_template_slot_usage_reports_error() {
-        let errors = transform_errors(r#"<Comp v-slot><template #header>Header</template></Comp>"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VSlotMixedSlotUsage);
-    }
-
-    #[test]
-    fn test_explicit_default_slot_with_children_reports_error() {
-        let errors = transform_errors(
-            r#"<Comp><template #default>Default</template><span>Extra</span></Comp>"#,
-        );
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(
-            errors[0].code,
-            ErrorCode::VSlotExtraneousDefaultSlotChildren
-        );
-    }
-
-    #[test]
-    fn test_explicit_default_slot_allows_whitespace_children() {
-        let errors = transform_errors("<Comp><template #default>Default</template>\n  \t\n</Comp>");
-
-        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
-    }
-
-    #[test]
-    fn test_custom_directive_on_slot_outlet_reports_error() {
-        let errors = transform_errors(r#"<slot v-custom />"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(
-            errors[0].code,
-            ErrorCode::VSlotUnexpectedDirectiveOnSlotOutlet
-        );
-    }
-
-    #[test]
-    fn test_get_slot_prop_names_from_directive() {
-        let allocator = Bump::new();
-        let (root, _) = parse(
-            &allocator,
-            r#"<Comp><template #default="{ item, active }">{{ item.id }}{{ active }}</template></Comp>"#,
-        );
-
-        if let TemplateChildNode::Element(el) = &root.children[0] {
-            if let TemplateChildNode::Element(slot_template) = &el.children[0] {
-                let dir = slot_template
-                    .props
-                    .iter()
-                    .find_map(|prop| match prop {
-                        crate::PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
-                        _ => None,
-                    })
-                    .expect("expected v-slot directive");
-                let names = get_slot_prop_names(dir);
-                let names: Vec<_> = names.iter().map(|name| name.as_str()).collect();
-                assert_eq!(names, vec!["item", "active"]);
-            } else {
-                panic!("expected slot template element");
-            }
-        } else {
-            panic!("expected component root element");
-        }
-    }
 }

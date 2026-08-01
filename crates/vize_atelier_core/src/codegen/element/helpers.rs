@@ -6,7 +6,7 @@
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
-use vize_carton::is_builtin_directive;
+use vize_carton::{ensure_sufficient_stack, is_builtin_directive};
 
 use super::super::{
     context::CodegenContext, node::generate_node, props::is_supported_directive,
@@ -194,15 +194,16 @@ fn child_crosses_namespace_boundary(ns: Namespace, child: &TemplateChildNode<'_>
     match child {
         TemplateChildNode::Element(el) => match el.tag_type {
             ElementType::Element => el.ns != ns,
-            ElementType::Template => children_cross_namespace_boundary(ns, &el.children),
+            ElementType::Template => {
+                ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &el.children))
+            }
             _ => false,
         },
-        TemplateChildNode::If(if_node) => if_node
-            .branches
-            .iter()
-            .any(|branch| children_cross_namespace_boundary(ns, &branch.children)),
+        TemplateChildNode::If(if_node) => if_node.branches.iter().any(|branch| {
+            ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &branch.children))
+        }),
         TemplateChildNode::For(for_node) => {
-            children_cross_namespace_boundary(ns, &for_node.children)
+            ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &for_node.children))
         }
         _ => false,
     }

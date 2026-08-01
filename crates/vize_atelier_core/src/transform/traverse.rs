@@ -5,7 +5,7 @@ use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };
-use vize_carton::profile;
+use vize_carton::{ensure_sufficient_stack, profile};
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
@@ -78,7 +78,18 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
 }
 
 /// Traverse a single node
+///
+/// This is the transform lane's recursion step: `traverse_children` calls it per
+/// child and it calls `traverse_children` back for that child's subtree, so the
+/// call depth here follows template nesting depth. The guard moves the descent
+/// onto a fresh stack before the thread stack runs out, because a stack overflow
+/// aborts the process instead of producing a diagnostic
+/// (`vize_carton::recursion`).
 pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
+    ensure_sufficient_stack(|| traverse_node_guarded(ctx, node));
+}
+
+fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChildNode<'a>) {
     // Collect exit functions from transforms
     let mut exit_fns = ExitFns::new();
 
