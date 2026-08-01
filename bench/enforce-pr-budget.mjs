@@ -84,9 +84,13 @@ export function enforceBenchmarkBudget(data, options = {}) {
 
   const budget = data.budget ?? createBenchmarkBudget(data.results ?? []);
   if (budget.status !== "failed") {
+    const confirmed = (data.results ?? []).filter((result) => result.attempts?.length === 2);
     return {
       ok: true,
-      message: "Benchmark budget passed.",
+      message:
+        confirmed.length === 0
+          ? "Benchmark budget passed."
+          : `Benchmark budget passed after extending ${confirmed.length} initial breach(es) with paired confirmation samples: ${confirmed.map((result) => result.label).join(", ")}.`,
     };
   }
 
@@ -99,7 +103,7 @@ export function enforceBenchmarkBudget(data, options = {}) {
 
   return {
     ok: false,
-    message: `Benchmark regression budget failed for ${budget.regressionCount} task(s):\n${failures}`,
+    message: `Benchmark regression budget failed for ${budget.regressionCount} task(s) after paired confirmation:\n${failures}`,
   };
 }
 

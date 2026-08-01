@@ -69,6 +69,8 @@ test("benchmark markdown reports the active regression budget", () => {
   });
 
   assert.match(markdown, /Budget: failed \(1 regression\)\./);
+  assert.match(markdown, /Any threshold breach receives 5 fresh confirmation pairs/);
+  assert.match(markdown, /\| Task \| Base median \| Head median \| Paired rate \| Result \|/);
   assert.match(markdown, /Regression budget failures:/);
   assert.match(markdown, /Type check: 1\.150x \(\+15\.00%\)/);
 });

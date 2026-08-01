@@ -13,6 +13,7 @@ import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 
 import { laneEnvironment, makeTasks } from "./compare-pr-lanes.mjs";
+import { confirmRegressions, summarizeBenchmarkRuns } from "./compare-pr-results.mjs";
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
@@ -58,15 +59,6 @@ function parseNonNegativeInt(value, fallback) {
 function parsePositiveFloat(value, fallback) {
   const parsed = Number.parseFloat(value ?? "");
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function median(values) {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) {
-    return sorted[mid];
-  }
-  return (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 function formatMs(ms) {
@@ -162,28 +154,13 @@ function measureTask(task, baseBin, headBin, options) {
     }
   }
 
-  const baseMs = median(baseRuns);
-  const headMs = median(headRuns);
-  const rate = baseMs === 0 ? Number.NaN : headMs / baseMs;
-  const changePercent = Number.isFinite(rate) ? (rate - 1) * 100 : Number.NaN;
-  const status =
-    changePercent >= options.thresholdPercent
-      ? "regression"
-      : changePercent <= -options.thresholdPercent
-        ? "faster"
-        : "stable";
-
-  return {
+  return summarizeBenchmarkRuns({
     id: task.id,
     label: task.label,
-    baseMs,
-    headMs,
-    rate,
-    changePercent,
-    status,
     baseRuns,
     headRuns,
-  };
+    thresholdPercent: options.thresholdPercent,
+  });
 }
 
 export function createBenchmarkBudget(results) {
@@ -212,13 +189,13 @@ export function renderMarkdown(data) {
     `Base: \`${data.baseLabel}\`  Head: \`${data.headLabel}\`  Input: ${data.fileCount.toLocaleString()} generated SFC files`,
   );
   lines.push(
-    `Median of ${data.runs} measured run(s) after ${data.warmups} warmup run(s). Times are shown in milliseconds to 0.001ms. Rate is head/base, so below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%.`,
+    `Median of ${data.runs} adjacent head/base pairs after ${data.warmups} warmup pair(s). Any threshold breach receives ${data.runs} fresh confirmation pairs, and the final rate is the paired median over all samples. Times are shown in milliseconds to 0.001ms. Rate below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%.`,
   );
   lines.push(
     `Budget: ${budget.status}${budget.regressionCount > 0 ? ` (${budget.regressionCount} regression${budget.regressionCount === 1 ? "" : "s"})` : ""}.`,
   );
   lines.push("");
-  lines.push("| Task | Base | Head | Rate | Result |");
+  lines.push("| Task | Base median | Head median | Paired rate | Result |");
   lines.push("| --- | ---: | ---: | ---: | --- |");
   for (const result of data.results) {
     lines.push(
@@ -241,8 +218,15 @@ export function renderMarkdown(data) {
   for (const result of data.results) {
     lines.push(`### ${result.label}`);
     lines.push("");
-    lines.push(`- Base: ${formatRunList(result.baseRuns)}`);
-    lines.push(`- Head: ${formatRunList(result.headRuns)}`);
+    const attempts = result.attempts ?? [result];
+    for (const [index, attempt] of attempts.entries()) {
+      const prefix = attempts.length === 1 ? "" : index === 0 ? "Initial " : "Confirmation ";
+      lines.push(
+        `- ${prefix}Result: ${formatRate(attempt.rate)} (${formatPercent(attempt.changePercent)}), ${attempt.status}`,
+      );
+      lines.push(`- ${prefix}Base: ${formatRunList(attempt.baseRuns)}`);
+      lines.push(`- ${prefix}Head: ${formatRunList(attempt.headRuns)}`);
+    }
     lines.push("");
   }
   lines.push("</details>");
@@ -289,12 +273,16 @@ export function main(argv = process.argv.slice(2)) {
     allowNonZeroExit: false,
   };
 
-  const results = tasks.map((task) =>
+  const measure = (task) =>
     measureTask(task, baseBin, headBin, {
       ...options,
       allowNonZeroExit: task.allowNonZeroExit,
       threads: task.threads ?? 1,
-    }),
+    });
+  const results = confirmRegressions(
+    tasks.map((task) => ({ task, result: measure(task) })),
+    measure,
+    thresholdPercent,
   );
 
   const data = {
