@@ -139,7 +139,7 @@ const A = () => _createVNode(_resolveComponent("B"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, {
     modelValue: val,
     "onUpdate:modelValue": $event => ((val) = $event)
@@ -166,7 +166,7 @@ const A = () => _createVNode(_resolveComponent("B"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, {
     argument: val,
     "onUpdate:argument": $event => ((val) = $event),
@@ -192,7 +192,7 @@ const A = () => _createVNode(_resolveComponent("B"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B))
 }
 
@@ -215,7 +215,7 @@ const A = () => _createVNode(_resolveComponent("B"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, {
     modelValue: foo,
     "onUpdate:modelValue": $event => ((foo) = $event),
@@ -249,7 +249,7 @@ const A = () => _createVNode(_resolveComponent("B"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, {
     modelValue: foo,
     "onUpdate:modelValue": $event => ((foo) = $event),
@@ -292,7 +292,7 @@ const A = () => _withDirectives(_createVNode(_resolveComponent("B"), null, null)
 import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock, vShow as _vShow } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return _withDirectives((_openBlock(), _createBlock(_component_B, null, null, 512 /* NEED_PATCH */)), [
     [_vShow, vis]
   ])
@@ -366,7 +366,7 @@ const A = () => _withDirectives(_createVNode("a", null, null), [[_resolveDirecti
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   const _directive_custom = _resolveDirective("custom")
-  
+
   return _withDirectives((_openBlock(), _createElementBlock("a", null, null, 512 /* NEED_PATCH */)), [
     [_directive_custom, val, "arg"]
   ])
@@ -389,7 +389,7 @@ const A = () => _withDirectives(_createVNode("a", null, null), [[_resolveDirecti
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   const _directive_custom = _resolveDirective("custom")
-  
+
   return _withDirectives((_openBlock(), _createElementBlock("a", null, null, 512 /* NEED_PATCH */)), [
     [_directive_custom, val, "arg", { a: true, b: true }]
   ])
@@ -409,7 +409,7 @@ const A = () => _withDirectives(_createVNode("div", null, null), [[_resolveDirec
 import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
   const _directive_unknown_thing = _resolveDirective("unknown-thing")
-  
+
   return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [
     [_directive_unknown_thing, x]
   ])

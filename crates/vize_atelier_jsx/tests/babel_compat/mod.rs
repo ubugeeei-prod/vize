@@ -145,6 +145,30 @@ fn fixture_dir() -> PathBuf {
         .join("fixtures")
 }
 
+/// Canonicalize generated text before it becomes snapshot input.
+///
+/// The compiler output is semantically unchanged; this only keeps platform
+/// line endings and indentation on otherwise blank lines out of snapshots.
+fn normalize_snapshot_text(input: &str) -> std::string::String {
+    let input = input.trim_end();
+    let mut normalized = std::string::String::with_capacity(input.len());
+    for (index, line) in input.lines().enumerate() {
+        if index > 0 {
+            normalized.push('\n');
+        }
+        normalized.push_str(line.trim_end());
+    }
+    normalized
+}
+
+#[test]
+fn snapshot_text_normalizes_line_endings_and_trailing_whitespace() {
+    assert_eq!(
+        normalize_snapshot_text("first  \r\n \t\r\nlast\t\r\n"),
+        "first\n\nlast"
+    );
+}
+
 /// Load `fixtures/corpus.json`.
 pub fn load_corpus() -> Corpus {
     let path = fixture_dir().join("corpus.json");
@@ -212,5 +236,5 @@ pub fn vize_vdom_output(case: &Case) -> std::string::String {
     } else {
         rendered.push_str(module);
     }
-    rendered
+    normalize_snapshot_text(&rendered)
 }

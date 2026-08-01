@@ -119,7 +119,7 @@ const A = () => _createVNode(_resolveComponent("my-el"), {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_my_el = _resolveComponent("my-el")
-  
+
   return (_openBlock(), _createBlock(_component_my_el, { foo: 1 }))
 }
 
@@ -139,7 +139,7 @@ const A = () => _createVNode("MyEl", {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_MyEl = _resolveComponent("MyEl")
-  
+
   return (_openBlock(), _createBlock(_component_MyEl, { foo: 1 }))
 }
 
@@ -162,7 +162,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, _isSlot(slots) ? slot
 import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createTextVNode(_toDisplayString(slots), 1 /* TEXT */)
@@ -187,7 +187,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createTextVNode(_toDisplayString(slots), 1 /* TEXT */)

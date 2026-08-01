@@ -48,7 +48,7 @@ const A = () => <B v-models={foo}/>;
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B))
 }
 
@@ -66,7 +66,7 @@ const A = () => <B v-models={[foo]}/>;
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B))
 }
 
@@ -85,6 +85,6 @@ const A = () => _createVNode(_resolveComponent("B"), null, 1);
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B))
 }

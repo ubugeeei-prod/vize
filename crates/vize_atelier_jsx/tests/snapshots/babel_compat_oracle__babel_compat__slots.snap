@@ -19,7 +19,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createElementVNode("i")
@@ -47,7 +47,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createTextVNode("foo")
@@ -72,7 +72,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx((s) => [
       _createElementVNode("i", null, _toDisplayString(s.x), 1 /* TEXT */)
@@ -98,7 +98,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createElementVNode("div", null, "A")
@@ -121,7 +121,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, slots);
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, slots, 1024 /* DYNAMIC_SLOTS */))
 }
 
@@ -142,7 +142,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createElementVNode("i")
@@ -171,7 +171,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     bar: _withCtx(() => [
       _createElementVNode("b")
@@ -199,7 +199,7 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B, null, {
     default: _withCtx(() => [
       _createElementVNode("i")
@@ -225,6 +225,6 @@ const A = () => _createVNode(_resolveComponent("B"), null, {
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
-  
+
   return (_openBlock(), _createBlock(_component_B))
 }
