@@ -70,8 +70,9 @@ const rustBranchCoverageCommand = [
     "cargo +nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core",
     "--branch --json --summary-only",
     `--output-path ${rustBranchCoverageJson}`,
-    "--fail-under-lines 55 --fail-under-functions 70 --fail-under-regions 55",
   ].join(" "),
+  // Keep threshold enforcement in one place so failures still render the
+  // complete metric table instead of stopping at cargo-llvm-cov's exit code.
   moonScript(
     "enforce_rust_source_coverage",
     "--json",

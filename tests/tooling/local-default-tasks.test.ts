@@ -80,6 +80,19 @@ test("workspace build, test, and lint default to their local task graphs", () =>
   assert.doesNotMatch(ci.command, /blacksmith|test:testbox/);
 });
 
+test("branch coverage reports every metric before enforcing thresholds", () => {
+  const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
+  const [reportCommand, enforcementCommand] = command.split(" && ").slice(1);
+
+  assert.match(reportCommand, /cargo \+nightly llvm-cov/);
+  assert.doesNotMatch(reportCommand, /--fail-under-/);
+  assert.match(enforcementCommand, /enforce_rust_source_coverage/);
+  assert.match(enforcementCommand, /--min-lines 55/);
+  assert.match(enforcementCommand, /--min-functions 70/);
+  assert.match(enforcementCommand, /--min-regions 55/);
+  assert.match(enforcementCommand, /--min-branches 40/);
+});
+
 test("Testbox commands fail with an actionable lifecycle when the box id is absent", () => {
   const result = spawnSync(
     "/bin/sh",
