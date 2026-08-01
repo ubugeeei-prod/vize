@@ -2,7 +2,26 @@ use super::{CorsaServer, Diagnostic};
 use crate::batch::restore_virtual_vue_specifiers;
 use crate::corsa_bridge::CorsaVueVirtualProject;
 use crate::corsa_client::LspDiagnostic;
-use vize_carton::{String, cstr, line_index::LineIndex};
+use vize_carton::{FxHashSet, String, cstr, line_index::LineIndex};
+
+type DiagnosticKey = (String, String, u32, u32, Option<String>);
+
+/// Collapse diagnostics that started at distinct virtual positions but map to
+/// the same authored span. The batch checker already does this after mapping;
+/// the persistent check server needs the same boundary because dependency
+/// patches can make both a per-prop and whole-props check report one defect.
+pub(super) fn dedup_diagnostics(diagnostics: &mut Vec<Diagnostic>) {
+    let mut seen = FxHashSet::<DiagnosticKey>::default();
+    diagnostics.retain(|diagnostic| {
+        seen.insert((
+            diagnostic.message.clone(),
+            diagnostic.severity.clone(),
+            diagnostic.line,
+            diagnostic.column,
+            diagnostic.code.clone(),
+        ))
+    });
+}
 
 impl CorsaServer {
     /// Run Corsa and map its virtual TypeScript diagnostics back to the SFC.
@@ -123,7 +142,7 @@ mod tests {
     use serde_json::json;
     use vize_carton::line_index::LineIndex;
 
-    use super::{map_corsa_diagnostic, one_based};
+    use super::{dedup_diagnostics, map_corsa_diagnostic, one_based};
     use crate::batch::ImportSourceMap;
     use crate::corsa_bridge::{CorsaVueVirtualDocument, CorsaVueVirtualProject};
     use crate::corsa_client::{LspDiagnostic, LspPosition, LspRange};
@@ -222,5 +241,33 @@ mod tests {
             mapped.message,
             "Cannot find module './Missing.vue.ts' or its corresponding type declarations."
         );
+    }
+
+    #[test]
+    fn mapped_duplicates_collapse_without_hiding_distinct_diagnostics() {
+        let duplicate = super::Diagnostic {
+            message: "Type mismatch".into(),
+            severity: "error".into(),
+            line: 7,
+            column: 27,
+            code: Some("TS2322".into()),
+        };
+        let mut diagnostics = vec![
+            duplicate.clone(),
+            duplicate,
+            super::Diagnostic {
+                message: "Type mismatch".into(),
+                severity: "warning".into(),
+                line: 7,
+                column: 27,
+                code: Some("TS2322".into()),
+            },
+        ];
+
+        dedup_diagnostics(&mut diagnostics);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics[0].severity, "error");
+        assert_eq!(diagnostics[1].severity, "warning");
     }
 }

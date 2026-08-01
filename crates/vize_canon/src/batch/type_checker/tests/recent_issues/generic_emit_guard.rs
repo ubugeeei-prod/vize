@@ -3,6 +3,15 @@
 //! Oracle: TypeScript 6.0.3 and Vue 3.6.0-beta.10.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use vize_carton::{String, cstr};
+
+/// The whole-props failure every usage here produces: it binds the optional
+/// `onSave` and never binds the required `count`.
+fn missing_count(line: u32, props: &str) -> String {
+    cstr!(
+        "{line}:4:error Argument of type '{{ onSave: (_value: string) => void; }}' is not assignable to parameter of type '{props} & Record<string, unknown>'.\nProperty 'count' is missing in type '{{ onSave: (_value: string) => void; }}' but required in type '{props}'."
+    )
+}
 
 #[test]
 fn generic_emit_guards_are_overload_order_independent() {
@@ -16,7 +25,7 @@ fn generic_emit_guards_are_overload_order_independent() {
                 "src/components.ts",
                 r#"type Props = {
   count: number
-  onSave?: (value: number) => void
+  onSave?: (value: string) => void
 }
 
 export const GenericFirstCallbackChild = null as unknown as {
@@ -77,24 +86,37 @@ const stringHandler = (_value: string) => {}
     let Some(snapshot) = snapshot else {
         return;
     };
-    let actual: Vec<_> = snapshot
-        .iter()
-        .map(|(file, code, message)| {
-            (
-                file.as_str(),
-                *code,
-                message.split(':').take(2).collect::<Vec<_>>().join(":"),
-            )
-        })
-        .collect();
+
+    // `TypedOnlyChild` spells its props inline, so TypeScript prints the type
+    // rather than the `Props` alias the other three share. Every usage binds a
+    // declared `on*` prop and none of them binds `count`: before #3569 a named
+    // binding switched the whole-props target to one where every unbound key was
+    // optional, and all four were silent.
+    let inline_props = "{ count: number; onSave?: ((value: string) => void) | undefined; }";
     assert_eq!(
-        actual,
-        [
-            ("src/Parent.vue", Some(2322), "7:31".to_string()),
-            ("src/Parent.vue", Some(2322), "8:30".to_string()),
-            ("src/Parent.vue", Some(2322), "9:18".to_string()),
-            ("src/Parent.vue", Some(2345), "10:4".to_string()),
+        snapshot,
+        vec![
+            (
+                String::from("src/Parent.vue"),
+                Some(2345),
+                missing_count(10, inline_props),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2345),
+                missing_count(7, "Props"),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2345),
+                missing_count(8, "Props"),
+            ),
+            (
+                String::from("src/Parent.vue"),
+                Some(2345),
+                missing_count(9, "Props"),
+            ),
         ],
-        "generic-first and generic-last overloads must share one result, and unbound required props must remain enforced: {snapshot:#?}"
+        "generic-first and generic-last overloads must share one result, and every usage reports the required `count` it never binds"
     );
 }

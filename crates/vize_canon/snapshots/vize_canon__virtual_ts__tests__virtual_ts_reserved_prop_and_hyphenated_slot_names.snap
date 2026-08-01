@@ -122,28 +122,13 @@ function __setup() {
 
   // Component props type declarations
   type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizePropChecker<C, P, K extends PropertyKey> = __VizeIsAny<C> extends true ? __VizeWholePropChecker<C, P, K> : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : __VizeWholePropChecker<C, P, K>) : __VizeWholePropChecker<C, P, K>;
+  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
-  type __VizeExactOptionalProps<P> = { [K in keyof P]?: Required<Pick<P, K>>[K] | {} | null };
-  type __VizeRelaxedProps<P> = __VizeExactOptionalProps<P>;
-  // @ts-ignore TS2694/TS2307: Vue 2 has no PublicProps; an unresolved alias degrades to any and therefore contributes no keys.
-  type __VizeVuePublicProps = import('vue').PublicProps;
-  type __VizeVuePublicPropKeys = [__VizeIsAny<__VizeVuePublicProps>] extends [true] ? never : keyof __VizeVuePublicProps;
-  type __VizeUsageCamelize<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeUsageCamelize<T>>}` : S;
-  type __VizeUsageEventProp<K extends string> = `on${Capitalize<__VizeUsageCamelize<K>>}`;
-  type __VizeComponentEmitPropKeys<C> = '__vizeEmitProps' extends keyof C ? C extends { __vizeEmitProps?: infer P } ? keyof P : never : C extends { emits?: infer E } ? [__VizeIsAny<E>] extends [true] ? never : __VizeUsageEventProp<E extends readonly (infer N extends string)[] ? N : keyof NonNullable<E> & string> : never;
-  type __VizeEventNameForProp<K> = K extends `on${infer N}` ? Uncapitalize<N> : never;
-  type __VizeEventSuffixForProp<K> = K extends `on${infer N}` ? N : never;
-  type __VizeInstanceEmitPropKeys<C, K extends PropertyKey> = C extends { new (...args: any[]): { $emit: infer F } } ? [__VizeIsAny<F>] extends [true] ? never : F extends (event: string, ...args: any[]) => any ? never : K extends `on${string}` ? F extends (event: __VizeEventSuffixForProp<K>, ...args: any[]) => any ? K : F extends (event: __VizeEventNameForProp<K>, ...args: any[]) => any ? K : never : never : never;
-  type __VizeDeclaredAuthoredPropKeys<C, P, K extends PropertyKey> = P extends unknown ? Exclude<Extract<keyof P, K>, __VizeVuePublicPropKeys | __VizeComponentEmitPropKeys<C> | __VizeInstanceEmitPropKeys<C, K>> : never;
-  type __VizeAuthoredProps<C, P, K extends PropertyKey> = P extends unknown ? [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? never : { [Q in __VizeDeclaredAuthoredPropKeys<C, P, K>]-?: P[Q] } : never;
-  type __VizeWholeProps<C, P, K extends PropertyKey, A> = [__VizeDeclaredAuthoredPropKeys<C, P, K>] extends [never] ? P : [A] extends [__VizeAuthoredProps<C, P, K>] ? P : __VizeRelaxedProps<P>;
-  type __VizeWholePropChecker<C, P, K extends PropertyKey> = [K] extends [never] ? (props: P & Record<string, unknown>) => void : <A extends Record<string, unknown>>(props: A & __VizeWholeProps<C, P, K, A>) => void;
   // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { __vizeCheck: any } ? Record<string, unknown> : (typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {}));
   type __TrendChart_0_prop_class = __VizePropValue<__TrendChart_Props_0, 'class'>;
   type __TrendChart_CheckProps_0 = __TrendChart_Props_0;
-  type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart, __TrendChart_CheckProps_0, never>;
+  type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart, __TrendChart_CheckProps_0>;
 
   // Component template navigation references
   void TrendChart;

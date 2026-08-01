@@ -4,5 +4,9 @@ mod attribute_only_required_props;
 mod attribute_only_required_props_edges;
 #[path = "generic_emit_guard.rs"]
 mod generic_emit_guard;
+#[path = "literal_union_props.rs"]
+mod literal_union_props;
 #[path = "runtime_mixin_props.rs"]
 mod runtime_mixin_props;
+#[path = "wide_props_type_complexity.rs"]
+mod wide_props_type_complexity;

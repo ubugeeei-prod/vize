@@ -344,6 +344,8 @@ impl CorsaServer {
             diagnostics.push(sfc_diagnostic);
         }
 
+        diagnostics::dedup_diagnostics(&mut diagnostics);
+
         let error_count = diagnostics.iter().filter(|d| d.severity == "error").count();
 
         Ok(CheckResult {

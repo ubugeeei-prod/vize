@@ -95,7 +95,6 @@ pub(super) fn generate_component_props(
         // Generic functional prop-checker for this component (#775).
         append_prop_checker_alias(
             ts,
-            usage,
             component_type_name.as_str(),
             component_ref.as_str(),
             idx,

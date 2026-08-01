@@ -5,8 +5,8 @@
 //! it: it extracts `label?: string` to `string | undefined` and assigns to that,
 //! which is legal whatever the option says. The distinction between "absent" and
 //! "present and `undefined`" only exists when a whole object literal is assigned
-//! at once, so the usage's props literal is now checked against
-//! `__VizeExactOptionalProps<__Child_Props_N>`.
+//! at once, so the usage's props literal is checked against the child's props
+//! type as a whole (`__Child_Props_N`).
 //!
 //! Every case below is a guard on that check reporting *only* what the per-prop
 //! path cannot, because anything else it reports is a second diagnostic for a
@@ -150,12 +150,9 @@ const maybe: string | undefined = undefined
 }
 
 /// The shapes that must stay silent under the option. Each one would be a false
-/// positive on correct code, and the last two are the reason this check widens
-/// every property rather than using the child's props type:
+/// positive on correct code:
 ///
-/// * a prop the template did not pass — `Child` declares only optional props
-///   here, but the widening is what keeps the missing-required-prop class off in
-///   general;
+/// * a prop the template did not pass, which `Child` declares optional;
 /// * `class`, `style` and `data-*` fallthrough attributes the child never
 ///   declares;
 /// * a prop whose declared type includes `null`, passed `null`;
@@ -210,12 +207,10 @@ const orNull: string | null = null
     assert_eq!(snapshot, vec![], "no correct usage may be reported");
 }
 
-/// An ordinary type mismatch stays the per-prop check's to report, at its own
-/// anchor, and is **not** reported a second time by the whole-object check. This
-/// is the case that ruled out checking against the child's props type or
-/// `Partial<>` of it: both reported every wrongly-typed prop twice, one byte
-/// apart, with an identical code and message that `dedup_diagnostics` could not
-/// collapse because the positions differ.
+/// An ordinary type mismatch is reported exactly once. Both checks see it — the
+/// per-prop assignment and TypeScript's elaboration of the props literal — but
+/// both land on the authored attribute name with the same code and the same
+/// message, so `dedup_diagnostics` collapses them into one row.
 #[test]
 fn a_wrongly_typed_prop_is_reported_exactly_once() {
     if resolve_test_tsgo_binary().is_none() {

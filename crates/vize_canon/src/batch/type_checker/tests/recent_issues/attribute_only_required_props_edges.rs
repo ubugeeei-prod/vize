@@ -1,4 +1,7 @@
-//! Vue public props and adjacent checker paths for #3566.
+//! Vue public props and adjacent checker paths for #3566, and every boundary
+//! #3569 names: a correct named prop beside a missing sibling, a wrong named
+//! prop beside a missing sibling, a complete usage, fallthrough attributes,
+//! spreads, and one diagnostic per defect.
 //!
 //! Oracle: `vue-tsc@3.3.4`, TypeScript `6.0.3`, Vue `3.6.0-beta.10`.
 
@@ -138,6 +141,10 @@ const onSave = (_value: string) => {}
 
   <!-- Multibyte text before the tag must not shift the reported column. -->
   <span title="🎉✅" /><Child :count="1" />
+
+  <!-- A declared binding beside fallthrough attrs or a spread. -->
+  <Child :count="1" class="edge" data-id="1" />
+  <Child :count="1" v-bind="goodBag" />
 </template>
 "#,
             ),
@@ -189,8 +196,26 @@ const onSave = (_value: string) => {}
             ("src/Parent.vue", Some(2345), "46:4".to_string()),
             ("src/Parent.vue", Some(2345), "49:4".to_string()),
             ("src/Parent.vue", Some(2345), "54:24".to_string()),
+            ("src/Parent.vue", Some(2345), "57:4".to_string()),
         ],
         "exact vue-tsc positions: {snapshot:#?}"
+    );
+
+    // Every defect above is reported by exactly one check. The per-prop path and
+    // the whole-props path both see a wrongly typed named prop, at the same
+    // authored anchor and with the same message, so `dedup_diagnostics` collapses
+    // the pair - a second row on any of these lines is that collapse breaking.
+    let mut lines: Vec<_> = snapshot
+        .iter()
+        .map(|(_, _, message)| message.split(':').next().unwrap_or_default())
+        .collect();
+    let reported = lines.len();
+    lines.sort_unstable();
+    lines.dedup();
+    assert_eq!(
+        lines.len(),
+        reported,
+        "no usage may be reported twice: {snapshot:#?}"
     );
 
     let diagnostic_at = |line: u32| {
@@ -215,6 +240,7 @@ const onSave = (_value: string) => {}
         (18, "Property 'label' is missing"),
         (27, "Property 'label' is missing"),
         (39, "Property 'count' is missing"),
+        (57, "Property 'label' is missing"),
     ] {
         assert!(
             diagnostic_at(line).2.contains(expected),
