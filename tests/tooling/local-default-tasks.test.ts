@@ -85,6 +85,7 @@ test("branch coverage reports every metric before enforcing thresholds", () => {
   const [reportCommand, enforcementCommand] = command.split(" && ").slice(1);
 
   assert.match(reportCommand, /cargo \+nightly llvm-cov/);
+  assert.match(reportCommand, /--branch(?:\s|$)/);
   assert.doesNotMatch(reportCommand, /--fail-under-/);
   assert.match(enforcementCommand, /enforce_rust_source_coverage/);
   assert.match(enforcementCommand, /--min-lines 55/);
