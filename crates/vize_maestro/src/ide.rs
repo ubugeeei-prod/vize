@@ -8,6 +8,7 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 pub mod auto_import;
+pub mod auto_insert;
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
@@ -35,6 +36,7 @@ mod template_expression;
 pub mod type_service;
 pub mod workspace_symbols;
 
+pub use auto_insert::AutoInsertService;
 pub use code_action::CodeActionService;
 pub use code_lens::CodeLensService;
 pub use completion::{CompletionService, TRIGGER_CHARACTERS, trigger_characters};

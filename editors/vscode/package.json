@@ -272,6 +272,31 @@
           "type": "boolean",
           "default": true,
           "description": "Enable Vize edits for file rename operations."
+        },
+        "vize.autoInsert.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable experimental automatic insertion for Vue refs, interpolation spacing, tags, and attribute quotes."
+        },
+        "vize.autoInsert.dotValue": {
+          "type": "boolean",
+          "default": true,
+          "description": "Insert .value after an identifier when Vize resolves its TypeScript type as a Vue Ref. Requires vize.autoInsert.enable and type checking."
+        },
+        "vize.autoInsert.bracketSpacing": {
+          "type": "boolean",
+          "default": true,
+          "description": "Insert spaces inside an empty Vue interpolation. Requires vize.autoInsert.enable."
+        },
+        "vize.autoInsert.autoCreateQuotes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Insert quotes after an attribute equals sign. Requires vize.autoInsert.enable."
+        },
+        "vize.autoInsert.autoClosingTags": {
+          "type": "boolean",
+          "default": true,
+          "description": "Insert matching closing tags in Vue templates. Requires vize.autoInsert.enable."
         }
       }
     },

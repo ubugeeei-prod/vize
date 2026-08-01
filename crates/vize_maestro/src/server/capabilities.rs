@@ -213,7 +213,20 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         execute_command_provider: None,
         call_hierarchy_provider: None,
         moniker_provider: None,
-        experimental: None,
+        experimental: features.auto_insert.then(|| {
+            serde_json::json!({
+                "autoInsertionProvider": {
+                    "triggerCharacters": ["}", "=", ">", "/", "\\w"],
+                    "configurationSections": [
+                        ["vize.autoInsert.bracketSpacing"],
+                        ["vize.autoInsert.autoCreateQuotes"],
+                        ["vize.autoInsert.autoClosingTags"],
+                        ["vize.autoInsert.autoClosingTags"],
+                        ["vize.autoInsert.dotValue"]
+                    ]
+                }
+            })
+        }),
 
         // Default for other fields
         ..Default::default()

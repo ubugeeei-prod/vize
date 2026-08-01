@@ -16,6 +16,7 @@ const ALL_EDITOR_FEATURES_OFF: LspInitializationOptions = {
   documentSymbols: false,
   editor: true,
   fileRename: false,
+  autoInsert: false,
   foldingRanges: false,
   formatting: false,
   hover: false,

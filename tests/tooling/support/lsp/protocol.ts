@@ -31,6 +31,7 @@ export type LspInitializationOptions = {
   semanticTokens?: boolean;
   typecheck?: boolean;
   workspaceSymbols?: boolean;
+  autoInsert?: boolean;
 };
 
 export type LspPosition = {
@@ -99,6 +100,22 @@ export type ServerCapabilities = {
   };
   workspace?: unknown;
   workspaceSymbolProvider?: unknown;
+  experimental?: {
+    autoInsertionProvider?: {
+      triggerCharacters: string[];
+      configurationSections: Array<string[] | null>;
+    };
+  };
+};
+
+export type AutoInsertParams = {
+  textDocument: TextDocumentIdentifier;
+  selection: LspPosition;
+  change: {
+    rangeOffset: number;
+    rangeLength: number;
+    text: string;
+  };
 };
 
 export type LspDiagnostic = {

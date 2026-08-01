@@ -23,6 +23,7 @@ fn all_features() -> LspFeatureConfig {
         folding_ranges: true,
         inlay_hints: true,
         file_rename: true,
+        auto_insert: true,
         cross_file: true,
     }
 }

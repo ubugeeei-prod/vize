@@ -151,14 +151,19 @@ assert.equal(configurationProperties["vize.serverPath"].default, "");
 assert.equal(configurationProperties["vize.trace.server"].default, "off");
 
 for (const [key, property] of Object.entries(configurationProperties)) {
-  if (key === "vize.serverPath" || key === "vize.trace.server") {
+  if (
+    key === "vize.serverPath" ||
+    key === "vize.trace.server" ||
+    (key.startsWith("vize.autoInsert.") && key !== "vize.autoInsert.enable")
+  ) {
     continue;
   }
   const expectedDefault =
     key === "vize.diagnostics.enable" ||
     key === "vize.formatting.enable" ||
     key === "vize.optionsApi.enable" ||
-    key === "vize.legacyVue2.enable"
+    key === "vize.legacyVue2.enable" ||
+    key === "vize.autoInsert.enable"
       ? false
       : true;
   assert.equal(property.default, expectedDefault, `${key} has an unexpected default`);

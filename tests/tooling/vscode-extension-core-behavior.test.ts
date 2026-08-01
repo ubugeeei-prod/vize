@@ -41,6 +41,7 @@ const FEATURE_TO_OPTION = {
   "foldingRanges.enable": "foldingRanges",
   "inlayHints.enable": "inlayHints",
   "fileRename.enable": "fileRename",
+  "autoInsert.enable": "autoInsert",
 } as const satisfies Record<(typeof FEATURE_SETTING_KEYS)[number], string>;
 
 const FEATURE_MANIFEST_DEFAULTS = {
@@ -66,6 +67,7 @@ const FEATURE_MANIFEST_DEFAULTS = {
   "foldingRanges.enable": true,
   "inlayHints.enable": true,
   "fileRename.enable": true,
+  "autoInsert.enable": false,
 } as const satisfies Record<(typeof FEATURE_SETTING_KEYS)[number], boolean>;
 
 type Scope = "global" | "workspace" | "workspaceFolder";
@@ -232,6 +234,7 @@ test("vscode lint-only profile updates every feature switch exactly once", () =>
     "foldingRanges.enable": false,
     "inlayHints.enable": false,
     "fileRename.enable": false,
+    "autoInsert.enable": false,
   });
 });
 
@@ -268,6 +271,20 @@ test("vscode file rename can be enabled without the editor bundle", () => {
   });
   assert.equal(hasAnyEnabledCapability(config), true);
   assert.equal(hasAnyExplicitCapabilityValue(config), true);
+});
+
+test("vscode automatic insertion is an explicit opt-in independent of the editor bundle", () => {
+  const config = new FakeConfig({
+    enable: true,
+    "editor.enable": false,
+    "autoInsert.enable": true,
+  });
+
+  assert.deepEqual(getInitializationOptions(config), {
+    editor: false,
+    autoInsert: true,
+  });
+  assert.equal(hasAnyEnabledCapability(config), true);
 });
 
 test("vscode explicit capability detection ignores unrelated settings", () => {

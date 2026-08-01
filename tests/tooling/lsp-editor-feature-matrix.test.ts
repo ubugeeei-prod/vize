@@ -126,6 +126,7 @@ test("lint-only profile explicitly disables every non-lint capability", () => {
     ecosystem: false,
     editor: false,
     fileRename: false,
+    autoInsert: false,
     foldingRanges: false,
     formatting: false,
     hover: false,

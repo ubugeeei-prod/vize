@@ -1,0 +1,61 @@
+{
+  "oracle": {
+    "package": "@vue/language-server",
+    "version": "3.3.8",
+    "method": "volar/client/autoInsert",
+    "measuredAt": "2026-08-01"
+  },
+  "capability": {
+    "triggerCharacters": ["}", "=", ">", "/", "\\w"],
+    "configurationSections": [
+      ["vue.autoInsert.bracketSpacing"],
+      ["html.autoCreateQuotes"],
+      ["html.autoClosingTags", "javascript.autoClosingTags", "typescript.autoClosingTags"],
+      ["html.autoClosingTags"],
+      ["vue.autoInsert.dotValue"]
+    ]
+  },
+  "cases": [
+    {
+      "name": "interpolation spacing",
+      "source": "<template>{{}}</template>",
+      "selection": { "line": 0, "character": 12 },
+      "change": { "rangeOffset": 11, "rangeLength": 0, "text": "{}" },
+      "response": " $0 "
+    },
+    {
+      "name": "attribute quotes",
+      "source": "<template><div class=></div></template>",
+      "selection": { "line": 0, "character": 21 },
+      "change": { "rangeOffset": 20, "rangeLength": 0, "text": "=" },
+      "response": "\"$1\""
+    },
+    {
+      "name": "closing tag",
+      "source": "<template><section></template>",
+      "selection": { "line": 0, "character": 19 },
+      "change": { "rangeOffset": 18, "rangeLength": 0, "text": ">" },
+      "response": "$0</section>"
+    },
+    {
+      "name": "slash closing tag",
+      "source": "<template><section></</template>",
+      "selection": { "line": 0, "character": 21 },
+      "change": { "rangeOffset": 20, "rangeLength": 0, "text": "/" },
+      "response": "section>"
+    },
+    {
+      "name": "void tag",
+      "source": "<template><input></template>",
+      "selection": { "line": 0, "character": 17 },
+      "change": { "rangeOffset": 16, "rangeLength": 0, "text": ">" },
+      "response": null
+    }
+  ],
+  "dotValue": {
+    "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"\nconst count = ref(0)\ncount\n</script>",
+    "selection": { "line": 3, "character": 5 },
+    "change": { "rangeOffset": 76, "rangeLength": 0, "text": "t" },
+    "response": "${1:.value}"
+  }
+}

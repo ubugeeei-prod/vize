@@ -3,6 +3,7 @@
 //! This module contains the core LSP server using tower-lsp.
 
 mod annotations;
+mod auto_insert;
 mod capabilities;
 mod document_structure;
 mod format;
@@ -17,7 +18,7 @@ pub use capabilities::server_capabilities;
 pub use state::BatchTypeCheckCache;
 pub use state::{LspFeatureConfig, ServerState};
 
-use tower_lsp::Client;
+use tower_lsp::{Client, ClientSocket, LspService};
 
 use crate::document::DocumentStore;
 
@@ -42,4 +43,13 @@ impl MaestroServer {
     pub fn documents(&self) -> &DocumentStore {
         &self.state.documents
     }
+}
+
+/// Build the language service, including Volar's private automatic-insertion
+/// request. `LanguageServer` cannot declare custom methods, so every transport
+/// must use this builder rather than `LspService::new`.
+pub(crate) fn build_lsp_service() -> (LspService<MaestroServer>, ClientSocket) {
+    LspService::build(MaestroServer::new)
+        .custom_method(auto_insert::AUTO_INSERT_METHOD, MaestroServer::auto_insert)
+        .finish()
 }

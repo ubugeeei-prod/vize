@@ -37,6 +37,7 @@ import {
   type LspInitializationOptions,
 } from "./extension-core";
 import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-discovery";
+import { createAutoInsertMiddleware } from "./auto-insert";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -534,11 +535,12 @@ async function startClient(
   outputChannel.appendLine(`Using server: ${serverPath}`);
 
   const serverOptions: ServerOptions = createServerOptions(serverPath);
-  const nextClient = new LanguageClient(
+  let nextClient: LanguageClient | undefined;
+  nextClient = new LanguageClient(
     "vize",
     "Vize Language Server",
     serverOptions,
-    createClientOptions(initializationOptions),
+    createClientOptions(initializationOptions, () => nextClient, config),
   );
 
   applyTraceSetting(nextClient, config);
@@ -567,6 +569,8 @@ async function stopClient(): Promise<void> {
 
 function createClientOptions(
   initializationOptions: LspInitializationOptions,
+  getClient: () => LanguageClient | undefined,
+  config: ReturnType<typeof workspace.getConfiguration>,
 ): LanguageClientOptions {
   return {
     documentSelector: createDocumentSelector(),
@@ -580,6 +584,7 @@ function createClientOptions(
     outputChannel,
     traceOutputChannel: outputChannel,
     initializationOptions,
+    middleware: createAutoInsertMiddleware(getClient, config),
   };
 }
 

@@ -79,7 +79,7 @@ pub use ide::{
 pub use server::MaestroServer;
 pub use virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
-use tower_lsp::{LspService, Server};
+use tower_lsp::Server;
 
 /// Initialize file-based logging to node_modules/.vize/lsp.log
 fn init_file_logging() {
@@ -127,7 +127,7 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let stdin = runtime::threaded_reader("vize-lsp-stdin", std::io::stdin())?;
     let stdout = runtime::threaded_writer("vize-lsp-stdout", std::io::stdout())?;
 
-    let (service, socket) = LspService::new(MaestroServer::new);
+    let (service, socket) = server::build_lsp_service();
 
     Server::new(stdin, stdout, socket).serve(service).await;
 
@@ -163,7 +163,7 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     let read = runtime::threaded_reader("vize-lsp-tcp-read", stream.try_clone()?)?;
     let write = runtime::threaded_writer("vize-lsp-tcp-write", stream)?;
 
-    let (service, socket) = LspService::new(MaestroServer::new);
+    let (service, socket) = server::build_lsp_service();
 
     Server::new(read, write, socket).serve(service).await;
 

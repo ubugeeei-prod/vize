@@ -42,6 +42,7 @@ export const FEATURE_SETTING_KEYS = [
   "foldingRanges.enable",
   "inlayHints.enable",
   "fileRename.enable",
+  "autoInsert.enable",
 ] as const;
 
 export const LINT_ONLY_CONFIGURATION_UPDATES: Array<[string, boolean]> = [
@@ -68,6 +69,7 @@ export const LINT_ONLY_CONFIGURATION_UPDATES: Array<[string, boolean]> = [
   ["foldingRanges.enable", false],
   ["inlayHints.enable", false],
   ["fileRename.enable", false],
+  ["autoInsert.enable", false],
 ];
 
 export const CAPABILITY_LABELS: Record<string, string> = {
@@ -91,6 +93,7 @@ export const CAPABILITY_LABELS: Record<string, string> = {
   foldingRanges: "folding",
   inlayHints: "inlay hints",
   fileRename: "file rename",
+  autoInsert: "automatic insertion",
 };
 
 export function createDocumentSelector(): Array<{ language: string; scheme: string }> {
@@ -163,6 +166,7 @@ export function getInitializationOptions(
   setFeatureOption(options, config, "foldingRanges.enable", "foldingRanges", true);
   setFeatureOption(options, config, "inlayHints.enable", "inlayHints", true);
   setFeatureOption(options, config, "fileRename.enable", "fileRename", true);
+  setFeatureOption(options, config, "autoInsert.enable", "autoInsert", false);
 
   if (
     Object.keys(options).length === 0 &&

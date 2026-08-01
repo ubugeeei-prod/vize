@@ -175,12 +175,33 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   // formatting providers (opt-in, see below), `signatureHelpProvider`,
   // `typeDefinitionProvider`, `implementationProvider`, `declarationProvider`,
   // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
-  // `experimental` — none of which has a handler behind it.
+  // `experimental` is absent unless the private client explicitly opts in.
 };
 
 test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
   await withCapabilities("editor-full", { editor: true, lint: true }, (capabilities) => {
     assert.deepEqual(capabilities, EDITOR_BUNDLE_CAPABILITIES);
+  });
+});
+
+test("vize lsp advertises the exact measured auto-insertion extension only when opted in", async () => {
+  await withCapabilities("auto-insert", { editor: true, autoInsert: true }, (capabilities) => {
+    assert.deepEqual(capabilities.experimental, {
+      autoInsertionProvider: {
+        triggerCharacters: ["}", "=", ">", "/", "\\w"],
+        configurationSections: [
+          ["vize.autoInsert.bracketSpacing"],
+          ["vize.autoInsert.autoCreateQuotes"],
+          ["vize.autoInsert.autoClosingTags"],
+          ["vize.autoInsert.autoClosingTags"],
+          ["vize.autoInsert.dotValue"],
+        ],
+      },
+    });
+  });
+
+  await withCapabilities("auto-insert-off", { editor: true, autoInsert: false }, (capabilities) => {
+    assert.equal(capabilities.experimental, undefined);
   });
 });
 

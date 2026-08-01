@@ -135,10 +135,12 @@ function summarizeParams(params) {
 
   return {
     changes: summarizeWatchedFileChanges(params.changes),
+    change: params.change,
     context: summarizeContext(params.context),
     initializationOptions: params.initializationOptions,
     newName: params.newName,
     position: params.position,
+    selection: params.selection,
     processId: params.processId,
     query: params.query,
     range: params.range,
@@ -150,7 +152,7 @@ function summarizeParams(params) {
 }
 
 function createCapabilities() {
-  return {
+  const capabilities = {
     codeActionProvider: true,
     codeLensProvider: {
       resolveProvider: false,
@@ -184,12 +186,24 @@ function createCapabilities() {
     textDocumentSync: 1,
     workspaceSymbolProvider: true,
   };
+  if (activeInitializationOptions.autoInsert === true) {
+    capabilities.experimental = {
+      autoInsertionProvider: {
+        triggerCharacters: ["}", "=", ">", "/", "\\w"],
+        configurationSections: [["vize.autoInsert.bracketSpacing"]],
+      },
+    };
+  }
+  return capabilities;
 }
 
 function createResponse(message) {
   const uri = message.params?.textDocument?.uri ?? workspaceRootUri;
 
   switch (message.method) {
+    case "volar/client/autoInsert":
+      return message.params?.change?.text === "{}" ? " $0 " : null;
+
     case "textDocument/codeAction":
       return [
         {

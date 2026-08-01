@@ -21,6 +21,7 @@ const explicitlyDisabledInitializationOptions = {
   ecosystem: false,
   editor: false,
   fileRename: false,
+  autoInsert: false,
   foldingRanges: false,
   formatting: false,
   hover: false,
@@ -61,6 +62,7 @@ const featureSettingKeys = [
   "foldingRanges.enable",
   "inlayHints.enable",
   "fileRename.enable",
+  "autoInsert.enable",
 ];
 const granularEditorCapabilitySettings = [
   ["completion.enable", "completion"],
@@ -95,6 +97,7 @@ exports.run = async function run() {
   await runSyntaxHighlightContributionSmoke();
   await runFakeServerLifecycleSmoke();
   await runConfigurationEdgeCaseSmoke();
+  await runAutoInsertSmoke();
   await runDiagnosticSmoke();
   await runEditorCapabilityProviderSmoke({
     assertLocation,
@@ -410,6 +413,50 @@ async function runConfigurationEdgeCaseSmoke() {
   await disableVizeAndWaitForShutdown(logPath);
 }
 
+async function runAutoInsertSmoke() {
+  const { logPath, serverPath } = getFakeServer();
+
+  await prepareConfiguredFakeServer({ logPath, serverPath });
+  const document = await openWorkspaceDocument("src", "App.vue");
+  const editor = await vscode.window.showTextDocument(document);
+  const line = document.lineAt(5);
+  const insertion = line.text.indexOf("</main>");
+  assert.ok(insertion > 0, "expected the fixture main close tag");
+  assert.ok(
+    await editor.edit((edit) => edit.insert(new vscode.Position(5, insertion), "{}")),
+    "expected interpolation seed edit to apply",
+  );
+  editor.selection = new vscode.Selection(5, insertion + 1, 5, insertion + 1);
+
+  await updateVizeConfiguration("autoInsert.enable", true);
+  await updateVizeConfiguration("enable", true);
+  let entries = await waitForReadyServer(logPath, "automatic insertion profile");
+  assertInitializationOptions(entries, { autoInsert: true });
+
+  await vscode.commands.executeCommand("type", { text: "{" });
+
+  entries = await waitForLogEntries(
+    logPath,
+    (nextEntries) => methodMessages(nextEntries, "volar/client/autoInsert").length >= 1,
+    "automatic insertion request",
+  );
+  const request = methodMessages(entries, "volar/client/autoInsert").at(-1);
+  assert.deepEqual(request.params.change, {
+    rangeLength: 0,
+    rangeOffset: document.offsetAt(new vscode.Position(5, insertion + 1)),
+    text: "{}",
+  });
+  assert.deepEqual(request.params.selection, { character: insertion + 2, line: 5 });
+  const insertedLine = await waitForDocumentText(
+    document,
+    (text) => text.includes("{{  }}</main>"),
+    "automatic insertion snippet",
+  );
+  assert.ok(insertedLine.includes("{{  }}</main>"), insertedLine);
+
+  await disableVizeAndWaitForShutdown(logPath);
+}
+
 async function runDiagnosticSmoke() {
   const { logPath, serverPath } = getFakeServer();
 
@@ -697,6 +744,22 @@ async function waitForDiagnostics(uri, predicate, label) {
   }
 
   assert.fail(`${label} did not happen. Last diagnostics: ${JSON.stringify(diagnostics)}`);
+}
+
+async function waitForDocumentText(document, predicate, label) {
+  const timeoutAt = Date.now() + 20_000;
+  let text = document.getText();
+
+  while (Date.now() < timeoutAt) {
+    text = document.getText();
+    if (predicate(text)) {
+      return text;
+    }
+
+    await sleep(100);
+  }
+
+  assert.fail(`${label} did not happen. Last document: ${text}`);
 }
 
 function readGrammar(extension, grammarPath) {

@@ -30,6 +30,7 @@ pub(super) struct LspConfigSection {
     folding_ranges: Option<bool>,
     inlay_hints: Option<bool>,
     file_rename: Option<bool>,
+    auto_insert: Option<bool>,
     corsa: Option<bool>,
     tsgo: Option<bool>,
     cross_file: Option<bool>,
@@ -121,6 +122,9 @@ impl LspConfigSection {
         if let Some(enabled) = self.file_rename {
             features.file_rename = enabled;
         }
+        if let Some(enabled) = self.auto_insert {
+            features.auto_insert = enabled;
+        }
         if let Some(enabled) = self.cross_file {
             features.cross_file = enabled;
         }
@@ -153,6 +157,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             folding_ranges: config.folding_ranges,
             inlay_hints: config.inlay_hints,
             file_rename: config.file_rename,
+            auto_insert: None,
             corsa: config.corsa,
             tsgo: config.tsgo,
             cross_file: config.cross_file,
@@ -186,6 +191,7 @@ pub struct LspFeatureConfig {
     pub(crate) folding_ranges: bool,
     pub(crate) inlay_hints: bool,
     pub(crate) file_rename: bool,
+    pub(crate) auto_insert: bool,
     pub(crate) cross_file: bool,
 }
 
@@ -212,6 +218,7 @@ impl LspFeatureConfig {
             folding_ranges: false,
             inlay_hints: false,
             file_rename: false,
+            auto_insert: false,
             cross_file: false,
         }
     }
@@ -241,6 +248,9 @@ impl LspFeatureConfig {
         self.folding_ranges = enabled;
         self.inlay_hints = enabled;
         self.file_rename = enabled;
+        if !enabled {
+            self.auto_insert = false;
+        }
     }
 }
 
@@ -267,6 +277,10 @@ impl Default for LspFeatureConfig {
             folding_ranges: true,
             inlay_hints: true,
             file_rename: true,
+            // Volar's custom request is private protocol and only VS Code has
+            // a client for it. Keep it opt-in until the client explicitly
+            // requests the extension.
+            auto_insert: false,
             // Cross-file diagnostic groups are off by default — they scan
             // every Vue file in the workspace, which is too slow for the
             // default editor experience. Opt in via
