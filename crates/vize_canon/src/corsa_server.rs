@@ -340,10 +340,7 @@ impl CorsaServer {
 
         // Merge in Vue-specific compile errors (e.g. props destructure default type
         // mismatch) so the socket-mode check matches the direct `vize check` runner.
-        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(uri, content, &descriptor) {
-            diagnostics.push(sfc_diagnostic);
-        }
-
+        diagnostics.extend(collect_sfc_compile_diagnostic(uri, content, &descriptor));
         diagnostics::dedup_diagnostics(&mut diagnostics);
 
         let error_count = diagnostics.iter().filter(|d| d.severity == "error").count();
