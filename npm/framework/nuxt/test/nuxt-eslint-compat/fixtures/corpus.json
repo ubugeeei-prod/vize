@@ -1,0 +1,168 @@
+{
+  "oracle": {
+    "module": "@nuxt/eslint",
+    "config": "@nuxt/eslint-config",
+    "moduleVersion": "1.16.0",
+    "configVersion": "1.16.0"
+  },
+  "description": "Nuxt project states whose generated lint config @vizejs/nuxt must reproduce. Each case is materialised under a scratch root by oracle.mjs; every path is expressed relative to that root so the recording stays machine-independent.",
+  "dirDefaultCases": [
+    {
+      "id": "defaults/empty",
+      "description": "A hand-written config with no dirs at all takes every default.",
+      "dirs": {}
+    },
+    {
+      "id": "defaults/src-only",
+      "description": "Declaring src derives every per-feature directory from it.",
+      "dirs": { "src": ["src"] }
+    },
+    {
+      "id": "defaults/root-only",
+      "description": "Declaring root makes src follow root rather than the built-in pair.",
+      "dirs": { "root": ["."] }
+    },
+    {
+      "id": "defaults/empty-arrays",
+      "description": "Present-but-empty lists are kept: an empty array is truthy, so the ||= defaults never fire.",
+      "dirs": { "root": [], "src": [], "pages": [] }
+    },
+    {
+      "id": "defaults/partial",
+      "description": "Only the missing lists are defaulted; declared ones pass through untouched.",
+      "dirs": { "src": ["app"], "components": ["app/ui", "app/widgets"] }
+    }
+  ],
+  "cases": [
+    {
+      "id": "dirs/default",
+      "category": "dirs",
+      "description": "Nuxt 4 defaults: a single layer with srcDir app/.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": {}
+    },
+    {
+      "id": "dirs/srcdir-is-root",
+      "category": "dirs",
+      "description": "Nuxt 3 layout where srcDir equals rootDir, so every directory is top level.",
+      "project": { "layers": [{ "srcDir": "." }] },
+      "config": {}
+    },
+    {
+      "id": "dirs/two-layers",
+      "category": "dirs",
+      "description": "A base layer extended by the app layer; every directory list gains a second entry.",
+      "project": { "layers": [{ "srcDir": "app" }, { "srcDir": "layers/base" }] },
+      "config": {}
+    },
+    {
+      "id": "dirs/dir-overrides",
+      "category": "dirs",
+      "description": "nuxt.options.dir renames pages, layouts, plugins, middleware and modules.",
+      "project": {
+        "layers": [{ "srcDir": "app" }],
+        "dir": {
+          "pages": "routes",
+          "layouts": "shells",
+          "plugins": "boot",
+          "middleware": "guards",
+          "modules": "mods"
+        }
+      },
+      "config": {}
+    },
+    {
+      "id": "dirs/imports-dirs",
+      "category": "dirs",
+      "description": "Extra auto-import directories, including a tilde-prefixed entry.",
+      "project": {
+        "layers": [{ "srcDir": "app", "imports": { "dirs": ["shared", "~/helpers"] } }]
+      },
+      "config": {}
+    },
+    {
+      "id": "dirs/components-string-array",
+      "category": "dirs",
+      "description": "components declared as a bare array of directory strings.",
+      "project": { "layers": [{ "srcDir": "app", "components": ["./ui", "./blocks"] }] },
+      "config": {}
+    },
+    {
+      "id": "dirs/components-prefixed",
+      "category": "dirs",
+      "description": "components declared as objects, one of which carries a prefix.",
+      "project": {
+        "layers": [
+          {
+            "srcDir": "app",
+            "components": { "dirs": ["./ui", { "path": "./widgets", "prefix": "W" }] }
+          }
+        ]
+      },
+      "config": {}
+    },
+    {
+      "id": "dirs/components-true",
+      "category": "dirs",
+      "description": "components: true keeps the default components directory.",
+      "project": { "layers": [{ "srcDir": "app", "components": true }] },
+      "config": {}
+    },
+    {
+      "id": "features/defaults",
+      "category": "features",
+      "description": "No feature options: standalone on, stylistic off, config-key sorting off.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": {}
+    },
+    {
+      "id": "features/standalone-false",
+      "category": "features",
+      "description": "standalone: false drops the baseline blocks, keeping only the Nuxt-aware ones.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "standalone": false }
+    },
+    {
+      "id": "features/stylistic",
+      "category": "features",
+      "description": "stylistic: true also switches nuxt.config key sorting on.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "stylistic": true }
+    },
+    {
+      "id": "features/stylistic-sort-opt-out",
+      "category": "features",
+      "description": "An explicit sortConfigKeys: false overrides the stylistic default.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "stylistic": true, "nuxt": { "sortConfigKeys": false } }
+    },
+    {
+      "id": "features/sort-config-opt-in",
+      "category": "features",
+      "description": "sortConfigKeys can be enabled without stylistic rules.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "nuxt": { "sortConfigKeys": true } }
+    },
+    {
+      "id": "features/typescript-false",
+      "category": "features",
+      "description": "typescript: false drops the TypeScript blocks from the baseline.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "typescript": false }
+    },
+    {
+      "id": "features/typescript-true",
+      "category": "features",
+      "description": "typescript: true adds the TypeScript blocks regardless of package detection.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "typescript": true }
+    },
+    {
+      "id": "features/tooling",
+      "category": "features",
+      "description": "tooling: true adds the module-author rule blocks.",
+      "project": { "layers": [{ "srcDir": "app" }] },
+      "config": { "tooling": true }
+    }
+  ]
+}

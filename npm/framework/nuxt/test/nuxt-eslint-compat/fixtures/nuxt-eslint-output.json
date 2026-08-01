@@ -1,0 +1,2470 @@
+{
+  "schemaVersion": 1,
+  "description": "Recorded @nuxt/eslint output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
+  "moduleVersion": "1.16.0",
+  "configVersion": "1.16.0",
+  "typeScriptDetected": false,
+  "dirDefaults": {
+    "defaults/empty": {
+      "root": [
+        ".",
+        "./app"
+      ],
+      "src": [
+        ".",
+        "./app"
+      ],
+      "pages": [
+        "./pages",
+        "./app/pages"
+      ],
+      "layouts": [
+        "./layouts",
+        "./app/layouts"
+      ],
+      "components": [
+        "./components",
+        "./app/components"
+      ],
+      "composables": [
+        "./composables",
+        "./app/composables"
+      ],
+      "plugins": [
+        "./plugins",
+        "./app/plugins"
+      ],
+      "modules": [
+        "./modules",
+        "./app/modules"
+      ],
+      "middleware": [
+        "./middleware",
+        "./app/middleware"
+      ],
+      "servers": [
+        "./servers",
+        "./app/servers"
+      ],
+      "componentsPrefixed": []
+    },
+    "defaults/src-only": {
+      "src": [
+        "src"
+      ],
+      "root": [
+        ".",
+        "./app"
+      ],
+      "pages": [
+        "src/pages"
+      ],
+      "layouts": [
+        "src/layouts"
+      ],
+      "components": [
+        "src/components"
+      ],
+      "composables": [
+        "src/composables"
+      ],
+      "plugins": [
+        "src/plugins"
+      ],
+      "modules": [
+        "src/modules"
+      ],
+      "middleware": [
+        "src/middleware"
+      ],
+      "servers": [
+        "src/servers"
+      ],
+      "componentsPrefixed": []
+    },
+    "defaults/root-only": {
+      "root": [
+        "."
+      ],
+      "src": [
+        "."
+      ],
+      "pages": [
+        "./pages"
+      ],
+      "layouts": [
+        "./layouts"
+      ],
+      "components": [
+        "./components"
+      ],
+      "composables": [
+        "./composables"
+      ],
+      "plugins": [
+        "./plugins"
+      ],
+      "modules": [
+        "./modules"
+      ],
+      "middleware": [
+        "./middleware"
+      ],
+      "servers": [
+        "./servers"
+      ],
+      "componentsPrefixed": []
+    },
+    "defaults/empty-arrays": {
+      "root": [],
+      "src": [],
+      "pages": [],
+      "layouts": [],
+      "components": [],
+      "composables": [],
+      "plugins": [],
+      "modules": [],
+      "middleware": [],
+      "servers": [],
+      "componentsPrefixed": []
+    },
+    "defaults/partial": {
+      "src": [
+        "app"
+      ],
+      "components": [
+        "app/ui",
+        "app/widgets"
+      ],
+      "root": [
+        ".",
+        "./app"
+      ],
+      "pages": [
+        "app/pages"
+      ],
+      "layouts": [
+        "app/layouts"
+      ],
+      "composables": [
+        "app/composables"
+      ],
+      "plugins": [
+        "app/plugins"
+      ],
+      "modules": [
+        "app/modules"
+      ],
+      "middleware": [
+        "app/middleware"
+      ],
+      "servers": [
+        "app/servers"
+      ],
+      "componentsPrefixed": []
+    }
+  },
+  "cases": {
+    "dirs/default": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/srcdir-is-root": {
+      "dirs": {
+        "pages": [
+          "pages"
+        ],
+        "composables": [
+          "composables",
+          "utils"
+        ],
+        "components": [
+          "components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "layouts"
+        ],
+        "plugins": [
+          "plugins"
+        ],
+        "middleware": [
+          "middleware"
+        ],
+        "modules": [
+          "modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          ""
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app.{js,ts,jsx,tsx,vue}",
+            "components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "error.{js,ts,jsx,tsx,vue}",
+            "layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/two-layers": {
+      "dirs": {
+        "pages": [
+          "app/pages",
+          "layers/base/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils",
+          "layers/base/composables",
+          "layers/base/utils"
+        ],
+        "components": [
+          "app/components",
+          "layers/base/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts",
+          "layers/base/layouts"
+        ],
+        "plugins": [
+          "app/plugins",
+          "layers/base/plugins"
+        ],
+        "middleware": [
+          "app/middleware",
+          "layers/base/middleware"
+        ],
+        "modules": [
+          "app/modules",
+          "layers/base/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app",
+          "layers/base"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "layers/base/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/app.{js,ts,jsx,tsx,vue}",
+            "layers/base/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/error.{js,ts,jsx,tsx,vue}",
+            "layers/base/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "layers/base/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/dir-overrides": {
+      "dirs": {
+        "pages": [
+          "app/routes"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/shells"
+        ],
+        "plugins": [
+          "app/boot"
+        ],
+        "middleware": [
+          "app/guards"
+        ],
+        "modules": [
+          "app/mods"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/routes/**/*.{js,ts,jsx,tsx,vue}",
+            "app/shells/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/routes/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/routes/**/*.{js,ts,jsx,tsx,vue}",
+            "app/shells/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/imports-dirs": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils",
+          "app/shared",
+          "app/helpers"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/components-string-array": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/ui",
+          "app/blocks"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/blocks/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "app/ui/**/*.server.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/blocks/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "app/ui/*/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/components-prefixed": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/ui",
+          "app/widgets"
+        ],
+        "componentsPrefixed": [
+          "app/widgets"
+        ],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "app/ui/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/widgets/**/*.server.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}",
+            "app/ui/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/widgets/**/*.{js,ts,jsx,tsx,vue}",
+            "app/widgets/*/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "dirs/components-true": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/defaults": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/standalone-false": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": false,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/stylistic": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": true,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/sort-config",
+        "nuxt/stylistic",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/sort-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/nuxt-config-keys-order": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/stylistic-sort-opt-out": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": true,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {
+          "sortConfigKeys": false
+        },
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/stylistic",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/sort-config-opt-in": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {
+          "sortConfigKeys": true
+        },
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/sort-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/sort-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/nuxt-config-keys-order": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/typescript-false": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/typescript-true": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": true,
+        "tooling": false,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/typescript/setup",
+        "nuxt/typescript/rules",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    },
+    "features/tooling": {
+      "dirs": {
+        "pages": [
+          "app/pages"
+        ],
+        "composables": [
+          "app/composables",
+          "app/utils"
+        ],
+        "components": [
+          "app/components"
+        ],
+        "componentsPrefixed": [],
+        "layouts": [
+          "app/layouts"
+        ],
+        "plugins": [
+          "app/plugins"
+        ],
+        "middleware": [
+          "app/middleware"
+        ],
+        "modules": [
+          "app/modules"
+        ],
+        "servers": [],
+        "root": [],
+        "src": [
+          "app"
+        ]
+      },
+      "features": {
+        "standalone": true,
+        "stylistic": false,
+        "typescript": false,
+        "tooling": true,
+        "formatters": false,
+        "nuxt": {},
+        "import": {}
+      },
+      "configNames": [
+        "gitignore",
+        null,
+        "nuxt/javascript",
+        "nuxt/vue/setup",
+        "nuxt/vue/rules",
+        "nuxt/import/rules",
+        "nuxt/setup",
+        "nuxt/vue/single-root",
+        "nuxt/rules",
+        "nuxt/pages",
+        "nuxt/nuxt-config",
+        "nuxt/tooling/jsdoc",
+        "nuxt/tooling/unicorn",
+        "nuxt/tooling/regexp",
+        "nuxt/disables/routes"
+      ],
+      "nuxtConfigs": [
+        {
+          "name": null,
+          "files": null,
+          "ignores": [
+            "**/dist",
+            "**/node_modules",
+            "**/.nuxt",
+            "**/.output",
+            "**/.vercel",
+            "**/.netlify",
+            "**/public"
+          ],
+          "rules": null,
+          "globals": null
+        },
+        {
+          "name": "nuxt/setup",
+          "files": null,
+          "ignores": null,
+          "rules": null,
+          "globals": {
+            "$fetch": "readonly"
+          }
+        },
+        {
+          "name": "nuxt/vue/single-root",
+          "files": [
+            "app/components/**/*.server.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/no-multiple-template-root": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/rules",
+          "files": null,
+          "ignores": null,
+          "rules": {
+            "nuxt/prefer-import-meta": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/pages",
+          "files": [
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-page-meta-runtime-values": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/nuxt-config",
+          "files": [
+            "**/.config/nuxt.?([cm])[jt]s?(x)",
+            "**/nuxt.config.?([cm])[jt]s?(x)"
+          ],
+          "ignores": null,
+          "rules": {
+            "nuxt/no-nuxt-config-test-key": "error"
+          },
+          "globals": null
+        },
+        {
+          "name": "nuxt/disables/routes",
+          "files": [
+            "app/app.{js,ts,jsx,tsx,vue}",
+            "app/components/*/**/*.{js,ts,jsx,tsx,vue}",
+            "app/error.{js,ts,jsx,tsx,vue}",
+            "app/layouts/**/*.{js,ts,jsx,tsx,vue}",
+            "app/pages/**/*.{js,ts,jsx,tsx,vue}"
+          ],
+          "ignores": null,
+          "rules": {
+            "vue/multi-word-component-names": "off"
+          },
+          "globals": null
+        }
+      ]
+    }
+  }
+}

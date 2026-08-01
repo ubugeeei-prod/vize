@@ -57,6 +57,13 @@ catalogs:
     "@babel/plugin-syntax-typescript": "7.28.6"
     "@vue/babel-plugin-jsx": "2.0.1"
 
+  # Real @nuxt/eslint toolchain, used only as the differential oracle for the
+  # Nuxt lint config port (npm/framework/nuxt/test/nuxt-eslint-compat).
+  # Bump deliberately: a version change re-records the committed ground truth.
+  nuxt-eslint-oracle:
+    "@nuxt/eslint": "1.16.0"
+    "@nuxt/eslint-config": "1.16.0"
+
   # Shared repo and file-system utilities.
   repo-tooling:
     "@iarna/toml": "2.2.5"

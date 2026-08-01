@@ -10,6 +10,8 @@
     "@babel/core": "catalog:babel-jsx-oracle",
     "@babel/plugin-syntax-typescript": "catalog:babel-jsx-oracle",
     "@iarna/toml": "catalog:repo-tooling",
+    "@nuxt/eslint": "catalog:nuxt-eslint-oracle",
+    "@nuxt/eslint-config": "catalog:nuxt-eslint-oracle",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@typescript/native-preview": "catalog:typescript",
