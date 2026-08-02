@@ -13,3 +13,10 @@ pub mod type_aware;
 pub(crate) mod url;
 pub mod vapor;
 pub mod vue;
+
+/// Register every rule that belongs to the Nuxt preset but not to the broader
+/// presets it builds on.
+pub(crate) fn register_nuxt(registry: &mut crate::rule::RuleRegistry) {
+    opinionated::register_nuxt(registry);
+    ecosystem::register_nuxt(registry);
+}

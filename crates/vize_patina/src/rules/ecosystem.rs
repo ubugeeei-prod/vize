@@ -35,9 +35,13 @@ pub(crate) fn register_nuxt(registry: &mut RuleRegistry) {
     register_if_missing(registry, Box::new(NuxtPreferNuxtLink));
 }
 
-pub(crate) fn register_opt_in(registry: &mut RuleRegistry) {
+pub(crate) fn register_all(registry: &mut RuleRegistry) {
     register(registry);
     register_nuxt(registry);
+}
+
+pub(crate) fn register_opt_in(registry: &mut RuleRegistry) {
+    register_all(registry);
 }
 
 fn register_if_missing(registry: &mut RuleRegistry, rule: Box<dyn crate::rule::Rule>) {
