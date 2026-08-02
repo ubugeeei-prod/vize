@@ -43,6 +43,98 @@ fn expression_guard_rejects_jsdoc_non_nullable_type_angle_chains() {
 }
 
 #[test]
+fn expression_guard_rejects_identifier_type_angle_chains() {
+    // The js_ts_expression slow-unit reproducer (#3712) is dominated by
+    // identifier-starting type references such as `froppy<s$my<s$mbod...`.
+    // OXC recursively speculates that every `<Identifier` opens another type
+    // argument list, so the same depth budget used for structural types must
+    // bound this shape before parsing.
+    let at_limit = format!(
+        "root{}",
+        "<TypeReference".repeat(MAX_EXPRESSION_NESTING_DEPTH)
+    );
+    assert_eq!(
+        expression_nesting_depth(&at_limit),
+        MAX_EXPRESSION_NESTING_DEPTH
+    );
+    assert!(expression_is_safe_to_parse(&at_limit));
+
+    let rejected = format!(
+        "root{}",
+        "<TypeReference".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)
+    );
+    assert_eq!(
+        expression_nesting_depth(&rejected),
+        MAX_EXPRESSION_NESTING_DEPTH + 1
+    );
+    assert!(expression_exceeds_max_depth(&rejected));
+    assert!(!expression_is_safe_to_parse(&rejected));
+    assert_eq!(
+        prefix_identifiers_in_expression(&rejected).as_str(),
+        rejected
+    );
+    assert_eq!(
+        strip_typescript_from_expression(&rejected).as_str(),
+        rejected
+    );
+
+    // `$` and `_` are valid identifier starts in TypeScript type references, a
+    // `\uXXXX` escape lexes as one, and so does a non-ASCII identifier start.
+    // Trivia between `<` and the identifier is skipped exactly as OXC skips it.
+    for identifier in [
+        "<$type",
+        "<_type",
+        "<\\u0041type",
+        "<\u{65e5}\u{672c}",
+        "< spaced",
+        "</* t */typed",
+    ] {
+        let chain = format!(
+            "root{}",
+            identifier.repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)
+        );
+        assert!(!expression_is_safe_to_parse(&chain), "{identifier}");
+    }
+}
+
+#[test]
+fn expression_guard_keeps_ordinary_identifier_comparisons_safe() {
+    // The identifier arm is by far the broadest of the four speculative
+    // classes — nearly every `<` in real code is followed by one — so the two
+    // escapes that keep it off ordinary expressions are pinned here.
+
+    // A closing `>` pays its angle back, so balanced generics never accumulate
+    // however deeply they nest.
+    let nested_generics = "useState<Map<string, Set<number>>>(initial)";
+    assert_eq!(expression_nesting_depth(nested_generics), 3);
+    assert!(expression_is_safe_to_parse(nested_generics));
+
+    // An arrow's `=>` closes an angle too, which is why callback-heavy template
+    // expressions stay flat: 40 of them peak at the one open call parenthesis
+    // plus the one comparison angle live inside it.
+    let callbacks = std::iter::repeat_n("items.filter(i => i.score < i.limit)", 40)
+        .collect::<Vec<_>>()
+        .join(" + ");
+    assert_eq!(expression_nesting_depth(&callbacks), 2);
+    assert!(expression_is_safe_to_parse(&callbacks));
+
+    // Logical operators end the candidate type chain, so a flat boolean chain
+    // of identifier comparisons past the limit never latches.
+    let chain = std::iter::repeat_n("a < b", MAX_EXPRESSION_NESTING_DEPTH + 5)
+        .collect::<Vec<_>>()
+        .join(" && ");
+    assert_eq!(expression_nesting_depth(&chain), 0);
+    assert!(expression_is_safe_to_parse(&chain));
+
+    // And the accepted expressions really are rewritten, rather than returned
+    // unchanged the way a guard rejection would return them.
+    assert_eq!(
+        prefix_identifiers_in_expression("a < b && c < d").as_str(),
+        "_ctx.a < _ctx.b && _ctx.c < _ctx.d"
+    );
+}
+
+#[test]
 fn expression_guard_resets_type_angle_speculation_after_logical_operators() {
     // A flat boolean chain of `< !` comparisons past the limit must stay
     // accepted: `&&`/`||`/`??` cannot appear inside a type-argument list, so

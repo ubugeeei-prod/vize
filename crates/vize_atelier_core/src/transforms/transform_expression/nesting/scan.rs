@@ -54,15 +54,23 @@ pub(super) fn is_speculative_type_angle_open(content: &str, open: usize) -> bool
     let after = &content[open + 1..];
     let marker = skip_type_angle_trivia(after);
     // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
-    // type (#3213); `(` starts a parenthesized type (#3277, #3279, #3281 — a
-    // 2.8KB `<`-dense reproducer stayed 3ms with the `<(` adjacency broken and
-    // took ~10s with it intact). Each keeps OXC inside type-argument
-    // speculation, so repeated occurrences make unclosed angles count toward
-    // the depth budget.
-    matches!(
-        after.as_bytes().get(marker),
-        Some(b'{' | b'[' | b'!' | b'(')
-    )
+    // type (#3213); `(` starts a parenthesized type (#3277/#3279/#3281); and an
+    // identifier starts a type reference — `f<T>`, the plainest type-argument
+    // list there is (#3712). Each keeps OXC inside type-argument speculation, so
+    // repeated occurrences make unclosed angles count toward the depth budget.
+    //
+    // A digit is deliberately excluded. `f<0>` is a valid numeric literal type,
+    // but `a < 1` is overwhelmingly a comparison, and the identifier arm alone
+    // already covers every reproducer shape seen so far.
+    match after.as_bytes().get(marker) {
+        // `\` starts a `\uXXXX` identifier escape, which OXC lexes as an
+        // identifier start just like a bare letter.
+        Some(b'{' | b'[' | b'!' | b'(' | b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' | b'\\') => true,
+        // Trivia is already skipped, so a remaining non-ASCII lead byte begins a
+        // Unicode identifier (`f<日本語>`) rather than whitespace.
+        Some(byte) => !byte.is_ascii(),
+        None => false,
+    }
 }
 
 /// Skip the lexer trivia OXC drops between `<` and the next token: ASCII and

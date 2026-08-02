@@ -27,15 +27,21 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
     let mut template_interpolation_depths = Vec::new();
     // Plain `foo < bar` is indistinguishable from a type argument to a byte
     // scanner. Enter angle-tracking mode only for repeated speculative type
-    // prefixes: the structural shapes of the parser-timeout class (`<{`, `<[`,
-    // #2944), the JSDoc non-nullable shape (`<!`, #3213), and the
-    // parenthesized-type shape (`<(`, #3277/#3279/#3281), where OXC's type
-    // speculation recurses once per marker and per nested `<` until the Rust
-    // stack overflows or the rewind cascade goes super-linear. All are
-    // discovered while scanning so strings and
-    // comments cannot activate the mode. Logical/nullish operators (`&&`, `||`,
-    // `??`) cannot appear inside a type-argument list, so they reset this
+    // prefixes: the structural shapes (`<{`, `<[`, #2944), JSDoc non-nullable
+    // shape (`<!`, #3213), parenthesized-type shape (`<(`, #3277/#3279/#3281),
+    // and identifier-led type references (`<T`, #3712). OXC's type speculation
+    // recurses once per marker and nested `<` until the Rust stack overflows or
+    // the rewind cascade goes super-linear. All are discovered while scanning so
+    // strings and comments cannot activate the mode.
+    //
+    // Only *unclosed* angles accumulate, and logical/nullish operators (`&&`,
+    // `||`, `??`) cannot appear inside a type-argument list, so they reset this
     // speculation: a flat boolean chain of `<` comparisons is not a type run.
+    // Those two escapes are what keep the identifier arm — by far the broadest
+    // of the four — off ordinary code: every `>` pays an angle back, and any
+    // real boolean chain resets. Measured against the #3712 reproducer, both
+    // escapes also match OXC: injecting `&&` every 25 `<`, or closing the
+    // angles, drops a 10.7KB input from 1.47s to ~25us.
     let mut speculative_type_angle_opens = 0usize;
     let mut track_type_angles = false;
     let mut i = 0;
