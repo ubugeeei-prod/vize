@@ -38,17 +38,10 @@ fn write(root: &Path, rel: &str, content: &str) {
     std::fs::write(path, content).unwrap();
 }
 
-#[test]
-fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
-        return;
-    };
-    let project_root = unique_case_dir("exports");
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(project_root.join("components")).unwrap();
-    write(&project_root, "nuxt.config.ts", "export default {};\n");
+fn write_nuxt_project_scaffold(project_root: &Path) {
+    write(project_root, "nuxt.config.ts", "export default {};\n");
     write(
-        &project_root,
+        project_root,
         "tsconfig.json",
         r#"{
   "compilerOptions": {
@@ -62,7 +55,7 @@ fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
 }"#,
     );
     write(
-        &project_root,
+        project_root,
         "node_modules/@nuxtjs/composition-api/package.json",
         r#"{
   "name": "@nuxtjs/composition-api",
@@ -80,18 +73,32 @@ fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
 }"#,
     );
     write(
-        &project_root,
+        project_root,
         "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
         r#"export declare function defineComponent<T>(options: T): T;
 export declare function ref<T>(value: T): { value: T };
 export declare function computed<T>(getter: () => T): { value: T };
 export type PropType<T> = { new (...args: never[]): T } | { (): T };
 export declare function useContext(): { app: unknown };
-export declare function useFetch<T>(callback: () => T): { fetch: () => Promise<T> };
+export declare function useFetch<T>(callback: () => T): {
+  fetch: () => Promise<T>;
+  $fetch: () => Promise<T>;
+};
 export declare function useStore(): { state: unknown };
 export declare function useRoute(): { value: { path: string } };
 "#,
     );
+}
+
+#[test]
+fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("exports");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("components")).unwrap();
+    write_nuxt_project_scaffold(&project_root);
     write(
         &project_root,
         "components/AppDialog.vue",
@@ -159,6 +166,75 @@ export default defineComponent({
     assert!(
         !stdout.contains("TS2307") && !stdout.contains("@nuxtjs/composition-api"),
         "composition-api exports should resolve through Nuxt fallback paths:\n{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_deduplicates_nuxt_global_with_setup_return_spread() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("global-spread");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("components")).unwrap();
+    write_nuxt_project_scaffold(&project_root);
+    write(
+        &project_root,
+        "components/UseFetchButton.vue",
+        r#"<script lang="ts">
+import { defineComponent, useFetch } from "@nuxtjs/composition-api";
+
+export default defineComponent({
+  setup() {
+    const { $fetch } = useFetch(async () => {});
+    const refreshFromSetup = () => $fetch();
+    const extra = {};
+
+    return { refreshFromSetup, ...extra };
+  },
+});
+</script>
+
+<template>
+  <button @click="$fetch">Refresh</button>
+</template>
+"#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "components/UseFetchButton.vue",
+            "--format",
+            "json",
+            "--show-virtual-ts",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert_eq!(
+        stderr.matches("var $fetch:").count(),
+        1,
+        "the setup-spread fallback should declare $fetch exactly once:\n{stderr}"
+    );
+    assert!(
+        !stderr.contains("const $fetch: __VizeInstanceGlobal<'$fetch'>"),
+        "the instance-global pass must not redeclare $fetch:\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

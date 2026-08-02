@@ -9,6 +9,8 @@ use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifiers_oxc};
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
+use super::context::ScopeGenerationOptions;
+
 /// Handle undefined references from template.
 pub(super) fn generate_undefined_refs(
     ts: &mut String,
@@ -74,13 +76,19 @@ pub(super) fn generate_instance_global_refs(
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,
-    options: &VirtualTsOptions,
+    scope_options: &ScopeGenerationOptions<'_, '_>,
 ) {
     if summary.undefined_refs.is_empty() && summary.template_expressions.is_empty() {
         return;
     }
 
-    let mut emitter = InstanceGlobalRefsEmitter::new(ts, mappings, summary, options);
+    let mut emitter = InstanceGlobalRefsEmitter::new(
+        ts,
+        mappings,
+        summary,
+        scope_options.virtual_ts_options,
+        scope_options.setup_spread_bindings,
+    );
     for undef in &summary.undefined_refs {
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
@@ -105,6 +113,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     mappings: &'a mut Vec<VizeMapping>,
     options: &'a VirtualTsOptions,
     bindings: &'a BindingMetadata,
+    synthetic_setup_bindings: FxHashSet<&'a str>,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
     emitted_header: bool,
@@ -116,12 +125,17 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         mappings: &'a mut Vec<VizeMapping>,
         summary: &'a Croquis,
         options: &'a VirtualTsOptions,
+        synthetic_setup_bindings: &'a [String],
     ) -> Self {
         Self {
             ts,
             mappings,
             options,
             bindings: &summary.bindings,
+            synthetic_setup_bindings: synthetic_setup_bindings
+                .iter()
+                .map(|name| name.as_str())
+                .collect(),
             type_export_names: summary
                 .type_exports
                 .iter()
@@ -135,6 +149,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
         if !is_template_instance_global_name(name)
             || self.bindings.contains(name)
+            || self.synthetic_setup_bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)
             || !self.seen_names.insert(name.into())

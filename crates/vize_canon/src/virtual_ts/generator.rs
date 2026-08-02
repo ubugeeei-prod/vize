@@ -797,6 +797,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         ScopeGenerationOptions {
                             check_options,
                             virtual_ts_options: options,
+                            setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                             template_ast,
                             check_unresolved_global_components: has_script_reference_types,
                             legacy_vue2,
@@ -804,7 +805,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     )
                 );
             }
-
             // Declare unresolved components (auto-imported or built-in) as `any`.
             // Names known to be provided by ambient project declarations stay
             // unshadowed so their actual component prop types are preserved.

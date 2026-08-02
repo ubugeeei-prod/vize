@@ -27,6 +27,9 @@ pub(crate) struct ScopeGenContext<'a> {
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) virtual_ts_options: &'a VirtualTsOptions,
+    /// Names already declared by the conservative Options API setup-spread fallback.
+    /// Instance-global generation shares the same template scope and must not redeclare them.
+    pub(crate) setup_spread_bindings: &'a [String],
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) check_unresolved_global_components: bool,
     pub(crate) legacy_vue2: bool,

@@ -54,6 +54,10 @@ impl TemplateRefUnwraps {
         }
     }
 
+    pub(super) fn setup_spread_bindings(&self) -> &[String] {
+        &self.options_api_setup_bindings
+    }
+
     pub(super) fn emit_type_captures(&self, mut ts: &mut String) {
         if !self.setup_bindings.is_empty() {
             ts.push_str("  // Ref type captures (before template scope shadows them)\n");

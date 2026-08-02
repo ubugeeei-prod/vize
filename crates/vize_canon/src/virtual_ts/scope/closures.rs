@@ -119,13 +119,7 @@ pub(crate) fn generate_scope_closures(
     if check_options.check_template_bindings {
         profile!(
             "canon.virtual_ts.instance_global_refs",
-            generate_instance_global_refs(
-                ts,
-                mappings,
-                summary,
-                template_offset,
-                virtual_ts_options
-            )
+            generate_instance_global_refs(ts, mappings, summary, template_offset, &options)
         );
     }
 
