@@ -7,7 +7,7 @@
 //! Reasons here are short labels; the inventory row carries the full prose.
 
 use super::Verdict;
-use super::Verdict::{Deferred as Todo, Divergent as Diff, Equivalent as Same};
+use super::Verdict::{Deferred as Todo, Equivalent as Same};
 
 /// One entry per corpus case, in corpus order.
 pub const VERDICTS: &[(&str, Verdict)] = &[
@@ -145,4 +145,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // Closed by #3391: Babel VDOM mode forwards the primitive literals babel
     // passes straight into the vnode's children argument.
     ("errors/v_slots_not_object", Same),
+    ("errors/v_slots_static_template", Same),
+    // Authored children make Babel spread the primitive after the default slot.
+    ("errors/v_slots_not_object_with_children", Same),
 ];

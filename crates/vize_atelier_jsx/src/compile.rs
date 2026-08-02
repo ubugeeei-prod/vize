@@ -167,6 +167,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         config.compat,
         config.default_mode,
         BabelLoweringOptions {
+            vdom_compat: !config.ssr,
             transform_on_helper: transform_on_helper.as_deref(),
             object_slots_helper: object_slot_helpers
                 .as_ref()

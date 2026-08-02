@@ -41,6 +41,9 @@ use crate::span::SpanMapper;
 /// site instead of widening three signatures each time.
 #[derive(Clone, Copy, Default)]
 pub(crate) struct BabelLoweringOptions<'m> {
+    /// Whether the current compilation can emit Babel-compatible VDOM output.
+    /// SSR has its own backend and must not inherit VDOM-only lowering rules.
+    pub vdom_compat: bool,
     /// Collision-free `_transformOn` binding, when `transformOn` is enabled.
     pub transform_on_helper: Option<&'m str>,
     /// Collision-free `_isSlot` binding, when `enableObjectSlots` is enabled.
@@ -65,6 +68,7 @@ pub struct Lowerer<'a, 'm, 's> {
     babel_vdom_lane: bool,
     transform_on_helper: Option<String>,
     object_slots_helper: Option<String>,
+    babel_vdom_compat_allowed: bool,
     babel_vdom_compat_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
     /// `<style scoped>` blocks extracted from the render root currently being
@@ -103,6 +107,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             babel_vdom_lane: babel.vdom_lane,
             transform_on_helper: babel.transform_on_helper.map(String::from),
             object_slots_helper: babel.object_slots_helper.map(String::from),
+            babel_vdom_compat_allowed: babel.vdom_compat,
             babel_vdom_compat_active: false,
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
@@ -215,7 +220,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     /// Whether Babel-only VDOM child semantics apply to the current render root.
     pub(crate) fn uses_babel_vdom_compat(&self) -> bool {
-        self.uses_babel_compat() && self.babel_vdom_compat_active
+        self.uses_babel_compat() && self.babel_vdom_compat_allowed && self.babel_vdom_compat_active
     }
 
     /// Select whether the current render root may use VDOM-only Babel options.

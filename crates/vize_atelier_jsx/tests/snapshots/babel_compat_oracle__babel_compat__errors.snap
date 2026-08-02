@@ -87,3 +87,47 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_B, null, 1, 1024 /* DYNAMIC_SLOTS */))
 }
+
+## errors/v_slots_static_template
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-slots={`text`}/>;
+### babel options
+(defaults)
+### babel
+import { resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, `text`);
+### vize (vdom, babel compat)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+
+  return (_openBlock(), _createBlock(_component_B, null, `text`, 1024 /* DYNAMIC_SLOTS */))
+}
+
+## errors/v_slots_not_object_with_children
+### verdict
+equivalent
+### source (jsx)
+const A = () => <B v-slots={1}>x</B>;
+### babel options
+(defaults)
+### babel
+import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createVNode as _createVNode } from "vue";
+const A = () => _createVNode(_resolveComponent("B"), null, {
+  default: () => [_createTextVNode("x")],
+  ...1
+});
+### vize (vdom, babel compat)
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
+export function render(_ctx, _cache) {
+  const _component_B = _resolveComponent("B")
+
+  return (_openBlock(), _createBlock(_component_B, null, {
+    default: _withCtx(() => [
+      _createTextVNode("x")
+    ]),
+    ...1
+  }, 1024 /* DYNAMIC_SLOTS */))
+}

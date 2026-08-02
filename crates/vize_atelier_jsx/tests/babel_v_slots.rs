@@ -10,9 +10,9 @@
 //!
 //! Opt-in Babel VDOM mode reproduces the pass-through for the literals whose
 //! source text is already valid JavaScript in children position. Everything
-//! babel would forward as a *container* (arrays, template literals, raw JSX,
-//! functions, sequences) stays diagnosed rather than emitted as a malformed
-//! module.
+//! babel would forward as a *container* (arrays, interpolated template literals,
+//! raw JSX, functions, sequences) stays diagnosed rather than emitted as a
+//! malformed module.
 
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
 use vize_carton::Bump;
@@ -50,18 +50,9 @@ fn render_module(children: Option<&str>) -> String {
     )
 }
 
-fn compile(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> (String, Vec<String>) {
+fn compile_with_config(source: &str, config: &JsxCompileConfig) -> (String, Vec<String>) {
     let bump = Bump::new();
-    let out = compile_jsx(
-        &bump,
-        source,
-        JsxLang::Jsx,
-        &JsxCompileConfig {
-            compat,
-            default_mode: mode,
-            ..Default::default()
-        },
-    );
+    let out = compile_jsx(&bump, source, JsxLang::Jsx, config);
     (
         out.module_code().to_string(),
         out.diagnostics
@@ -71,12 +62,23 @@ fn compile(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> (String,
     )
 }
 
-/// Every primitive literal spelling babel passes straight through.
-const PRIMITIVES: [&str; 6] = ["1", "true", "null", "\"text\"", "1n", "/re/g"];
+fn compile(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> (String, Vec<String>) {
+    compile_with_config(
+        source,
+        &JsxCompileConfig {
+            compat,
+            default_mode: mode,
+            ..Default::default()
+        },
+    )
+}
+
+/// Every self-contained literal spelling babel passes straight through.
+const FORWARDABLE_LITERALS: [&str; 7] = ["1", "true", "null", "\"text\"", "1n", "/re/g", "`text`"];
 
 #[test]
-fn primitive_v_slots_values_are_forwarded_in_babel_vdom() {
-    for value in PRIMITIVES {
+fn self_contained_v_slots_literals_are_forwarded_in_babel_vdom() {
+    for value in FORWARDABLE_LITERALS {
         let source = format!("const A = () => <B v-slots={{{value}}}/>;");
         let (module, diagnostics) =
             compile(source.as_str(), JsxCompatMode::Babel, JsxOutputMode::Vdom);
@@ -86,9 +88,9 @@ fn primitive_v_slots_values_are_forwarded_in_babel_vdom() {
 }
 
 #[test]
-fn native_mode_still_rejects_every_primitive_v_slots_value() {
+fn native_mode_still_rejects_every_forwardable_v_slots_literal() {
     // The switch is opt-in: default Vize output and diagnostics are unchanged.
-    for value in PRIMITIVES {
+    for value in FORWARDABLE_LITERALS {
         let source = format!("const A = () => <B v-slots={{{value}}}/>;");
         let (module, diagnostics) =
             compile(source.as_str(), JsxCompatMode::Native, JsxOutputMode::Vdom);
@@ -98,46 +100,64 @@ fn native_mode_still_rejects_every_primitive_v_slots_value() {
 }
 
 #[test]
-fn babel_vapor_output_keeps_rejecting_primitive_v_slots_values() {
+fn babel_vapor_output_keeps_rejecting_forwardable_v_slots_literals() {
     // Compat mode is a VDOM-only contract, so the Vapor request is diagnosed and
     // the value is still rejected rather than half-applied.
-    let (module, diagnostics) = compile(
-        "const A = () => <B v-slots={1}/>;",
-        JsxCompatMode::Babel,
-        JsxOutputMode::Vapor,
+    let expected_module = concat!(
+        "import { resolveComponent as _resolveComponent, createComponentWithFallback as ",
+        "_createComponentWithFallback } from 'vue';\n",
+        "\n",
+        "export function render(_ctx) {\n",
+        "  const _component_B = _resolveComponent(\"B\")\n",
+        "  const n0 = _createComponentWithFallback(_component_B, null, null, true)\n",
+        "  return n0\n",
+        "}\n",
     );
-    assert_eq!(
-        diagnostics,
-        vec![
-            not_a_slots_object("1"),
-            "compiler.jsxCompat: \"babel\" is not supported with Vapor output: \
-             @vue/babel-plugin-jsx has no Vapor equivalent. Use jsxMode \"vdom\" for babel \
-             compatibility, or drop jsxCompat to use Vize's own Vapor semantics."
-                .to_string()
-        ]
-    );
-    assert_eq!(
-        module,
-        concat!(
-            "import { resolveComponent as _resolveComponent, createComponentWithFallback as ",
-            "_createComponentWithFallback } from 'vue';\n",
-            "\n",
-            "export function render(_ctx) {\n",
-            "  const _component_B = _resolveComponent(\"B\")\n",
-            "  const n0 = _createComponentWithFallback(_component_B, null, null, true)\n",
-            "  return n0\n",
-            "}\n",
-        )
-    );
+    for value in ["1", "`text`"] {
+        let source = format!("const A = () => <B v-slots={{{value}}}/>;");
+        let (module, diagnostics) =
+            compile(source.as_str(), JsxCompatMode::Babel, JsxOutputMode::Vapor);
+        assert_eq!(
+            diagnostics,
+            vec![
+                not_a_slots_object(value),
+                "compiler.jsxCompat: \"babel\" is not supported with Vapor output: \
+                 @vue/babel-plugin-jsx has no Vapor equivalent. Use jsxMode \"vdom\" for babel \
+                 compatibility, or drop jsxCompat to use Vize's own Vapor semantics."
+                    .to_string()
+            ],
+            "{value}"
+        );
+        assert_eq!(module, expected_module, "{value}");
+    }
+}
+
+#[test]
+fn babel_ssr_output_keeps_rejecting_forwardable_v_slots_literals() {
+    let config = JsxCompileConfig {
+        compat: JsxCompatMode::Babel,
+        ssr: true,
+        ..Default::default()
+    };
+    let (bare_module, bare_diagnostics) = compile_with_config("const A = () => <B/>;", &config);
+    assert_eq!(bare_diagnostics, Vec::<String>::new());
+
+    for value in ["1", "`text`"] {
+        let source = format!("const A = () => <B v-slots={{{value}}}/>;");
+        let (module, diagnostics) = compile_with_config(source.as_str(), &config);
+        assert_eq!(diagnostics, vec![not_a_slots_object(value)], "{value}");
+        assert_eq!(module, bare_module, "{value}");
+    }
 }
 
 #[test]
 fn container_and_function_v_slots_values_stay_diagnosed_in_babel_vdom() {
     // These are the shapes whose source text is not a self-contained value:
-    // arrays and template literals may hold nested JSX, raw JSX is a vnode, a
-    // lone function is the default slot, and the comma operator changes meaning
-    // when spliced into an argument list. Forwarding them verbatim would emit a
-    // module that does not mean what babel's does, so they keep their error.
+    // arrays and interpolated template literals may hold nested JSX, raw JSX is
+    // a vnode, a lone function is the default slot, and the comma operator
+    // changes meaning when spliced into an argument list. Forwarding them
+    // verbatim would emit a module that does not mean what babel's does, so they
+    // keep their error.
     for (value, message) in [
         ("[a, b]", not_a_slots_object("[a, b]")),
         ("<i/>", not_a_slots_object("<i/>")),

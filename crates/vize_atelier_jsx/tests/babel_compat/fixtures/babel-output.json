@@ -394,6 +394,14 @@
     "errors/v_slots_not_object": {
       "status": "ok",
       "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, 1);"
+    },
+    "errors/v_slots_static_template": {
+      "status": "ok",
+      "code": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, `text`);"
+    },
+    "errors/v_slots_not_object_with_children": {
+      "status": "ok",
+      "code": "import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nconst A = () => _createVNode(_resolveComponent(\"B\"), null, {\n  default: () => [_createTextVNode(\"x\")],\n  ...1\n});"
     }
   }
 }

@@ -13,7 +13,7 @@ opt-in compat mode (#3391) is expected to change.
 
 | Artifact                                  | Role                                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `babel_compat/fixtures/corpus.json`       | the 98 inputs + the babel plugin options each is compiled with                                             |
+| `babel_compat/fixtures/corpus.json`       | the 100 inputs + the babel plugin options each is compiled with                                            |
 | `babel_compat/oracle.mjs`                 | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
 | `babel_compat/fixtures/babel-output.json` | committed ground truth (generated — do not hand-edit)                                                      |
 | `../babel_compat_oracle.rs`               | snapshots babel's output beside Vize's, per category, with a verdict per row                               |
@@ -55,7 +55,7 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   96 |
+| equivalent |   98 |
 | divergent  |    0 |
 | deferred   |    2 |
 
@@ -271,15 +271,18 @@ stale — but that check is not committed and does not run in CI (#3391).
 `resolveDirective("slots")` lookup #3418 removed. A user directive named `slots`
 collides with it exactly as one named `show` or `model` would.
 
-### `v-slots` spellings Vize rejects and babel accepts
+### `v-slots` spellings where native Vize is stricter than babel
 
-Not corpus rows, because a compat mode is not expected to adopt them; recorded
-here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
+Native mode rejects all the shapes below. Babel VDOM compatibility adopts only
+corpus-pinned self-contained literals; the remaining exclusions stay explicit
+(#3418, #3467, `src/lower/v_slots.rs`):
 
-- `v-slots` with no value, `v-slots="str"`, and any literal value
-  (`v-slots={1}`, `v-slots={[…]}`) — babel forwards these as the component's
-  children, which is meaningless for a component. A slots object is either an
-  object literal to expand or an opaque expression to forward, never a literal.
+- `v-slots` with no value, a quoted value (`v-slots="str"`), or a container
+  literal (`v-slots={[…]}`) remains rejected. Babel VDOM compatibility forwards
+  self-contained expression literals (`v-slots={1}`, including static template
+  literals) as component children; native mode retains the strict slots-object
+  diagnostic. Interpolated templates remain rejected because forwarding their
+  raw source could leak nested JSX.
 - `v-slots={() => …}` — a lone function is the _default slot_, not a slots
   object: babel forwards it as children and Vue wraps it as `{default: fn}`.
   Spreading it would contribute nothing, so Vize names it and points at
@@ -330,15 +333,17 @@ Compared against Vize's default, which is already fully optimized.
 | `optimize/fragment`              | no flag                               | `64 /* STABLE_FRAGMENT */`            | no change          | ✅      |
 | `optimize/map_list`              | raw array child                       | `renderList` + `KEYED_FRAGMENT`       | no change          | ✅      |
 
-## Inputs babel rejects
+## Error cases and permissive babel edges
 
-A compat mode must reject what babel rejects, with a diagnostic — never silently
-accept it.
+The corpus pins rejection parity and babel-permissive edges. Compat mode must not
+silently accept a babel error; permissive rows document opt-in VDOM behavior.
 
-| Case                              | Babel                                                           | Vize today                                                        | Compat mode             | Verdict |
-| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------- | ------- |
-| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change               | ✅      |
-| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change               | ✅      |
-| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change               | ✅      |
-| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change               | ✅      |
-| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418, #3467)             | forward safe primitives | ✅      |
+| Case                                      | Babel                                                           | Vize today                                                        | Compat mode             | Verdict |
+| ----------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------- | ------- |
+| `errors/v_model_non_lval`                 | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change               | ✅      |
+| `errors/v_model_no_value`                 | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change               | ✅      |
+| `errors/v_models_not_array`               | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change               | ✅      |
+| `errors/v_models_entry_not_array`         | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change               | ✅      |
+| `errors/v_slots_not_object`               | forwards the value as children                                  | rejects it, naming the offending value (#3418, #3467)             | forward safe primitives | ✅      |
+| `errors/v_slots_static_template`          | forwards the static template as children                        | same in Babel VDOM compat; native still rejects                   | forward literal         | ✅      |
+| `errors/v_slots_not_object_with_children` | `{ default: () => ["x"], ...1 }`                                | same spread semantics in Babel VDOM compat                        | no change               | ✅      |

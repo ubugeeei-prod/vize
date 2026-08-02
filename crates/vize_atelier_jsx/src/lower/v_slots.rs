@@ -59,10 +59,11 @@
 //!   `v-slots={1}`, `v-slots={[…]}`). Babel forwards these as the component's
 //!   children, which is meaningless for a component: a slots object is either an
 //!   object literal to expand or an opaque expression to forward, never a
-//!   primitive. Opt-in Babel VDOM mode (#3391) forwards the *primitive* literals
-//!   verbatim, because that is exactly what babel emits and the source text is
-//!   already valid JavaScript; arrays, template literals, raw JSX, functions, and
-//!   sequences stay diagnosed rather than emitted as a malformed module.
+//!   primitive. Opt-in Babel VDOM mode (#3391) forwards the *self-contained*
+//!   literals verbatim, including substitution-free template literals, because
+//!   that is exactly what babel emits and the source text is already valid JavaScript;
+//!   arrays, interpolated template literals, raw JSX, functions, and sequences
+//!   stay diagnosed rather than emitted as a malformed module.
 //! - `v-slots:arg={…}` — `v-slots` takes no argument; the slot names are the
 //!   object's keys.
 //! - `v-slots` on a plain element, which has no slots.
@@ -93,9 +94,10 @@ enum SlotsValue<'e> {
     /// is forwarded into the slots object as a spread. The span is the source to
     /// emit, with any wrapper stripped.
     Forwarded(Span),
-    /// A primitive literal (`v-slots={1}`). Native mode diagnoses it like any
-    /// other non-slots value; Babel VDOM compatibility forwards it verbatim as
-    /// the vnode's children argument, matching the plugin.
+    /// A self-contained literal (`v-slots={1}` or a substitution-free template
+    /// literal). Native mode diagnoses it like any other non-slots value; Babel
+    /// VDOM compatibility forwards it verbatim as the vnode's children
+    /// argument, matching the plugin.
     CompatForwarded(Span),
     /// A literal, an array, a lone function, or a quoted/missing value: babel
     /// forwards these as the component's children, which is not a slots object.
@@ -273,7 +275,7 @@ fn classify_v_slots_value<'e>(value: &'e JSXAttributeValue<'e>) -> SlotsValue<'e
         // The comma operator does not survive being emitted verbatim as a
         // spread (`{...a, b}` is two properties, not one spread).
         Expression::SequenceExpression(_) => SlotsValue::Rejected(inner.span(), NOT_A_SLOTS_OBJECT),
-        _ if is_primitive_literal(inner) => SlotsValue::CompatForwarded(inner.span()),
+        _ if is_compat_forwardable_literal(inner) => SlotsValue::CompatForwarded(inner.span()),
         _ if is_literal_value(inner) => SlotsValue::Rejected(inner.span(), NOT_A_SLOTS_OBJECT),
         _ => SlotsValue::Forwarded(inner.span()),
     }
@@ -287,19 +289,21 @@ const IS_A_FUNCTION: &str = "is a function, not a slots object: a lone function 
 /// Literals whose source text is already valid JavaScript in children position,
 /// so babel's pass-through can be reproduced by forwarding the span verbatim.
 ///
-/// Container literals are deliberately excluded: an array or a template literal
-/// may hold nested JSX that still has to be lowered, and raw JSX is a vnode
-/// rather than a value.
-fn is_primitive_literal(expression: &Expression<'_>) -> bool {
-    matches!(
-        expression,
+/// Container literals are deliberately excluded: an array may hold nested JSX
+/// that still has to be lowered, and raw JSX is a vnode rather than a value. A
+/// template literal only qualifies when it has no substitutions, for the same
+/// reason: its interpolations can contain JSX.
+fn is_compat_forwardable_literal(expression: &Expression<'_>) -> bool {
+    match expression {
         Expression::BigIntLiteral(_)
-            | Expression::BooleanLiteral(_)
-            | Expression::NullLiteral(_)
-            | Expression::NumericLiteral(_)
-            | Expression::RegExpLiteral(_)
-            | Expression::StringLiteral(_)
-    )
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::RegExpLiteral(_)
+        | Expression::StringLiteral(_) => true,
+        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        _ => false,
+    }
 }
 
 /// Whether an expression is a literal value that can never be a slots object.
