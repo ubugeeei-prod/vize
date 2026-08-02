@@ -42,3 +42,20 @@ thiserror = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
+
+[package.metadata.cargo-semver-checks.lints]
+# `ElementNode::is_custom_element` landed unconditionally in #3718 and moves
+# behind `_custom_elements` here, before any release carried it: no published
+# `vize_relief` ever exposed the field, so no consumer can lose it. The gate
+# compares against the base branch rather than the registry, though, so it sees
+# the field disappear from main's default surface and reports a (major) pub
+# field removal — both on this change and on the push-triggered run once it
+# lands on main.
+#
+# A conventional breaking marker is not the fix: `vize_relief` is
+# alpha-supported, a tier whose contract has an API break fixed rather than
+# marked, and hiding an unpublished field is exactly that fix. So allow this
+# lint the way `vize_armature` allows the field-add lint its unprefixed
+# `legacy` feature cannot dodge. Once main's baseline no longer carries the
+# field the two surfaces agree again and this allow can be dropped.
+struct_pub_field_missing = "allow"
