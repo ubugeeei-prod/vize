@@ -21,6 +21,15 @@ pub struct ElementNode<'a> {
     pub children: Vec<'a, super::TemplateChildNode<'a>>,
     pub is_self_closing: bool,
     /// Preserve an upstream compiler's explicit custom-element classification.
+    ///
+    /// Set by front ends that resolve custom elements themselves (the JSX
+    /// lowerer honoring Babel's `isCustomElement`) and read by the element
+    /// transform, which must not promote such a tag to a component. Compiled
+    /// only behind the internal `_custom_elements` cargo feature (enabled
+    /// transitively by `vize_atelier_core/_custom_elements`), keeping the
+    /// default AST surface — and `cargo-semver-checks`, whose feature heuristic
+    /// skips `_`-prefixed features — byte-identical.
+    #[cfg(feature = "_custom_elements")]
     pub is_custom_element: bool,
     pub loc: SourceLocation,
     pub inner_loc: Option<SourceLocation>,
@@ -37,6 +46,7 @@ impl<'a> ElementNode<'a> {
             props: Vec::new_in(allocator),
             children: Vec::new_in(allocator),
             is_self_closing: false,
+            #[cfg(feature = "_custom_elements")]
             is_custom_element: false,
             loc,
             inner_loc: None,

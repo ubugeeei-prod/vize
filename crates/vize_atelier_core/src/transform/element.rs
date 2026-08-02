@@ -74,7 +74,14 @@ fn maybe_promote_element_to_component(
     ctx: &TransformContext<'_>,
     el: &mut Box<'_, ElementNode<'_>>,
 ) {
-    if el.tag_type != ElementType::Element || el.is_custom_element {
+    if el.tag_type != ElementType::Element {
+        return;
+    }
+
+    // A front end that classified the tag itself (JSX honoring Babel's
+    // `isCustomElement`) already decided this stays an intrinsic element.
+    #[cfg(feature = "_custom_elements")]
+    if el.is_custom_element {
         return;
     }
 

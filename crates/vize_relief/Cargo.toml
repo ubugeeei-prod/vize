@@ -22,6 +22,18 @@ metadata.vize.stability = "alpha-supported"
 # internal feature; depend on `vize_atelier_core/legacy` instead.
 _legacy = []
 
+# Gates the upstream custom-element classification carried on
+# [`crate::ast::ElementNode`]. Only front ends that classify custom elements
+# themselves (the JSX lowerer honoring Babel's `isCustomElement`) set it, and
+# only `vize_atelier_core`'s element transform reads it, so the Vue 3 template
+# pipeline never needs the field.
+#
+# Underscore-prefixed for the same reason as `_legacy`: `cargo-semver-checks`'
+# feature heuristic enables every non-excluded feature, which would surface the
+# added field and trip the (major) constructible struct-adds-field lint. Treat
+# it as internal; depend on `vize_atelier_core/_custom_elements` instead.
+_custom_elements = []
+
 [dependencies]
 vize_carton = { workspace = true }
 
