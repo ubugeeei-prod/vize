@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { formatRegressionLine } from "./compare-pr-results.mjs";
 import { createBenchmarkBudget } from "./compare-pr.mjs";
 
 export const DEFAULT_SKIP_OVERRIDE_LABEL = "ci:allow-skipped-benchmark";
@@ -36,21 +37,6 @@ function requireArg(args, key) {
     throw new Error(`Missing required argument: --${key}`);
   }
   return value;
-}
-
-function formatPercent(value) {
-  if (!Number.isFinite(value)) {
-    return "n/a";
-  }
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}%`;
-}
-
-function formatRate(value) {
-  if (!Number.isFinite(value)) {
-    return "n/a";
-  }
-  return `${value.toFixed(3)}x`;
 }
 
 function parseLabelsJson(value) {
@@ -94,12 +80,7 @@ export function enforceBenchmarkBudget(data, options = {}) {
     };
   }
 
-  const failures = budget.regressions
-    .map(
-      (regression) =>
-        `- ${regression.label}: ${formatRate(regression.rate)} (${formatPercent(regression.changePercent)})`,
-    )
-    .join("\n");
+  const failures = budget.regressions.map(formatRegressionLine).join("\n");
 
   return {
     ok: false,

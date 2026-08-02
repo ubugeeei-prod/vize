@@ -31,6 +31,50 @@ export function laneEnvironment(threads, base) {
   return env;
 }
 
+/**
+ * Budget for the two lanes whose measured noise is wider than the shared 5%.
+ *
+ * The 5% default was sized (#1411) for lanes that take 120-190ms on the
+ * 1000-file corpus. `lint-max` and `fmt-max` clear that same corpus in 37-39ms
+ * with the Rayon pool unpinned, so 5% of their wall time is under 2ms -- inside
+ * process startup and scheduler jitter on a shared 32-vCPU runner. Every
+ * release commit gives a free null measurement, because its diff is version
+ * strings in manifests, `Cargo.lock`, `editors/*` and READMEs and cannot change
+ * throughput. Over the seven such comparisons run since #3622 introduced the
+ * paired estimator (v0.313.0 through v0.317.0):
+ *
+ * | lane             | base median | change on a no-code diff | sd    |
+ * | ---------------- | ----------: | ------------------------ | ----: |
+ * | Format (max)     |      38.9ms | -3.93% .. +4.49%         |  2.58 |
+ * | Lint (max)       |      37.1ms | -3.46% .. +0.60%         |  1.37 |
+ * | Type check (1T)  |     830.2ms | -1.05% .. +3.29%         |  1.46 |
+ * | Lint (1T)        |     122.5ms | -2.78% .. +1.90%         |  1.51 |
+ * | Compile SFC      |     189.9ms | -2.55% .. +1.62%         |  1.41 |
+ * | Type check (max) |     839.2ms | -2.45% .. +0.68%         |  1.08 |
+ * | Format (1T)      |     147.4ms | -1.72% .. +1.23%         |  1.20 |
+ *
+ * `Format (max)` reached +4.49% on a commit that changed no code: 0.5 points
+ * short of cancelling a release. (v0.312.0's gate did cancel one, reporting
+ * +5.37%, but that predates #3622 -- rescoring that run's own samples with the
+ * paired estimator gives -3.93%.) A budget sitting inside its lane's noise band
+ * reports coin flips, not regressions.
+ *
+ * 10% is 2.2x the widest excursion measured on a diff that changes no code, and
+ * more than three standard deviations above the noisier of the two lanes. It
+ * stays far below what these lanes exist to catch: #3460's published
+ * `vize lint (max)` moved +16% and `vize fmt (max)` +58% over a window the
+ * pinned lanes scored as neutral-to-better, and both still fail at 10%.
+ *
+ * `check-max` is unpinned too but keeps the 5% default: at 839ms it is nowhere
+ * near the noise floor, and the same seven comparisons put it inside +-2.45%.
+ */
+export const UNPINNED_FAST_LANE_THRESHOLD_PERCENT = 10;
+
+/** The regression budget one lane is judged against. */
+export function laneThresholdPercent(task, defaultThresholdPercent) {
+  return task.thresholdPercent ?? defaultThresholdPercent;
+}
+
 export function makeTasks(inputDir, taskFilter) {
   const tsconfig = join(inputDir, "tsconfig.json");
   const pattern = ".";
@@ -58,6 +102,7 @@ export function makeTasks(inputDir, taskFilter) {
       label: "Lint (max)",
       args: ["lint", pattern, "--quiet"],
       threads: "max",
+      thresholdPercent: UNPINNED_FAST_LANE_THRESHOLD_PERCENT,
       allowNonZeroExit: true,
     },
     {
@@ -83,6 +128,7 @@ export function makeTasks(inputDir, taskFilter) {
       label: "Format (max)",
       args: ["fmt", "*.vue", "--check"],
       threads: "max",
+      thresholdPercent: UNPINNED_FAST_LANE_THRESHOLD_PERCENT,
       allowNonZeroExit: true,
     },
     {

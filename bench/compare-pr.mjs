@@ -12,8 +12,14 @@ import { basename, delimiter, dirname, join, parse, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 
-import { laneEnvironment, makeTasks } from "./compare-pr-lanes.mjs";
-import { confirmRegressions, summarizeBenchmarkRuns } from "./compare-pr-results.mjs";
+import { laneEnvironment, laneThresholdPercent, makeTasks } from "./compare-pr-lanes.mjs";
+import {
+  confirmRegressions,
+  formatPercent,
+  formatRate,
+  formatRegressionLine,
+  summarizeBenchmarkRuns,
+} from "./compare-pr-results.mjs";
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
@@ -71,23 +77,8 @@ function formatMs(ms) {
   })}ms`;
 }
 
-function formatRate(value) {
-  if (!Number.isFinite(value)) {
-    return "n/a";
-  }
-  return `${value.toFixed(3)}x`;
-}
-
 function formatRunList(values) {
   return values.map(formatMs).join(", ");
-}
-
-function formatPercent(value) {
-  if (!Number.isFinite(value)) {
-    return "n/a";
-  }
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}%`;
 }
 
 function pathWithNodeBins(cwd) {
@@ -159,7 +150,7 @@ function measureTask(task, baseBin, headBin, options) {
     label: task.label,
     baseRuns,
     headRuns,
-    thresholdPercent: options.thresholdPercent,
+    thresholdPercent: laneThresholdPercent(task, options.thresholdPercent),
   });
 }
 
@@ -171,6 +162,7 @@ export function createBenchmarkBudget(results) {
       label: result.label,
       rate: result.rate,
       changePercent: result.changePercent,
+      thresholdPercent: result.thresholdPercent,
     }));
 
   return {
@@ -178,6 +170,20 @@ export function createBenchmarkBudget(results) {
     regressionCount: regressions.length,
     regressions,
   };
+}
+
+/**
+ * Lanes judged against something other than the shared default, so a report
+ * never implies one budget covered every row. Derived from the results rather
+ * than restated, so it cannot drift from what actually gated the run.
+ */
+export function laneBudgetOverrides(results, defaultThresholdPercent) {
+  return results
+    .filter(
+      (result) =>
+        result.thresholdPercent != null && result.thresholdPercent !== defaultThresholdPercent,
+    )
+    .map((result) => `${result.label} ${result.thresholdPercent}%`);
 }
 
 export function renderMarkdown(data) {
@@ -188,8 +194,9 @@ export function renderMarkdown(data) {
   lines.push(
     `Base: \`${data.baseLabel}\`  Head: \`${data.headLabel}\`  Input: ${data.fileCount.toLocaleString()} generated SFC files`,
   );
+  const overrides = laneBudgetOverrides(data.results, data.thresholdPercent);
   lines.push(
-    `Median of ${data.runs} adjacent head/base pairs after ${data.warmups} warmup pair(s). Any threshold breach receives ${data.runs} fresh confirmation pairs, and the final rate is the paired median over all samples. Times are shown in milliseconds to 0.001ms. Rate below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%.`,
+    `Median of ${data.runs} adjacent head/base pairs after ${data.warmups} warmup pair(s). Any threshold breach receives ${data.runs} fresh confirmation pairs, and the final rate is the paired median over all samples. Times are shown in milliseconds to 0.001ms. Rate below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%${overrides.length === 0 ? "" : `, except ${overrides.join(", ")}`}.`,
   );
   lines.push(
     `Budget: ${budget.status}${budget.regressionCount > 0 ? ` (${budget.regressionCount} regression${budget.regressionCount === 1 ? "" : "s"})` : ""}.`,
@@ -206,9 +213,7 @@ export function renderMarkdown(data) {
     lines.push("");
     lines.push("Regression budget failures:");
     for (const regression of budget.regressions) {
-      lines.push(
-        `- ${regression.label}: ${formatRate(regression.rate)} (${formatPercent(regression.changePercent)})`,
-      );
+      lines.push(formatRegressionLine(regression));
     }
   }
   lines.push("");

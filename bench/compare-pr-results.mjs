@@ -1,6 +1,32 @@
 /**
- * Pure result classification and confirmation for the PR benchmark gate.
+ * Pure result classification, formatting, and confirmation for the PR
+ * benchmark gate.
  */
+
+export function formatRate(value) {
+  if (!Number.isFinite(value)) {
+    return "n/a";
+  }
+  return `${value.toFixed(3)}x`;
+}
+
+export function formatPercent(value) {
+  if (!Number.isFinite(value)) {
+    return "n/a";
+  }
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+/**
+ * One budget failure, naming the budget it broke. Lanes no longer share a
+ * single threshold, so a bare rate does not say what the gate compared against.
+ */
+export function formatRegressionLine(regression) {
+  const budget =
+    regression.thresholdPercent == null ? "" : ` over a ${regression.thresholdPercent}% budget`;
+  return `- ${regression.label}: ${formatRate(regression.rate)} (${formatPercent(regression.changePercent)})${budget}`;
+}
 
 function median(values) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -37,6 +63,7 @@ export function summarizeBenchmarkRuns({ id, label, baseRuns, headRuns, threshol
     rate,
     changePercent,
     status,
+    thresholdPercent,
     baseRuns,
     headRuns,
     pairRates,
@@ -58,7 +85,9 @@ export function confirmRegressions(measurements, remeasure, thresholdPercent) {
       label: result.label,
       baseRuns: [...result.baseRuns, ...confirmation.baseRuns],
       headRuns: [...result.headRuns, ...confirmation.headRuns],
-      thresholdPercent,
+      // A lane is judged against its own budget, so pooling the confirmation
+      // samples must not silently re-judge it against the shared default.
+      thresholdPercent: result.thresholdPercent ?? thresholdPercent,
     });
     return {
       ...combined,

@@ -65,6 +65,49 @@ export function assertReleaseCommitIsOnMainFirstParent(sha, mainSha, isOnFirstPa
 }
 
 /**
+ * What "the drift does not affect the release" means.
+ *
+ * The preflight waits 30-40 minutes for eight workflows to report success at
+ * the exact release SHA, and the repository's merge automation lands PRs
+ * throughout that window. #3540 stopped demanding an exact `main` tip and
+ * settled for first-parent ancestry, which removed the failure mode but left
+ * the acceptance rule saying nothing: any commit ever on `main` was accepted.
+ *
+ * Ordinary drift genuinely cannot affect a release. Everything the release
+ * publishes is built from the tagged tree; the tag is immutable and verified to
+ * still resolve to `sha`; every required gate is evaluated at `sha`, not at
+ * `main`; and release-blocking issues are evaluated live. A fix merged after
+ * the tag simply ships in the next version.
+ *
+ * One kind of drift is different: another release. A second `chore: release`
+ * commit means `main` has moved the version line on, and finishing the older
+ * release then publishes a lower version *after* a higher one -- npm's `latest`
+ * dist-tag, the crates.io release order and the "latest" GitHub Release all end
+ * up describing the superseded build. v0.316.0 and v0.317.0 were tagged seven
+ * minutes apart and were in flight together, so this is the live case, not a
+ * hypothetical.
+ *
+ * The workspace version at `main`'s tip is what makes that decidable: only the
+ * release tool writes it, and it is exactly "which release owns `main` now".
+ * Equal means the drift is ordinary work and the release still owns its
+ * version; different means a newer release has taken over and this one must not
+ * publish. Checking it before the gate wait also stops the superseded release
+ * in seconds instead of after 35 minutes of CI.
+ */
+export function assertReleaseVersionStillOwnsMain({
+  tag,
+  sha,
+  mainSha,
+  releaseVersion,
+  mainVersion,
+}) {
+  if (mainVersion === releaseVersion) return;
+  throw new Error(
+    `Release ${tag} (${sha}) is superseded: origin/main ${mainSha} is at workspace version ${mainVersion}, not ${releaseVersion}. Publishing it now would ship an older version after a newer one; cut the next release instead.`,
+  );
+}
+
+/**
  * Issues that must be closed before `tag` may ship.
  *
  * A `fix(fuzz):` reproducer blocks every release: it is a live defect, not a

@@ -13,8 +13,10 @@ import {
 import {
   assertReleaseCommitIsOnMainFirstParent,
   assertReleaseMetadata,
+  assertReleaseVersionStillOwnsMain,
   findReleaseBlockers,
   remoteTagCommit,
+  workspaceVersionFromCargoToml,
 } from "./release-preflight-core.mjs";
 import {
   assertRequiredWorkflowJobs,
@@ -49,7 +51,7 @@ function runGit(args, acceptedExitCodes = [0], cwd = root) {
   return result;
 }
 
-function verifyGitReleaseTarget(tag, sha) {
+function verifyGitReleaseTarget(tag, sha, version) {
   const head = runGit(["rev-parse", "HEAD"]).stdout.trim();
   if (head !== sha) {
     throw new Error(`Checked out HEAD ${head} does not match release event SHA ${sha}`);
@@ -64,6 +66,17 @@ function verifyGitReleaseTarget(tag, sha) {
     .stdout.trim()
     .split(/\r?\n/);
   assertReleaseCommitIsOnMainFirstParent(sha, mainSha, mainFirstParentHistory.includes(sha));
+  // ...and the one kind of drift that does invalidate this release: another
+  // release taking over the version line. See assertReleaseVersionStillOwnsMain.
+  assertReleaseVersionStillOwnsMain({
+    tag,
+    sha,
+    mainSha,
+    releaseVersion: version,
+    mainVersion: workspaceVersionFromCargoToml(
+      runGit(["show", "refs/remotes/origin/main:Cargo.toml"]).stdout,
+    ),
+  });
 
   const remoteTag = runGit([
     "ls-remote",
@@ -129,7 +142,7 @@ export function verifyReleaseTarget(env = process.env) {
     cargoToml: fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"),
     packageManifests: readPackageManifests(),
   });
-  verifyGitReleaseTarget(tag, sha);
+  verifyGitReleaseTarget(tag, sha, version);
   return { tag, sha, version, baseSha: releaseParentSha(sha) };
 }
 
@@ -218,7 +231,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
         .join("\n")}`,
     );
   }
-  verifyGitReleaseTarget(tag, sha);
+  verifyGitReleaseTarget(tag, sha, version);
   console.log(`Release preflight passed for ${tag} (${sha}) at workspace version ${version}.`);
   console.log(`Required workflows: ${requiredReleaseWorkflows.join(", ")}`);
 }

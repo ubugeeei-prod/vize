@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   assertReleaseCommitIsOnMainFirstParent,
   assertReleaseMetadata,
+  assertReleaseVersionStillOwnsMain,
   findReleaseBlockers,
   remoteTagCommit,
   workspaceVersionFromCargoToml,
@@ -94,7 +95,41 @@ test("release commit may remain on main's first-parent history when main advance
 test("release commit rejects ancestry that exists only through a merge's second parent", () => {
   assert.throws(
     () => assertReleaseCommitIsOnMainFirstParent("c".repeat(40), "b".repeat(40), false),
-    /not on the first-parent history of current origin\/main/,
+    new Error(
+      `Release commit ${"c".repeat(40)} is not on the first-parent history of current origin/main ${"b".repeat(40)}`,
+    ),
+  );
+});
+
+// The merge automation lands PRs throughout the preflight's 30-40 minute gate
+// wait, and none of them changes what this release publishes: the artifacts are
+// built from the immutable tagged tree and every required gate is evaluated at
+// the release SHA. A second release commit is different -- it moves the version
+// line on, and finishing the older release then ships a lower version after a
+// higher one.
+test("ordinary drift on main keeps the release, a newer release takes it away", () => {
+  const mainSha = "b".repeat(40);
+  assert.doesNotThrow(() =>
+    assertReleaseVersionStillOwnsMain({
+      tag: "v1.2.3",
+      sha,
+      mainSha,
+      releaseVersion: "1.2.3",
+      mainVersion: "1.2.3",
+    }),
+  );
+  assert.throws(
+    () =>
+      assertReleaseVersionStillOwnsMain({
+        tag: "v1.2.3",
+        sha,
+        mainSha,
+        releaseVersion: "1.2.3",
+        mainVersion: "1.3.0",
+      }),
+    new Error(
+      `Release v1.2.3 (${sha}) is superseded: origin/main ${mainSha} is at workspace version 1.3.0, not 1.2.3. Publishing it now would ship an older version after a newer one; cut the next release instead.`,
+    ),
   );
 });
 

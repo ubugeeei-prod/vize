@@ -49,6 +49,7 @@ test("target-only mode verifies HEAD, main first-parent history, and the peeled 
       "  console.log(`${process.env.TEST_TAG_OBJECT}\\trefs/tags/${process.env.TEST_TAG}`);",
       "  console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}^{}`);",
       "} else if (command === 'rev-list --first-parent refs/remotes/origin/main') console.log(process.env.TEST_MAIN_FIRST_PARENT_HISTORY);",
+      "else if (command === 'show refs/remotes/origin/main:Cargo.toml') process.stdout.write(process.env.TEST_MAIN_CARGO_TOML);",
       "else if (args[0] === 'rev-list') console.log(`${process.env.TEST_RELEASE_SHA} ${process.env.TEST_BASE_SHA}`);",
       "else if (args[0] === 'merge-base') process.exit(0);",
       "else process.exit(2);",
@@ -68,6 +69,7 @@ test("target-only mode verifies HEAD, main first-parent history, and the peeled 
         TEST_RELEASE_SHA: sha,
         TEST_MAIN_SHA: sha,
         TEST_MAIN_FIRST_PARENT_HISTORY: [sha, "b".repeat(40)].join("\n"),
+        TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
         TEST_TAG: `v${version}`,
         TEST_TAG_OBJECT: "c".repeat(40),
         TEST_TAG_SHA: sha,
@@ -77,26 +79,55 @@ test("target-only mode verifies HEAD, main first-parent history, and the peeled 
       },
     });
 
+  const outcome = (result: ReturnType<typeof run>) => [result.status, result.stderr];
+
   try {
     const success = run();
-    assert.equal(success.status, 0, `${success.stderr}\n${success.stdout}`.trim());
-    const advancedMain = run({ TEST_MAIN_SHA: "d".repeat(40) });
-    assert.equal(advancedMain.status, 0, `${advancedMain.stderr}\n${advancedMain.stdout}`.trim());
-    const headMismatch = run({ TEST_HEAD_SHA: "f".repeat(40) });
-    assert.equal(headMismatch.status, 1);
-    assert.match(headMismatch.stderr, /Checked out HEAD .* does not match release event SHA/);
-    const secondParentOnly = run({
-      TEST_MAIN_SHA: "d".repeat(40),
-      TEST_MAIN_FIRST_PARENT_HISTORY: ["d".repeat(40), "b".repeat(40)].join("\n"),
-    });
-    assert.equal(secondParentOnly.status, 1);
-    assert.match(
-      secondParentOnly.stderr,
-      /not on the first-parent history of current origin\/main/,
+    assert.deepEqual(outcome(success), [0, ""], `${success.stderr}\n${success.stdout}`.trim());
+
+    // The repository's merge automation lands PRs throughout the 30-40 minute
+    // gate wait. Ordinary drift keeps the workspace version, so the release
+    // still owns its version line and the gates measured at the tag still say
+    // what they said.
+    assert.deepEqual(outcome(run({ TEST_MAIN_SHA: "d".repeat(40) })), [0, ""]);
+
+    // A second release commit is the one kind of drift that does invalidate
+    // this one: finishing now publishes a lower version after a higher one.
+    assert.deepEqual(
+      outcome(
+        run({
+          TEST_MAIN_SHA: "d".repeat(40),
+          TEST_MAIN_CARGO_TOML: '[workspace.package]\nversion = "99.99.99"\n',
+        }),
+      ),
+      [
+        1,
+        `Release v${version} (${sha}) is superseded: origin/main ${"d".repeat(40)} is at workspace version 99.99.99, not ${version}. Publishing it now would ship an older version after a newer one; cut the next release instead.\n`,
+      ],
     );
-    const tagMismatch = run({ TEST_TAG_SHA: "e".repeat(40) });
-    assert.equal(tagMismatch.status, 1);
-    assert.match(tagMismatch.stderr, /Remote tag .* points to/);
+
+    assert.deepEqual(outcome(run({ TEST_HEAD_SHA: "f".repeat(40) })), [
+      1,
+      `Checked out HEAD ${"f".repeat(40)} does not match release event SHA ${sha}\n`,
+    ]);
+
+    assert.deepEqual(
+      outcome(
+        run({
+          TEST_MAIN_SHA: "d".repeat(40),
+          TEST_MAIN_FIRST_PARENT_HISTORY: ["d".repeat(40), "b".repeat(40)].join("\n"),
+        }),
+      ),
+      [
+        1,
+        `Release commit ${sha} is not on the first-parent history of current origin/main ${"d".repeat(40)}\n`,
+      ],
+    );
+
+    assert.deepEqual(outcome(run({ TEST_TAG_SHA: "e".repeat(40) })), [
+      1,
+      `Remote tag v${version} points to ${"e".repeat(40)}, expected ${sha}\n`,
+    ]);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
