@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -186,31 +186,20 @@ function runCommand(executable: string, args: string[]) {
   const env = { ...process.env };
   delete env.GITHUB_ACTIONS;
 
-  try {
-    const stdout = execFileSync(executable, args, {
-      cwd: fixtureDir,
-      encoding: "utf8",
-      env,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { exitCode: 0, output: normalizeOutput(stdout) };
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "status" in error &&
-      "stdout" in error &&
-      "stderr" in error
-    ) {
-      const processError = error as { status: number | null; stdout: string; stderr: string };
-      return {
-        exitCode: processError.status ?? 1,
-        output: normalizeOutput(`${processError.stdout}${processError.stderr}`),
-      };
-    }
-
-    throw error;
+  const result = spawnSync(executable, args, {
+    cwd: fixtureDir,
+    encoding: "utf8",
+    env,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.error) {
+    throw result.error;
   }
+
+  return {
+    exitCode: result.status ?? 1,
+    output: normalizeOutput(`${result.stdout}${result.stderr}`),
+  };
 }
 
 function normalizeOutput(output: string): string {

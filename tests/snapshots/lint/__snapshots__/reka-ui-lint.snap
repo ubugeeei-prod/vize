@@ -4856,17 +4856,6 @@
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuDemo.story.vue",
     "messages": [
       {
-        "ruleId": "ecosystem/nuxt-prefer-nuxt-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/nuxt-prefer-nuxt-link] Use NuxtLink for internal links",
-        "line": 49,
-        "column": 25,
-        "endLine": 49,
-        "endColumn": 33,
-        "help": "Replace the anchor with <NuxtLink to=\"...\"> so Nuxt can prefetch, route, and type-check the navigation target."
-      },
-      {
         "ruleId": "a11y/img-alt",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -4890,7 +4879,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuSubmenus.story.vue",

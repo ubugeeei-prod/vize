@@ -1820,21 +1820,10 @@
         "endLine": 49,
         "endColumn": 69,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "ecosystem/nuxt-prefer-nuxt-link",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
-        "severity": 1,
-        "message": "[vize:ecosystem/nuxt-prefer-nuxt-link] Use NuxtLink for internal links",
-        "line": 109,
-        "column": 9,
-        "endLine": 109,
-        "endColumn": 35,
-        "help": "Replace the anchor with <NuxtLink to=\"...\"> so Nuxt can prefetch, route, and type-check the navigation target."
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/Package/Table.vue",
