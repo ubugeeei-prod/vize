@@ -78,6 +78,7 @@ test("semantic comparison records exact shared, false-positive, and false-negati
 
 test("published normalization evidence is immutable canonical JSON", () => {
   assert.ok(Object.isFrozen(semanticNormalization));
+  assert.equal(semanticNormalization.version, 2);
   assert.ok(Object.isFrozen(semanticNormalization.categories));
   assert.ok(Object.isFrozen(semanticNormalization.omittedCategories));
   assert.ok(Object.isFrozen(semanticNormalization.ignoredScopeFamilies));
@@ -134,6 +135,10 @@ test("normalization ignores structural nesting but detects changed semantic scop
       "entity.name.constant.counter-name.less",
       "entity.other.keyframe-offset.percentage.css",
       "entity.other.counter-name.less",
+      "attribute_value",
+      "entity.other.attribute-selector.sass",
+      "html",
+      "inline.pug",
     ]),
     "x",
     "source.vue",
@@ -152,6 +157,14 @@ test("normalization ignores structural nesting but detects changed semantic scop
     "vue-shell.vue",
   );
   assert.deepEqual(vueShell.semanticSpans[0].categories, ["attribute"]);
+
+  const pugInlineTag = tokenizeSemanticSource(
+    grammar(["source.vue", "tag.inline.pug"]),
+    "x",
+    "source.vue",
+    "pug-inline-tag.vue",
+  );
+  assert.deepEqual(pugInlineTag.semanticSpans[0].categories, ["tag"]);
 });
 
 test("semantic tokenizer fails closed on unknown scopes, malformed spans, and timeouts", () => {

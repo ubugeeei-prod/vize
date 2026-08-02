@@ -16,7 +16,7 @@ export const semanticCategories = Object.freeze([
 ] as const);
 
 export const semanticNormalization = Object.freeze({
-  version: 1,
+  version: 2,
   categories: semanticCategories,
   coordinates: "1-based UTF-16 columns with an exclusive end",
   omittedCategories: Object.freeze([
@@ -27,6 +27,7 @@ export const semanticNormalization = Object.freeze({
     "number",
     "operator",
     "property",
+    "selector",
     "string",
     "type",
     "variable",
@@ -37,6 +38,8 @@ export const semanticNormalization = Object.freeze({
     "expression",
     "fenced_code",
     "heading",
+    "html",
+    "inline",
     "markup",
     "meta",
     "new",
@@ -149,18 +152,21 @@ function normalizeScopes(scopes: string[], label: string): string[] {
 
 function semanticCategory(scope: string): string | null {
   if (scope.startsWith("comment")) return "comment";
+  if (scope === "attribute_value") return "string";
   if (scope.startsWith("string")) return "string";
   if (scope.startsWith("constant.numeric")) return "number";
   if (scope.startsWith("constant") || scope.startsWith("support.constant")) return "literal";
   if (scope.startsWith("keyword.operator")) return "operator";
   if (scope.startsWith("keyword") && scope.endsWith(".vue")) return "attribute";
   if (scope.startsWith("keyword") || scope.startsWith("storage")) return "keyword";
+  if (scope.startsWith("tag.")) return "tag";
   if (scope.startsWith("entity.name.tag")) return "tag";
   if (scope.startsWith("entity.name.label")) return "label";
   if (scope.startsWith("entity.name.section")) return "label";
   if (scope.startsWith("entity.name.constant")) return "literal";
   if (scope.startsWith("entity.other.keyframe-offset")) return "literal";
   if (scope.startsWith("entity.other.counter-name")) return "literal";
+  if (scope.startsWith("entity.other.attribute-selector")) return "selector";
   if (scope.startsWith("entity.other.attribute-name")) return "attribute";
   if (scope.startsWith("entity.name.function") || scope.startsWith("support.function")) {
     return "function";
