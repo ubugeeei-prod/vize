@@ -8,7 +8,8 @@ test("push SemVer checks preserve pull-request markers after squash merge", () =
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
-  assert.match(job, /permissions:\n\s+contents:\s*read\n\s+pull-requests:\s*read/);
+  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+contents:\s*read\n/);
+  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+pull-requests:\s*read\n/);
   assert.match(job, /- name:\s*Resolve SemVer change marker/);
   assert.match(
     job,
@@ -85,6 +86,59 @@ test("push marker falls back to direct-push commit messages", async () => {
   });
 
   assert.equal(marker, "fix(ci): prepare a direct push\nfix(ci)!: apply a direct breaking push");
+});
+
+test("push marker fails closed when a commit has multiple exact merged pull requests", async () => {
+  const sha = "f49c94e03ad957b1f6f51276a328acb533c21343";
+  await assert.rejects(
+    resolveSemverChangeMarker({
+      eventName: "push",
+      event: {
+        after: sha,
+        head_commit: { message: "fix(ci): ambiguous squash" },
+        repository: { full_name: "ubugeeei-prod/vize" },
+      },
+      token: "test-token",
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify([
+            { title: "fix(ci): first", merge_commit_sha: sha, merged_at: "2026-08-02T08:40:36Z" },
+            { title: "fix(ci): second", merge_commit_sha: sha, merged_at: "2026-08-02T08:41:12Z" },
+          ]),
+          { status: 200 },
+        ),
+    }),
+    /multiple exact merged pull requests/,
+  );
+});
+
+test("push marker fails closed without repository, commit, or token metadata", async () => {
+  const event = {
+    head_commit: { message: "fix(ci): direct push" },
+    repository: { full_name: "ubugeeei-prod/vize" },
+  };
+  const fetchImpl = async () => {
+    throw new Error("incomplete push metadata must not reach the associated-pulls API");
+  };
+
+  await assert.rejects(
+    resolveSemverChangeMarker({ eventName: "push", event, sha: "abc123", fetchImpl }),
+    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
+  );
+  await assert.rejects(
+    resolveSemverChangeMarker({ eventName: "push", event, token: "test-token", fetchImpl }),
+    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
+  );
+  await assert.rejects(
+    resolveSemverChangeMarker({
+      eventName: "push",
+      event: { head_commit: event.head_commit },
+      sha: "abc123",
+      token: "test-token",
+      fetchImpl,
+    }),
+    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
+  );
 });
 
 test("pull-request marker uses event metadata without an API request", async () => {
