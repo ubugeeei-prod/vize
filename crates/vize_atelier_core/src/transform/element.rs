@@ -620,7 +620,7 @@ mod tests {
 
     use super::transform_element;
     use crate::{
-        PropNode, TemplateChildNode,
+        ElementType, PropNode, TemplateChildNode,
         errors::{CompilerError, ErrorCode},
         lane::{ParentNode, TransformContext, traverse::traverse_children},
         options::TransformOptions,
@@ -807,5 +807,46 @@ mod tests {
         // Issue #1169: a dynamic arg on a plain element is rejected too, so the
         // three competing update mechanisms never fire.
         assert_v_model_arg_on_element_rejected(r#"<input v-model:[dynKey]="value" />"#);
+    }
+
+    #[test]
+    fn test_transform_hyphenated_template_tag_is_promoted_to_component() {
+        // The template pipeline never sets the custom-element flag, so a
+        // hyphenated tag keeps resolving as a component whether or not
+        // `_custom_elements` is compiled in.
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<my-el></my-el>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        match &mut root.children[0] {
+            TemplateChildNode::Element(el) => {
+                transform_element(&mut ctx, el);
+                assert_eq!(el.tag_type, ElementType::Component);
+            }
+            other => panic!("Expected ElementNode, got {:?}", other.node_type()),
+        }
+    }
+
+    #[cfg(feature = "_custom_elements")]
+    #[test]
+    fn test_transform_keeps_upstream_custom_element_as_element() {
+        // A front end that already classified the tag (the JSX lowerer honoring
+        // Babel's `isCustomElement`) wins over the hyphenated-tag heuristic.
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<my-el></my-el>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        let mut ctx =
+            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
+        match &mut root.children[0] {
+            TemplateChildNode::Element(el) => {
+                el.is_custom_element = true;
+                transform_element(&mut ctx, el);
+                assert_eq!(el.tag_type, ElementType::Element);
+            }
+            other => panic!("Expected ElementNode, got {:?}", other.node_type()),
+        }
     }
 }

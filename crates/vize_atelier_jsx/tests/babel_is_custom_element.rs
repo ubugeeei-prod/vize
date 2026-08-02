@@ -63,6 +63,32 @@ fn matching_unbound_tag_uses_a_string_vnode_tag() {
 }
 
 #[test]
+fn matching_hyphenated_tag_stays_an_intrinsic_element() {
+    // A hyphenated tag is the shape the element transform would otherwise
+    // promote to a component, so it is the case that proves the lowerer's
+    // verdict survives the transform.
+    let is_custom_element = |tag: &str| tag == "my-el";
+    let (custom, diagnostics) = compile(
+        "const A = () => <my-el foo={1}/>;",
+        &babel_vdom(),
+        Some(&is_custom_element),
+    );
+
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+    assert!(
+        custom.contains("_createElementBlock(\"my-el\", { foo: 1 })"),
+        "{custom}"
+    );
+    assert!(!custom.contains("_resolveComponent"), "{custom}");
+
+    let (baseline, _) = compile("const A = () => <my-el foo={1}/>;", &babel_vdom(), None);
+    assert!(
+        baseline.contains("_resolveComponent(\"my-el\")"),
+        "{baseline}"
+    );
+}
+
+#[test]
 fn predicate_is_inert_outside_babel_vdom() {
     let source = "const A = () => <MyEl foo={1}/>;";
     let is_custom_element = |tag: &str| {
