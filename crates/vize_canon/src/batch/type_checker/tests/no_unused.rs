@@ -4,6 +4,7 @@ use super::{
 };
 use vize_carton::cstr;
 
+mod css_v_bind;
 mod define_emits_unused;
 
 #[test]

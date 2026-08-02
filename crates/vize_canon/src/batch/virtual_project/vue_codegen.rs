@@ -32,6 +32,7 @@ use super::diagnostics::{
 };
 use super::{
     art_usage::collect_art_template_referenced_names,
+    css_var_usage::collect_css_var_referenced_names,
     setup_props::augment_type_based_props_from_script_context,
 };
 
@@ -209,12 +210,18 @@ pub(super) fn generate_vue_virtual_ts(
         "canon.croquis.augment_type_props",
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
     );
+    // Names the generated component surface consumes outside `<template>`:
+    // `<art>` variant templates and CSS `v-bind()` expressions. Both feed the
+    // unused-binding anchors, which are otherwise narrowed to template-referenced
+    // names so a genuinely unused binding still reports TS6133.
     let extra_template_referenced_names = codegen_options.preserve_unused_diagnostics.then(|| {
-        collect_art_template_referenced_names(
+        let mut names = collect_art_template_referenced_names(
             descriptor,
             codegen_options.template_syntax,
             codegen_options.experimental_in_tag_comments,
-        )
+        );
+        names.extend(collect_css_var_referenced_names(descriptor));
+        names
     });
 
     let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
