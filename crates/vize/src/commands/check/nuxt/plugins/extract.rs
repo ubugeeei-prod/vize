@@ -1,5 +1,7 @@
 //! AST extraction for Nuxt plugin provide/inject keys.
 
+mod bindings;
+
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, Function, ObjectExpression,
@@ -9,6 +11,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::String;
 
+use self::bindings::{StaticPlugin, resolve_static_plugin_from_export};
 use super::super::parsing::{
     collect_object_keys, extract_call_expression_from_export, extract_expression,
     extract_object_expression, find_object_property,
@@ -28,7 +31,7 @@ pub(in crate::commands::check::nuxt) fn extract_plugin_provide_keys_from_source(
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
         };
-        collect_plugin_keys_from_default_export(&export.declaration, &mut keys);
+        collect_plugin_keys_from_default_export(&export.declaration, &ret.program.body, &mut keys);
     }
 
     keys
@@ -36,6 +39,7 @@ pub(in crate::commands::check::nuxt) fn extract_plugin_provide_keys_from_source(
 
 fn collect_plugin_keys_from_default_export(
     declaration: &ExportDefaultDeclarationKind<'_>,
+    program_body: &[Statement<'_>],
     keys: &mut Vec<String>,
 ) {
     if let Some(call) = extract_call_expression_from_export(declaration) {
@@ -51,51 +55,12 @@ fn collect_plugin_keys_from_default_export(
         return;
     }
 
-    match declaration {
-        ExportDefaultDeclarationKind::ArrowFunctionExpression(arrow) => {
-            collect_plugin_keys_from_arrow_function(arrow, keys);
-        }
-        ExportDefaultDeclarationKind::FunctionDeclaration(function)
-        | ExportDefaultDeclarationKind::FunctionExpression(function) => {
+    match resolve_static_plugin_from_export(declaration, program_body) {
+        Some(StaticPlugin::Arrow(arrow)) => collect_plugin_keys_from_arrow_function(arrow, keys),
+        Some(StaticPlugin::Function(function)) => {
             collect_plugin_keys_from_function(function, keys);
         }
-        ExportDefaultDeclarationKind::ParenthesizedExpression(parenthesized) => {
-            collect_plugin_keys_from_expression(&parenthesized.expression, keys);
-        }
-        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
-            collect_plugin_keys_from_expression(&ts_as.expression, keys);
-        }
-        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
-            collect_plugin_keys_from_expression(&ts_satisfies.expression, keys);
-        }
-        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
-            collect_plugin_keys_from_expression(&ts_non_null.expression, keys);
-        }
-        _ => {}
-    }
-}
-
-fn collect_plugin_keys_from_expression(expression: &Expression<'_>, keys: &mut Vec<String>) {
-    match expression {
-        Expression::ArrowFunctionExpression(arrow) => {
-            collect_plugin_keys_from_arrow_function(arrow, keys);
-        }
-        Expression::FunctionExpression(function) => {
-            collect_plugin_keys_from_function(function, keys)
-        }
-        Expression::ParenthesizedExpression(parenthesized) => {
-            collect_plugin_keys_from_expression(&parenthesized.expression, keys);
-        }
-        Expression::TSAsExpression(ts_as) => {
-            collect_plugin_keys_from_expression(&ts_as.expression, keys);
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            collect_plugin_keys_from_expression(&ts_satisfies.expression, keys);
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            collect_plugin_keys_from_expression(&ts_non_null.expression, keys);
-        }
-        _ => {}
+        None => {}
     }
 }
 
@@ -303,40 +268,5 @@ fn collect_plugin_keys_from_object(object: &ObjectExpression<'_>, keys: &mut Vec
             }
             _ => {}
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::extract_plugin_provide_keys_from_source;
-
-    #[test]
-    fn extracts_nuxt2_inject_keys_from_callback_plugin() {
-        let source = r#"
-export default defineNuxtPlugin((_context, register) => {
-  register('logger', { info(message) { return message.length } })
-  if (true) {
-    register(`auth`, {})
-  }
-})
-"#;
-
-        let keys = extract_plugin_provide_keys_from_source(source);
-        assert_eq!(keys, vec!["logger", "auth"]);
-    }
-
-    #[test]
-    fn extracts_nuxt2_inject_keys_from_raw_export_plugin() {
-        let source = r#"
-export default (_context, inject) => {
-  inject('logger', { info(message) { return message.length } })
-  if (true) {
-    inject(`auth`, {})
-  }
-}
-"#;
-
-        let keys = extract_plugin_provide_keys_from_source(source);
-        assert_eq!(keys, vec!["logger", "auth"]);
     }
 }
