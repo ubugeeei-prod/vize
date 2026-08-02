@@ -1,162 +1,78 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
-import { resolveSemverChangeMarker } from "../../tools/github/semver-change-marker.mjs";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
-test("push SemVer checks preserve pull-request markers after squash merge", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const job = workflowJobBody(workflow, "semver-checks");
+type WorkflowStep = {
+  env?: Record<string, string>;
+  id?: string;
+  name?: string;
+  run?: string;
+  uses?: string;
+  with?: Record<string, unknown>;
+};
 
-  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+contents:\s*read\n/);
-  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+pull-requests:\s*read\n/);
-  assert.match(job, /- name:\s*Resolve SemVer change marker/);
-  assert.match(
-    job,
-    /GITHUB_TOKEN:\s*\$\{\{\s*github\.event_name == 'push' && github\.token \|\| ''\s*\}\}/,
-  );
-  assert.match(
-    job,
-    /node tools\/github\/semver-change-marker\.mjs "\$RUNNER_TEMP\/semver-change-marker\.txt"/,
-  );
-  assert.match(job, /SEMVER_CHANGE_MARKER="\$\(cat "\$RUNNER_TEMP\/semver-change-marker\.txt"\)"/);
-  assert.doesNotMatch(job, /git log -1 --format=%B/);
-});
+type CheckWorkflow = {
+  jobs?: Record<
+    string,
+    {
+      permissions?: Record<string, string>;
+      steps?: WorkflowStep[];
+    }
+  >;
+};
 
-test("push marker uses the exact squash-merged pull request body", async () => {
-  const sha = "f49c94e03ad957b1f6f51276a328acb533c21343";
-  const calls = [];
-  const marker = await resolveSemverChangeMarker({
-    eventName: "push",
-    event: {
-      after: sha,
-      head_commit: { message: "fix(atelier): keep custom element metadata internal (#3720)" },
-      repository: { full_name: "ubugeeei-prod/vize" },
+test("the SemVer job resolves its release type before running cargo-semver-checks", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as CheckWorkflow;
+  const job = workflow.jobs?.["semver-checks"];
+  assert.ok(job);
+  assert.deepEqual(job.permissions, { contents: "read", "pull-requests": "read" });
+
+  const steps = job.steps ?? [];
+  assert.deepEqual(
+    steps.find((step) => step.id === "semver-release-type"),
+    {
+      env: { GITHUB_TOKEN: "${{ github.token }}" },
+      id: "semver-release-type",
+      name: "Resolve SemVer release type",
+      run: "node tools/github/semver-change-marker.mjs",
     },
-    repository: "ubugeeei-prod/vize",
-    sha,
-    token: "test-token",
-    fetchImpl: async (url, init) => {
-      calls.push({ url, init });
-      return new Response(
-        JSON.stringify([
-          {
-            title: "fix(ci): unrelated pull request",
-            body: "BREAKING CHANGE: unrelated marker.",
-            merge_commit_sha: "0000000000000000000000000000000000000000",
-            merged_at: "2026-08-02T08:39:00Z",
-          },
-          {
-            title: "fix(atelier): keep custom element metadata internal",
-            body: "Compatibility note\n\nBREAKING CHANGE: remove an unreleased field.",
-            merge_commit_sha: sha,
-            merged_at: "2026-08-02T08:40:36Z",
-          },
-        ]),
-        { status: 200 },
-      );
-    },
-  });
-
-  assert.equal(
-    marker,
-    "fix(atelier): keep custom element metadata internal\nCompatibility note\n\nBREAKING CHANGE: remove an unreleased field.",
   );
-  assert.equal(
-    calls[0].url,
-    `https://api.github.com/repos/ubugeeei-prod/vize/commits/${sha}/pulls`,
-  );
-  assert.equal(calls[0].init.headers.Authorization, "Bearer test-token");
-});
 
-test("push marker falls back to direct-push commit messages", async () => {
-  const marker = await resolveSemverChangeMarker({
-    eventName: "push",
-    event: {
-      after: "1234567890abcdef",
-      commits: [
-        { message: "fix(ci): prepare a direct push" },
-        { message: "fix(ci)!: apply a direct breaking push" },
-      ],
-      head_commit: { message: "fix(ci)!: apply a direct breaking push" },
-      repository: { full_name: "ubugeeei-prod/vize" },
-    },
-    token: "test-token",
-    fetchImpl: async () => new Response("[]", { status: 200 }),
-  });
-
-  assert.equal(marker, "fix(ci): prepare a direct push\nfix(ci)!: apply a direct breaking push");
-});
-
-test("push marker fails closed when a commit has multiple exact merged pull requests", async () => {
-  const sha = "f49c94e03ad957b1f6f51276a328acb533c21343";
-  await assert.rejects(
-    resolveSemverChangeMarker({
-      eventName: "push",
-      event: {
-        after: sha,
-        head_commit: { message: "fix(ci): ambiguous squash" },
-        repository: { full_name: "ubugeeei-prod/vize" },
+  assert.deepEqual(
+    steps.find((step) => step.name === "Check public API SemVer compatibility"),
+    {
+      env: {
+        BASELINE_REV:
+          "${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}",
+        SEMVER_RELEASE_TYPE: "${{ steps.semver-release-type.outputs.release-type }}",
       },
-      token: "test-token",
-      fetchImpl: async () =>
-        new Response(
-          JSON.stringify([
-            { title: "fix(ci): first", merge_commit_sha: sha, merged_at: "2026-08-02T08:40:36Z" },
-            { title: "fix(ci): second", merge_commit_sha: sha, merged_at: "2026-08-02T08:41:12Z" },
-          ]),
-          { status: 200 },
-        ),
-    }),
-    /multiple exact merged pull requests/,
-  );
-});
-
-test("push marker fails closed without repository, commit, or token metadata", async () => {
-  const event = {
-    head_commit: { message: "fix(ci): direct push" },
-    repository: { full_name: "ubugeeei-prod/vize" },
-  };
-  const fetchImpl = async () => {
-    throw new Error("incomplete push metadata must not reach the associated-pulls API");
-  };
-
-  await assert.rejects(
-    resolveSemverChangeMarker({ eventName: "push", event, sha: "abc123", fetchImpl }),
-    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
-  );
-  await assert.rejects(
-    resolveSemverChangeMarker({ eventName: "push", event, token: "test-token", fetchImpl }),
-    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
-  );
-  await assert.rejects(
-    resolveSemverChangeMarker({
-      eventName: "push",
-      event: { head_commit: event.head_commit },
-      sha: "abc123",
-      token: "test-token",
-      fetchImpl,
-    }),
-    /GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events/,
-  );
-});
-
-test("pull-request marker uses event metadata without an API request", async () => {
-  const marker = await resolveSemverChangeMarker({
-    eventName: "pull_request",
-    event: {
-      pull_request: {
-        title: "fix(relief): remove an unreleased field",
-        body: "BREAKING CHANGE: remove the field before release.",
-      },
+      name: "Check public API SemVer compatibility",
+      run: [
+        'case "$BASELINE_REV" in 0000000000000000000000000000000000000000) BASELINE_REV="";; esac',
+        "SEMVER_ARGS=()",
+        'case "$SEMVER_RELEASE_TYPE" in major) SEMVER_ARGS+=(--release-type major);; esac',
+        'if [ -n "$BASELINE_REV" ]; then',
+        '  cargo semver-checks check-release --package ${{ matrix.crate }} --baseline-rev "$BASELINE_REV" "${SEMVER_ARGS[@]}"',
+        "else",
+        '  cargo semver-checks check-release --package ${{ matrix.crate }} "${SEMVER_ARGS[@]}"',
+        "fi",
+        "",
+      ].join("\n"),
     },
-    fetchImpl: async () => {
-      throw new Error("pull-request events must not call the associated-pulls API");
-    },
-  });
+  );
 
-  assert.equal(
-    marker,
-    "fix(relief): remove an unreleased field\nBREAKING CHANGE: remove the field before release.",
+  assert.deepEqual(
+    steps.map((step) => step.name ?? step.uses?.split("@")[0]),
+    [
+      "actions/checkout",
+      "Resolve SemVer release type",
+      "dtolnay/rust-toolchain",
+      "wild-linker/action",
+      "./.github/actions/setup-rust-sticky-cache",
+      "Install cargo-semver-checks",
+      "Check public API SemVer compatibility",
+    ],
   );
 });
