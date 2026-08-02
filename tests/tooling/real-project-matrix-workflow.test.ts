@@ -130,8 +130,11 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     runIndex < lspIndex && lspIndex < syntaxHighlighterIndex,
     "the hydrated fixture corpus must run through the production LSP before syntax audit",
   );
-  assert.equal(lsp.env?.VIZE_LSP_BIN, "target/ci/vize");
-  assert.equal(lsp.env?.REAL_PROJECT_LSP_TIMEOUT_MS, "600000");
+  assert.deepEqual(lsp.env, {
+    CORSA_PATH: "${{ github.workspace }}/node_modules/.bin/tsgo",
+    REAL_PROJECT_LSP_TIMEOUT_MS: "600000",
+    VIZE_LSP_BIN: "target/ci/vize",
+  });
   assert.match(lsp.run ?? "", /tests\/tooling\/real-project-lsp\.test\.ts/);
   assert.match(lsp.run ?? "", /--test-concurrency=1/);
   assert.match(lsp.run ?? "", /test -s "\$FIXTURE_REPORT_DIR\/lsp-lifecycle-summary\.json"/);

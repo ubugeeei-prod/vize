@@ -114,6 +114,7 @@ jobs:
 
       - name: Check real-project LSP lifecycle
         env:
+          CORSA_PATH: ${{ github.workspace }}/node_modules/.bin/tsgo
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
           VIZE_LSP_BIN: target/ci/vize
         run: |
