@@ -118,6 +118,10 @@ jobs:
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
           VIZE_LSP_BIN: target/ci/vize
         run: |
+          if [ ! -x "$CORSA_PATH" ]; then
+            echo "::error title=Missing typecheck runtime::vp install produced no executable at $CORSA_PATH"
+            exit 1
+          fi
           node --test --test-concurrency=1 \
             tests/tooling/real-project-lsp.test.ts
           test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"

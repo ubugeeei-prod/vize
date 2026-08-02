@@ -135,6 +135,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     REAL_PROJECT_LSP_TIMEOUT_MS: "600000",
     VIZE_LSP_BIN: "target/ci/vize",
   });
+  assert.match(lsp.run ?? "", /if \[ ! -x "\$CORSA_PATH" \]; then/);
+  assert.match(lsp.run ?? "", /::error title=Missing typecheck runtime::/);
   assert.match(lsp.run ?? "", /tests\/tooling\/real-project-lsp\.test\.ts/);
   assert.match(lsp.run ?? "", /--test-concurrency=1/);
   assert.match(lsp.run ?? "", /test -s "\$FIXTURE_REPORT_DIR\/lsp-lifecycle-summary\.json"/);
