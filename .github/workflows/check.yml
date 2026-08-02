@@ -81,8 +81,7 @@ jobs:
       contents: read
       pull-requests: read
     # Matrix legs run in parallel and keep breaking changes attributed per crate.
-    # PRs compare against base; pushes compare against previous main. Schedules lack an exact base.
-    # Squash pushes recover the merged PR marker; direct pushes use their event commit messages.
+    # PRs compare against base; pushes compare against previous main (squash pushes recover the merged PR marker, direct pushes use their commit messages). Schedules lack an exact base.
     # Conventional breaking markers (`type(scope)!:` / `BREAKING CHANGE:`) are major.
     # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
     # Omit unpublished crates and their dependents so registry fallback cannot hit "not found".
