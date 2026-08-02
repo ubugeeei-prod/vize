@@ -73,54 +73,6 @@ fn babel_compat_forwards_a_numeric_value_only_for_vdom() {
 }
 
 #[test]
-fn babel_compat_forwards_a_static_template_but_not_an_interpolated_one() {
-    let compile = |source: &str| {
-        let bump = Bump::new();
-        let out = compile_jsx(
-            &bump,
-            source,
-            JsxLang::Jsx,
-            &JsxCompileConfig {
-                compat: JsxCompatMode::Babel,
-                ..Default::default()
-            },
-        );
-        let diagnostics = out
-            .diagnostics
-            .iter()
-            .map(|diagnostic| diagnostic.message.as_str().to_string())
-            .collect::<Vec<_>>();
-        (out.module_code().to_string(), diagnostics)
-    };
-
-    // A template literal with no substitutions is a primitive: its source is
-    // already valid JavaScript, so babel's "forward it as children" is
-    // reproducible verbatim.
-    let (static_template, static_diagnostics) = compile("const A = () => <B v-slots={`t`}/>;");
-    assert_eq!(static_diagnostics, Vec::<String>::new());
-    assert!(
-        static_template.contains("_createBlock(_component_B, null, `t`, 1024 /* DYNAMIC_SLOTS */)"),
-        "{static_template}"
-    );
-
-    // An interpolated one stays rejected: its substitutions can hold JSX that
-    // still needs lowering, so the source cannot be forwarded verbatim.
-    let (interpolated, interpolated_diagnostics) =
-        compile("const A = () => <B v-slots={`t${<i/>}`}/>;");
-    assert_eq!(
-        interpolated_diagnostics,
-        vec![
-            "v-slots value ``t${<i/>}`` is not a slots object: babel forwards it as the \
-             component's children, which leaves the component with no slots. Write the slots \
-             inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. \
-             v-slots={slots}."
-                .to_string()
-        ]
-    );
-    assert!(!interpolated.contains("DYNAMIC_SLOTS"), "{interpolated}");
-}
-
-#[test]
 fn compatibility_does_not_leak_into_vapor_or_ssr() {
     let compile = |default_mode, ssr| {
         let bump = Bump::new();
@@ -172,4 +124,109 @@ fn compatibility_does_not_leak_into_vapor_or_ssr() {
         ]
     );
     assert!(!ssr.contains("DYNAMIC_SLOTS"), "{ssr}");
+}
+
+#[test]
+fn babel_compat_keeps_babels_spread_semantics_with_authored_children() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        "const A = () => <B v-slots={1}>x</B>;",
+        JsxLang::Jsx,
+        &JsxCompileConfig {
+            compat: JsxCompatMode::Babel,
+            ..Default::default()
+        },
+    );
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    assert_eq!(
+        out.module_code(),
+        concat!(
+            "import { resolveComponent as _resolveComponent, openBlock as _openBlock, ",
+            "createBlock as _createBlock, createTextVNode as _createTextVNode, ",
+            "withCtx as _withCtx } from \"vue\"\n",
+            "export function render(_ctx, _cache) {\n",
+            "  const _component_B = _resolveComponent(\"B\")\n",
+            "  \n",
+            "  return (_openBlock(), _createBlock(_component_B, null, {\n",
+            "    default: _withCtx(() => [\n",
+            "      _createTextVNode(\"x\")\n",
+            "    ]),\n",
+            "    ...1\n",
+            "  }, 1024 /* DYNAMIC_SLOTS */))\n",
+            "}",
+        )
+    );
+}
+
+#[test]
+fn babel_compat_forwards_only_static_template_literals() {
+    let compile = |source| {
+        let bump = Bump::new();
+        let out = compile_jsx(
+            &bump,
+            source,
+            JsxLang::Jsx,
+            &JsxCompileConfig {
+                compat: JsxCompatMode::Babel,
+                ..Default::default()
+            },
+        );
+        let diagnostics = out
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str().to_string())
+            .collect::<Vec<_>>();
+        (out.module_code().to_string(), diagnostics)
+    };
+
+    let (static_template, diagnostics) = compile("const A = () => <B v-slots={`text`}/>;");
+    assert_eq!(diagnostics, Vec::<String>::new());
+    assert_eq!(
+        static_template,
+        concat!(
+            "import { resolveComponent as _resolveComponent, openBlock as _openBlock, ",
+            "createBlock as _createBlock } from \"vue\"\n",
+            "export function render(_ctx, _cache) {\n",
+            "  const _component_B = _resolveComponent(\"B\")\n",
+            "  \n",
+            "  return (_openBlock(), _createBlock(_component_B, null, `text`, ",
+            "1024 /* DYNAMIC_SLOTS */))\n",
+            "}",
+        )
+    );
+
+    let bump = Bump::new();
+    let native = compile_jsx(
+        &bump,
+        "const A = () => <B v-slots={`text`}/>;",
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    assert_eq!(
+        native
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect::<Vec<_>>(),
+        vec![
+            "v-slots value ``text`` is not a slots object: babel forwards it as the \
+             component's children, which leaves the component with no slots. Write the slots \
+             inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. \
+             v-slots={slots}."
+        ]
+    );
+    assert!(!native.module_code().contains("`text`"));
+
+    let (_, interpolated_diagnostics) = compile("const A = () => <B v-slots={`text ${<i/>}`}/>;");
+    assert_eq!(
+        interpolated_diagnostics,
+        vec![
+            "v-slots value ``text ${<i/>}`` is not a slots object: babel forwards it as the \
+             component's children, which leaves the component with no slots. Write the slots \
+             inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. \
+             v-slots={slots}."
+                .to_string()
+        ]
+    );
 }

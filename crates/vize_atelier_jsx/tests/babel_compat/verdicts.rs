@@ -146,4 +146,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // Closed by #3391: Babel VDOM mode forwards the primitive literals babel
     // passes straight into the vnode's children argument.
     ("errors/v_slots_not_object", Same),
+    // With authored children Babel uses its normal slots-object representation:
+    // `{ default: () => [...], ...1 }`, which Vize preserves.
+    ("errors/v_slots_not_object_with_children", Same),
 ];

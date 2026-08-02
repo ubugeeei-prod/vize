@@ -626,6 +626,12 @@
       "category": "errors",
       "lang": "jsx",
       "source": "const A = () => <B v-slots={1}/>;"
+    },
+    {
+      "id": "errors/v_slots_not_object_with_children",
+      "category": "errors",
+      "lang": "jsx",
+      "source": "const A = () => <B v-slots={1}>x</B>;"
     }
   ]
 }
