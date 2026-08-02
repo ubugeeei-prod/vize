@@ -113,8 +113,8 @@ Vapor semantics.
 ```
 
 **SSR输出。**插件的选项描述了客户端的 vnode 树。因此，SSR编译
-保留了整个巴别通道——包括`transformOn`和`enableObjectSlots`辅助、
-`isCustomElement`谓词、`mergeProps: false`以及所有仅巴别塔的降低——并使用Vize
+完全不应用 Babel 通道——不应用`transformOn`和`enableObjectSlots`辅助、
+`isCustomElement`谓词、`mergeProps: false`以及所有仅 Babel 的降级——并使用Vize
 自身的SSR语义，而不是输出半应用的混合。
 
 这两点都是刻意的回答，记录在箱子里，避免被重新争论。
@@ -124,10 +124,10 @@ Vapor semantics.
 两行语料库列被记录为 `deferred` 而非发散，因为它们都在等待
 无关的编译器工作，而非兼容模式：
 
-| 划船                      | 巴别塔的功效                          | 它正在等待什么                                                                                                                                                         |
+| 行                        | 巴别塔的功效                          | 它正在等待什么                                                                                                                                                         |
 | ------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options/resolve_type_on` | 附录 `{ props: { … }, name: "A" }`    | 类型驱动的道具/发射推理，需要在[#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502)上跟踪类型分辨率 |
-| `slots/dynamic_slot_name` | 发射计算出的密钥， `{ [n]: () => … }` | 动态槽降;Vize目前警告并放弃了该槽位                                                                                                                                    |
+| `slots/dynamic_slot_name` | 发射计算出的密钥， `{ [n]: () => … }` | 动态插槽降级；Vize 目前会警告并丢弃该插槽                                                                                                                              |
 
 ## 兼容性的衡量方式
 

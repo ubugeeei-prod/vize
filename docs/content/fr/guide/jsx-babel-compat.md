@@ -113,9 +113,9 @@ Vapor semantics.
 ```
 
 **sortie SSR.** Les options du plugin décrivent les arbres vnode clients. La compilation SSR
-donc retient toute la voie de Babel — les aides `transformOn` et `enableObjectSlots`, le prédicat
-`isCustomElement`, `mergeProps: false`, et chaque abaissement uniquement de Babel — et utilise la sémantique SSR
-propre de Vize au lieu d’émettre un mélange à moitié appliqué.
+n’applique donc pas du tout la voie de Babel — ni les aides `transformOn` et `enableObjectSlots`, ni
+le prédicat `isCustomElement`, ni `mergeProps: false`, ni aucun abaissement propre à Babel — et
+utilise la sémantique SSR propre de Vize au lieu d’émettre un mélange à moitié appliqué.
 
 Les deux sont des réponses délibérées, enregistrées dans la caisse pour ne pas être recontestées.
 
@@ -127,7 +127,7 @@ travail de compilateur non lié plutôt que le mode compat lui-même :
 | Rangée                    | Ce que fait Babel                         | Ce qu’il attend                                                                                                                                                                                                            |
 | ------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options/resolve_type_on` | ajoute `{ props: { … }, name: "A" }`      | l’inférence pilotée par type propage/émet, qui nécessite que la résolution du type soit suivie sur [#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502) |
-| `slots/dynamic_slot_name` | émet une clé calculée, `{ [n]: () => … }` | abaissement dynamique des fentes ; Vize avertit actuellement et abandonne la machine à sous                                                                                                                                |
+| `slots/dynamic_slot_name` | émet une clé calculée, `{ [n]: () => … }` | abaissement dynamique des slots ; Vize avertit actuellement et abandonne le slot                                                                                                                                           |
 
 ## Comment la compatibilité est mesurée
 

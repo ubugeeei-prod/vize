@@ -113,9 +113,9 @@ Vapor semantics.
 ```
 
 **saída SSR.** As opções do plugin descrevem árvores vnode do cliente. Portanto, a compilação SSR
-retém toda a rota de Babel — os auxiliares de `transformOn` e `enableObjectSlots`, o predicado
-`isCustomElement`, `mergeProps: false`, e toda redução apenas de Babel — e usa a própria semântica SSR
-do Vize em vez de emitir uma mistura meio aplicada.
+não aplica a rota de Babel — nem os auxiliares `transformOn` e `enableObjectSlots`, nem o predicado
+`isCustomElement`, nem `mergeProps: false`, nem qualquer redução exclusiva de Babel — e usa a própria
+semântica SSR do Vize em vez de emitir uma mistura meio aplicada.
 
 Ambas são respostas deliberadas, registradas na caixa para não serem discutidas novamente.
 

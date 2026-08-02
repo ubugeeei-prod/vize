@@ -36,6 +36,16 @@ const locales = (globalThis as { __vizeDocsLocales?: Record<string, LocaleString
   .__vizeDocsLocales!;
 const localeCodes = sitemap.supportedLocales.map(({ code }) => code);
 
+/** The `{ code, name }` pairs `docs/vite.config.ts` builds the site for. */
+function configuredLocales(): Array<{ code: string; name: string }> {
+  const viteConfig = fs.readFileSync(path.join(repoRoot, "docs/vite.config.ts"), "utf8");
+  const block = /locales:\s*\[(?<entries>[^\]]*)\]/u.exec(viteConfig)?.groups?.entries;
+  assert.ok(block, "docs/vite.config.ts must declare an i18n locales array");
+  return [
+    ...block.matchAll(/\{\s*code:\s*"(?<code>[^"]+)"\s*,\s*name:\s*"(?<name>[^"]+)"\s*\}/gu),
+  ].map(({ groups }) => ({ code: groups!.code, name: groups!.name }));
+}
+
 function hasContentPage(locale: string, navPath: string): boolean {
   const localeDir = locale === "en" ? contentDir : path.join(contentDir, locale);
   if (navPath === "/") {
@@ -83,14 +93,9 @@ void test("the sitemap ships the locales the docs site is built for", () => {
   ]);
   assert.deepEqual(Object.keys(locales), localeCodes);
 
-  const viteConfig = fs.readFileSync(path.join(repoRoot, "docs/vite.config.ts"), "utf8");
-  for (const { code, name } of sitemap.supportedLocales) {
-    assert.equal(
-      viteConfig.includes(`{ code: "${code}", name: "${name}" }`),
-      true,
-      `docs/vite.config.ts must build the ${code} locale`,
-    );
-  }
+  // The whole list, both directions: a locale the theme knows about but the
+  // site is not built for is as broken as the reverse.
+  assert.deepEqual(configuredLocales(), sitemap.supportedLocales);
 });
 
 void test("the sidebar groups the pages the site actually publishes", () => {
@@ -127,18 +132,18 @@ void test("every locale labels every sidebar entry", () => {
   // agree key for key, in the same order.
   const expectedKeys = Object.keys(locales.en.labels).filter((navPath) => !hidden(navPath));
 
+  const groupKeys = sitemap.navGroups.map((group) => group.key);
   for (const locale of localeCodes) {
     const keys = Object.keys(locales[locale].labels);
     assert.deepEqual(locale === "en" ? keys.filter((k) => !hidden(k)) : keys, expectedKeys);
-    assert.deepEqual(Object.keys(locales[locale].ui.groups), [
-      "start",
-      "projectSetup",
-      "staticAnalysis",
-      "rules",
-      "tooling",
-      "architecture",
-      "blog",
-    ]);
+    // Derived from the sitemap, whose own key list is pinned literally above,
+    // so a new group forces a heading in every locale. Order-sensitive: these
+    // are hand-maintained files and keeping them aligned costs nothing.
+    assert.deepEqual(
+      Object.keys(locales[locale].ui.groups),
+      groupKeys,
+      `${locale} must name every sitemap group`,
+    );
   }
 
   const navPaths = sitemap.navGroups.flatMap((group) => group.paths);
