@@ -9,6 +9,70 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "fixtures", "compiler-diff-report.mjs");
 
+function writeFakeVizePreload(directory: string): string {
+  const preloadPath = path.join(directory, "fake-vize.cjs");
+  const report = JSON.stringify({
+    files: [],
+    summary: {
+      fileCount: 0,
+      changedFiles: 0,
+      additions: 0,
+      removals: 0,
+      officialErrors: 0,
+      vizeErrors: 0,
+    },
+  });
+  fs.writeFileSync(
+    preloadPath,
+    `const path = require("node:path");
+if (path.basename(process.argv[1] ?? "") === "inspector") {
+  process.stdout.write(${JSON.stringify(report)});
+  process.exit(0);
+}
+`,
+  );
+  return preloadPath;
+}
+
+function fakeVizeEnv(preloadPath: string): NodeJS.ProcessEnv {
+  const preloadOption = `--require=${JSON.stringify(preloadPath)}`;
+  return {
+    ...process.env,
+    NODE_OPTIONS: [process.env.NODE_OPTIONS, preloadOption].filter(Boolean).join(" "),
+  };
+}
+
+function runCompilerFixtureDiff(vizeBin: string, invocationDirectory = root) {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-diff-bin-"));
+  const outputDir = path.join(tempDir, "report");
+  const preloadPath = writeFakeVizePreload(tempDir);
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        toolPath,
+        "--project",
+        "element-plus",
+        "--target",
+        "dom",
+        "--max-files",
+        "1",
+        "--output-dir",
+        outputDir,
+        "--vize-bin",
+        vizeBin,
+      ],
+      { cwd: invocationDirectory, encoding: "utf8", env: fakeVizeEnv(preloadPath) },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
 test("compiler fixture diff reporter documents the shared artifact directory", () => {
   const result = spawnSync(process.execPath, [toolPath, "--help"], {
     cwd: root,
@@ -79,4 +143,22 @@ test("compiler fixture diff reporter rejects unknown fixture ids", () => {
   } finally {
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
+});
+
+test("compiler fixture diff reporter resolves --vize-bin from the invocation directory", () => {
+  const binPath = process.execPath;
+  const invocationDirectory = path.dirname(binPath);
+  const relativeBinPath = `.${path.sep}${path.basename(binPath)}`;
+  const summary = runCompilerFixtureDiff(relativeBinPath, invocationDirectory);
+
+  assert.equal(summary.command.vize, binPath);
+  assert.equal(summary.projects[0].targets[0].status, "ok");
+});
+
+test("compiler fixture diff reporter preserves an absolute --vize-bin path", () => {
+  const binPath = process.execPath;
+  const summary = runCompilerFixtureDiff(binPath);
+
+  assert.equal(summary.command.vize, binPath);
+  assert.equal(summary.projects[0].targets[0].status, "ok");
 });

@@ -390,7 +390,9 @@ function resolveVizeLaunch(vizeBin) {
     join(repoRoot, "target", "ci", executableName("vize")),
     join(repoRoot, "target", "debug", executableName("vize")),
     join(repoRoot, "target", "release", executableName("vize")),
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((candidate) => resolve(candidate));
 
   for (const candidate of candidates) {
     if (!existsSync(candidate)) {
