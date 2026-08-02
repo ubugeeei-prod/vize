@@ -20,8 +20,9 @@ pub(super) fn generate_event_handler_expressions(
     if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
             let content = expr.content.as_str();
+            let is_callable_reference = is_callable_handler_reference(content);
             let is_implicit_reference =
-                ctx.data.has_implicit_event && is_callable_handler_reference(content);
+                ctx.check_emits && ctx.data.has_implicit_event && is_callable_reference;
             let inline_callback_arg = inline_callback_event_argument(content);
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
@@ -55,7 +56,23 @@ pub(super) fn generate_event_handler_expressions(
             // declaration's assignability error at the declared name, so the
             // synthetic identifier is what maps back to the attribute (#3462).
             let mut listener_spans = None;
-            let gen_range = if let Some(listener_type) = ctx.event_listener_type
+            let gen_range = if !ctx.check_emits
+                && (is_callable_reference || inline_callback_arg.is_some())
+            {
+                append!(*ts, "{indent}void (", indent = handler_indent);
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str(");  // handler expression (emit checks disabled)\n");
+                mapped_start..mapped_end
+            } else if !ctx.check_emits {
+                append!(*ts, "{indent}", indent = handler_indent);
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str(";  // handler expression (emit checks disabled)\n");
+                mapped_start..mapped_end
+            } else if let Some(listener_type) = ctx.event_listener_type
                 && (is_implicit_reference || inline_callback_arg.is_some())
             {
                 let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);

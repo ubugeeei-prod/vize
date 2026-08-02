@@ -8,6 +8,9 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::extract_inline_callback_params;
 use crate::scope::EventHandlerScopeData;
+use oxc_ast::ast::Statement;
+use oxc_parser::{ParseOptions, Parser};
+use oxc_span::SourceType;
 use vize_carton::{CompactString, profile, smallvec};
 use vize_relief::ExpressionNode;
 
@@ -120,7 +123,10 @@ impl Drawer {
             } else {
                 // Simple handler reference, or inline statement-list handler.
                 let has_implicit_event = content.contains("$event") || !content.contains('(');
-                let is_statement_list = is_inline_statement_list(content);
+                let is_statement_list = profile!(
+                    "croquis.template.v_on.statement_list",
+                    is_inline_statement_list(content)
+                );
 
                 if has_implicit_event || (is_statement_list && !content.contains("=>")) {
                     self.croquis.scopes.enter_event_handler_scope(
@@ -202,14 +208,79 @@ impl Drawer {
 
 fn is_inline_statement_list(content: &str) -> bool {
     let trimmed = content.trim_end();
-    if trimmed.ends_with(';') {
+    if trimmed.ends_with(';')
+        || content
+            .split(';')
+            .take(2)
+            .filter(|part| !part.trim().is_empty())
+            .count()
+            > 1
+    {
         return true;
     }
 
-    content
-        .split(';')
-        .take(2)
-        .filter(|part| !part.trim().is_empty())
-        .count()
-        > 1
+    if !content.contains(['\n', '\r']) {
+        return false;
+    }
+
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = Parser::new(&allocator, content, SourceType::ts())
+        .with_options(ParseOptions {
+            allow_return_outside_function: true,
+            ..Default::default()
+        })
+        .parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return false;
+    }
+
+    let mut statements = parsed
+        .program
+        .body
+        .iter()
+        .filter(|statement| !matches!(statement, Statement::EmptyStatement(_)));
+    let Some(first) = statements.next() else {
+        return false;
+    };
+    !matches!(first, Statement::ExpressionStatement(_)) || statements.next().is_some()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_inline_statement_list;
+
+    #[test]
+    fn classifies_asi_and_semicolon_statement_lists() {
+        for content in [
+            "emit('create')\nemit('close')",
+            "emit('create')\r\nemit('close')",
+            "emit('create'); emit('close')",
+            "emit('create');",
+            "\nif (ready) run()\n",
+            "\nconst value = getValue()\n",
+            "\nreturn run()\n",
+        ] {
+            assert!(
+                is_inline_statement_list(content),
+                "expected statement-list handler: {content:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn keeps_multiline_single_expressions_out_of_statement_scopes() {
+        for content in [
+            "handler\n  .call(null)",
+            "ready\n  ? onReady()\n  : onPending()",
+            "items\n  .map(item => item.id)\n  .join(',')",
+            "({\n  key: value\n})",
+            "emit('create')\n+",
+            "emit('create')",
+        ] {
+            assert!(
+                !is_inline_statement_list(content),
+                "expected single-expression handler: {content:?}"
+            );
+        }
+    }
 }

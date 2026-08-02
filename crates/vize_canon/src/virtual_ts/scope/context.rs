@@ -49,6 +49,10 @@ pub(crate) struct VForPropsContext<'a> {
 pub(super) struct EventHandlerExprContext<'a> {
     pub(super) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(super) data: &'a EventHandlerScopeData,
+    /// Whether handler assignability and payload types should be checked.
+    /// When disabled, authored handler bodies are still emitted as statements
+    /// so template-binding checks remain valid and parseable.
+    pub(super) check_emits: bool,
     pub(super) event_type: &'a str,
     /// For component `@event` handlers, the synthesized listener type
     /// (e.g. `__Child_1_test_listener`) that captures the full emit argument

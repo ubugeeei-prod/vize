@@ -115,6 +115,10 @@ impl VirtualTsCheckOptions {
     pub(crate) fn any_enabled(self) -> bool {
         self.check_props || self.check_template_bindings || self.check_emits
     }
+
+    pub(crate) fn check_event_handlers(self) -> bool {
+        self.check_emits || self.check_template_bindings
+    }
 }
 
 impl Default for VirtualTsCheckOptions {

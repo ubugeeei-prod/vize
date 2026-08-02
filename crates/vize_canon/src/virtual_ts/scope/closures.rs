@@ -366,7 +366,7 @@ pub(super) fn generate_scope_node(
             ts.push_str(indent);
             ts.push_str("};\n");
         }
-        ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
+        ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
             generate_event_handler_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
         }
         _ => {

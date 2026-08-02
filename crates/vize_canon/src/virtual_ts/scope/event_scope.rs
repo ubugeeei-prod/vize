@@ -26,6 +26,31 @@ pub(super) fn generate_event_handler_scope(
     let scope_id = scope.id.as_u32();
     append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
+    if !ctx.check_options.check_emits {
+        append!(*ts, "{indent}(($event: any) => {{\n");
+        profile!(
+            "canon.virtual_ts.event_handler_expressions",
+            generate_event_handler_expressions(
+                ts,
+                mappings,
+                scope_id,
+                &EventHandlerExprContext {
+                    expressions_by_scope: ctx.expressions_by_scope,
+                    data,
+                    check_emits: false,
+                    event_type: "any",
+                    event_listener_type: None,
+                    event_name_src_range: None,
+                    template_prop_names: ctx.template_prop_names,
+                    template_offset: ctx.template_offset,
+                    indent: inner_indent,
+                },
+            )
+        );
+        append!(*ts, "{indent}}})({{}} as any);\n");
+        return;
+    }
+
     if data.target_component.is_some() {
         let event_types = generate_component_event_types(
             ts,
@@ -66,6 +91,7 @@ pub(super) fn generate_event_handler_scope(
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
                     data,
+                    check_emits: true,
                     event_type: event_type.as_str(),
                     event_listener_type: Some(listener_type.as_str()),
                     event_name_src_range: event_name_source_range(
@@ -98,6 +124,7 @@ pub(super) fn generate_event_handler_scope(
                 &EventHandlerExprContext {
                     expressions_by_scope: ctx.expressions_by_scope,
                     data,
+                    check_emits: true,
                     event_type,
                     // Native DOM listeners keep the identity-call shape,
                     // so there is no declared name to anchor at.
