@@ -10,6 +10,8 @@
 #[cfg(test)]
 mod class_component_props_tests;
 #[cfg(test)]
+mod define_emits_usage_tests;
+#[cfg(test)]
 mod dynamic_component_names_tests;
 #[cfg(test)]
 mod event_handler_tests;

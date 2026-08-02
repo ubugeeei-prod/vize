@@ -1,4 +1,4 @@
-//! Setup-scope anchors for props bindings shadowed by template generation.
+//! Setup-scope anchors for compiler-macro bindings consumed by template generation.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, BindingPattern, CallExpression, Expression, VariableDeclarator};
@@ -8,12 +8,12 @@ use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, append, profile};
 use vize_croquis::{
     Croquis,
-    macros::{DEFINE_PROPS, WITH_DEFAULTS},
+    macros::{DEFINE_EMITS, DEFINE_PROPS, WITH_DEFAULTS},
 };
 
 use crate::virtual_ts::props::{strip_outer_angle_brackets, type_reference_lookup_key};
 
-pub(super) fn emit_setup_scope_prop_anchors(
+pub(super) fn emit_setup_scope_macro_anchors(
     ts: &mut String,
     summary: &Croquis,
     script_content: Option<&str>,
@@ -21,6 +21,7 @@ pub(super) fn emit_setup_scope_prop_anchors(
     preserve_unused_diagnostics: bool,
 ) {
     if preserve_unused_diagnostics {
+        emit_define_emits_result_anchors(ts, summary, script_content, template_referenced_names);
         let bindings = profile!(
             "canon.virtual_ts.collect_define_props_result_anchors",
             collect_define_props_result_anchor_names(
@@ -61,6 +62,83 @@ pub(super) fn emit_setup_scope_prop_anchors(
         }
         ts.push('\n');
     }
+}
+
+fn emit_define_emits_result_anchors(
+    ts: &mut String,
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_referenced_names: Option<&FxHashSet<String>>,
+) {
+    if summary.macros.define_emits().is_none()
+        || !template_referenced_names.is_some_and(|names| names.contains("$emit"))
+    {
+        return;
+    }
+    let Some(script) = script_content else {
+        return;
+    };
+
+    let bindings = profile!(
+        "canon.virtual_ts.collect_define_emits_result_anchors",
+        collect_define_emits_result_bindings(script)
+    );
+    let mut names = summary
+        .bindings
+        .bindings
+        .keys()
+        .map(|name| name.as_str())
+        .filter(|name| bindings.iter().any(|candidate| candidate.as_str() == *name))
+        .collect::<Vec<_>>();
+    names.sort_unstable();
+    if names.is_empty() {
+        return;
+    }
+
+    ts.push_str("\n  // Reference defineEmits result used through template $emit\n  ");
+    for (index, name) in names.iter().enumerate() {
+        if index > 0 {
+            ts.push(' ');
+        }
+        append!(*ts, "void {name};");
+    }
+    ts.push('\n');
+}
+
+fn collect_define_emits_result_bindings(script: &str) -> FxHashSet<CompactString> {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    let mut collector = DefineEmitsResultBindingCollector::default();
+    collector.visit_program(&parsed.program);
+    collector.bindings
+}
+
+#[derive(Default)]
+struct DefineEmitsResultBindingCollector {
+    bindings: FxHashSet<CompactString>,
+}
+
+impl<'a> Visit<'a> for DefineEmitsResultBindingCollector {
+    fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
+        if let BindingPattern::BindingIdentifier(binding) = &declarator.id
+            && declarator.init.as_ref().is_some_and(is_define_emits_call)
+        {
+            self.bindings
+                .insert(CompactString::new(binding.name.as_str()));
+        }
+
+        walk::walk_variable_declarator(self, declarator);
+    }
+}
+
+fn is_define_emits_call(expression: &Expression<'_>) -> bool {
+    let Expression::CallExpression(call) = expression else {
+        return false;
+    };
+    matches!(
+        &call.callee,
+        Expression::Identifier(identifier) if identifier.name.as_str() == DEFINE_EMITS
+    )
 }
 
 fn collect_define_props_result_anchor_names<'a>(

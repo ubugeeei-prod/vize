@@ -5,6 +5,57 @@ use std::{path::Path, process::Command};
 use vize_carton::cstr;
 
 #[test]
+fn legacy_vue2_template_emit_marks_define_emits_result_as_used() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_project("legacy-vue2-template-emit-result-binding");
+    std::fs::write(
+        project_root.join("src/App.vue"),
+        r#"<script setup lang="ts">
+const emit = defineEmits<{
+  (event: 'click'): void
+}>()
+</script>
+
+<template>
+  <button @click="$emit('click')">Click</button>
+</template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "template $emit should consume the defineEmits result binding\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn legacy_vue2_typed_emits_do_not_report_unused_loose_emit_helper() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
@@ -145,6 +196,9 @@ fn create_project(name: &str) -> std::path::PathBuf {
     std::fs::write(
         project_root.join("vize.config.json"),
         r#"{
+  "vue": {
+    "version": "2.7"
+  },
   "typeChecker": {
     "legacyVue2": true
   }

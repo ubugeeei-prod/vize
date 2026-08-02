@@ -4,6 +4,8 @@ use super::{
 };
 use vize_carton::cstr;
 
+mod define_emits_unused;
+
 #[test]
 fn batch_type_checker_marks_art_bindings_as_used_with_no_unused_locals() {
     if resolve_test_tsgo_binary().is_none() {
