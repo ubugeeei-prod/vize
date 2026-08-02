@@ -78,6 +78,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const dependencyIndex = steps.indexOf(dependency);
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const runIndex = steps.indexOf(run!);
+  const lsp = steps.find((step) => step.name === "Check real-project LSP lifecycle");
+  assert.ok(lsp, "Missing 'Check real-project LSP lifecycle' step");
+  const lspIndex = steps.indexOf(lsp);
   const syntaxHighlighter = steps.find(
     (step) => step.name === "Check real-project syntax highlighting",
   );
@@ -124,7 +127,16 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.ok(
-    runIndex < syntaxHighlighterIndex && syntaxHighlighterIndex < glyphPropertiesIndex,
+    runIndex < lspIndex && lspIndex < syntaxHighlighterIndex,
+    "the hydrated fixture corpus must run through the production LSP before syntax audit",
+  );
+  assert.equal(lsp.env?.VIZE_LSP_BIN, "target/ci/vize");
+  assert.equal(lsp.env?.REAL_PROJECT_LSP_TIMEOUT_MS, "600000");
+  assert.match(lsp.run ?? "", /tests\/tooling\/real-project-lsp\.test\.ts/);
+  assert.match(lsp.run ?? "", /--test-concurrency=1/);
+  assert.match(lsp.run ?? "", /test -s "\$FIXTURE_REPORT_DIR\/lsp-lifecycle-summary\.json"/);
+  assert.ok(
+    syntaxHighlighterIndex < glyphPropertiesIndex,
     "the hydrated fixture corpus must run through the shipped syntax highlighter",
   );
   assert.match(
@@ -189,6 +201,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   }
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
+  assert.match(summary?.run ?? "", /lsp-lifecycle-summary\.json/);
+  assert.match(summary?.run ?? "", /actualFileCount/);
+  assert.match(summary?.run ?? "", /No LSP lifecycle report was produced/);
   assert.match(summary?.run ?? "", /syntax-highlighter-summary\.json/);
   assert.match(summary?.run ?? "", /failedProjectCount/);
   assert.match(

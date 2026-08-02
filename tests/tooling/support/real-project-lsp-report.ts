@@ -1,0 +1,150 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const reportName = "lsp-lifecycle-summary.json";
+
+export type FixtureProject = {
+  coverage: string[];
+  expectedVueFileCount: number | null;
+  fixturePath: string;
+  id: string;
+  revision: string;
+  vueGlobs: string[];
+};
+
+export type DiagnosticEvidence = {
+  count: number;
+  sha256: string;
+};
+
+export type LspProjectEvidence = {
+  actualFile: string | null;
+  actualFileDiagnostics: DiagnosticEvidence | null;
+  brokenProbeDiagnostics: DiagnosticEvidence | null;
+  durationMs: number;
+  failure?: string;
+  fixedProbeDiagnostics: DiagnosticEvidence | null;
+  id: string;
+  repairedProbeDiagnostics: DiagnosticEvidence | null;
+  revision: string;
+  status: "failed" | "ok";
+  vueFileCount: number;
+};
+
+export function selectProjects(projects: FixtureProject[], environment: NodeJS.ProcessEnv) {
+  const shardIndex = environment.FIXTURE_SHARD_INDEX;
+  const shardCount = environment.FIXTURE_SHARD_COUNT;
+  if ((shardIndex == null) !== (shardCount == null)) {
+    throw new Error("FIXTURE_SHARD_INDEX and FIXTURE_SHARD_COUNT must be set together");
+  }
+  if (shardIndex != null && shardCount != null) {
+    const index = nonNegativeInteger(shardIndex, "FIXTURE_SHARD_INDEX");
+    const count = positiveInteger(shardCount, "FIXTURE_SHARD_COUNT");
+    assert.ok(index < count, "FIXTURE_SHARD_INDEX must be less than FIXTURE_SHARD_COUNT");
+    const selected = projects.filter((_, projectIndex) => projectIndex % count === index);
+    assert.ok(selected.length > 0, `fixture shard ${index}/${count} selected no projects`);
+    return { enforced: true, projects: selected, shardCount: count, shardIndex: index };
+  }
+  return {
+    enforced: false,
+    projects: projects.filter((project) => isHydrated(path.resolve(root, project.fixturePath))),
+    shardCount: null,
+    shardIndex: null,
+  };
+}
+
+export function createLspReport(
+  selection: ReturnType<typeof selectProjects>,
+  projects: LspProjectEvidence[],
+  environment: NodeJS.ProcessEnv,
+) {
+  return {
+    schema: "vize.realProjectLspLifecycle",
+    version: 1,
+    commitSha: resolveCommitSha(environment),
+    shard: { count: selection.shardCount, index: selection.shardIndex },
+    summary: {
+      projectCount: projects.length,
+      actualFileCount: projects.filter((project) => project.actualFile != null).length,
+      vueFileCount: projects.reduce((total, project) => total + project.vueFileCount, 0),
+      failedProjectCount: projects.filter((project) => project.status === "failed").length,
+    },
+    projects,
+  };
+}
+
+export function writeLspReport(
+  report: ReturnType<typeof createLspReport>,
+  environment: NodeJS.ProcessEnv,
+): void {
+  const configured = environment.FIXTURE_REPORT_DIR;
+  if (configured == null || configured.length === 0) return;
+  const outputDir = path.resolve(root, configured);
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(path.join(outputDir, reportName), `${JSON.stringify(report, null, 2)}\n`);
+}
+
+export function emptyLspEvidence(project: FixtureProject): LspProjectEvidence {
+  return {
+    actualFile: null,
+    actualFileDiagnostics: null,
+    brokenProbeDiagnostics: null,
+    durationMs: 0,
+    fixedProbeDiagnostics: null,
+    id: project.id,
+    repairedProbeDiagnostics: null,
+    revision: project.revision,
+    status: "failed",
+    vueFileCount: 0,
+  };
+}
+
+export function assertFixtureFileCount(project: FixtureProject, files: string[]): void {
+  if (project.expectedVueFileCount != null) {
+    assert.equal(
+      files.length,
+      project.expectedVueFileCount,
+      `${project.id} matched ${files.length} Vue files, expected ${project.expectedVueFileCount}`,
+    );
+  }
+  if (project.expectedVueFileCount !== 0) {
+    assert.ok(files.length > 0, `${project.id} matched no files`);
+  }
+}
+
+export function isHydrated(directory: string): boolean {
+  return fs.existsSync(directory) && fs.readdirSync(directory).length > 0;
+}
+
+export function positiveInteger(value: string, name: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${name} must be positive`);
+  return parsed;
+}
+
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function nonNegativeInteger(value: string, name: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) throw new Error(`${name} must be non-negative`);
+  return parsed;
+}
+
+function resolveCommitSha(environment: NodeJS.ProcessEnv): string {
+  const value = environment.GITHUB_SHA;
+  if (value != null) return requireCommitSha(value, "GITHUB_SHA");
+  const result = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
+  assert.equal(result.status, 0, "git rev-parse HEAD must succeed");
+  return requireCommitSha(result.stdout.trim(), "git rev-parse HEAD");
+}
+
+function requireCommitSha(value: string, source: string): string {
+  assert.match(value, /^[0-9a-f]{40}$/, `${source} must be a full lowercase commit SHA`);
+  return value;
+}

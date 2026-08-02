@@ -112,6 +112,15 @@ jobs:
             --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
 
+      - name: Check real-project LSP lifecycle
+        env:
+          REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
+          VIZE_LSP_BIN: target/ci/vize
+        run: |
+          node --test --test-concurrency=1 \
+            tests/tooling/real-project-lsp.test.ts
+          test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
+
       - name: Check real-project syntax highlighting
         env:
           SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "600000"
@@ -154,6 +163,13 @@ jobs:
             cat "$FIXTURE_REPORT_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No fixture tool report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          lsp_report="$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
+          if [[ -s "$lsp_report" ]]; then
+            jq -r '"LSP lifecycle: \(.summary.projectCount) project(s), \(.summary.actualFileCount) actual file(s), \(.summary.vueFileCount) Vue file(s), \(.summary.failedProjectCount) failed project(s)"' \
+              "$lsp_report" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No LSP lifecycle report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
           syntax_report="$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"
           if [[ -f "$syntax_report" ]]; then
