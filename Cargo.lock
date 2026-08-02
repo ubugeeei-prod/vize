@@ -3875,6 +3875,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "tempfile",
+ "tower",
  "tower-lsp",
  "tracing",
  "tracing-subscriber",

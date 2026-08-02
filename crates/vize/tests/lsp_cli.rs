@@ -9,6 +9,51 @@ mod lsp_process;
 use lsp_process::{LspProcess, file_uri};
 
 #[test]
+fn lsp_exit_notification_terminates_process_while_stdin_stays_open() {
+    let project = tempfile::tempdir().unwrap();
+    let root_uri = file_uri(project.path());
+    let mut lsp = LspProcess::spawn(project.path());
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "processId": null,
+            "rootUri": root_uri,
+            "capabilities": {},
+            "initializationOptions": {
+                "lint": false,
+                "typecheck": false,
+                "ecosystem": false
+            }
+        }
+    }));
+    let initialize = lsp.recv_response(1);
+    assert!(initialize["result"].is_object(), "{initialize:#}");
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "method": "initialized",
+        "params": {}
+    }));
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "shutdown"
+    }));
+    let shutdown = lsp.recv_response(2);
+    assert!(shutdown["result"].is_null(), "{shutdown:#}");
+
+    lsp.send(json!({
+        "jsonrpc": "2.0",
+        "method": "exit"
+    }));
+    let status = lsp.wait_for_exit();
+    assert!(status.success(), "LSP exited with {status}");
+}
+
+#[test]
 fn lsp_corsa_smoke_publishes_diagnostics_and_hover() {
     let workspace_root = workspace_root();
     let Some(corsa_path) = discover_corsa_in_ancestors(workspace_root) else {

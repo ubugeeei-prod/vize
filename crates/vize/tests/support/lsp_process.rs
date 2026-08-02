@@ -15,6 +15,7 @@ use serde_json::Value;
 use vize_carton::{String as CompactString, cstr, path::canonicalize_non_verbatim};
 
 const MESSAGE_TIMEOUT: Duration = Duration::from_secs(20);
+const PROCESS_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub struct LspProcess {
     child: Option<Child>,
@@ -124,6 +125,35 @@ impl LspProcess {
                     "timed out waiting for LSP message: {error}; seen: {seen:#?}"
                 )),
             }
+        }
+    }
+
+    /// Wait for the server to terminate without closing its stdin. This models
+    /// editor clients, which keep the pipe alive while waiting for the LSP
+    /// `exit` notification to end the child process.
+    pub fn wait_for_exit(&mut self) -> ExitStatus {
+        assert!(
+            self.stdin.is_some(),
+            "LSP stdin must remain open while waiting for process exit"
+        );
+        let deadline = Instant::now() + PROCESS_EXIT_TIMEOUT;
+        loop {
+            let status = self
+                .child
+                .as_mut()
+                .expect("LSP child is unavailable")
+                .try_wait()
+                .unwrap_or_else(|error| self.fail(cstr!("failed to poll LSP process: {error}")));
+            if let Some(status) = status {
+                self.status = Some(status);
+                return status;
+            }
+            if Instant::now() >= deadline {
+                self.fail(cstr!(
+                    "LSP process did not exit within {PROCESS_EXIT_TIMEOUT:?} while stdin remained open"
+                ));
+            }
+            std::thread::sleep(Duration::from_millis(10));
         }
     }
 

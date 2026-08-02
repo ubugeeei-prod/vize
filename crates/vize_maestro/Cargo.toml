@@ -23,6 +23,7 @@ tower-lsp.workspace = true
 
 # Async Runtime
 futures.workspace = true
+tower.workspace = true
 async-trait.workspace = true
 
 # Text Processing

@@ -79,6 +79,7 @@ pub use ide::{
 pub use server::MaestroServer;
 pub use virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
+use futures::future::{Either, select};
 use tower_lsp::Server;
 
 /// Initialize file-based logging to node_modules/.vize/lsp.log
@@ -127,9 +128,7 @@ pub async fn serve() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let stdin = runtime::threaded_reader("vize-lsp-stdin", std::io::stdin())?;
     let stdout = runtime::threaded_writer("vize-lsp-stdout", std::io::stdout())?;
 
-    let (service, socket) = server::build_lsp_service();
-
-    Server::new(stdin, stdout, socket).serve(service).await;
+    serve_transport(stdin, stdout).await;
 
     Ok(())
 }
@@ -163,9 +162,7 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
     let read = runtime::threaded_reader("vize-lsp-tcp-read", stream.try_clone()?)?;
     let write = runtime::threaded_writer("vize-lsp-tcp-write", stream)?;
 
-    let (service, socket) = server::build_lsp_service();
-
-    Server::new(read, write, socket).serve(service).await;
+    serve_transport(read, write).await;
 
     Ok(())
 }
@@ -173,4 +170,22 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 /// Start the TCP LSP server on the current thread.
 pub fn serve_tcp_blocking(port: u16) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     runtime::block_on(serve_tcp(port))
+}
+
+async fn serve_transport<I, O>(read: I, write: O)
+where
+    I: futures::io::AsyncRead + Unpin,
+    O: futures::io::AsyncWrite,
+{
+    let (service, socket) = server::build_lsp_service();
+    let (service, exit_notification) = server::with_exit_signal(service);
+    let transport = Server::new(read, write, socket).serve(service);
+
+    futures::pin_mut!(transport);
+    futures::pin_mut!(exit_notification);
+
+    match select(transport, exit_notification).await {
+        Either::Left(_) => {}
+        Either::Right(_) => tracing::info!("LSP exit notification handled; stopping transport"),
+    }
 }
