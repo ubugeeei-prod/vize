@@ -235,6 +235,35 @@ export class LspSession {
     }
   }
 
+  /**
+   * Abruptly terminate the production server and wait until the child is
+   * actually gone. Restart oracles use this instead of racing a fresh server
+   * against an old process that has only received a signal.
+   */
+  async kill(signal: NodeJS.Signals = "SIGKILL"): Promise<void> {
+    if (this.process.exitCode != null || this.process.signalCode != null) {
+      return;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const onExit = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      const timeout = setTimeout(() => {
+        this.process.off("exit", onExit);
+        reject(new Error(`Timed out waiting for vize lsp to exit after ${signal}`));
+      }, 5000);
+
+      this.process.once("exit", onExit);
+      if (!this.process.kill(signal)) {
+        clearTimeout(timeout);
+        this.process.off("exit", onExit);
+        reject(new Error(`Failed to send ${signal} to vize lsp`));
+      }
+    });
+  }
+
   private send(message: JsonRpcMessage): void {
     const payload = JSON.stringify(message);
     const frame = `Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`;
