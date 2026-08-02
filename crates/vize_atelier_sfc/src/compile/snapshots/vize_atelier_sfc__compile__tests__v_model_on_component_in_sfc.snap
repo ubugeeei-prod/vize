@@ -16,9 +16,9 @@ const msg = ref('')
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(MyComponent, {
-    language: 'en',
     modelValue: msg.value,
-    "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((msg).value = $event))
+    "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((msg).value = $event)),
+    language: 'en'
   }, null, 8 /* PROPS */, ["modelValue"]))
 }
 }

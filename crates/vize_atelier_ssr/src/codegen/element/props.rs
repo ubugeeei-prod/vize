@@ -1,6 +1,7 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
 use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
+use vize_carton::{FxHashMap, is_on};
 
 /// Build an object literal from normalized prop entries.
 pub(super) fn component_props_object(entries: &[VNodePropEntry]) -> String {
@@ -51,14 +52,31 @@ pub(super) fn normalize_prop_entries(
     let mut normalized = std::vec::Vec::with_capacity(entries.len());
     let mut class_values = std::vec::Vec::new();
     let mut style_values = std::vec::Vec::new();
+    let mut event_values: FxHashMap<String, std::vec::Vec<String>> = FxHashMap::default();
 
     for entry in entries {
         if !entry.dynamic && entry.key == "class" {
             class_values.push(entry.value);
         } else if !entry.dynamic && entry.key == "style" {
             style_values.push(entry.value);
+        } else if !entry.dynamic && is_on(&entry.key) {
+            if let Some(values) = event_values.get_mut(&entry.key) {
+                values.push(entry.value);
+            } else {
+                event_values.insert(entry.key.clone(), vec![entry.value.clone()]);
+                normalized.push(entry);
+            }
         } else {
             normalized.push(entry);
+        }
+    }
+
+    for entry in &mut normalized {
+        if !entry.dynamic
+            && is_on(&entry.key)
+            && let Some(values) = event_values.remove(&entry.key)
+        {
+            entry.value = merge_prop_values(values);
         }
     }
 

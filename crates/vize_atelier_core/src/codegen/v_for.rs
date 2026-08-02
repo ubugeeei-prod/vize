@@ -5,6 +5,7 @@
 
 mod generate;
 pub(crate) mod helpers;
+mod item_props;
 mod slot_outlet;
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};

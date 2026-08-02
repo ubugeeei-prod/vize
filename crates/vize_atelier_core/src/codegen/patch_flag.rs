@@ -6,9 +6,7 @@ use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, T
 use oxc_ast::ast as oxc_ast_types;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::String;
-use vize_carton::ToCompactString;
-use vize_carton::is_builtin_directive;
+use vize_carton::{FxHashSet, String, ToCompactString, is_builtin_directive};
 
 /// Check whether an interpolation only references bindings constant at runtime.
 fn is_constant_interpolation(
@@ -473,8 +471,10 @@ fn calculate_element_patch_info_inner(
     }
 
     let patch_flag = if flag > 0 { Some(flag) } else { None };
-    // Deduplicate dynamic props (e.g., multiple handlers for same event)
-    dynamic_props.dedup();
+    // Deduplicate in source order even when another generated prop sits
+    // between two listeners for the same runtime key (v-model plus @update).
+    let mut seen_dynamic_props = FxHashSet::default();
+    dynamic_props.retain(|prop| seen_dynamic_props.insert(prop.clone()));
     let dynamic_props_result = if !dynamic_props.is_empty() {
         Some(dynamic_props)
     } else {

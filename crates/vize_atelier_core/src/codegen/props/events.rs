@@ -8,8 +8,7 @@ use super::super::{
     expression::generate_event_handler,
     helpers::{camelize, capitalize_first},
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{FxHashSet, String, ToCompactString};
 
 /// Compute the prop key for a static v-on event, mirroring Vue's
 /// `transforms/vOn.ts` casing rules.
@@ -85,7 +84,7 @@ pub fn von_event_key_for(
 /// scan/merge path consistent with the single-handler emission path, so events
 /// differing only by an option modifier (`@click` vs `@click.once`) get
 /// distinct keys and are never merged into one prop.
-pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool) -> Option<String> {
+pub(crate) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool) -> Option<String> {
     if dir.name != "on" {
         return None;
     }
@@ -107,14 +106,37 @@ pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>, is_plain_element: bool)
     }
 }
 
+/// Return static runtime event keys that occur more than once in one prop
+/// object. Object-spread callers pass each source-order segment separately so
+/// handlers on opposite sides of a spread remain separate mergeProps args.
+pub(crate) fn duplicate_von_event_keys(
+    props: &[PropNode<'_>],
+    is_plain_element: bool,
+) -> FxHashSet<String> {
+    let mut seen = FxHashSet::default();
+    let mut duplicates = FxHashSet::default();
+
+    for prop in props {
+        let PropNode::Directive(dir) = prop else {
+            continue;
+        };
+        let Some(key) = get_von_event_key(dir, is_plain_element) else {
+            continue;
+        };
+        if !seen.insert(key.clone()) {
+            duplicates.insert(key);
+        }
+    }
+
+    duplicates
+}
+
 /// Generate merged event handlers for the same event name as array syntax
 /// e.g., onClick: [_ctx.a, _withModifiers(_ctx.b, ["ctrl"])]
-pub(super) fn generate_merged_event_handlers(
+pub(crate) fn generate_merged_event_handlers(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     target_event_key: &str,
-    _static_class: Option<&str>,
-    _static_style: Option<&str>,
 ) {
     // Output the event key name (e.g., "onClick" or "\"onUpdate:modelValue\"")
     // Event names containing ':' need quotes for valid JavaScript

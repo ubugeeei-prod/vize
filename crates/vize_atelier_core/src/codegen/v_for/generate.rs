@@ -25,15 +25,12 @@ use super::super::{
     slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
 };
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
+use super::item_props::{
+    EventPropAction, event_prop_action, event_prop_sets, generate_event_prop_action,
+    is_for_item_segment_skip_prop, strip_need_patch_for_v_for_item,
+};
 use super::slot_outlet::generate_for_slot_outlet;
 use vize_carton::ToCompactString;
-
-fn strip_need_patch_for_v_for_item(patch_flag: Option<i32>) -> Option<i32> {
-    patch_flag.and_then(|flag| {
-        let next = flag & !512;
-        (next > 0).then_some(next)
-    })
-}
 
 /// Generate item for v-for (as block, not regular vnode)
 pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
@@ -571,6 +568,7 @@ pub(crate) fn generate_for_item_props(
         },
         style_before: full_merge.style_before,
     };
+    let (duplicate_events, mut emitted_events) = event_prop_sets(ctx, &el.props);
 
     if let Some(key) = key_exp {
         // Merge key with other props
@@ -596,9 +594,13 @@ pub(crate) fn generate_for_item_props(
             {
                 continue;
             }
+            let action = event_prop_action(ctx, prop, &duplicate_events, &mut emitted_events);
+            if matches!(&action, EventPropAction::Skip) {
+                continue;
+            }
             ctx.push(",");
             ctx.newline();
-            generate_single_prop(ctx, prop, merge_static);
+            generate_event_prop_action(ctx, action, prop, &el.props, merge_static);
         }
 
         if let Some(sid) = scope_id {
@@ -632,11 +634,15 @@ pub(crate) fn generate_for_item_props(
             {
                 continue;
             }
+            let action = event_prop_action(ctx, prop, &duplicate_events, &mut emitted_events);
+            if matches!(&action, EventPropAction::Skip) {
+                continue;
+            }
             if !first {
                 ctx.push(",");
             }
             ctx.push(" ");
-            generate_single_prop(ctx, prop, merge_static);
+            generate_event_prop_action(ctx, action, prop, &el.props, merge_static);
             first = false;
         }
 
@@ -783,6 +789,7 @@ fn flush_for_item_props_segment(
         },
         style_before: full_merge.style_before,
     };
+    let (duplicate_events, mut emitted_events) = event_prop_sets(ctx, props);
 
     ctx.push("{");
     ctx.indent();
@@ -813,11 +820,15 @@ fn flush_for_item_props_segment(
         {
             continue;
         }
+        let action = event_prop_action(ctx, prop, &duplicate_events, &mut emitted_events);
+        if matches!(&action, EventPropAction::Skip) {
+            continue;
+        }
         if !first_prop {
             ctx.push(",");
         }
         ctx.newline();
-        generate_single_prop(ctx, prop, merge_static);
+        generate_event_prop_action(ctx, action, prop, props, merge_static);
         first_prop = false;
     }
 
@@ -837,19 +848,8 @@ fn flush_for_item_props_segment(
     ctx.push("}");
 }
 
-fn is_for_item_segment_skip_prop(prop: &PropNode<'_>, skip_is_prop: bool) -> bool {
-    if should_skip_prop(prop) || (skip_is_prop && is_is_prop(prop)) {
-        return true;
-    }
-    matches!(
-        prop,
-        PropNode::Directive(dir)
-            if dir.arg.is_none() && (dir.name == "bind" || dir.name == "on")
-    )
-}
-
 /// Generate a single prop (attribute or directive)
-fn generate_single_prop(
+pub(super) fn generate_single_prop(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
     static_merge: super::super::props::StaticMerge<'_>,

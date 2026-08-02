@@ -4,6 +4,7 @@
 //! submodules keep SSR element generation small enough to audit independently.
 
 mod component;
+mod component_props;
 mod plain;
 mod props;
 mod slot;

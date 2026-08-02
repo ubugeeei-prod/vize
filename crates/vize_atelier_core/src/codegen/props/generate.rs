@@ -532,13 +532,7 @@ fn generate_props_object_inner(
                                 ctx.push(" ");
                             }
                             first = false;
-                            generate_merged_event_handlers(
-                                ctx,
-                                props,
-                                &event_key,
-                                scan.static_class,
-                                scan.static_style,
-                            );
+                            generate_merged_event_handlers(ctx, props, &event_key);
                             continue;
                         }
                     }

@@ -449,15 +449,11 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         let dynamic_vmodel: std::vec::Vec<_> =
             vmodel_data.iter().filter(|d| d.is_dynamic).collect();
 
-        // For static v-model: remove directives and add generated props
-        // First remove all static v-model directives in reverse order (to preserve indices)
-        for data in static_vmodel.iter().rev() {
-            el.props.remove(data.idx);
-        }
-
-        // Then add all generated props in forward order
+        // Build in source order for stable cache indexes, then splice in
+        // reverse so each v-model remains beside its explicit listeners.
+        let mut replacements = std::vec::Vec::with_capacity(static_vmodel.len());
         for data in static_vmodel.iter() {
-            // Add :propName prop
+            let mut generated = std::vec::Vec::with_capacity(3);
             let value_prop = PropNode::Directive(Box::new_in(
                 DirectiveNode {
                     name: String::new("bind"),
@@ -491,9 +487,8 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 },
                 allocator,
             ));
-            el.props.push(value_prop);
+            generated.push(value_prop);
 
-            // Add @update:propName prop
             let raw_handler_expr = ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode::new(data.handler.as_str(), false, data.dir_loc.clone()),
                 allocator,
@@ -520,9 +515,8 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 },
                 allocator,
             ));
-            el.props.push(event_prop);
+            generated.push(event_prop);
 
-            // Add modelModifiers prop for components with modifiers
             if let (Some(modifiers_obj), Some(modifiers_key)) =
                 (&data.modifiers_obj, &data.modifiers_key)
             {
@@ -553,8 +547,14 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     },
                     allocator,
                 ));
-                el.props.push(modifiers_prop);
+                generated.push(modifiers_prop);
             }
+
+            replacements.push((data.idx, generated));
+        }
+
+        for (index, generated) in replacements.into_iter().rev() {
+            drop(el.props.splice(index..=index, generated));
         }
 
         // For dynamic v-model: keep the directive (will be handled in codegen with normalizeProps)

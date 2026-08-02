@@ -8,8 +8,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MonacoEditor = _resolveComponent("MonacoEditor")
   
   return (_openBlock(), _createBlock(_component_MonacoEditor, {
-    language: editorLanguage,
     modelValue: source,
-    "onUpdate:modelValue": $event => ((source) = $event)
-  }, null, 8 /* PROPS */, ["language", "modelValue", "onUpdate:modelValue"]))
+    "onUpdate:modelValue": $event => ((source) = $event),
+    language: editorLanguage
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue", "language"]))
 }

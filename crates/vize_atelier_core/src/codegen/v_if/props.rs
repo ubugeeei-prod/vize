@@ -8,11 +8,14 @@ use super::{
         context::CodegenContext,
         element::helpers::is_is_prop,
         expression::generate_expression,
-        props::{StaticMerge, is_supported_directive},
+        props::{
+            StaticMerge, duplicate_von_event_keys, generate_merged_event_handlers,
+            get_von_event_key, is_supported_directive,
+        },
     },
     generate::{
-        generate_single_prop_for_if, get_static_event_key, is_vbind_spread_prop,
-        is_von_spread_prop, should_skip_prop_for_if,
+        generate_single_prop_for_if, is_vbind_spread_prop, is_von_spread_prop,
+        should_skip_prop_for_if,
     },
     generate_if_branch_key,
 };
@@ -156,7 +159,12 @@ fn generate_segment_object(
     }
 
     let static_merge = StaticMerge::from_props(props);
-    let mut seen_events: FxHashSet<String> = FxHashSet::default();
+    let duplicate_events = if ctx.merge_props {
+        duplicate_von_event_keys(props, ctx.props_is_plain_element)
+    } else {
+        FxHashSet::default()
+    };
+    let mut emitted_events: FxHashSet<String> = FxHashSet::default();
     let previous_skip_normalize = ctx.skip_normalize;
     if inside_merge_props {
         ctx.skip_normalize = true;
@@ -176,18 +184,26 @@ fn generate_segment_object(
         if !is_renderable_prop(prop, skip_is_prop, has_dynamic_class, has_dynamic_style) {
             continue;
         }
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "on"
-            && let Some(key) = get_static_event_key(dir)
-            && !seen_events.insert(key)
+        let merged_event_key = if let PropNode::Directive(dir) = prop
+            && let Some(key) = get_von_event_key(dir, ctx.props_is_plain_element)
+            && duplicate_events.contains(&key)
         {
-            continue;
-        }
+            if !emitted_events.insert(key.clone()) {
+                continue;
+            }
+            Some(key)
+        } else {
+            None
+        };
         if !first_prop {
             ctx.push(",");
         }
         ctx.newline();
-        generate_single_prop_for_if(ctx, prop, static_merge);
+        if let Some(key) = merged_event_key {
+            generate_merged_event_handlers(ctx, props, &key);
+        } else {
+            generate_single_prop_for_if(ctx, prop, static_merge);
+        }
         first_prop = false;
     }
 

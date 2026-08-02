@@ -116,6 +116,17 @@ mod v_if {
             r#"<MyComponent v-if="ok"><template #header><h1>title</h1></template></MyComponent>"#
         ));
     }
+
+    #[test]
+    fn duplicate_event_keys_are_merged_without_dropping_handlers() {
+        let code = get_compiled(r#"<button v-if="ok" @click="a" @click.ctrl="b"></button>"#);
+
+        assert_eq!(code.matches("onClick:").count(), 1, "{code}");
+        assert!(
+            code.contains(r#"onClick: [a, _withModifiers(b, ["ctrl"])]"#),
+            "{code}",
+        );
+    }
 }
 
 // =============================================================================
@@ -130,6 +141,21 @@ mod v_for {
         insta::assert_snapshot!(get_compiled(
             r#"<div v-for="item in items">{{ item }}</div>"#
         ));
+    }
+
+    #[test]
+    fn duplicate_event_keys_after_a_spread_are_merged() {
+        let code = get_compiled(
+            r#"<li v-for="item in items" :key="item.id" v-bind="item.props" @keydown="a" @keydown.enter.prevent="b"></li>"#,
+        );
+
+        assert_eq!(code.matches("onKeydown:").count(), 1, "{code}");
+        assert!(
+            code.contains(
+                r#"onKeydown: [a, _withKeys(_withModifiers(b, ["prevent"]), ["enter"])]"#,
+            ),
+            "{code}",
+        );
     }
 }
 
@@ -234,5 +260,45 @@ mod component {
 
         assert!(code.contains(r#"_resolveComponent("Table")"#), "{code}");
         assert!(code.contains(r#"_createElementVNode("span""#), "{code}");
+    }
+
+    #[test]
+    fn model_update_handlers_merge_in_template_source_order() {
+        let model_first = get_compiled(r#"<Foo v-model="value" @update:modelValue="onUpdate" />"#);
+        assert_eq!(
+            model_first.matches(r#""onUpdate:modelValue":"#).count(),
+            1,
+            "{model_first}",
+        );
+        assert!(
+            model_first.contains(
+                r#"modelValue: value,
+    "onUpdate:modelValue": [$event => ((value) = $event), onUpdate]"#,
+            ),
+            "{model_first}",
+        );
+        assert!(
+            model_first.contains(r#"["modelValue", "onUpdate:modelValue"]"#),
+            "{model_first}",
+        );
+
+        let listener_first =
+            get_compiled(r#"<Foo @update:modelValue="onUpdate" v-model="value" />"#);
+        assert_eq!(
+            listener_first.matches(r#""onUpdate:modelValue":"#).count(),
+            1,
+            "{listener_first}",
+        );
+        assert!(
+            listener_first.contains(
+                r#""onUpdate:modelValue": [onUpdate, $event => ((value) = $event)],
+    modelValue: value"#,
+            ),
+            "{listener_first}",
+        );
+        assert!(
+            listener_first.contains(r#"["onUpdate:modelValue", "modelValue"]"#),
+            "{listener_first}",
+        );
     }
 }

@@ -2,15 +2,13 @@
 //!
 //! Contains single-prop generation, event key deduplication, and spread detection.
 
-use crate::{DirectiveNode, ExpressionNode, PropNode};
+use crate::{ExpressionNode, PropNode};
 
 use super::super::{
     context::CodegenContext,
-    helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
+    helpers::{escape_js_string, is_valid_js_identifier},
     props::{StaticMerge, generate_directive_prop_with_static},
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
 
 /// Check if prop should be skipped for v-if branch element.
 pub(super) fn should_skip_prop_for_if(
@@ -131,77 +129,4 @@ pub(super) fn is_von_spread_prop(prop: &PropNode<'_>) -> bool {
         return dir.name == "on" && dir.arg.is_none();
     }
     false
-}
-
-/// Compute static event prop key for dedupe (e.g., `onClick`, `onUpdate:modelValue`).
-pub(super) fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
-    let arg = dir.arg.as_ref()?;
-    let ExpressionNode::Simple(exp) = arg else {
-        return None;
-    };
-    if !exp.is_static {
-        return None;
-    }
-
-    let mut event_name = exp.content.as_str();
-    let is_keyboard_event = matches!(event_name, "keydown" | "keyup" | "keypress");
-
-    let mut event_option_modifiers: Vec<&str> = Vec::new();
-    let mut system_modifiers: Vec<&str> = Vec::new();
-
-    for modifier in dir.modifiers.iter() {
-        let mod_name = modifier.content.as_str();
-        match mod_name {
-            "capture" | "once" | "passive" => {
-                event_option_modifiers.push(mod_name);
-            }
-            "left" | "right" if !is_keyboard_event => {
-                system_modifiers.push(mod_name);
-            }
-            "middle" => {
-                system_modifiers.push(mod_name);
-            }
-            _ => {}
-        }
-    }
-
-    let has_right_modifier = system_modifiers.contains(&"right");
-    let has_middle_modifier = system_modifiers.contains(&"middle");
-
-    if event_name == "click" && has_right_modifier {
-        event_name = "contextmenu";
-    } else if event_name == "click" && has_middle_modifier {
-        event_name = "mouseup";
-    }
-
-    let mut key = if event_name.contains(':') {
-        let parts: Vec<&str> = event_name.splitn(2, ':').collect();
-        if parts.len() == 2 {
-            let first_part = camelize(parts[0]);
-            let mut name = String::from("on");
-            if let Some(first) = first_part.chars().next() {
-                name.push_str(&first.to_uppercase().to_compact_string());
-                name.push_str(&first_part[first.len_utf8()..]);
-            }
-            name.push(':');
-            name.push_str(parts[1]);
-            name
-        } else {
-            String::from(event_name)
-        }
-    } else {
-        let camelized = camelize(event_name);
-        let mut name = String::from("on");
-        if let Some(first) = camelized.chars().next() {
-            name.push_str(&first.to_uppercase().to_compact_string());
-            name.push_str(&camelized[first.len_utf8()..]);
-        }
-        name
-    };
-
-    for opt_mod in &event_option_modifiers {
-        key.push_str(&capitalize_first(opt_mod));
-    }
-
-    Some(key)
 }
