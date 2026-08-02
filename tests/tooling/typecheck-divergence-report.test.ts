@@ -113,6 +113,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       cwd: fixture.fixtureRoot,
       args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject],
     });
+    const fixtureBase = path.relative(fixture.reportDir, fixture.fixtureRoot).replaceAll("\\", "/");
     assert.deepEqual(readJson(baselineProject), {
       extends: path
         .relative(fixture.reportDir, path.join(fixture.fixtureRoot, ".generated/tsconfig.json"))
@@ -122,7 +123,10 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
           .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "src/App.vue"))
           .replaceAll("\\", "/"),
       ],
-      include: [],
+      // #3738: ambient declarations are the fixture's type environment, and a
+      // `files`-only program drops every one of them.
+      include: [`${fixtureBase}/**/*.d.ts`],
+      exclude: [`${fixtureBase}/**/node_modules/**`, `${fixtureBase}/**/dist/**`],
       references: [],
     });
     const markdown = fs.readFileSync(

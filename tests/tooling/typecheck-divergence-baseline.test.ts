@@ -4,13 +4,16 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  breachFailure,
   cleanup,
   commitSha,
+  instrumentClassification,
   readJson,
   root,
   run,
   setup,
   sharedVizeDiagnostic,
+  unusableFailure,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
 /**
@@ -38,10 +41,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
   try {
     const result = run(fixture);
     assert.equal(result.status, 1);
-    assert.equal(
-      result.stderr,
-      `Typecheck divergence baseline is unusable for fixture: ${emptyBaselineReason}\n`,
-    );
+    assert.equal(result.stderr, `${unusableFailure(emptyBaselineReason)}\n`);
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.budget, {
       maxFalsePositiveRatio: 0.05,
@@ -77,6 +77,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
         `Budget verdict: unusable (${emptyBaselineReason})`,
+        `Classification: ${instrumentClassification}`,
         "Budget passed: false",
         `Digest: ${artifact.divergence.sha256}`,
         "",
@@ -99,8 +100,9 @@ test("two sides that never meet are unusable, not a breach of both budgets", () 
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      "Typecheck divergence baseline is unusable for fixture: " +
-        "vize reported 1 and vue-tsc reported 1 diagnostics with none in common\n",
+      `${unusableFailure(
+        "vize reported 1 and vue-tsc reported 1 diagnostics with none in common",
+      )}\n`,
     );
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
       maxFalsePositiveRatio: 0.05,
@@ -149,7 +151,7 @@ test("--budget-mode record-only reports an unusable baseline as a warning", () =
         `Wrote ${path.relative(root, artifactPath(fixture, "json"))}`,
         `Wrote ${path.relative(root, artifactPath(fixture, "md"))}`,
         "::warning title=Typecheck divergence budget not enforced::" +
-          `Typecheck divergence baseline is unusable for fixture: ${emptyBaselineReason}`,
+          unusableFailure(emptyBaselineReason),
         "",
       ].join("\n"),
     );
@@ -169,8 +171,7 @@ test("a diagnostic-free baseline is a real breach when it covered every Vue file
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      "Typecheck divergence budget breached for fixture: " +
-        "2 false positives (ratio 1) exceed maxFalsePositiveRatio 0.05\n",
+      `${breachFailure(1, "2 false positives (ratio 1) exceed maxFalsePositiveRatio 0.05")}\n`,
     );
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.equal(artifact.baseline.coverage.verdict, "usable");

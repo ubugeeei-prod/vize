@@ -9,6 +9,7 @@ import {
   run,
   setup,
   sharedBaselineOutput,
+  unusableFailure,
   writeVueTsc,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
@@ -52,10 +53,7 @@ test("a baseline that could not read its extended config is unusable, not a pass
   try {
     const result = run(fixture);
     assert.equal(result.status, 1);
-    assert.equal(
-      result.stderr,
-      `Typecheck divergence baseline is unusable for fixture: ${configuredBaselineReason(detail)}\n`,
-    );
+    assert.equal(result.stderr, `${unusableFailure(configuredBaselineReason(detail))}\n`);
 
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.baseline.configuration, {
@@ -109,10 +107,7 @@ test("a config error reported against the fixture tsconfig is unusable", () => {
   try {
     const result = run(fixture);
     assert.equal(result.status, 1);
-    assert.equal(
-      result.stderr,
-      `Typecheck divergence baseline is unusable for fixture: ${configuredBaselineReason(detail)}\n`,
-    );
+    assert.equal(result.stderr, `${unusableFailure(configuredBaselineReason(detail))}\n`);
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.baseline.configuration, {
       diagnostics: [
@@ -154,10 +149,7 @@ test("a config error against the materialized baseline project is unusable", () 
     );
     const result = run(fixture);
     assert.equal(result.status, 1);
-    assert.equal(
-      result.stderr,
-      `Typecheck divergence baseline is unusable for fixture: ${configuredBaselineReason(detail)}\n`,
-    );
+    assert.equal(result.stderr, `${unusableFailure(configuredBaselineReason(detail))}\n`);
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.baseline.configuration, {
       diagnostics: [
@@ -221,6 +213,59 @@ test("an ordinary non-Vue diagnostic is not a configuration failure", () => {
     });
     assert.equal(artifact.divergence.summary.baselineExcludedNonVueCount, 1);
     assert.equal(artifact.divergence.summary.sharedCount, 1);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("a file-list error against a Vue file is unusable, not a false negative", () => {
+  // #3738, the element-plus shape. `TS6307` is reported against the source file,
+  // so it read as an ordinary type error while saying the opposite: the file is
+  // in the program without being in the project's file list. On run 30738583070
+  // element-plus's baseline emitted 208 of these and the ledger scored every one
+  // as a Vize false negative — 88% of that shard's false-negative breach — while
+  // the real finding was that the materialized project never listed the `.ts`
+  // files its SFCs import.
+  const detail =
+    "src/App.vue(1,1): error TS6307: File '/fixture/src/util.ts' is not listed within the " +
+    "file list of project '/fixture/fixture-vue-tsc.tsconfig.json'. Projects must list all " +
+    "files or use an 'include' pattern.";
+  const fixture = setup({ baselineOutput: `${detail}\n${sharedBaselineOutput}` });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, `${unusableFailure(configuredBaselineReason(detail))}\n`);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.deepEqual(artifact.baseline.configuration, {
+      diagnostics: [
+        {
+          code: 6307,
+          column: 1,
+          file: "src/App.vue",
+          line: 1,
+          message:
+            "File '/fixture/src/util.ts' is not listed within the file list of project " +
+            "'/fixture/fixture-vue-tsc.tsconfig.json'. Projects must list all files or use " +
+            "an 'include' pattern.",
+          severity: "error",
+        },
+      ],
+      errorCount: 1,
+      unusableReason: configuredBaselineReason(detail),
+      verdict: "unusable",
+    });
+    assert.deepEqual(artifact.budget, {
+      maxFalsePositiveRatio: 0.05,
+      maxFalseNegativeRatio: 0.05,
+      falsePositivePassed: true,
+      falseNegativePassed: false,
+      unusableReason: configuredBaselineReason(detail),
+      verdict: "unusable",
+      passed: false,
+    });
+    // Still counted as a scoreable false negative in the divergence lens: the
+    // verdict is what refuses to read it as one, so the evidence stays intact.
+    assert.equal(artifact.divergence.summary.falseNegativeCount, 1);
   } finally {
     cleanup(fixture);
   }

@@ -17,6 +17,32 @@ export const commitSha = "a".repeat(40);
 export const sharedVizeDiagnostic = "error:1:1 [TS2322] shared";
 export const sharedBaselineOutput = "src/App.vue(1,1): error TS2322: shared\n";
 
+/**
+ * The classification #3738 added to every failing verdict. A reader of run
+ * 30738583070 could not tell a Vize finding from a broken baseline, so both
+ * failure messages now name which one they are before quoting the numbers.
+ */
+export const instrumentClassification =
+  "instrument failure, the vue-tsc baseline did not measure Vize";
+
+export function divergenceClassification(sharedVueFileCount: number) {
+  return (
+    "Vize divergence, the vue-tsc baseline loaded cleanly over the same " +
+    `${sharedVueFileCount} Vue files`
+  );
+}
+
+export function unusableFailure(reason: string) {
+  return `Typecheck divergence baseline is unusable for fixture — ${instrumentClassification}: ${reason}`;
+}
+
+export function breachFailure(sharedVueFileCount: number, breaches: string) {
+  return (
+    "Typecheck divergence budget breached for fixture — " +
+    `${divergenceClassification(sharedVueFileCount)}: ${breaches}`
+  );
+}
+
 export type FixtureOptions = {
   /** Diagnostics the fake `vize check` artifact reports for `src/App.vue`. */
   vizeDiagnostics?: string[];

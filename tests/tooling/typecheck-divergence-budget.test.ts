@@ -4,8 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  breachFailure,
   cleanup,
   commitSha,
+  divergenceClassification,
   readJson,
   root,
   run,
@@ -59,7 +61,7 @@ test("a false-positive budget breach fails the divergence report", () => {
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      "Typecheck divergence budget breached for fixture: 1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05\n",
+      `${breachFailure(1, "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05")}\n`,
     );
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.budget, {
@@ -97,6 +99,7 @@ test("a false-positive budget breach fails the divergence report", () => {
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
         "Budget verdict: breached",
+        `Classification: ${divergenceClassification(1)}`,
         "Budget passed: false",
         `Digest: ${artifact.divergence.sha256}`,
         "",
@@ -114,7 +117,7 @@ test("a false-negative budget breach fails the divergence report", () => {
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      "Typecheck divergence budget breached for fixture: 1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05\n",
+      `${breachFailure(1, "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05")}\n`,
     );
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
       maxFalsePositiveRatio: 0.05,
@@ -140,9 +143,11 @@ test("a breach of both budgets reports both sides", () => {
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      "Typecheck divergence budget breached for fixture: " +
+      `${breachFailure(
+        1,
         "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05; " +
-        "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05\n",
+          "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05",
+      )}\n`,
     );
   } finally {
     cleanup(fixture);
@@ -186,8 +191,7 @@ test("--budget-mode record-only records a breach without failing the job", () =>
     assert.equal(
       result.stdout,
       `${wroteLines(fixture)}::warning title=Typecheck divergence budget not enforced::` +
-        "Typecheck divergence budget breached for fixture: " +
-        "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05\n",
+        `${breachFailure(1, "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05")}\n`,
     );
     // Recording is not forgiving: the artifact still carries the failing verdict.
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
@@ -207,9 +211,10 @@ test("--budget-mode record-only records a breach without failing the job", () =>
 test("--budget-mode enforce is the default and fails the job", () => {
   const fixture = setup({ vizeDiagnostics: [sharedVizeDiagnostic, vizeOnly] });
   try {
-    const expected =
-      "Typecheck divergence budget breached for fixture: " +
-      "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05\n";
+    const expected = `${breachFailure(
+      1,
+      "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05",
+    )}\n`;
     const explicit = run(fixture, {}, ["--budget-mode", "enforce"]);
     assert.equal(explicit.status, 1);
     assert.equal(explicit.stderr, expected);

@@ -1,3 +1,5 @@
+import { describeClassification } from "./typecheck-divergence-budget.mjs";
+
 /**
  * The human-readable half of a divergence run, split out of
  * `typecheck-divergence-report.mjs` so the report script stays inside the
@@ -8,6 +10,10 @@
  * the Vue-file coverage, and — since #3513 — how many configuration diagnostics
  * the baseline emitted. A shard that measured nothing has to say so here, not
  * only in the JSON nobody opens.
+ *
+ * Since #3738 it also prints the classification, because the numbers alone do
+ * not carry it: 568 false positives measured against a baseline that never
+ * loaded and 39 measured against one that did read identically in this table.
  */
 export function renderMarkdown(artifact) {
   const summary = artifact.divergence.summary;
@@ -35,6 +41,7 @@ export function renderMarkdown(artifact) {
     `Unexpected Vue files: ${coverage.unexpectedVueFiles.length}`,
     `Ignored dependency Vue files: ${coverage.ignoredDependencyVueFileCount}`,
     `Budget verdict: ${describeVerdict(artifact.budget)}`,
+    `Classification: ${describeClassification(artifact)}`,
     `Budget passed: ${artifact.budget.passed}`,
     `Digest: ${artifact.divergence.sha256}`,
     "",

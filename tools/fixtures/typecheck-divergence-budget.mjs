@@ -100,14 +100,41 @@ export function assertBudgetPassed(artifact, budgetMode = "enforce") {
   const mode = parseBudgetMode(budgetMode);
   const budget = artifact.budget;
   if (budget.verdict === "passed") return;
-  const detail =
+  const detail = `${
     budget.verdict === "unusable"
-      ? `Typecheck divergence baseline is unusable for ${artifact.project}: ${budget.unusableReason}`
-      : `Typecheck divergence budget breached for ${artifact.project}: ${describeBreaches(artifact).join("; ")}`;
+      ? `Typecheck divergence baseline is unusable for ${artifact.project}`
+      : `Typecheck divergence budget breached for ${artifact.project}`
+  } — ${describeClassification(artifact)}: ${
+    budget.verdict === "unusable" ? budget.unusableReason : describeBreaches(artifact).join("; ")
+  }`;
   if (mode === "enforce") throw new Error(detail);
   // A GitHub workflow command, so a release run that records an unusable
   // baseline still shows a warning on the run instead of a silent green tick.
   process.stdout.write(`::warning title=Typecheck divergence budget not enforced::${detail}\n`);
+}
+
+/**
+ * Answer the only question a failing shard leaves the reader with (#3738): is
+ * this Vize being wrong, or the instrument being broken?
+ *
+ * The auditor of run 30738583070 could not tell, and read the answer off the
+ * ratios — 0.87 to 0.99 looked like two programs, 0.06 looked like a compiler.
+ * That inference is not available from a ratio, and it was wrong in both
+ * directions on that run. The verdict already carries the answer, because every
+ * `unusable` reason is a proof that the baseline did not measure Vize; it just
+ * was not stated. So state it, on the failure and in the step summary, and say
+ * what the usable case rests on rather than leaving it implied.
+ */
+export function describeClassification(artifact) {
+  const budget = artifact.budget;
+  if (budget.verdict === "unusable") {
+    return "instrument failure, the vue-tsc baseline did not measure Vize";
+  }
+  const coverage = artifact.baseline.coverage;
+  return (
+    "Vize divergence, the vue-tsc baseline loaded cleanly over the same " +
+    `${coverage.sharedVueFileCount} Vue files`
+  );
 }
 
 function describeBreaches(artifact) {

@@ -23,16 +23,28 @@
  * did manage to resolve — no `strict`, no `paths`, no `types` — checks the files
  * anyway, and the ledger scores that against Vize as a real measurement.
  *
- * So this is deliberately narrow: only a diagnostic with no file at all, or one
- * reported against a `tsconfig`/`jsconfig` JSON file, is a configuration
- * diagnostic. Misskey's 94 excluded non-Vue diagnostics are `.ts` source errors
- * and stay scoreable; a fixture whose baseline could not read its own config
- * does not.
+ * So this is deliberately narrow: only a diagnostic with no file at all, one
+ * reported against a `tsconfig`/`jsconfig` JSON file, or one whose code says the
+ * program could not be built as asked, is a configuration diagnostic. Misskey's
+ * 94 excluded non-Vue diagnostics are `.ts` source errors and stay scoreable; a
+ * fixture whose baseline could not read its own config does not.
+ *
+ * That third arm is #3738. `TS6307` and `TS6059` are reported against a *source*
+ * file rather than the config, so they read as ordinary type errors while saying
+ * the opposite: that the file is in the program without being in the project's
+ * file list, or outside its `rootDir`. Neither is a claim about the code. On run
+ * 30738583070 element-plus's baseline emitted 208 `TS6307`, which the ledger
+ * scored as 208 Vize false negatives — 88% of that shard's false-negative
+ * breach — and vuetify's emitted 1252 `TS6059` naming the report directory as
+ * its `rootDir`. A baseline that cannot say which files it is checking is not a
+ * baseline.
  */
 
 const diagnosticPattern = /^(.+)\((\d+),(\d+)\): (error|warning) TS(\d+): (.+)$/u;
 const projectPattern = /^(error|warning) TS(\d+): (.+)$/u;
 const configurationFilePattern = /[jt]sconfig[^/]*\.json$/u;
+/** TS6307: not listed within the file list of project. TS6059: not under 'rootDir'. */
+const programConstructionCodes = new Set([6059, 6307]);
 
 export function evaluateBaselineConfiguration(vueTscOutput) {
   if (typeof vueTscOutput !== "string") throw new Error("vue-tsc output must be a string");
@@ -41,7 +53,8 @@ export function evaluateBaselineConfiguration(vueTscOutput) {
     const positioned = diagnosticPattern.exec(line);
     if (positioned != null) {
       const file = positioned[1].replaceAll("\\", "/");
-      if (!configurationFilePattern.test(file)) continue;
+      const code = Number(positioned[5]);
+      if (!configurationFilePattern.test(file) && !programConstructionCodes.has(code)) continue;
       diagnostics.push({
         code: Number(positioned[5]),
         column: Number(positioned[3]),

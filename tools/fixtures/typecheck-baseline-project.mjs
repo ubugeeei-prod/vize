@@ -7,17 +7,39 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * The fixture's pinned tsconfig remains the source of compiler options, while
  * `files` replaces solution-style or incomplete include lists. This makes the
  * baseline compare the same authored SFCs instead of silently checking none.
+ *
+ * `files` alone is not enough, though, and #3738 is what that costs. A `files`
+ * list seeds the program with those roots and nothing else, so every ambient
+ * declaration the fixture owns — `declare global`, `declare namespace`, module
+ * augmentation — falls out of the program unless some SFC happens to import it,
+ * which ambient files by definition are not imported. The baseline then reports
+ * the project's own globals as undeclared and the ledger scores that against
+ * Vize: on run 30738583070 all 24 of lx-music-desktop's "false negatives" were
+ * `Cannot find namespace 'LX'` or `Property 'lx' does not exist on 'Window'`,
+ * both declared in its `src/**\/*.d.ts`, and restoring the glob below takes the
+ * baseline from 25 diagnostics over the Vue corpus to 1 — the one Vize agrees
+ * with. `elk`, `voicevox`, `vuestic-admin` and `misskey` fail the same way.
+ *
+ * Declaration files are the right thing to add back and the only thing:
+ * they are the fixture's type *environment*, never the comparison's subject, so
+ * they cannot change which SFCs are checked, and every diagnostic reported
+ * inside one is already excluded from scoring for being non-Vue. `exclude` is
+ * ours rather than the fixture's for the same reason — the glob is ours, and it
+ * must not reach into installed or built output. It cannot narrow the compared
+ * corpus, because `exclude` never applies to `files`.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
   const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
   const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
+  const fixtureBase = configRelativePath(configDir, fixtureRoot);
   const config = {
     extends: configRelativePath(configDir, resolve(fixtureRoot, sourceProject)),
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
-    include: [],
+    include: [`${fixtureBase}/**/*.d.ts`],
+    exclude: [`${fixtureBase}/**/node_modules/**`, `${fixtureBase}/**/dist/**`],
     references: [],
   };
   const source = `${JSON.stringify(config, null, 2)}\n`;
