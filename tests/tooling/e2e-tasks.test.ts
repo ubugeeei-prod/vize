@@ -107,9 +107,14 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     scripts["test:readiness:build"],
     "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts",
   );
+  // nuxt-ui is the release gate that no pull request could exercise until it
+  // joined this smoke: its SSR render output is what broke in #3736, twice, at
+  // release time. Each spec gets its own Playwright run so one app's dev server
+  // cannot leak into the next, matching test:dev:ci.
   assert.equal(
     scripts["test:readiness:dev"],
-    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/misskey.spec.ts",
+    "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/misskey.spec.ts" +
+      " && VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
   );
 
   assertExists("tests", "snapshots", "check", "compiler-macros.ts");
@@ -117,6 +122,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "snapshots", "build", "elk.ts");
   assertExists("tests", "snapshots", "build", "generic.ts");
   assertExists("tests", "app", "dev", "misskey.spec.ts");
+  assertExists("tests", "app", "dev", "nuxt-ui.spec.ts");
 
   for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
     const snapshotName = fixture === "npmx.dev" ? "npmx" : fixture;

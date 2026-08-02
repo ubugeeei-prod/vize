@@ -119,10 +119,16 @@ impl SsrCodegenContext<'_> {
         if segments.is_empty() {
             return "null".to_compact_string();
         }
-        if segments.len() == 1
-            && let ComponentPropSegment::Entries(entries) = segments.pop().unwrap()
-        {
-            return self.component_entries_expression(entries);
+        // A single segment is already a valid prop bag on its own: an object
+        // literal is emitted bare, and a spread keeps its
+        // `_normalizeProps(_guardReactiveProps(...))` normalization. Neither
+        // needs a `_mergeProps` wrapper, because there is nothing to merge it
+        // with. Render whichever variant it is rather than only unwrapping
+        // `Entries`: leaving `Spread` to fall through used to drop the segment
+        // and silently strip every `v-bind="obj"` prop from the component.
+        if segments.len() == 1 {
+            let segment = segments.pop().expect("segments has exactly one element");
+            return self.component_segment_expression(segment);
         }
 
         self.use_core_helper(RuntimeHelper::MergeProps);
@@ -131,22 +137,25 @@ impl SsrCodegenContext<'_> {
             if index > 0 {
                 out.push_str(", ");
             }
-            match segment {
-                ComponentPropSegment::Entries(entries) => {
-                    out.push_str(&self.component_entries_expression(entries));
-                }
-                ComponentPropSegment::Spread(spread) => {
-                    self.use_core_helper(RuntimeHelper::NormalizeProps);
-                    self.use_core_helper(RuntimeHelper::GuardReactiveProps);
-                    out.push_str(&wrap_call(
-                        "_normalizeProps",
-                        &wrap_call("_guardReactiveProps", &spread),
-                    ));
-                }
-            }
+            let rendered = self.component_segment_expression(segment);
+            out.push_str(&rendered);
         }
         out.push(')');
         out
+    }
+
+    fn component_segment_expression(&mut self, segment: ComponentPropSegment) -> String {
+        match segment {
+            ComponentPropSegment::Entries(entries) => self.component_entries_expression(entries),
+            ComponentPropSegment::Spread(spread) => {
+                self.use_core_helper(RuntimeHelper::NormalizeProps);
+                self.use_core_helper(RuntimeHelper::GuardReactiveProps);
+                wrap_call(
+                    "_normalizeProps",
+                    &wrap_call("_guardReactiveProps", &spread),
+                )
+            }
+        }
     }
 
     fn component_entries_expression(&mut self, entries: std::vec::Vec<VNodePropEntry>) -> String {

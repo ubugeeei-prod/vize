@@ -123,6 +123,7 @@ test("pull requests run one path-filtered fast app readiness job", () => {
     "'tests/_fixtures/_projects/compiler-macros/**'",
     "'tests/_helpers/**'",
     "'tests/app/dev/misskey.spec.ts'",
+    "'tests/app/dev/nuxt-ui.spec.ts'",
     "'tests/snapshots/check/compiler-macros.ts'",
     "'tests/snapshots/check/{elk,misskey,npmx,nuxt-ui,reka-ui}.ts'",
     "'tests/snapshots/check/__snapshots__/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}-check.snap'",
@@ -218,7 +219,7 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
     ["check", "test:readiness:check", "check.log", "3m"],
     ["lint", "test:readiness:lint", "lint.log", "2m"],
     ["build", "test:readiness:build", "build.log", "3m"],
-    ["dev", "test:readiness:dev", "dev.log", "3m"],
+    ["dev", "test:readiness:dev", "dev.log", "8m"],
   ] as const) {
     const step = yamlStepBody(action, { id });
     assert.match(step, /continue-on-error:\s*true/);
