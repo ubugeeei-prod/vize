@@ -6,11 +6,44 @@
 //! `createVNode` calls, never opens a block, leaves `&&` / `?:` / `.map()` as
 //! plain JavaScript, and by default emits **no** patch flags at all.
 //!
-//! Most of that difference is invisible at runtime — 63 of the 94 cases in
-//! `tests/babel_compat/fixtures/corpus.json` are already semantically
-//! equivalent. The rest are not, and a project migrating off
-//! `@vue/babel-plugin-jsx` needs a way to ask for babel's semantics instead of
-//! Vize's. [`JsxCompatMode::Babel`] is that switch.
+//! Most of that difference is invisible at runtime; the rest is what this switch
+//! exists for, because a project migrating off `@vue/babel-plugin-jsx` needs a
+//! way to ask for babel's semantics instead of Vize's. [`JsxCompatMode::Babel`]
+//! is that switch. How closely it lands is measured against the real plugin by
+//! the differential oracle in `tests/babel_compat/`, whose row-by-row verdicts
+//! and current totals live in `tests/BABEL_COMPAT_INVENTORY.md`.
+//!
+//! # Babel plugin options
+//!
+//! The plugin's options have no config-file spelling of their own: each is a
+//! parameter of a `compile_jsx_with_babel_*` entry point, and every one of them
+//! is inert unless [`JsxCompatMode::Babel`] is selected.
+//!
+//! | `@vue/babel-plugin-jsx` option | Vize entry point |
+//! | ------------------------------ | ---------------- |
+//! | `transformOn` | [`crate::BabelJsxOptions::transform_on`] |
+//! | `pragma` | [`crate::compile_jsx_with_babel_pragma`] |
+//! | `mergeProps` | [`crate::compile_jsx_with_babel_merge_props`] |
+//! | `isCustomElement` | [`crate::BabelJsxCustomizations::is_custom_element`] |
+//! | `enableObjectSlots` | [`crate::compile_jsx_with_babel_object_slots`] |
+//! | any combination of the above | [`crate::compile_jsx_with_babel_customizations`] |
+//!
+//! `optimize` has no Vize equivalent, because Vize's output is always optimized
+//! — which is what the plugin's `optimize: true` produces. `resolveType` is
+//! deferred, along with one other row:
+//!
+//! - `options/resolve_type_on` — type-driven props/emits inference needs the
+//!   type-resolution work tracked on #1497 / #1502.
+//! - `slots/dynamic_slot_name` — a computed slot name warns and drops; it needs
+//!   dynamic-slot lowering.
+//!
+//! # Compat under SSR output
+//!
+//! `@vue/babel-plugin-jsx` emits client vnode trees, so its options describe
+//! client output only. SSR compilation therefore withholds the whole Babel lane
+//! — the `transformOn` / `enableObjectSlots` helpers, the `isCustomElement`
+//! predicate, `mergeProps: false`, and every Babel-only lowering — and falls
+//! back to Vize's own SSR semantics rather than emitting a half-applied mixture.
 //!
 //! # Why this is not a directive prologue
 //!
