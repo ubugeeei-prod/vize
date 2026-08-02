@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const packageDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(packageDir, "../../..");
 const pluginEntry = path.join(workspaceRoot, "npm/oxint/dist/index.mjs");
+const cliEntry = path.join(workspaceRoot, "npm/oxint/dist/cli.mjs");
 const fixtureDir = path.join(workspaceRoot, "target", "vize-tests", "oxlint-plugin-vize-nuxt-test");
 const configPath = path.join(fixtureDir, ".oxlintrc.json");
 const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
@@ -127,7 +128,15 @@ assert.match(
   /PageMeta\.vue[\s\S]*2:25[\s\S]*`useRoute\(\)` requires a Nuxt\/Vue runtime context[\s\S]*vize\(nuxt\/no-page-meta-runtime-values\)/u,
 );
 
-const internalLinkRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "InternalLink.vue"]);
+// `InternalLink.vue` has no script block, so it has to go through the
+// `oxlint-vize` CLI: plain Oxlint never hands scriptless SFCs to JS plugins.
+const internalLinkRun = runOxlintVize([
+  "-c",
+  ".oxlintrc.json",
+  "-f",
+  "stylish",
+  "InternalLink.vue",
+]);
 assert.equal(internalLinkRun.exitCode, 0, "NuxtLink preference is a warning by default");
 assert.match(
   internalLinkRun.output,
@@ -166,11 +175,19 @@ function findOxlintBin() {
 }
 
 function runOxlint(args: string[]) {
+  return runCommand(findOxlintBin(), args);
+}
+
+function runOxlintVize(args: string[]) {
+  return runCommand(process.execPath, [cliEntry, ...args]);
+}
+
+function runCommand(executable: string, args: string[]) {
   const env = { ...process.env };
   delete env.GITHUB_ACTIONS;
 
   try {
-    const stdout = execFileSync(findOxlintBin(), args, {
+    const stdout = execFileSync(executable, args, {
       cwd: fixtureDir,
       encoding: "utf8",
       env,
