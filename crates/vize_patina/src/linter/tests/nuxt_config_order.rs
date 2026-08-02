@@ -33,6 +33,72 @@ fn nuxt_preset_reports_fixable_config_order() {
 }
 
 #[test]
+fn nuxt_preset_ignores_unrelated_default_export_configs() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    for (filename, source) in [
+        (
+            "vitest.config.ts",
+            "export default defineConfig({ resolve: {}, test: {} })",
+        ),
+        (
+            "vize.config.ts",
+            "export default defineConfig({ compiler: {}, vite: {} })",
+        ),
+    ] {
+        let result = linter.lint_script(source, filename);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "nuxt/nuxt-config-keys-order"),
+            "{filename}: {:#?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn nuxt_preset_ignores_component_option_objects() {
+    let source = r#"<script lang="ts">
+export default defineComponent({ name: "DataTable", model: {} })
+</script>
+"#;
+    let result = Linter::with_preset(LintPreset::Nuxt).lint_sfc(source, "components/DataTable.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "nuxt/nuxt-config-keys-order"),
+        "{:#?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn nuxt_preset_checks_supported_nuxt_config_path_forms() {
+    let linter = Linter::with_preset(LintPreset::Nuxt);
+    let source = "export default defineNuxtConfig({ ssr: true, modules: [] })";
+    for filename in [
+        "nuxt.config.ts",
+        "apps/web/nuxt.config.mjs",
+        ".config/nuxt.ts",
+        "apps/web/.config/nuxt.cts",
+        r"apps\web\nuxt.config.js",
+        r"apps\web\.config\nuxt.mts",
+    ] {
+        let result = linter.lint_script(source, filename);
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == "nuxt/nuxt-config-keys-order"),
+            "{filename}: {:#?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
 fn config_order_rule_is_nuxt_only_but_can_be_selected_explicitly() {
     let source = "export default { ssr: true, modules: [] }";
     for preset in [LintPreset::Ecosystem, LintPreset::Opinionated] {

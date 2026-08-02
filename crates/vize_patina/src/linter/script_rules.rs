@@ -13,7 +13,7 @@ mod template_ast;
 use html_scripts::extract_inline_scripts;
 use prefilter::{
     descriptor_scripts_may_match_ecosystem_rule, has_only_active_ecosystem_script_rules,
-    script_rule_may_match,
+    script_rule_applies_to_filename, script_rule_may_match,
 };
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry};
@@ -112,10 +112,10 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .script
         .as_ref()
         .map(|block| (block.content.as_ref(), block.loc.start))
-        .filter(|(source, _)| block_has_active_rule(linter, source));
+        .filter(|(source, _)| block_has_active_rule(linter, source, result.filename.as_str()));
     let script_alloc = Allocator::default();
     let script_parsed = script
-        .filter(|(source, _)| block_has_active_ast_rule(linter, source))
+        .filter(|(source, _)| block_has_active_ast_rule(linter, source, result.filename.as_str()))
         .map(|(source, _)| {
             let parsed = profile!(
                 "patina.script_rule.parse",
@@ -128,10 +128,10 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .script_setup
         .as_ref()
         .map(|block| (block.content.as_ref(), block.loc.start))
-        .filter(|(source, _)| block_has_active_rule(linter, source));
+        .filter(|(source, _)| block_has_active_rule(linter, source, result.filename.as_str()));
     let setup_alloc = Allocator::default();
     let script_setup_parsed = script_setup
-        .filter(|(source, _)| block_has_active_ast_rule(linter, source))
+        .filter(|(source, _)| block_has_active_ast_rule(linter, source, result.filename.as_str()))
         .map(|(source, _)| {
             let parsed = profile!(
                 "patina.script_rule.parse",
@@ -211,23 +211,30 @@ fn resolved_rule<'a>(
 /// byte prefilter (its deny list may reference identifiers the default prefilter
 /// does not know about), so the block is always parsed for overridden rules.
 #[inline]
-fn entry_may_match(linter: &Linter, entry: &BuiltinScriptRuleEntry, source: &str) -> bool {
-    linter.script_rule_overrides.contains_key(entry.rule_name)
-        || script_rule_may_match(entry.rule_name, source)
+fn entry_may_match(
+    linter: &Linter,
+    entry: &BuiltinScriptRuleEntry,
+    source: &str,
+    filename: &str,
+) -> bool {
+    script_rule_applies_to_filename(entry.rule_name, filename)
+        && (linter.script_rule_overrides.contains_key(entry.rule_name)
+            || script_rule_may_match(entry.rule_name, source))
 }
 
 /// Whether any enabled built-in script rule could match `source`.
 ///
 /// Mirrors the per-rule `is_rule_enabled` + `script_rules.contains` +
 /// `script_rule_may_match` gate so a block matching no rule is never parsed.
-fn block_has_active_rule(linter: &Linter, source: &str) -> bool {
-    active_builtin_script_rule_entries(linter).any(|entry| entry_may_match(linter, entry, source))
+fn block_has_active_rule(linter: &Linter, source: &str, filename: &str) -> bool {
+    active_builtin_script_rule_entries(linter)
+        .any(|entry| entry_may_match(linter, entry, source, filename))
 }
 
 /// Whether any enabled AST-based built-in script rule could match `source`.
-fn block_has_active_ast_rule(linter: &Linter, source: &str) -> bool {
+fn block_has_active_ast_rule(linter: &Linter, source: &str, filename: &str) -> bool {
     active_builtin_script_rule_entries(linter).any(|entry| {
-        resolved_rule(linter, entry).uses_ast() && entry_may_match(linter, entry, source)
+        resolved_rule(linter, entry).uses_ast() && entry_may_match(linter, entry, source, filename)
     })
 }
 
@@ -247,7 +254,7 @@ fn run_builtin_script_rule(
     sfc: SfcScriptContext<'_>,
     result: &mut LintResult,
 ) {
-    if !entry_may_match(linter, entry, source) {
+    if !entry_may_match(linter, entry, source, result.filename.as_str()) {
         return;
     }
     let mut lint = ScriptLintResult::default();
@@ -301,12 +308,12 @@ pub(crate) fn append_builtin_script_rules_for_source(
     result: &mut LintResult,
 ) {
     // Skip work entirely when no enabled rule could match this block.
-    if !block_has_active_rule(linter, source) {
+    if !block_has_active_rule(linter, source, result.filename.as_str()) {
         return;
     }
 
     let allocator = Allocator::default();
-    let parsed = block_has_active_ast_rule(linter, source).then(|| {
+    let parsed = block_has_active_ast_rule(linter, source, result.filename.as_str()).then(|| {
         profile!(
             "patina.script_rule.parse",
             Parser::new(&allocator, source, script_source_type()).parse()

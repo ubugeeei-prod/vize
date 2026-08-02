@@ -48,6 +48,47 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
     }
 }
 
+/// Whether a built-in script rule applies to the current file.
+///
+/// The Nuxt config ordering rule mirrors an upstream rule that is activated by
+/// config overrides. Native presets do not have an override layer, so preserve
+/// that boundary here instead of treating every default export as Nuxt config.
+pub(super) fn script_rule_applies_to_filename(rule_name: &str, filename: &str) -> bool {
+    rule_name != RULE_NUXT_CONFIG_KEYS_ORDER || is_nuxt_config_filename(filename)
+}
+
+fn is_nuxt_config_filename(filename: &str) -> bool {
+    let mut components = filename
+        .rsplit(['/', '\\'])
+        .filter(|component| !component.is_empty());
+    let Some(basename) = components.next() else {
+        return false;
+    };
+
+    has_script_extension(basename, "nuxt.config")
+        || (components.next() == Some(".config") && has_script_extension(basename, "nuxt"))
+}
+
+fn has_script_extension(filename: &str, stem: &str) -> bool {
+    matches!(
+        filename.strip_prefix(stem),
+        Some(
+            ".js"
+                | ".jsx"
+                | ".ts"
+                | ".tsx"
+                | ".cjs"
+                | ".cjsx"
+                | ".cts"
+                | ".ctsx"
+                | ".mjs"
+                | ".mjsx"
+                | ".mts"
+                | ".mtsx"
+        )
+    )
+}
+
 pub(super) fn descriptor_scripts_may_match_ecosystem_rule(descriptor: &SfcDescriptor<'_>) -> bool {
     descriptor
         .script
@@ -81,4 +122,40 @@ fn source_may_match_ecosystem_rule(source: &str) -> bool {
     ]
     .into_iter()
     .any(|rule_name| script_rule_may_match(rule_name, source))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_nuxt_config_filename;
+
+    #[test]
+    fn recognizes_supported_nuxt_config_paths() {
+        for extension in [
+            "js", "jsx", "ts", "tsx", "cjs", "cjsx", "cts", "ctsx", "mjs", "mjsx", "mts", "mtsx",
+        ] {
+            let root = format!("apps/web/nuxt.config.{extension}");
+            let hidden = format!("apps/web/.config/nuxt.{extension}");
+            assert!(is_nuxt_config_filename(&root), "{root}");
+            assert!(is_nuxt_config_filename(&hidden), "{hidden}");
+        }
+
+        assert!(is_nuxt_config_filename(r"apps\web\nuxt.config.js"));
+        assert!(is_nuxt_config_filename(r"apps\web\.config\nuxt.mts"));
+    }
+
+    #[test]
+    fn rejects_unrelated_or_lookalike_paths() {
+        for filename in [
+            "vitest.config.ts",
+            "vize.config.ts",
+            "components/DataTable.vue",
+            "nuxt.config.d.ts",
+            "nuxt.config.json",
+            "config/nuxt.ts",
+            ".config/not-nuxt.ts",
+            "my-nuxt.config.ts",
+        ] {
+            assert!(!is_nuxt_config_filename(filename), "{filename}");
+        }
+    }
 }
