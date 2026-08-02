@@ -38,7 +38,7 @@ test("npm bootstrap workflow uses one default-branch repository dispatch event",
   assert.doesNotMatch(source, /workflow_dispatch|\$\{\{\s*inputs\./);
   assert.deepEqual(workflow.permissions, { contents: "read" });
 
-  const controlsCheckout = workflow.jobs?.bootstrap?.steps?.find(
+  const controlsCheckout = workflow.jobs?.handoff?.steps?.find(
     (step) => step.name === "Checkout bootstrap controls from main",
   );
   assert.ok(controlsCheckout);
@@ -54,14 +54,13 @@ test("npm bootstrap workflow uses one default-branch repository dispatch event",
 test("npm bootstrap validates an exact tag before building with existing release helpers", () => {
   const source = readRepoFile(".github", "workflows", "release-npm-bootstrap.yml");
   const workflow = parse(source) as BootstrapWorkflow;
-  const job = workflow.jobs?.bootstrap;
+  const job = workflow.jobs?.handoff;
   assert.ok(job);
   assert.equal(job["runs-on"], "ubuntu-24.04");
-  assert.equal(job.environment, "npm");
+  assert.equal(job.environment, undefined);
   assert.deepEqual(job.permissions, {
     actions: "read",
     contents: "read",
-    "id-token": "write",
   });
 
   const steps = job.steps ?? [];
@@ -106,29 +105,46 @@ test("npm bootstrap validates an exact tag before building with existing release
   assert.deepEqual(
     requiredIndices,
     [...requiredIndices].sort((left, right) => left - right),
-    "every credential-free validation must run before publish",
+    "every release-artifact validation must run before the CLI handoff is packed",
   );
 });
 
-test("npm bootstrap exposes NPM_TOKEN only to the provenance publish step", () => {
+test("npm bootstrap creates a credential-free deterministic CLI handoff", () => {
   const source = readRepoFile(".github", "workflows", "release-npm-bootstrap.yml");
   const workflow = parse(source) as BootstrapWorkflow;
-  const steps = workflow.jobs?.bootstrap?.steps ?? [];
-  const publish = steps.find((step) => step.name === "Publish the package once with provenance");
-  assert.ok(publish);
-  assert.equal(publish["working-directory"], undefined);
-  assert.equal(publish.env?.BOOTSTRAP_PACKAGE_PATH, "bootstrap-package");
-  assert.equal(publish.env?.NODE_AUTH_TOKEN, "${{ secrets.NPM_TOKEN }}");
-  assert.equal(publish.env?.NPM_CONFIG_USERCONFIG, "${{ runner.temp }}/npm-bootstrap.npmrc");
-  assert.match(publish.run ?? "", /_authToken=\$\{NODE_AUTH_TOKEN\}/);
-  assert.match(publish.run ?? "", /publish_npm_package -- .* --provenance/);
-  assert.equal(steps.at(-1), publish);
+  const steps = workflow.jobs?.handoff?.steps ?? [];
+  const pack = steps.find(
+    (step) => step.name === "Pack deterministic npm CLI first-publish handoff",
+  );
+  assert.ok(pack);
+  assert.equal(pack.id, "handoff");
+  assert.equal(pack.run, "node tools/github/npm-bootstrap-handoff.mjs");
+  assert.equal(pack.env?.BOOTSTRAP_ARTIFACT_PATH, "bootstrap-package");
+  assert.equal(pack.env?.BOOTSTRAP_HANDOFF_PATH, "npm-cli-first-publish");
+  assert.equal(pack.env?.EXPECTED_PACKAGE_NAME, "${{ steps.preflight.outputs.package_name }}");
+  assert.equal(pack.env?.EXPECTED_PACKAGE_VERSION, "${{ steps.preflight.outputs.version }}");
+  assert.equal(pack.env?.RELEASE_TAG_SHA, "${{ steps.preflight.outputs.tag_sha }}");
 
-  for (const step of steps) {
-    if (step === publish) continue;
-    assert.doesNotMatch(JSON.stringify(step), /NPM_TOKEN|NODE_AUTH_TOKEN|_authToken/);
-  }
-  assert.equal([...source.matchAll(/secrets\.NPM_TOKEN/g)].length, 1);
+  const upload = steps.find((step) => step.name === "Upload npm CLI first-publish handoff");
+  assert.ok(upload);
+  assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+  assert.equal(upload.with?.name, "${{ steps.handoff.outputs.artifact_name }}");
+  assert.equal(upload.with?.path, "npm-cli-first-publish");
+  assert.equal(upload.with?.["if-no-files-found"], "error");
+  assert.equal(upload.with?.["compression-level"], 0);
+  assert.equal(upload.with?.["retention-days"], 7);
+  assert.equal(steps.at(-1), upload);
+  const registryRecheck = steps.find(
+    (step) => step.name === "Confirm package is still unpublished",
+  );
+  assert.ok(registryRecheck);
+  assert.ok(steps.indexOf(registryRecheck) < steps.indexOf(pack));
+  assert.ok(steps.indexOf(pack) < steps.indexOf(upload));
+
+  assert.doesNotMatch(
+    source,
+    /NPM_TOKEN|NODE_AUTH_TOKEN|_authToken|secrets\.|id-token|--provenance|npm publish|publish_npm_package/,
+  );
 });
 
 test("npm bootstrap handoff documents the exact trusted publisher command", () => {
@@ -155,9 +171,11 @@ test("npm bootstrap handoff documents the exact trusted publisher command", () =
   const bootstrapSectionStart = docs.indexOf("### First-publish bootstrap");
   assert.notEqual(bootstrapSectionStart, -1, "docs must keep the First-publish bootstrap section");
   assert.doesNotMatch(docs.slice(bootstrapSectionStart), /v0\.314\.0/);
-  assert.match(docs, /90 days/);
-  assert.match(docs, /short-lived Granular Access Token/);
-  assert.match(docs, /revoke/i);
+  assert.match(docs, /npm-cli-first-publish-vizejs-nuxt-lint-config-X\.Y\.Z/);
+  assert.match(docs, /npm publish \.\/vizejs-nuxt-lint-config-X\.Y\.Z\.tgz --access public/);
+  assert.match(docs, /does not request an OIDC token/i);
+  assert.match(docs, /does not have GitHub Actions OIDC provenance/i);
+  assert.doesNotMatch(docs.slice(bootstrapSectionStart), /Granular Access Token|NPM_TOKEN/);
   assert.match(docs, /Freeze `main`/);
   assert.match(docs, /Disable PR auto-merge/);
   assert.match(docs, /neither direct pushes nor other merges/);

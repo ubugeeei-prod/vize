@@ -109,14 +109,32 @@ available. The run must be the completed failed `.github/workflows/release.yml`
 tag run for the same SHA. Its package build, release preflight, and tarball smoke
 jobs must be successful, while only the target package publish job is required
 to have failed. The exact package artifact from that run is downloaded,
-identity-checked, smoke-installed again, and published with provenance. The
-workflow refuses to run unless the package remains absent from npm.
+identity-checked, manifest-normalized, and smoke-installed again. The workflow
+refuses to run unless the package remains absent from npm. It then runs
+`npm pack` twice and requires both tarballs to be byte-for-byte identical before
+uploading this credential-free handoff artifact:
 
-npm Granular Access Tokens expire after at most 90 days. Before dispatch, rotate
-an expired or long-lived `NPM_TOKEN` repository secret to a short-lived Granular
-Access Token scoped to write packages in `@vizejs` and permitted to bypass 2FA.
-The secret is exposed only to the final publish step. Never place the token in a
-workflow-level or job-level environment.
+```text
+npm-cli-first-publish-vizejs-nuxt-lint-config-X.Y.Z/
+├── SHA512SUMS
+├── npm-publish-handoff.json
+└── vizejs-nuxt-lint-config-X.Y.Z.tgz
+```
+
+The handoff workflow does not request an OIDC token, read an npm secret, or
+publish anything. Download the named artifact shown in its job summary, verify
+`SHA512SUMS`, authenticate locally as an npm owner with settings 2FA, and make
+the one-time first publish from the exact tarball:
+
+```bash
+shasum -a 512 --check SHA512SUMS
+npm whoami
+npm publish ./vizejs-nuxt-lint-config-X.Y.Z.tgz --access public
+```
+
+This local CLI first publish does not have GitHub Actions OIDC provenance. That
+is expected only for the package-creation bootstrap; do not pass
+`--provenance`, and do not describe this run as Trusted Publishing.
 
 Immediately after the first publish of `@vizejs/nuxt-lint-config`, configure the
 normal release workflow as its trusted publisher. Use npm CLI 11.17.0 or newer
@@ -126,17 +144,16 @@ and authenticate as an npm owner with settings 2FA:
 npm trust github @vizejs/nuxt-lint-config --file release.yml --repo ubugeeei-prod/vize --env npm --allow-publish --yes
 ```
 
-Confirm the package's npm settings name `release.yml` and the `npm` environment.
-Revoke the short-lived Granular Access Token immediately and remove or rotate
-the `NPM_TOKEN` secret, then rerun only the failed jobs in the same Release run.
-The standard OIDC-only publish job will see the exact version and finish its
-registry verification, allowing the remaining release jobs to complete. Use
+Confirm the package's npm settings name `release.yml` and the `npm` environment,
+then rerun only the failed jobs in the same Release run. The standard OIDC-only
+publish job will see the exact version and finish its registry verification,
+allowing the remaining release jobs to complete. Use
 `.github/workflows/release.yml` for every later version. Do not use the bootstrap
 workflow after the package exists; its registry guard will reject the request.
 
 After every package is configured and one release has verified OIDC publishing,
 set the npm package publishing access to require two-factor authentication and
-disallow tokens, then revoke the old automation token.
+disallow tokens, then delete any obsolete npm publishing secret from GitHub.
 
 ## What is not signed
 

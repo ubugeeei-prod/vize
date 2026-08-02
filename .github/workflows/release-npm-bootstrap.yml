@@ -1,10 +1,10 @@
-name: Bootstrap npm package
+name: Prepare npm first-publish CLI handoff
 
 on:
   repository_dispatch:
     types: [npm-bootstrap]
 
-run-name: Bootstrap ${{ github.event.client_payload.package_path }} from ${{ github.event.client_payload.tag_name }} run ${{ github.event.client_payload.release_run_id }}
+run-name: Prepare CLI handoff for ${{ github.event.client_payload.package_path }} from ${{ github.event.client_payload.tag_name }} run ${{ github.event.client_payload.release_run_id }}
 
 concurrency:
   group: npm-bootstrap-${{ github.event.client_payload.package_path }}
@@ -14,19 +14,14 @@ permissions: { contents: read }
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PUBLISH_RETRY_LIMIT: 3
-  PUBLISH_RETRY_DELAY: 10
-  PUBLISH_RESOLUTION_RETRY_LIMIT: 24
-  PUBLISH_RESOLUTION_RETRY_DELAY: 10
 
 jobs:
-  bootstrap:
-    name: First publish to npm
+  handoff:
+    name: Prepare first-publish CLI handoff
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    environment: npm
-    # actions: read downloads the Release run artifact; id-token: write signs npm provenance.
-    permissions: { actions: read, contents: read, id-token: write }
+    # actions: read downloads the exact Release run artifact. This job never publishes.
+    permissions: { actions: read, contents: read }
     steps:
       - name: Checkout bootstrap controls from main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -75,12 +70,23 @@ jobs:
           RELEASE_RUN_ID: ${{ steps.preflight.outputs.release_run_id }}
           RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
         run: node tools/github/npm-bootstrap-preflight.mjs registry-recheck
-      - name: Publish the package once with provenance
+      - name: Pack deterministic npm CLI first-publish handoff
+        id: handoff
         env:
-          BOOTSTRAP_PACKAGE_PATH: bootstrap-package
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/npm-bootstrap.npmrc
-        run: |
-          trap 'rm -f "$NPM_CONFIG_USERCONFIG"' EXIT
-          printf '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\n' > "$NPM_CONFIG_USERCONFIG"
-          moon run --target native tools/moon/cmd/publish_npm_package -- "$BOOTSTRAP_PACKAGE_PATH" --provenance
+          BOOTSTRAP_ARTIFACT_PATH: bootstrap-package
+          BOOTSTRAP_HANDOFF_PATH: npm-cli-first-publish
+          EXPECTED_PACKAGE_NAME: ${{ steps.preflight.outputs.package_name }}
+          EXPECTED_PACKAGE_VERSION: ${{ steps.preflight.outputs.version }}
+          RELEASE_ARTIFACT_NAME: ${{ steps.preflight.outputs.artifact_name }}
+          RELEASE_RUN_ID: ${{ steps.preflight.outputs.release_run_id }}
+          RELEASE_TAG_NAME: ${{ github.event.client_payload.tag_name }}
+          RELEASE_TAG_SHA: ${{ steps.preflight.outputs.tag_sha }}
+        run: node tools/github/npm-bootstrap-handoff.mjs
+      - name: Upload npm CLI first-publish handoff
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.handoff.outputs.artifact_name }}
+          path: npm-cli-first-publish
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
