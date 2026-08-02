@@ -6,6 +6,19 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+// The docs theme has no module loader; each i18n script registers itself on a
+// global when loaded. `docs-navigation.test.ts` owns the wiring assertions.
+for (const basename of ["sitemap", "locales/en"]) {
+  await import(path.join(root, "docs/theme/i18n", `${basename}.js`));
+}
+const sitemap = (globalThis as { __vizeDocsSitemap?: { navGroups: NavGroup[] } })
+  .__vizeDocsSitemap!;
+const locales = (globalThis as { __vizeDocsLocales?: Record<string, LocaleStrings> })
+  .__vizeDocsLocales!;
+
+type NavGroup = { key: string; paths: string[] };
+type LocaleStrings = { labels: Record<string, string> };
+
 test("language engineering practices document upstream-derived compiler workflows", () => {
   const practices = readRepoFile(
     "docs",
@@ -113,24 +126,31 @@ test("language-facing change classes are present in docs, contribution guide, an
 });
 
 test("docs navigation exposes the language engineering practices page", () => {
-  const navigation = readRepoFile("docs", "theme", "i18n", "navigation.js");
-  const navigationTest = readRepoFile("docs", "theme", "navigation.test.js");
   const architectureOverview = readRepoFile("docs", "content", "architecture", "overview.md");
   const productionReadiness = readRepoFile("docs", "release", "production-readiness.md");
 
-  for (const content of [navigation, navigationTest]) {
-    assert.match(content, /architecture\/language-engineering-practices/);
-  }
+  // The sidebar's structure and its labels are data, not file text: the groups
+  // live in `docs/theme/i18n/sitemap.js` and the labels in
+  // `docs/theme/i18n/locales/`. Assert the whole Architecture group so a page
+  // dropped from it fails here rather than reading as an unrelated reorder.
+  assert.deepEqual(sitemap.navGroups.find((group) => group.key === "architecture")?.paths, [
+    "/architecture/overview",
+    "/architecture/crates",
+    "/architecture/source-guide",
+    "/architecture/language-engineering-practices",
+    "/architecture/performance",
+    "/philosophy",
+  ]);
+  assert.equal(
+    locales.en.labels["/architecture/language-engineering-practices"],
+    "Language Engineering",
+  );
 
   assert.match(architectureOverview, /language-engineering-practices\.md/);
   assert.match(productionReadiness, /language-engineering change-class evidence/);
   assert.match(productionReadiness, /security-audit` workflow status/);
   assert.match(productionReadiness, /pr-benchmark-budget` status/);
   assert.match(productionReadiness, /\.github\/workflows\/fuzz\.yml/);
-  assert.match(
-    navigation,
-    /\["\/architecture\/language-engineering-practices", "Language Engineering"\]/,
-  );
 });
 
 function readRepoFile(...segments: string[]): string {
