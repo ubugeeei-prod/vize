@@ -1,0 +1,69 @@
+/**
+ * French sidebar labels and chrome strings.
+ *
+ * Only overrides live here; any path without an entry falls back to the
+ * English label in `en.js`, which is where the blog post titles are kept.
+ */
+((locales) => {
+  locales.fr = {
+    labels: {
+      "/": "Vue d’ensemble",
+      "/getting-started": "Bien démarrer",
+      "/stability": "Stabilité",
+      "/credits": "Crédits",
+      "/guide/configuration": "Configuration",
+      "/guide/workflows": "Flux de travail",
+      "/guide/jsx": "JSX et TSX",
+      "/guide/jsx-babel-compat": "Compatibilité Babel JSX",
+      "/guide/troubleshooting": "Dépannage",
+      "/guide/cli": "CLI",
+      "/guide/vite-plugin": "Plugin Vite",
+      "/guide/unplugin": "Intégrations des bundlers",
+      "/guide/wasm": "Bindings WASM",
+      "/guide/static-analysis": "Analyse statique",
+      "/guide/cross-file-complexity": "Complexité inter-fichiers",
+      "/guide/analysis-diagnostics": "Diagnostics",
+      "/guide/oxlint": "Plugin Oxlint",
+      "/guide/comment-annotations": "Annotations de commentaires",
+      "/rules": "Vue d’ensemble des règles",
+      "/rules/all": "Toutes les règles",
+      "/rules/vue": "Vue",
+      "/rules/type-and-script": "Types et scripts",
+      "/rules/html": "HTML",
+      "/rules/accessibility": "Accessibilité",
+      "/rules/ssr": "SSR",
+      "/rules/vapor": "Vapor",
+      "/rules/musea-and-css": "Musea et CSS",
+      "/rules/cross-file": "Règles inter-fichiers",
+      "/guide/musea": "Musea",
+      "/integrations/nuxt": "Nuxt",
+      "/integrations/vscode": "VS Code",
+      "/integrations/mcp": "Serveur MCP",
+      "/architecture/overview": "Vue d’ensemble de l’architecture",
+      "/architecture/crates": "Crates",
+      "/architecture/source-guide": "Guide du code source",
+      "/architecture/language-engineering-practices": "Ingénierie des langages",
+      "/architecture/performance": "Performances",
+      "/philosophy": "Philosophie",
+      "/blog": "Vue d’ensemble",
+      "/blog/notes": "Notes",
+      "/blog/releases": "Versions",
+    },
+    ui: {
+      groups: {
+        start: "Accueil",
+        projectSetup: "Configuration du projet",
+        staticAnalysis: "Analyse statique",
+        rules: "Règles",
+        tooling: "Outils",
+        architecture: "Architecture",
+        blog: "Blog",
+      },
+      language: "Langue",
+      more: "Plus",
+      search: "Rechercher",
+      searchPlaceholder: "Rechercher dans la documentation...",
+      footer: 'Publié sous <a href="https://opensource.org/licenses/MIT">licence MIT</a>.',
+    },
+  };
+})((globalThis.__vizeDocsLocales ??= {}));

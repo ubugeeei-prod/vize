@@ -1,0 +1,69 @@
+/**
+ * Simplified Chinese sidebar labels and chrome strings.
+ *
+ * Only overrides live here; any path without an entry falls back to the
+ * English label in `en.js`, which is where the blog post titles are kept.
+ */
+((locales) => {
+  locales["zh-CN"] = {
+    labels: {
+      "/": "概述",
+      "/getting-started": "入门",
+      "/stability": "稳定性",
+      "/credits": "致谢",
+      "/guide/configuration": "配置",
+      "/guide/workflows": "用户工作流",
+      "/guide/jsx": "JSX 与 TSX",
+      "/guide/jsx-babel-compat": "Babel JSX 兼容",
+      "/guide/troubleshooting": "故障排除",
+      "/guide/cli": "CLI",
+      "/guide/vite-plugin": "Vite 插件",
+      "/guide/unplugin": "打包器集成",
+      "/guide/wasm": "WASM 绑定",
+      "/guide/static-analysis": "静态分析",
+      "/guide/cross-file-complexity": "跨文件复杂度",
+      "/guide/analysis-diagnostics": "诊断",
+      "/guide/oxlint": "Oxlint 插件",
+      "/guide/comment-annotations": "注释标注",
+      "/rules": "规则概述",
+      "/rules/all": "全部规则",
+      "/rules/vue": "Vue",
+      "/rules/type-and-script": "类型与脚本",
+      "/rules/html": "HTML",
+      "/rules/accessibility": "无障碍",
+      "/rules/ssr": "SSR",
+      "/rules/vapor": "Vapor",
+      "/rules/musea-and-css": "Musea 与 CSS",
+      "/rules/cross-file": "跨文件规则",
+      "/guide/musea": "Musea",
+      "/integrations/nuxt": "Nuxt",
+      "/integrations/vscode": "VS Code",
+      "/integrations/mcp": "MCP 服务器",
+      "/architecture/overview": "架构概述",
+      "/architecture/crates": "Crate",
+      "/architecture/source-guide": "源码指南",
+      "/architecture/language-engineering-practices": "语言工程",
+      "/architecture/performance": "性能",
+      "/philosophy": "理念",
+      "/blog": "概述",
+      "/blog/notes": "笔记",
+      "/blog/releases": "发布",
+    },
+    ui: {
+      groups: {
+        start: "开始",
+        projectSetup: "项目设置",
+        staticAnalysis: "静态分析",
+        rules: "规则",
+        tooling: "工具",
+        architecture: "架构",
+        blog: "博客",
+      },
+      language: "语言",
+      more: "更多",
+      search: "搜索",
+      searchPlaceholder: "搜索文档...",
+      footer: '根据 <a href="https://opensource.org/licenses/MIT">MIT License</a> 发布。',
+    },
+  };
+})((globalThis.__vizeDocsLocales ??= {}));

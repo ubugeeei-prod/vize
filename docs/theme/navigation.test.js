@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { SCRIPT_BASENAMES } from "./background.ts";
 
-await import("./i18n/navigation.js");
+// The docs site has no module loader: the theme scripts are concatenated in
+// `SCRIPT_BASENAMES` order and talk through globals. Loading the i18n files in
+// that same order is what makes this file exercise the shipped wiring.
+for (const basename of SCRIPT_BASENAMES.filter((name) => name.startsWith("i18n/"))) {
+  await import(`./${basename}.js`);
+}
 
 const navigation = globalThis.__vizeDocsNavigation;
 
