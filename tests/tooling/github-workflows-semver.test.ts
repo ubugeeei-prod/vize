@@ -141,6 +141,77 @@ test("push marker fails closed without repository, commit, or token metadata", a
   );
 });
 
+test("branch-deletion pushes skip the associated-pulls request", async () => {
+  const marker = await resolveSemverChangeMarker({
+    eventName: "push",
+    event: {
+      after: "0000000000000000000000000000000000000000",
+      commits: [],
+      deleted: true,
+      repository: { full_name: "ubugeeei-prod/vize" },
+    },
+    token: "test-token",
+    fetchImpl: async () => {
+      throw new Error("branch deletions must not call the associated-pulls API");
+    },
+  });
+
+  assert.equal(marker, "");
+});
+
+test("associated-pulls requests retry network errors and transient server failures", async () => {
+  let attempts = 0;
+  const delays = [];
+  const marker = await resolveSemverChangeMarker({
+    eventName: "push",
+    event: {
+      after: "1234567890abcdef",
+      commits: [{ message: "fix(ci): retry transient associated-pulls failures" }],
+      repository: { full_name: "ubugeeei-prod/vize" },
+    },
+    token: "test-token",
+    fetchImpl: async () => {
+      attempts += 1;
+      if (attempts === 1) throw new Error("temporary network failure");
+      if (attempts === 2) return new Response("temporary server failure", { status: 503 });
+      return new Response("[]", { status: 200 });
+    },
+    sleepImpl: async (delay) => {
+      delays.push(delay);
+    },
+  });
+
+  assert.equal(marker, "fix(ci): retry transient associated-pulls failures");
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [100, 200]);
+});
+
+test("associated-pulls requests do not retry non-transient failures", async () => {
+  let attempts = 0;
+
+  await assert.rejects(
+    resolveSemverChangeMarker({
+      eventName: "push",
+      event: {
+        after: "1234567890abcdef",
+        commits: [{ message: "fix(ci): no fallback" }],
+        repository: { full_name: "ubugeeei-prod/vize" },
+      },
+      token: "test-token",
+      fetchImpl: async () => {
+        attempts += 1;
+        return new Response("not found", { status: 404 });
+      },
+      sleepImpl: async () => {
+        throw new Error("non-transient failures must not sleep");
+      },
+    }),
+    /HTTP 404/,
+  );
+
+  assert.equal(attempts, 1);
+});
+
 test("pull-request marker uses event metadata without an API request", async () => {
   const marker = await resolveSemverChangeMarker({
     eventName: "pull_request",

@@ -20,26 +20,55 @@ function pushCommitMarker(event) {
     messages.push(headMessage);
   }
   if (messages.length === 0) {
+    if (event.deleted === true) return "";
     throw new Error("Push event contains no commit message for the SemVer fallback");
   }
   return messages.join("\n");
 }
 
-async function mergedPullRequestForCommit({ apiUrl, fetchImpl, repository, sha, token }) {
+const retryDelays = [100, 200];
+
+async function fetchAssociatedPullRequests({ fetchImpl, init, sleepImpl, url }) {
+  for (let attempt = 0; ; attempt += 1) {
+    let response;
+    try {
+      response = await fetchImpl(url, init);
+    } catch (error) {
+      if (attempt === retryDelays.length) throw error;
+      await sleepImpl(retryDelays[attempt]);
+      continue;
+    }
+    const transient = response.status >= 500 && response.status < 600;
+    if (!transient || attempt === retryDelays.length) return response;
+    await sleepImpl(retryDelays[attempt]);
+  }
+}
+
+async function mergedPullRequestForCommit({
+  apiUrl,
+  fetchImpl,
+  repository,
+  sha,
+  sleepImpl,
+  token,
+}) {
+  if (typeof sha === "string" && /^0+$/.test(sha)) return null;
   if (!repository || !sha || !token) {
     throw new Error("GITHUB_REPOSITORY, GITHUB_SHA, and GITHUB_TOKEN are required for push events");
   }
   const encodedRepository = repository.split("/").map(encodeURIComponent).join("/");
-  const response = await fetchImpl(
-    `${apiUrl}/repos/${encodedRepository}/commits/${encodeURIComponent(sha)}/pulls`,
-    {
+  const response = await fetchAssociatedPullRequests({
+    fetchImpl,
+    init: {
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${token}`,
         "X-GitHub-Api-Version": "2022-11-28",
       },
     },
-  );
+    sleepImpl,
+    url: `${apiUrl}/repos/${encodedRepository}/commits/${encodeURIComponent(sha)}/pulls`,
+  });
   if (!response.ok) {
     throw new Error(`GitHub associated-pulls request failed with HTTP ${response.status}`);
   }
@@ -63,6 +92,7 @@ export async function resolveSemverChangeMarker({
   fetchImpl = globalThis.fetch,
   repository,
   sha,
+  sleepImpl = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),
   token,
 }) {
   if (eventName === "pull_request") {
@@ -77,6 +107,7 @@ export async function resolveSemverChangeMarker({
     fetchImpl,
     repository: repository || event.repository?.full_name,
     sha: sha || event.after,
+    sleepImpl,
     token,
   });
   return pullRequest ? pullRequestMarker(pullRequest) : pushCommitMarker(event);
