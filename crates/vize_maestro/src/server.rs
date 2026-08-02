@@ -3,12 +3,11 @@
 //! This module contains the core LSP server using tower-lsp.
 
 use std::{
-    sync::Arc,
+    future::Future,
     task::{Context, Poll},
 };
 
-use futures::{FutureExt, channel::oneshot, future::BoxFuture};
-use parking_lot::Mutex;
+use futures::{FutureExt, StreamExt, channel::mpsc, future::BoxFuture};
 use tower::Service;
 use tower_lsp::jsonrpc::{Request, Response};
 
@@ -71,18 +70,16 @@ pub(crate) fn build_lsp_service() -> (LspService<MaestroServer>, ClientSocket) {
 /// deadlock with its client.
 pub(crate) struct ExitAwareService<S> {
     inner: S,
-    exit_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
+    exit_sender: mpsc::UnboundedSender<()>,
 }
 
-pub(crate) fn with_exit_signal<S>(inner: S) -> (ExitAwareService<S>, oneshot::Receiver<()>) {
-    let (exit_sender, exit_receiver) = oneshot::channel();
-    (
-        ExitAwareService {
-            inner,
-            exit_sender: Arc::new(Mutex::new(Some(exit_sender))),
-        },
-        exit_receiver,
-    )
+pub(crate) fn with_exit_signal<S>(
+    inner: S,
+) -> (ExitAwareService<S>, impl Future<Output = ()> + Send) {
+    let (exit_sender, mut exit_receiver) = mpsc::unbounded();
+    (ExitAwareService { inner, exit_sender }, async move {
+        let _ = exit_receiver.next().await;
+    })
 }
 
 impl<S> Service<Request> for ExitAwareService<S>
@@ -102,12 +99,12 @@ where
     fn call(&mut self, request: Request) -> Self::Future {
         let is_exit = request.method() == "exit";
         let response = self.inner.call(request);
-        let exit_sender = Arc::clone(&self.exit_sender);
+        let exit_sender = self.exit_sender.clone();
 
         async move {
             let result = response.await;
-            if is_exit && let Some(sender) = exit_sender.lock().take() {
-                let _ = sender.send(());
+            if is_exit {
+                let _ = exit_sender.unbounded_send(());
             }
             result
         }
