@@ -40,6 +40,7 @@ pub struct Lowerer<'a, 'm, 's> {
     compat: JsxCompatMode,
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
+    custom_element_spans: std::vec::Vec<(u32, u32)>,
     transform_on_helper: Option<String>,
     babel_vdom_compat_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
@@ -70,6 +71,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             compat,
             is_custom_element,
             scoping,
+            custom_element_spans: std::vec::Vec::new(),
             transform_on_helper: transform_on_helper.map(String::from),
             babel_vdom_compat_active: false,
             diagnostics: std::vec::Vec::new(),
@@ -115,6 +117,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Consume the lowerer and return its diagnostics.
     pub fn into_diagnostics(self) -> std::vec::Vec<JsxDiagnostic> {
         self.diagnostics
+    }
+
+    pub(crate) fn into_compat_parts(
+        self,
+    ) -> (std::vec::Vec<JsxDiagnostic>, std::vec::Vec<(u32, u32)>) {
+        (self.diagnostics, self.custom_element_spans)
     }
 
     /// Record a diagnostic.

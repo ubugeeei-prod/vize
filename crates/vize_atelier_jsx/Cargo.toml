@@ -11,12 +11,9 @@ metadata.vize.stability = "compatibility-preview"
 [dependencies]
 # Internal crates
 vize_carton = { workspace = true }
-# `_custom_elements` carries the lowerer's Babel `isCustomElement` verdict on
-# the AST so the element transform keeps a matching tag as an intrinsic element
-# instead of resolving it as a component.
-vize_relief = { workspace = true, features = ["_custom_elements"] }
+vize_relief = { workspace = true }
 vize_croquis = { workspace = true }
-vize_atelier_core = { workspace = true, features = ["_custom_elements"] }
+vize_atelier_core = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 # Reused for the first-cut JSX Vapor SSR render path (#1533): the lowered
 # RootNode is the same `vize_relief` type the SSR codegen consumes, so the

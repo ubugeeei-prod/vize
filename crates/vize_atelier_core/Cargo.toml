@@ -16,15 +16,6 @@ metadata.vize.stability = "alpha-supported"
 # (`vize_relief`) and dialect-capability (`vize_armature`) crates.
 legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 
-# Honor an upstream front end's own custom-element classification
-# (`ElementNode::is_custom_element`) instead of promoting the tag to a
-# component. Enabled by `vize_atelier_jsx`, whose lowerer resolves Babel's
-# `isCustomElement` option; the template pipeline classifies custom elements in
-# the parser and never needs it. Underscore-prefixed like the relief feature it
-# forwards to, so `cargo-semver-checks`' feature heuristic keeps the re-exported
-# AST surface byte-identical.
-_custom_elements = ["vize_relief/_custom_elements"]
-
 [dependencies]
 vize_carton = { workspace = true }
 vize_croquis = { workspace = true }

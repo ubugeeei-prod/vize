@@ -50,7 +50,7 @@ impl<'a> TransformContext<'a> {
             in_ssr: ssr,
             errors: std::vec::Vec::new(),
             template_syntax_quirks,
-            allow_static_v_model_arg_on_element: false,
+            jsx_compat: super::JsxTransformCompat::default(),
             node_removed: false,
             analysis: None,
             hoisted_scope_id: None,

@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 
+import { configureBundledCorsaRuntime } from "./corsa-runtime.js";
 import { runInitCli } from "./init.js";
 import { runSetupCli } from "./setup.js";
 
@@ -20,6 +21,7 @@ try {
     // land in the same reporter as the synchronous commands.
     runInitCli(args.slice(1)).catch(fail);
   } else {
+    configureBundledCorsaRuntime();
     const native = require("@vizejs/native") as typeof import("@vizejs/native");
     native.runCli(args);
   }

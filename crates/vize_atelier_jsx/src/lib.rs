@@ -178,6 +178,7 @@ pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOut
         None,
         None,
     )
+    .0
 }
 
 /// Lower a module with project-level compatibility semantics.
@@ -193,7 +194,7 @@ fn lower_source_with_compat<'a>(
     default_mode: JsxOutputMode,
     transform_on_helper: Option<&str>,
     is_custom_element: Option<&BabelIsCustomElement>,
-) -> LowerOutput<'a> {
+) -> (LowerOutput<'a>, std::vec::Vec<(u32, u32)>) {
     let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
@@ -217,9 +218,13 @@ fn lower_source_with_compat<'a>(
     }
     let roots = finder::lower_program_roots(&parsed.program, &mut lowerer, default_mode);
     let analysis = analyze::analyze_program(&parsed.program, source);
-    LowerOutput {
-        roots,
-        analysis,
-        diagnostics: lowerer.into_diagnostics(),
-    }
+    let (diagnostics, custom_element_spans) = lowerer.into_compat_parts();
+    (
+        LowerOutput {
+            roots,
+            analysis,
+            diagnostics,
+        },
+        custom_element_spans,
+    )
 }
