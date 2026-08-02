@@ -176,26 +176,26 @@ Recorded so the verdicts are not read as byte equality (#3421,
 
 ## Directives
 
-| Case                                       | Babel                                                          | Vize today                                                      | Compat mode             | Verdict |
-| ------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------- | ------- |
-| `directives/v_model_input`                 | `withDirectives(…, [[vModelText, val]])`                       | same                                                            | no change               | ✅      |
+| Case                                       | Babel                                                          | Vize today                                                      | Compat mode                                   | Verdict |
+| ------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------- | ------- |
+| `directives/v_model_input`                 | `withDirectives(…, [[vModelText, val]])`                       | same                                                            | no change                                     | ✅      |
 | `directives/v_model_arg`                   | `[[vModelText, val, "foo"]]` + `onUpdate:foo`                  | rejected outside Babel VDOM compatibility mode                  | accepts and passes the arg in Babel VDOM mode | ✅      |
-| `directives/v_model_modifier_array`        | `[[vModelText, val, void 0, {trim: true}]]`                    | same                                                            | no change               | ✅      |
-| `directives/v_model_underscore`            | `{lazy: true}` modifiers                                       | same                                                            | no change               | ✅      |
-| `directives/v_model_arg_underscore`        | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected outside Babel VDOM compatibility mode                  | accepts arg and modifiers in Babel VDOM mode | ✅      |
-| `directives/v_model_component`             | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change               | ✅      |
-| `directives/v_model_component_arg_mods`    | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change               | ✅      |
-| `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                            | rejected: dynamic arguments need computed prop lowering (#3466) | add computed prop IR    | ❌      |
-| `directives/v_models`                      | expands to one prop pair per entry                             | same, via one `model` directive per entry (#3418)               | no change               | ✅      |
-| `directives/v_models_mods`                 | adds `<arg>Modifiers` per entry                                | same props, different literal order (#3418)                     | no change               | ✅      |
-| `directives/v_show_element`                | `[[vShow, vis]]`                                               | same                                                            | no change               | ✅      |
-| `directives/v_show_component`              | `[[vShow, vis]]` on the component vnode                        | same                                                            | no change               | ✅      |
-| `directives/v_html`                        | `{innerHTML: h}`                                               | same                                                            | no change               | ✅      |
-| `directives/v_html_with_children`          | keeps the children too                                         | same                                                            | no change               | ✅      |
-| `directives/v_text`                        | `{textContent: t}` raw                                         | `textContent: toDisplayString(t)`                               | raw in compat mode      | ✅      |
-| `directives/v_custom_arg`                  | `[[resolveDirective("custom"), val, "arg"]]`                   | same                                                            | no change               | ✅      |
-| `directives/v_custom_array`                | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | same (#3421)                                                    | no change               | ✅      |
-| `directives/v_dashed_custom`               | `resolveDirective("unknown-thing")`                            | same                                                            | no change               | ✅      |
+| `directives/v_model_modifier_array`        | `[[vModelText, val, void 0, {trim: true}]]`                    | same                                                            | no change                                     | ✅      |
+| `directives/v_model_underscore`            | `{lazy: true}` modifiers                                       | same                                                            | no change                                     | ✅      |
+| `directives/v_model_arg_underscore`        | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected outside Babel VDOM compatibility mode                  | accepts arg and modifiers in Babel VDOM mode  | ✅      |
+| `directives/v_model_component`             | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change                                     | ✅      |
+| `directives/v_model_component_arg_mods`    | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change                                     | ✅      |
+| `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                            | rejected: dynamic arguments need computed prop lowering (#3466) | add computed prop IR                          | ❌      |
+| `directives/v_models`                      | expands to one prop pair per entry                             | same, via one `model` directive per entry (#3418)               | no change                                     | ✅      |
+| `directives/v_models_mods`                 | adds `<arg>Modifiers` per entry                                | same props, different literal order (#3418)                     | no change                                     | ✅      |
+| `directives/v_show_element`                | `[[vShow, vis]]`                                               | same                                                            | no change                                     | ✅      |
+| `directives/v_show_component`              | `[[vShow, vis]]` on the component vnode                        | same                                                            | no change                                     | ✅      |
+| `directives/v_html`                        | `{innerHTML: h}`                                               | same                                                            | no change                                     | ✅      |
+| `directives/v_html_with_children`          | keeps the children too                                         | same                                                            | no change                                     | ✅      |
+| `directives/v_text`                        | `{textContent: t}` raw                                         | `textContent: toDisplayString(t)`                               | raw in compat mode                            | ✅      |
+| `directives/v_custom_arg`                  | `[[resolveDirective("custom"), val, "arg"]]`                   | same                                                            | no change                                     | ✅      |
+| `directives/v_custom_array`                | unpacks `[val, 'arg', ['a','b']]` into value / arg / modifiers | same (#3421)                                                    | no change                                     | ✅      |
+| `directives/v_dashed_custom`               | `resolveDirective("unknown-thing")`                            | same                                                            | no change                                     | ✅      |
 
 ### `v-models` spellings Vize rejects and babel accepts
 
