@@ -17,6 +17,9 @@ use crate::commands::check::tsconfig_inputs::{
     parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig,
 };
 
+#[cfg(test)]
+mod legacy_options_tests;
+
 pub(super) fn resolve_checker_tsconfig_path(
     program_tsconfig_path: Option<&Path>,
     project_root: &Path,
@@ -75,6 +78,15 @@ pub(super) fn write_nuxt_fallback_tsconfig(
 
     let mut compiler_options = Map::new();
     compiler_options.insert("paths".into(), Value::Object(paths));
+    if program_tsconfig_path.is_some() {
+        // Nuxt 2 and Bridge projects commonly remain on TypeScript 5 configs
+        // that require `baseUrl` and legacy Node resolution. This wrapper is
+        // Vize's compatibility layer, so acknowledge TypeScript 6 deprecations
+        // here instead of letting the native TypeScript 7 option probe turn
+        // them into errors on this generated file. Unrelated config errors are
+        // still reported by the probe.
+        compiler_options.insert("ignoreDeprecations".into(), Value::String("6.0".into()));
+    }
 
     let mut config = Map::new();
     if let Some(tsconfig_path) = program_tsconfig_path {

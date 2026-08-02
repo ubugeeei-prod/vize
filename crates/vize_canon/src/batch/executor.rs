@@ -32,6 +32,7 @@ mod option_probe;
 mod session;
 
 use cli::{auto_server_count, check_with_cli, check_with_cli_sharded};
+use diagnostics::dedup_diagnostics;
 use fallback::{FallbackStep, warn_fallback};
 use session::IncrementalSessionState;
 #[cfg(test)]
@@ -100,6 +101,7 @@ impl CorsaExecutor {
             result.exit_code = result.exit_code.max(1);
         }
         result.diagnostics.extend(options);
+        result.diagnostics = dedup_diagnostics(result.diagnostics);
         Ok(result)
     }
 
