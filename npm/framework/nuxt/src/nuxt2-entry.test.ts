@@ -7,6 +7,7 @@ import path from "node:path";
 import test from "node:test";
 
 const NUXT2_SAFE_KIT_VERSION = "3.11.2";
+const SUBPROCESS_TIMEOUT_MS = 120_000;
 
 void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM entry", async () => {
   const packageRoot = new URL("..", import.meta.url);
@@ -16,6 +17,7 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
     execFileSync("pnpm", ["pack", "--pack-destination", packDir], {
       cwd: packageRoot,
       stdio: "pipe",
+      timeout: SUBPROCESS_TIMEOUT_MS,
     });
 
     const tarballs = fs.readdirSync(packDir).filter((name) => name.endsWith(".tgz"));
@@ -25,6 +27,7 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
     const packedPackageJson = JSON.parse(
       execFileSync("tar", ["-xOf", tarball, "package/package.json"], {
         encoding: "utf8",
+        timeout: SUBPROCESS_TIMEOUT_MS,
       }),
     ) as {
       dependencies?: Record<string, string>;
@@ -35,16 +38,12 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
     const packedKitVersion = packedPackageJson.dependencies?.["@nuxt/kit"];
 
     assert.equal(packedKitVersion, NUXT2_SAFE_KIT_VERSION);
-    assert.ok(
-      !packedKitVersion?.startsWith("4."),
-      "Nuxt 2 must not load @nuxt/kit 4.x through @vizejs/nuxt",
-    );
     assert.equal(packedPackageJson.main, "./dist/nuxt2-entry.cjs");
     assert.equal(packedPackageJson.module, "./dist/index.mjs");
     assert.equal(packedPackageJson.exports?.["."]?.require, "./dist/nuxt2-entry.cjs");
     assert.equal(packedPackageJson.exports?.["."]?.import, "./dist/index.mjs");
 
-    execFileSync("tar", ["-xf", tarball, "-C", packDir]);
+    execFileSync("tar", ["-xf", tarball, "-C", packDir], { timeout: SUBPROCESS_TIMEOUT_MS });
     const fixtureRoot = packDir;
     const fixtureModules = path.join(fixtureRoot, "node_modules");
     const packageDir = path.join(packDir, "package");
@@ -159,6 +158,9 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
     assert.deepEqual(hookNames, ["close", "builder:prepared", "build:templates"]);
     assert.equal((globalThis as Record<string, unknown>)[viteLoadMarker], 1);
 
+    // The probe runs in a fresh child process, so the parent marker above does not carry over:
+    // viteLoads: 1 asserts the ESM entry loads Vite eagerly at import time, without invoking the
+    // module, in contrast with the CJS entry which loads no Vite until the handler runs.
     const esmProbe = JSON.parse(
       execFileSync(
         process.execPath,
@@ -173,7 +175,7 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
             "}));",
           ].join("\n"),
         ],
-        { cwd: fixtureRoot, encoding: "utf8" },
+        { cwd: fixtureRoot, encoding: "utf8", timeout: SUBPROCESS_TIMEOUT_MS },
       ),
     ) as { type?: string; viteLoads?: number };
     assert.deepEqual(esmProbe, { type: "function", viteLoads: 1 });

@@ -54,3 +54,4 @@ const vizeNuxtModule = Object.assign(
 );
 
 module.exports = vizeNuxtModule;
+module.exports.default = vizeNuxtModule;
