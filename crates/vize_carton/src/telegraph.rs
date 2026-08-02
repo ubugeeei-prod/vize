@@ -69,7 +69,7 @@ impl<Message, Output> Telegraph<Message, Output> {
 
     /// Number of registered emitters.
     pub fn len(&self) -> usize {
-        self.emitters.len()
+            self.emitters.len()
     }
 
     /// Whether no emitters are registered.
