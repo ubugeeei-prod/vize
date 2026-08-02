@@ -12,7 +12,7 @@
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
 use vize_atelier_core::codegen::generate_with_vnode_factory_and_merge_props;
-use vize_atelier_core::lane::{transform, transform_with_plain_element_model_argument};
+use vize_atelier_core::lane::transform_with_jsx_compatibility;
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // `CodegenMode::Module` is the only supported JSX target: JSX/TSX is authored
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
@@ -81,6 +81,7 @@ pub(crate) struct VdomCompatOptions<'a> {
     pub vnode_factory: Option<&'a str>,
     pub merge_props: bool,
     pub allow_static_v_model_arg_on_element: bool,
+    pub custom_element_spans: &'a [(u32, u32)],
 }
 
 impl Default for VdomCompatOptions<'_> {
@@ -90,6 +91,7 @@ impl Default for VdomCompatOptions<'_> {
             vnode_factory: None,
             merge_props: true,
             allow_static_v_model_arg_on_element: false,
+            custom_element_spans: &[],
         }
     }
 }
@@ -175,11 +177,14 @@ pub(crate) fn compile_root_to_vdom(
         binding_metadata: None,
         ..Default::default()
     };
-    let errors = if compat.allow_static_v_model_arg_on_element {
-        transform_with_plain_element_model_argument(bump, &mut root, transform_opts, Some(analysis))
-    } else {
-        transform(bump, &mut root, transform_opts, Some(analysis))
-    };
+    let errors = transform_with_jsx_compatibility(
+        bump,
+        &mut root,
+        transform_opts,
+        Some(analysis),
+        compat.allow_static_v_model_arg_on_element,
+        compat.custom_element_spans,
+    );
     diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
 
     let codegen_opts = CodegenOptions {

@@ -41,7 +41,10 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         let loc = self.mapper().location(element.span);
         let mut node = ElementNode::new(self.bump(), tag, loc);
         let is_custom_element = custom_element_tag.is_some();
-        node.is_custom_element = is_custom_element && !bound_custom_element;
+        if is_custom_element && !bound_custom_element {
+            self.custom_element_spans
+                .push((element.span.start, element.span.end));
+        }
         node.tag_type = element_type(
             &opening.name,
             self.uses_babel_compat(),

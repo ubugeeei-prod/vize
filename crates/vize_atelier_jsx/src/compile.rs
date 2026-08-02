@@ -250,7 +250,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     } else {
         None
     };
-    let lowered = lower_source_with_compat(
+    let (lowered, custom_element_spans) = lower_source_with_compat(
         bump,
         source,
         lang,
@@ -320,6 +320,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                         vnode_factory,
                         merge_props,
                         allow_static_v_model_arg_on_element: config.compat.is_babel(),
+                        custom_element_spans: &custom_element_spans,
                     },
                     &mut diagnostics,
                 )),

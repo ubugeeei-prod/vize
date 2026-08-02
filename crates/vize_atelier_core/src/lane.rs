@@ -16,7 +16,7 @@ mod structural_keys;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
 
-use vize_carton::{Box, Bump, SmallVec, String, Vec, profile};
+use vize_carton::{Box, Bump, FxHashSet, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::errors::CompilerError;
@@ -31,7 +31,8 @@ use traverse::traverse_children;
 
 #[allow(deprecated)]
 pub use extensions::{
-    transform_with_hoisted_scope_id, transform_with_plain_element_model_argument,
+    transform_with_hoisted_scope_id, transform_with_jsx_compatibility,
+    transform_with_plain_element_model_argument,
     transform_with_template_syntax_quirks_and_hoisted_scope_id,
     transform_with_vue_parser_quirks_and_hoisted_scope_id,
 };
@@ -64,6 +65,12 @@ pub struct DirectiveTransformResult<'a> {
 /// Structural directive transform (v-if, v-for)
 pub type StructuralDirectiveTransform<'a> =
     fn(&mut TransformContext<'a>, &mut ElementNode<'a>, &DirectiveNode<'a>) -> Option<ExitFn<'a>>;
+
+#[derive(Default)]
+pub(crate) struct JsxTransformCompat {
+    pub allow_static_v_model_arg_on_element: bool,
+    pub custom_element_spans: FxHashSet<(u32, u32)>,
+}
 
 /// Transform context for AST traversal
 pub struct TransformContext<'a> {
@@ -112,13 +119,21 @@ pub struct TransformContext<'a> {
     pub errors: std::vec::Vec<CompilerError>,
     /// Enables compatibility for template syntax edge-case behavior.
     pub(crate) template_syntax_quirks: bool,
-    pub(crate) allow_static_v_model_arg_on_element: bool,
+    pub(crate) jsx_compat: JsxTransformCompat,
     /// Node was removed flag
     pub(crate) node_removed: bool,
     /// Semantic analysis summary (optional, for enhanced transforms)
     pub(crate) analysis: Option<&'a Croquis>,
     /// Scope ID to bake into static VNodes hoisted outside render scope.
     pub(crate) hoisted_scope_id: Option<String>,
+}
+
+impl TransformContext<'_> {
+    pub(crate) fn is_jsx_custom_element(&self, el: &ElementNode<'_>) -> bool {
+        self.jsx_compat
+            .custom_element_spans
+            .contains(&(el.loc.start.offset, el.loc.end.offset))
+    }
 }
 
 /// Enum for parent node types
@@ -178,7 +193,15 @@ pub fn transform<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, false, None, false)
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        false,
+        None,
+        JsxTransformCompat::default(),
+    )
 }
 
 /// Transform the root AST node with template syntax quirk compatibility enabled.
@@ -188,7 +211,15 @@ pub fn transform_with_template_syntax_quirks<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, true, None, false)
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        true,
+        None,
+        JsxTransformCompat::default(),
+    )
 }
 
 /// Transform the root AST node with Vue parser quirk compatibility enabled.
@@ -209,7 +240,7 @@ pub(crate) fn transform_inner<'a>(
     analysis: Option<&'a Croquis>,
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
-    allow_static_v_model_arg_on_element: bool,
+    jsx_compat: JsxTransformCompat,
 ) -> std::vec::Vec<CompilerError> {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
@@ -228,7 +259,7 @@ pub(crate) fn transform_inner<'a>(
             template_syntax_quirks,
         )
     };
-    ctx.allow_static_v_model_arg_on_element = allow_static_v_model_arg_on_element;
+    ctx.jsx_compat = jsx_compat;
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.root = Some(root as *mut _);
 

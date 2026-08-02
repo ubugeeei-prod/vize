@@ -74,7 +74,7 @@ fn maybe_promote_element_to_component(
     ctx: &TransformContext<'_>,
     el: &mut Box<'_, ElementNode<'_>>,
 ) {
-    if el.tag_type != ElementType::Element || el.is_custom_element {
+    if el.tag_type != ElementType::Element || ctx.is_jsx_custom_element(el) {
         return;
     }
 
@@ -309,7 +309,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
 
             if !is_component
                 && !supports_plain_element_model_argument(
-                    ctx.allow_static_v_model_arg_on_element,
+                    ctx.jsx_compat.allow_static_v_model_arg_on_element,
                     dir.arg.as_ref(),
                 )
             {

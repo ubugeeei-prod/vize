@@ -121,6 +121,15 @@ fn lexical_bindings_win_before_a_matching_predicate() {
         assert!(!module.contains("_resolveComponent(\"MyEl\")"), "{module}");
         assert!(!module.contains("_createElementBlock(\"MyEl\""), "{module}");
     }
+
+    let source = "const A = () => <MyEl/>; const B = (MyEl) => <MyEl/>;";
+    let (module, diagnostics) = compile(source, &babel_vdom(), Some(&is_custom_element));
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+    assert!(module.contains("_createElementBlock(\"MyEl\""), "{module}");
+    assert!(
+        module.contains("_resolveDynamicComponent(MyEl)"),
+        "{module}"
+    );
 }
 
 #[test]
