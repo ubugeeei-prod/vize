@@ -22,11 +22,13 @@ mod v_slots;
 
 pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
 
-use oxc_ast::ast::{JSXElement, JSXFragment};
+use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
+use oxc_semantic::Scoping;
 use oxc_span::Span;
 use vize_carton::{Box, Bump, String, ToCompactString};
 use vize_relief::{RootNode, TemplateChildNode};
 
+use crate::BabelIsCustomElement;
 use crate::compat::JsxCompatMode;
 use crate::diagnostics::JsxDiagnostic;
 use crate::span::SpanMapper;
@@ -36,6 +38,8 @@ pub struct Lowerer<'a, 'm, 's> {
     bump: &'a Bump,
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
+    is_custom_element: Option<&'m BabelIsCustomElement>,
+    scoping: Option<Scoping>,
     transform_on_helper: Option<String>,
     babel_vdom_compat_active: bool,
     diagnostics: std::vec::Vec<JsxDiagnostic>,
@@ -48,7 +52,7 @@ pub struct Lowerer<'a, 'm, 's> {
 impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Build a lowerer that allocates IR in `bump` and maps spans via `mapper`.
     pub fn new(bump: &'a Bump, mapper: &'m SpanMapper<'s>) -> Self {
-        Self::with_compat(bump, mapper, JsxCompatMode::Native, None)
+        Self::with_compat(bump, mapper, JsxCompatMode::Native, None, None, None)
     }
 
     /// Build a lowerer using the requested project-level JSX semantics.
@@ -57,11 +61,15 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         mapper: &'m SpanMapper<'s>,
         compat: JsxCompatMode,
         transform_on_helper: Option<&str>,
+        is_custom_element: Option<&'m BabelIsCustomElement>,
+        scoping: Option<Scoping>,
     ) -> Self {
         Self {
             bump,
             mapper,
             compat,
+            is_custom_element,
+            scoping,
             transform_on_helper: transform_on_helper.map(String::from),
             babel_vdom_compat_active: false,
             diagnostics: std::vec::Vec::new(),
@@ -175,6 +183,28 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// Select whether the current render root may use VDOM-only Babel options.
     pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
         self.babel_vdom_compat_active = mode == crate::JsxOutputMode::Vdom;
+    }
+
+    /// Whether Babel's `isCustomElement` predicate selects this JSX tag.
+    pub(crate) fn is_babel_custom_element(&self, tag: &str) -> bool {
+        tag != "Fragment"
+            && self.uses_babel_vdom_compat()
+            && self
+                .is_custom_element
+                .is_some_and(|predicate| predicate(tag))
+    }
+
+    /// Whether an authored JSX identifier resolves to a lexical JavaScript binding.
+    pub(crate) fn is_bound_jsx_identifier(&self, name: &JSXElementName<'_>) -> bool {
+        let JSXElementName::IdentifierReference(reference) = name else {
+            return false;
+        };
+        let Some(reference_id) = reference.reference_id.get() else {
+            return false;
+        };
+        self.scoping
+            .as_ref()
+            .is_some_and(|scoping| scoping.has_binding(reference_id))
     }
 
     /// Collision-free helper binding for Babel's opt-in `transformOn` lowering.

@@ -3,9 +3,77 @@ use vize_carton::{Bump, String};
 
 use super::{
     BabelJsxOptions, JsxCompileConfig, JsxCompileOutput,
-    compile_jsx_with_babel_pragma_and_merge_props,
+    compile_jsx_with_babel_customizations_inner,
 };
 use crate::{JsxDiagnostic, JsxLang};
+
+/// Thread-safe predicate matching Babel's `isCustomElement` option.
+pub type BabelIsCustomElement = dyn Fn(&str) -> bool + Send + Sync;
+
+/// Additive Babel options that carry borrowed values or must compose together.
+#[derive(Clone, Copy)]
+pub struct BabelJsxCustomizations<'a> {
+    /// Optional vnode factory supplied by Babel's `pragma` option.
+    pub pragma: Option<&'a str>,
+    /// Whether prop segments are combined through Vue's `mergeProps` helper.
+    pub merge_props: bool,
+    /// Project-specific custom-element classifier.
+    pub is_custom_element: Option<&'a BabelIsCustomElement>,
+}
+
+impl Default for BabelJsxCustomizations<'_> {
+    fn default() -> Self {
+        Self {
+            pragma: None,
+            merge_props: true,
+            is_custom_element: None,
+        }
+    }
+}
+
+/// Compile JSX/TSX with every additive Babel customization combined.
+pub fn compile_jsx_with_babel_customizations(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    customizations: BabelJsxCustomizations<'_>,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_customizations_inner(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        customizations,
+    )
+}
+
+/// Compile with the additive Babel `pragma` and `mergeProps` options combined.
+#[doc(hidden)]
+pub fn compile_jsx_with_babel_pragma_and_merge_props(
+    bump: &Bump,
+    source: &str,
+    lang: JsxLang,
+    config: &JsxCompileConfig,
+    babel_options: &BabelJsxOptions,
+    pragma: Option<&str>,
+    merge_props: bool,
+) -> JsxCompileOutput {
+    compile_jsx_with_babel_customizations(
+        bump,
+        source,
+        lang,
+        config,
+        babel_options,
+        BabelJsxCustomizations {
+            pragma,
+            merge_props,
+            is_custom_element: None,
+        },
+    )
+}
 
 /// Compile JSX/TSX with explicit `@vue/babel-plugin-jsx` option compatibility.
 pub fn compile_jsx_with_babel_options(
@@ -15,14 +83,13 @@ pub fn compile_jsx_with_babel_options(
     config: &JsxCompileConfig,
     babel_options: &BabelJsxOptions,
 ) -> JsxCompileOutput {
-    compile_jsx_with_babel_pragma_and_merge_props(
+    compile_jsx_with_babel_customizations(
         bump,
         source,
         lang,
         config,
         babel_options,
-        None,
-        true,
+        BabelJsxCustomizations::default(),
     )
 }
 
@@ -35,14 +102,16 @@ pub fn compile_jsx_with_babel_pragma(
     babel_options: &BabelJsxOptions,
     pragma: Option<&str>,
 ) -> JsxCompileOutput {
-    compile_jsx_with_babel_pragma_and_merge_props(
+    compile_jsx_with_babel_customizations(
         bump,
         source,
         lang,
         config,
         babel_options,
-        pragma,
-        true,
+        BabelJsxCustomizations {
+            pragma,
+            ..Default::default()
+        },
     )
 }
 
@@ -55,14 +124,16 @@ pub fn compile_jsx_with_babel_merge_props(
     babel_options: &BabelJsxOptions,
     merge_props: bool,
 ) -> JsxCompileOutput {
-    compile_jsx_with_babel_pragma_and_merge_props(
+    compile_jsx_with_babel_customizations(
         bump,
         source,
         lang,
         config,
         babel_options,
-        None,
-        merge_props,
+        BabelJsxCustomizations {
+            merge_props,
+            ..Default::default()
+        },
     )
 }
 

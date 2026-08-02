@@ -38,6 +38,17 @@ pub(crate) fn element_tag(name: &JSXElementName<'_>) -> String {
     }
 }
 
+/// The authored name of an unqualified JSX identifier.
+pub(crate) fn identifier_name<'n>(name: &'n JSXElementName<'_>) -> Option<&'n str> {
+    match name {
+        JSXElementName::Identifier(id) => Some(id.name.as_str()),
+        JSXElementName::IdentifierReference(reference) => Some(reference.name.as_str()),
+        JSXElementName::NamespacedName(_)
+        | JSXElementName::MemberExpression(_)
+        | JSXElementName::ThisExpression(_) => None,
+    }
+}
+
 /// Whether a JSX element name refers to a component rather than an intrinsic
 /// (HTML/SVG) element.
 ///

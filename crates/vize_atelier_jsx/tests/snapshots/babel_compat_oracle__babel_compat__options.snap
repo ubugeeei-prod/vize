@@ -125,7 +125,7 @@ export function render(_ctx, _cache) {
 
 ## options/is_custom_element_fn
 ### verdict
-divergent: no isCustomElement option
+equivalent
 ### source (jsx)
 const A = () => <MyEl foo={1}/>;
 ### babel options
@@ -136,11 +136,9 @@ const A = () => _createVNode("MyEl", {
   "foo": 1
 }, null);
 ### vize (vdom, babel compat)
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  const _component_MyEl = _resolveComponent("MyEl")
-
-  return (_openBlock(), _createBlock(_component_MyEl, { foo: 1 }))
+  return (_openBlock(), _createElementBlock("MyEl", { foo: 1 }))
 }
 
 ## options/object_slots_default

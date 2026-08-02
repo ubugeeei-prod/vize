@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   91 |
-| divergent  |    5 |
+| equivalent |   92 |
+| divergent  |    4 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -99,11 +99,15 @@ deliberate answer, recorded here so it is not relitigated.
 | `options/merge_props_default`       | `mergeProps({class:"a"}, p, {class:c})`             | same                                         | no change                                            | ✅      |
 | `options/merge_props_false`         | one object literal with a duplicate key             | always merges via `mergeProps`               | object spread + duplicate-key semantics (#3391)      | ✅      |
 | `options/is_custom_element_default` | `<my-el/>` → `resolveComponent("my-el")`            | same                                         | no change                                            | ✅      |
-| `options/is_custom_element_fn`      | matching tag becomes a string tag                   | always resolved as a component               | add `isCustomElement`                                | ❌      |
+| `options/is_custom_element_fn`      | matching tag becomes a string tag                   | predicate-selected tag uses element lowering | additive `isCustomElement` predicate API             | ✅      |
 | `options/object_slots_default`      | `_isSlot(slots) ? slots : {default: () => [slots]}` | `toDisplayString(slots)` in the default slot | treat a lone expression child as a slot object       | ❌      |
 | `options/object_slots_false`        | `{default: () => [slots]}`                          | `toDisplayString(slots)` in the default slot | raw child, plus an `enableObjectSlots: false` option | ❌      |
 | `options/resolve_type_off`          | JSX replaced, types untouched                       | equivalent render output                     | no change                                            | ✅      |
 | `options/resolve_type_on`           | appends `{props: {...}, name: "A"}`                 | no type-driven inference                     | deferred: needs #1497 / #1502                        | ⏸       |
+
+`isCustomElement` accepts captured predicates and composes with `pragma`,
+`mergeProps`, and `transformOn` through `BabelJsxCustomizations`. As in Babel, a
+lexical JavaScript binding wins over conversion to a string tag.
 
 ## Elements and tags
 

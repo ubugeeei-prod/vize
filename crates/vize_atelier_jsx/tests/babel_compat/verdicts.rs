@@ -18,10 +18,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("options/merge_props_default", Same),
     ("options/merge_props_false", Same),
     ("options/is_custom_element_default", Same),
-    (
-        "options/is_custom_element_fn",
-        Diff("no isCustomElement option"),
-    ),
+    ("options/is_custom_element_fn", Same),
     (
         "options/object_slots_default",
         Diff("lone expression child stringified"),

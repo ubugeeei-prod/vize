@@ -47,6 +47,7 @@ mod forwarded_slots;
 
 pub use analyze::analyze_program as analyze_jsx_program;
 
+use oxc_semantic::SemanticBuilder;
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
@@ -54,7 +55,8 @@ use vize_relief::RootNode;
 
 pub use compat::JsxCompatMode;
 pub use compile::{
-    BabelJsxOptions, JsxCompileConfig, JsxCompileOutput, JsxComponent, compile_jsx,
+    BabelIsCustomElement, BabelJsxCustomizations, BabelJsxOptions, JsxCompileConfig,
+    JsxCompileOutput, JsxComponent, compile_jsx, compile_jsx_with_babel_customizations,
     compile_jsx_with_babel_merge_props, compile_jsx_with_babel_options,
     compile_jsx_with_babel_pragma, compile_jsx_with_babel_pragma_and_merge_props, resolve_mode,
 };
@@ -174,6 +176,7 @@ pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOut
         JsxCompatMode::Native,
         JsxOutputMode::Vdom,
         None,
+        None,
     )
 }
 
@@ -189,12 +192,26 @@ fn lower_source_with_compat<'a>(
     compat: JsxCompatMode,
     default_mode: JsxOutputMode,
     transform_on_helper: Option<&str>,
+    is_custom_element: Option<&BabelIsCustomElement>,
 ) -> LowerOutput<'a> {
     let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
+    let scoping = is_custom_element.map(|_| {
+        SemanticBuilder::new()
+            .build(&parsed.program)
+            .semantic
+            .into_scoping()
+    });
     let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::with_compat(bump, &mapper, compat, transform_on_helper);
+    let mut lowerer = Lowerer::with_compat(
+        bump,
+        &mapper,
+        compat,
+        transform_on_helper,
+        is_custom_element,
+        scoping,
+    );
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }

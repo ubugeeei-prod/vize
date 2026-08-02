@@ -1,7 +1,7 @@
 //! Lowering JSX elements and fragments into [`ElementNode`]s.
 
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
-use oxc_span::Span;
+use oxc_span::{GetSpan, Span};
 use vize_carton::{Box, String};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, PropNode};
 
@@ -23,22 +23,37 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     pub(crate) fn lower_element_node(&mut self, element: &JSXElement<'_>) -> ElementNode<'a> {
         let opening = &element.opening_element;
         self.reject_unsupported_namespace(&opening.name);
-        // A member-expression tag is a value, so it becomes the `:is` binding of
-        // a dynamic component rather than a tag string.
-        let expression_tag = name::expression_tag_span(&opening.name);
+        let custom_element_tag =
+            name::identifier_name(&opening.name).filter(|tag| self.is_babel_custom_element(tag));
+        let bound_custom_element = custom_element_tag.is_some_and(|tag| {
+            !vize_carton::is_html_tag(tag)
+                && !vize_carton::is_svg_tag(tag)
+                && self.is_bound_jsx_identifier(&opening.name)
+        });
+        // A member-expression or bound predicate match is a value, so it becomes
+        // the `:is` binding of a dynamic component rather than a tag string.
+        let expression_tag = name::expression_tag_span(&opening.name)
+            .or_else(|| bound_custom_element.then(|| opening.name.span()));
         let tag = match expression_tag {
             Some(_) => String::from(DYNAMIC_COMPONENT_TAG),
             None => name::element_tag(&opening.name),
         };
         let loc = self.mapper().location(element.span);
         let mut node = ElementNode::new(self.bump(), tag, loc);
-        node.tag_type = element_type(&opening.name, self.uses_babel_compat());
+        let is_custom_element = custom_element_tag.is_some();
+        node.is_custom_element = is_custom_element && !bound_custom_element;
+        node.tag_type = element_type(
+            &opening.name,
+            self.uses_babel_compat(),
+            is_custom_element && !bound_custom_element,
+        );
         node.is_self_closing = element.closing_element.is_none();
         // `v-models` and `v-slots` are component-only. Native mode classifies a
         // dashed lowercase tag as an intrinsic element here, but the DOM backend
         // still resolves it with `resolveComponent`; Babel compatibility
         // classifies it as a component during lowering, matching the plugin.
-        let on_component = node.tag_type == ElementType::Component || node.tag.contains('-');
+        let on_component = !is_custom_element
+            && (node.tag_type == ElementType::Component || node.tag.contains('-'));
         node.props = self.lower_attributes(&opening.attributes, on_component);
         if let Some(span) = expression_tag {
             // First, so the emitted props object reads `<component :is="…" …>`
@@ -49,7 +64,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         // Components route through slot synthesis (object/render-prop children
         // become `<template v-slot>`s); intrinsic elements lower children
         // directly.
-        node.children = if node.tag_type == ElementType::Component {
+        node.children = if node.tag_type == ElementType::Component && !is_custom_element {
             self.lower_component_children(&element.children)
         } else {
             self.lower_element_children(&element.children)
@@ -108,8 +123,12 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     }
 }
 
-fn element_type(name: &JSXElementName<'_>, babel_compat: bool) -> ElementType {
-    if name::is_component(name, babel_compat) {
+fn element_type(
+    name: &JSXElementName<'_>,
+    babel_compat: bool,
+    is_custom_element: bool,
+) -> ElementType {
+    if !is_custom_element && name::is_component(name, babel_compat) {
         ElementType::Component
     } else {
         ElementType::Element

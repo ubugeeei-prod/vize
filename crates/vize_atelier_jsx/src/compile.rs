@@ -23,8 +23,9 @@ use crate::{JsxLang, JsxOutputMode, lower_source_with_compat};
 use self::babel::{collision_free_transform_on_helper, resolve_vnode_factory};
 
 pub use self::babel::{
+    BabelIsCustomElement, BabelJsxCustomizations, compile_jsx_with_babel_customizations,
     compile_jsx_with_babel_merge_props, compile_jsx_with_babel_options,
-    compile_jsx_with_babel_pragma,
+    compile_jsx_with_babel_pragma, compile_jsx_with_babel_pragma_and_merge_props,
 };
 pub use component::JsxComponent;
 
@@ -232,21 +233,23 @@ pub fn compile_jsx(
     compile_jsx_with_babel_options(bump, source, lang, config, &BabelJsxOptions::default())
 }
 
-/// Compile with the two additive Babel options combined.
-#[doc(hidden)]
-pub fn compile_jsx_with_babel_pragma_and_merge_props(
+pub(crate) fn compile_jsx_with_babel_customizations_inner(
     bump: &Bump,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
     babel_options: &BabelJsxOptions,
-    pragma: Option<&str>,
-    merge_props: bool,
+    customizations: BabelJsxCustomizations<'_>,
 ) -> JsxCompileOutput {
     let transform_on_helper =
         (config.compat.is_babel() && babel_options.transform_on && !config.ssr)
             .then(|| collision_free_transform_on_helper(source));
-    let merge_props = !config.compat.is_babel() || config.ssr || merge_props;
+    let merge_props = !config.compat.is_babel() || config.ssr || customizations.merge_props;
+    let is_custom_element = if config.compat.is_babel() && !config.ssr {
+        customizations.is_custom_element
+    } else {
+        None
+    };
     let lowered = lower_source_with_compat(
         bump,
         source,
@@ -254,6 +257,7 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
         config.compat,
         config.default_mode,
         transform_on_helper.as_deref(),
+        is_custom_element,
     );
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
@@ -263,7 +267,7 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
             .iter()
             .any(|root| resolve_mode(root.mode, config.default_mode) == JsxOutputMode::Vdom);
     let vnode_factory = resolve_vnode_factory(
-        pragma,
+        customizations.pragma,
         config.compat.is_babel() && has_vdom_root,
         &mut diagnostics,
     );

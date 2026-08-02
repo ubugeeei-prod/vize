@@ -20,6 +20,8 @@ pub struct ElementNode<'a> {
     pub props: Vec<'a, PropNode<'a>>,
     pub children: Vec<'a, super::TemplateChildNode<'a>>,
     pub is_self_closing: bool,
+    /// Preserve an upstream compiler's explicit custom-element classification.
+    pub is_custom_element: bool,
     pub loc: SourceLocation,
     pub inner_loc: Option<SourceLocation>,
     /// If props are hoisted, this is the index into the hoists array (1-based for _hoisted_N)
@@ -35,6 +37,7 @@ impl<'a> ElementNode<'a> {
             props: Vec::new_in(allocator),
             children: Vec::new_in(allocator),
             is_self_closing: false,
+            is_custom_element: false,
             loc,
             inner_loc: None,
             hoisted_props_index: None,

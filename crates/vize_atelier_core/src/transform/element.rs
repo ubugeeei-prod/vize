@@ -74,7 +74,7 @@ fn maybe_promote_element_to_component(
     ctx: &TransformContext<'_>,
     el: &mut Box<'_, ElementNode<'_>>,
 ) {
-    if el.tag_type != ElementType::Element {
+    if el.tag_type != ElementType::Element || el.is_custom_element {
         return;
     }
 
