@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { collectVueInputPaths } from "../../../tools/fixtures/tool-matrix-inputs.mjs";
 import { isDiagnosticsForUri, offsetToPosition } from "./lsp/assertions.ts";
+import { resolvePinnedCorsaPath } from "./lsp/launch.ts";
 import type {
   LspDiagnostic,
   LspInitializationOptions,
@@ -94,7 +95,7 @@ export async function runRealProjectLspAudit(
         return Math.min(remaining, diagnosticsTimeoutMs);
       };
       const result = await exerciseLspLifecycle(
-        dependencies.createSession?.() ?? new LspSession(),
+        dependencies.createSession?.() ?? createPinnedSession(),
         fixtureDir,
         files[0] ?? null,
         remainingMs,
@@ -120,6 +121,24 @@ export async function runRealProjectLspAudit(
       `${report.summary.failedProjectCount} failed project(s)\n`,
   );
   return { evidence, report, skipped: false } as const;
+}
+
+let pinnedCorsaPath: string | null = null;
+
+/**
+ * Start a production LSP session pinned to the Corsa binary this checkout
+ * ships.
+ *
+ * One project per shard installs its own dependencies for the typecheck
+ * baseline, and a project that pins an older `@typescript/native-preview` than
+ * this checkout (misskey does) wins the server's ancestor walk with a binary
+ * whose `api` subcommand rejects the flags the bridge sends. The bridge then
+ * reports "not available", the probe never receives its TS2322, and the wait
+ * burns the diagnostics timeout instead of proving anything about vize.
+ */
+function createPinnedSession(): LspAuditSession {
+  pinnedCorsaPath ??= resolvePinnedCorsaPath();
+  return new LspSession({ env: { CORSA_PATH: pinnedCorsaPath } });
 }
 
 export async function exerciseLspLifecycle(
