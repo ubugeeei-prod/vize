@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   94 |
-| divergent  |    2 |
+| equivalent |   95 |
+| divergent  |    1 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -335,10 +335,10 @@ Compared against Vize's default, which is already fully optimized.
 A compat mode must reject what babel rejects, with a diagnostic — never silently
 accept it.
 
-| Case                              | Babel                                                           | Vize today                                                        | Compat mode    | Verdict |
-| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | -------------- | ------- |
-| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change      | ✅      |
-| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change      | ✅      |
-| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change      | ✅      |
-| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change      | ✅      |
-| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418, #3467)             | keep rejecting | ❌      |
+| Case                              | Babel                                                           | Vize today                                                        | Compat mode             | Verdict |
+| --------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------- | ------- |
+| `errors/v_model_non_lval`         | rejects a non-assignable `v-model` target                       | rejects it too, naming the offending expression (closed by #3420) | no change               | ✅      |
+| `errors/v_model_no_value`         | rejects: "You have to use JSX Expression inside your v-model"   | rejects: "v-model is missing expression."                         | no change               | ✅      |
+| `errors/v_models_not_array`       | rejects a non-array `v-models` value                            | rejects it too, naming the expected entry shape (closed by #3418) | no change               | ✅      |
+| `errors/v_models_entry_not_array` | rejects: "You should pass a Two-dimensional Arrays to v-models" | rejects it too, naming the offending entry (closed by #3418)      | no change               | ✅      |
+| `errors/v_slots_not_object`       | forwards the value as children                                  | rejects it, naming the offending value (#3418, #3467)             | forward safe primitives | ✅      |

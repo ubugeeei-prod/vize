@@ -143,8 +143,7 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     // two-dimensional array.
     ("errors/v_models_not_array", Same),
     ("errors/v_models_entry_not_array", Same),
-    (
-        "errors/v_slots_not_object",
-        Diff("non-object v-slots value rejected; babel forwards it"),
-    ),
+    // Closed by #3391: Babel VDOM mode forwards the primitive literals babel
+    // passes straight into the vnode's children argument.
+    ("errors/v_slots_not_object", Same),
 ];
