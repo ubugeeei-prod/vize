@@ -1,18 +1,18 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { collectVueInputPaths } from "../../../tools/fixtures/tool-matrix-inputs.mjs";
-import { loadPinnedShikiVueOracle } from "./shiki-vue-oracle.ts";
 import {
-  createDivergenceArtifact,
-  renderDivergenceMarkdown,
-  type ProjectArtifact,
-} from "./syntax-divergence-artifact.ts";
+  resolveCommitSha,
+  writeDivergenceEvidence,
+  writeStructuralEvidence,
+  type ProjectEvidence,
+} from "./real-project-syntax-report.ts";
+import { loadPinnedShikiVueOracle } from "./shiki-vue-oracle.ts";
+import { createDivergenceArtifact, type ProjectArtifact } from "./syntax-divergence-artifact.ts";
 import {
   applyDocumentedDivergences,
   compareSemanticSpans,
@@ -43,20 +43,6 @@ type FixtureProject = {
   id: string;
   revision: string;
   vueGlobs: string[];
-};
-
-type ProjectEvidence = {
-  characterCount: number;
-  durationMs: number;
-  failure?: string;
-  fileCount: number;
-  id: string;
-  inputSha256: string;
-  lineCount: number;
-  revision: string;
-  status: "failed" | "ok";
-  tokenCount: number;
-  tokenSha256: string;
 };
 
 export async function runRealProjectSyntaxAudit(environment = process.env, now = Date.now) {
@@ -180,7 +166,7 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
   }
 
   writeStructuralEvidence(
-    selection,
+    { count: selection.shardCount, index: selection.shardIndex },
     evidence,
     [vizeVue.getEvidence(), vizeArt?.getEvidence()].filter(
       (item): item is TextMateGrammarEvidence => item != null,
@@ -237,67 +223,6 @@ function selectProjects(projects: FixtureProject[], environment: NodeJS.ProcessE
   };
 }
 
-function writeStructuralEvidence(
-  selection: ReturnType<typeof selectProjects>,
-  projects: ProjectEvidence[],
-  grammars: TextMateGrammarEvidence[],
-  environment: NodeJS.ProcessEnv,
-): void {
-  const outputDir = outputDirectory(environment);
-  if (outputDir == null) return;
-  const artifact = {
-    schema: "vize.fixtureSyntaxHighlighterReport",
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    commitSha: resolveCommitSha(environment),
-    runtime: { name: "node", version: process.versions.node },
-    machine: {
-      arch: process.arch,
-      logicalCpuCount: os.cpus().length,
-      platform: process.platform,
-      totalMemoryBytes: os.totalmem(),
-    },
-    shard: { count: selection.shardCount, index: selection.shardIndex },
-    grammars,
-    summary: {
-      failedProjectCount: projects.filter((project) => project.status === "failed").length,
-      fileCount: projects.reduce((sum, project) => sum + project.fileCount, 0),
-      lineCount: projects.reduce((sum, project) => sum + project.lineCount, 0),
-      projectCount: projects.length,
-      tokenCount: projects.reduce((sum, project) => sum + project.tokenCount, 0),
-    },
-    projects,
-  };
-  fs.writeFileSync(
-    path.join(outputDir, "syntax-highlighter-summary.json"),
-    `${JSON.stringify(artifact, null, 2)}\n`,
-  );
-}
-
-function writeDivergenceEvidence(
-  artifact: ReturnType<typeof createDivergenceArtifact>,
-  environment: NodeJS.ProcessEnv,
-): void {
-  const outputDir = outputDirectory(environment);
-  if (outputDir == null) return;
-  fs.writeFileSync(
-    path.join(outputDir, "syntax-highlighter-divergence.json"),
-    `${JSON.stringify(artifact, null, 2)}\n`,
-  );
-  fs.writeFileSync(
-    path.join(outputDir, "syntax-highlighter-divergence.md"),
-    renderDivergenceMarkdown(artifact),
-  );
-}
-
-function outputDirectory(environment: NodeJS.ProcessEnv): string | null {
-  const value = environment.FIXTURE_REPORT_DIR;
-  if (value == null || value.length === 0) return null;
-  const outputDir = path.resolve(root, value);
-  fs.mkdirSync(outputDir, { recursive: true });
-  return outputDir;
-}
-
 function emptyEvidence(project: FixtureProject): ProjectEvidence {
   return {
     characterCount: 0,
@@ -328,19 +253,6 @@ function assertFixtureFileCount(project: FixtureProject, files: string[]): void 
 
 function isHydrated(directory: string): boolean {
   return fs.existsSync(directory) && fs.readdirSync(directory).length > 0;
-}
-
-function resolveCommitSha(environment: NodeJS.ProcessEnv): string {
-  const value = environment.GITHUB_SHA;
-  if (value != null) return requireCommitSha(value, "GITHUB_SHA");
-  const result = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
-  assert.equal(result.status, 0, "git rev-parse HEAD must succeed");
-  return requireCommitSha(result.stdout.trim(), "git rev-parse HEAD");
-}
-
-function requireCommitSha(value: string, source: string): string {
-  assert.match(value, /^[0-9a-f]{40}$/, `${source} must be a full lowercase commit SHA`);
-  return value;
 }
 
 function positiveInteger(value: string, name: string): number {
