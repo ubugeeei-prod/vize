@@ -33,13 +33,17 @@ silently change output for every existing Vize user — and it is a project-leve
 setting with no per-component directive form, because it changes the shape of
 the emitted module rather than of a single render function.
 
+Its scope is JSX/TSX compilation: the key is read by this crate's JSX entry
+points and by the JSX bindings that wrap them. `.vue` SFCs do not go through the
+JSX compiler, so `jsxCompat` does not change how they are compiled.
+
 ### Plugin option mapping
 
-The plugin's options have no config-file spelling; each is a parameter of a
-`compile_jsx_with_babel_*` entry point, and all of them are inert unless
-`jsxCompat` is `"babel"`.
+The plugin's options have no config-file spelling; each is a Vize option or API
+field on a `compile_jsx_with_babel_*` entry point, and all of them are inert
+unless `jsxCompat` is `"babel"`.
 
-| `@vue/babel-plugin-jsx` | Vize                                        |
+| `@vue/babel-plugin-jsx` | Vize option / API                           |
 | ----------------------- | ------------------------------------------- |
 | `transformOn`           | `BabelJsxOptions::transform_on`             |
 | `pragma`                | `compile_jsx_with_babel_pragma`             |

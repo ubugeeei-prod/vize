@@ -16,11 +16,11 @@
 //! # Babel plugin options
 //!
 //! The plugin's options have no config-file spelling of their own: each is a
-//! parameter of a `compile_jsx_with_babel_*` entry point, and every one of them
-//! is inert unless [`JsxCompatMode::Babel`] is selected.
+//! Vize option or API field on a `compile_jsx_with_babel_*` entry point, and
+//! every one of them is inert unless [`JsxCompatMode::Babel`] is selected.
 //!
-//! | `@vue/babel-plugin-jsx` option | Vize entry point |
-//! | ------------------------------ | ---------------- |
+//! | `@vue/babel-plugin-jsx` option | Vize option / API |
+//! | ------------------------------ | ----------------- |
 //! | `transformOn` | [`crate::BabelJsxOptions::transform_on`] |
 //! | `pragma` | [`crate::compile_jsx_with_babel_pragma`] |
 //! | `mergeProps` | [`crate::compile_jsx_with_babel_merge_props`] |
