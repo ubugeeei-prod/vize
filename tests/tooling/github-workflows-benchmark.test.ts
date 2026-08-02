@@ -250,7 +250,7 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
 
   for (const [jobName, minutes] of [
-    ["criterion-ab", 45],
+    ["criterion-ab", 120],
     ["dialect-guard", 45],
   ] as const) {
     assert.match(

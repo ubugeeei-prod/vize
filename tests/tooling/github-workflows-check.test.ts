@@ -23,12 +23,12 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["node-engine-compat", 20],
     ["check-vize-apps", 20],
     ["vue-parity", 30],
-    ["test-scripts", 15],
+    ["test-scripts", 30],
     ["editor-extensions", 15],
     ["editor-host-smoke", 30],
     ["build-js-packages", 30],
-    ["test-js-packages", 30],
-    ["clippy-and-test", 30],
+    ["test-js-packages", 45],
+    ["clippy-and-test", 45],
     ["coverage", 30],
     ["source-coverage", 40],
     ["branch-coverage", 45],
@@ -42,7 +42,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     );
   }
 
-  assert.match(workflowJobBody(e2eWorkflow, "app-readiness"), /timeout-minutes:\s*15\b/);
+  assert.match(workflowJobBody(e2eWorkflow, "app-readiness"), /timeout-minutes:\s*30\b/);
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],

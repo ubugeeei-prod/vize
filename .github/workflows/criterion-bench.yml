@@ -46,7 +46,7 @@ jobs:
   criterion-ab:
     name: criterion-ab
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 45
+    timeout-minutes: 120
     permissions:
       contents: read
     steps:

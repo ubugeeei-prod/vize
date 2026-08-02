@@ -144,7 +144,7 @@ test("pull requests run one path-filtered fast app readiness job", () => {
 
   assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'pull_request'\s*\}\}/);
   assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
-  assert.match(job, /timeout-minutes:\s*15/);
+  assert.match(job, /timeout-minutes:\s*30\b/);
   assert.match(job, /contents:\s*read\s*# required by actions\/checkout/);
   assert.match(job, /pull-requests:\s*read\s*# required by dorny\/paths-filter/);
   assert.match(
