@@ -211,27 +211,12 @@ export class LspSession {
     try {
       await this.request("shutdown", undefined, 10000);
     } finally {
-      const exited = new Promise<void>((resolve) => {
-        if (this.process.exitCode != null || this.process.signalCode != null) {
-          resolve();
-          return;
-        }
-
-        const timeout = setTimeout(() => {
-          if (!this.process.kill("SIGKILL")) {
-            resolve();
-          }
-        }, 5000);
-
-        this.process.once("exit", () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      });
-
+      const exited = this.waitForExit(5000);
       this.notify("exit", undefined);
       this.process.stdin.end();
-      await exited;
+      if (!(await exited)) {
+        await this.kill().catch(() => undefined);
+      }
     }
   }
 
@@ -245,22 +230,28 @@ export class LspSession {
       return;
     }
 
-    await new Promise<void>((resolve, reject) => {
+    const exited = this.waitForExit(5000);
+    assert.ok(this.process.kill(signal), `Failed to send ${signal} to vize lsp`);
+    assert.ok(await exited, `Timed out waiting for vize lsp to exit after ${signal}`);
+  }
+
+  /** Resolve `true` once the child exits, or `false` if it is still alive after `timeoutMs`. */
+  private waitForExit(timeoutMs: number): Promise<boolean> {
+    if (this.process.exitCode != null || this.process.signalCode != null) {
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
       const onExit = () => {
         clearTimeout(timeout);
-        resolve();
+        resolve(true);
       };
       const timeout = setTimeout(() => {
         this.process.off("exit", onExit);
-        reject(new Error(`Timed out waiting for vize lsp to exit after ${signal}`));
-      }, 5000);
+        resolve(false);
+      }, timeoutMs);
 
       this.process.once("exit", onExit);
-      if (!this.process.kill(signal)) {
-        clearTimeout(timeout);
-        this.process.off("exit", onExit);
-        reject(new Error(`Failed to send ${signal} to vize lsp`));
-      }
     });
   }
 
