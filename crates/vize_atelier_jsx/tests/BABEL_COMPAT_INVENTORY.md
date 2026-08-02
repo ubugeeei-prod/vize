@@ -280,6 +280,12 @@ here so the choice is not implicit (#3418, #3467, `src/lower/v_slots.rs`):
   (`v-slots={1}`, `v-slots={[…]}`) — babel forwards these as the component's
   children, which is meaningless for a component. A slots object is either an
   object literal to expand or an opaque expression to forward, never a literal.
+  Native mode keeps rejecting all of them; opt-in Babel VDOM compatibility
+  forwards only the primitive expression literals (`v-slots={1}`, and a template
+  literal with no interpolation), because their source is already valid
+  JavaScript. A quoted value, a missing value, and container literals
+  (`v-slots={[…]}`, a JSX element, an interpolated template) stay rejected: they
+  are not forwardable verbatim without leaking unlowered JSX.
 - `v-slots={() => …}` — a lone function is the _default slot_, not a slots
   object: babel forwards it as children and Vue wraps it as `{default: fn}`.
   Spreading it would contribute nothing, so Vize names it and points at

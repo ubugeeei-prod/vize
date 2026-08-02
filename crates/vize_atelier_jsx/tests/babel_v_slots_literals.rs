@@ -73,6 +73,54 @@ fn babel_compat_forwards_a_numeric_value_only_for_vdom() {
 }
 
 #[test]
+fn babel_compat_forwards_a_static_template_but_not_an_interpolated_one() {
+    let compile = |source: &str| {
+        let bump = Bump::new();
+        let out = compile_jsx(
+            &bump,
+            source,
+            JsxLang::Jsx,
+            &JsxCompileConfig {
+                compat: JsxCompatMode::Babel,
+                ..Default::default()
+            },
+        );
+        let diagnostics = out
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str().to_string())
+            .collect::<Vec<_>>();
+        (out.module_code().to_string(), diagnostics)
+    };
+
+    // A template literal with no substitutions is a primitive: its source is
+    // already valid JavaScript, so babel's "forward it as children" is
+    // reproducible verbatim.
+    let (static_template, static_diagnostics) = compile("const A = () => <B v-slots={`t`}/>;");
+    assert_eq!(static_diagnostics, Vec::<String>::new());
+    assert!(
+        static_template.contains("_createBlock(_component_B, null, `t`, 1024 /* DYNAMIC_SLOTS */)"),
+        "{static_template}"
+    );
+
+    // An interpolated one stays rejected: its substitutions can hold JSX that
+    // still needs lowering, so the source cannot be forwarded verbatim.
+    let (interpolated, interpolated_diagnostics) =
+        compile("const A = () => <B v-slots={`t${<i/>}`}/>;");
+    assert_eq!(
+        interpolated_diagnostics,
+        vec![
+            "v-slots value ``t${<i/>}`` is not a slots object: babel forwards it as the \
+             component's children, which leaves the component with no slots. Write the slots \
+             inline, e.g. v-slots={{ default: () => <div/> }}, or forward a slots object, e.g. \
+             v-slots={slots}."
+                .to_string()
+        ]
+    );
+    assert!(!interpolated.contains("DYNAMIC_SLOTS"), "{interpolated}");
+}
+
+#[test]
 fn compatibility_does_not_leak_into_vapor_or_ssr() {
     let compile = |default_mode, ssr| {
         let bump = Bump::new();

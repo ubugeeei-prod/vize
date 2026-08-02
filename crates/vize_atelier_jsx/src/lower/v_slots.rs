@@ -60,9 +60,10 @@
 //!   children, which is meaningless for a component: a slots object is either an
 //!   object literal to expand or an opaque expression to forward, never a
 //!   primitive. Opt-in Babel VDOM mode (#3391) forwards the *primitive* literals
-//!   verbatim, because that is exactly what babel emits and the source text is
-//!   already valid JavaScript; arrays, template literals, raw JSX, functions, and
-//!   sequences stay diagnosed rather than emitted as a malformed module.
+//!   verbatim, including substitution-free template literals, because that is
+//!   exactly what babel emits and the source text is already valid JavaScript;
+//!   arrays, interpolated template literals, raw JSX, functions, and sequences
+//!   stay diagnosed rather than emitted as a malformed module.
 //! - `v-slots:arg={…}` — `v-slots` takes no argument; the slot names are the
 //!   object's keys.
 //! - `v-slots` on a plain element, which has no slots.
@@ -287,19 +288,21 @@ const IS_A_FUNCTION: &str = "is a function, not a slots object: a lone function 
 /// Literals whose source text is already valid JavaScript in children position,
 /// so babel's pass-through can be reproduced by forwarding the span verbatim.
 ///
-/// Container literals are deliberately excluded: an array or a template literal
-/// may hold nested JSX that still has to be lowered, and raw JSX is a vnode
-/// rather than a value.
+/// Container literals are deliberately excluded: an array may hold nested JSX
+/// that still has to be lowered, and raw JSX is a vnode rather than a value. A
+/// template literal only qualifies when it has no substitutions, for the same
+/// reason: its interpolations can contain JSX.
 fn is_primitive_literal(expression: &Expression<'_>) -> bool {
-    matches!(
-        expression,
+    match expression {
         Expression::BigIntLiteral(_)
-            | Expression::BooleanLiteral(_)
-            | Expression::NullLiteral(_)
-            | Expression::NumericLiteral(_)
-            | Expression::RegExpLiteral(_)
-            | Expression::StringLiteral(_)
-    )
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::RegExpLiteral(_)
+        | Expression::StringLiteral(_) => true,
+        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        _ => false,
+    }
 }
 
 /// Whether an expression is a literal value that can never be a slots object.
