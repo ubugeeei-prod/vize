@@ -6,6 +6,7 @@ mod generate;
 mod object_spread;
 mod scan;
 mod static_merge;
+mod v_model;
 
 use crate::{PropNode, RuntimeHelper};
 

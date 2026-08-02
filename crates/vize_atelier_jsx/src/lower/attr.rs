@@ -285,7 +285,8 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             && arg.is_none()
             && let Some(array) = self.array_literal_value(attr.value.as_ref())
         {
-            match self.lower_model_array(array, loc) {
+            match self.lower_model_array(array, loc, self.uses_babel_vdom_compat() && on_component)
+            {
                 ModelArrayLowering::Lowered(prop) => {
                     return DirectiveAttributeLowering::Lowered(prop);
                 }

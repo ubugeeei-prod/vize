@@ -47,6 +47,11 @@ pub(crate) struct BabelLoweringOptions<'m> {
     pub object_slots_helper: Option<&'m str>,
     /// Project-specific custom-element classifier from `isCustomElement`.
     pub is_custom_element: Option<&'m BabelIsCustomElement>,
+    /// Whether the Babel VDOM lane may apply at all. Babel's options are a
+    /// client-VDOM contract, so the compiler switches this off for SSR exactly
+    /// as it withholds the `transformOn` / `enableObjectSlots` /
+    /// `isCustomElement` inputs there.
+    pub vdom_lane: bool,
 }
 
 /// Lowers OXC JSX nodes into Vize IR against a single source text.
@@ -57,6 +62,7 @@ pub struct Lowerer<'a, 'm, 's> {
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
     custom_element_spans: std::vec::Vec<(u32, u32)>,
+    babel_vdom_lane: bool,
     transform_on_helper: Option<String>,
     object_slots_helper: Option<String>,
     babel_vdom_compat_active: bool,
@@ -94,6 +100,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             is_custom_element: babel.is_custom_element,
             scoping,
             custom_element_spans: std::vec::Vec::new(),
+            babel_vdom_lane: babel.vdom_lane,
             transform_on_helper: babel.transform_on_helper.map(String::from),
             object_slots_helper: babel.object_slots_helper.map(String::from),
             babel_vdom_compat_active: false,
@@ -213,7 +220,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
     /// Select whether the current render root may use VDOM-only Babel options.
     pub(crate) fn set_current_output_mode(&mut self, mode: crate::JsxOutputMode) {
-        self.babel_vdom_compat_active = mode == crate::JsxOutputMode::Vdom;
+        self.babel_vdom_compat_active = self.babel_vdom_lane && mode == crate::JsxOutputMode::Vdom;
     }
 
     /// Whether Babel's `isCustomElement` predicate selects this JSX tag.

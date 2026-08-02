@@ -172,6 +172,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                 .as_ref()
                 .map(|helpers| helpers.is_slot.as_str()),
             is_custom_element,
+            vdom_lane: !config.ssr,
         },
     );
     let mut diagnostics = lowered.diagnostics;

@@ -121,16 +121,21 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     /// `model` directive. Layout (per babel-plugin-jsx):
     ///   - element 0: the model expression (required)  -> `exp`
     ///   - a trailing array-literal element: modifiers  -> `directive.modifiers`
-    ///   - an intermediate string-literal element: arg  -> `directive.arg`
+    ///   - an intermediate element: arg  -> `directive.arg`
     ///
     /// Returns [`ModelArrayLowering::Unrecognized`] for shapes we cannot
     /// confidently destructure (e.g. empty array, spread/hole elements).
-    /// Recognized dynamic arguments are rejected instead of being silently
-    /// discarded: representing them requires computed prop codegen (#3466).
+    ///
+    /// A *dynamic* argument (anything but a string literal) needs computed prop
+    /// and update-listener keys, which only components support, so it is
+    /// accepted when `allow_dynamic_arg` says the caller is lowering a component
+    /// in opt-in Babel VDOM mode and rejected everywhere else rather than being
+    /// silently discarded (#3466).
     pub(crate) fn lower_model_array(
         &mut self,
         array: &oxc_ast::ast::ArrayExpression<'_>,
         loc: &SourceLocation,
+        allow_dynamic_arg: bool,
     ) -> ModelArrayLowering<'a> {
         // Collect the plain (non-hole, non-spread) expression elements.
         let mut elems: std::vec::Vec<&Expression<'_>> = std::vec::Vec::new();
@@ -157,13 +162,14 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
             _ => None,
         };
 
-        // An intermediate string-literal element (index 1, before any modifiers
-        // array) is the arg: the bound prop name for component v-model.
+        // An intermediate element (index 1, before any modifiers array) is the
+        // arg: the bound prop name for component v-model.
         let arg = if modifiers_idx == Some(1) {
             None
         } else {
             match elems.get(1).copied() {
-                Some(Expression::StringLiteral(string)) => Some(string),
+                Some(expression @ Expression::StringLiteral(_)) => Some(expression),
+                Some(expression) if allow_dynamic_arg => Some(expression),
                 Some(expression) => {
                     let span = expression.span();
                     let source = self.mapper().slice(span);
@@ -182,8 +188,13 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
 
         let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
         directive.exp = Some(self.dyn_expr(value_expr.span()));
-        if let Some(string) = arg {
-            directive.arg = Some(self.static_expr(string.value.as_str(), string.span));
+        if let Some(argument) = arg {
+            directive.arg = Some(match argument {
+                Expression::StringLiteral(string) => {
+                    self.static_expr(string.value.as_str(), string.span)
+                }
+                expression => self.dyn_expr(expression.span()),
+            });
         }
 
         if let Some(idx) = modifiers_idx

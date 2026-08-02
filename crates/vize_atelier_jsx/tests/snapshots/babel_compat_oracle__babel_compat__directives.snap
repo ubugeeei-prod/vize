@@ -187,7 +187,7 @@ export function render(_ctx, _cache) {
 
 ## directives/v_model_component_dynamic_arg
 ### verdict
-divergent: dynamic v-model argument diagnosed; needs computed prop lowering
+equivalent
 ### source (jsx)
 const A = () => <B v-model={[foo, bar]}/>;
 ### babel options
@@ -199,12 +199,12 @@ const A = () => _createVNode(_resolveComponent("B"), {
   ["onUpdate:" + bar]: $event => foo = $event
 }, null);
 ### vize (vdom, babel compat)
-<Error> v-model argument `bar` must be a string literal; dynamic arguments are not supported.
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 export function render(_ctx, _cache) {
   const _component_B = _resolveComponent("B")
 
-  return (_openBlock(), _createBlock(_component_B))
+  return (_openBlock(), _createBlock(_component_B, _normalizeProps({ [bar]: foo,
+  ["onUpdate:" + bar]: $event => ((foo) = $event) }), null, 16 /* FULL_PROPS */))
 }
 
 ## directives/v_models

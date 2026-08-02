@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   95 |
-| divergent  |    1 |
+| equivalent |   96 |
+| divergent  |    0 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -189,7 +189,7 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | `directives/v_model_arg_underscore`        | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected outside Babel VDOM compatibility mode                  | accepts arg and modifiers in Babel VDOM mode  | ✅      |
 | `directives/v_model_component`             | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change                                     | ✅      |
 | `directives/v_model_component_arg_mods`    | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change                                     | ✅      |
-| `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                            | rejected: dynamic arguments need computed prop lowering (#3466) | add computed prop IR                          | ❌      |
+| `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                            | rejected: dynamic arguments need computed prop lowering (#3466) | same computed props in Babel VDOM mode        | ✅      |
 | `directives/v_models`                      | expands to one prop pair per entry                             | same, via one `model` directive per entry (#3418)               | no change                                     | ✅      |
 | `directives/v_models_mods`                 | adds `<arg>Modifiers` per entry                                | same props, different literal order (#3418)                     | no change                                     | ✅      |
 | `directives/v_show_element`                | `[[vShow, vis]]`                                               | same                                                            | no change                                     | ✅      |

@@ -11,6 +11,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 
 use super::StaticMerge;
+use super::v_model::generate_vmodel_prop;
 
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
@@ -446,56 +447,4 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
     }
 
     super::events::generate_von_handler_value(ctx, dir);
-}
-
-/// Generate dynamic v-model on component as props
-fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
-    // Handle dynamic v-model on component
-    // Generate: [_ctx.prop]: _ctx.value, ["onUpdate:" + _ctx.prop]: handler
-    if let Some(ExpressionNode::Simple(arg_exp)) = &dir.arg
-        && !arg_exp.is_static
-    {
-        let prop_name = &arg_exp.content;
-        let value_exp = dir
-            .exp
-            .as_ref()
-            .map(|e| match e {
-                ExpressionNode::Simple(s) => s.content.as_str(),
-                ExpressionNode::Compound(c) => c.loc.source.as_str(),
-            })
-            .unwrap_or("undefined");
-
-        // [_ctx.prop]: _ctx.value
-        ctx.push("[_ctx.");
-        ctx.push(prop_name);
-        ctx.push("]: ");
-        ctx.push(value_exp);
-        ctx.push(",");
-        ctx.newline();
-
-        // ["onUpdate:" + _ctx.prop]: $event => ((_ctx.value) = $event)
-        ctx.push("[\"onUpdate:\" + _ctx.");
-        ctx.push(prop_name);
-        ctx.push("]: $event => ((");
-        ctx.push(value_exp);
-        ctx.push(") = $event)");
-
-        // Add modifiers if present
-        if !dir.modifiers.is_empty() {
-            ctx.push(",");
-            ctx.newline();
-            // [_ctx.prop + "Modifiers"]: { modifier: true }
-            ctx.push("[_ctx.");
-            ctx.push(prop_name);
-            ctx.push(" + \"Modifiers\"]: { ");
-            for (i, modifier) in dir.modifiers.iter().enumerate() {
-                if i > 0 {
-                    ctx.push(", ");
-                }
-                ctx.push(&modifier.content);
-                ctx.push(": true");
-            }
-            ctx.push(" }");
-        }
-    }
 }

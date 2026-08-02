@@ -195,7 +195,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 }
             }
 
-            match self.lower_model_array(entry, &loc) {
+            match self.lower_model_array(entry, &loc, self.uses_babel_vdom_compat()) {
                 ModelArrayLowering::Lowered(prop) => lowered.push(prop),
                 ModelArrayLowering::Rejected => rejected = true,
                 ModelArrayLowering::Unrecognized => {
