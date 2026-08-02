@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { canonicalJson, sha256 } from "./syntax-evidence.ts";
+import { assertNormalizedPath, canonicalJson, sha256 } from "./syntax-evidence.ts";
 import { semanticCategories, type SemanticSpan } from "./syntax-semantic-divergence.ts";
 
 export type DivergenceRecord = {
@@ -27,10 +27,12 @@ export function compareSemanticSpans(
   const shared: Array<Omit<DivergenceRecord, "kind">> = [];
   const falsePositives: DivergenceRecord[] = [];
   const falseNegatives: DivergenceRecord[] = [];
+  const vizeByLine = groupByLine(vize);
+  const oracleByLine = groupByLine(oracle);
   for (const [lineIndex, line] of source.split("\n").entries()) {
     const lineNumber = lineIndex + 1;
-    const left = vize.filter((span) => span.line === lineNumber);
-    const right = oracle.filter((span) => span.line === lineNumber);
+    const left = vizeByLine.get(lineNumber) ?? [];
+    const right = oracleByLine.get(lineNumber) ?? [];
     const boundaries = new Set([1, line.length + 1]);
     for (const span of [...left, ...right]) {
       boundaries.add(span.startColumn);
@@ -99,8 +101,12 @@ export function validateLedger(
 ): DocumentedDivergence[] {
   assert.ok(value != null && typeof value === "object" && !Array.isArray(value));
   const ledger = value as { entries?: unknown; schema?: unknown; version?: unknown };
-  assert.equal(ledger.schema, "vize.fixtureSyntaxDivergenceLedger");
-  assert.equal(ledger.version, 1);
+  assert.equal(
+    ledger.schema,
+    "vize.fixtureSyntaxDivergenceLedger",
+    "unexpected syntax divergence ledger schema",
+  );
+  assert.equal(ledger.version, 1, "unexpected syntax divergence ledger version");
   const entries = ledger.entries;
   assert.ok(Array.isArray(entries), "syntax divergence ledger entries must be an array");
   const identities = new Set<string>();
@@ -123,7 +129,7 @@ export function validateLedger(
       knownProjectIds == null || knownProjectIds.has(entry.project),
       `unknown syntax divergence ledger project ${entry.project}`,
     );
-    assertNormalizedPath(entry.file);
+    assertNormalizedPath(entry.file, "ledger path");
     assert.ok(semanticCategories.includes(entry.category as (typeof semanticCategories)[number]));
     assert.ok(entry.kind === "false-positive" || entry.kind === "false-negative");
     for (const field of ["line", "startColumn", "endColumn"] as const) {
@@ -165,6 +171,16 @@ function categoriesAt(spans: SemanticSpan[], column: number): string[] {
   );
 }
 
+function groupByLine(spans: SemanticSpan[]): Map<number, SemanticSpan[]> {
+  const byLine = new Map<number, SemanticSpan[]>();
+  for (const span of spans) {
+    const bucket = byLine.get(span.line);
+    if (bucket == null) byLine.set(span.line, [span]);
+    else bucket.push(span);
+  }
+  return byLine;
+}
+
 function difference(left: string[], right: string[]): string[] {
   const excluded = new Set(right);
   return left.filter((category) => !excluded.has(category));
@@ -184,15 +200,4 @@ function recordIdentity(record: Omit<DivergenceRecord, "kind"> & { kind?: string
     record.endColumn,
     record.category,
   ].join(":");
-}
-
-function assertNormalizedPath(value: string): void {
-  assert.equal(typeof value, "string");
-  assert.ok(
-    value.length > 0 &&
-      !value.startsWith("/") &&
-      !value.includes("\\") &&
-      !value.split("/").some((part) => part === "" || part === "." || part === ".."),
-    `invalid ledger path ${value}`,
-  );
 }

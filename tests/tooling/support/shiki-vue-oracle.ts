@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -11,7 +10,7 @@ import {
   textmateDependencyVersions,
   textmateModulePath,
 } from "./textmate-deps.ts";
-import { canonicalJson } from "./syntax-evidence.ts";
+import { byteOrder, canonicalJson, sha256 } from "./syntax-evidence.ts";
 import type { TextMateGrammar } from "./vue-textmate.ts";
 
 const packageName = "@shikijs/langs";
@@ -56,7 +55,7 @@ export async function loadPinnedShikiVueOracle(
 ) {
   const modulePath = services.modulePath ?? shikiLanguageModulePath("vue");
   const readFile = services.readFile ?? fs.readFileSync;
-  const manifestPath = findPackageManifest(modulePath, packageName);
+  const manifestPath = findPackageManifest(modulePath, packageName, readFile);
   const manifest = JSON.parse(readFile(manifestPath, "utf8") as string) as {
     license?: string;
     name?: string;
@@ -138,11 +137,11 @@ export async function loadPinnedShikiVueOracle(
   let grammar: TextMateGrammar | null;
   try {
     grammar = registry.loadGrammar(rootScope) as TextMateGrammar | null;
+    assert.ok(grammar, `failed to load pinned oracle grammar ${rootScope}`);
   } catch (error) {
     registry.dispose();
     throw error;
   }
-  assert.ok(grammar, `failed to load pinned oracle grammar ${rootScope}`);
   return {
     getEvidence: (): OracleEvidence => ({
       configuredGrammarSha256: sha256(
@@ -194,12 +193,16 @@ export function validateOraclePin(evidence: {
   );
 }
 
-function findPackageManifest(modulePath: string, expectedName: string): string {
+function findPackageManifest(
+  modulePath: string,
+  expectedName: string,
+  readFile: typeof fs.readFileSync = fs.readFileSync,
+): string {
   let directory = path.dirname(modulePath);
   while (directory !== path.dirname(directory)) {
     const candidate = path.join(directory, "package.json");
     if (fs.existsSync(candidate)) {
-      const manifest = JSON.parse(fs.readFileSync(candidate, "utf8")) as { name?: string };
+      const manifest = JSON.parse(readFile(candidate, "utf8") as string) as { name?: string };
       if (manifest.name === expectedName) return candidate;
     }
     directory = path.dirname(directory);
@@ -275,12 +278,4 @@ function unresolvedSentinelGrammar(scopeName: string): BundledGrammar {
 
 function readJsonGrammar(relativePath: string): BundledGrammar {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8")) as BundledGrammar;
-}
-
-function sha256(value: string | Buffer): string {
-  return createHash("sha256").update(value).digest("hex");
-}
-
-function byteOrder(left: string, right: string): number {
-  return Buffer.from(left).compare(Buffer.from(right));
 }

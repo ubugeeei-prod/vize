@@ -6,7 +6,9 @@ import {
   validateOracleGrammarClosure,
   validateOraclePin,
 } from "./support/shiki-vue-oracle.ts";
+import { compareSemanticSpans } from "./support/syntax-semantic-comparison.ts";
 import { tokenizeSemanticSource } from "./support/syntax-semantic-divergence.ts";
+import { loadVueTextMateGrammar } from "./support/vue-textmate.ts";
 
 test("pinned @shikijs/langs/vue oracle carries exact independent provenance", async () => {
   const oracle = await loadPinnedShikiVueOracle();
@@ -76,6 +78,59 @@ test("oracle fails closed when source activates an unresolved embedded grammar",
     );
     assert.ok(oracle.getEvidence().unresolvedScopeSentinels.includes("source.ignore"));
   } finally {
+    oracle.registry.dispose();
+  }
+});
+
+test("shipped Art Vue grammar records intentional Vize-only spans against the oracle", async () => {
+  const artVue = await loadVueTextMateGrammar("source.art-vue");
+  const oracle = await loadPinnedShikiVueOracle();
+  try {
+    const source = [
+      '<art title="Button" component="Button">',
+      '  <variant name="typed">',
+      '    <Button :items="makeList<User>()" />',
+      "  </variant>",
+      "</art>",
+    ].join("\n");
+    const shipped = tokenizeSemanticSource(
+      artVue.grammar,
+      source,
+      "source.art-vue",
+      "vize/editor-art-vue",
+    );
+    const upstream = tokenizeSemanticSource(
+      oracle.grammar,
+      source,
+      oracle.rootScope,
+      "oracle/editor-art-vue",
+    );
+    const comparison = compareSemanticSpans(
+      "editor/Variant.art.vue",
+      source,
+      shipped.semanticSpans,
+      upstream.semanticSpans,
+    );
+
+    assert.equal(artVue.getEvidence().rootScope, "source.art-vue");
+    assert.deepEqual(
+      comparison.falsePositives.map(({ category, line, startColumn, endColumn }) => ({
+        category,
+        line,
+        startColumn,
+        endColumn,
+      })),
+      [
+        { category: "tag", line: 2, startColumn: 4, endColumn: 11 },
+        { category: "attribute", line: 2, startColumn: 12, endColumn: 16 },
+        { category: "tag", line: 3, startColumn: 6, endColumn: 12 },
+        { category: "attribute", line: 3, startColumn: 13, endColumn: 19 },
+        { category: "tag", line: 4, startColumn: 5, endColumn: 12 },
+      ],
+    );
+    assert.deepEqual(comparison.falseNegatives, []);
+  } finally {
+    artVue.registry.dispose();
     oracle.registry.dispose();
   }
 });

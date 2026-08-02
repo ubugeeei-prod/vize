@@ -72,7 +72,10 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
   const ledger = JSON.parse(rawLedger) as unknown;
   validateLedger(ledger, new Set(registry.projects.map((project) => project.id)));
   const vizeVue = await loadVueTextMateGrammar();
-  const oracle = await loadPinnedShikiVueOracle();
+  const oracle = await loadPinnedShikiVueOracle().catch((error: unknown) => {
+    vizeVue.registry.dispose();
+    throw error;
+  });
   let vizeArt: Awaited<ReturnType<typeof loadVueTextMateGrammar>> | null = null;
   const evidence: ProjectEvidence[] = [];
   const projectArtifacts: ProjectArtifact[] = [];
@@ -83,14 +86,14 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
       const fixtureDir = path.resolve(root, project.fixturePath);
       const startedAt = Date.now();
       const structural = emptyEvidence(project);
+      const inputDigest = createHash("sha256");
+      const tokenDigest = createHash("sha256");
       try {
         assert.ok(project.coverage.includes("syntax-highlighter"));
         assert.ok(isHydrated(fixtureDir), `${project.id} fixture is not hydrated`);
         const files = collectVueInputPaths(fixtureDir, project.vueGlobs);
         assertFixtureFileCount(project, files);
         structural.fileCount = files.length;
-        const inputDigest = createHash("sha256");
-        const tokenDigest = createHash("sha256");
         const comparisonDigest = createHash("sha256");
         const falsePositives: DivergenceRecord[] = [];
         const falseNegatives: DivergenceRecord[] = [];
@@ -142,8 +145,8 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
           tokenDigest.update(`${JSON.stringify([file, vize.tokenSha256])}\n`);
           comparisonDigest.update(`${JSON.stringify([file, comparison.sha256])}\n`);
         }
-        structural.inputSha256 = inputDigest.digest("hex");
-        structural.tokenSha256 = tokenDigest.digest("hex");
+        structural.inputSha256 = inputDigest.copy().digest("hex");
+        structural.tokenSha256 = tokenDigest.copy().digest("hex");
         const classified = applyDocumentedDivergences(
           project.id,
           { falseNegatives, falsePositives, sha256: "", shared: [] },
@@ -165,6 +168,8 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
       } catch (error) {
         structural.failure = errorMessage(error);
       }
+      structural.inputSha256 = inputDigest.digest("hex");
+      structural.tokenSha256 = tokenDigest.digest("hex");
       structural.durationMs = Date.now() - startedAt;
       evidence.push(structural);
     }
@@ -309,10 +314,16 @@ function emptyEvidence(project: FixtureProject): ProjectEvidence {
 }
 
 function assertFixtureFileCount(project: FixtureProject, files: string[]): void {
-  if (project.expectedVueFileCount != null)
-    assert.equal(files.length, project.expectedVueFileCount);
-  if (project.expectedVueFileCount !== 0)
+  if (project.expectedVueFileCount != null) {
+    assert.equal(
+      files.length,
+      project.expectedVueFileCount,
+      `${project.id} matched ${files.length} Vue files, expected ${project.expectedVueFileCount}`,
+    );
+  }
+  if (project.expectedVueFileCount !== 0) {
     assert.ok(files.length > 0, `${project.id} matched no files`);
+  }
 }
 
 function isHydrated(directory: string): boolean {

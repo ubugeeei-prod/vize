@@ -131,9 +131,16 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     syntaxHighlighter?.run ?? "",
     /tests\/tooling\/real-project-syntax-highlighting\.test\.ts/,
   );
+  assert.equal(syntaxHighlighter?.env?.SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS, "600000");
   assert.match(syntaxHighlighter?.run ?? "", /--test-concurrency=1/);
-  assert.match(syntaxHighlighter?.run ?? "", /test -s .*syntax-highlighter-divergence\.json/);
-  assert.match(syntaxHighlighter?.run ?? "", /test -s .*syntax-highlighter-divergence\.md/);
+  assert.match(
+    syntaxHighlighter?.run ?? "",
+    /test -s "\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.json"/,
+  );
+  assert.match(
+    syntaxHighlighter?.run ?? "",
+    /test -s "\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
+  );
   assert.ok(glyphPropertiesIndex < divergenceIndex);
   assert.equal(glyphProperties?.env?.VIZE_TEST_BIN, "target/ci/vize");
   assert.match(glyphProperties?.run ?? "", /--test-concurrency=1/);
@@ -184,7 +191,12 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /syntax-highlighter-summary\.json/);
   assert.match(summary?.run ?? "", /failedProjectCount/);
-  assert.match(summary?.run ?? "", /syntax-highlighter-divergence\.md/);
+  assert.match(
+    summary?.run ?? "",
+    /syntax_divergence="\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
+  );
+  assert.match(summary?.run ?? "", /if \[\[ -s "\$syntax_divergence" \]\]/);
+  assert.match(summary?.run ?? "", /cat "\$syntax_divergence" >> "\$GITHUB_STEP_SUMMARY"/);
   assert.match(summary?.run ?? "", /No syntax-highlighter divergence report was produced/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
   assert.match(summary?.run ?? "", /divergence_reports\[@\]/);

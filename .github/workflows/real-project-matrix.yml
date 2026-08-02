@@ -113,6 +113,8 @@ jobs:
             --output-dir "$FIXTURE_REPORT_DIR"
 
       - name: Check real-project syntax highlighting
+        env:
+          SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "600000"
         run: |
           node --test --test-concurrency=1 \
             tests/tooling/real-project-syntax-highlighting.test.ts
@@ -161,7 +163,7 @@ jobs:
             echo "No syntax-highlighter report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
           syntax_divergence="$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
-          if [[ -f "$syntax_divergence" ]]; then
+          if [[ -s "$syntax_divergence" ]]; then
             cat "$syntax_divergence" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No syntax-highlighter divergence report was produced." >> "$GITHUB_STEP_SUMMARY"

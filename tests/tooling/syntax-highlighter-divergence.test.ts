@@ -7,6 +7,7 @@ import {
   validateLedger,
 } from "./support/syntax-semantic-comparison.ts";
 import {
+  canonicalJson,
   semanticNormalization,
   tokenizeSemanticSource,
   type SemanticSpan,
@@ -75,6 +76,15 @@ test("semantic comparison records exact shared, false-positive, and false-negati
   );
 });
 
+test("published normalization evidence is immutable canonical JSON", () => {
+  assert.ok(Object.isFrozen(semanticNormalization));
+  assert.ok(Object.isFrozen(semanticNormalization.categories));
+  assert.ok(Object.isFrozen(semanticNormalization.omittedCategories));
+  assert.ok(Object.isFrozen(semanticNormalization.ignoredScopeFamilies));
+  assert.equal(canonicalJson({ omitted: undefined, retained: 1 }), '{"retained":1}');
+  assert.throws(() => canonicalJson(undefined), /value is not JSON-serializable/);
+});
+
 test("normalization ignores structural nesting but detects changed semantic scopes", () => {
   const structuralA = tokenizeSemanticSource(
     grammar(["source.vue", "meta.tag.vue", "punctuation.definition.tag.vue"]),
@@ -89,7 +99,6 @@ test("normalization ignores structural nesting but detects changed semantic scop
     "structural-b.vue",
   );
   assert.deepEqual(structuralA.semanticSpans, structuralB.semanticSpans);
-  assert.match(semanticNormalization.rationale, /directives as HTML attributes/);
 
   const tag = tokenizeSemanticSource(
     grammar(["source.vue", "entity.name.tag.html.vue"]),
@@ -119,8 +128,12 @@ test("normalization ignores structural nesting but detects changed semantic scop
       "entity.other.inherited-class.ts",
       "support.constant.property-value.css",
       "support.variable.property.ts",
+      "support.other.variable.less",
       "entity.name.label.ts",
+      "entity.name.section.markdown",
+      "entity.name.constant.counter-name.less",
       "entity.other.keyframe-offset.percentage.css",
+      "entity.other.counter-name.less",
     ]),
     "x",
     "source.vue",
@@ -235,7 +248,7 @@ test("intentional divergence ledger is exact and stale entries fail closed", () 
   );
   assert.throws(
     () => validateLedger({ schema: "wrong", version: 1, entries: [] }),
-    /Expected values to be strictly equal/,
+    /unexpected syntax divergence ledger schema/,
   );
   assert.throws(
     () => validateLedger(ledger, new Set(["another-fixture"])),

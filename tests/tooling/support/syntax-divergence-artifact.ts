@@ -6,6 +6,7 @@ import {
   semanticNormalization,
   sha256,
 } from "./syntax-semantic-divergence.ts";
+import { assertNormalizedPath, byteOrder } from "./syntax-evidence.ts";
 import { shikiVueOracleProvenance } from "./shiki-vue-oracle.ts";
 import { textmateDependencyVersions } from "./textmate-deps.ts";
 
@@ -53,17 +54,7 @@ export type DivergenceArtifact = {
 };
 
 export function createDivergenceArtifact(input: DivergenceArtifactInput): DivergenceArtifact {
-  const summary = {
-    documentedDivergenceCount: sum(input.projects, "documentedDivergences"),
-    falseNegativeCount: sum(input.projects, "falseNegatives"),
-    falsePositiveCount: sum(input.projects, "falsePositives"),
-    fileCount: input.projects.reduce((total, project) => total + project.fileCount, 0),
-    projectCount: input.projects.length,
-    semanticSpanCount: input.projects.reduce(
-      (total, project) => total + project.semanticSpanCount,
-      0,
-    ),
-  };
+  const summary = summarize(input.projects);
   const body: Omit<DivergenceArtifact, "sha256"> = {
     schema: "vize.fixtureSyntaxHighlighterDivergence",
     version: 1,
@@ -105,9 +96,13 @@ export function validateDivergenceArtifact(value: unknown): asserts value is Div
   validateShard(artifact.shard);
   validateGrammars(artifact.grammars);
   assertRecord(artifact.ledger, "artifact ledger");
-  assert.deepEqual(Object.keys(artifact.ledger), ["path", "sha256"]);
+  assert.deepEqual(
+    Object.keys(artifact.ledger),
+    ["path", "sha256"],
+    "unexpected artifact ledger fields",
+  );
   assert.match(artifact.ledger?.sha256, /^[0-9a-f]{64}$/);
-  assertNormalizedPath(artifact.ledger?.path);
+  assertNormalizedPath(artifact.ledger?.path, "artifact path");
   assert.ok(Array.isArray(artifact.projects) && artifact.projects.length > 0);
   const projectIds = new Set<string>();
   for (const project of artifact.projects) {
@@ -115,20 +110,11 @@ export function validateDivergenceArtifact(value: unknown): asserts value is Div
     assert.ok(!projectIds.has(project.id), `duplicate artifact project ${project.id}`);
     projectIds.add(project.id);
   }
-  assert.deepEqual(artifact.summary, {
-    documentedDivergenceCount: sum(artifact.projects, "documentedDivergences"),
-    falseNegativeCount: sum(artifact.projects, "falseNegatives"),
-    falsePositiveCount: sum(artifact.projects, "falsePositives"),
-    fileCount: artifact.projects.reduce(
-      (total: number, project: ProjectArtifact) => total + project.fileCount,
-      0,
-    ),
-    projectCount: artifact.projects.length,
-    semanticSpanCount: artifact.projects.reduce(
-      (total: number, project: ProjectArtifact) => total + project.semanticSpanCount,
-      0,
-    ),
-  });
+  assert.deepEqual(
+    artifact.summary,
+    summarize(artifact.projects),
+    "syntax divergence artifact summary mismatch",
+  );
   const { sha256: digest, ...body } = artifact;
   assert.equal(digest, sha256(canonicalJson(body)), "syntax divergence artifact digest mismatch");
 }
@@ -188,6 +174,7 @@ function validateShard(value: unknown): void {
   }
   assert.ok(
     typeof shard.count === "number" && Number.isSafeInteger(shard.count) && shard.count > 0,
+    "artifact shard count must be a positive integer",
   );
   assert.ok(
     typeof shard.index === "number" &&
@@ -262,7 +249,7 @@ function validateRecord(value: unknown, collection: string, projectId: string): 
       "startColumn",
     ].sort(),
   );
-  assertNormalizedPath(record.file);
+  assertNormalizedPath(record.file, "artifact path");
   assert.ok(
     semanticCategories.includes(record.category),
     `unknown artifact semantic category ${String(record.category)}`,
@@ -288,15 +275,15 @@ function sum(projects: ProjectArtifact[], key: keyof ProjectArtifact): number {
   return projects.reduce((total, project) => total + (project[key] as unknown[]).length, 0);
 }
 
-function assertNormalizedPath(value: unknown): void {
-  assert.ok(
-    typeof value === "string" &&
-      value.length > 0 &&
-      !value.startsWith("/") &&
-      !value.includes("\\") &&
-      !value.split("/").some((part) => part === "" || part === "." || part === ".."),
-    `invalid artifact path ${String(value)}`,
-  );
+function summarize(projects: ProjectArtifact[]): DivergenceSummary {
+  return {
+    documentedDivergenceCount: sum(projects, "documentedDivergences"),
+    falseNegativeCount: sum(projects, "falseNegatives"),
+    falsePositiveCount: sum(projects, "falsePositives"),
+    fileCount: projects.reduce((total, project) => total + project.fileCount, 0),
+    projectCount: projects.length,
+    semanticSpanCount: projects.reduce((total, project) => total + project.semanticSpanCount, 0),
+  };
 }
 
 function assertRecord(value: unknown, label: string): void {
@@ -314,8 +301,4 @@ function assertStringSet(value: unknown, label: string): void {
     [...new Set(strings)].sort(byteOrder),
     `${label} must be sorted and unique`,
   );
-}
-
-function byteOrder(left: string, right: string): number {
-  return Buffer.from(left).compare(Buffer.from(right));
 }

@@ -8,12 +8,18 @@ export { canonicalJson, sha256 } from "./syntax-evidence.ts";
 
 export const semanticLineTimeoutMs = 1_000;
 
-export const semanticCategories = ["attribute", "comment", "invalid", "tag"] as const;
+export const semanticCategories = Object.freeze([
+  "attribute",
+  "comment",
+  "invalid",
+  "tag",
+] as const);
 
-export const semanticNormalization = {
+export const semanticNormalization = Object.freeze({
   version: 1,
   categories: semanticCategories,
-  omittedCategories: [
+  coordinates: "1-based UTF-16 columns with an exclusive end",
+  omittedCategories: Object.freeze([
     "function",
     "keyword",
     "label",
@@ -24,8 +30,8 @@ export const semanticNormalization = {
     "string",
     "type",
     "variable",
-  ],
-  ignoredScopeFamilies: [
+  ]),
+  ignoredScopeFamilies: Object.freeze([
     "case-clause",
     "cast",
     "expression",
@@ -42,10 +48,10 @@ export const semanticNormalization = {
     "switch-statement",
     "text",
     "vue",
-  ],
+  ]),
   rationale:
     "Compare Vue shell roles. Shiki 4.0.2 leaves interpolations unscoped and treats many directives as HTML attributes, so directive names normalize to attributes while embedded-language and string scopes are omitted.",
-};
+});
 
 export type SemanticSpan = {
   categories: string[];
@@ -151,7 +157,10 @@ function semanticCategory(scope: string): string | null {
   if (scope.startsWith("keyword") || scope.startsWith("storage")) return "keyword";
   if (scope.startsWith("entity.name.tag")) return "tag";
   if (scope.startsWith("entity.name.label")) return "label";
+  if (scope.startsWith("entity.name.section")) return "label";
+  if (scope.startsWith("entity.name.constant")) return "literal";
   if (scope.startsWith("entity.other.keyframe-offset")) return "literal";
+  if (scope.startsWith("entity.other.counter-name")) return "literal";
   if (scope.startsWith("entity.other.attribute-name")) return "attribute";
   if (scope.startsWith("entity.name.function") || scope.startsWith("support.function")) {
     return "function";
@@ -168,6 +177,7 @@ function semanticCategory(scope: string): string | null {
   ) {
     return "property";
   }
+  if (scope.startsWith("support.other.variable")) return "variable";
   if (scope.startsWith("variable") || scope.startsWith("support.variable")) return "variable";
   if (scope.startsWith("invalid")) return "invalid";
   return null;

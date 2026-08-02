@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { shikiVueOracleProvenance } from "./support/shiki-vue-oracle.ts";
 import {
   createDivergenceArtifact,
+  renderDivergenceMarkdown,
   validateDivergenceArtifact,
 } from "./support/syntax-divergence-artifact.ts";
 import { textmateDependencyVersions } from "./support/textmate-deps.ts";
@@ -18,7 +19,7 @@ test("divergence artifacts are deterministic and reject malformed records", () =
   malformed.summary.fileCount = 2;
   assert.throws(
     () => validateDivergenceArtifact(malformed),
-    /Expected values to be strictly deep-equal/,
+    /syntax divergence artifact summary mismatch/,
   );
   const malformedRecord = structuredClone(first);
   malformedRecord.projects[0].falsePositives = [
@@ -37,23 +38,57 @@ test("divergence artifacts are deterministic and reject malformed records", () =
   );
 });
 
+test("divergence markdown reports the summary and digest", () => {
+  const artifact = createDivergenceArtifact(validInput());
+  const markdown = renderDivergenceMarkdown(artifact);
+  assert.match(markdown, new RegExp(`Commit: ${artifact.commitSha}`));
+  assert.match(markdown, /Projects: 1/);
+  assert.match(markdown, /Vue files: 1/);
+  assert.match(markdown, new RegExp(`Digest: ${artifact.sha256}`));
+});
+
 test("divergence artifacts reject malformed provenance and topology", () => {
   const input = validInput();
-  for (const invalid of [
-    { ...input, grammars: null },
-    { ...input, shard: { count: null, index: 0 } },
-    { ...input, shard: { count: -1, index: 999 } },
-    { ...input, projects: [...input.projects, structuredClone(input.projects[0])] },
-    { ...input, ledger: { ...input.ledger, unexpected: true } },
+  const cases = [
     {
-      ...input,
-      grammars: {
-        ...input.grammars,
-        oracle: { ...input.grammars.oracle, grammarClosureSha256: "0".repeat(64) },
-      },
+      label: "missing grammars",
+      value: { ...input, grammars: null },
+      expected: /artifact grammars/,
     },
-  ]) {
-    assert.throws(() => createDivergenceArtifact(invalid));
+    {
+      label: "half-null shard",
+      value: { ...input, shard: { count: null, index: 0 } },
+      expected: /unsharded artifact index must be null/,
+    },
+    {
+      label: "negative shard count",
+      value: { ...input, shard: { count: -1, index: 999 } },
+      expected: /artifact shard count must be a positive integer/,
+    },
+    {
+      label: "duplicate project",
+      value: { ...input, projects: [...input.projects, structuredClone(input.projects[0])] },
+      expected: /duplicate artifact project fixture/,
+    },
+    {
+      label: "unexpected ledger field",
+      value: { ...input, ledger: { ...input.ledger, unexpected: true } },
+      expected: /unexpected artifact ledger fields/,
+    },
+    {
+      label: "oracle provenance drift",
+      value: {
+        ...input,
+        grammars: {
+          ...input.grammars,
+          oracle: { ...input.grammars.oracle, grammarClosureSha256: "0".repeat(64) },
+        },
+      },
+      expected: /oracle grammarClosureSha256 provenance drifted/,
+    },
+  ];
+  for (const { label, value, expected } of cases) {
+    assert.throws(() => createDivergenceArtifact(value), expected, label);
   }
 });
 
