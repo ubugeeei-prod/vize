@@ -85,7 +85,7 @@ Warns on internal `<a href="/...">` links in Nuxt-oriented code. External links,
 `target="_blank"` remain plain anchors.
 
 Default severity: `warning`
-Presets: `ecosystem`
+Presets: `nuxt`
 
 Bad:
 

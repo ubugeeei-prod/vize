@@ -415,6 +415,7 @@ impl RuleRegistry {
     pub fn with_all() -> Self {
         let mut registry = Self::with_opinionated();
         crate::rules::ecosystem::register(&mut registry);
+        crate::rules::ecosystem::register_nuxt(&mut registry);
 
         registry
     }
@@ -423,6 +424,7 @@ impl RuleRegistry {
     pub fn with_nuxt() -> Self {
         let mut registry = Self::with_happy_path();
         crate::rules::opinionated::register_nuxt(&mut registry);
+        crate::rules::ecosystem::register_nuxt(&mut registry);
 
         registry
     }

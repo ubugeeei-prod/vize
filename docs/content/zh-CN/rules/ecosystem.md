@@ -87,7 +87,7 @@ router.push({ name: "settings" });
 `target="_blank"`依然是普通的锚点。
 
 默认严重程度：`warning`
-预设：`ecosystem`
+预设：`nuxt`
 
 缺点：
 

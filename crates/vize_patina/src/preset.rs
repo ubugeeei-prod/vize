@@ -205,9 +205,10 @@ mod tests {
         assert!(RuleRegistry::with_ecosystem().has_rule("ecosystem/router-link-require-to"));
         assert!(RuleRegistry::with_ecosystem().has_rule("ecosystem/vue-i18n-no-missing-key"));
         assert!(
-            !RuleRegistry::with_preset(LintPreset::Nuxt)
-                .has_rule("ecosystem/nuxt-prefer-nuxt-link")
+            RuleRegistry::with_preset(LintPreset::Nuxt).has_rule("ecosystem/nuxt-prefer-nuxt-link")
         );
+        assert!(!RuleRegistry::with_ecosystem().has_rule("ecosystem/nuxt-prefer-nuxt-link"));
+        assert!(RuleRegistry::with_all().has_rule("ecosystem/nuxt-prefer-nuxt-link"));
         assert!(RuleRegistry::with_opt_in_rules().has_rule("ecosystem/router-link-require-to"));
         assert!(RuleRegistry::with_opt_in_rules().has_rule("ecosystem/vue-i18n-no-missing-key"));
         assert!(

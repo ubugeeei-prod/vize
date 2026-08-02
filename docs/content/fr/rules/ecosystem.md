@@ -87,7 +87,7 @@ Avertissements sur les liens `<a href="/...">` internes dans le code orienté Nu
 `target="_blank"` restent de simples ancres.
 
 Sévérité par défaut : `warning`
-Presets : `ecosystem`
+Presets : `nuxt`
 
 Mauvais :
 

@@ -427,4 +427,16 @@ mod tests {
         assert_eq!(void_link.presets, vec!["ecosystem"]);
         assert_eq!(void_link.default_severity, "error");
     }
+
+    #[test]
+    fn patina_rule_metadata_limits_nuxt_link_rule_to_nuxt() {
+        let rules = collect_patina_rule_metadata();
+        let prefer_nuxt_link = rules
+            .iter()
+            .find(|rule| rule.name == "ecosystem/nuxt-prefer-nuxt-link")
+            .expect("NuxtLink preference rule should be exposed");
+
+        assert_eq!(prefer_nuxt_link.presets, vec!["nuxt"]);
+        assert_eq!(prefer_nuxt_link.default_severity, "warning");
+    }
 }

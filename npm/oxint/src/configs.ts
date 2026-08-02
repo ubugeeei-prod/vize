@@ -105,7 +105,9 @@ if (import.meta.vitest) {
 
     it("keeps ecosystem rules out of non-ecosystem presets until explicitly selected", () => {
       expect(configs.recommended["vize/ecosystem/router-link-require-to"]).toBeUndefined();
-      expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();
+      expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBe("warn");
+      expect(configs.ecosystem["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();
+      expect(configs.all["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBe("warn");
       expect(configs.ecosystem["vize/ecosystem/router-link-require-to"]).toBe("error");
       expect(configs.ecosystem["vize/ecosystem/vue-i18n-no-missing-key"]).toBe("warn");
       expect(configs.ecosystem["vize/ecosystem/void-link-require-href"]).toBe("error");

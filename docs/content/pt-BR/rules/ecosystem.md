@@ -87,7 +87,7 @@ Avisos sobre links internos de `<a href="/...">` em código orientado a Nuxt. Li
 `target="_blank"` continuam sendo âncoras simples.
 
 Gravidade padrão: `warning`
-Presets: `ecosystem`
+Presets: `nuxt`
 
 Ruim:
 
