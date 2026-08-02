@@ -58,11 +58,7 @@ export class LspSession {
   private nextId = 0;
   private stderr = "";
 
-  /**
-   * `env` entries are layered over the test runner's environment, so callers
-   * can pin server-side discovery (for example `CORSA_PATH`) without leaking
-   * that choice into unrelated sessions.
-   */
+  /** `env` layers over the runner environment, e.g. to pin `CORSA_PATH` for one session. */
   constructor(options: { env?: NodeJS.ProcessEnv } = {}) {
     const [command, ...args] = resolveVizeLaunchCommand();
     this.process = spawn(command, args, {
