@@ -629,20 +629,9 @@
         "endLine": 87,
         "endColumn": 43,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/require-v-for-key",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <slot>",
-        "line": 106,
-        "column": 11,
-        "endLine": 106,
-        "endColumn": 41,
-        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {

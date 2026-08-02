@@ -20,8 +20,12 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupElement, MarkupList, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupList, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -46,7 +50,7 @@ impl RequireVForKey {
         if element.is_tag("template") {
             return;
         }
-        if element.has_key_binding() {
+        if element.has_key_binding() || has_object_bound_key(element) {
             return;
         }
 
@@ -57,6 +61,79 @@ impl RequireVForKey {
         let help = ctx.lint().t("vue/require-v-for-key.help");
         ctx.lint()
             .error_at_with_help(message, element.range(), help);
+    }
+}
+
+fn has_object_bound_key(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        if !found
+            && binding.kind() == MarkupBindingKind::Bind
+            && binding.arg_name().is_none()
+            && binding.expression().is_some_and(object_has_static_key)
+        {
+            found = true;
+        }
+    });
+    found
+}
+
+fn object_has_static_key(source: &str) -> bool {
+    let source = source.trim();
+    if !matches!(source.as_bytes().first(), Some(b'{') | Some(b'(')) {
+        return false;
+    }
+
+    let allocator = Allocator::default();
+    let source_type = SourceType::from_path("template.ts").unwrap_or_else(|_| SourceType::ts());
+    let Ok(expression) = Parser::new(&allocator, source, source_type).parse_expression() else {
+        return false;
+    };
+    if expression.span().end as usize != source.len() {
+        return false;
+    }
+
+    let Some(root) = object_expression(&expression) else {
+        return false;
+    };
+    let mut objects = vec![root];
+    while let Some(object) = objects.pop() {
+        for property in &object.properties {
+            match property {
+                ObjectPropertyKind::ObjectProperty(property) => {
+                    if is_static_key(&property.key) {
+                        return true;
+                    }
+                }
+                ObjectPropertyKind::SpreadProperty(spread) => {
+                    if let Some(object) = object_expression(&spread.argument) {
+                        objects.push(object);
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+fn object_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            object_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => object_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(satisfies) => object_expression(&satisfies.expression),
+        Expression::TSNonNullExpression(non_null) => object_expression(&non_null.expression),
+        _ => None,
+    }
+}
+
+fn is_static_key(key: &PropertyKey<'_>) -> bool {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => identifier.name == "key",
+        PropertyKey::StringLiteral(literal) => literal.value == "key",
+        _ => false,
     }
 }
 
@@ -144,7 +221,9 @@ impl Rule for RequireVForKey {
                 {
                     return s.content.as_str() == "key";
                 }
-                false
+                dir.name.as_str() == "bind"
+                    && dir.arg.is_none()
+                    && matches!(&dir.exp, Some(ExpressionNode::Simple(expression)) if object_has_static_key(expression.content.as_str()))
             }
         });
 
