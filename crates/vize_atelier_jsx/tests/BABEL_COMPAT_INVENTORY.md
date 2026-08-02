@@ -55,8 +55,8 @@ numbers cannot drift from the verdict table.
 
 | Verdict    | Rows |
 | ---------- | ---: |
-| equivalent |   89 |
-| divergent  |    7 |
+| equivalent |   91 |
+| divergent  |    5 |
 | deferred   |    2 |
 
 ## Global divergences
@@ -179,10 +179,10 @@ Recorded so the verdicts are not read as byte equality (#3421,
 | Case                                       | Babel                                                          | Vize today                                                      | Compat mode             | Verdict |
 | ------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------- | ------- |
 | `directives/v_model_input`                 | `withDirectives(…, [[vModelText, val]])`                       | same                                                            | no change               | ✅      |
-| `directives/v_model_arg`                   | `[[vModelText, val, "foo"]]` + `onUpdate:foo`                  | rejected: "v-model argument is not supported on plain elements" | accept and pass the arg | ❌      |
+| `directives/v_model_arg`                   | `[[vModelText, val, "foo"]]` + `onUpdate:foo`                  | rejected outside Babel VDOM compatibility mode                  | accepts and passes the arg in Babel VDOM mode | ✅      |
 | `directives/v_model_modifier_array`        | `[[vModelText, val, void 0, {trim: true}]]`                    | same                                                            | no change               | ✅      |
 | `directives/v_model_underscore`            | `{lazy: true}` modifiers                                       | same                                                            | no change               | ✅      |
-| `directives/v_model_arg_underscore`        | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected as above                                               | accept and pass the arg | ❌      |
+| `directives/v_model_arg_underscore`        | `[[vModelText, val, "foo", {trim: true}]]`                     | rejected outside Babel VDOM compatibility mode                  | accepts arg and modifiers in Babel VDOM mode | ✅      |
 | `directives/v_model_component`             | `modelValue` + `onUpdate:modelValue` props                     | same                                                            | no change               | ✅      |
 | `directives/v_model_component_arg_mods`    | `argument`, `argumentModifiers`, `onUpdate:argument`           | same props, different literal order                             | no change               | ✅      |
 | `directives/v_model_component_dynamic_arg` | computed prop + `"onUpdate:" + bar`                            | rejected: dynamic arguments need computed prop lowering (#3466) | add computed prop IR    | ❌      |

@@ -315,6 +315,7 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
                         transform_on_helper: transform_on_helper.as_deref(),
                         vnode_factory,
                         merge_props,
+                        allow_static_v_model_arg_on_element: config.compat.is_babel(),
                     },
                     &mut diagnostics,
                 )),

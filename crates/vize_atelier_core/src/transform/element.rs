@@ -4,7 +4,10 @@ use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_
 
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
-use crate::steps::v_model::generate_model_assignment_handler;
+use crate::steps::v_model::{
+    generate_model_assignment_handler, model_update_listener_name,
+    supports_plain_element_model_argument,
+};
 use crate::steps::v_slot::validate_v_slot_usage;
 use crate::{
     ConstantType, DirectiveNode, ElementNode, ElementType, ExpressionNode, InterpolationNode,
@@ -304,10 +307,12 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 continue;
             }
 
-            // v-model with an argument (static or dynamic) is a component-only
-            // feature. On a plain element Vue raises a hard compile error and
-            // generates no binding, so reject it here before emitting anything.
-            if !is_component && dir.arg.is_some() {
+            if !is_component
+                && !supports_plain_element_model_argument(
+                    ctx.allow_static_v_model_arg_on_element,
+                    dir.arg.as_ref(),
+                )
+            {
                 ctx.on_error(ErrorCode::VModelArgOnElement, Some(dir.loc.clone()));
                 invalid_model_indices.push(idx);
                 continue;
@@ -337,21 +342,8 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     }
                 });
 
-            // Create event name
-            let event_name = if is_component {
-                let mut name = String::with_capacity(9 + prop_name.len());
-                name.push_str("onUpdate:");
-                name.push_str(prop_name.as_str());
-                name
-            } else {
-                // For native elements, use input event (or change for lazy)
-                let has_lazy = dir.modifiers.iter().any(|m| m.content == "lazy");
-                if has_lazy {
-                    String::new("onChange")
-                } else {
-                    String::new("onInput")
-                }
-            };
+            let named_model = is_component || dir.arg.is_some();
+            let event_name = model_update_listener_name(named_model.then_some(prop_name.as_str()));
 
             // Build handler expression
             let handler = if is_component {
@@ -565,7 +557,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
     } else {
         // For native elements: process in reverse order to preserve indices during insertion
         for data in vmodel_data.iter().rev() {
-            // Keep v-model directive, insert onUpdate:modelValue handler right after it
+            // Keep v-model directive, insert its update handler right after it.
             let handler =
                 generate_model_assignment_handler(ctx, data.raw_value_exp.as_str(), "$event");
             let raw_handler_expr = ExpressionNode::Simple(Box::new_in(
@@ -578,7 +570,11 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     name: String::new("on"),
                     raw_name: None,
                     arg: Some(ExpressionNode::Simple(Box::new_in(
-                        SimpleExpressionNode::new("update:modelValue", true, data.dir_loc.clone()),
+                        SimpleExpressionNode::new(
+                            &data.event_name[2..],
+                            true,
+                            data.dir_loc.clone(),
+                        ),
                         allocator,
                     ))),
                     exp: Some(processed_handler),

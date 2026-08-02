@@ -24,13 +24,18 @@ fn generate_vmodel_entry(
 
     let modifiers: Vec<_> = dir.modifiers.iter().map(|m| m.content.as_str()).collect();
     let parsed_mods = parse_model_modifiers(&dir.modifiers);
-    let has_modifiers = parsed_mods.lazy || parsed_mods.number || parsed_mods.trim;
+    let active_modifiers: Vec<_> = modifiers
+        .iter()
+        .copied()
+        .filter(|modifier| dir.arg.is_some() || matches!(*modifier, "lazy" | "number" | "trim"))
+        .collect();
+    let has_modifiers = if dir.arg.is_some() {
+        !active_modifiers.is_empty()
+    } else {
+        parsed_mods.lazy || parsed_mods.number || parsed_mods.trim
+    };
 
     if has_modifiers {
-        let active_modifiers: Vec<_> = modifiers
-            .iter()
-            .filter(|m| matches!(*m, &"lazy" | &"number" | &"trim"))
-            .collect();
         let is_single_modifier = active_modifiers.len() == 1;
 
         ctx.push("  [");
@@ -45,7 +50,13 @@ fn generate_vmodel_entry(
         }
         ctx.push(",");
         ctx.newline();
-        ctx.push("    void 0,");
+        if let Some(arg) = &dir.arg {
+            ctx.push("    ");
+            generate_expression(ctx, arg);
+            ctx.push(",");
+        } else {
+            ctx.push("    void 0,");
+        }
         ctx.newline();
 
         if is_single_modifier {
@@ -74,6 +85,10 @@ fn generate_vmodel_entry(
         ctx.push(", ");
         if let Some(exp) = &dir.exp {
             generate_expression(ctx, exp);
+        }
+        if let Some(arg) = &dir.arg {
+            ctx.push(", ");
+            generate_expression(ctx, arg);
         }
         ctx.push("]");
     }

@@ -6,6 +6,7 @@
 mod context;
 #[path = "transform/element.rs"]
 pub mod element;
+mod extensions;
 #[path = "transform/patterned_template.rs"]
 pub mod patterned_template;
 #[path = "transform/structural.rs"]
@@ -27,6 +28,13 @@ use crate::{
 };
 
 use traverse::traverse_children;
+
+#[allow(deprecated)]
+pub use extensions::{
+    transform_with_hoisted_scope_id, transform_with_plain_element_model_argument,
+    transform_with_template_syntax_quirks_and_hoisted_scope_id,
+    transform_with_vue_parser_quirks_and_hoisted_scope_id,
+};
 
 /// Transform function for nodes - returns optional exit function(s)
 pub type NodeTransform<'a> =
@@ -104,6 +112,7 @@ pub struct TransformContext<'a> {
     pub errors: std::vec::Vec<CompilerError>,
     /// Enables compatibility for template syntax edge-case behavior.
     pub(crate) template_syntax_quirks: bool,
+    pub(crate) allow_static_v_model_arg_on_element: bool,
     /// Node was removed flag
     pub(crate) node_removed: bool,
     /// Semantic analysis summary (optional, for enhanced transforms)
@@ -169,7 +178,7 @@ pub fn transform<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, false, None)
+    transform_inner(allocator, root, options, analysis, false, None, false)
 }
 
 /// Transform the root AST node with template syntax quirk compatibility enabled.
@@ -179,7 +188,7 @@ pub fn transform_with_template_syntax_quirks<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, true, None)
+    transform_inner(allocator, root, options, analysis, true, None, false)
 }
 
 /// Transform the root AST node with Vue parser quirk compatibility enabled.
@@ -193,56 +202,14 @@ pub fn transform_with_vue_parser_quirks<'a>(
     transform_with_template_syntax_quirks(allocator, root, options, analysis)
 }
 
-/// Transform the root AST node with an explicit scope ID for hoisted VNodes.
-#[doc(hidden)]
-pub fn transform_with_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
-    root: &mut RootNode<'a>,
-    options: TransformOptions,
-    analysis: Option<&'a Croquis>,
-    hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, false, hoisted_scope_id)
-}
-
-/// Transform the root AST node with template syntax quirks and an explicit hoisted scope ID.
-#[doc(hidden)]
-pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
-    root: &mut RootNode<'a>,
-    options: TransformOptions,
-    analysis: Option<&'a Croquis>,
-    hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
-    transform_inner(allocator, root, options, analysis, true, hoisted_scope_id)
-}
-
-/// Transform the root AST node with Vue parser quirks and an explicit hoisted scope ID.
-#[doc(hidden)]
-#[deprecated(note = "use transform_with_template_syntax_quirks_and_hoisted_scope_id instead")]
-pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
-    root: &mut RootNode<'a>,
-    options: TransformOptions,
-    analysis: Option<&'a Croquis>,
-    hoisted_scope_id: Option<String>,
-) -> std::vec::Vec<CompilerError> {
-    transform_with_template_syntax_quirks_and_hoisted_scope_id(
-        allocator,
-        root,
-        options,
-        analysis,
-        hoisted_scope_id,
-    )
-}
-
-fn transform_inner<'a>(
+pub(crate) fn transform_inner<'a>(
     allocator: &'a Bump,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
+    allow_static_v_model_arg_on_element: bool,
 ) -> std::vec::Vec<CompilerError> {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
@@ -261,6 +228,7 @@ fn transform_inner<'a>(
             template_syntax_quirks,
         )
     };
+    ctx.allow_static_v_model_arg_on_element = allow_static_v_model_arg_on_element;
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.root = Some(root as *mut _);
 

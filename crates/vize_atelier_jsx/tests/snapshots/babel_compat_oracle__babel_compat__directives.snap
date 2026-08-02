@@ -26,7 +26,7 @@ export function render(_ctx, _cache) {
 
 ## directives/v_model_arg
 ### verdict
-divergent: v-model arg rejected on elements
+equivalent
 ### source (jsx)
 const A = () => <input v-model:foo={val}/>;
 ### babel options
@@ -37,10 +37,13 @@ const A = () => _withDirectives(_createVNode("input", {
   "onUpdate:foo": $event => val = $event
 }, null), [[_vModelText, val, "foo"]]);
 ### vize (vdom, babel compat)
-<Error> v-model argument is not supported on plain elements.
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("input"))
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:foo": $event => ((val) = $event)
+  }, null, 40 /* PROPS, NEED_HYDRATION */, ["onUpdate:foo"])), [
+    [_vModelText, val, "foo"]
+  ])
 }
 
 ## directives/v_model_modifier_array
@@ -103,7 +106,7 @@ export function render(_ctx, _cache) {
 
 ## directives/v_model_arg_underscore
 ### verdict
-divergent: v-model arg rejected on elements
+equivalent
 ### source (jsx)
 const A = () => <input v-model:foo_trim={val}/>;
 ### babel options
@@ -116,10 +119,18 @@ const A = () => _withDirectives(_createVNode("input", {
   trim: true
 }]]);
 ### vize (vdom, babel compat)
-<Error> v-model argument is not supported on plain elements.
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("input"))
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+    "onUpdate:foo": $event => ((val) = $event)
+  }, null, 40 /* PROPS, NEED_HYDRATION */, ["onUpdate:foo"])), [
+    [
+      _vModelText,
+      val,
+      "foo",
+      { trim: true }
+    ]
+  ])
 }
 
 ## directives/v_model_component

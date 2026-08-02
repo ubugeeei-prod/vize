@@ -61,6 +61,22 @@ pub(crate) fn generate_model_assignment_handler(
     handler
 }
 
+pub(crate) fn supports_plain_element_model_argument(
+    allow_static: bool,
+    arg: Option<&ExpressionNode<'_>>,
+) -> bool {
+    arg.is_none()
+        || (allow_static && matches!(arg, Some(ExpressionNode::Simple(arg)) if arg.is_static))
+}
+
+pub(crate) fn model_update_listener_name(argument: Option<&str>) -> String {
+    let argument = argument.unwrap_or("modelValue");
+    let mut name = String::with_capacity(9 + argument.len());
+    name.push_str("onUpdate:");
+    name.push_str(argument);
+    name
+}
+
 /// Parse v-model modifiers from directive modifiers
 pub fn parse_model_modifiers(modifiers: &Vec<'_, SimpleExpressionNode<'_>>) -> VModelModifiers {
     let mut result = VModelModifiers::default();

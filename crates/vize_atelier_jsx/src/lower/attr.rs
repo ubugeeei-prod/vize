@@ -22,7 +22,9 @@ use vize_relief::{
 
 use super::Lowerer;
 use super::expr::container_expr_span;
-use super::v_model::{ModelArrayLowering, split_underscore_model_modifiers};
+use super::v_model::{
+    ModelArrayLowering, split_model_arg_modifiers, split_underscore_model_modifiers,
+};
 
 enum DirectiveAttributeLowering<'a> {
     NotDirective,
@@ -50,7 +52,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                     if self.try_lower_v_models(attr, on_component, &mut props) {
                         continue;
                     }
-                    self.lower_attribute(attr)
+                    self.lower_attribute(attr, on_component)
                 }
                 JSXAttributeItem::SpreadAttribute(spread) => {
                     Some(self.lower_spread_attribute(spread))
@@ -74,7 +76,11 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
     }
 
     /// Lower one attribute, or `None` when it was rejected with a diagnostic.
-    fn lower_attribute(&mut self, attr: &JSXAttribute<'_>) -> Option<PropNode<'a>> {
+    fn lower_attribute(
+        &mut self,
+        attr: &JSXAttribute<'_>,
+        on_component: bool,
+    ) -> Option<PropNode<'a>> {
         let loc = self.mapper().location(attr.span);
 
         // `v-model` writes back through an assignment, so its target must be
@@ -92,7 +98,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         }
 
         // Directive forms: `v-model`, `v-show`, `v-on:click`, custom `v-foo:arg`.
-        match self.try_directive_attribute(attr, &loc) {
+        match self.try_directive_attribute(attr, &loc, on_component) {
             DirectiveAttributeLowering::Lowered(directive) => return Some(directive),
             DirectiveAttributeLowering::Rejected => return None,
             DirectiveAttributeLowering::NotDirective => {}
@@ -203,6 +209,7 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
         &mut self,
         attr: &JSXAttribute<'_>,
         loc: &SourceLocation,
+        on_component: bool,
     ) -> DirectiveAttributeLowering<'a> {
         let (raw_name, arg) = match &attr.name {
             JSXAttributeName::NamespacedName(named) => {
@@ -223,6 +230,30 @@ impl<'a, 'm, 's> Lowerer<'a, 'm, 's> {
                 (raw_name, None)
             }
         };
+
+        // Babel encodes `v-model:foo.trim` as `v-model:foo_trim` because JSX
+        // attribute names cannot contain dots. This spelling is special only
+        // for Babel-compatible plain elements; component arguments retain the
+        // authored underscore name and their established lowering.
+        if self.uses_babel_vdom_compat()
+            && !on_component
+            && raw_name == "model"
+            && let Some((arg_name, arg_span)) = arg
+            && let Some((model_arg, suffix_mods)) = split_model_arg_modifiers(arg_name)
+        {
+            let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
+            directive.arg = Some(self.static_expr(model_arg, arg_span));
+            directive.exp = self.directive_value_expr(attr.value.as_ref());
+            for modifier in suffix_mods {
+                directive
+                    .modifiers
+                    .push(SimpleExpressionNode::new(modifier, false, loc.clone()));
+            }
+            return DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
+                directive,
+                self.bump(),
+            )));
+        }
 
         // `v-model_lazy` / `v-model_number_lazy` — babel-plugin-jsx encodes
         // v-model modifiers as `_<mod>` name suffixes (JSX attribute names cannot

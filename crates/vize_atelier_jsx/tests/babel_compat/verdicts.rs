@@ -76,16 +76,10 @@ pub const VERDICTS: &[(&str, Verdict)] = &[
     ("events/capture_passive", Same),
     // -- directives ------------------------------------------------------
     ("directives/v_model_input", Same),
-    (
-        "directives/v_model_arg",
-        Diff("v-model arg rejected on elements"),
-    ),
+    ("directives/v_model_arg", Same),
     ("directives/v_model_modifier_array", Same),
     ("directives/v_model_underscore", Same),
-    (
-        "directives/v_model_arg_underscore",
-        Diff("v-model arg rejected on elements"),
-    ),
+    ("directives/v_model_arg_underscore", Same),
     ("directives/v_model_component", Same),
     ("directives/v_model_component_arg_mods", Same),
     (

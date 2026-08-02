@@ -259,3 +259,17 @@ pub(crate) fn split_underscore_model_modifiers(
     }
     Some(("model", mods))
 }
+
+/// Split Babel's namespaced argument/modifier spelling:
+/// `v-model:argument_trim` -> `("argument", ["trim"])`.
+pub(crate) fn split_model_arg_modifiers(name: &str) -> Option<(&str, std::vec::Vec<&str>)> {
+    let (arg, rest) = name.split_once('_')?;
+    if arg.is_empty() || rest.is_empty() {
+        return None;
+    }
+    let modifiers: std::vec::Vec<_> = rest.split('_').collect();
+    if modifiers.iter().any(|modifier| modifier.is_empty()) {
+        return None;
+    }
+    Some((arg, modifiers))
+}

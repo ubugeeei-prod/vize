@@ -50,6 +50,7 @@ impl<'a> TransformContext<'a> {
             in_ssr: ssr,
             errors: std::vec::Vec::new(),
             template_syntax_quirks,
+            allow_static_v_model_arg_on_element: false,
             node_removed: false,
             analysis: None,
             hoisted_scope_id: None,
@@ -299,7 +300,6 @@ impl<'a> TransformContext<'a> {
     }
 
     /// Register a Vue 2 pipe filter (maintains first-seen order for codegen).
-    ///
     /// Legacy-only; only ever called from the dialect-gated filter rewrite.
     #[cfg(feature = "legacy")]
     pub(crate) fn add_filter(&mut self, filter: impl Into<String>) {
