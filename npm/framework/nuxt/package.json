@@ -28,12 +28,14 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.mjs",
+  "main": "./dist/nuxt2-entry.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
+      "require": "./dist/nuxt2-entry.cjs",
       "default": "./dist/index.mjs"
     },
     "./lint": {
@@ -63,6 +65,7 @@
     "vize": "workspace:*"
   },
   "devDependencies": {
+    "jiti-nuxt2": "npm:jiti@1.21.7",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",

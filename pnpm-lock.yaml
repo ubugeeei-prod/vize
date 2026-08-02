@@ -736,6 +736,9 @@ importers:
         specifier: workspace:*
         version: link:../../cli
     devDependencies:
+      jiti-nuxt2:
+        specifier: npm:jiti@1.21.7
+        version: jiti@1.21.7
       typescript:
         specifier: catalog:typescript
         version: 6.0.3

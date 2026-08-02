@@ -12,6 +12,7 @@ export default defineConfig({
   },
   pack: {
     entry: ["src/index.ts", "src/lint/index.ts", "src/runtime/server/dev-stylesheet-links.ts"],
+    copy: [{ from: "src/nuxt2-entry.cjs", to: "dist" }],
     format: "esm",
     dts: true,
     clean: true,
