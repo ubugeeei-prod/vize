@@ -79,6 +79,65 @@ test("materialized baseline extends an explicit generated project", () => {
   }
 });
 
+test(
+  "materialized baseline keeps the fixture's ambient declarations in the program",
+  { skip: !fs.existsSync(vueTsc) },
+  () => {
+    // #3738. A `files` list seeds the program with those roots and nothing else,
+    // so an ambient declaration — never imported, by definition — leaves the
+    // program and the baseline reports the fixture's own globals as undeclared.
+    // Both declarations here are the two shapes that failed on run 30738583070:
+    // one under a plain directory (lx-music-desktop's `src/**/*.d.ts`), one under
+    // a dot-directory that a TypeScript wildcard segment never descends into
+    // (elk's `.nuxt/imports.d.ts`).
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-ambient-baseline-project-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
+    fs.mkdirSync(path.join(fixtureRoot, ".generated"));
+    fs.mkdirSync(reportDir);
+    fs.writeFileSync(
+      path.join(fixtureRoot, ".generated/tsconfig.json"),
+      `${JSON.stringify({ compilerOptions: { strict: true, noEmit: true } })}\n`,
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "src/globals.d.ts"),
+      "declare namespace Authored { type Id = string }\n",
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, ".generated/imports.d.ts"),
+      "declare function generatedHelper(): number\n",
+    );
+    fs.writeFileSync(
+      path.join(fixtureRoot, "src/App.vue"),
+      '<script setup lang="ts">const id: Authored.Id = String(generatedHelper())</script>\n',
+    );
+
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        {
+          id: "fixture",
+          tsconfig: "tsconfig.json",
+          typecheckPerformance: { baseline: { tsconfig: ".generated/tsconfig.json" } },
+        },
+        { fileCount: 1, files: [{ file: "src/App.vue" }] },
+      );
+      const result = runVueTsc(project.path, fixtureRoot);
+      const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
+      assert.deepEqual(diagnostics, []);
+      assert.equal(result.status, 0, result.stderr);
+      // Both ambient roots reached the program, not just the compared SFC.
+      const program = result.stdout.split("\n").map((line) => line.trimEnd());
+      assert.equal(program.includes(path.join(fixtureRoot, "src/globals.d.ts")), true);
+      assert.equal(program.includes(path.join(fixtureRoot, ".generated/imports.d.ts")), true);
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
+
 function runVueTsc(project: string, cwd: string) {
   return spawnSync(vueTsc, ["--noEmit", "--pretty", "false", "--listFiles", "-p", project], {
     cwd,
