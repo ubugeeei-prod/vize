@@ -27,19 +27,32 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * ours rather than the fixture's for the same reason — the glob is ours, and it
  * must not reach into installed or built output. It cannot narrow the compared
  * corpus, because `exclude` never applies to `files`.
+ *
+ * The source config's own directory is globbed as well as the fixture root,
+ * because a TypeScript wildcard segment never descends into a dot-directory:
+ * `<fixture>/**\/*.d.ts` misses `.nuxt/imports.d.ts` while `<fixture>/.nuxt/**`
+ * matches it, the segment being literal. That is the whole of elk's generated
+ * type environment, and every project whose baseline config is generated into a
+ * dot-directory has the same shape. For the rest the second root is already
+ * inside the first and adds nothing.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
   const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
   const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
-  const fixtureBase = configRelativePath(configDir, fixtureRoot);
+  const sourcePath = resolve(fixtureRoot, sourceProject);
+  const ambientRoots = [
+    ...new Set(
+      [fixtureRoot, dirname(sourcePath)].map((root) => configRelativePath(configDir, root)),
+    ),
+  ];
   const config = {
-    extends: configRelativePath(configDir, resolve(fixtureRoot, sourceProject)),
+    extends: configRelativePath(configDir, sourcePath),
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
-    include: [`${fixtureBase}/**/*.d.ts`],
-    exclude: [`${fixtureBase}/**/node_modules/**`, `${fixtureBase}/**/dist/**`],
+    include: ambientRoots.map((root) => `${root}/**/*.d.ts`),
+    exclude: ambientRoots.flatMap((root) => [`${root}/**/node_modules/**`, `${root}/**/dist/**`]),
     references: [],
   };
   const source = `${JSON.stringify(config, null, 2)}\n`;
