@@ -5,9 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Schedule trigger for slow jobs (nix-flake, playground-test) that should
-  # run on a cadence but no longer block PR review. See the conditional
-  # `if:` guards on those jobs.
+  # Daily cadence for nix-flake and source-coverage; both skip pull requests.
   schedule:
     # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
     # GitHub Actions concurrency budget.
@@ -535,8 +533,6 @@ jobs:
     timeout-minutes: 30
     needs:
       - build-js-packages
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -666,6 +662,10 @@ jobs:
           name: test-inventory
           path: test-inventory.json
           retention-days: 14
+      # Runs last so the inventory is collected and uploaded either way.
+      - name: Require every needed job to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/github/require-needs-success.mjs
 
   test-report-comment:
     name: test-report-comment
