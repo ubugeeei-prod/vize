@@ -3,7 +3,6 @@
 //! Defines the `LintResult` output type and the `Linter` struct with its
 //! builder-pattern configuration methods.
 
-use super::category_rules::rule_matches_config_category;
 #[cfg(not(target_arch = "wasm32"))]
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
@@ -261,52 +260,10 @@ impl Linter {
         self
     }
 
-    /// Disable every registered rule that belongs to one of the configured categories.
-    #[inline]
-    pub fn with_disabled_categories(mut self, categories: Vec<String>) -> Self {
-        if categories.is_empty() {
-            return self;
-        }
-
-        for category in categories {
-            let disabled = self
-                .registry
-                .rules()
-                .iter()
-                .filter(|rule| {
-                    rule_matches_config_category(rule.meta().name, rule.meta().category, &category)
-                })
-                .map(|rule| String::from(rule.meta().name));
-            self.disabled_rules.extend(disabled);
-        }
-        self
-    }
-
     /// Apply rule-level severity overrides from host configuration.
     #[inline]
     pub fn with_rule_severity_overrides(mut self, rules: Vec<(String, Severity)>) -> Self {
         self.severity_overrides.extend(rules);
-        self
-    }
-
-    /// Apply category-level severity overrides to every registered matching rule.
-    #[inline]
-    pub fn with_category_severity_overrides(mut self, categories: Vec<(String, Severity)>) -> Self {
-        if categories.is_empty() {
-            return self;
-        }
-
-        for (category, severity) in categories {
-            let overrides = self
-                .registry
-                .rules()
-                .iter()
-                .filter(|rule| {
-                    rule_matches_config_category(rule.meta().name, rule.meta().category, &category)
-                })
-                .map(|rule| (String::from(rule.meta().name), severity));
-            self.severity_overrides.extend(overrides);
-        }
         self
     }
 

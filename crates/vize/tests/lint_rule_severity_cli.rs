@@ -76,6 +76,63 @@ const handleStepClick = (stepIndex: number) => {
 }
 
 #[test]
+fn lint_config_category_severity_applies_to_builtin_script_rules() {
+    let project_root = tempfile::tempdir().unwrap();
+    write_file(
+        project_root.path(),
+        "vize.config.json",
+        r#"{
+  "linter": {
+    "preset": "nuxt",
+    "categories": {
+      "correctness": "warn",
+      "suspicious": "warn",
+      "style": "warn",
+      "perf": "warn",
+      "a11y": "warn",
+      "security": "warn"
+    }
+  }
+}"#,
+    );
+    write_file(
+        project_root.path(),
+        "nuxt.config.ts",
+        "export default { ssr: true, modules: [] }\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root.path())
+        .args([
+            "lint",
+            "--config",
+            "vize.config.json",
+            "--format",
+            "json",
+            "nuxt.config.ts",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", output_details(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let file = json.as_array().unwrap().first().unwrap();
+    assert_eq!(file["errorCount"], serde_json::json!(0), "{stdout}");
+    assert_eq!(file["warningCount"], serde_json::json!(1), "{stdout}");
+    assert_eq!(
+        file["messages"][0]["ruleId"],
+        serde_json::json!("nuxt/nuxt-config-keys-order"),
+        "{stdout}"
+    );
+    assert_eq!(
+        file["messages"][0]["severity"],
+        serde_json::json!(1),
+        "{stdout}"
+    );
+}
+
+#[test]
 fn quiet_lint_reduces_warning_totals_and_preserves_max_warnings_exit() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(

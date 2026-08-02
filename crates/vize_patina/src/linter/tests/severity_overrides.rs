@@ -36,3 +36,54 @@ fn css_rule_severity_override_recounts_sfc_result() {
     assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     assert_eq!(result.diagnostics[0].severity, Severity::Error);
 }
+
+const NUXT_CONFIG_ORDER_SOURCE: &str = "export default { ssr: true, modules: [] }";
+
+#[test]
+fn script_rule_category_severity_override_recounts_sfc_result() {
+    let result = Linter::with_preset(LintPreset::Nuxt)
+        .with_category_severity_overrides(vec![("style".into(), Severity::Warning)])
+        .lint_script(NUXT_CONFIG_ORDER_SOURCE, "nuxt.config.ts");
+
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].severity, Severity::Warning);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "nuxt/nuxt-config-keys-order"
+    );
+}
+
+#[test]
+fn existing_perf_category_classification_applies_to_script_rule() {
+    let result = Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(vec!["script/no-async-in-computed".into()]))
+        .with_category_severity_overrides(vec![("perf".into(), Severity::Warning)])
+        .lint_script("const value = computed(async () => 1)", "component.ts");
+
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].severity, Severity::Warning);
+}
+
+#[test]
+fn unrelated_category_does_not_override_script_rule_severity() {
+    let result = Linter::with_preset(LintPreset::Nuxt)
+        .with_category_severity_overrides(vec![("correctness".into(), Severity::Warning)])
+        .lint_script(NUXT_CONFIG_ORDER_SOURCE, "nuxt.config.ts");
+
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].severity, Severity::Error);
+}
+
+#[test]
+fn disabled_category_disables_classified_script_rule() {
+    let result = Linter::with_preset(LintPreset::Nuxt)
+        .with_disabled_categories(vec!["style".into()])
+        .lint_script(NUXT_CONFIG_ORDER_SOURCE, "nuxt.config.ts");
+
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 0);
+}

@@ -7,6 +7,19 @@
 
 use crate::rule::RuleCategory;
 
+/// Match categories that are defined by an explicit rule-name classification.
+///
+/// Built-in script and CSS rules do not use [`RuleCategory`], so callers that
+/// own those registries use this name-only half of the category mapping.
+pub(super) fn rule_name_matches_config_category(rule_name: &str, config_category: &str) -> bool {
+    match config_category {
+        "style" => is_style_rule_name(rule_name),
+        "security" => is_security_rule_name(rule_name),
+        "perf" => is_perf_rule_name(rule_name),
+        _ => false,
+    }
+}
+
 pub(super) fn rule_matches_config_category(
     rule_name: &str,
     rule_category: RuleCategory,
@@ -15,12 +28,11 @@ pub(super) fn rule_matches_config_category(
     match config_category {
         "correctness" => matches!(rule_category, RuleCategory::Essential),
         "style" => {
-            is_style_rule_name(rule_name)
+            rule_name_matches_config_category(rule_name, config_category)
                 || matches!(rule_category, RuleCategory::StronglyRecommended)
         }
         "a11y" => matches!(rule_category, RuleCategory::Accessibility),
-        "security" => is_security_rule_name(rule_name),
-        "perf" => is_perf_rule_name(rule_name),
+        "security" | "perf" => rule_name_matches_config_category(rule_name, config_category),
         "suspicious" => {
             matches!(
                 rule_category,
@@ -61,6 +73,7 @@ fn is_style_rule_name(rule_name: &str) -> bool {
             | "css/prefer-logical-properties"
             | "css/prefer-nested-selectors"
             | "css/prefer-slotted"
+            | "nuxt/nuxt-config-keys-order"
     )
 }
 

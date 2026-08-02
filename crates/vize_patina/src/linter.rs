@@ -5,6 +5,7 @@
 //! - [`config`]: `Linter` struct, builder methods, and `LintResult`
 //! - [`engine`]: Core linting methods and template extraction
 
+mod category_config;
 mod category_rules;
 mod compatibility;
 mod config;
