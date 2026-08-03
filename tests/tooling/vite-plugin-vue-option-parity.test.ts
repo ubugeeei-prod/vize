@@ -16,7 +16,6 @@ import { test } from "node:test";
 import type { Plugin, ResolvedConfig } from "vite";
 
 import {
-  createClientHmrProbe,
   createUpstreamPlugin,
   honoredEvidence,
   readLedger,
@@ -170,14 +169,18 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
   assert.ok(resolved);
   await loadVueModule(plugin, resolved);
 
-  const { environment, sent } = createClientHmrProbe(file);
+  const sent: Array<{ data?: { css?: string; type?: string }; event?: string }> = [];
+  const server = {
+    moduleGraph: { getModulesByFile: () => undefined, invalidateModule() {} },
+    ws: { send: (payload: never) => sent.push(payload) },
+  };
 
   fs.writeFileSync(file, restyled);
-  const affected = await hook<AnyHook>(plugin.hotUpdate).call({ environment }, {
-    type: "update",
+  const affected = await hook<AnyHook>(plugin.handleHotUpdate).call({}, {
     file,
     modules: [],
     read: async () => restyled,
+    server,
     timestamp: Date.now(),
   } as never);
 

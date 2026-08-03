@@ -78,7 +78,9 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
       getModuleById(id: string) {
         return id === toPluginVisibleVirtualId(vueFile) ? clientModule : undefined;
       },
-      async getModuleByUrl() {},
+      async getModuleByUrl() {
+        throw new Error("unresolved speculative candidate");
+      },
       getModulesByFile() {},
       invalidateModule() {},
     },

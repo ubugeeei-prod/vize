@@ -15,8 +15,6 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-import { toPluginVisibleVirtualId } from "../../../npm/builder/vite/src/virtual.ts";
-
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const ledgerPath = path.join(
   repoRoot,
@@ -258,40 +256,6 @@ export function validateLedger(ledger: ParityLedger, surface: UpstreamSurface): 
   }
 
   assert.deepEqual(ledger.summary, counts, "the ledger summary must match its entries");
-}
-
-export interface ClientHmrProbe {
-  /** Stand-in for the Vite client environment `hotUpdate` runs against. */
-  environment: unknown;
-  /** HMR payloads the plugin pushed to the client during the probe. */
-  sent: Array<{ data?: { css?: string; type?: string }; event?: string }>;
-}
-
-/**
- * A minimal Vite client environment for driving the `hotUpdate` hook.
- *
- * Vize implements upstream's `handleHotUpdate` behavior through Vite's
- * environment-aware `hotUpdate` hook, so a probe has to expose the loaded
- * client virtual module in the environment's graph for `file` to be
- * hot-updated at all.
- */
-export function createClientHmrProbe(file: string): ClientHmrProbe {
-  const sent: ClientHmrProbe["sent"] = [];
-  const clientId = toPluginVisibleVirtualId(file);
-  const clientModule = { id: clientId, url: clientId };
-  return {
-    sent,
-    environment: {
-      name: "client",
-      moduleGraph: {
-        getModuleById: (id: string) => (id === clientId ? clientModule : undefined),
-        getModuleByUrl: async () => undefined,
-        getModulesByFile: () => undefined,
-        invalidateModule() {},
-      },
-      hot: { send: (payload: never) => sent.push(payload) },
-    },
-  };
 }
 
 /** Every `honored` entry, as `<section>.<name>` → evidence id. */

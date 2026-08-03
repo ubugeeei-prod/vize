@@ -8,6 +8,7 @@ import {
   isFatalError,
 } from "../../_helpers/assertions";
 import { getProcessLogs } from "../../_helpers/server";
+import { installSourceRestore } from "./nuxt-ui-hmr-cleanup";
 
 const OPTIMIZE_RELOAD = /optimized dependencies changed\. reloading/i;
 const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;
@@ -145,33 +146,8 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;
   let forwardCompleted = false;
-  // A killed worker (Playwright global timeout, CI cancellation) skips `finally`
-  // and would leave the tracked fixture source edited, so restore on the way out
-  // of the process too.
-  let restored = false;
-  const restore = () => {
-    if (restored) return;
-    restored = true;
-    try {
-      fs.writeFileSync(sourcePath, originalSource);
-    } catch {
-      // Best effort during abrupt shutdown.
-    }
-  };
-  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
-  const onSignal = (signal: NodeJS.Signals) => {
-    restore();
-    process.off("exit", restore);
-    for (const other of signals) process.off(other, onSignal);
-    // Re-raise so termination keeps its default meaning for the worker.
-    process.kill(process.pid, signal);
-  };
-  const detach = () => {
-    process.off("exit", restore);
-    for (const signal of signals) process.off(signal, onSignal);
-  };
-  process.on("exit", restore);
-  for (const signal of signals) process.on(signal, onSignal);
+  // A killed worker skips `finally`, so keep a process-level source restore too.
+  const restoreGuard = installSourceRestore(sourcePath, originalSource);
   try {
     await page.evaluate((value) => {
       (window as Window & { __vizeNuxtUiHmrProbe?: string }).__vizeNuxtUiHmrProbe = value;
@@ -194,18 +170,17 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   } finally {
     const requestStart = hmrRequests.length;
     const completionStart = completedHmrUpdates.length;
-    try {
-      fs.writeFileSync(sourcePath, originalSource);
-      restored = true;
-      if (forwardCompleted) {
-        await expect(original).toBeVisible({ timeout: 60_000 });
-        await expect(updated).toHaveCount(0, { timeout: 60_000 });
-        expect(hmrRequests.length).toBeGreaterThan(requestStart);
-        await expect.poll(() => completedHmrUpdates.length).toBeGreaterThan(completionStart);
-        await page.waitForTimeout(2_000);
-      }
-    } finally {
-      detach();
+    // If this synchronous restore fails, the attached exit handler gets one
+    // final best-effort attempt because the following detach is not reached.
+    fs.writeFileSync(sourcePath, originalSource);
+    restoreGuard.markRestored();
+    restoreGuard.detach();
+    if (forwardCompleted) {
+      await expect(original).toBeVisible({ timeout: 60_000 });
+      await expect(updated).toHaveCount(0, { timeout: 60_000 });
+      expect(hmrRequests.length).toBeGreaterThan(requestStart);
+      await expect.poll(() => completedHmrUpdates.length).toBeGreaterThan(completionStart);
+      await page.waitForTimeout(2_000);
     }
   }
 
