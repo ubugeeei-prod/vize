@@ -136,6 +136,9 @@ export const testAndBenchmarkTasks = defineTasks({
   ),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
+  "test:emacs-extension:headless": noCacheTask(
+    "emacs -Q --batch -l ert -l editors/emacs/test/vize-test.el -f ert-run-tests-batch-and-exit",
+  ),
   "test:emacs-extension:package": noCacheTask("vp run --workspace-root package:emacs-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,

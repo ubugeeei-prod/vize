@@ -1,4 +1,5 @@
 (require 'ert)
+(require 'eglot)
 
 (load-file (expand-file-name "../vize.el" (file-name-directory load-file-name)))
 
@@ -81,7 +82,6 @@
   (let ((eglot-server-programs nil)
         (vize-eglot-major-modes '(vize-vue-mode vize-art-vue-mode)))
     (vize-setup-eglot 'lint)
-    (provide 'eglot)
     (should
      (equal eglot-server-programs
             '((vize-art-vue-mode "vize" "lsp" :initializationOptions (:lint t))

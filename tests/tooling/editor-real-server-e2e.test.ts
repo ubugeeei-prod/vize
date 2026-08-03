@@ -49,6 +49,18 @@ test("CI runs both headless editor specs", () => {
   assert.match(action, /command -v vim/);
 });
 
+test("CI executes the packaged Emacs ERT suite", () => {
+  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+
+  assert.equal(
+    taskCommand("test:emacs-extension:headless"),
+    "emacs -Q --batch -l ert -l editors/emacs/test/vize-test.el -f ert-run-tests-batch-and-exit",
+  );
+  assert.match(action, /command -v emacs/);
+  assert.match(action, /sudo apt-get install -y emacs-nox/);
+  assert.match(action, /vp run --workspace-root test:emacs-extension:headless/);
+});
+
 test("check.yml keeps the editor real-server job in the required set", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 

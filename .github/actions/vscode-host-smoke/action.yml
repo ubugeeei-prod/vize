@@ -56,6 +56,10 @@ runs:
       shell: bash
       run: command -v vim || (sudo apt-get update && sudo apt-get install -y vim)
 
+    - name: Ensure Emacs is available
+      shell: bash
+      run: command -v emacs || (sudo apt-get update && sudo apt-get install -y emacs-nox)
+
     - name: Run VS Code host smoke against the real server
       shell: bash
       env:
@@ -74,6 +78,12 @@ runs:
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       run: vp run --workspace-root test:vim-extension:headless
+
+    - name: Run the packaged Emacs ERT suite
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      run: vp run --workspace-root test:emacs-extension:headless
 
     - name: Run the Neovim scenario against the real server
       shell: bash
