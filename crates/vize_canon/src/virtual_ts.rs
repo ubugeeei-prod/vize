@@ -38,6 +38,7 @@ pub use generator::{
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
 pub use helpers::{DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME};
+pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSubSpan};
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};

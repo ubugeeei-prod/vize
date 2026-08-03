@@ -6,9 +6,8 @@
 use std::ops::Range;
 
 use super::types::VirtualTsOptions;
-use vize_carton::String;
-use vize_carton::append;
 use vize_carton::config::VueVersion;
+use vize_carton::{String, append};
 use vize_croquis::macros::{
     DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_PROPS, DEFINE_SLOTS, WITH_DEFAULTS,
 };
@@ -286,12 +285,12 @@ pub(crate) fn generate_template_context(
     if !options.template_globals.is_empty() {
         ctx.push_str("    // Plugin globals (via ComponentCustomProperties)\n");
         for global in &options.template_globals {
+            let type_annotation = global.context_type_annotation();
             append!(
                 ctx,
-                "    const {}: __Global<'{}', {}> = undefined as any;\n",
+                "    const {}: {} = undefined as any;\n",
                 global.name,
-                global.name,
-                global.type_annotation
+                type_annotation
             );
         }
     }

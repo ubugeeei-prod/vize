@@ -1,6 +1,7 @@
 mod anchors;
 mod component_constructors;
 mod component_export;
+mod css_modules;
 mod emits;
 mod generics;
 mod global_components;
@@ -20,6 +21,7 @@ mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::emit_default_export_declaration;
+use self::css_modules::CssModuleAssertions;
 use self::emits::{emit_emit_props_helper, emit_emits_type, emit_exposed_type, emit_slots_type};
 use self::generics::{HoistedGenericAliases, generic_injection_point, references_any_identifier};
 use self::global_components::GlobalComponentPlan;
@@ -493,20 +495,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_script_body", {
             ts.push_str("  // User setup code\n");
             let script_gen_start = ts.len();
-            // Use split('\n') to correctly track byte offsets for CRLF files.
-            // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
-            // causing src_byte_offset drift that incorrectly skips user code.
+            // `split('\n')` preserves byte offsets for CRLF; `lines()` strips `\r`.
             let mut src_byte_offset: usize = 0; // offset within script content
             let mut module_span_index = 0usize;
             let named_value_export_starts =
                 self::script_module::collect_named_value_export_starts(script);
             let mut props_const_assertions = PropsConstAssertions::new(script, options_api);
-            // Script-absolute offset right after the wrapped options object.
+            let mut css_module_assertions = CssModuleAssertions::new(script, options);
             let mut pending_wrap_close: Option<usize> = None;
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
             let mut emitted_default_alias = false;
-
             let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
             for raw_line in script.split('\n') {
@@ -557,6 +556,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     pending_wrap_close = None;
                 }
 
+                css_module_assertions.splice_output_line(&mut output_line, line_start);
                 props_const_assertions.splice_output_line(&mut output_line, line_start);
 
                 // Strip `export` from non-import lines inside setup scope

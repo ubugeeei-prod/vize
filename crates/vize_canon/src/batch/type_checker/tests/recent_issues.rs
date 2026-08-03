@@ -1,5 +1,6 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 mod component_prop_regressions;
+mod css_module_classes;
 mod directive_anchors;
 mod directive_values;
 mod empty_required_props;

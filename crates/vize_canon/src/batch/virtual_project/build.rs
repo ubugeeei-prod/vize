@@ -7,7 +7,7 @@ use oxc_span::SourceType;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
 
-use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
 use crate::batch::Diagnostic;
 use crate::batch::declaration_path::is_declaration_file;
@@ -15,6 +15,9 @@ use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+
+mod css_modules;
+pub(super) use css_modules::virtual_ts_options_for_descriptor;
 
 use super::VirtualFile;
 use super::diagnostics::collect_sfc_block_ranges;
@@ -225,41 +228,6 @@ pub(super) fn build_script_registered_file(
         diagnostics: Vec::new(),
         unchecked_javascript: false,
     })
-}
-
-pub(super) fn virtual_ts_options_for_descriptor(
-    base: &VirtualTsOptions,
-    descriptor: &SfcDescriptor,
-) -> VirtualTsOptions {
-    // Per-file generation never re-emits the global auto-import stubs inline:
-    // they are written once to a shared ambient `.d.ts` (see
-    // `write_auto_import_stubs`). Build the per-file options with an empty
-    // `auto_import_stubs` instead of deep-cloning the (potentially large,
-    // Nuxt/auto-import) global Vec only to clear it again at the call site.
-    let css_modules: Vec<CompactString> = descriptor
-        .styles
-        .iter()
-        .filter_map(|style| {
-            style
-                .module
-                .as_ref()
-                .map(|module| module.to_compact_string())
-        })
-        .collect();
-    let css_modules = if css_modules.is_empty() {
-        // No `<style module>` blocks: reuse the global css_modules.
-        base.css_modules.clone()
-    } else {
-        css_modules
-    };
-
-    VirtualTsOptions {
-        template_globals: base.template_globals.clone(),
-        css_modules,
-        auto_import_stubs: Vec::new(),
-        external_template_bindings: base.external_template_bindings.clone(),
-        reference_paths: base.reference_paths.clone(),
-    }
 }
 
 pub(super) fn prepend_vue_jsx_reference(code: &mut CompactString, mappings: &mut [VizeMapping]) {

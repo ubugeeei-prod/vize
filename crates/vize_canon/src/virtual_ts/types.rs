@@ -1,7 +1,7 @@
 //! Type definitions for virtual TypeScript generation.
 
 use std::ops::Range;
-use vize_carton::{FxHashSet, String, config::VueVersion};
+use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
 
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,6 +48,22 @@ pub struct TemplateGlobal {
     pub type_annotation: String,
     /// Default value expression (e.g., "(() => '') as any")
     pub default_value: String,
+}
+
+/// Marks a [`TemplateGlobal`] synthesized from an authored `<style module>`
+/// block. The marker stays in the otherwise-unused fallback-value field so
+/// per-SFC CSS-module metadata does not expand the public `VirtualTsOptions`
+/// struct (which downstream users construct directly).
+pub(crate) const CSS_MODULE_GLOBAL_MARKER: &str = "__vize_css_module_global";
+
+impl TemplateGlobal {
+    pub(crate) fn context_type_annotation(&self) -> String {
+        if self.default_value == CSS_MODULE_GLOBAL_MARKER {
+            self.type_annotation.clone()
+        } else {
+            cstr!("__Global<'{}', {}>", self.name, self.type_annotation)
+        }
+    }
 }
 
 /// Options for virtual TypeScript generation.

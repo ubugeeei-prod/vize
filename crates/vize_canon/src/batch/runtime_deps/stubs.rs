@@ -172,6 +172,7 @@ export declare function reactive<T extends object>(target: T): T;
 export declare function shallowRef<T>(value: T): ShallowRef<T>;
 export declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;
 export declare function useTemplateRef<T = unknown>(key: string): ShallowRef<T | null>;
+export declare function useCssModule(name?: string): Record<string, string>;
 export declare function useId(): string;
 export declare function watch<T>(source: T, callback: (...args: any[]) => void, options?: any): void;
 export declare function watchEffect(effect: (onCleanup: (cleanupFn: () => void) => void) => void): void;
