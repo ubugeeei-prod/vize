@@ -4,6 +4,9 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 fn workspace_root() -> &'static Path {
@@ -58,7 +61,7 @@ fn resolve_test_corsa_path() -> Option<String> {
 
 #[test]
 fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 
@@ -163,7 +166,7 @@ void rootOnly;
 
 #[test]
 fn check_from_workspace_root_accepts_subproject_directory_input() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 
@@ -250,7 +253,7 @@ const msg: string = rootValue;
 
 #[test]
 fn check_from_package_cwd_resolves_package_local_dependencies() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 
