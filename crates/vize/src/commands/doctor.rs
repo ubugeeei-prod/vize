@@ -76,6 +76,15 @@ enum DoctorError {
         path: PathBuf,
         message: String,
     },
+    ParseScriptModule {
+        path: PathBuf,
+        message: String,
+    },
+    ParseSfcScript {
+        path: PathBuf,
+        block: &'static str,
+        message: String,
+    },
     Analysis(ApplicationAnalysisError),
     Serialize(serde_json::Error),
     Write(io::Error),
@@ -115,6 +124,24 @@ impl fmt::Display for DoctorError {
                 write!(
                     formatter,
                     "cannot parse component {}: {message}",
+                    path.display()
+                )
+            }
+            Self::ParseScriptModule { path, message } => {
+                write!(
+                    formatter,
+                    "cannot parse script module {}: {message}",
+                    path.display()
+                )
+            }
+            Self::ParseSfcScript {
+                path,
+                block,
+                message,
+            } => {
+                write!(
+                    formatter,
+                    "cannot parse component {block} {}: {message}",
                     path.display()
                 )
             }

@@ -11,6 +11,7 @@ export {
   vizeConfigStore,
 } from "./config.ts";
 export { rewriteStaticAssetUrls as __internal_rewriteStaticAssetUrls } from "./transform.ts";
+export type { VizeVueFeatures } from "./vue-features.ts";
 export type {
   VizeOptions,
   CompiledModule,

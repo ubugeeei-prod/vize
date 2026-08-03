@@ -88,6 +88,69 @@ fn malformed_components_cannot_produce_a_healthy_report() {
 }
 
 #[test]
+fn malformed_script_modules_cannot_produce_a_healthy_report() {
+    let directory = tempfile::tempdir().unwrap();
+    write(
+        directory.path(),
+        "src/broken.ts",
+        "export const answer: number =",
+    );
+
+    let output = doctor(directory.path(), &["src", "--format", "json"]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("cannot parse script module"));
+    assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn malformed_sfc_scripts_cannot_produce_a_healthy_report() {
+    let directory = tempfile::tempdir().unwrap();
+    write(
+        directory.path(),
+        "src/Broken.vue",
+        "<script setup lang=\"ts\">const answer: number =</script>\n<template><p /></template>",
+    );
+
+    let output = doctor(directory.path(), &["src", "--format", "json"]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("cannot parse component script"));
+    assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn valid_script_module_dialects_remain_supported() {
+    let directory = tempfile::tempdir().unwrap();
+    for (path, source) in [
+        ("src/value.js", "export const value = 1"),
+        ("src/component.jsx", "export const View = () => <div />"),
+        ("src/value.ts", "export const value: number = 1"),
+        (
+            "src/component.tsx",
+            "export const View = () => <div data-value={1} />",
+        ),
+        ("src/value.mjs", "export const value = 1"),
+        ("src/value.cjs", "module.exports = { value: 1 }"),
+        ("src/value.mts", "export const value: number = 1"),
+        ("src/value.cts", "module.exports = { value: 1 as number }"),
+    ] {
+        write(directory.path(), path, source);
+    }
+    write(
+        directory.path(),
+        "src/TsxComponent.vue",
+        "<script setup lang=\"tsx\">const View = () => <div /></script>\n<template><View /></template>",
+    );
+
+    let output = doctor(directory.path(), &["src", "--format", "json"]);
+    let report: DoctorReport = serde_json::from_slice(&output.stdout).unwrap();
+
+    assert!(output.status.success());
+    assert_eq!(report.summary().counts.total(), 0);
+}
+
+#[test]
 fn public_sfc_contract_is_explicit_and_source_accurate() {
     let directory = tempfile::tempdir().unwrap();
     let source = "<script setup>const label = 'Save'</script>\n\

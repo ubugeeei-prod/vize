@@ -4,6 +4,7 @@ import type {
   ExperimentalPluginOptions,
 } from "./experimental-options.ts";
 import type { VizeInspectorOptions } from "./inspector-types.ts";
+import type { VizeVueFeatures } from "./vue-features.ts";
 
 export type {
   VizeInspectorLintPlanProvider,
@@ -115,6 +116,9 @@ export interface VizeOptions extends ExperimentalPluginOptions {
 
   /** Development inspector integrations exposed through Vite's dev server. */
   inspector?: VizeInspectorOptions;
+
+  /** Vue runtime feature flags compatible with `@vitejs/plugin-vue`. */
+  features?: VizeVueFeatures;
 
   /**
    * Vue major version for the host project.

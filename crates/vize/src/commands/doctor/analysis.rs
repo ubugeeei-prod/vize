@@ -1,5 +1,8 @@
 //! Whole-project graph construction with authored SFC coordinate recovery.
 
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_parser::Parser as OxcParser;
+use oxc_span::SourceType;
 use std::path::Path;
 use vize_armature::Parser;
 use vize_atelier_sfc::{
@@ -7,7 +10,7 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
     parse_sfc,
 };
-use vize_carton::{Allocator, FxHashMap};
+use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
 use vize_doctor::{
@@ -55,6 +58,7 @@ pub(super) fn analyze_application(
                 public_sfc,
             )?;
         } else {
+            validate_script_module(source)?;
             analyzer.add_file(&source.path, source.source.as_str());
         }
     }
@@ -95,6 +99,22 @@ fn add_sfc(
         path: source.path.clone(),
         message: error.message,
     })?;
+    if let Some(script) = descriptor.script.as_ref() {
+        validate_sfc_script(
+            source,
+            "script",
+            script.content.as_ref(),
+            script.lang.as_deref(),
+        )?;
+    }
+    if let Some(script) = descriptor.script_setup.as_ref() {
+        validate_sfc_script(
+            source,
+            "script setup",
+            script.content.as_ref(),
+            script.lang.as_deref(),
+        )?;
+    }
     if public_sfc && let Some(finding) = canonical_sfc::finding(&doctor_path, &descriptor) {
         public_sfc_findings.push(finding);
     }
@@ -131,6 +151,53 @@ fn add_sfc(
     );
     source_maps.insert(file_id, SfcSourceMap::from_descriptor(&descriptor));
     Ok(())
+}
+
+fn validate_script_module(source: &DoctorSource) -> Result<(), DoctorError> {
+    let source_type = SourceType::from_path(&source.path).unwrap_or_else(|_| SourceType::ts());
+    if let Some(message) = script_parse_error(source.source.as_str(), source_type) {
+        return Err(DoctorError::ParseScriptModule {
+            path: source.path.clone(),
+            message,
+        });
+    }
+    Ok(())
+}
+
+fn validate_sfc_script(
+    source: &DoctorSource,
+    block: &'static str,
+    script: &str,
+    lang: Option<&str>,
+) -> Result<(), DoctorError> {
+    let source_type = match lang.map(str::trim) {
+        Some(lang) if lang.eq_ignore_ascii_case("jsx") => SourceType::jsx(),
+        Some(lang) if lang.eq_ignore_ascii_case("tsx") => SourceType::tsx(),
+        Some(lang) if lang.eq_ignore_ascii_case("ts") => SourceType::ts(),
+        _ => SourceType::from_path("script.js").unwrap_or_default(),
+    };
+    if let Some(message) = script_parse_error(script, source_type) {
+        return Err(DoctorError::ParseSfcScript {
+            path: source.path.clone(),
+            block,
+            message,
+        });
+    }
+    Ok(())
+}
+
+fn script_parse_error(source: &str, source_type: SourceType) -> Option<String> {
+    let allocator = OxcAllocator::default();
+    let parsed = OxcParser::new(&allocator, source, source_type).parse();
+    parsed
+        .diagnostics
+        .first()
+        .map(ToCompactString::to_compact_string)
+        .or_else(|| {
+            parsed
+                .panicked
+                .then(|| "parser panicked while parsing source".into())
+        })
 }
 
 impl SfcSourceMap {

@@ -1,6 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { parse } from "@vue/compiler-sfc";
+
 /** Rule identifiers enforced by the component authoring gate. */
 export type AuthoringRule =
   | "behavior-table"
@@ -60,7 +62,7 @@ export async function auditComponentAuthoring(
     const basename = path.basename(sfc);
     const source = await read(sfc);
 
-    for (const message of explicitSfcProblems(source)) report(sfc, "explicit-sfc", message);
+    for (const message of explicitSfcProblems(source, sfc)) report(sfc, "explicit-sfc", message);
 
     if (!behaviorSources.some((table) => table.includes(basename))) {
       report(
@@ -111,15 +113,22 @@ export function formatAuthoringViolations(violations: readonly AuthoringViolatio
     .join("\n");
 }
 
-function explicitSfcProblems(source: string): string[] {
+function explicitSfcProblems(source: string, filename: string): string[] {
+  const { descriptor, errors } = parse(source, { filename });
   const problems: string[] = [];
-  if (!source.includes('<script setup lang="ts">')) {
+  if (errors.length > 0) problems.push(`SFC source has ${errors.length} parse error(s)`);
+  if (descriptor.scriptSetup?.lang !== "ts") {
     problems.push('Missing <script setup lang="ts"> block');
   }
-  if (!source.includes("<template>")) problems.push("Missing <template> block");
-  if (!source.includes("<style scoped>")) problems.push("Missing <style scoped> block");
-  if (/\bh\s*\(/.test(source)) problems.push("Render-function escape hatch h() is not allowed");
-  if (/defineOptions|withDefaults|interface (?:Props|Emits)/.test(source)) {
+  if (descriptor.template === null) problems.push("Missing <template> block");
+  if (!descriptor.styles.some((style) => style.scoped)) {
+    problems.push("Missing <style scoped> block");
+  }
+  const scripts = [descriptor.script?.content, descriptor.scriptSetup?.content]
+    .filter((script): script is string => script !== undefined)
+    .join("\n");
+  if (/\bh\s*\(/.test(scripts)) problems.push("Render-function escape hatch h() is not allowed");
+  if (/defineOptions|withDefaults|interface (?:Props|Emits)/.test(scripts)) {
     problems.push("Use literal defineProps/defineEmits types without helper indirection");
   }
   return problems;

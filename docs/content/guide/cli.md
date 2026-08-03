@@ -240,8 +240,8 @@ initial analyzers cover dependency injection, unique element IDs, server/client 
 reactivity flow, asynchronous mutation risks, setup-context ownership, and circular imports; Vue
 diagnostics map back to byte offsets in the authored `.vue` file, including components with both
 `<script>` and `<script setup>`. Discovery follows source-control ignore files, rejects inputs
-outside the declared workspace, fails closed when a component cannot be parsed, and never writes
-source files.
+outside the declared workspace, fails closed when a component or script module cannot be parsed,
+and never writes source files.
 
 Key options:
 
