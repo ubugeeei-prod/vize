@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 use vize_carton::{String, ToCompactString, cstr};
@@ -80,7 +83,7 @@ fn resolve_test_corsa_path() -> Option<String> {
 
 #[test]
 fn check_declaration_emit_reports_module_declaration_outputs() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
@@ -211,7 +214,7 @@ export const answer = 42;
 
 #[test]
 fn check_declaration_emit_rewrites_declaration_map_sources() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let app_source = r#"<script setup lang="ts">

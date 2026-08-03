@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 use vize_carton::{String, ToCompactString, cstr};
@@ -164,7 +167,7 @@ fn collect_declaration_snapshot_recursive(
 
 #[test]
 fn build_dts_emits_declarations_alongside_compiled_js() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project("build-dts-emit", &[("src/Button.vue", BUTTON_VUE)]);
@@ -205,7 +208,7 @@ fn build_dts_emits_declarations_alongside_compiled_js() {
 
 #[test]
 fn build_declaration_dir_redirects_declaration_outputs() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(

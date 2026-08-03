@@ -20,6 +20,9 @@
 //! workspace's, so the floor is pinned regardless of which `vue` the developer
 //! happens to have installed.
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 use vize_carton::{String, ToCompactString, cstr};
@@ -174,7 +177,7 @@ fn create_project(corsa_path: &str) -> std::path::PathBuf {
 
 #[test]
 fn declaration_emit_survives_a_vue_without_native_elements_or_directive() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project(corsa_path.as_str());
