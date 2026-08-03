@@ -16,6 +16,7 @@ mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
 mod ts_extension_substitution;
+mod unknown_component_event_callbacks;
 mod unmapped_template_fallback;
 mod vapor_anchors;
 #[test]

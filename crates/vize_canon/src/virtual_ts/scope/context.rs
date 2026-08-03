@@ -81,6 +81,10 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// Native DOM events leave this `None` and fall back to the single `$event`
     /// parameter typed by `event_type`.
     pub(super) event_listener_type: Option<&'a str>,
+    /// The contextual type applied to an authored component-event callback.
+    /// This becomes `unknown` when the event args remain unresolved, matching
+    /// vue-tsc by preserving noImplicitAny diagnostics in the callback itself.
+    pub(super) event_handler_type: Option<&'a str>,
     /// Authored range of the `@event` / `v-on:event` attribute name, where
     /// vue-tsc anchors a wrongly-shaped handler (#3462). `None` when the
     /// directive text cannot be read back from the template.

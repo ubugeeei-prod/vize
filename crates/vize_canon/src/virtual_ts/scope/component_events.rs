@@ -16,6 +16,8 @@ pub(super) struct ComponentEventTypes {
     pub(super) event_type: String,
     pub(super) listener_type: String,
     pub(super) listener_type_expr: String,
+    pub(super) handler_type: String,
+    pub(super) handler_type_expr: String,
 }
 
 pub(super) fn generate_component_event_types(
@@ -46,6 +48,7 @@ pub(super) fn generate_component_event_types(
     let args_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_args");
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
+    let handler_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_handler");
 
     append!(
         *ts,
@@ -143,10 +146,22 @@ pub(super) fn generate_component_event_types(
             "unknown[] extends {args_type} ? ((...args: any[]) => unknown) : ((...args: {listener_args_type}) => unknown)"
         )
     };
+    let handler_type_expr = if legacy_vue2 {
+        listener_type.clone()
+    } else {
+        // An unresolved event has no contextual type in vue-tsc. Annotating the
+        // authored inline callback as `(...args: any[]) => unknown` would hide
+        // its noImplicitAny diagnostics (#3756), so only known emit tuples
+        // provide a listener context. The call site casts back to the callable
+        // listener alias after the initializer has been checked.
+        cstr!("unknown[] extends {args_type} ? unknown : {listener_type}")
+    };
     Some(ComponentEventTypes {
         event_type,
         listener_type,
         listener_type_expr,
+        handler_type,
+        handler_type_expr,
     })
 }
 

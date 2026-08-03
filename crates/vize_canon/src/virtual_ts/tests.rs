@@ -2033,13 +2033,17 @@ function handleTest(value1: string, value2: number) {
     // with every argument spread.
     assert!(
         output.code.contains(
-            "const __vize_handler_8_13: __Test_8_test_listener | null | undefined = (handleTest);"
+            "type __Test_8_test_handler = unknown[] extends __Test_8_test_args ? unknown : __Test_8_test_listener;"
+        ) && output.code.contains(
+            "const __vize_handler_8_13: __Test_8_test_handler | null | undefined = (handleTest);"
         ),
         "bare handler reference must be typed against the emit listener type:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("__vize_handler_8_13(...__vize_args);"),
+        output
+            .code
+            .contains("(__vize_handler_8_13 as __Test_8_test_listener)(...__vize_args);"),
         "bare handler reference must be invoked with the full argument spread:\n{}",
         output.code
     );
@@ -2049,13 +2053,17 @@ function handleTest(value1: string, value2: number) {
     // full argument spread, avoiding TS2556 on the fixed-arity arrow.
     assert!(
         output.code.contains(
-            "const __vize_handler_9_40: __Test_9_test_listener | null | undefined = ((value1, value2) => handleTest(value1, value2));"
+            "type __Test_9_test_handler = unknown[] extends __Test_9_test_args ? unknown : __Test_9_test_listener;"
+        ) && output.code.contains(
+            "const __vize_handler_9_40: __Test_9_test_handler | null | undefined = ((value1, value2) => handleTest(value1, value2));"
         ),
         "inline multi-arg arrow must be typed against the emit listener type:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("__vize_handler_9_40(...__vize_args);"),
+        output
+            .code
+            .contains("(__vize_handler_9_40 as __Test_9_test_listener)(...__vize_args);"),
         "inline multi-arg arrow must be invoked with the full argument spread:\n{}",
         output.code
     );
