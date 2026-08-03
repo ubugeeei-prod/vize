@@ -103,45 +103,38 @@ function parseJson(result: CheckResult): CheckJson {
 const BAD_TS = "export const x: string = 123;";
 const GOOD_TS = "export const answer = 42 as const;\n";
 
-test(
-  "vize check --format json has a stable top-level shape and key names",
-  checkerOptions,
-  () => {
-    withWorkspace((dir) => {
-      fs.writeFileSync(path.join(dir, "bad.ts"), BAD_TS, "utf8");
-      const result = runCheck(
-        ["bad.ts", "--format", "json", "--corsa-path", CHECKER as string],
-        dir,
-      );
-      assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+test("vize check --format json has a stable top-level shape and key names", checkerOptions, () => {
+  withWorkspace((dir) => {
+    fs.writeFileSync(path.join(dir, "bad.ts"), BAD_TS, "utf8");
+    const result = runCheck(["bad.ts", "--format", "json", "--corsa-path", CHECKER as string], dir);
+    assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
 
-      const parsed = parseJson(result);
+    const parsed = parseJson(result);
+    assert.deepEqual(
+      Object.keys(parsed).sort(),
+      ["errorCount", "fileCount", "files", "warningCount"],
+      "top-level keys should be exactly the documented camelCase envelope",
+    );
+    // `--declaration` is absent, so the emitter must not surface a declarations key.
+    assert.equal("declarations" in parsed, false, "no declarations key without --declaration");
+
+    assert.ok(Array.isArray(parsed.files), "files should be an array");
+    for (const entry of parsed.files) {
       assert.deepEqual(
-        Object.keys(parsed).sort(),
-        ["errorCount", "fileCount", "files", "warningCount"],
-        "top-level keys should be exactly the documented camelCase envelope",
+        Object.keys(entry).sort(),
+        ["diagnostics", "file"],
+        "each file entry should expose file/diagnostics without virtualTs by default",
       );
-      // `--declaration` is absent, so the emitter must not surface a declarations key.
-      assert.equal("declarations" in parsed, false, "no declarations key without --declaration");
+      assert.equal(typeof entry.file, "string");
+      assert.equal("virtualTs" in entry, false);
+      assert.ok(Array.isArray(entry.diagnostics));
+    }
 
-      assert.ok(Array.isArray(parsed.files), "files should be an array");
-      for (const entry of parsed.files) {
-        assert.deepEqual(
-          Object.keys(entry).sort(),
-          ["diagnostics", "file"],
-          "each file entry should expose file/diagnostics without virtualTs by default",
-        );
-        assert.equal(typeof entry.file, "string");
-        assert.equal("virtualTs" in entry, false);
-        assert.ok(Array.isArray(entry.diagnostics));
-      }
-
-      assert.equal(typeof parsed.errorCount, "number");
-      assert.equal(typeof parsed.warningCount, "number");
-      assert.equal(typeof parsed.fileCount, "number");
-    });
-  },
-);
+    assert.equal(typeof parsed.errorCount, "number");
+    assert.equal(typeof parsed.warningCount, "number");
+    assert.equal(typeof parsed.fileCount, "number");
+  });
+});
 
 test(
   "vize check --format json exposes declaration outputs when --declaration succeeds",
@@ -247,37 +240,33 @@ test(
   },
 );
 
-test(
-  "vize check --format json reports only the requested subset of files",
-  checkerOptions,
-  () => {
-    withWorkspace((dir) => {
-      fs.mkdirSync(path.join(dir, "src"));
-      fs.writeFileSync(
-        path.join(dir, "src/Good.vue"),
-        '<script setup lang="ts">\nconst x: number = 1\n</script>\n<template><div>{{ x }}</div></template>\n',
-        "utf8",
-      );
-      // Sibling with an unterminated interpolation: it must never appear in the
-      // report when only Good.vue is checked.
-      fs.writeFileSync(
-        path.join(dir, "src/Bad.vue"),
-        '<script setup lang="ts">\nconst x: number = 1\n</script>\n<template><div>{{ unclosed </div></template>\n',
-        "utf8",
-      );
+test("vize check --format json reports only the requested subset of files", checkerOptions, () => {
+  withWorkspace((dir) => {
+    fs.mkdirSync(path.join(dir, "src"));
+    fs.writeFileSync(
+      path.join(dir, "src/Good.vue"),
+      '<script setup lang="ts">\nconst x: number = 1\n</script>\n<template><div>{{ x }}</div></template>\n',
+      "utf8",
+    );
+    // Sibling with an unterminated interpolation: it must never appear in the
+    // report when only Good.vue is checked.
+    fs.writeFileSync(
+      path.join(dir, "src/Bad.vue"),
+      '<script setup lang="ts">\nconst x: number = 1\n</script>\n<template><div>{{ unclosed </div></template>\n',
+      "utf8",
+    );
 
-      const result = runCheck(
-        ["src/Good.vue", "--format", "json", "--corsa-path", CHECKER as string],
-        dir,
-      );
-      const parsed = parseJson(result);
+    const result = runCheck(
+      ["src/Good.vue", "--format", "json", "--corsa-path", CHECKER as string],
+      dir,
+    );
+    const parsed = parseJson(result);
 
-      assert.equal(parsed.files.length, 1, "only the explicitly requested file should be reported");
-      assert.equal(parsed.files[0]?.file, "src/Good.vue");
-      assert.ok(
-        parsed.files.every((f) => f.file !== "src/Bad.vue"),
-        "the unrequested sibling must not appear in the report",
-      );
-    });
-  },
-);
+    assert.equal(parsed.files.length, 1, "only the explicitly requested file should be reported");
+    assert.equal(parsed.files[0]?.file, "src/Good.vue");
+    assert.ok(
+      parsed.files.every((f) => f.file !== "src/Bad.vue"),
+      "the unrequested sibling must not appear in the report",
+    );
+  });
+});
