@@ -29,6 +29,7 @@ mod diagnostics;
 mod global_components;
 mod ignores;
 mod input_scope;
+mod invocation;
 mod nuxt_tsconfig;
 mod resolve;
 #[cfg(unix)]
@@ -50,6 +51,7 @@ use global_components::{
 };
 use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
+use invocation::resolve_invocation_program;
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
@@ -138,12 +140,14 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
-    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
-    let tsconfig_path =
-        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
-    let nuxt_project_root =
-        resolve_nuxt_project_root(effective_tsconfig.as_deref(), &cwd, &project_root);
-    let explicit_input_root = explicit_input_root(&project_root, &cwd);
+    let (invocation_project_root, invocation_tsconfig_path) =
+        resolve_invocation_program(effective_tsconfig.as_deref(), &cwd);
+    let nuxt_project_root = resolve_nuxt_project_root(
+        effective_tsconfig.as_deref(),
+        &cwd,
+        &invocation_project_root,
+    );
+    let explicit_input_root = explicit_input_root(&invocation_project_root, &cwd);
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
     let check_ignore_set = load_check_ignore_set(args, config_dir);
@@ -154,9 +158,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         FxHashSet<PathBuf>,
     ) = if args.patterns.is_empty() {
         let (files, reported_files) = collect_default_run_files(
-            &project_root,
+            &invocation_project_root,
             &cwd,
-            tsconfig_path.as_deref(),
+            invocation_tsconfig_path.as_deref(),
             jsx_typecheck,
             &mut tsconfig_input_cache,
             &mut canonical_paths,
@@ -165,8 +169,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         exit_if_default_run_leaves_cwd(
             &files,
             &cwd,
-            &project_root,
-            tsconfig_path.as_deref(),
+            &invocation_project_root,
+            invocation_tsconfig_path.as_deref(),
             args.quiet,
         );
         (files, Vec::new(), reported_files)
@@ -187,12 +191,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    let validate_inputs = !args.patterns.is_empty() && tsconfig_path.is_some();
+    let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
     if !args.patterns.is_empty() {
         register_transitive_local_imports(
             &mut files,
             &cwd,
-            tsconfig_path.as_deref(),
+            invocation_tsconfig_path.as_deref(),
             jsx_typecheck,
             &mut canonical_paths,
             Some(&explicit_input_root),
@@ -201,13 +205,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
     exit_if_inputs_outside_root(&explicit_input_root, &files, validate_inputs);
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
-    let tsconfig_path =
+    let discovered_tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
     let program_tsconfig_path = if args.patterns.is_empty() {
-        tsconfig_path.clone()
+        invocation_tsconfig_path.clone()
     } else {
         resolve_tsconfig_for_files(
-            tsconfig_path.as_deref(),
+            discovered_tsconfig_path.as_deref(),
             &explicit_files,
             jsx_typecheck,
             &mut tsconfig_input_cache,
@@ -231,21 +235,17 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         );
     }
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
-    let tsconfig_path =
-        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
-    let program_tsconfig_path = if args.patterns.is_empty() {
-        tsconfig_path.clone()
+    let program_project_root = if args.patterns.is_empty() {
+        &invocation_project_root
     } else {
-        program_tsconfig_path
+        &project_root
     };
     resolve::retain_project_files(&mut files, &project_root);
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
-    let tsconfig = program_tsconfig_path.as_deref();
-    let nuxt_root = &nuxt_project_root;
     let nuxt_path_aliases = nuxt::detect(
         &mut virtual_ts_options,
-        nuxt_root,
-        tsconfig,
+        &nuxt_project_root,
+        program_tsconfig_path.as_deref(),
         legacy_vue2,
         dialect,
     );
@@ -275,7 +275,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!(
             "Building Corsa virtual project for {} files under {}...",
             files.len(),
-            project_root.display()
+            program_project_root.display()
         );
     }
 
@@ -413,7 +413,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         let declaration_options = resolve_declaration_emit_options(
             args.declaration_dir.as_deref(),
             program_tsconfig_path.as_deref(),
-            &project_root,
+            program_project_root,
         );
         let declaration_dir = declaration_options.out_dir.clone();
         match checker.emit_declarations(&declaration_options) {
@@ -506,7 +506,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             "{} virtual file(s), {} error(s), project {}",
             virtual_files.len(),
             total_errors,
-            project_root.display()
+            program_project_root.display()
         );
         let report = ProfileReport {
             title: "check",
