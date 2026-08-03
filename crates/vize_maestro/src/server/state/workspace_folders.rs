@@ -86,9 +86,31 @@ impl ServerState {
         contexts.extend(added.into_iter().map(WorkspaceFolderConfig::load));
     }
 
-    /// Sync the contexts from a `didChangeWorkspaceFolders` event (#3240).
-    pub(crate) fn apply_workspace_folders_change(&self, event: &WorkspaceFoldersChangeEvent) {
-        self.update_workspace_folders(folder_roots(&event.added), &folder_roots(&event.removed));
+    /// Sync the contexts from a `didChangeWorkspaceFolders` event (#3240) and
+    /// return the open documents whose enclosing folder context may have
+    /// changed. The request handler republishes diagnostics for these URIs.
+    pub(crate) fn apply_workspace_folders_change(
+        &self,
+        event: &WorkspaceFoldersChangeEvent,
+    ) -> Vec<Url> {
+        let added = folder_roots(&event.added);
+        let removed = folder_roots(&event.removed);
+        let mut changed_roots = added.clone();
+        changed_roots.extend(removed.iter().cloned());
+
+        self.update_workspace_folders(added, &removed);
+
+        let mut affected = self
+            .documents
+            .uris()
+            .into_iter()
+            .filter(|uri| {
+                uri.to_file_path()
+                    .is_ok_and(|path| changed_roots.iter().any(|root| path.starts_with(root)))
+            })
+            .collect::<Vec<_>>();
+        affected.sort_by(|a, b| a.as_str().cmp(b.as_str()));
+        affected
     }
 
     /// Linter settings for a document: its deepest enclosing workspace folder
@@ -124,7 +146,7 @@ fn deepest_enclosing_folder<'a>(
 
 #[cfg(test)]
 mod tests {
-    use tower_lsp::lsp_types::Url;
+    use tower_lsp::lsp_types::{Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
     use vize_carton::config::LintRuleSeverity;
 
     use crate::server::ServerState;
@@ -209,6 +231,43 @@ mod tests {
         let (config, _) = state.linter_settings_for_uri(&uri);
         assert_eq!(config.rules.get("vue/require-v-for-key"), None);
 
+        let _ = std::fs::remove_dir_all(parent);
+    }
+
+    #[test]
+    fn workspace_folder_changes_select_only_open_documents_under_changed_roots() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let parent = std::env::temp_dir().join(format!(
+            "vize-folder-revalidation-{}-{nonce}",
+            std::process::id()
+        ));
+        let added_root = parent.join("added");
+        let untouched_root = parent.join("untouched");
+        std::fs::create_dir_all(&added_root).unwrap();
+        std::fs::create_dir_all(&untouched_root).unwrap();
+
+        let affected = Url::from_file_path(added_root.join("Affected.vue")).unwrap();
+        let untouched = Url::from_file_path(untouched_root.join("Untouched.vue")).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(affected.clone(), "<template />".into(), 1, "vue".into());
+        state
+            .documents
+            .open(untouched, "<template />".into(), 1, "vue".into());
+
+        let selected = state.apply_workspace_folders_change(&WorkspaceFoldersChangeEvent {
+            added: vec![WorkspaceFolder {
+                uri: Url::from_file_path(&added_root).unwrap(),
+                name: "added".into(),
+            }],
+            removed: Vec::new(),
+        });
+
+        assert_eq!(selected, vec![affected]);
         let _ = std::fs::remove_dir_all(parent);
     }
 }

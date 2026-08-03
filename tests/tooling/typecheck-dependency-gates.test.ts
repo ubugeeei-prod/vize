@@ -210,6 +210,25 @@ test("module import Rust CLI gates use the fail-closed Corsa helper", () => {
   }
 });
 
+test("plain script and reference Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    ["check_plain_script_named_exports_cli.rs", 2],
+    ["check_plain_script_namespace_cli.rs", 3],
+    ["check_reference_types_cli.rs", 3],
+    ["check_sfc_import_suppressions_cli.rs", 1],
+  ] as const;
+
+  for (const [file, expectedCalls] of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.equal(
+      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      expectedCalls,
+      `${file} should guard all ${expectedCalls} Corsa resolver calls`,
+    );
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });

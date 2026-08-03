@@ -6,6 +6,9 @@
 //! CLI so the diagnostics come from a type checker rather than from string
 //! inspection of the generated module.
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 fn workspace_root() -> &'static Path {
@@ -130,7 +133,7 @@ fn diagnostics(report: &serde_json::Value) -> Vec<String> {
 
 #[test]
 fn check_accepts_plain_script_namespaces_used_as_values_and_types() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
@@ -246,7 +249,7 @@ const capturedValue: number = captured;
 /// consumer's import is a real error.
 #[test]
 fn check_reports_an_import_of_an_unexported_plain_script_namespace() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
@@ -298,7 +301,7 @@ const label: string = Bare.label;
 /// project whose diagnostics were dropped.
 #[test]
 fn check_reports_the_legacy_module_keyword_from_a_plain_script() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
