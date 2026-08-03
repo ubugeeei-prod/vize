@@ -1,5 +1,5 @@
 name: Editor real-server end-to-end
-description: Run VS Code, Neovim, and Vim real-server scenarios plus packaged editor specs
+description: Run VS Code, Zed, Neovim, and Vim real-server scenarios plus packaged editor specs
 
 runs:
   using: composite
@@ -13,6 +13,8 @@ runs:
 
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      with:
+        targets: wasm32-wasip2
 
     - name: Setup Wild linker
       uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -36,6 +38,30 @@ runs:
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       run: vp install --frozen-lockfile --prefer-offline
+
+    - name: Install pinned Zed extension CLI
+      shell: bash
+      env:
+        ZED_EXTENSION_CLI_SHA: 9ee3c503a4bbbc6b4a0f8a789acca4871d773223
+        ZED_EXTENSION_CLI_SHA256: a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757
+      run: |
+        set -euo pipefail
+        curl -fsSL -o "${RUNNER_TEMP}/zed-extension" \
+          "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension"
+        echo "${ZED_EXTENSION_CLI_SHA256}  ${RUNNER_TEMP}/zed-extension" | sha256sum --check --strict
+        chmod +x "${RUNNER_TEMP}/zed-extension"
+
+    - name: Validate the Zed extension
+      shell: bash
+      working-directory: editors/zed
+      run: |
+        set -euo pipefail
+        mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"
+        mkdir -p "${RUNNER_TEMP}/zed-extension-output"
+        "${RUNNER_TEMP}/zed-extension" \
+          --source-dir . \
+          --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
+          --output-dir "${RUNNER_TEMP}/zed-extension-output"
 
     - name: Build vize CLI
       shell: bash
@@ -126,3 +152,10 @@ runs:
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_TEST_VIM_LSP_PATH: ${{ runner.temp }}/vim-lsp
       run: vp run --workspace-root test:vim-extension:real-server
+
+    - name: Run the Zed scenario against the real server
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+      run: vp run --workspace-root test:zed-extension:real-server

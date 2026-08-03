@@ -123,6 +123,7 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:zed-extension:unit": task("cargo test --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],
   }),
+  "test:zed-extension:real-server": noCacheTask("node tools/zed-vize/run-real-server.mjs"),
   "test:nvim-extension:headless": noCacheTask(
     "nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa' && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin '+set runtimepath^=editors/nvim' '+luafile editors/nvim/test/vize_spec.lua' '+qa'",
   ),
