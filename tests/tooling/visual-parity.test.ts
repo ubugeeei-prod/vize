@@ -13,4 +13,13 @@ test("visual parity compares the shared viewport width and full page height", ()
     visualComparisonDimensions({ height: 720, width: 1_280 }, { height: 900, width: 1_280 }),
     { height: 900, width: 1_280 },
   );
+
+  assert.deepEqual(
+    visualComparisonDimensions(
+      { height: 14_674, width: 1_208 },
+      { height: 14_674, width: 1_208 },
+      390,
+    ),
+    { height: 14_674, width: 390 },
+  );
 });

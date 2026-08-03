@@ -86,11 +86,17 @@ export async function expectVisualParity(
   fs.writeFileSync(referencePath, referenceBuffer);
   fs.writeFileSync(candidatePath, candidateBuffer);
 
+  const viewportWidths = [
+    referencePage.viewportSize()?.width,
+    candidatePage.viewportSize()?.width,
+  ].filter((width): width is number => width !== undefined);
+  const viewportWidth = viewportWidths.length > 0 ? Math.min(...viewportWidths) : undefined;
   const result = comparePngBuffers(
     referenceBuffer,
     candidateBuffer,
     options.channelThreshold ?? DEFAULT_CHANNEL_THRESHOLD,
     diffPath,
+    viewportWidth,
   );
   const maxDiffRatio = options.maxDiffRatio ?? DEFAULT_MAX_DIFF_RATIO;
   const message = [
@@ -108,10 +114,11 @@ function comparePngBuffers(
   candidateBuffer: Buffer,
   channelThreshold: number,
   diffPath: string,
+  viewportWidth?: number,
 ): PngCompareResult {
   const reference = PNG.sync.read(referenceBuffer);
   const candidate = PNG.sync.read(candidateBuffer);
-  const { height, width } = visualComparisonDimensions(reference, candidate);
+  const { height, width } = visualComparisonDimensions(reference, candidate, viewportWidth);
   const diff = new PNG({ width, height });
   let diffPixels = 0;
 
@@ -158,13 +165,14 @@ function comparePngBuffers(
 export function visualComparisonDimensions(
   reference: ImageDimensions,
   candidate: ImageDimensions,
+  viewportWidth?: number,
 ): ImageDimensions {
   return {
     // Full-page screenshots can include horizontal document overflow beyond the
-    // shared browser viewport. Compare the common visible width while retaining
-    // the full vertical extent so missing page content still fails parity.
+    // shared browser viewport. Cap the common PNG width to the actual viewport
+    // while retaining the full vertical extent so missing page content fails.
     height: Math.max(reference.height, candidate.height),
-    width: Math.min(reference.width, candidate.width),
+    width: Math.min(reference.width, candidate.width, viewportWidth ?? Number.POSITIVE_INFINITY),
   };
 }
 
