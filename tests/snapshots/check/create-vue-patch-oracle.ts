@@ -318,7 +318,12 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
         )}\n`,
       );
 
-      const cleanSource = materializeCreateVueTypecheckSource(fixture);
+      materializeCreateVueTypecheckSource(fixture);
+      const cleanSource = fixture.applyExactPatch(
+        appPath,
+        `${createVueCleanCount}\nconst label = 'ready'`,
+        `${createVueCleanCount}\nconst countActive = 2\nconst countArchived = 3\nconst label = 'ready'`,
+      );
       const appFile = fixture.resolve(appPath);
       const appUri = pathToFileURL(appFile).href;
 
@@ -341,6 +346,35 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
           (params) => isDiagnosticsForUri(params, appUri) && params.version === 1,
         )) as PublishDiagnosticsParams;
         assert.deepEqual(cleanPublish.diagnostics, [], JSON.stringify(cleanPublish.diagnostics));
+
+        const requestCompletionRanking = async () => {
+          const completion = (await session.request("textDocument/completion", {
+            textDocument: { uri: appUri },
+            position: offsetToPosition(
+              cleanSource,
+              cleanSource.indexOf("{{ count }}") + "{{ cou".length,
+            ),
+          })) as
+            | Array<{ label: string; sortText?: string }>
+            | { items?: Array<{ label: string; sortText?: string }> }
+            | null;
+          const items = Array.isArray(completion) ? completion : (completion?.items ?? []);
+          return items
+            .filter((item) => item.label.startsWith("count"))
+            .map((item) => ({ label: item.label, sortText: item.sortText ?? null }));
+        };
+
+        // #3224 completion-ranking oracle: these candidates share the exact
+        // prefix at the request position. Pin both response order and the LSP
+        // sortText contract, then repeat the request so map/set iteration or a
+        // warm Corsa session cannot silently reshuffle the production answer.
+        const expectedCompletionRanking = [
+          { label: "count", sortText: "0count" },
+          { label: "countActive", sortText: "0countActive" },
+          { label: "countArchived", sortText: "0countArchived" },
+        ];
+        assert.deepEqual(await requestCompletionRanking(), expectedCompletionRanking);
+        assert.deepEqual(await requestCompletionRanking(), expectedCompletionRanking);
 
         const completion = await session.request("textDocument/completion", {
           textDocument: { uri: appUri },
