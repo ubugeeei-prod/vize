@@ -80,13 +80,14 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     action.match(/VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/g) ?? [];
   assert.equal(
     serverPathUses.length,
-    4,
-    "every real-server scenario must consume the one built binary",
+    6,
+    "every real-server scenario and host health check must consume the one built binary",
   );
   assert.match(action, /vp run --workspace-root test:vscode-extension:host-real/);
   assert.match(action, /vp run --workspace-root test:nvim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:vim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:zed-extension:real-server/);
+  assert.match(action, /vp run --workspace-root test:helix-extension:real-server/);
 
   // The scenario needs a Neovim with a Lua LSP client, pinned and checksummed.
   assert.match(action, /NVIM_VERSION: v\d+\.\d+\.\d+/);

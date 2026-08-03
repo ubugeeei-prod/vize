@@ -24,3 +24,8 @@ typecheck = true
 
 The package registers Vize for `vue` and `art-vue`. The `art-vue` language uses a glob so
 `*.art.vue` files do not get swallowed by the generic `.vue` suffix rule.
+
+CI validates this file with the pinned official Helix binary (`hx --health vue` and
+`hx --health art-vue`), then runs the advertised language-server features against one real
+`vize lsp` binary. Formatting is not advertised by this default profile; enable it explicitly
+with `formatting = true` if Helix should use Vize as the document formatter.
