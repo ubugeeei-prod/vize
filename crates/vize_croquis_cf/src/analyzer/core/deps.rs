@@ -32,6 +32,7 @@ impl CrossFileAnalyzer {
             })
             .collect();
         let used_components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
+        self.clear_component_usage_edges(file_id);
 
         let mut import_bindings = Vec::new();
         for (source, is_type_only, local_bindings) in imports_data {
@@ -119,6 +120,29 @@ impl CrossFileAnalyzer {
 
     pub(super) fn find_component_by_name(&self, name: &str) -> Option<FileId> {
         self.graph.find_by_component(name)
+    }
+
+    fn clear_component_usage_edges(&mut self, file_id: FileId) {
+        let targets = self.graph.get_node(file_id).map_or_else(Vec::new, |node| {
+            node.imports
+                .iter()
+                .filter_map(|(target, edge)| {
+                    (*edge == DependencyEdge::ComponentUsage).then_some(*target)
+                })
+                .collect()
+        });
+
+        if let Some(node) = self.graph.get_node_mut(file_id) {
+            node.imports
+                .retain(|(_, edge)| *edge != DependencyEdge::ComponentUsage);
+        }
+        for target in targets {
+            if let Some(node) = self.graph.get_node_mut(target) {
+                node.importers.retain(|(source, edge)| {
+                    *source != file_id || *edge != DependencyEdge::ComponentUsage
+                });
+            }
+        }
     }
 }
 

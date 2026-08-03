@@ -1,5 +1,5 @@
 use super::CrossFileAnalyzer;
-use crate::graph::{DependencyEdge, ModuleNode};
+use crate::graph::ModuleNode;
 use crate::registry::FileId;
 use std::path::Path;
 use vize_croquis::{
@@ -106,31 +106,10 @@ impl CrossFileAnalyzer {
 
     /// Rebuild component usage edges.
     ///
-    /// This should be called after all files have been added to ensure
-    /// that ComponentUsage edges are correctly established. When files
-    /// are added one by one, component references might not resolve
-    /// if the target component hasn't been added yet.
+    /// Re-resolve imports after all files have been added so each component
+    /// usage follows the importing file's own binding before name fallback.
     pub fn rebuild_component_edges(&mut self) {
-        // Collect all used_components from all files
-        let component_data: Vec<_> = self
-            .registry
-            .iter()
-            .map(|entry| {
-                let components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
-                (entry.id, components)
-            })
-            .collect();
-
-        // Add ComponentUsage edges for any that were missed
-        for (file_id, used_components) in component_data {
-            for component in used_components {
-                if let Some(target_id) = self.find_component_by_name(component.as_str()) {
-                    // add_edge checks for duplicates internally
-                    self.graph
-                        .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
-                }
-            }
-        }
+        self.rebuild_import_edges();
     }
 }
 
