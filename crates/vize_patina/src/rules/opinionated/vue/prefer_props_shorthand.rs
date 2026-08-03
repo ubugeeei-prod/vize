@@ -100,6 +100,7 @@ mod tests {
     use super::PreferPropsShorthand;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
+    use vize_carton::config::VueVersion;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
@@ -127,6 +128,13 @@ mod tests {
         let result = linter.lint_template(r#"<MyComponent :foo="foo" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_vue2_compatibility_disables_vue34_shorthand() {
+        let linter = create_linter().with_vue_version(Some(VueVersion::V2_7));
+        let result = linter.lint_template(r#"<MyComponent :foo="foo" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
