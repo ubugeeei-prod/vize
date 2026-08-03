@@ -1,8 +1,11 @@
 use super::super::compile_sfc;
+use super::temp_compile_project_dir;
 use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
 };
 use crate::{SfcParseOptions, parse_sfc};
+use std::fs;
+use vize_carton::ToCompactString;
 
 #[test]
 fn test_define_emits_quoted_update_event_in_sfc() {
@@ -166,6 +169,89 @@ withDefaults(defineProps<{
     assert_eq!(&source[loc.start..loc.end], "items");
     assert_eq!((loc.start_line, loc.start_column), (6, 9));
     assert_eq!((loc.end_line, loc.end_column), (6, 14));
+}
+
+#[test]
+fn test_define_props_extends_value_imported_declaration_barrel_interface() {
+    let project = temp_compile_project_dir("value-import-declaration-barrel-props");
+    let package = project.join("node_modules/some-ui");
+    let dist = package.join("dist");
+    let src = project.join("src");
+    fs::create_dir_all(&dist).unwrap();
+    fs::create_dir_all(&src).unwrap();
+
+    fs::write(
+        package.join("package.json"),
+        r#"{ "name": "some-ui", "types": "./dist/index.d.ts" }"#,
+    )
+    .unwrap();
+    fs::write(
+        dist.join("index.d.ts"),
+        "import { PrimitiveProps } from './index4.js'\nexport { PrimitiveProps }\n",
+    )
+    .unwrap();
+    fs::write(dist.join("index4.js"), "export {};\n").unwrap();
+    fs::write(
+        dist.join("index4.d.ts"),
+        r#"type AsTag = 'a' | 'button' | 'div' | ({} & string)
+interface PrimitiveProps {
+  asChild?: boolean
+  as?: AsTag
+}
+export { PrimitiveProps, AsTag }
+"#,
+    )
+    .unwrap();
+
+    let button_path = src.join("Button.vue");
+    let source = r#"<script setup lang="ts">
+import type { PrimitiveProps } from "some-ui"
+
+interface Props extends PrimitiveProps {
+  variant?: string
+}
+
+const props = withDefaults(defineProps<Props>(), { as: "button" })
+</script>
+
+<template>
+  <div :data-as="as" :data-as-child="asChild" :data-variant="variant" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(button_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("asChild: {\n      type: Boolean"),
+        "inherited Boolean prop must reach runtime props:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains(
+            "as: {\n      type: [String, Object],\n      required: false,\n      default: \"button\""
+        ),
+        "withDefaults must retain the inherited prop default:\n{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("variant: {\n      type: String,\n      required: false"),
+        "local props must remain present:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("\"data-as\": __props.as")
+            && result.code.contains("\"data-as-child\": __props.asChild")
+            && !result.code.contains("_ctx.as"),
+        "inherited props must not fall back to instance context:\n{}",
+        result.code
+    );
+
+    let _ = fs::remove_dir_all(project);
 }
 
 fn compile_vapor_ts_sfc(source: &str) -> SfcCompileResult {
