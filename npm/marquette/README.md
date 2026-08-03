@@ -129,6 +129,22 @@ mutate their inputs. Compatibility reports expose validation diagnostics for
 both manifests and omit changes when either input is invalid. The published manifest schema is available from
 `@vizejs/marquette/adapter/schema`.
 
+Native rendering adapters share one closed version-one baseline for rendering,
+events, layout, text, images, animation, accessibility, and lifecycle:
+
+```ts
+import { nativeEngineCapabilityProfile } from "@vizejs/marquette/adapter";
+
+const nativeAdapter = {
+  adapter: "native.example",
+  capabilities: nativeEngineCapabilityProfile(),
+};
+```
+
+The canonical identifiers use the `native.*` namespace and are emitted in a
+stable order. The helper returns fresh values so an adapter may add private
+capabilities without changing the baseline used by another consumer.
+
 ## Test-run evidence
 
 Release-bound test-run evidence records live in their own lazy entries so

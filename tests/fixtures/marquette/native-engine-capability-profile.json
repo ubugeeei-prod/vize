@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "adapter": "fixture.native",
+  "capabilities": [
+    { "id": "native.rendering", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.events", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.layout", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.text", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.images", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.animation", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.accessibility", "minVersion": 1, "maxVersion": 1 },
+    { "id": "native.lifecycle", "minVersion": 1, "maxVersion": 1 }
+  ]
+}

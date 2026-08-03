@@ -5,8 +5,9 @@ use serde_json::Value;
 use vize_carton::{String, ToCompactString};
 use vize_marquette::{
     ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA, AdapterCapabilityManifest, ApplicationContract,
-    compare_adapter_capabilities, contract_fingerprint, negotiate_adapter_capabilities,
-    validate_adapter_capability_manifest,
+    CapabilityDefinition, NATIVE_ENGINE_CAPABILITY_IDS, NATIVE_ENGINE_CAPABILITY_VERSION,
+    compare_adapter_capabilities, contract_fingerprint, native_engine_capability_profile,
+    negotiate_adapter_capabilities, validate_adapter_capability_manifest,
 };
 
 fn fixture(name: &str) -> PathBuf {
@@ -42,6 +43,46 @@ struct CompatibilityCase {
     previous: AdapterCapabilityManifest,
     next: AdapterCapabilityManifest,
     expected: Value,
+}
+
+#[test]
+fn native_engine_profile_matches_the_shared_contract_and_negotiates_fail_closed() {
+    let expected: AdapterCapabilityManifest = read("native-engine-capability-profile.json");
+    let profile = native_engine_capability_profile();
+    let actual = AdapterCapabilityManifest {
+        format_version: 1,
+        adapter: "fixture.native".into(),
+        capabilities: profile.clone(),
+    };
+
+    assert_eq!(actual, expected);
+    assert!(validate_adapter_capability_manifest(&actual).is_empty());
+    assert_eq!(profile.len(), NATIVE_ENGINE_CAPABILITY_IDS.len());
+    assert!(profile.iter().all(|support| {
+        support.min_version == NATIVE_ENGINE_CAPABILITY_VERSION
+            && support.max_version == NATIVE_ENGINE_CAPABILITY_VERSION
+    }));
+
+    let mut contract = ApplicationContract::new("native-profile");
+    for id in NATIVE_ENGINE_CAPABILITY_IDS {
+        contract.capabilities.insert(
+            id.into(),
+            CapabilityDefinition::new(id, "Native engine contract"),
+        );
+    }
+    let compatible =
+        negotiate_adapter_capabilities(&contract, NATIVE_ENGINE_CAPABILITY_IDS, &actual);
+    assert!(compatible.compatible);
+
+    let mut missing_animation = actual;
+    missing_animation
+        .capabilities
+        .retain(|support| support.id.as_str() != "native.animation");
+    let incompatible =
+        negotiate_adapter_capabilities(&contract, NATIVE_ENGINE_CAPABILITY_IDS, &missing_animation);
+    assert!(!incompatible.compatible);
+    assert_eq!(incompatible.mismatches.len(), 1);
+    assert_eq!(incompatible.mismatches[0].capability, "native.animation");
 }
 
 #[test]

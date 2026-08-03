@@ -4,7 +4,10 @@ import { test } from "node:test";
 
 import type { ApplicationMarquette } from "./model.js";
 import {
+  NATIVE_ENGINE_CAPABILITY_IDS,
+  NATIVE_ENGINE_CAPABILITY_VERSION,
   compareAdapterCapabilities,
+  nativeEngineCapabilityProfile,
   negotiateAdapterCapabilities,
   parseAdapterCapabilityManifest,
   validateAdapterCapabilityManifest,
@@ -37,6 +40,58 @@ interface CompatibilityCase {
   readonly next: AdapterCapabilityManifest;
   readonly expected: AdapterCapabilityCompatibilityReport;
 }
+
+void test("native engine profile matches the shared contract and returns fresh values", async () => {
+  const expected = await read<AdapterCapabilityManifest>("native-engine-capability-profile.json");
+  const first = nativeEngineCapabilityProfile();
+  const manifest = {
+    formatVersion: 1,
+    adapter: "fixture.native",
+    capabilities: first,
+  } as const satisfies AdapterCapabilityManifest;
+
+  assert.deepEqual(manifest, expected);
+  assert.deepEqual(
+    first.map(({ id }) => id),
+    NATIVE_ENGINE_CAPABILITY_IDS,
+  );
+  assert.equal(first.length, 8);
+  assert.ok(
+    first.every(
+      ({ minVersion, maxVersion }) =>
+        minVersion === NATIVE_ENGINE_CAPABILITY_VERSION &&
+        maxVersion === NATIVE_ENGINE_CAPABILITY_VERSION,
+    ),
+  );
+  assert.deepEqual(validateAdapterCapabilityManifest(manifest), []);
+
+  const contract: ApplicationMarquette = {
+    application: "native-profile",
+    capabilities: Object.fromEntries(
+      NATIVE_ENGINE_CAPABILITY_IDS.map((id) => [
+        id,
+        { id, description: "Native engine contract", version: 1 },
+      ]),
+    ),
+  };
+  assert.equal(
+    negotiateAdapterCapabilities(contract, NATIVE_ENGINE_CAPABILITY_IDS, manifest).compatible,
+    true,
+  );
+
+  const missingAnimation = {
+    ...manifest,
+    capabilities: manifest.capabilities.filter(({ id }) => id !== "native.animation"),
+  };
+  assert.deepEqual(
+    negotiateAdapterCapabilities(contract, NATIVE_ENGINE_CAPABILITY_IDS, missingAnimation)
+      .mismatches,
+    [{ code: "missing-capability", capability: "native.animation", requiredVersion: 1 }],
+  );
+
+  (first[0] as { id: string }).id = "mutated";
+  assert.equal(nativeEngineCapabilityProfile()[0]?.id, "native.rendering");
+});
 
 void test("matches shared negotiation fixtures and input permutations", async () => {
   const fixture = await read<NegotiationFixture>("adapter-negotiation.json");
