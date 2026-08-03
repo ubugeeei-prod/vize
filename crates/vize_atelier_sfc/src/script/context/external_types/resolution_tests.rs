@@ -68,3 +68,65 @@ fn package_root_prefers_exports_types_over_top_level_types() {
 
     let _ = std::fs::remove_dir_all(package);
 }
+
+#[test]
+fn package_root_reads_condition_only_exports_map() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let package = std::env::temp_dir().join(format!(
+        "vize-sfc-external-types-{}-root-conditions-{nonce}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(package.join("dist")).unwrap();
+    // `exports` may omit the `"."` subpath and hold conditions directly.
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"types":"./legacy.d.ts","exports":{"types":"./dist/index.d.ts","default":"./dist/index.js"}}"#,
+    )
+    .unwrap();
+    std::fs::write(package.join("legacy.d.ts"), "export type Legacy = string").unwrap();
+    std::fs::write(
+        package.join("dist/index.d.ts"),
+        "export type Modern = string",
+    )
+    .unwrap();
+
+    let resolved = resolve_package_types(&package, "").unwrap();
+    assert!(
+        resolved.ends_with("dist/index.d.ts"),
+        "expected root condition types entry, got {resolved:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(package);
+}
+
+#[test]
+fn package_root_ignores_subpath_only_exports_map() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let package = std::env::temp_dir().join(format!(
+        "vize-sfc-external-types-{}-subpath-only-{nonce}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(package.join("dist")).unwrap();
+    // Only a subpath is exported, so its `types` must not answer for the root.
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"types":"./legacy.d.ts","exports":{"./sub":{"types":"./dist/sub.d.ts"}}}"#,
+    )
+    .unwrap();
+    std::fs::write(package.join("legacy.d.ts"), "export type Legacy = string").unwrap();
+    std::fs::write(package.join("dist/sub.d.ts"), "export type Sub = string").unwrap();
+
+    let resolved = resolve_package_types(&package, "").unwrap();
+    assert!(
+        resolved.ends_with("legacy.d.ts"),
+        "expected legacy types fallback, got {resolved:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(package);
+}

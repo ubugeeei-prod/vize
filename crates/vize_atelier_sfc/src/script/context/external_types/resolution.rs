@@ -190,7 +190,7 @@ fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
         if let Some(manifest) = &manifest {
             // Modern resolution honours `exports` ahead of the legacy
             // top-level `types`/`typings` entry points.
-            if let Some(types) = exports_types_entry(manifest, ".")
+            if let Some(types) = exports_root_types_entry(manifest)
                 && let Some(path) = resolve_candidate_path(package_dir.join(types))
             {
                 return Some(path);
@@ -219,20 +219,37 @@ fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
     resolve_candidate_path(package_dir.join(subpath))
 }
 
-/// Find the `types` condition for an `exports` entry; conditions may nest.
+/// Find the `types` condition for an `exports` subpath entry.
 fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Option<String> {
-    fn find_types(value: &serde_json::Value) -> Option<String> {
-        match value {
-            serde_json::Value::Object(map) => {
-                if let Some(types) = map.get("types").and_then(|value| value.as_str()) {
-                    return Some(types.to_compact_string());
-                }
-                map.values().find_map(find_types)
-            }
-            _ => None,
-        }
+    find_types_condition(manifest.get("exports")?.get(key)?)
+}
+
+/// Find the `types` condition for the package root. The root entry is either
+/// the explicit `"."` subpath or, when no subpath keys are present, a condition
+/// map placed directly under `exports`.
+fn exports_root_types_entry(manifest: &serde_json::Value) -> Option<String> {
+    let exports = manifest.get("exports")?;
+    if let Some(root) = exports.get(".") {
+        return find_types_condition(root);
     }
-    find_types(manifest.get("exports")?.get(key)?)
+    let conditions = exports.as_object()?;
+    if conditions.keys().any(|key| key.starts_with('.')) {
+        return None;
+    }
+    find_types_condition(exports)
+}
+
+/// Read a `types` condition out of an `exports` value; conditions may nest.
+fn find_types_condition(value: &serde_json::Value) -> Option<String> {
+    match value {
+        serde_json::Value::Object(map) => {
+            if let Some(types) = map.get("types").and_then(|value| value.as_str()) {
+                return Some(types.to_compact_string());
+            }
+            map.values().find_map(find_types_condition)
+        }
+        _ => None,
+    }
 }
 
 pub(super) fn resolve_at_src_alias(current_file: &Path, specifier: &str) -> Option<PathBuf> {
