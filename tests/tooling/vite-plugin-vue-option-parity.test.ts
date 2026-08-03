@@ -16,6 +16,7 @@ import { test } from "node:test";
 import type { Plugin, ResolvedConfig } from "vite";
 
 import {
+  createClientHmrProbe,
   createUpstreamPlugin,
   honoredEvidence,
   readLedger,
@@ -23,7 +24,6 @@ import {
   validateLedger,
 } from "./_helpers/vite-plugin-vue-parity.ts";
 import { vize } from "../../npm/builder/vite/src/plugin/index.ts";
-import { toPluginVisibleVirtualId } from "../../npm/builder/vite/src/virtual.ts";
 
 type AnyHook = (...args: never[]) => unknown;
 
@@ -170,23 +170,7 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
   assert.ok(resolved);
   await loadVueModule(plugin, resolved);
 
-  const sent: Array<{ data?: { css?: string; type?: string }; event?: string }> = [];
-  // Vize implements upstream's `handleHotUpdate` behavior through Vite's
-  // environment-aware `hotUpdate` hook, so the probe drives the client
-  // environment: the loaded client virtual module has to be reachable in its
-  // graph for the SFC to be hot-updated at all.
-  const clientId = toPluginVisibleVirtualId(file);
-  const clientModule = { id: clientId, url: clientId };
-  const environment = {
-    name: "client",
-    moduleGraph: {
-      getModuleById: (id: string) => (id === clientId ? clientModule : undefined),
-      getModuleByUrl: async () => undefined,
-      getModulesByFile: () => undefined,
-      invalidateModule() {},
-    },
-    hot: { send: (payload: never) => sent.push(payload) },
-  };
+  const { environment, sent } = createClientHmrProbe(file);
 
   fs.writeFileSync(file, restyled);
   const affected = await hook<AnyHook>(plugin.hotUpdate).call({ environment }, {
