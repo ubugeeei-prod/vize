@@ -89,6 +89,10 @@ export interface CompilerConfig {
    */
   jsxMode?: "vdom" | "vapor";
   /**
+   * JSX semantics for projects migrating from @vue/babel-plugin-jsx
+   */
+  jsxCompat?: "native" | "babel";
+  /**
    * Treat lowercase non-HTML tags as custom renderer elements
    */
   customRenderer?: boolean;

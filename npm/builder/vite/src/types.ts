@@ -199,6 +199,14 @@ export interface VizeOptions extends ExperimentalPluginOptions {
   jsxMode?: "vdom" | "vapor";
 
   /**
+   * JSX semantics for projects migrating from `@vue/babel-plugin-jsx`.
+   * `"native"` keeps Vize's defaults; `"babel"` opts into Babel-compatible
+   * behavior. Babel compatibility is only defined for VDOM output.
+   * @default "native"
+   */
+  jsxCompat?: "native" | "babel";
+
+  /**
    * Treat lowercase non-HTML tags as custom renderer elements instead of Vue components.
    * Useful for TresJS and other custom renderers.
    * @default false

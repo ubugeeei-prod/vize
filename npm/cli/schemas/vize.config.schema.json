@@ -61,6 +61,12 @@
           "type": "string",
           "enum": ["vdom", "vapor"]
         },
+        "jsxCompat": {
+          "description": "JSX semantics for projects migrating from @vue/babel-plugin-jsx",
+          "default": "native",
+          "type": "string",
+          "enum": ["native", "babel"]
+        },
         "customRenderer": {
           "description": "Treat lowercase non-HTML tags as custom renderer elements",
           "default": false,

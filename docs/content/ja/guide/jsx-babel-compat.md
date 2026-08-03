@@ -5,8 +5,7 @@ title: Babel JSX 互換
 # Babel JSX 互換
 
 > **ステータス:** オプトインであり、デフォルトでは無効です。`compiler.jsxCompat` は設定ローダーが読み取り、
-> `compileJsx` バインディングが解釈します。バンドラープラグインはまだこの値をコンパイラへ渡していません。
-> 現時点で何が動くかは、下の「有効にする」節を参照してください。
+> native/WASM の `compileJsx` バインディングと Vize のバンドラープラグインが解釈します。
 
 Vize は `.jsx` と `.tsx` を自前のコンパイラクレートでコンパイルします。そのため出力はテンプレートコンパイラと
 同じ形、つまりブロックツリーであり、`v-if` / `v-for` は JavaScript から降ろされ、各ノードにパッチフラグが付き
@@ -35,7 +34,7 @@ Vize は `.jsx` と `.tsx` を自前のコンパイラクレートでコンパ�
 `"native"` にフォールバックします。認識できない `jsxMode` の扱いと同じで、設定値の書き間違いがコンパイルを
 止めてはならないためです。
 
-同じ値は `compileJsx` バインディングが直接受け取ります。現時点でこのモードが実際に効くのはここです。
+同じ値は `compileJsx` バインディングが直接受け取ります。
 
 ```js
 import { compileJsx } from "@vizejs/native";
@@ -47,11 +46,9 @@ const result = compileJsx(source, {
 });
 ```
 
-`@vizejs/wasm` も同じ `jsxCompat` オプションを公開しています。バンドラープラグイン
-（`@vizejs/vite-plugin`、`@vizejs/unplugin`、`@vizejs/rspack-plugin`、`@vizejs/nuxt`）は現在 `jsxMode` と
-`vapor` を `compileJsx` に渡していますが `jsxCompat` は渡していないため、設定キーを書くだけではバンドラーの
-出力はまだ変わりません。この配線は
-[#3391](https://github.com/ubugeeei-prod/vize/issues/3391) で追跡しています。
+`@vizejs/wasm` も同じ `jsxCompat` オプションを公開しています。Vite、unplugin、Rspack、Nuxt の各
+エントリポイントは設定された `jsxCompat` を `compileJsx` へ渡し、各オプション型でも `jsxMode`、
+`vapor` と並べて `jsxCompat` を直接指定できます。
 
 ## なぜオプトインでプロジェクト単位なのか
 

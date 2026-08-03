@@ -16,6 +16,8 @@ export interface JsxCompileOptionsNapi {
    * still override it.
    */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   vapor?: boolean;
   /**
    * Emit a v3 source map for the generated render code (#1533). When `true`,

@@ -6,9 +6,8 @@ title: Compatibilidade Babel JSX
 
 # Compatibilidade Babel JSX
 
-> **Status:** opt-in e desligado por padrão. `compiler.jsxCompat` é lido pelo carregador de configuração e
-> homenageado pelas `compileJsx` encadernações; Os plugins bundler ainda não encaminham para o compilador.
-> A seção "Habilitando" abaixo cobre o que funciona hoje.
+> **Status:** opt-in e desligado por padrão. `compiler.jsxCompat` é lido pelo carregador de configuração,
+> pelas ligações native/WASM de `compileJsx` e pelos plugins bundler do Vize.
 
 O Vize compila `.jsx` e `.tsx` através de suas próprias caixas de compilador, então a saída é
 formato de compilador de template: uma árvore de blocos, `v-if` / `v-for` reduzida do JavaScript e patch
@@ -37,8 +36,7 @@ A chave aceita `"native"` (o padrão) e `"babel"`. Qualquer outro valor retorna 
 em vez de falhar na compilação, correspondendo à forma como um `jsxMode` não reconhecido é tratado: uma configuração
 valor isolada nunca deve bloquear a compilação.
 
-O mesmo valor é aceito diretamente pelas ligações `compileJsx` , que é onde o modo entra
-efeito hoje:
+O mesmo valor é aceito diretamente pelas ligações `compileJsx`:
 
 ```js
 import { compileJsx } from "@vizejs/native";
@@ -50,11 +48,9 @@ const result = compileJsx(source, {
 });
 ```
 
-`@vizejs/wasm` expõe a mesma opção `jsxCompat`. Os plugins do bundler
-(`@vizejs/vite-plugin`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`) atualmente passam
-`jsxMode` e `vapor` para `compileJsx`, mas não `jsxCompat`, então configurar a chave de configuração sozin
-ha ainda não muda o que o bundler emite. Essa fiação é rastreada em
-[#3391](https://github.com/ubugeeei-prod/vize/issues/3391).
+`@vizejs/wasm` expõe a mesma opção `jsxCompat`. Os pontos de entrada Vite, unplugin, Rspack e
+Nuxt encaminham o valor configurado de `jsxCompat` para `compileJsx`, e seus tipos de opções
+aceitam `jsxCompat` diretamente ao lado de `jsxMode` e `vapor`.
 
 ## Por que é opt-in e em nível de projeto
 

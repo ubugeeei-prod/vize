@@ -8,13 +8,14 @@ interface TransformResult {
   map?: unknown;
 }
 
-function createPlugin(vapor: boolean, jsxMode?: "vdom" | "vapor") {
+function createPlugin(vapor: boolean, jsxMode?: "vdom" | "vapor", jsxCompat?: "native" | "babel") {
   return vizeUnplugin.raw(
     {
       isProduction: true,
       root: packageRoot,
       vapor,
       jsxMode,
+      jsxCompat,
     },
     {
       framework: "rollup",
@@ -27,8 +28,9 @@ async function runTransform(
   source: string,
   id: string,
   jsxMode?: "vdom" | "vapor",
+  jsxCompat?: "native" | "babel",
 ): Promise<{ result: TransformResult | null; warnings: string[] }> {
-  const plugin = createPlugin(vapor, jsxMode);
+  const plugin = createPlugin(vapor, jsxMode, jsxCompat);
 
   const transformInclude = plugin.transformInclude;
   if (typeof transformInclude === "function") {
@@ -116,6 +118,30 @@ void test("jsxMode:'vdom' keeps the vdom default even when vapor:true", async (t
     /_createElementBlock\("div"/,
     "jsxMode:'vdom' produces vdom element-block output",
   );
+});
+
+void test("jsxCompat:'babel' reaches the unplugin compiler with complete output", async (t) => {
+  const source = "const A = () => <input disabled/>;";
+  const id = resolveFixturePath("jsx", "Compat.jsx");
+  const native = await runTransform(false, source, id);
+  const babel = await runTransform(false, source, id, undefined, "babel");
+
+  t.assert.equal(
+    native.result?.code,
+    'import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n' +
+      "export function render(_ctx, _cache) {\n" +
+      '  return (_openBlock(), _createElementBlock("input", { disabled: "" }))\n' +
+      "}",
+  );
+  t.assert.equal(
+    babel.result?.code,
+    'import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n' +
+      "export function render(_ctx, _cache) {\n" +
+      '  return (_openBlock(), _createElementBlock("input", { disabled: true }))\n' +
+      "}",
+  );
+  t.assert.deepEqual(native.warnings, []);
+  t.assert.deepEqual(babel.warnings, []);
 });
 
 void test("a .tsx transform carries the runtime-helper preamble and a source map", async (t) => {

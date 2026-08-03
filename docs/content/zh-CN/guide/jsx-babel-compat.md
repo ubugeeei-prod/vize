@@ -6,9 +6,8 @@ title: Babel JSX 兼容性
 
 # Babel JSX 兼容性
 
-> **状态：**默认选择加入和关闭。配置加载器读取`compiler.jsxCompat`
-> 以 `compileJsx` 的束缚致敬;bundler 插件还不会转发到编译器。
-> 下面的“启用它”部分介绍了目前有效的方法。
+> **状态：**选择加入，默认关闭。配置加载器、native/WASM `compileJsx` 绑定和 Vize bundler 插件
+> 都支持 `compiler.jsxCompat`。
 
 Vize 通过自己的编译器箱编译 `.jsx` 和 `.tsx` ，因此输出呈现
 模板编译器形状：块树，从 JavaScript 中降 `v-if` / `v-for` ，并在每个节点上补丁
@@ -37,8 +36,7 @@ Vapor/VDOM输出选择器，请参见 [JSX & TSX guide](./jsx.md)。
 ，而不是构建失败，这与未识别`jsxMode`的处理方式相符：一个零散的配置
 值绝不能阻碍编译。
 
-相同的数值被 `compileJsx` 绑定直接接受，这也是该模式今天
-起作用的地方：
+相同的值也可以直接传给 `compileJsx` 绑定：
 
 ```js
 import { compileJsx } from "@vizejs/native";
@@ -50,11 +48,9 @@ const result = compileJsx(source, {
 });
 ```
 
-`@vizejs/wasm`也暴露了同样的`jsxCompat`选项。捆绑包插件
-（`@vizejs/vite-plugin`、`@vizejs/unplugin`、`@vizejs/rspack-plugin`、`@vizejs/nuxt`）目前只传递
-`jsxMode`和`vapor`给`compileJsx`，但不会`jsxCompat`，所以仅设置配置键
-还不会改变捆绑包器输出的信号。这些线路会被追踪在
-[#3391](https://github.com/ubugeeei-prod/vize/issues/3391)。
+`@vizejs/wasm` 也暴露同样的 `jsxCompat` 选项。Vite、unplugin、Rspack 和 Nuxt 入口会把各自
+配置的 `jsxCompat` 传给 `compileJsx`，其选项类型也允许把 `jsxCompat` 与 `jsxMode`、`vapor`
+并列直接指定。
 
 ## 为什么它是选择加入和项目级别的
 

@@ -20,6 +20,7 @@ import "./plugin/inspector-lint-plan.test.ts";
 import "./plugin/external-sfc-hmr.test.ts";
 import "./plugin/hmr.test.ts";
 import "./plugin/index.test.ts";
+import "./plugin/jsx-compat.test.ts";
 import "./plugin/load-jsx-passthrough.test.ts";
 import "./plugin/load-storybook.test.ts";
 import "./plugin/load.test.ts";

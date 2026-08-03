@@ -581,6 +581,11 @@ export interface JsxCompileOptionsNapi {
    */
   jsxMode?: string;
   /**
+   * JSX semantics: `"native"` (default) or `"babel"`. Babel compatibility is
+   * only defined for VDOM output.
+   */
+  jsxCompat?: "native" | "babel";
+  /**
    * Legacy default-mode toggle: `true` compiles components to Vapor, `false`
    * (default) to VDOM. Kept for back-compat; prefer `jsxMode`. Ignored when
    * `jsxMode` is set.

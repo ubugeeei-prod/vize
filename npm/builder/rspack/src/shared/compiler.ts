@@ -68,12 +68,18 @@ ${output}`;
 export function compileJsxModule(
   filePath: string,
   source: string,
-  options: { jsxMode?: "vdom" | "vapor"; vapor?: boolean; sourceMap?: boolean } = {},
+  options: {
+    jsxMode?: "vdom" | "vapor";
+    jsxCompat?: "native" | "babel";
+    vapor?: boolean;
+    sourceMap?: boolean;
+  } = {},
 ): { code: string; map: string | null; warnings: string[] } {
   const result = compileJsx(source, {
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
+    jsxCompat: options.jsxCompat,
     vapor: options.vapor ?? false,
     sourceMap: options.sourceMap ?? false,
   });

@@ -79,6 +79,12 @@ compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Default output mode for .jsx/.tsx components without a \"use vue:*\" directive"
       default = "vdom"
     }
+    ["jsxCompat"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "native"; "babel" }
+      description = "JSX semantics for projects migrating from @vue/babel-plugin-jsx"
+      default = "native"
+    }
     ["customRenderer"] = new JsonSchema {
       type = "boolean"
       description = "Treat lowercase non-HTML tags as custom renderer elements"

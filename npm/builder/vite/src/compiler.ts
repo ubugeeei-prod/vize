@@ -215,6 +215,8 @@ export function compileFile(
 export interface JsxCompileFileOptions {
   /** Default JSX output mode; takes precedence over `vapor`. */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   vapor?: boolean;
   /**
    * SSR build: skip the runtime `<style>` injection for any extracted
@@ -249,6 +251,7 @@ export function compileJsxModule(
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
+    jsxCompat: options.jsxCompat,
     vapor: options.vapor ?? false,
     sourceMap: options.sourceMap ?? false,
   });

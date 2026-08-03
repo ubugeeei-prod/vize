@@ -107,9 +107,42 @@ function typescriptInterfaceKeys(source: string, interfaceName: string): string[
   return [...body.matchAll(/^\s{2}([\w$]+)\??:/gm)].map((match) => match[1]).sort();
 }
 
-const configSections = ["CompilerConfig", "LinterConfig", "TypeCheckerConfig"] as const;
+function rustStructKeys(file: string, structNames: string[]): string[] {
+  const source = fs.readFileSync(file, "utf8");
+  return structNames
+    .flatMap((structName) => {
+      const body = bracedBody(source, new RegExp(`struct ${structName}\\b`));
+      return [...body.matchAll(/^\s+(?:pub(?:\([^)]*\))?\s+)?([a-z]\w*)\s*:/gm)].map(
+        (match) => match[1],
+      );
+    })
+    .filter((key) => key !== "config")
+    .map((key) => key.replace(/_([a-z])/g, (_match, letter: string) => letter.toUpperCase()))
+    .sort();
+}
 
-test("public config keys stay identical across generated artifacts", () => {
+const configSections = [
+  {
+    name: "CompilerConfig",
+    pkl: "CompilerConfig.pkl",
+    rust: [{ file: "compiler.rs", structs: ["RawCompilerConfig"] }],
+  },
+  {
+    name: "LinterConfig",
+    pkl: "LinterConfig.pkl",
+    rust: [{ file: "linter.rs", structs: ["LinterConfig", "RawLinterConfig"] }],
+  },
+  {
+    name: "TypeCheckerConfig",
+    pkl: "TypeCheckerConfig.pkl",
+    rust: [
+      { file: "type_checker.rs", structs: ["TypeCheckerConfigDeserialize"] },
+      { file: "../model.rs", structs: ["RawTypeCheckerConfig"] },
+    ],
+  },
+] as const;
+
+test("config keys stay exhaustive across Rust, Pkl, JSON Schema and generated TypeScript", () => {
   const schema = JSON.parse(
     fs.readFileSync(path.join("npm", "cli", "schemas", "vize.config.schema.json"), "utf8"),
   ) as {
@@ -122,17 +155,32 @@ test("public config keys stay identical across generated artifacts", () => {
   const compatPkl = path.join("npm", "cli", "pkl", "vize.pkl");
 
   for (const section of configSections) {
-    const primaryKeys = pklClassKeys(path.join("npm", "cli", "pkl", `${section}.pkl`), section);
+    const primaryKeys = pklClassKeys(path.join("npm", "cli", "pkl", section.pkl), section.name);
     const artifactKeys = {
       primaryPkl: primaryKeys,
-      compatPkl: pklClassKeys(compatPkl, section),
-      jsonSchema: Object.keys(schema.definitions[section].properties).sort(),
-      generatedTypes: typescriptInterfaceKeys(generatedTypes, section),
+      compatPkl: pklClassKeys(compatPkl, section.name),
+      jsonSchema: Object.keys(schema.definitions[section.name].properties).sort(),
+      generatedTypes: typescriptInterfaceKeys(generatedTypes, section.name),
     };
     assert.deepEqual(
       artifactKeys,
       Object.fromEntries(Object.keys(artifactKeys).map((name) => [name, primaryKeys])),
-      `${section} public key sets must be identical`,
+      `${section.name} public key sets must be identical`,
     );
+
+    const rustKeys = section.rust
+      .flatMap(({ file, structs }) =>
+        rustStructKeys(path.join("crates", "vize_carton", "src", "config", "model", file), [
+          ...structs,
+        ]),
+      )
+      .sort();
+    for (const [artifact, keys] of Object.entries(artifactKeys)) {
+      assert.deepEqual(
+        rustKeys.filter((key) => !keys.includes(key)),
+        [],
+        `${section.name} Rust keys missing from ${artifact}`,
+      );
+    }
   }
 });

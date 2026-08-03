@@ -74,6 +74,7 @@ export function normalizeOptions(
     experimentalPatternedTemplate: rawOptions.experimentalPatternedTemplate ?? false,
     experimentalServerScript: rawOptions.experimentalServerScript ?? false,
     jsxMode: rawOptions.jsxMode,
+    jsxCompat: rawOptions.jsxCompat,
     customRenderer: rawOptions.customRenderer ?? false,
     templateSyntax,
     runtimeModuleName: rawOptions.runtimeModuleName ?? "vue",

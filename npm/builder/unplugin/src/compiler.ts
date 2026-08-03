@@ -107,6 +107,7 @@ export function compileJsxModule(
     filename: filePath,
     lang: filePath.endsWith(".tsx") ? "tsx" : "jsx",
     jsxMode: options.jsxMode,
+    jsxCompat: options.jsxCompat,
     vapor: options.vapor,
     sourceMap: options.sourceMap,
   });

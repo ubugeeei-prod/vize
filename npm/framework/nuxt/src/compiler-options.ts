@@ -66,6 +66,8 @@ export interface VizeNuxtCompilerOptions {
    * directive (forwarded to the underlying Vize plugin). @default "vdom"
    */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   /** Treat lowercase non-HTML tags as custom renderer elements. */
   customRenderer?: boolean;
   /** Template syntax compatibility mode. */

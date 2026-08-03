@@ -12,6 +12,30 @@ void test("compileJsxModule includes the runtime-helper preamble in the emitted 
   t.assert.snapshot(code);
 });
 
+void test("compileJsxModule forwards jsxCompat with complete output", (t) => {
+  const source = "const A = () => <input disabled/>;";
+  const native = compileJsxModule("/src/App.jsx", source, { jsxMode: "vdom" });
+  const babel = compileJsxModule("/src/App.jsx", source, {
+    jsxMode: "vdom",
+    jsxCompat: "babel",
+  });
+
+  t.assert.equal(
+    native.code,
+    'import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n' +
+      "export function render(_ctx, _cache) {\n" +
+      '  return (_openBlock(), _createElementBlock("input", { disabled: "" }))\n' +
+      "}",
+  );
+  t.assert.equal(
+    babel.code,
+    'import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"\n' +
+      "export function render(_ctx, _cache) {\n" +
+      '  return (_openBlock(), _createElementBlock("input", { disabled: true }))\n' +
+      "}",
+  );
+});
+
 void test("compileJsxModule surfaces a v3 source map when sourceMap is requested", (t) => {
   const { map } = compileJsxModule("/src/App.tsx", SOURCE, { jsxMode: "vdom", sourceMap: true });
   assert.equal(typeof map, "string", "a source map is surfaced when requested");

@@ -221,6 +221,8 @@ export interface JsxCompileOptions {
    * `filename`).
    */
   lang?: "jsx" | "tsx";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   /**
    * Default output mode: `true` compiles components to Vapor, `false`
    * (default) to VDOM. Per-component `"use vue:vapor"` / `"use vue:vdom"`

@@ -45,6 +45,7 @@ export function resolveExperimentalCompilerOptions(
     vapor: options.vapor ?? compilerConfig?.vapor ?? experimentals.vapor,
     jsxMode:
       options.jsxMode ?? compilerConfig?.jsxMode ?? (experimentals.jsxVapor ? "vapor" : undefined),
+    jsxCompat: options.jsxCompat ?? compilerConfig?.jsxCompat,
     experimentalInTagComments: experimentals.inTagComments,
     experimentalPatternedTemplate: experimentals.patternedTemplate,
     experimentalServerScript: experimentals.serverScript,

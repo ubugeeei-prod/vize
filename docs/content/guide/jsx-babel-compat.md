@@ -5,8 +5,7 @@ title: Babel JSX Compatibility
 # Babel JSX Compatibility
 
 > **Status:** opt-in and off by default. `compiler.jsxCompat` is read by the config loader and
-> honoured by the `compileJsx` bindings; the bundler plugins do not forward it to the compiler yet.
-> The "Enabling it" section below covers what works today.
+> honoured by the native/WASM `compileJsx` bindings and the Vize bundler plugins.
 
 Vize compiles `.jsx` and `.tsx` through its own compiler crates, so the output is
 template-compiler shaped: a block tree, `v-if` / `v-for` lowered out of the JavaScript, and patch
@@ -35,8 +34,7 @@ The key accepts `"native"` (the default) and `"babel"`. Any other value falls ba
 rather than failing the build, matching how an unrecognised `jsxMode` is handled: a stray config
 value must never block compilation.
 
-The same value is accepted directly by the `compileJsx` bindings, which is where the mode takes
-effect today:
+The same value is accepted directly by the `compileJsx` bindings:
 
 ```js
 import { compileJsx } from "@vizejs/native";
@@ -48,11 +46,9 @@ const result = compileJsx(source, {
 });
 ```
 
-`@vizejs/wasm` exposes the same `jsxCompat` option. The bundler plugins
-(`@vizejs/vite-plugin`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`) currently pass
-`jsxMode` and `vapor` through to `compileJsx` but not `jsxCompat`, so setting the config key alone
-does not yet change what a bundler emits. That wiring is tracked on
-[#3391](https://github.com/ubugeeei-prod/vize/issues/3391).
+`@vizejs/wasm` exposes the same `jsxCompat` option. The Vite, unplugin, Rspack, and Nuxt entry
+points forward their configured `jsxCompat` value to `compileJsx`, and their option types accept
+`jsxCompat` directly alongside `jsxMode` and `vapor`.
 
 ## Why it is opt-in and project-level
 

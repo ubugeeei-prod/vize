@@ -6,9 +6,8 @@ title: Compatibilité Babel JSX
 
 # Compatibilité Babel JSX
 
-> **Statut :** option d’adhésion et désactivation par défaut. `compiler.jsxCompat` est lu par le chargeur de configuration et
-> honoré par les `compileJsx` liaisons ; Les plugins bundler ne le transmettent pas encore au compilateur.
-> La section « Activation » ci-dessous explique ce qui fonctionne aujourd’hui.
+> **Statut :** option d’adhésion désactivée par défaut. `compiler.jsxCompat` est pris en charge par le
+> chargeur de configuration, les liaisons native/WASM de `compileJsx` et les plugins bundler de Vize.
 
 Vize compile `.jsx` et `.tsx` via ses propres caisses de compilation, donc la sortie est
 forme de compilateur modèle : un arbre de blocs, `v-if` / `v-for` supprimés du JavaScript, et patch
@@ -37,8 +36,7 @@ La clé accepte `"native"` (le défaut) et `"babel"`. Toute autre valeur revient
 plutôt qu’à échouer dans la compilation, correspondant à la façon dont un `jsxMode` non reconnu est géré : une valeur
 de configuration errante ne doit jamais bloquer la compilation.
 
-La même valeur est acceptée directement par les liaisons `compileJsx` , c’est là que le mode prend
-effet aujourd’hui :
+La même valeur est acceptée directement par les liaisons `compileJsx` :
 
 ```js
 import { compileJsx } from "@vizejs/native";
@@ -50,11 +48,9 @@ const result = compileJsx(source, {
 });
 ```
 
-`@vizejs/wasm` expose la même option `jsxCompat`. Les plugins bundler
-(`@vizejs/vite-plugin`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`) passent actuellement
-`jsxMode` et `vapor` à `compileJsx` mais pas `jsxCompat`, donc le simple réglage de la clé de configuration
-ne change pas encore ce qu’un bundler émet. Ce câblage est suivi sur
-[#3391](https://github.com/ubugeeei-prod/vize/issues/3391).
+`@vizejs/wasm` expose la même option `jsxCompat`. Les points d’entrée Vite, unplugin, Rspack et
+Nuxt transmettent leur valeur `jsxCompat` configurée à `compileJsx`, et leurs types d’options
+acceptent directement `jsxCompat` aux côtés de `jsxMode` et `vapor`.
 
 ## Pourquoi c’est un consentement volontaire et au niveau projet
 

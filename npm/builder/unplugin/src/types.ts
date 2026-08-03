@@ -20,6 +20,8 @@ export interface JsxCompileOptionsNapi {
   lang?: "jsx" | "tsx";
   /** Default JSX output mode; mirrors `compiler.jsxMode`, wins over `vapor`. */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   vapor?: boolean;
   /** Emit a v3 source map for the generated render code (#1533). */
   sourceMap?: boolean;
@@ -108,6 +110,8 @@ export interface VizeUnpluginOptions {
    * @default "vdom"
    */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  jsxCompat?: "native" | "babel";
   customRenderer?: boolean;
   templateSyntax?: VizeTemplateSyntax;
   runtimeModuleName?: string;
@@ -193,6 +197,8 @@ export interface NormalizedVizeUnpluginOptions {
   experimentalServerScript: boolean;
   /** Default JSX output mode; `undefined` when unset (treated as VDOM). */
   jsxMode?: "vdom" | "vapor";
+  /** JSX semantics; `undefined` when unset (treated as native). */
+  jsxCompat?: "native" | "babel";
   customRenderer: boolean;
   templateSyntax: VizeTemplateSyntax;
   runtimeModuleName: string;

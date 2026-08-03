@@ -406,11 +406,11 @@ export function transformJsxRequest(
     warnings,
   } = compileJsxModule(realPath, code, {
     jsxMode: state.mergedOptions.jsxMode,
+    jsxCompat: state.mergedOptions.jsxCompat,
     vapor: state.mergedOptions.vapor ?? false,
     ssr,
     sourceMap,
   });
-
   for (const warning of warnings) {
     state.logger.warn(`Warning in ${realPath}: ${warning}`);
   }
