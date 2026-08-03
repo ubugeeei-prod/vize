@@ -6,12 +6,13 @@
  */
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import type { FrescoStyle } from "../protocol.js";
 
 export interface StaticProps<T = unknown> {
   /** Items to render */
   items: T[];
   /** Optional container style */
-  style?: Record<string, unknown>;
+  style?: FrescoStyle;
   /** Render item callback */
   children?: (item: T, index: number) => unknown;
 }
@@ -23,7 +24,7 @@ export const Static = defineComponent({
       type: Array as PropType<unknown[]>,
       default: () => [],
     },
-    style: Object as PropType<Record<string, unknown>>,
+    style: Object as PropType<FrescoStyle>,
   },
   setup(props, { slots }) {
     return () => {

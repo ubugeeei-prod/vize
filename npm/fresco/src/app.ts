@@ -29,6 +29,14 @@ import {
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
+import type {
+  CompositionEvent,
+  FocusEvent,
+  KeyEvent,
+  MouseEvent,
+  PasteEvent,
+  ResizeEvent,
+} from "./protocol.js";
 import {
   createRenderer,
   treeToRenderNodes,
@@ -36,60 +44,17 @@ import {
   type FrescoNode,
 } from "./renderer.js";
 
-export type KeyEventType = "press" | "repeat" | "release";
-
-// Event types
-export interface KeyEvent {
-  type: "key";
-  key?: string;
-  char?: string;
-  ctrl: boolean;
-  alt: boolean;
-  shift: boolean;
-  meta: boolean;
-  super: boolean;
-  hyper: boolean;
-  capsLock: boolean;
-  numLock: boolean;
-  eventType?: KeyEventType;
-}
-
-export interface PasteEvent {
-  type: "paste";
-  text: string;
-}
-
-export interface ResizeEvent {
-  type: "resize";
-  width: number;
-  height: number;
-}
-
-export interface MouseEvent {
-  type: "mouse";
-  button?: string;
-  x: number;
-  y: number;
-}
-
-export interface FocusEvent {
-  type: "focus";
-  focused: boolean;
-}
-
-export interface CompositionEvent {
-  type: "compositionstart" | "compositionupdate" | "compositionend";
-  text: string;
-  cursor: number;
-}
-
-export type InputEvent =
-  | KeyEvent
-  | PasteEvent
-  | ResizeEvent
-  | MouseEvent
-  | FocusEvent
-  | CompositionEvent;
+export type {
+  CompositionEvent,
+  FocusEvent,
+  FrescoInputEvent,
+  InputEvent,
+  KeyEvent,
+  KeyEventType,
+  MouseEvent,
+  PasteEvent,
+  ResizeEvent,
+} from "./protocol.js";
 
 // Global event state
 export const lastKeyEvent: Ref<KeyEvent | null> = ref(null);

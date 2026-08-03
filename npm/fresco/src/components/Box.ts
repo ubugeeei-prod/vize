@@ -5,110 +5,25 @@
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
 import type { AriaRole, AriaState } from "../accessibility.js";
 import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
+import type {
+  FrescoBorderStyle,
+  FrescoCanonicalStyle,
+  FrescoDimension,
+  FrescoRenderStyle,
+} from "../protocol.js";
 
-export type DimensionValue = number | string;
-export type BorderStyleName =
-  | "none"
-  | "single"
-  | "double"
-  | "round"
-  | "rounded"
-  | "bold"
-  | "heavy"
-  | "dashed";
+export type DimensionValue = FrescoDimension;
+export type BorderStyleName = FrescoBorderStyle | "round" | "bold";
 
-export interface BoxProps {
-  /** Display type */
-  display?: "flex" | "none";
-  /** Positioning mode */
-  position?: "absolute" | "relative" | "static";
-  top?: DimensionValue;
-  right?: DimensionValue;
-  bottom?: DimensionValue;
-  left?: DimensionValue;
-  /** Flex direction */
-  flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
-  /** Flex wrap */
-  flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
-  /** Justify content */
-  justifyContent?:
-    | "flex-start"
-    | "flex-end"
-    | "center"
-    | "space-between"
-    | "space-around"
-    | "space-evenly";
-  /** Align items */
-  alignItems?: "flex-start" | "flex-end" | "center" | "stretch" | "baseline";
-  /** Align self */
-  alignSelf?: "auto" | "flex-start" | "flex-end" | "center" | "stretch" | "baseline";
-  /** Align content */
-  alignContent?:
-    | "flex-start"
-    | "flex-end"
-    | "center"
-    | "stretch"
-    | "space-between"
-    | "space-around"
-    | "space-evenly";
-  /** Flex grow */
-  flexGrow?: number;
-  /** Flex shrink */
-  flexShrink?: number;
-  /** Flex basis */
-  flexBasis?: DimensionValue;
-  /** Width */
-  width?: DimensionValue;
-  /** Height */
-  height?: DimensionValue;
-  /** Min width */
-  minWidth?: DimensionValue;
-  /** Min height */
-  minHeight?: DimensionValue;
-  /** Max width */
-  maxWidth?: DimensionValue;
-  /** Max height */
-  maxHeight?: DimensionValue;
-  /** Aspect ratio */
-  aspectRatio?: number;
-  /** Padding (all sides) */
-  padding?: number;
+export interface BoxProps extends FrescoCanonicalStyle {
   /** Padding X (left and right) */
   paddingX?: number;
   /** Padding Y (top and bottom) */
   paddingY?: number;
-  /** Padding top */
-  paddingTop?: number;
-  /** Padding right */
-  paddingRight?: number;
-  /** Padding bottom */
-  paddingBottom?: number;
-  /** Padding left */
-  paddingLeft?: number;
-  /** Margin (all sides) */
-  margin?: number;
   /** Margin X (left and right) */
   marginX?: number;
   /** Margin Y (top and bottom) */
   marginY?: number;
-  /** Margin top */
-  marginTop?: number;
-  /** Margin right */
-  marginRight?: number;
-  /** Margin bottom */
-  marginBottom?: number;
-  /** Margin left */
-  marginLeft?: number;
-  /** Gap between children */
-  gap?: number;
-  /** Column gap between children */
-  columnGap?: number;
-  /** Row gap between children */
-  rowGap?: number;
-  /** Overflow behavior */
-  overflow?: "visible" | "hidden" | "scroll";
-  overflowX?: "visible" | "hidden" | "scroll";
-  overflowY?: "visible" | "hidden" | "scroll";
   /** Border style (Fresco alias) */
   border?: BorderStyleName;
   /** Border style (Ink alias) */
@@ -241,7 +156,7 @@ export const Box = defineComponent({
     return () => {
       if (isScreenReaderEnabled && props.ariaHidden) return null;
 
-      const style: Record<string, unknown> = {};
+      const style: FrescoRenderStyle = {};
 
       if (props.display) style.display = props.display;
       if (props.position) style.position = props.position;

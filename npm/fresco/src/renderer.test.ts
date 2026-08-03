@@ -92,38 +92,63 @@ void test("inserts, reorders, and removes list children through anchors", async 
   mounted.unmount();
 });
 
-void test("flattens the mounted tree into native render nodes", () => {
+void test("emits all four discriminated render variants with canonical payload fields", () => {
   const mounted = mountFresco(() =>
-    h("box", { style: { flexDirection: "row", width: "100%", padding: 1 } }, [
-      h("text", { text: "hi", fg: "cyan", bold: true }),
-      h("input", { value: "abc", placeholder: "type...", focused: true, cursor: 3 }),
+    h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
+      h("text", {
+        content: "hi",
+        wrap: "end",
+        color: "cyan",
+        background_color: "blue",
+        dim_color: true,
+      }),
+      h("input", {
+        value: 123,
+        placeholder: 456,
+        focus: true,
+        cursor: 3,
+        mask: true,
+        mask_char: "#",
+        style: { min_width: 10, overflowX: "hidden" },
+      }),
     ]),
   );
 
   const box = firstChild(mounted);
-  const nodes = treeToRenderNodes(box);
+  const nodes = treeToRenderNodes(mounted.root);
 
-  assert.equal(nodes.length, 3);
-  const [boxNode, textNode, inputNode] = nodes;
+  assert.equal(nodes.length, 4);
+  const [rootNode, boxNode, textNode, inputNode] = nodes;
+  assert.deepEqual(rootNode, {
+    id: mounted.root.id,
+    nodeType: "root",
+    children: [box.id],
+  });
   assert.deepEqual(boxNode, {
     id: box.id,
     nodeType: "box",
-    style: { flexDirection: "row", width: "100%", padding: 1 },
+    style: { flexDirection: "row", width: "40", paddingLeft: 1 },
+    border: "rounded",
     children: [textNode?.id, inputNode?.id],
   });
   assert.deepEqual(textNode, {
     id: box.children[0]?.id,
     nodeType: "text",
     text: "hi",
-    appearance: { fg: "cyan", bold: true },
+    wrap: true,
+    wrapMode: "truncate-end",
+    appearance: { fg: "cyan", bg: "blue", dim: true },
   });
   assert.deepEqual(inputNode, {
     id: box.children[1]?.id,
     nodeType: "input",
-    value: "abc",
-    placeholder: "type...",
+    value: "123",
+    placeholder: "456",
     focused: true,
     cursor: 3,
+    mask: true,
+    maskChar: "#",
+    style: { overflowX: "hidden", minWidth: "10" },
   });
   mounted.unmount();
 });
@@ -146,7 +171,15 @@ void test("normalizes wrap props into native wrap modes", () => {
 
 void test("keeps appearance aliases and drops empty style objects", () => {
   const mounted = mountFresco(() =>
-    h("text", { text: "x", color: "red", backgroundColor: "blue", dimColor: true, style: {} }),
+    h("text", {
+      text: "x",
+      color: "red",
+      backgroundColor: "blue",
+      dimColor: true,
+      blink: true,
+      hidden: true,
+      style: {},
+    }),
   );
 
   const [node] = treeToRenderNodes(firstChild(mounted));
@@ -154,7 +187,7 @@ void test("keeps appearance aliases and drops empty style objects", () => {
     id: firstChild(mounted).id,
     nodeType: "text",
     text: "x",
-    appearance: { fg: "red", bg: "blue", dim: true },
+    appearance: { fg: "red", bg: "blue", dim: true, blink: true, hidden: true },
   });
   mounted.unmount();
 });

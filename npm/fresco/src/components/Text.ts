@@ -4,6 +4,7 @@
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
 import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
+import type { FrescoAppearance } from "../protocol.js";
 import { stringifyChildren } from "../utils/text.js";
 
 export type TextWrap =
@@ -17,33 +18,17 @@ export type TextWrap =
   | "end"
   | "middle";
 
-export interface TextProps {
+export interface TextProps extends FrescoAppearance {
   /** Text content (alternative to slot) */
   content?: string;
   /** Ink-compatible text wrapping/truncation mode */
   wrap?: TextWrap;
-  /** Foreground color (Fresco alias) */
-  fg?: string;
   /** Foreground color (Ink alias) */
   color?: string;
-  /** Background color (Fresco alias) */
-  bg?: string;
   /** Background color (Ink alias) */
   backgroundColor?: string;
-  /** Bold text */
-  bold?: boolean;
-  /** Dim text (Fresco alias) */
-  dim?: boolean;
   /** Dim text (Ink alias) */
   dimColor?: boolean;
-  /** Italic text */
-  italic?: boolean;
-  /** Underlined text */
-  underline?: boolean;
-  /** Strikethrough text */
-  strikethrough?: boolean;
-  /** Inverse background/foreground colors */
-  inverse?: boolean;
   /** Accessibility label, accepted for Ink API parity */
   "aria-label"?: string;
   /** Hide from screen readers, accepted for Ink API parity */
@@ -66,6 +51,8 @@ export const Text = defineComponent({
     underline: Boolean,
     strikethrough: Boolean,
     inverse: Boolean,
+    blink: Boolean,
+    hidden: Boolean,
     // Declared camelCase so the runtime props object (which Vue camelizes)
     // matches these keys; templates and h() may still pass "aria-label" etc.
     ariaLabel: String,
@@ -93,6 +80,8 @@ export const Text = defineComponent({
         underline: props.underline,
         strikethrough: props.strikethrough,
         inverse: props.inverse,
+        ...(props.blink ? { blink: true } : {}),
+        ...(props.hidden ? { hidden: true } : {}),
         "aria-label": props.ariaLabel,
         "aria-hidden": props.ariaHidden,
       });

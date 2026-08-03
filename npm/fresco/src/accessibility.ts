@@ -3,8 +3,8 @@
  */
 
 import type { InjectionKey, Ref } from "@vue/runtime-core";
-import type { FlexStyleNapi } from "@vizejs/fresco-native";
 import type { FrescoNode, NativeRenderNode } from "./renderer.js";
+import { normalizeFrescoStyle } from "./renderPayload.js";
 
 export const SCREEN_READER_KEY: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol("fresco-screen-reader");
@@ -140,7 +140,7 @@ export function treeToScreenReaderString(
 
 export function treeToScreenReaderRenderNodes(root: FrescoNode): NativeRenderNode[] {
   const output = treeToScreenReaderString(root);
-  const rootStyle = (root.props.style ?? {}) as FlexStyleNapi;
+  const rootStyle = normalizeFrescoStyle(root.props.style) ?? {};
   const nodes: NativeRenderNode[] = [
     {
       id: root.id,

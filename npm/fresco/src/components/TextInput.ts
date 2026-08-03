@@ -4,6 +4,7 @@
 
 import { computed, defineComponent, h, ref, watch, type PropType } from "@vue/runtime-core";
 import { useInput } from "../composables/useInput.js";
+import type { FrescoDimension, FrescoRenderStyle } from "../protocol.js";
 import {
   deleteGraphemeAt,
   deleteGraphemeBefore,
@@ -25,8 +26,7 @@ export interface TextInputProps {
   mask?: boolean;
   /** Mask character */
   maskChar?: string;
-  /** Input width */
-  width?: number | string;
+  /** Input width */ width?: FrescoDimension;
   /** Foreground color */
   fg?: string;
   /** Background color */
@@ -72,7 +72,7 @@ export const TextInput = defineComponent({
       type: String,
       default: "*",
     },
-    width: [Number, String] as PropType<number | string>,
+    width: [Number, String] as PropType<FrescoDimension>,
     fg: String,
     bg: String,
   },
@@ -316,7 +316,7 @@ export const TextInput = defineComponent({
     });
 
     return () => {
-      const style: Record<string, unknown> = {};
+      const style: FrescoRenderStyle = {};
       if (props.width !== undefined) {
         style.width = String(props.width);
       }
@@ -351,7 +351,7 @@ export const PasswordInput = defineComponent({
       default: "Enter password...",
     },
     focus: Boolean,
-    width: [Number, String] as PropType<number | string>,
+    width: [Number, String] as PropType<FrescoDimension>,
     fg: String,
     bg: String,
   },
