@@ -1,8 +1,9 @@
 //! nuxt/nuxt-config-keys-order
 //!
-//! Reproduce `@nuxt/eslint-plugin` 1.16.0's config ordering, including its
-//! official-module positions, `$environment` group, unknown-key collation,
-//! comment-preserving text edits, and nested environment objects.
+//! Reproduce `@nuxt/eslint-plugin` 1.16.0's config ordering and fixes, while
+//! reporting the first authored inversion instead of the whole config object.
+//! This includes official-module positions, the `$environment` group,
+//! unknown-key collation, comment-preserving edits, and nested environments.
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
@@ -10,11 +11,15 @@ use oxc_ast::ast::{
     Argument, ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind,
     Program, PropertyKey, Statement,
 };
+use oxc_span::GetSpan;
 use vize_carton::{String, cstr};
 
 #[path = "nuxt_config_keys_order_support.rs"]
 mod support;
-use support::{property_name, property_text_ranges, sort_named_segments};
+use support::{
+    first_order_inversion, property_display_name, property_name, property_text_ranges,
+    sort_named_segments,
+};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "nuxt/nuxt-config-keys-order",
@@ -127,32 +132,30 @@ fn report_sort(
         .iter()
         .map(|property| property_name(property, source))
         .collect::<Vec<_>>();
+    let Some((misplaced_index, expected_after_index)) = first_order_inversion(&names) else {
+        return;
+    };
     let mut reordered = (0..object.properties.len()).collect::<Vec<_>>();
     sort_named_segments(&mut reordered, &names);
-    if reordered
-        .iter()
-        .enumerate()
-        .all(|(index, item)| index == *item)
-    {
-        return;
-    }
 
     let (range_start, range_end, pieces) = property_text_ranges(object, source);
     let mut replacement = String::new("");
     for index in &reordered {
         replacement.push_str(&pieces[*index]);
     }
-    let mut visible = reordered
-        .iter()
-        .filter_map(|index| names[*index].as_deref());
-    let first = visible.next().unwrap_or("unknown");
-    let second = visible.next().unwrap_or(first);
-    let start = offset as u32 + object.span.start;
-    let end = offset as u32 + object.span.end;
+    let misplaced = property_display_name(&object.properties[misplaced_index], source)
+        .or_else(|| names[misplaced_index].clone())
+        .unwrap_or_else(|| "unknown".into());
+    let expected_after = property_display_name(&object.properties[expected_after_index], source)
+        .or_else(|| names[expected_after_index].clone())
+        .unwrap_or_else(|| "unknown".into());
+    let misplaced_span = object.properties[misplaced_index].span();
+    let start = offset as u32 + misplaced_span.start;
+    let end = offset as u32 + misplaced_span.end;
     result.add_diagnostic(
         LintDiagnostic::error(
             META.name,
-            cstr!("Expected config key \"{first}\" to come before \"{second}\""),
+            cstr!("Expected config key \"{misplaced}\" to come after \"{expected_after}\""),
             start,
             end,
         )

@@ -2,7 +2,7 @@ use super::{META, NuxtConfigKeysOrder};
 use crate::diagnostic::Severity;
 use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule};
 use serde_json::Value;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 const CORPUS: &str = include_str!(
     "../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
@@ -56,20 +56,6 @@ fn fix_until_stable(source: &str) -> String {
     panic!("Nuxt config order fix did not converge");
 }
 
-fn line_column(source: &str, offset: usize) -> (u64, u64) {
-    let prefix = &source[..offset];
-    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u64 + 1;
-    // ESLint columns count UTF-16 code units, not bytes.
-    let column = prefix
-        .rsplit_once('\n')
-        .map_or(prefix, |(_, tail)| tail)
-        .chars()
-        .map(char::len_utf16)
-        .sum::<usize>() as u64
-        + 1;
-    (line, column)
-}
-
 #[test]
 fn metadata_matches_the_nuxt_rule_contract() {
     let meta = NuxtConfigKeysOrder.meta();
@@ -91,9 +77,9 @@ fn exact_single_line_diagnostic_and_fix_contract() {
     assert_eq!(diagnostic.severity, Severity::Error);
     assert_eq!(
         diagnostic.message,
-        "Expected config key \"modules\" to come before \"ssr\""
+        "Expected config key \"ssr\" to come after \"modules\""
     );
-    assert_eq!((diagnostic.start, diagnostic.end), (32, 58));
+    assert_eq!((diagnostic.start, diagnostic.end), (34, 43));
     assert!(diagnostic.help.is_none());
 
     let edit = &diagnostic.fix.as_ref().unwrap().edits[0];
@@ -127,9 +113,9 @@ fn sorts_top_level_and_environment_objects_to_convergence() {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect::<Vec<_>>(),
         [
-            "Expected config key \"modules\" to come before \"$production\"",
-            "Expected config key \"modules\" to come before \"ssr\"",
-            "Expected config key \"app\" to come before \"build\"",
+            "Expected config key \"ssr\" to come after \"$test\"",
+            "Expected config key \"ssr\" to come after \"modules\"",
+            "Expected config key \"build\" to come after \"app\"",
         ]
     );
     let fixed = fix_until_stable(source);
@@ -143,10 +129,64 @@ fn sorts_top_level_and_environment_objects_to_convergence() {
 #[test]
 fn spreads_are_boundaries_between_sortable_segments() {
     let source = "export default { modules: [], ssr: true, ...base, css: [], app: {}, ...tail, vite: {}, build: {} }";
+    let result = lint(source);
+    assert_eq!(result.diagnostics.len(), 1);
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Expected config key \"css\" to come after \"app\""
+    );
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (50, 57)
+    );
     assert_eq!(
         fix_until_stable(source),
         "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {}, }"
     );
+}
+
+#[test]
+fn reports_the_actual_issue_3768_key_pair_at_the_authored_property() {
+    for (properties, message, property) in [
+        (
+            "modules: [], css: [], plugins: []",
+            "Expected config key \"css\" to come after \"plugins\"",
+            "css: []",
+        ),
+        (
+            "css: [], modules: [], plugins: []",
+            "Expected config key \"css\" to come after \"modules\"",
+            "css: []",
+        ),
+        (
+            "ssr: false, modules: [], plugins: []",
+            "Expected config key \"ssr\" to come after \"modules\"",
+            "ssr: false",
+        ),
+        (
+            "modules: [], router: {}, plugins: []",
+            "Expected config key \"router\" to come after \"plugins\"",
+            "router: {}",
+        ),
+        (
+            "modules: [], components: {}, plugins: []",
+            "Expected config key \"components\" to come after \"plugins\"",
+            "components: {}",
+        ),
+    ] {
+        let source = cstr!("export default defineNuxtConfig({{ {properties} }})");
+        let result = lint(&source);
+        assert_eq!(result.diagnostics.len(), 1, "{properties}");
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(diagnostic.message, message, "{properties}");
+        let start = source.find(property).unwrap() as u32;
+        assert_eq!(
+            (diagnostic.start, diagnostic.end),
+            (start, start + property.len() as u32),
+            "{properties}"
+        );
+        assert!(diagnostic.fix.is_some(), "{properties}");
+    }
 }
 
 #[test]
@@ -155,6 +195,18 @@ fn unknown_and_literal_keys_follow_upstream_collation() {
         fix_until_stable("export default { zebra: 1, Zebra: 2, alpha: 3, Alpha: 4 }"),
         "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2, }"
     );
+    let literal_source =
+        "export default { zebra: 1, \"ssr\": true, modules: [], 'app': {}, css: [] }";
+    let literal_diagnostic = &lint(literal_source).diagnostics[0];
+    assert_eq!(
+        literal_diagnostic.message,
+        "Expected config key \"zebra\" to come after \"ssr\""
+    );
+    assert_eq!((literal_diagnostic.start, literal_diagnostic.end), (17, 25));
+    assert_eq!(
+        fix_until_stable(literal_source),
+        "export default { modules: [], css: [], 'app': {}, \"ssr\": true, zebra: 1, }"
+    );
     assert_eq!(
         fix_until_stable("export default { \"ssr\": true, modules: [], 'app': {}, css: [] }"),
         "export default { modules: [], css: [], 'app': {}, \"ssr\": true, }"
@@ -162,7 +214,7 @@ fn unknown_and_literal_keys_follow_upstream_collation() {
 }
 
 #[test]
-fn matches_the_recorded_nuxt_eslint_plugin_oracle() {
+fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
     let corpus: Value = serde_json::from_str(CORPUS).unwrap();
     let recording: Value = serde_json::from_str(RECORDING).unwrap();
     let cases = corpus["nuxtConfigKeysOrderCases"].as_array().unwrap();
@@ -176,32 +228,24 @@ fn matches_the_recorded_nuxt_eslint_plugin_oracle() {
         let result = lint(source);
         assert_eq!(result.diagnostics.len(), expected_messages.len(), "{id}");
 
+        // #3768 intentionally narrows the upstream whole-object range and
+        // rewrites its sorted-prefix message. Focused tests above pin those
+        // fields; this corpus continues to pin the upstream sorting fix.
         for (diagnostic, expected) in result.diagnostics.iter().zip(expected_messages) {
             assert_eq!(diagnostic.rule_name, "nuxt/nuxt-config-keys-order", "{id}");
             assert_eq!(diagnostic.severity, Severity::Error, "{id}");
-            assert_eq!(
-                diagnostic.message,
-                expected["message"].as_str().unwrap(),
-                "{id}"
-            );
-
             let range = expected["range"].as_array().unwrap();
             let start = range[0].as_u64().unwrap();
             let end = range[1].as_u64().unwrap();
-            assert_eq!(
-                (u64::from(diagnostic.start), u64::from(diagnostic.end)),
-                (start, end),
-                "diagnostic range for {id}"
-            );
-            assert_eq!(
-                line_column(source, start as usize),
-                (
-                    expected["line"].as_u64().unwrap(),
-                    expected["column"].as_u64().unwrap()
-                ),
+            assert!(
+                u64::from(diagnostic.start) >= start,
                 "diagnostic start for {id}"
             );
-
+            assert!(u64::from(diagnostic.end) <= end, "diagnostic end for {id}");
+            assert!(
+                diagnostic.start < diagnostic.end,
+                "diagnostic range for {id}"
+            );
             let fix = diagnostic.fix.as_ref().unwrap();
             assert_eq!(fix.edits.len(), 1, "{id}");
             let expected_fix = &expected["fix"];
@@ -256,7 +300,7 @@ fn diagnostic_and_fix_offsets_include_the_sfc_block_offset() {
     let source = "export default { ssr: true, modules: [] }";
     let result = lint_at(source, 41);
     let diagnostic = &result.diagnostics[0];
-    assert_eq!((diagnostic.start, diagnostic.end), (56, 82));
+    assert_eq!((diagnostic.start, diagnostic.end), (58, 67));
     let edit = &diagnostic.fix.as_ref().unwrap().edits[0];
     assert_eq!((edit.start, edit.end), (57, 80));
 }

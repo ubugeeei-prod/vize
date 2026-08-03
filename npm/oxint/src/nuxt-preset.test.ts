@@ -151,7 +151,7 @@ assert.match(
 );
 assert.match(
   nuxtConfigRun.output,
-  /nuxt\.config\.ts[\s\S]*Expected config key "modules" to come before "ssr"[\s\S]*vize\(nuxt\/nuxt-config-keys-order\)/u,
+  /nuxt\.config\.ts[\s\S]*2:3[\s\S]*Expected config key "ssr" to come after "modules"[\s\S]*vize\(nuxt\/nuxt-config-keys-order\)/u,
 );
 
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");

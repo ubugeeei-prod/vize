@@ -91,6 +91,27 @@ pub(super) fn sort_named_segments(reordered: &mut [usize], names: &[Option<Strin
     }
 }
 
+/// Return the first adjacent pair whose authored order contradicts the Nuxt
+/// comparator. Unnamed properties (notably spreads) remain sorting boundaries,
+/// matching `sort_named_segments` and the fix that the diagnostic accompanies.
+pub(super) fn first_order_inversion(names: &[Option<String>]) -> Option<(usize, usize)> {
+    let mut previous: Option<usize> = None;
+    for (index, name) in names.iter().enumerate() {
+        let Some(name) = name.as_deref() else {
+            previous = None;
+            continue;
+        };
+        if let Some(previous_index) = previous {
+            let previous_name = names[previous_index].as_deref()?;
+            if compare_names(previous_name, name).is_gt() {
+                return Some((previous_index, index));
+            }
+        }
+        previous = Some(index);
+    }
+    None
+}
+
 fn sort_segment(segment: &mut [usize], names: &[Option<String>]) {
     segment.sort_by(|left, right| {
         compare_names(
@@ -157,6 +178,39 @@ pub(super) fn property_name(property: &ObjectPropertyKind<'_>, source: &str) -> 
         return None;
     };
     key_name(&property.key, source)
+}
+
+pub(super) fn property_display_name(
+    property: &ObjectPropertyKind<'_>,
+    source: &str,
+) -> Option<String> {
+    let ObjectPropertyKind::ObjectProperty(property) = property else {
+        return None;
+    };
+    display_key_name(&property.key, source)
+}
+
+fn display_key_name(key: &PropertyKey<'_>, source: &str) -> Option<String> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.to_compact_string()),
+        PropertyKey::Identifier(identifier) => Some(identifier.name.to_compact_string()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.to_compact_string()),
+        PropertyKey::ParenthesizedExpression(parenthesized) => {
+            display_expression_key_name(&parenthesized.expression, source)
+        }
+        _ => Some(span_text(key.span(), source)),
+    }
+}
+
+fn display_expression_key_name(expression: &Expression<'_>, source: &str) -> Option<String> {
+    match expression {
+        Expression::Identifier(identifier) => Some(identifier.name.to_compact_string()),
+        Expression::StringLiteral(literal) => Some(literal.value.to_compact_string()),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            display_expression_key_name(&parenthesized.expression, source)
+        }
+        _ => Some(span_text(expression.span(), source)),
+    }
 }
 
 fn key_name(key: &PropertyKey<'_>, source: &str) -> Option<String> {

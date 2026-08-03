@@ -24,8 +24,9 @@ fn nuxt_preset_reports_fixable_config_order() {
         .unwrap();
     assert_eq!(
         diagnostic.message,
-        "Expected config key \"modules\" to come before \"ssr\""
+        "Expected config key \"ssr\" to come after \"modules\""
     );
+    assert_eq!((diagnostic.start, diagnostic.end), (17, 26));
     assert_eq!(
         diagnostic.fix.as_ref().unwrap().apply(source),
         "export default { modules: [], ssr: true, }"
