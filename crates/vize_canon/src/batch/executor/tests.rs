@@ -197,6 +197,10 @@ fn checks_with_cli_when_project_session_api_is_unavailable() {
     use crate::batch::VirtualProject;
     use std::os::unix::fs::PermissionsExt;
 
+    let _fallback_guard = super::fallback::FALLBACK_TEST_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
     let case_dir = unique_case_dir("cli-fallback");
     let _ = fs::remove_dir_all(&case_dir);
     let cache_dir = case_dir.join(".cache");
