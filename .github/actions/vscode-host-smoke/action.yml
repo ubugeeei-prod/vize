@@ -1,5 +1,5 @@
 name: Editor real-server end-to-end
-description: Run VS Code, Zed, Neovim, and Vim real-server scenarios plus packaged editor specs
+description: Run VS Code, Zed, Neovim, Vim, and Helix real-server scenarios plus packaged specs
 
 runs:
   using: composite
@@ -63,9 +63,36 @@ runs:
           --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
           --output-dir "${RUNNER_TEMP}/zed-extension-output"
 
+    - name: Install pinned Helix
+      shell: bash
+      env:
+        HELIX_VERSION: 25.07.1
+        HELIX_SHA256: 3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b
+      run: |
+        set -euo pipefail
+        archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
+        curl -fsSL -o "${archive}" \
+          "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
+        echo "${HELIX_SHA256}  ${archive}" | sha256sum --check --strict
+        mkdir -p "${RUNNER_TEMP}/helix"
+        tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
+        "${RUNNER_TEMP}/helix/hx" --version
+
     - name: Build vize CLI
       shell: bash
       run: cargo build --profile ci -p vize
+
+    - name: Check the Helix package with the official CLI
+      shell: bash
+      env:
+        XDG_CONFIG_HOME: ${{ runner.temp }}/helix-config
+        HELIX_RUNTIME: ${{ runner.temp }}/helix/runtime
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+      run: |
+        set -euo pipefail
+        mkdir -p "${XDG_CONFIG_HOME}/helix"
+        cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
+        node tools/helix-vize/assert-helix-health.mjs "${RUNNER_TEMP}/helix/hx"
 
     - name: Ensure xvfb is available
       shell: bash
@@ -159,3 +186,10 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
       run: vp run --workspace-root test:zed-extension:real-server
+
+    - name: Run the Helix scenario against the real server
+      shell: bash
+      env:
+        NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+      run: vp run --workspace-root test:helix-extension:real-server
