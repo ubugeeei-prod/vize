@@ -142,3 +142,66 @@ void test("rejects SFCs that bypass the explicit authoring contract", async () =
     },
   );
 });
+
+void test("accepts semantic block attributes and a companion script", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    '<script setup lang="ts">',
+    '<script>export const version = 1;</script>\n<script lang="ts" setup>',
+  ).replace("<style scoped>", '<style lang="css" scoped>');
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      assert.deepEqual(await auditComponentAuthoring(directory), []);
+    },
+  );
+});
+
+void test("does not accept canonical section spellings in inert script text", async () => {
+  const sfc = `<script setup lang="ts">
+const fakeSections = "<template></template><style scoped></style>";
+</script>
+`;
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      const violations = await auditComponentAuthoring(directory);
+      assert.deepEqual(
+        violations.map((violation) => violation.rule),
+        ["explicit-sfc", "explicit-sfc"],
+      );
+      const report = formatAuthoringViolations(violations);
+      assert.match(report, /Missing <template> block/);
+      assert.match(report, /Missing <style scoped> block/);
+    },
+  );
+});
+
+void test("rejects malformed SFC section structure", async () => {
+  const sfc = COMPLIANT_SFC.replace(
+    "</template>",
+    "</template>\n<template><p>Duplicate</p></template>",
+  );
+  await withFixture(
+    {
+      "TheWidget.vue": sfc,
+      "widget.behavior.md": "TheWidget.vue",
+      "widget.test.ts": 'import TheWidget from "./TheWidget.vue";\nexport default TheWidget;\n',
+    },
+    async (directory) => {
+      const violations = await auditComponentAuthoring(directory);
+      assert.deepEqual(
+        violations.map((violation) => violation.rule),
+        ["explicit-sfc"],
+      );
+      assert.match(formatAuthoringViolations(violations), /SFC source has 1 parse error\(s\)/);
+    },
+  );
+});

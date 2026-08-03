@@ -14,6 +14,9 @@
     "fmt": "vp fmt --write authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
     "test": "vp exec node --test authoring-gate.test.ts lint-sfc.test.ts"
   },
+  "dependencies": {
+    "@vue/compiler-sfc": "catalog:vue-stable"
+  },
   "devDependencies": {
     "@types/node": "catalog:typescript",
     "vite-plus": "catalog:vite-stack"

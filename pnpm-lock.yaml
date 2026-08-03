@@ -209,6 +209,9 @@ catalogs:
     '@vue/compiler-dom':
       specifier: 3.5.35
       version: 3.5.35
+    '@vue/compiler-sfc':
+      specifier: 3.5.35
+      version: 3.5.35
     '@vue/runtime-core':
       specifier: 3.5.35
       version: 3.5.35
@@ -999,6 +1002,10 @@ importers:
         version: 3.5.35(typescript@6.0.3)
 
   npm/ui/tooling:
+    dependencies:
+      '@vue/compiler-sfc':
+        specifier: catalog:vue-stable
+        version: 3.5.35
     devDependencies:
       '@types/node':
         specifier: catalog:typescript
