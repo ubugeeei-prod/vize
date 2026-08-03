@@ -29,6 +29,7 @@ mod diagnostics;
 mod global_components;
 mod ignores;
 mod input_scope;
+mod invocation;
 mod nuxt_tsconfig;
 mod resolve;
 #[cfg(unix)]
@@ -50,6 +51,7 @@ use global_components::{
 };
 use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
+use invocation::resolve_invocation_program;
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
@@ -138,17 +140,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
-    // Resolve the invocation's program before collecting transitive imports.
-    // Those imports may live above this directory and force the virtual mirror
-    // to use a wider materialization root, but they must never select a different
-    // tsconfig for the program (#3780).
-    let invocation_project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
-    let invocation_tsconfig_path = resolve_tsconfig_path(
-        effective_tsconfig.as_deref(),
-        &cwd,
-        &invocation_project_root,
-        &[],
-    );
+    let (invocation_project_root, invocation_tsconfig_path) =
+        resolve_invocation_program(effective_tsconfig.as_deref(), &cwd);
     let nuxt_project_root = resolve_nuxt_project_root(
         effective_tsconfig.as_deref(),
         &cwd,
@@ -249,12 +242,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     resolve::retain_project_files(&mut files, &project_root);
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
-    let tsconfig = program_tsconfig_path.as_deref();
-    let nuxt_root = &nuxt_project_root;
     let nuxt_path_aliases = nuxt::detect(
         &mut virtual_ts_options,
-        nuxt_root,
-        tsconfig,
+        &nuxt_project_root,
+        program_tsconfig_path.as_deref(),
         legacy_vue2,
         dialect,
     );
