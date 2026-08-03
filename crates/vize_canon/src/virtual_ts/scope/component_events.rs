@@ -150,20 +150,12 @@ pub(super) fn generate_component_event_types(
             "unknown[] extends {args_type} ? ((...args: any[]) => unknown) : ((...args: {listener_args_type}) => unknown)"
         )
     };
-    let (handler_type, handler_type_expr) = if !legacy_vue2
-        && requires_unresolved_handler_implicit_any(summary, component_name, data, scope)
-    {
-        (
-            Some(cstr!(
-                "__{component_type_name}_{scope_id}_{safe_event_name}_handler"
-            )),
-            Some(cstr!(
-                "unknown[] extends {args_type} ? unknown : {listener_type}"
-            )),
-        )
-    } else {
-        (None, None)
-    };
+    let handler_type_expr = (!legacy_vue2
+        && requires_unresolved_handler_implicit_any(summary, component_name, data, scope))
+    .then(|| cstr!("unknown[] extends {args_type} ? unknown : {listener_type}"));
+    let handler_type = handler_type_expr
+        .as_ref()
+        .map(|_| cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_handler"));
     Some(ComponentEventTypes {
         event_type,
         handler_type,
