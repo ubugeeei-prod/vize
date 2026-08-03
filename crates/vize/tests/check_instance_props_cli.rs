@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -93,7 +96,7 @@ fn write(root: &Path, rel: &str, content: &str) {
 
 #[test]
 fn check_instance_type_props_preserves_camel_case_sfc_props() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("camel-props");
@@ -183,7 +186,7 @@ void key;
 
 #[test]
 fn check_template_prop_checks_preserve_camel_case_sfc_props() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("camel-template-prop-mismatch");

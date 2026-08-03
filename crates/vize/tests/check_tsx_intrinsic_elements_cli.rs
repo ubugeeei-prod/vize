@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -87,7 +90,7 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
 
 #[test]
 fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("jsx-vapor");
@@ -163,7 +166,7 @@ fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
 
 #[test]
 fn check_tsx_vapor_keeps_script_type_errors() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("jsx-vapor-type-error");

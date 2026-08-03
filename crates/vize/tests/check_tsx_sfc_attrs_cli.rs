@@ -1,14 +1,14 @@
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use vize_carton::cstr;
 
 fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
+        .ancestors()
+        .nth(2)
         .expect("workspace root should exist")
         .to_path_buf()
 }
@@ -87,7 +87,7 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
 
 #[test]
 fn check_tsx_story_allows_sfc_class_and_style_attrs() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("fallthrough");
@@ -177,7 +177,7 @@ export const Example = () => (
 
 #[test]
 fn check_tsx_story_allows_slot_object_with_kebab_update_handler() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("slot-object-events");
@@ -284,7 +284,7 @@ export const Tabs = () => (
 
 #[test]
 fn check_tsx_sfc_preserves_intrinsic_event_context_without_explicit_types() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("sfc-event-context");
