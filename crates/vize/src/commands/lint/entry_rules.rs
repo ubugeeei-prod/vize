@@ -12,9 +12,12 @@ use super::LintArgs;
 use crate::lint_plan::matcher::GlobSequence;
 use crate::lint_plan::matcher::{LintPlanScope, absolute_path};
 
+const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
+
 pub(super) struct ResolvedLinterRuleGroups {
     pub(super) configs: Vec<crate::config::LinterConfig>,
     pub(super) file_config_indices: Vec<usize>,
+    pinia_available: Vec<bool>,
 }
 
 impl ResolvedLinterRuleGroups {
@@ -29,12 +32,13 @@ impl ResolvedLinterRuleGroups {
     ) -> Vec<Linter> {
         self.configs
             .iter()
-            .map(|config| {
+            .zip(&self.pinia_available)
+            .map(|(config, pinia_available)| {
                 let type_aware =
                     args.type_aware || args.strict_reactivity || config.type_aware_lint_enabled();
                 let mut linter = Linter::with_preset(preset)
                     .with_additional_rules(config.enabled_rules())
-                    .with_disabled_rules(config.disabled_rules())
+                    .with_disabled_rules(resolved_disabled_rules(config, *pinia_available))
                     .with_disabled_categories(config.disabled_categories())
                     .with_category_severity_overrides(severity_overrides(
                         config.category_severity_overrides(),
@@ -101,22 +105,22 @@ impl LinterRuleResolver {
 
     /// Resolve each distinct matching-entry signature exactly once for the batch.
     pub(super) fn resolve_files(&self, files: &[PathBuf], cwd: &Path) -> ResolvedLinterRuleGroups {
-        if self.scopes.is_empty() {
-            return ResolvedLinterRuleGroups {
-                configs: vec![self.plan.base.clone()],
-                file_config_indices: vec![0; files.len()],
-            };
-        }
-        let mut signatures = FxHashMap::<Vec<usize>, usize>::default();
+        let mut signatures = FxHashMap::<(Vec<usize>, bool), usize>::default();
+        let mut dependency_cache = FxHashMap::default();
         let mut configs = Vec::new();
+        let mut pinia_available = Vec::new();
         let mut file_config_indices = Vec::with_capacity(files.len());
         for file in files {
-            let signature = self.matching_entries(file, cwd);
+            let signature = (
+                self.matching_entries(file, cwd),
+                package_is_resolvable_from(file, cwd, "pinia", &mut dependency_cache),
+            );
             let index = match signatures.get(&signature) {
                 Some(index) => *index,
                 None => {
                     let index = configs.len();
-                    configs.push(self.plan.resolve_matching_entries(&signature));
+                    configs.push(self.plan.resolve_matching_entries(&signature.0));
+                    pinia_available.push(signature.1);
                     signatures.insert(signature, index);
                     index
                 }
@@ -126,6 +130,7 @@ impl LinterRuleResolver {
         ResolvedLinterRuleGroups {
             configs,
             file_config_indices,
+            pinia_available,
         }
     }
 
@@ -137,6 +142,56 @@ impl LinterRuleResolver {
             .filter_map(|(index, scope)| scope.matches(&file).then_some(index))
             .collect()
     }
+}
+
+fn resolved_disabled_rules(
+    config: &crate::config::LinterConfig,
+    pinia_available: bool,
+) -> Vec<String> {
+    let mut rules = config.disabled_rules();
+    if !pinia_available {
+        rules.push(PINIA_PREFER_STORE_TO_REFS.into());
+    }
+    rules
+}
+
+fn package_is_resolvable_from(
+    file: &Path,
+    cwd: &Path,
+    package_name: &str,
+    cache: &mut FxHashMap<PathBuf, bool>,
+) -> bool {
+    let absolute = absolute_path(file, cwd);
+    let Some(directory) = absolute.parent() else {
+        return false;
+    };
+    let mut current = directory.to_path_buf();
+    let mut visited = Vec::new();
+    let available = loop {
+        if let Some(available) = cache.get(&current) {
+            break *available;
+        }
+        visited.push(current.clone());
+        if current
+            .join("node_modules")
+            .join(package_name)
+            .join("package.json")
+            .is_file()
+        {
+            break true;
+        }
+        let Some(parent) = current.parent() else {
+            break false;
+        };
+        if parent == current {
+            break false;
+        }
+        current = parent.to_path_buf();
+    };
+    for directory in visited {
+        cache.insert(directory, available);
+    }
+    available
 }
 
 #[cfg(test)]

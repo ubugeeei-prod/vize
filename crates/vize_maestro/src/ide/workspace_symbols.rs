@@ -1,14 +1,12 @@
-//! Workspace symbols provider.
-//!
-//! Provides workspace-wide symbol search for:
-//! - Vue components (from file names)
-//! - Script bindings (functions, variables, classes)
-//! - CSS classes and IDs
+//! Workspace-wide symbol search for Vue components, script bindings, and styles.
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
     clippy::disallowed_macros
 )]
+
+#[cfg(feature = "native")]
+mod disk;
 
 use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolKind, Url};
 
@@ -38,6 +36,9 @@ impl WorkspaceSymbolsService {
             Self::collect_symbols_from_document(uri, &content, &query_lower, &mut symbols);
         }
 
+        #[cfg(feature = "native")]
+        disk::collect(state, &query_lower, &mut symbols);
+
         // Sort by relevance (exact match first, then prefix match, then contains)
         symbols.sort_by(|a, b| {
             let a_name = a.name.to_lowercase();
@@ -60,7 +61,6 @@ impl WorkspaceSymbolsService {
             a_name.cmp(&b_name)
         });
 
-        // Limit results
         symbols.truncate(100);
 
         symbols

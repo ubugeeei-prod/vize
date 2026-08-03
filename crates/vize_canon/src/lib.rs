@@ -122,9 +122,10 @@ pub use batch::{
     BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic, ContentMapperSpan,
     ContentMapperTransform, CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions,
     DeclarationEmitResult, DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter,
-    ImportSourceMap, PackageManager, SfcBlockType, TypeCheckResult as BatchTypeCheckResult,
-    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,
-    generate_vue_content_mapper_transform, sfc_block_fallback_offset,
+    ImportSourceMap, IncrementalCheckMetrics, PackageManager, SfcBlockType,
+    TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
+    VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
+    sfc_block_fallback_offset,
 };
 
 #[cfg(feature = "native")]

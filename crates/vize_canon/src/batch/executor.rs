@@ -12,7 +12,8 @@ use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
 use super::materialize_lock::MaterializeLock;
 use super::type_checker::{
-    DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
+    DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, IncrementalCheckMetrics,
+    TypeCheckResult,
 };
 use super::virtual_project::VirtualProject;
 use oxc_span::SourceType;
@@ -74,6 +75,13 @@ impl CorsaExecutor {
 
     pub fn corsa_path(&self) -> &Path {
         &self.corsa_path
+    }
+
+    pub(crate) fn incremental_metrics(&self) -> IncrementalCheckMetrics {
+        self.incremental_session
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .metrics
     }
 
     pub fn check(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {

@@ -9,7 +9,10 @@ use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
+mod metrics;
 mod paths;
+mod result;
+pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};
 
 /// Result of type checking.
@@ -21,23 +24,6 @@ pub struct TypeCheckResult {
     pub exit_code: i32,
     /// Whether type checking succeeded.
     pub success: bool,
-}
-
-impl TypeCheckResult {
-    /// Check if there are any errors.
-    pub fn has_errors(&self) -> bool {
-        self.diagnostics.iter().any(|d| d.severity == 1)
-    }
-
-    /// Get the number of errors.
-    pub fn error_count(&self) -> usize {
-        self.diagnostics.iter().filter(|d| d.severity == 1).count()
-    }
-
-    /// Get the number of warnings.
-    pub fn warning_count(&self) -> usize {
-        self.diagnostics.iter().filter(|d| d.severity == 2).count()
-    }
 }
 
 /// Options for a project-backed batch type checker.
@@ -102,6 +88,14 @@ pub trait TypeChecker: Send + Sync {
     ///
     /// The result must observe the latest on-disk contents and include
     /// diagnostics from dependents, not only the changed files themselves.
+    ///
+    /// This is a low-level, Corsa-facing embedding API; it currently has no
+    /// in-tree production consumer. Vize rebuilds the scanned virtual sources
+    /// and sends their materialized delta to the persistent Corsa project
+    /// session. Corsa, rather than a duplicate Vize dependency graph, owns
+    /// dependency-aware invalidation. Use
+    /// [`BatchTypeChecker::incremental_metrics`] to measure session reuse,
+    /// refresh scope, diagnostic requests, and CLI degradation.
     fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult>;
 }
 

@@ -1,9 +1,16 @@
-use super::{GlobSequence, LinterRuleResolver};
+use super::{GlobSequence, LinterRuleResolver, resolved_disabled_rules};
 use crate::config::{
     LintRuleSeverity as Severity, LinterConfig, LinterConfigEntry, LinterConfigPlan,
 };
 use std::{collections::BTreeMap, fs, path::PathBuf};
 use vize_carton::FxHashMap;
+use vize_patina::{LintPreset, Linter};
+
+const IMPORTED_STORE_SFC: &str = r#"<script setup lang="ts">
+import { useCounterStore } from "./store"
+const { count, actions } = useCounterStore()
+</script>
+"#;
 
 fn rules(entries: &[(&str, Severity)]) -> FxHashMap<vize_carton::String, Severity> {
     entries
@@ -201,4 +208,102 @@ fn resolves_whole_rule_maps_for_each_distinct_glob_set_once() {
         ]),
     );
     assert_eq!(resolved.configs.len(), 4);
+}
+
+fn lint_imported_store(config: &LinterConfig, filename: &PathBuf, pinia_available: bool) -> usize {
+    Linter::with_preset(LintPreset::Ecosystem)
+        .with_disabled_rules(resolved_disabled_rules(config, pinia_available))
+        .lint_sfc(IMPORTED_STORE_SFC, filename.to_string_lossy().as_ref())
+        .warning_count
+}
+
+#[test]
+fn pinia_rule_requires_a_resolvable_project_dependency() {
+    let project = tempfile::tempdir().unwrap();
+    let imported = project.path().join("src/Imported.vue");
+    fs::create_dir_all(imported.parent().unwrap()).unwrap();
+    fs::write(&imported, IMPORTED_STORE_SFC).unwrap();
+
+    let resolve = || {
+        LinterRuleResolver::new(LinterConfigPlan::default(), project.path(), project.path())
+            .resolve_files(std::slice::from_ref(&imported), project.path())
+    };
+    let without_pinia = resolve();
+    assert_eq!(without_pinia.configs.len(), 1);
+    assert_eq!(
+        lint_imported_store(
+            &without_pinia.configs[0],
+            &imported,
+            without_pinia.pinia_available[0],
+        ),
+        0,
+        "an imported use*Store composable is not Pinia evidence by itself",
+    );
+
+    fs::create_dir_all(project.path().join("node_modules/pinia")).unwrap();
+    fs::write(
+        project.path().join("node_modules/pinia/package.json"),
+        r#"{"name":"pinia","version":"3.0.0"}"#,
+    )
+    .unwrap();
+    let with_pinia = resolve();
+    assert_eq!(with_pinia.configs.len(), 1);
+    assert_eq!(
+        lint_imported_store(
+            &with_pinia.configs[0],
+            &imported,
+            with_pinia.pinia_available[0]
+        ),
+        1,
+        "a resolvable Pinia dependency must preserve the real-store warning",
+    );
+}
+
+#[test]
+fn pinia_availability_isolated_per_monorepo_package() {
+    let project = tempfile::tempdir().unwrap();
+    let plain = project.path().join("packages/plain/src/Imported.vue");
+    let pinia = project.path().join("packages/pinia/src/Imported.vue");
+    for file in [&plain, &pinia] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, IMPORTED_STORE_SFC).unwrap();
+    }
+    fs::create_dir_all(project.path().join("packages/pinia/node_modules/pinia")).unwrap();
+    fs::write(
+        project
+            .path()
+            .join("packages/pinia/node_modules/pinia/package.json"),
+        r#"{"name":"pinia","version":"3.0.0"}"#,
+    )
+    .unwrap();
+
+    let files = vec![plain.clone(), pinia.clone()];
+    let resolved =
+        LinterRuleResolver::new(LinterConfigPlan::default(), project.path(), project.path())
+            .resolve_files(&files, project.path());
+    assert_eq!(
+        resolved.configs.len(),
+        2,
+        "dependency availability must participate in linter grouping",
+    );
+    let plain_config = &resolved.configs[resolved.file_config_indices[0]];
+    let pinia_config = &resolved.configs[resolved.file_config_indices[1]];
+    assert_eq!(
+        lint_imported_store(
+            plain_config,
+            &plain,
+            resolved.pinia_available[resolved.file_config_indices[0]],
+        ),
+        0,
+    );
+    assert_eq!(
+        lint_imported_store(
+            pinia_config,
+            &pinia,
+            resolved.pinia_available[resolved.file_config_indices[1]],
+        ),
+        1,
+    );
+    assert!(!resolved.pinia_available[resolved.file_config_indices[0]]);
+    assert!(resolved.pinia_available[resolved.file_config_indices[1]]);
 }

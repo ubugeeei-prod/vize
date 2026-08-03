@@ -75,6 +75,7 @@ export const testedPackages = [
   "./npm/framework/nuxt-lint-config",
   "./npm/framework/nuxt",
   "./npm/mcp-musea",
+  "./npm/fresco",
   "./npm/compose/core",
   "./npm/ui/core",
   "./npm/marquette",

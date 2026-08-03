@@ -11,6 +11,7 @@ import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
 import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
 import { inTestbox, testboxTasks } from "../../tools/vite-plus/tasks/testbox.ts";
 import { shellQuote } from "../../tools/vite-plus/task-helpers.ts";
+import { testedPackages } from "../../tools/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pushCurrentBranchCommand = 'git push --set-upstream origin "$(git branch --show-current)"';
@@ -78,6 +79,13 @@ test("workspace build, test, and lint default to their local task graphs", () =>
   assert.equal(ci.cache, false);
   assert.match(ci.command, /vp run --workspace-root test(?:\s|$)/);
   assert.doesNotMatch(ci.command, /blacksmith|test:testbox/);
+});
+
+test("workspace JS tests include the Fresco component suite", () => {
+  assert.ok(testedPackages.includes("./npm/fresco"));
+
+  const jsTests = taskShape(testAndBenchmarkTasks["test:js"]);
+  assert.match(jsTests.command, /--filter '\.\/npm\/fresco'(?:\s|$)/);
 });
 
 test("branch coverage reports every metric before enforcing thresholds", () => {

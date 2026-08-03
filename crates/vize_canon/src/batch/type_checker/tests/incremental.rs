@@ -1,6 +1,9 @@
 use super::super::{BatchTypeChecker, create_project_case, resolve_test_tsgo_binary};
 use crate::batch::TypeChecker;
 
+#[path = "incremental/file_lifecycle.rs"]
+mod file_lifecycle;
+
 #[test]
 fn observes_broken_and_repaired_vue_patch() {
     if resolve_test_tsgo_binary().is_none() {
@@ -53,6 +56,17 @@ const total: number = 1
         "unexpected TS2322 message: {}",
         type_error.message
     );
+    assert_eq!(
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 1,
+            session_starts: 1,
+            last_session_started: true,
+            last_requested_files: 1,
+            ..Default::default()
+        },
+        "the first incremental check should expose its cold session work"
+    );
 
     std::fs::write(&app_path, clean_source).expect("repair patch should write");
     let repaired = checker
@@ -67,9 +81,19 @@ const total: number = 1
         repaired.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 1),
-        "broken and repaired patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            session_refreshes: 1,
+            last_session_reused: true,
+            last_session_refreshed: true,
+            last_requested_files: 1,
+            last_changed_files: 1,
+            ..Default::default()
+        },
+        "the repair should expose one refreshed-file request on the reused session"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -148,9 +172,19 @@ const total: Total = 1
         repaired.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 1),
-        "dependency patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            session_refreshes: 1,
+            last_session_reused: true,
+            last_session_refreshed: true,
+            last_requested_files: 2,
+            last_changed_files: 1,
+            ..Default::default()
+        },
+        "dependency repair should request both diagnostic inputs after one-file refresh"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -231,97 +265,16 @@ const outside: number = 'must stay outside the scan'
         outside_change.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 0),
-        "an unchanged materialized scope should reuse without refreshing Corsa"
-    );
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn retains_added_files_across_incremental_refreshes() {
-    if resolve_test_tsgo_binary().is_none() {
-        return;
-    }
-
-    let clean_source = r#"<script setup lang="ts">
-const initial: number = 1
-</script>
-"#;
-    let project_root =
-        create_project_case("incremental-added-file", &[("src/App.vue", clean_source)]);
-    let app_path = project_root.join("src/App.vue");
-    let added_path = project_root.join("src/Added.vue");
-    let mut checker = BatchTypeChecker::new(&project_root).expect("checker should start");
-    checker.scan_project().expect("initial scan should succeed");
-
-    std::fs::write(
-        &added_path,
-        r#"<script setup lang="ts">
-const added: number = 'broken added file'
-</script>
-"#,
-    )
-    .expect("added file should write");
-    let after_add = checker
-        .check_incremental(std::slice::from_ref(&added_path))
-        .expect("added-file check should complete");
-    assert!(
-        after_add
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.file == added_path && diagnostic.code == Some(2322)),
-        "added file did not report TS2322: {:#?}",
-        after_add.diagnostics
-    );
-
-    std::fs::write(&app_path, clean_source.replace("= 1", "= 'broken app'"))
-        .expect("app patch should write");
-    let after_unrelated_edit = checker
-        .check_incremental(std::slice::from_ref(&app_path))
-        .expect("second incremental check should complete");
-    assert!(
-        after_unrelated_edit
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.file == added_path && diagnostic.code == Some(2322)),
-        "unrelated edit dropped the added file from the project: {:#?}",
-        after_unrelated_edit.diagnostics
-    );
-    assert!(
-        after_unrelated_edit
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.file == app_path && diagnostic.code == Some(2322)),
-        "second incremental check did not observe the App.vue patch: {:#?}",
-        after_unrelated_edit.diagnostics
-    );
-
-    std::fs::remove_file(&added_path).expect("added file should delete");
-    let after_delete = checker
-        .check_incremental(std::slice::from_ref(&added_path))
-        .expect("deleted-file check should complete");
-    assert!(
-        after_delete
-            .diagnostics
-            .iter()
-            .all(|diagnostic| diagnostic.file != added_path),
-        "deleted file retained stale diagnostics: {:#?}",
-        after_delete.diagnostics
-    );
-    assert!(
-        after_delete
-            .diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.file == app_path && diagnostic.code == Some(2322)),
-        "deleting the added file dropped the unrelated App.vue diagnostic: {:#?}",
-        after_delete.diagnostics
-    );
-    assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 2, 2),
-        "create, edit, and delete patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            last_session_reused: true,
+            last_requested_files: 1,
+            ..Default::default()
+        },
+        "an unchanged materialized scope should expose reuse without refresh work"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
