@@ -142,6 +142,7 @@ mod tests {
     use super::VOnHandlerStyle;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
+    use crate::{HelpLevel, Locale};
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
@@ -194,6 +195,31 @@ mod tests {
         let result = linter.lint_template(r#"<button @click="count++"></button>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn short_help_is_distinct_and_actionable_in_every_locale() {
+        for (locale, expected) in [
+            (
+                Locale::En,
+                "Write the handler as a method reference or an inline function instead of an inline statement.",
+            ),
+            (
+                Locale::Ja,
+                "ハンドラをインライン文ではなく、メソッド参照またはインライン関数として記述してください。",
+            ),
+            (
+                Locale::Zh,
+                "请将处理函数写成方法引用或内联函数，而不是内联语句。",
+            ),
+        ] {
+            let result = create_linter()
+                .with_locale(locale)
+                .with_help_level(HelpLevel::Short)
+                .lint_template(r#"<button @click="count++"></button>"#, "App.vue");
+
+            assert_eq!(result.diagnostics[0].help.as_deref(), Some(expected));
+        }
     }
 
     #[test]

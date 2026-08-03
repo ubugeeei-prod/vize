@@ -32,7 +32,7 @@ pub enum Severity {
 pub enum HelpLevel {
     /// No help text.
     None,
-    /// Short help text (first line only, markdown stripped).
+    /// Short help text (first actionable sentence, markdown and examples stripped).
     Short,
     /// Full help text with markdown formatting.
     #[default]
@@ -44,7 +44,7 @@ impl HelpLevel {
     pub fn process(&self, help: &str) -> Option<String> {
         match self {
             HelpLevel::None => None,
-            HelpLevel::Short => Some(super::formatting::strip_markdown_first_line(help)),
+            HelpLevel::Short => Some(super::compact_help::compact_help_text(help)),
             HelpLevel::Full => Some(help.to_compact_string()),
         }
     }

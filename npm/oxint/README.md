@@ -169,7 +169,7 @@ You can pass Patina settings through `settings.vize`:
 - `"ecosystem"` enables Vize's Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt, and Void Vue rules without taking on the full opinionated preset.
 - `"opinionated"` is the preset that enables Vize's built-in script rules such as `vize/script/no-options-api`.
 - Legacy aliases such as `"GeneralRecommended"`, `"Essential"`, `"Ecosystem"`, `"Incremental"`, `"Opinionated"`, `"Nuxt"`, and `"happy-path"` are still accepted for compatibility.
-- `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
+- `helpLevel` accepts `"full"`, `"short"`, or `"none"`. Short help keeps one actionable sentence and removes inline examples and trailing rationale.
 - `helpLevel: "full"` only expands the Patina remediation text. It does not restore original-SFC formatter anchors or machine-readable range fidelity.
 - `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
 - `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting. Omit it to use Vize's normal resolver.

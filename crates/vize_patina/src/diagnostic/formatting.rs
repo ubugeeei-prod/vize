@@ -41,36 +41,6 @@ pub fn render_help(markdown: &str, target: HelpRenderTarget) -> String {
     }
 }
 
-/// Strip markdown formatting and return the first meaningful line.
-pub(crate) fn strip_markdown_first_line(text: &str) -> String {
-    let mut in_code_block = false;
-    for line in text.lines() {
-        let trimmed = line.trim();
-        // Track code fence blocks
-        if trimmed.starts_with("```") {
-            in_code_block = !in_code_block;
-            continue;
-        }
-        // Skip lines inside code blocks
-        if in_code_block {
-            continue;
-        }
-        // Skip empty lines
-        if trimmed.is_empty() {
-            continue;
-        }
-        // Strip markdown bold/italic
-        let stripped = trimmed.replace("**", "").replace("__", "").replace('`', "");
-        // Skip lines that are just markdown headers
-        let stripped = stripped.trim_start_matches('#').trim();
-        if stripped.is_empty() {
-            continue;
-        }
-        return stripped.to_compact_string();
-    }
-    text.lines().next().unwrap_or(text).to_compact_string()
-}
-
 /// Convert markdown text to ANSI-formatted text for TUI display.
 ///
 /// Supports:

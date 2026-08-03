@@ -5,6 +5,7 @@
 //! - [`types`]: Core diagnostic data structures
 //! - [`formatting`]: Markdown rendering and help text formatting
 
+mod compact_help;
 pub mod formatting;
 mod types;
 
@@ -13,7 +14,7 @@ pub use types::{Fix, HelpLevel, LintDiagnostic, LintSummary, Severity, TextEdit}
 
 #[cfg(test)]
 mod tests {
-    use super::{HelpLevel, HelpRenderTarget, formatting, render_help};
+    use super::{HelpLevel, HelpRenderTarget, compact_help, formatting, render_help};
     use vize_carton::ToCompactString;
 
     #[test]
@@ -63,9 +64,51 @@ mod tests {
     }
 
     #[test]
-    fn test_strip_markdown_first_line_with_backticks() {
-        let result = formatting::strip_markdown_first_line("Use `v-model` instead of `{{ }}`");
+    fn test_compact_help_text_with_backticks() {
+        let result = compact_help::compact_help_text("Use `v-model` instead of `{{ }}`");
         assert_eq!(result, "Use v-model instead of {{ }}");
+    }
+
+    #[test]
+    fn test_compact_help_text_removes_examples_in_all_locales() {
+        assert_eq!(
+            compact_help::compact_help_text(
+                "Use a method (e.g. @click=\"handler\") or a function (e.g. @click=\"() => run()\").",
+            ),
+            "Use a method or a function."
+        );
+        assert_eq!(
+            compact_help::compact_help_text(
+                "メソッド参照（例: @click=\"handler\"）または関数（例: @click=\"() => run()\"）を使用してください。",
+            ),
+            "メソッド参照または関数を使用してください。"
+        );
+        assert_eq!(
+            compact_help::compact_help_text(
+                "请使用方法引用（例如 @click=\"handler\"）或函数（例如 @click=\"() => run()\"）。",
+            ),
+            "请使用方法引用或函数。"
+        );
+    }
+
+    #[test]
+    fn test_compact_help_text_keeps_only_the_action_sentence() {
+        assert_eq!(
+            compact_help::compact_help_text(
+                "Apply the safe rewrite. Reason: the longer explanation belongs to full help.",
+            ),
+            "Apply the safe rewrite."
+        );
+        assert_eq!(
+            compact_help::compact_help_text(
+                "安全な修正を適用してください。理由：詳細はfullヘルプにあります。"
+            ),
+            "安全な修正を適用してください。"
+        );
+        assert_eq!(
+            compact_help::compact_help_text("Call storeToRefs(store) before destructuring."),
+            "Call storeToRefs(store) before destructuring."
+        );
     }
 
     #[test]
