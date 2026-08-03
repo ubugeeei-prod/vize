@@ -49,7 +49,7 @@
     "check": "vp check src scripts vite.config.ts && pnpm check:types",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
-    "check:types": "vp exec tsgo --noEmit -p tsconfig.json",
+    "check:types": "vp exec tsc --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "dependencies": {
