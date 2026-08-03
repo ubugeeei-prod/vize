@@ -188,15 +188,17 @@ fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
 
     if subpath.is_empty() {
         if let Some(manifest) = &manifest {
-            if let Some(types) = manifest
-                .get("types")
-                .or_else(|| manifest.get("typings"))
-                .and_then(|value| value.as_str())
+            // Modern resolution honours `exports` ahead of the legacy
+            // top-level `types`/`typings` entry points.
+            if let Some(types) = exports_types_entry(manifest, ".")
                 && let Some(path) = resolve_candidate_path(package_dir.join(types))
             {
                 return Some(path);
             }
-            if let Some(types) = exports_types_entry(manifest, ".")
+            if let Some(types) = manifest
+                .get("types")
+                .or_else(|| manifest.get("typings"))
+                .and_then(|value| value.as_str())
                 && let Some(path) = resolve_candidate_path(package_dir.join(types))
             {
                 return Some(path);
