@@ -5,6 +5,7 @@ import type {
   AdapterCapabilitySupport,
   CompatibilityChangeKind,
 } from "./adapter-model.js";
+import { validateAdapterCapabilityManifest } from "./adapter-validate.js";
 
 /**
  * Compares adapter capability support from older to newer.
@@ -16,6 +17,12 @@ export function compareAdapterCapabilities(
   previous: AdapterCapabilityManifest,
   next: AdapterCapabilityManifest,
 ): AdapterCapabilityCompatibilityReport {
+  const previousDiagnostics = validateAdapterCapabilityManifest(previous);
+  const nextDiagnostics = validateAdapterCapabilityManifest(next);
+  if (previousDiagnostics.length > 0 || nextDiagnostics.length > 0) {
+    return { previousDiagnostics, nextDiagnostics, changes: [] };
+  }
+
   const changes: AdapterCapabilityCompatibilityChange[] = [];
   if (previous.adapter !== next.adapter) {
     changes.push(change("breaking", "adapter", "adapter identity changed"));
@@ -59,7 +66,7 @@ export function compareAdapterCapabilities(
   changes.sort(
     (left, right) => compareText(left.path, right.path) || compareText(left.kind, right.kind),
   );
-  return { changes };
+  return { previousDiagnostics, nextDiagnostics, changes };
 }
 
 function byId(manifest: AdapterCapabilityManifest): Map<string, AdapterCapabilitySupport> {

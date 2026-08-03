@@ -88,7 +88,7 @@ fn rejects_unknown_fields_before_negotiation() {
     assert!(
         error
             .to_compact_string()
-            .contains("unknown field `unexpected`")
+            .contains("unknown field `zUnexpected`")
     );
 }
 

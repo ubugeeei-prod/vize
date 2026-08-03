@@ -96,6 +96,10 @@ export interface AdapterCapabilityCompatibilityChange {
 
 /** Deterministic compatibility report between two adapter manifests. */
 export interface AdapterCapabilityCompatibilityReport {
+  /** Validation failures in the previous manifest. */
+  readonly previousDiagnostics: readonly AdapterCapabilityDiagnostic[];
+  /** Validation failures in the next manifest. */
+  readonly nextDiagnostics: readonly AdapterCapabilityDiagnostic[];
   /** All changes in stable path order. */
   readonly changes: readonly AdapterCapabilityCompatibilityChange[];
 }

@@ -5,7 +5,7 @@ mod model;
 mod negotiate;
 mod validate;
 
-pub use compatibility::compare_adapter_capabilities;
+pub use compatibility::{AdapterCapabilityCompatibilityReport, compare_adapter_capabilities};
 pub use model::{
     ADAPTER_CAPABILITY_FORMAT_VERSION, AdapterCapabilityDiagnostic,
     AdapterCapabilityDiagnosticCode, AdapterCapabilityManifest, AdapterCapabilityMismatch,

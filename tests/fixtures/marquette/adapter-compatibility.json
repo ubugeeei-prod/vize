@@ -18,6 +18,8 @@
       ]
     },
     "expected": {
+      "previousDiagnostics": [],
+      "nextDiagnostics": [],
       "changes": [
         {
           "kind": "additive",
@@ -53,6 +55,8 @@
       "capabilities": [{ "id": "range", "minVersion": 2, "maxVersion": 4 }]
     },
     "expected": {
+      "previousDiagnostics": [],
+      "nextDiagnostics": [],
       "changes": [
         {
           "kind": "breaking",
@@ -72,7 +76,43 @@
     "previous": { "adapter": "fixture.adapter", "capabilities": [] },
     "next": { "adapter": "other.adapter", "capabilities": [] },
     "expected": {
+      "previousDiagnostics": [],
+      "nextDiagnostics": [],
       "changes": [{ "kind": "breaking", "path": "adapter", "message": "adapter identity changed" }]
+    }
+  },
+  {
+    "name": "duplicate-capabilities-make-both-inputs-invalid",
+    "previous": {
+      "adapter": "fixture.adapter",
+      "capabilities": [
+        { "id": "duplicate", "minVersion": 1, "maxVersion": 2 },
+        { "id": "duplicate", "minVersion": 2, "maxVersion": 3 }
+      ]
+    },
+    "next": {
+      "adapter": "fixture.adapter",
+      "capabilities": [
+        { "id": "duplicate", "minVersion": 1, "maxVersion": 3 },
+        { "id": "duplicate", "minVersion": 1, "maxVersion": 4 }
+      ]
+    },
+    "expected": {
+      "previousDiagnostics": [
+        {
+          "code": "duplicate-capability",
+          "path": "capabilities.1.id",
+          "message": "capability id must be unique within the adapter manifest"
+        }
+      ],
+      "nextDiagnostics": [
+        {
+          "code": "duplicate-capability",
+          "path": "capabilities.1.id",
+          "message": "capability id must be unique within the adapter manifest"
+        }
+      ],
+      "changes": []
     }
   }
 ]

@@ -125,7 +125,8 @@ use the stable `missing-capability`, `version-below-minimum`, and
 `version-above-maximum` codes. Adding a support range or widening either bound
 is additive; removing support or narrowing either bound is breaking. Both
 negotiation and compatibility reports are sorted deterministically and do not
-mutate their inputs. The published manifest schema is available from
+mutate their inputs. Compatibility reports expose validation diagnostics for
+both manifests and omit changes when either input is invalid. The published manifest schema is available from
 `@vizejs/marquette/adapter/schema`.
 
 ## Test-run evidence

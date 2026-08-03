@@ -57,10 +57,11 @@ void test("matches shared negotiation fixtures and input permutations", async ()
 });
 
 void test("matches shared semantic validation diagnostics", async () => {
-  const manifest = await read<AdapterCapabilityManifest>("adapter-manifest-invalid.json");
+  const input = await read<unknown>("adapter-manifest-invalid.json");
   const expected = await read<readonly AdapterCapabilityDiagnostic[]>(
     "adapter-manifest-invalid.expected.json",
   );
+  const manifest = parseAdapterCapabilityManifest(input);
 
   assert.deepEqual(validateAdapterCapabilityManifest(manifest), expected);
 });
@@ -69,7 +70,11 @@ void test("strict parsing rejects unknown and malformed fields before negotiatio
   const unknown = await read<unknown>("adapter-manifest-unknown-field.json");
   assert.throws(
     () => parseAdapterCapabilityManifest(unknown),
-    /capabilities\.0 has unknown field unexpected/,
+    /capabilities\.0 has unknown field zUnexpected/,
+  );
+  assert.throws(
+    () => parseAdapterCapabilityManifest({ formatVersion: "1", adapter: "fixture.adapter" }),
+    /formatVersion must be a number/,
   );
   assert.throws(
     () =>

@@ -1,11 +1,27 @@
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
 use vize_carton::{String, ToCompactString};
 
 use crate::{
-    CompatibilityChange, CompatibilityChangeKind, CompatibilityReport,
-    adapter::AdapterCapabilityManifest,
+    CompatibilityChange, CompatibilityChangeKind,
+    adapter::{
+        AdapterCapabilityDiagnostic, AdapterCapabilityManifest,
+        validate_adapter_capability_manifest,
+    },
 };
+
+/// Deterministic compatibility report between two adapter manifests.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AdapterCapabilityCompatibilityReport {
+    /// Validation failures in the previous manifest.
+    pub previous_diagnostics: Vec<AdapterCapabilityDiagnostic>,
+    /// Validation failures in the next manifest.
+    pub next_diagnostics: Vec<AdapterCapabilityDiagnostic>,
+    /// Capability changes, empty when either input is invalid.
+    pub changes: Vec<CompatibilityChange>,
+}
 
 /// Compares adapter capability support from older to newer.
 ///
@@ -14,7 +30,17 @@ use crate::{
 pub fn compare_adapter_capabilities(
     previous: &AdapterCapabilityManifest,
     next: &AdapterCapabilityManifest,
-) -> CompatibilityReport {
+) -> AdapterCapabilityCompatibilityReport {
+    let previous_diagnostics = validate_adapter_capability_manifest(previous);
+    let next_diagnostics = validate_adapter_capability_manifest(next);
+    if !previous_diagnostics.is_empty() || !next_diagnostics.is_empty() {
+        return AdapterCapabilityCompatibilityReport {
+            previous_diagnostics,
+            next_diagnostics,
+            changes: Vec::new(),
+        };
+    }
+
     let mut changes = Vec::new();
     if previous.adapter != next.adapter {
         changes.push(change(
@@ -81,7 +107,11 @@ pub fn compare_adapter_capabilities(
     }
 
     changes.sort_by(|left, right| (&left.path, left.kind).cmp(&(&right.path, right.kind)));
-    CompatibilityReport { changes }
+    AdapterCapabilityCompatibilityReport {
+        previous_diagnostics,
+        next_diagnostics,
+        changes,
+    }
 }
 
 fn by_id(manifest: &AdapterCapabilityManifest) -> BTreeMap<&str, &super::AdapterCapabilitySupport> {

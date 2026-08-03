@@ -108,8 +108,8 @@ export function validateAdapterCapabilityManifest(
 export function parseAdapterCapabilityManifest(value: unknown): AdapterCapabilityManifest {
   assertRecord(value, "manifest");
   assertKnownFields(value, ["formatVersion", "adapter", "capabilities"], "manifest");
-  if (value.formatVersion !== undefined && value.formatVersion !== 1) {
-    throw new TypeError("formatVersion must equal 1");
+  if (value.formatVersion !== undefined && typeof value.formatVersion !== "number") {
+    throw new TypeError("formatVersion must be a number");
   }
   if (typeof value.adapter !== "string") {
     throw new TypeError("adapter must be a string");
@@ -162,9 +162,7 @@ function assertKnownFields(
   path: string,
 ): void {
   const known = new Set(expected);
-  const unknown = Object.keys(value)
-    .filter((field) => !known.has(field))
-    .sort()[0];
+  const unknown = Object.keys(value).find((field) => !known.has(field));
   if (unknown !== undefined) throw new TypeError(`${path} has unknown field ${unknown}`);
 }
 
