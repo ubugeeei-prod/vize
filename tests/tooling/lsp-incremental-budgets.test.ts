@@ -286,6 +286,7 @@ test("incremental LSP suites carry complete enforced budget blocks", () => {
       "sharedBrokenSecondApp",
       "sharedRepairedSecondApp",
       "warmNoopSecondApp",
+      "cancellationConverge",
     ],
   };
 

@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
 import { completionLabels, hoverToText } from "../tooling/support/lsp/assertions.ts";
 import { LspSession } from "../tooling/support/lsp/session.ts";
+import { assertCancellationWindow, recordPublishes } from "./support/churn-oracle.ts";
 import { countFiles, IncrementalMetrics } from "./support/incremental-metrics.ts";
 import {
   assertSingleInjectedMismatch,
@@ -80,6 +81,7 @@ test(
           id: "vben-lsp-incremental",
           title: "Vue Vben Admin LSP Incremental Oracle",
         });
+        const publishes = recordPublishes(session);
         let baseline: string[] = [];
         let secondBaseline: string[] = [];
         let failure: unknown;
@@ -184,6 +186,7 @@ test(
             expectError: true,
           });
           assertSingleInjectedMismatch(leafBroken.diagnostics, baseline, leafBrokenSource, symbol);
+          const leafBrokenBaseline = normalizeDiagnostics(leafBroken.diagnostics);
 
           const leafRepaired = await changeVue(session, metrics, {
             name: "leafRepaired",
@@ -242,6 +245,42 @@ test(
             source: secondLeafSource,
           });
           assert.deepEqual(normalizeDiagnostics(secondWarm.diagnostics), secondBaseline);
+
+          // Fire four same-document changes without waiting between them. The
+          // server may cancel superseded work, but every publish that escapes
+          // must match the content for its own version and the window must end
+          // on the repaired version. Keeping the second app open makes this a
+          // cancellation oracle inside the real cross-package monorepo session.
+          const cancellationStart = publishes.length;
+          const expectedByVersion = new Map<number, string[]>();
+          let firstLeafVersion = 4;
+          for (const source of [leafBrokenSource, firstLeafSource, leafBrokenSource]) {
+            firstLeafVersion += 1;
+            expectedByVersion.set(
+              firstLeafVersion,
+              source === firstLeafSource ? baseline : leafBrokenBaseline,
+            );
+            session.notify("textDocument/didChange", {
+              textDocument: { uri: firstLeafUri, version: firstLeafVersion },
+              contentChanges: [{ text: source }],
+            });
+          }
+          firstLeafVersion += 1;
+          expectedByVersion.set(firstLeafVersion, baseline);
+          const cancellationConverged = await metrics.measure("cancellationConverge", () => {
+            session.notify("textDocument/didChange", {
+              textDocument: { uri: firstLeafUri, version: firstLeafVersion },
+              contentChanges: [{ text: firstLeafSource }],
+            });
+            return waitForDiagnostics(session, firstLeafUri, firstLeafVersion, false);
+          });
+          assert.deepEqual(normalizeDiagnostics(cancellationConverged.diagnostics), baseline);
+          assertCancellationWindow(
+            publishes.slice(cancellationStart),
+            firstLeafUri,
+            expectedByVersion,
+            firstLeafVersion,
+          );
 
           session.notify("textDocument/didClose", { textDocument: { uri: firstLeafUri } });
           session.notify("textDocument/didClose", { textDocument: { uri: secondLeafUri } });

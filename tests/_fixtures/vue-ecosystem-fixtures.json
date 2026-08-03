@@ -51,7 +51,8 @@
           "sharedBrokenSecondApp": 3000,
           "sharedRepaired": 3000,
           "sharedRepairedSecondApp": 3000,
-          "warmNoopSecondApp": 1500
+          "warmNoopSecondApp": 1500,
+          "cancellationConverge": 6000
         }
       }
     },
