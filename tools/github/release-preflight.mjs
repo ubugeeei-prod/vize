@@ -56,7 +56,9 @@ function verifyGitReleaseTarget(tag, sha, version) {
   if (head !== sha) {
     throw new Error(`Checked out HEAD ${head} does not match release event SHA ${sha}`);
   }
-  runGit(["fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/remotes/origin/main"]);
+  // The reusable workflow checks out the tag with fetch-depth: 0, which also
+  // hydrates origin/main. A second fetch here only repeats the large repository
+  // negotiation and can exceed the command timeout before any gate is checked.
   const mainSha = runGit(["rev-parse", "refs/remotes/origin/main"]).stdout.trim();
   // The local release guard requires an exact main tip before creating the
   // immutable tag. Once the tag exists, later main commits must not invalidate

@@ -23,7 +23,7 @@ test("release preflight CLI fails closed on unknown or ambiguous modes", () => {
   assert.throws(() => parseReleasePreflightMode(["--verify-only", "--target-only"]), /Usage:/);
 });
 
-test("target-only mode verifies HEAD, main first-parent history, and the peeled remote tag", () => {
+test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remote tag", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-target-"));
   const binDir = path.join(tempDir, "bin");
   const version = workspaceVersionFromCargoToml(
@@ -43,7 +43,6 @@ test("target-only mode verifies HEAD, main first-parent history, and the peeled 
       "const command = args.join(' ');",
       "if (command === 'rev-parse HEAD') console.log(process.env.TEST_HEAD_SHA);",
       "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_MAIN_SHA);",
-      "else if (args[0] === 'fetch') process.exit(0);",
       "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
       "else if (args[0] === 'ls-remote') {",
       "  console.log(`${process.env.TEST_TAG_OBJECT}\\trefs/tags/${process.env.TEST_TAG}`);",
