@@ -236,11 +236,12 @@ fn check_tsx_vapor_keeps_script_type_errors() {
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert_eq!(json["errorCount"], serde_json::json!(1), "{diagnostics:#?}");
-    assert!(
-        diagnostics
-            .iter()
-            .any(|diagnostic| diagnostic.contains("[TS2322]")),
-        "JSX Vapor typecheck should keep TSX script errors: {diagnostics:#?}"
+    // vue-tsc 3.3.4 on this byte-identical Standalone.tsx reports:
+    // `src/Standalone.tsx(2,9): error TS2322: Type 'string' is not assignable to type 'number'.`
+    assert_eq!(
+        diagnostics,
+        vec!["error:2:9 [TS2322] Type 'string' is not assignable to type 'number'."],
+        "JSX Vapor typecheck should keep the exact authored TSX diagnostic"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
