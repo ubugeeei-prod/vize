@@ -661,6 +661,19 @@
       "diff": "e2e-vrt"
     },
     {
+      "id": "mobile-web-best-practice",
+      "displayName": "Mobile Web Best Practice",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
+      "repository": "https://github.com/mcuking/mobile-web-best-practice",
+      "revision": "34a793b13492405f75c97b46253df5ee142014cc",
+      "license": { "spdx": "MIT", "files": ["LICENSE"] },
+      "vueGlobs": ["**/*.vue"],
+      "tsconfig": "tsconfig.json",
+      "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
+      "diff": "e2e-vrt"
+    },
+    {
       "id": "filebrowser",
       "displayName": "File Browser",
       "kind": "application",

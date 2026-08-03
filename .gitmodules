@@ -673,3 +673,7 @@
 	path = tests/_fixtures/_git/airi
 	url = https://github.com/moeru-ai/airi
 	shallow = true
+[submodule "tests/_fixtures/_git/mobile-web-best-practice"]
+	path = tests/_fixtures/_git/mobile-web-best-practice
+	url = https://github.com/mcuking/mobile-web-best-practice
+	shallow = true

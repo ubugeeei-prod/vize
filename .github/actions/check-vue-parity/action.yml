@@ -11,6 +11,7 @@ runs:
           tests/_fixtures/_git/create-vue \
           tests/_fixtures/_git/element-plus \
           tests/_fixtures/_git/misskey \
+          tests/_fixtures/_git/mobile-web-best-practice \
           tests/_fixtures/_git/nuxt-ui \
           tests/_fixtures/_git/pinia \
           tests/_fixtures/_git/vue-router \

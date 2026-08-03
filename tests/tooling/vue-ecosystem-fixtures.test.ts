@@ -50,6 +50,7 @@ interface SubmoduleEntry {
 
 const requestedFixtures = [
   "airi",
+  "mobile-web-best-practice",
   "vue-vben-admin",
   "hoppscotch",
   "element-plus",
