@@ -11,7 +11,7 @@
     {
       "file": "packages/core/src/Accordion/AccordionItem.vue",
       "diagnostics": [
-        "error:82:20 [TS2322] Type 'ComputedRef<boolean | undefined>' is not assignable to type 'ComputedRef<boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:85:3 [TS2322] Type 'ComputedRef<boolean | undefined>' is not assignable to type 'ComputedRef<boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -109,8 +109,8 @@
     {
       "file": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
       "diagnostics": [
-        "error:216:33 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:233:13 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:218:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:236:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -298,7 +298,7 @@
     {
       "file": "packages/core/src/Checkbox/CheckboxGroupRoot.vue",
       "diagnostics": [
-        "error:57:85 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:63:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -308,8 +308,8 @@
     {
       "file": "packages/core/src/Checkbox/CheckboxRoot.vue",
       "diagnostics": [
-        "error:48:16 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
-        "error:126:75 [TS2322] Type 'ComputedRef<boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nTypes of property 'value' are incompatible.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:49:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations.",
+        "error:130:3 [TS2322] Type 'ComputedRef<boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nTypes of property 'value' are incompatible.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -343,7 +343,7 @@
     {
       "file": "packages/core/src/Collapsible/CollapsibleRoot.vue",
       "diagnostics": [
-        "error:61:18 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:63:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -517,9 +517,9 @@
     {
       "file": "packages/core/src/Combobox/ComboboxRoot.vue",
       "diagnostics": [
-        "error:218:26 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:218:38 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:237:12 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:223:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:224:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:242:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -537,7 +537,7 @@
     {
       "file": "packages/core/src/Combobox/ComboboxVirtualizer.vue",
       "diagnostics": [
-        "error:5:38 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations."
+        "error:6:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations."
       ]
     },
     {
@@ -720,7 +720,7 @@
       "file": "packages/core/src/DateField/DateFieldRoot.vue",
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:178:12 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:180:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -833,8 +833,8 @@
       "file": "packages/core/src/DatePicker/DatePickerRoot.vue",
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:166:15 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:172:8 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:171:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:175:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -885,8 +885,8 @@
       "file": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:227:12 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:237:12 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:229:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:239:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -1004,8 +1004,8 @@
       "file": "packages/core/src/DateRangePicker/DateRangePickerRoot.vue",
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:185:15 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:191:8 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:190:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:194:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -1059,7 +1059,7 @@
     {
       "file": "packages/core/src/Dialog/DialogContentImpl.vue",
       "diagnostics": [
-        "error:58:48 [TS2591] Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig."
+        "error:61:5 [TS2591] Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig."
       ]
     },
     {
@@ -1277,8 +1277,8 @@
     {
       "file": "packages/core/src/Editable/EditableRoot.vue",
       "diagnostics": [
-        "error:210:12 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:213:1 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:213:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:215:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -1308,7 +1308,7 @@
     {
       "file": "packages/core/src/FocusScope/FocusScope.vue",
       "diagnostics": [
-        "error:36:17 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+        "error:37:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
       ]
     },
     {
@@ -1392,19 +1392,19 @@
     {
       "file": "packages/core/src/Listbox/ListboxRoot.vue",
       "diagnostics": [
-        "error:357:5 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:358:11 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:359:9 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:361:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:364:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:365:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
       "file": "packages/core/src/Listbox/ListboxVirtualizer.vue",
       "diagnostics": [
-        "error:14:38 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:16:36 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:18:45 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
-        "error:66:10 [TS7006] Parameter 'index' implicitly has an 'any' type.",
-        "error:75:2 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:15:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:18:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:20:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:67:18 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:78:82 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {
@@ -1763,7 +1763,7 @@
     {
       "file": "packages/core/src/NavigationMenu/NavigationMenuContent.vue",
       "diagnostics": [
-        "error:16:6 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
+        "error:16:40 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations."
       ]
     },
     {
@@ -1867,10 +1867,10 @@
     {
       "file": "packages/core/src/NumberField/NumberFieldRoot.vue",
       "diagnostics": [
-        "error:206:26 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:208:12 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:209:12 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:211:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:208:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:211:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:212:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:213:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -1922,7 +1922,7 @@
     {
       "file": "packages/core/src/Pagination/PaginationRoot.vue",
       "diagnostics": [
-        "error:82:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:85:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -1940,10 +1940,10 @@
     {
       "file": "packages/core/src/PinInput/PinInputRoot.vue",
       "diagnostics": [
-        "error:119:9 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:119:17 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:119:39 [TS2322] Type 'Ref<Type | undefined, Type | undefined> | (Ref<any, any> & PinInputType)' is not assignable to type 'Ref<PinInputType, PinInputType>'.\nType 'Ref<Type | undefined, Type | undefined>' is not assignable to type 'Ref<PinInputType, PinInputType>'.\nType 'Type | undefined' is not assignable to type 'PinInputType'.\nType 'undefined' is not assignable to type 'PinInputType'.",
-        "error:119:54 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:120:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:121:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:123:3 [TS2322] Type 'Ref<Type | undefined, Type | undefined> | (Ref<any, any> & PinInputType)' is not assignable to type 'Ref<PinInputType, PinInputType>'.\nType 'Ref<Type | undefined, Type | undefined>' is not assignable to type 'Ref<PinInputType, PinInputType>'.\nType 'Type | undefined' is not assignable to type 'PinInputType'.\nType 'undefined' is not assignable to type 'PinInputType'.",
+        "error:125:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2078,12 +2078,12 @@
       "file": "packages/core/src/Popper/PopperContent.vue",
       "diagnostics": [
         "error:6:8 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
-        "error:198:6 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
-        "error:293:21 [TS7031] Binding element 'elements' implicitly has an 'any' type.",
-        "error:293:31 [TS7031] Binding element 'rects' implicitly has an 'any' type.",
-        "error:293:38 [TS7031] Binding element 'availableWidth' implicitly has an 'any' type.",
-        "error:294:16 [TS7031] Binding element 'availableHeight' implicitly has an 'any' type.",
-        "error:334:27 [TS7019] Rest parameter 'args' implicitly has an 'any[]' type."
+        "error:201:8 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
+        "error:294:17 [TS7031] Binding element 'elements' implicitly has an 'any' type.",
+        "error:294:27 [TS7031] Binding element 'rects' implicitly has an 'any' type.",
+        "error:294:34 [TS7031] Binding element 'availableWidth' implicitly has an 'any' type.",
+        "error:294:50 [TS7031] Binding element 'availableHeight' implicitly has an 'any' type.",
+        "error:335:28 [TS7019] Rest parameter 'args' implicitly has an 'any[]' type."
       ]
     },
     {
@@ -2143,7 +2143,7 @@
     {
       "file": "packages/core/src/RadioGroup/RadioGroupItem.vue",
       "diagnostics": [
-        "error:22:39 [TS2307] Cannot find module 'ohash' or its corresponding type declarations."
+        "error:23:25 [TS2307] Cannot find module 'ohash' or its corresponding type declarations."
       ]
     },
     {
@@ -2285,7 +2285,7 @@
     {
       "file": "packages/core/src/Rating/RatingRoot.vue",
       "diagnostics": [
-        "error:93:9 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:96:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2339,8 +2339,8 @@
     {
       "file": "packages/core/src/ScrollArea/ScrollAreaScrollbar.vue",
       "diagnostics": [
-        "error:72:20 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:74:5 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:74:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:77:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2474,10 +2474,10 @@
     {
       "file": "packages/core/src/Select/SelectRoot.vue",
       "diagnostics": [
-        "error:90:44 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:164:31 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:165:7 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:170:7 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:93:3 [TS2578] Unused '@ts-expect-error' directive.",
+        "error:168:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:169:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:175:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2499,7 +2499,7 @@
     {
       "file": "packages/core/src/Select/SelectTrigger.vue",
       "diagnostics": [
-        "error:20:33 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<SelectTriggerProps>'.",
+        "error:21:3 [TS2353] Object literal may only specify known properties, and 'as' does not exist in type '__WithDefaultsArgs<SelectTriggerProps>'.",
         "error:60:14 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.",
         "error:71:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SelectTriggerProps>, \"as\"> & {}'."
       ]
@@ -2622,7 +2622,7 @@
     {
       "file": "packages/core/src/Splitter/SplitterResizeHandle.vue",
       "diagnostics": [
-        "error:140:10 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:141:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2720,7 +2720,7 @@
     {
       "file": "packages/core/src/Switch/SwitchRoot.vue",
       "diagnostics": [
-        "error:85:1 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:89:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2788,10 +2788,10 @@
     {
       "file": "packages/core/src/TagsInput/TagsInputRoot.vue",
       "diagnostics": [
-        "error:221:17 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:221:31 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:222:2 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:225:2 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:227:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:228:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:229:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:231:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2837,7 +2837,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:8:79 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:213:21 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:215:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2875,8 +2875,8 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:11:67 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:297:21 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:308:21 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:299:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:310:3 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -2942,7 +2942,7 @@
     {
       "file": "packages/core/src/Toast/ToastProvider.vue",
       "diagnostics": [
-        "error:81:20 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:84:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -3065,7 +3065,7 @@
       "file": "packages/core/src/Tooltip/TooltipContentImpl.vue",
       "diagnostics": [
         "error:4:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:77:23 [TS2739] Type '{ side: string; sideOffset: number; align: string; avoidCollisions: boolean; collisionBoundary: never[]; collisionPadding: number; arrowPadding: number; sticky: string; hideWhenDetached: boolean; }' is missing the following properties from type 'TooltipContentImplProps': alignOffset, positionStrategy, updatePositionStrategy"
+        "error:79:5 [TS2739] Type '{ side: string; sideOffset: number; align: string; avoidCollisions: boolean; collisionBoundary: never[]; collisionPadding: number; arrowPadding: number; sticky: string; hideWhenDetached: boolean; }' is missing the following properties from type 'TooltipContentImplProps': alignOffset, positionStrategy, updatePositionStrategy"
       ]
     },
     {
@@ -3075,9 +3075,9 @@
     {
       "file": "packages/core/src/Tooltip/TooltipProvider.vue",
       "diagnostics": [
-        "error:63:21 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
-        "error:98:21 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:99:21 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:64:30 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:100:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:101:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -3120,22 +3120,22 @@
     {
       "file": "packages/core/src/Tree/TreeRoot.vue",
       "diagnostics": [
-        "error:114:50 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:255:56 [TS2322] Type 'Ref<T[] | undefined, T[] | undefined>' is not assignable to type 'Ref<any[], any[]>'.\nType 'T[] | undefined' is not assignable to type 'any[]'.\nType 'undefined' is not assignable to type 'any[]'.",
-        "error:257:8 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:257:20 [TS2322] Type 'Ref<boolean | M | undefined, boolean | M | undefined> | (Ref<any, any> & boolean)' is not assignable to type 'Ref<boolean, boolean>'.\nType 'Ref<boolean | M | undefined, boolean | M | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | M | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:257:39 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
-        "error:259:5 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:120:3 [TS2578] Unused '@ts-expect-error' directive.",
+        "error:261:3 [TS2322] Type 'Ref<T[] | undefined, T[] | undefined>' is not assignable to type 'Ref<any[], any[]>'.\nType 'T[] | undefined' is not assignable to type 'any[]'.\nType 'undefined' is not assignable to type 'any[]'.",
+        "error:263:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:264:3 [TS2322] Type 'Ref<boolean | M | undefined, boolean | M | undefined> | (Ref<any, any> & boolean)' is not assignable to type 'Ref<boolean, boolean>'.\nType 'Ref<boolean | M | undefined, boolean | M | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | M | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:266:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
+        "error:267:3 [TS2322] Type 'Ref<boolean | undefined, boolean | undefined>' is not assignable to type 'Ref<boolean, boolean>'.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
       "file": "packages/core/src/Tree/TreeVirtualizer.vue",
       "diagnostics": [
-        "error:13:13 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:15:50 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:78:21 [TS7006] Parameter 'index' implicitly has an 'any' type.",
-        "error:80:77 [TS7006] Parameter 'index' implicitly has an 'any' type.",
-        "error:93:48 [TS7006] Parameter 'item' implicitly has an 'any' type."
+        "error:13:47 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:16:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:79:16 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:82:18 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:93:82 [TS7006] Parameter 'item' implicitly has an 'any' type."
       ]
     },
     {

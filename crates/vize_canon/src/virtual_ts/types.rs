@@ -181,6 +181,21 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) lib_references: Option<&'a [&'a str]>,
     /// Avoid introducing a `vite/client` type dependency in arbitrary projects.
     pub(crate) omit_vite_client_reference: bool,
+    /// Synthetic merged-script offset and SFC-absolute source offset of
+    /// `<script setup>`. Split-script analysis joins the two blocks with one
+    /// newline, while the authored closing/opening tags occupy more bytes.
+    pub(crate) split_script_setup_offsets: Option<(usize, usize)>,
+}
+
+impl VirtualTsGenerationOptions<'_> {
+    pub(crate) fn script_source_offset(self, script_offset: u32, offset: usize) -> usize {
+        if let Some((synthetic_setup_start, source_setup_start)) = self.split_script_setup_offsets
+            && offset >= synthetic_setup_start
+        {
+            return source_setup_start.saturating_add(offset - synthetic_setup_start);
+        }
+        (script_offset as usize).saturating_add(offset)
+    }
 }
 
 /// Default plugin globals.

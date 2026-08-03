@@ -91,7 +91,7 @@
     {
       "file": "app/components/account/AccountInlineInfo.vue",
       "diagnostics": [
-        "error:20:11 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
       ]
     },
     {

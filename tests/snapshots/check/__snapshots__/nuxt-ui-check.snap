@@ -5,7 +5,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/accordion' or its corresponding type declarations.",
-        "error:77:6 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -13,7 +13,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/alert' or its corresponding type declarations.",
-        "error:75:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -25,7 +25,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/auth-form' or its corresponding type declarations.",
-        "error:107:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:109:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -33,10 +33,10 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar' or its corresponding type declarations.",
-        "error:41:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:42:24 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:43:34 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
-        "error:72:2 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ '3xs': number; '2xs': number; xs: number; sm: number; md: number; lg: number; xl: number; '2xl': number; '3xl': number; }'."
+        "error:42:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:44:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
+        "error:74:31 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ '3xs': number; '2xs': number; xs: number; sm: number; md: number; lg: number; xl: number; '2xl': number; '3xl': number; }'."
       ]
     },
     {
@@ -44,7 +44,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar-group' or its corresponding type declarations.",
-        "error:34:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:35:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -52,7 +52,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/badge' or its corresponding type declarations.",
-        "error:45:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -60,7 +60,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/banner' or its corresponding type declarations.",
-        "error:70:5 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:70:39 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -68,8 +68,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/blog-post' or its corresponding type declarations.",
-        "error:62:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:62:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:63:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -77,7 +77,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/blog-posts' or its corresponding type declarations.",
-        "error:41:29 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -85,7 +85,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/breadcrumb' or its corresponding type declarations.",
-        "error:62:28 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -93,8 +93,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/button' or its corresponding type declarations.",
-        "error:46:32 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:48:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:47:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:49:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -103,7 +103,7 @@
         "error:5:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/calendar' or its corresponding type declarations.",
-        "error:118:72 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -111,7 +111,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/card' or its corresponding type declarations.",
-        "error:32:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -126,15 +126,15 @@
         "error:10:38 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
         "error:11:49 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations.",
         "error:12:19 [TS2307] Cannot find module '#build/ui/carousel' or its corresponding type declarations.",
-        "error:118:34 [TS2307] Cannot find module 'embla-carousel-vue' or its corresponding type declarations.",
-        "error:121:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:161:34 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<CarouselProps<T>>, \"active\" | \"align\" | \"arrows\" | \"autoHeight\" | \"autoScroll\" | \"autoplay\" | \"breakpoints\" | \"classNames\" | ... 16 more ... | \"wheelGestures\"> & { ...; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:199:44 [TS2307] Cannot find module 'embla-carousel-autoplay' or its corresponding type declarations.",
-        "error:206:2 [TS2307] Cannot find module 'embla-carousel-auto-scroll' or its corresponding type declarations.",
-        "error:211:2 [TS2307] Cannot find module 'embla-carousel-auto-height' or its corresponding type declarations.",
-        "error:216:2 [TS2307] Cannot find module 'embla-carousel-class-names' or its corresponding type declarations.",
-        "error:218:98 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
-        "error:226:12 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations."
+        "error:119:30 [TS2307] Cannot find module 'embla-carousel-vue' or its corresponding type declarations.",
+        "error:122:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:162:43 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<CarouselProps<T>>, \"active\" | \"align\" | \"arrows\" | \"autoHeight\" | \"autoScroll\" | \"autoplay\" | \"breakpoints\" | \"classNames\" | ... 16 more ... | \"wheelGestures\"> & { ...; }' has no properties in common with type '{ ui?: any; }'.",
+        "error:202:41 [TS2307] Cannot find module 'embla-carousel-autoplay' or its corresponding type declarations.",
+        "error:207:43 [TS2307] Cannot find module 'embla-carousel-auto-scroll' or its corresponding type declarations.",
+        "error:212:43 [TS2307] Cannot find module 'embla-carousel-auto-height' or its corresponding type declarations.",
+        "error:217:43 [TS2307] Cannot find module 'embla-carousel-class-names' or its corresponding type declarations.",
+        "error:222:37 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
+        "error:227:50 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations."
       ]
     },
     {
@@ -142,8 +142,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/changelog-version' or its corresponding type declarations.",
-        "error:62:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:62:45 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:62:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:63:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -152,9 +152,9 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:54 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/changelog-versions' or its corresponding type declarations.",
-        "error:53:20 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
-        "error:54:16 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:54:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:54:60 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
+        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -163,7 +163,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/chat-message' or its corresponding type declarations.",
-        "error:60:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:61:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -172,8 +172,8 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:44 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/chat-messages' or its corresponding type declarations.",
-        "error:79:23 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:81:80 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:80:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:82:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -181,7 +181,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-palette' or its corresponding type declarations.",
-        "error:27:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -189,7 +189,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt' or its corresponding type declarations.",
-        "error:44:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -198,8 +198,8 @@
         "error:2:33 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt-submit' or its corresponding type declarations.",
-        "error:89:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:117:8 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: string | number | symbol | undefined; variant: string | number | symbol | undefined; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | ... 1 more ... | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'."
+        "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:117:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: string | number | symbol | undefined; variant: string | number | symbol | undefined; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | ... 1 more ... | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'."
       ]
     },
     {
@@ -207,7 +207,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox' or its corresponding type declarations.",
-        "error:66:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:67:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:116:54 [TS2304] Cannot find name 'as'."
       ]
     },
@@ -216,7 +216,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox-group' or its corresponding type declarations.",
-        "error:83:46 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:85:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:168:4 [TS2345] Argument of type '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { name?: string | undefined; required?: boolean | undefined; ... 9 more ...; \"onUpdate:modelValue\"?: ((value: AcceptableValue[]) => any) | undefined; } & Record<...>'.\nType '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; orientation?: Orientation$1 | undefined; ... 6 more ...; \"onUpdate:modelValue\"?: ((value: AcceptableValue[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'Orientation$1 | undefined'.\nType 'string' is not assignable to type 'Orientation$1 | undefined'."
       ]
     },
@@ -225,7 +225,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chip' or its corresponding type declarations.",
-        "error:50:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:51:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -233,7 +233,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/collapsible' or its corresponding type declarations.",
-        "error:31:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:32:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -242,9 +242,9 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/color-picker' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
-        "error:74:91 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
-        "error:75:41 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
-        "error:76:46 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:75:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:76:33 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
+        "error:77:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -254,12 +254,12 @@
         "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:7:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/command-palette' or its corresponding type declarations.",
-        "error:215:94 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:216:28 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
-        "error:217:60 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:338:28 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
-        "error:338:33 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:378:48 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
+        "error:216:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:218:25 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
+        "error:219:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:341:57 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
+        "error:341:62 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:383:53 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
         "error:585:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
       ]
     },
@@ -268,7 +268,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/container' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -276,7 +276,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:114:73 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:116:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -284,7 +284,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:41:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -292,7 +292,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-group' or its corresponding type declarations.",
-        "error:28:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -300,7 +300,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-navbar' or its corresponding type declarations.",
-        "error:54:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -308,7 +308,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-panel' or its corresponding type declarations.",
-        "error:25:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:26:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -316,7 +316,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-resize-handle' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -325,8 +325,8 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/dashboard-search' or its corresponding type declarations.",
-        "error:82:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:85:43 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:83:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:85:77 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -334,8 +334,8 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
-        "error:54:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:56:64 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -343,8 +343,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar' or its corresponding type declarations.",
-        "error:55:4 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:57:35 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:56:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:58:56 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -352,7 +352,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-collapse' or its corresponding type declarations.",
-        "error:30:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -360,7 +360,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-toggle' or its corresponding type declarations.",
-        "error:30:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -368,7 +368,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-toolbar' or its corresponding type declarations.",
-        "error:28:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -378,8 +378,8 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/drawer' or its corresponding type declarations.",
         "error:12:18 [TS2430] Interface 'DrawerProps' incorrectly extends interface 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.\nProperty 'nested' is optional in type 'DrawerProps' but required in type 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.",
-        "error:69:117 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
-        "error:70:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:69:151 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
+        "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -387,8 +387,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
-        "error:121:51 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:124:93 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:123:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:126:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -396,7 +396,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:24 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
-        "error:53:12 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -408,19 +408,19 @@
         "error:8:35 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
         "error:9:37 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
         "error:10:19 [TS2307] Cannot find module '#build/ui/editor' or its corresponding type declarations.",
-        "error:87:70 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:89:20 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations.",
-        "error:90:24 [TS2307] Cannot find module '@tiptap/extension-code' or its corresponding type declarations.",
-        "error:91:23 [TS2307] Cannot find module '@tiptap/extension-horizontal-rule' or its corresponding type declarations.",
-        "error:92:30 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
-        "error:93:34 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
-        "error:94:23 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
-        "error:95:36 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
-        "error:99:37 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:197:24 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'Partial<EditorOptions>'.",
-        "error:217:16 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:237:18 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:249:27 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'SetContentOptions'."
+        "error:89:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:91:33 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations.",
+        "error:92:18 [TS2307] Cannot find module '@tiptap/extension-code' or its corresponding type declarations.",
+        "error:93:28 [TS2307] Cannot find module '@tiptap/extension-horizontal-rule' or its corresponding type declarations.",
+        "error:94:19 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
+        "error:95:21 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
+        "error:96:25 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
+        "error:97:26 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
+        "error:101:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:202:3 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'Partial<EditorOptions>'.",
+        "error:219:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
+        "error:239:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
+        "error:252:48 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'SetContentOptions'."
       ]
     },
     {
@@ -430,11 +430,11 @@
         "error:4:42 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
         "error:6:38 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/editor-drag-handle' or its corresponding type declarations.",
-        "error:49:26 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
-        "error:52:46 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:53:24 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:75:17 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<EditorDragHandleProps>, \"color\" | \"size\" | \"variant\"> & { color: string | number | symbol; size: string | number | symbol; variant: string | ... 1 more ... | symbol; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:82:20 [TS7031] Binding element 'rects' implicitly has an 'any' type."
+        "error:50:24 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
+        "error:53:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:75:51 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<EditorDragHandleProps>, \"color\" | \"size\" | \"variant\"> & { color: string | number | symbol; size: string | number | symbol; variant: string | ... 1 more ... | symbol; }' has no properties in common with type '{ ui?: any; }'.",
+        "error:83:14 [TS7031] Binding element 'rects' implicitly has an 'any' type."
       ]
     },
     {
@@ -442,7 +442,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/editor-emoji-menu' or its corresponding type declarations.",
-        "error:31:35 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:32:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -450,7 +450,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/editor-mention-menu' or its corresponding type declarations.",
-        "error:35:33 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -458,7 +458,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/editor-suggestion-menu' or its corresponding type declarations.",
-        "error:54:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -468,9 +468,9 @@
         "error:6:44 [TS2307] Cannot find module '@tiptap/extension-bubble-menu' or its corresponding type declarations.",
         "error:7:46 [TS2307] Cannot find module '@tiptap/extension-floating-menu' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/editor-toolbar' or its corresponding type declarations.",
-        "error:99:38 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:102:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:125:24 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type '{ ui?: any; }'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' has no properties in common with type '{ ui?: any; }'."
+        "error:101:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:126:48 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type '{ ui?: any; }'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' has no properties in common with type '{ ui?: any; }'."
       ]
     },
     {
@@ -478,7 +478,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/empty' or its corresponding type declarations.",
-        "error:53:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -487,7 +487,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '#app' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/error' or its corresponding type declarations.",
-        "error:45:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:45:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -495,7 +495,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/field-group' or its corresponding type declarations.",
-        "error:35:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -503,7 +503,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/file-upload' or its corresponding type declarations.",
-        "error:136:25 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:137:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -511,7 +511,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/footer' or its corresponding type declarations.",
-        "error:30:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -519,7 +519,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/footer-columns' or its corresponding type declarations.",
-        "error:51:26 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -527,7 +527,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/form' or its corresponding type declarations.",
-        "error:79:85 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:81:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -535,7 +535,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/form-field' or its corresponding type declarations.",
-        "error:57:39 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -543,8 +543,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/header' or its corresponding type declarations.",
-        "error:63:38 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:66:29 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:65:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:67:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -557,7 +557,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/input' or its corresponding type declarations.",
         "error:16:18 [TS2430] Interface 'InputProps<T, Mod>' incorrectly extends interface 'Omit<InputHTMLAttributes, \"autocomplete\" | \"autofocus\" | \"disabled\" | \"name\" | \"placeholder\" | \"required\" | \"type\">'.\nTypes of property 'size' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'Numberish | undefined'.\nType 'symbol' is not assignable to type 'Numberish | undefined'.",
-        "error:70:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -565,7 +565,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/input-date' or its corresponding type declarations.",
-        "error:75:36 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:170:13 [TS7006] Parameter 'el' implicitly has an 'any' type."
       ]
     },
@@ -574,10 +574,10 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-menu' or its corresponding type declarations.",
-        "error:228:133 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:228:164 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:228:275 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:274:74 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:229:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:230:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:279:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:575:4 [TS2345] Argument of type '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { name?: string | undefined; required?: boolean | undefined; ... 19 more ...; \"onUpdate:open\"?: ((value: boolean) => any) | undefined; } & Record<...>'.\nType '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; modelValue?: AcceptableValue[] | AcceptableValue | undefined; ... 16 more ...; \"onUpdate:open\"?: ((value: boolean) => any) | undefined; }'.\nTypes of property 'by' are incompatible.\nType 'string | ((a: T, b: T) => boolean) | undefined' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type '(a: AcceptableValue, b: AcceptableValue) => boolean'.\nTypes of parameters 'a' and 'a' are incompatible.\nType 'AcceptableValue' is not assignable to type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'AcceptableValue'."
       ]
     },
@@ -586,7 +586,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-number' or its corresponding type declarations.",
-        "error:88:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -594,7 +594,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
-        "error:73:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:74:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:157:4 [TS2345] Argument of type '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { name?: string | undefined; required?: boolean | undefined; ... 18 more ...; onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; modelValue?: AcceptableInputValue[] | null | undefined; ... 15 more ...; onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
         "error:167:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => unknown'.\nTypes of parameters 'value' and 'args' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
       ]
@@ -604,7 +604,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-time' or its corresponding type declarations.",
-        "error:56:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -612,7 +612,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/kbd' or its corresponding type declarations.",
-        "error:40:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:41:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -620,9 +620,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
-        "error:109:22 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:111:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:114:6 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:110:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:112:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:114:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -634,7 +634,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/main' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -642,7 +642,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/marquee' or its corresponding type declarations.",
-        "error:51:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:52:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -650,7 +650,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/modal' or its corresponding type declarations.",
-        "error:85:64 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -658,8 +658,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/navigation-menu' or its corresponding type declarations.",
-        "error:229:130 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:229:234 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:230:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -671,7 +671,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page' or its corresponding type declarations.",
-        "error:28:38 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -679,7 +679,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-anchors' or its corresponding type declarations.",
-        "error:43:1 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:44:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -687,7 +687,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-aside' or its corresponding type declarations.",
-        "error:28:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -695,7 +695,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-body' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -703,7 +703,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-cta' or its corresponding type declarations.",
-        "error:56:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -711,7 +711,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-card' or its corresponding type declarations.",
-        "error:74:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:75:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -719,7 +719,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-columns' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -727,7 +727,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-feature' or its corresponding type declarations.",
-        "error:45:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -735,7 +735,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-grid' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -743,7 +743,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-header' or its corresponding type declarations.",
-        "error:39:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:40:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -751,7 +751,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-hero' or its corresponding type declarations.",
-        "error:54:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -759,7 +759,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-links' or its corresponding type declarations.",
-        "error:45:3 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -767,7 +767,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-list' or its corresponding type declarations.",
-        "error:27:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -775,7 +775,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-logos' or its corresponding type declarations.",
-        "error:36:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:37:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -783,7 +783,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-section' or its corresponding type declarations.",
-        "error:68:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -791,7 +791,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pagination' or its corresponding type declarations.",
-        "error:107:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:108:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -799,7 +799,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/pin-input' or its corresponding type declarations.",
-        "error:56:7 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:130:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
         "error:131:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
       ]
@@ -809,8 +809,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/popover' or its corresponding type declarations.",
-        "error:62:51 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:67:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:64:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:68:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -818,7 +818,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
-        "error:115:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:116:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:231:148 [TS2322] Type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to type '((...args: any[]) => unknown) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => unknown'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): unknown'."
       ]
     },
@@ -827,7 +827,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-plans' or its corresponding type declarations.",
-        "error:52:26 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -835,7 +835,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-table' or its corresponding type declarations.",
-        "error:106:13 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -843,7 +843,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/progress' or its corresponding type declarations.",
-        "error:58:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -851,7 +851,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/radio-group' or its corresponding type declarations.",
-        "error:93:92 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:95:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:181:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -861,9 +861,9 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:54 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/scroll-area' or its corresponding type declarations.",
-        "error:84:74 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:85:27 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:87:16 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:86:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:87:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:88:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -871,8 +871,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select' or its corresponding type declarations.",
-        "error:152:28 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:152:108 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:153:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:155:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -880,9 +880,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select-menu' or its corresponding type declarations.",
-        "error:229:58 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:229:162 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:275:74 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:230:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:281:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
         "error:566:4 [TS2345] Argument of type '{ id: string | undefined; } & { [K in keyof ReactivePickReturn<Omit<__LooseRequired<SelectMenuProps<T, VK, M, Mod, C>>, \"autofocusDelay\" | \"descriptionKey\" | ... 6 more ... | \"virtualize\"> & { ...; }, \"by\" | ... 9 more ... | \"resetSearchTermOnSelect\"> as ...]?: ReactivePickReturn<...>[K] | undefined; } & { [K_1 in k...' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { name?: string | undefined; required?: boolean | undefined; ... 19 more ...; \"onUpdate:open\"?: ((value: boolean) => any) | undefined; } & Record<...>'.\nType '{ id: string | undefined; } & { [K in keyof ReactivePickReturn<Omit<__LooseRequired<SelectMenuProps<T, VK, M, Mod, C>>, \"autofocusDelay\" | \"descriptionKey\" | ... 6 more ... | \"virtualize\"> & { ...; }, \"by\" | ... 9 more ... | \"resetSearchTermOnSelect\"> as ...]?: ReactivePickReturn<...>[K] | undefined; } & { [K_1 in k...' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; modelValue?: AcceptableValue[] | AcceptableValue | undefined; ... 16 more ...; \"onUpdate:open\"?: ((value: boolean) => any) | undefined; }'.\nTypes of property 'by' are incompatible.\nType 'string | ((a: T, b: T) => boolean) | undefined' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type '(a: AcceptableValue, b: AcceptableValue) => boolean'.\nTypes of parameters 'a' and 'a' are incompatible.\nType 'AcceptableValue' is not assignable to type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'AcceptableValue'."
       ]
     },
@@ -891,7 +891,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/separator' or its corresponding type declarations.",
-        "error:55:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:81:4 [TS2345] Argument of type '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to parameter of type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.\nType '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to type '{ readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; readonly orientation?: DataOrientation | undefined; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -900,7 +900,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/skeleton' or its corresponding type declarations.",
-        "error:21:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -908,7 +908,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/slideover' or its corresponding type declarations.",
-        "error:85:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -916,7 +916,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/slider' or its corresponding type declarations.",
-        "error:49:2 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:50:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:110:4 [TS2345] Argument of type '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to parameter of type '{ readonly name?: string | undefined; readonly required?: boolean | undefined; readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; ... 12 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Recor...'.\nType '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to type '{ readonly name?: string | undefined; readonly required?: boolean | undefined; readonly asChild?: boolean | undefined; readonly as?: AsTag | Component | undefined; ... 12 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -925,7 +925,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
-        "error:83:8 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:147:63 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -934,7 +934,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/switch' or its corresponding type declarations.",
-        "error:63:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -945,13 +945,13 @@
         "error:42:41 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:43:19 [TS2307] Cannot find module '#build/ui/table' or its corresponding type declarations.",
         "error:47:16 [TS2664] Invalid module name in augmentation, module '@tanstack/table-core' cannot be found.",
-        "error:229:17 [TS2307] Cannot find module 'scule' or its corresponding type declarations.",
-        "error:229:46 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:232:55 [TS2307] Cannot find module '@tanstack/vue-table' or its corresponding type declarations.",
-        "error:232:108 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:234:45 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:251:31 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<TableProps<T>>, \"virtualize\" | \"watchOptions\"> & { virtualize: boolean | (Partial<Omit<VirtualizerOptions<Element, Element>, \"count\" | ... 2 more ... | \"overscan\">> & { ...; }); watchOptions: WatchOptions<...>; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:263:53 [TS7031] Binding element 'getValue' implicitly has an 'any' type."
+        "error:230:28 [TS2307] Cannot find module 'scule' or its corresponding type declarations.",
+        "error:231:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:232:119 [TS2307] Cannot find module '@tanstack/vue-table' or its corresponding type declarations.",
+        "error:233:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:235:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:252:40 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<TableProps<T>>, \"virtualize\" | \"watchOptions\"> & { virtualize: boolean | (Partial<Omit<VirtualizerOptions<Element, Element>, \"count\" | ... 2 more ... | \"overscan\">> & { ...; }); watchOptions: WatchOptions<...>; }' has no properties in common with type '{ ui?: any; }'.",
+        "error:267:21 [TS7031] Binding element 'getValue' implicitly has an 'any' type."
       ]
     },
     {
@@ -959,7 +959,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
-        "error:96:11 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:97:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:145:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -968,7 +968,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/textarea' or its corresponding type declarations.",
-        "error:70:69 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:73:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -980,7 +980,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/timeline' or its corresponding type declarations.",
-        "error:74:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:75:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:156:12 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
@@ -989,7 +989,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toast' or its corresponding type declarations.",
-        "error:77:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -997,7 +997,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toaster' or its corresponding type declarations.",
-        "error:52:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:156:43 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
         "error:157:30 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
       ]
@@ -1007,8 +1007,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/tooltip' or its corresponding type declarations.",
-        "error:52:26 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:55:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:53:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1016,10 +1016,10 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tree' or its corresponding type declarations.",
-        "error:146:82 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:147:34 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:186:47 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.\nNo index signature with a parameter of type 'string' was found on type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.",
-        "error:196:41 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'."
+        "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:149:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:189:18 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.\nNo index signature with a parameter of type 'string' was found on type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.",
+        "error:197:54 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'."
       ]
     },
     {
@@ -1027,7 +1027,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/user' or its corresponding type declarations.",
-        "error:46:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1037,26 +1037,26 @@
     {
       "file": "src/runtime/components/color-mode/ColorModeButton.vue",
       "diagnostics": [
-        "error:20:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:20:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeImage.vue",
       "diagnostics": [
-        "error:11:31 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:12:38 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:12:34 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:13:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeSelect.vue",
       "diagnostics": [
-        "error:11:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/color-mode/ColorModeSwitch.vue",
       "diagnostics": [
-        "error:11:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1065,8 +1065,8 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-navigation' or its corresponding type declarations.",
-        "error:97:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:142:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
+        "error:98:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:144:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
         "error:175:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:175:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:176:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
@@ -1086,8 +1086,8 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/content/content-search' or its corresponding type declarations.",
-        "error:113:39 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:116:33 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:115:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:117:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1095,8 +1095,8 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/content/content-search-button' or its corresponding type declarations.",
-        "error:54:30 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:56:64 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1105,7 +1105,7 @@
         "error:3:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/content/content-surround' or its corresponding type declarations.",
-        "error:57:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:86:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
         "error:96:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
       ]
@@ -1116,7 +1116,7 @@
         "error:4:30 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-toc' or its corresponding type declarations.",
-        "error:72:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:73:53 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1128,7 +1128,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/a' or its corresponding type declarations.",
-        "error:22:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1136,7 +1136,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/accordion' or its corresponding type declarations.",
-        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1144,7 +1144,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/accordion-item' or its corresponding type declarations.",
-        "error:22:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1152,7 +1152,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/badge' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1160,7 +1160,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/blockquote' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1168,7 +1168,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/callout' or its corresponding type declarations.",
-        "error:28:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1176,7 +1176,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/card' or its corresponding type declarations.",
-        "error:31:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:32:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1184,7 +1184,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/card-group' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1192,7 +1192,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/code' or its corresponding type declarations.",
-        "error:25:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:26:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1200,7 +1200,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/code-collapse' or its corresponding type declarations.",
-        "error:41:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1208,7 +1208,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/code-group' or its corresponding type declarations.",
-        "error:31:6 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1216,8 +1216,8 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/prose/code-icon' or its corresponding type declarations.",
-        "error:16:19 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:17:24 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:17:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:18:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1225,7 +1225,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/code-preview' or its corresponding type declarations.",
-        "error:21:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1233,7 +1233,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/code-tree' or its corresponding type declarations.",
-        "error:54:50 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1241,7 +1241,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/collapsible' or its corresponding type declarations.",
-        "error:41:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1249,7 +1249,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/em' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1257,7 +1257,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/field' or its corresponding type declarations.",
-        "error:42:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1265,7 +1265,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/field-group' or its corresponding type declarations.",
-        "error:26:32 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1273,7 +1273,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/h1' or its corresponding type declarations.",
-        "error:22:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1281,7 +1281,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/h2' or its corresponding type declarations.",
-        "error:22:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1289,7 +1289,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/h3' or its corresponding type declarations.",
-        "error:22:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1297,7 +1297,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/h4' or its corresponding type declarations.",
-        "error:22:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1305,7 +1305,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/hr' or its corresponding type declarations.",
-        "error:15:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:16:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1313,7 +1313,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/prose/icon' or its corresponding type declarations.",
-        "error:16:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:17:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1321,9 +1321,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/img' or its corresponding type declarations.",
-        "error:26:7 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
-        "error:28:14 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:28:52 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:26:41 [TS2307] Cannot find module 'motion-v' or its corresponding type declarations.",
+        "error:28:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:29:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -1331,7 +1331,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/prose/kbd' or its corresponding type declarations.",
-        "error:16:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:17:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1339,7 +1339,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/li' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1347,7 +1347,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/ol' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1355,7 +1355,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/p' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1363,7 +1363,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/pre' or its corresponding type declarations.",
-        "error:29:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:30:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1375,7 +1375,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/steps' or its corresponding type declarations.",
-        "error:25:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:26:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1383,7 +1383,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/strong' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1391,7 +1391,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/table' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1399,7 +1399,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/tabs' or its corresponding type declarations.",
-        "error:35:6 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:35:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1407,7 +1407,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/tabs-item' or its corresponding type declarations.",
-        "error:22:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:23:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1415,7 +1415,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/tbody' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1423,7 +1423,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/td' or its corresponding type declarations.",
-        "error:21:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1431,7 +1431,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/th' or its corresponding type declarations.",
-        "error:21:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1439,7 +1439,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/thead' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1447,7 +1447,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/tr' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1455,7 +1455,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/ul' or its corresponding type declarations.",
-        "error:20:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:21:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1485,19 +1485,19 @@
     {
       "file": "src/runtime/vue/components/Icon.vue",
       "diagnostics": [
-        "error:10:3 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
+        "error:10:37 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/vue/components/color-mode/ColorModeSelect.vue",
       "diagnostics": [
-        "error:11:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/vue/components/color-mode/ColorModeSwitch.vue",
       "diagnostics": [
-        "error:11:10 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:11:44 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1506,16 +1506,16 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:39 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
-        "error:72:19 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:75:35 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
-        "error:76:37 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:77:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:73:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:76:25 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
+        "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/vue/overrides/inertia/LinkBase.vue",
       "diagnostics": [
-        "error:19:3 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations."
+        "error:19:37 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations."
       ]
     },
     {
@@ -1523,9 +1523,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
-        "error:74:27 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:75:23 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:75:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:76:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:77:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1533,10 +1533,10 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
-        "error:65:19 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:66:19 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:69:39 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:71:46 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:66:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:67:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:70:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     }
   ],

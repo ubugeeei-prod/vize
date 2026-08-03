@@ -206,6 +206,11 @@ pub(super) fn generate_vue_virtual_ts(
         script_content,
         script_offset,
     } = analysis;
+    let split_script_setup_offsets = descriptor
+        .script
+        .as_ref()
+        .zip(descriptor.script_setup.as_ref())
+        .map(|(script, script_setup)| (script.content.len() + 1, script_setup.loc.start));
     profile!(
         "canon.croquis.augment_type_props",
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)
@@ -248,6 +253,7 @@ pub(super) fn generate_vue_virtual_ts(
                 hoist_shared_preamble,
                 lib_references: None,
                 omit_vite_client_reference: codegen_options.omit_vite_client_reference,
+                split_script_setup_offsets,
             },
         )
     );

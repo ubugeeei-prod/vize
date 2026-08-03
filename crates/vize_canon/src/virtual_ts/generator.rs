@@ -134,6 +134,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 ) -> VirtualTsOutput {
     let check_options = generation_options.check_options;
     let check_props = check_options.check_props;
+    let script_source_offset =
+        |offset| generation_options.script_source_offset(script_offset, offset);
     // Configured Vue dialect, used to emit dialect-aware template instance typing
     // (e.g. a Vue 2 `this`/template shape with `$listeners`,
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
@@ -322,7 +324,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     && let Some(inject_at) = generic_injection_point(text, type_name)
                 {
                     let (prefix, suffix) = text.split_at(inject_at);
-                    let src_base = script_offset as usize + start as usize;
+                    let src_base = script_source_offset(start as usize);
 
                     let gen_start = ts.len();
                     ts.push_str(prefix);
@@ -383,8 +385,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 let gen_end = ts.len();
                 mappings.push(VizeMapping {
                     gen_range: gen_start..gen_end,
-                    src_range: (script_offset as usize + start as usize)
-                        ..(script_offset as usize + end as usize),
+                    src_range: script_source_offset(start as usize)
+                        ..script_source_offset(end as usize),
                     sub_spans: Vec::new(),
                 });
             }
@@ -531,7 +533,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     src_byte_offset += raw_byte_len;
                     continue;
                 }
-                let gen_line_start = ts.len();
                 ts.push_str("  "); // indentation (not in source)
                 let gen_content_start = ts.len();
 
@@ -684,7 +685,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push('\n');
                 // Map the line content (excluding the "  " indent prefix)
                 if !line.is_empty() {
-                    let src_line_start = script_offset as usize + src_byte_offset;
+                    let src_line_start = script_source_offset(src_byte_offset);
                     let src_line_end = src_line_start + line.len();
                     mappings.push(VizeMapping {
                         gen_range: gen_content_start..gen_content_end,
@@ -700,7 +701,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     append!(ts, "  const __default__ = {name};\n");
                     pending_class_alias = None;
                 }
-                let _ = gen_line_start; // suppress unused warning
                 src_byte_offset += raw_byte_len;
             }
             if let Some((_, name)) = pending_class_alias.take() {

@@ -404,8 +404,8 @@
     {
       "file": "src/components/MkMenu.vue",
       "diagnostics": [
-        "error:409:36 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'.",
-        "error:421:36 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'."
+        "error:409:70 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'.",
+        "error:421:70 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'."
       ]
     },
     {
@@ -709,7 +709,7 @@
     {
       "file": "src/components/MkSuperMenu.vue",
       "diagnostics": [
-        "error:220:19 [TS2347] Untyped function calls may not accept type arguments."
+        "error:221:23 [TS2347] Untyped function calls may not accept type arguments."
       ]
     },
     {
