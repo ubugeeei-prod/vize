@@ -2,13 +2,14 @@ use vize_carton::{FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
 use crate::virtual_ts::helpers::to_safe_identifier;
+use crate::virtual_ts::scope::GlobalComponentCheck;
 use crate::virtual_ts::types::VirtualTsOptions;
 
 use super::imports::extract_declared_name;
 
 pub(super) struct GlobalComponentPlan<'a> {
     slot_component_names: FxHashSet<&'a str>,
-    include_all: bool,
+    component_check: GlobalComponentCheck,
 }
 
 impl<'a> GlobalComponentPlan<'a> {
@@ -27,16 +28,31 @@ impl<'a> GlobalComponentPlan<'a> {
         };
         Self {
             slot_component_names,
-            include_all,
+            // Vue 3 projects can contribute component types through ambient
+            // `GlobalComponents` augmentation without an SFC-local
+            // reference-types directive. Vue 2 retains the explicit-reference
+            // requirement because its global component surface differs.
+            component_check: if include_all {
+                GlobalComponentCheck::All
+            } else if !legacy_vue2 {
+                GlobalComponentCheck::PascalCase
+            } else {
+                GlobalComponentCheck::None
+            },
         }
     }
 
     pub(super) fn enabled(&self) -> bool {
-        self.include_all || !self.slot_component_names.is_empty()
+        !matches!(self.component_check, GlobalComponentCheck::None)
+            || !self.slot_component_names.is_empty()
+    }
+
+    pub(super) fn component_check(&self) -> GlobalComponentCheck {
+        self.component_check
     }
 
     pub(super) fn keeps_unresolved_binding(&self, name: &str) -> bool {
-        self.include_all || self.slot_component_names.contains(name)
+        self.component_check.allows(name) || self.slot_component_names.contains(name)
     }
 
     pub(super) fn emit(
@@ -65,7 +81,7 @@ impl<'a> GlobalComponentPlan<'a> {
         let mut has_header = false;
         for usage in &summary.component_usages {
             let name = usage.name.as_str();
-            if !self.include_all && !self.slot_component_names.contains(name) {
+            if !self.component_check.allows(name) && !self.slot_component_names.contains(name) {
                 continue;
             }
             let camel_name = camelize(name);

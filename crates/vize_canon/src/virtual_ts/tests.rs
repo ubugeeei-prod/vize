@@ -705,12 +705,10 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
 }
 
 #[test]
-fn test_unresolved_component_props_are_not_checked() {
+fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
-
     let script = "const count = 'unknown'\n";
     let template = r#"<AutoCard :count="count" />"#;
-
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
@@ -728,9 +726,11 @@ fn test_unresolved_component_props_are_not_checked() {
         &VirtualTsOptions::default(),
     );
 
-    assert!(output.code.contains("const AutoCard: any"));
-    assert!(!output.code.contains("type __AutoCard_Props_0"));
-    assert!(!output.code.contains("__AutoCard_Check_0"));
+    assert!(output.code.contains(
+        "declare const AutoCard: import(\"vue\").GlobalComponents extends { \"AutoCard\": infer __C } ? __C : any;"
+    ));
+    assert!(output.code.contains("type __AutoCard_Props_0"));
+    assert!(output.code.contains("__AutoCard_Check_0"));
 }
 
 #[test]

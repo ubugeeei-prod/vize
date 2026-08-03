@@ -799,7 +799,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             virtual_ts_options: options,
                             setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                             template_ast,
-                            check_unresolved_global_components: has_script_reference_types,
+                            check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
                         },
                     )

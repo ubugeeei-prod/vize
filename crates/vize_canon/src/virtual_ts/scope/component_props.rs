@@ -18,7 +18,7 @@ use super::component_prop_checker::{
     append_per_prop_aliases, append_prop_check_helpers, append_prop_checker_alias,
 };
 use super::component_prop_navigation;
-use super::context::{ComponentPropsContext, VForPropsContext};
+use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
@@ -205,14 +205,14 @@ pub(super) fn component_usage_has_checkable_binding(
     summary: &Croquis,
     usage: &ComponentUsage,
     external_template_bindings: &FxHashSet<&str>,
-    check_unresolved_global_components: bool,
+    check_unresolved_global_components: GlobalComponentCheck,
     legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
     summary.bindings.bindings.contains_key(name)
         || (!legacy_vue2
             && (external_template_bindings.contains(name)
-                || (check_unresolved_global_components && !name.is_empty())))
+                || check_unresolved_global_components.allows(name)))
 }
 
 fn generate_closure_component_props_recursive(

@@ -9,6 +9,27 @@ use vize_croquis::{Croquis, EventHandlerScopeData, ScopeId, analysis::ComponentU
 use crate::virtual_ts::expressions::{ComponentPropSource, TemplateValueChecks};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
+#[derive(Clone, Copy)]
+pub(crate) enum GlobalComponentCheck {
+    None,
+    PascalCase,
+    All,
+}
+
+impl GlobalComponentCheck {
+    pub(crate) fn allows(self, name: &str) -> bool {
+        match self {
+            Self::None => false,
+            Self::All => true,
+            // Authored PascalCase tags are already safe TypeScript references.
+            Self::PascalCase => name
+                .as_bytes()
+                .first()
+                .is_some_and(|first| first.is_ascii_uppercase()),
+        }
+    }
+}
+
 /// Context for recursive scope generation, bundling shared parameters.
 pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
@@ -31,7 +52,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Instance-global generation shares the same template scope and must not redeclare them.
     pub(crate) setup_spread_bindings: &'a [String],
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
-    pub(crate) check_unresolved_global_components: bool,
+    pub(crate) check_unresolved_global_components: GlobalComponentCheck,
     pub(crate) legacy_vue2: bool,
 }
 
@@ -77,7 +98,7 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
-    pub(super) check_unresolved_global_components: bool,
+    pub(super) check_unresolved_global_components: GlobalComponentCheck,
     pub(super) legacy_vue2: bool,
 }
 
