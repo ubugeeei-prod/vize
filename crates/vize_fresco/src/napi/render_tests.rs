@@ -3,7 +3,7 @@ use super::render_payload::{
     RenderNodeKindNapi, parse_render_node_kind, validate_render_node_kinds,
 };
 use super::types::{FlexStyleNapi, InputEventNapi, RenderNodeNapi, StyleNapi};
-use crate::input::{Event, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
+use crate::input::{Event, Key, KeyEvent, KeyModifiers, MouseButton, MouseEvent, MouseEventKind};
 
 fn render_node(id: i64, node_type: &str) -> RenderNodeNapi {
     RenderNodeNapi {
@@ -89,12 +89,55 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             RenderNodeKindNapi::Input,
         ]
     );
+
+    assert_eq!(nodes[0].id, 1);
+    assert_eq!(nodes[0].node_type, "root");
+    let root_style = nodes[0].style.as_ref().unwrap();
+    assert_eq!(root_style.width.as_deref(), Some("80"));
+    assert_eq!(root_style.height.as_deref(), Some("24"));
+    assert_eq!(nodes[0].children.as_deref(), Some([2].as_slice()));
+
+    assert_eq!(nodes[1].id, 2);
+    assert_eq!(nodes[1].node_type, "box");
+    let box_style = nodes[1].style.as_ref().unwrap();
+    assert_eq!(box_style.flex_direction.as_deref(), Some("row"));
+    assert_eq!(box_style.padding_left, Some(1.0));
+    let box_appearance = nodes[1].appearance.as_ref().unwrap();
+    assert_eq!(box_appearance.fg.as_deref(), Some("cyan"));
+    assert_eq!(box_appearance.bold, Some(true));
+    assert_eq!(nodes[1].border.as_deref(), Some("rounded"));
+    assert_eq!(nodes[1].children.as_deref(), Some([3, 4].as_slice()));
+
+    assert_eq!(nodes[2].id, 3);
+    assert_eq!(nodes[2].node_type, "text");
+    assert_eq!(nodes[2].text.as_deref(), Some("hello"));
+    assert_eq!(nodes[2].wrap, Some(true));
+    assert_eq!(nodes[2].wrap_mode.as_deref(), Some("truncate-end"));
+
+    assert_eq!(nodes[3].id, 4);
+    assert_eq!(nodes[3].node_type, "input");
+    assert_eq!(nodes[3].value.as_deref(), Some("secret"));
+    assert_eq!(nodes[3].placeholder.as_deref(), Some("type here"));
+    assert_eq!(nodes[3].focused, Some(true));
+    assert_eq!(nodes[3].cursor, Some(6));
+    assert_eq!(nodes[3].mask, Some(true));
+    assert_eq!(nodes[3].mask_char.as_deref(), Some("#"));
 }
 
 #[test]
 fn input_event_conversion_confirms_every_existing_discriminator() {
     let events = [
-        Event::Key(KeyEvent::char('x')),
+        Event::Key(KeyEvent::new(
+            Key::Char('x'),
+            KeyModifiers {
+                ctrl: true,
+                alt: true,
+                shift: true,
+                super_key: true,
+                hyper: true,
+                meta: true,
+            },
+        )),
         Event::Mouse(MouseEvent::new(
             MouseEventKind::Down(MouseButton::Left),
             2,
@@ -107,16 +150,47 @@ fn input_event_conversion_confirms_every_existing_discriminator() {
         Event::Paste("pasted".into()),
     ];
 
-    let discriminators = events
+    let converted = events
         .into_iter()
         .map(InputEventNapi::from)
-        .map(|event| event.event_type)
+        .collect::<Vec<_>>();
+    let discriminators = converted
+        .iter()
+        .map(|event| event.event_type.as_str())
         .collect::<Vec<_>>();
 
     assert_eq!(
         discriminators,
         ["key", "mouse", "resize", "focus", "focus", "paste"]
     );
+
+    let key = &converted[0];
+    assert_eq!(key.key, None);
+    assert_eq!(key.char.as_deref(), Some("x"));
+    assert_eq!(key.key_event_type.as_deref(), Some("press"));
+    let modifiers = key.modifiers.as_ref().unwrap();
+    assert!(modifiers.ctrl);
+    assert!(modifiers.alt);
+    assert!(modifiers.shift);
+    assert!(modifiers.meta);
+    assert!(modifiers.super_key);
+    assert!(modifiers.hyper);
+    assert!(!modifiers.caps_lock);
+    assert!(!modifiers.num_lock);
+
+    let mouse = &converted[1];
+    assert_eq!(mouse.button.as_deref(), Some("left"));
+    assert_eq!(mouse.x, Some(2));
+    assert_eq!(mouse.y, Some(3));
+    assert!(mouse.modifiers.is_none());
+
+    let resize = &converted[2];
+    assert_eq!(resize.width, Some(80));
+    assert_eq!(resize.height, Some(24));
+
+    assert_eq!(converted[3].key.as_deref(), Some("gained"));
+    assert_eq!(converted[4].key.as_deref(), Some("lost"));
+    assert_eq!(converted[5].text.as_deref(), Some("pasted"));
 }
 
 #[test]

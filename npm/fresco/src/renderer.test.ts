@@ -135,7 +135,7 @@ void test("emits all four discriminated render variants with canonical payload f
     id: box.children[0]?.id,
     nodeType: "text",
     text: "hi",
-    wrap: true,
+    wrap: false,
     wrapMode: "truncate-end",
     appearance: { fg: "cyan", bg: "blue", dim: true },
   });
@@ -163,9 +163,13 @@ void test("normalizes wrap props into native wrap modes", () => {
 
   assert.deepEqual(wrapOf(true), { wrap: true, wrapMode: "wrap" });
   assert.deepEqual(wrapOf(false), { wrap: false, wrapMode: "none" });
-  assert.deepEqual(wrapOf("end"), { wrap: true, wrapMode: "truncate-end" });
-  assert.deepEqual(wrapOf("middle"), { wrap: true, wrapMode: "truncate-middle" });
+  assert.deepEqual(wrapOf("end"), wrapOf("truncate-end"));
+  assert.deepEqual(wrapOf("middle"), wrapOf("truncate-middle"));
   assert.deepEqual(wrapOf("truncate-start"), { wrap: false, wrapMode: "truncate-start" });
+  assert.deepEqual(wrapOf("truncate-end"), { wrap: false, wrapMode: "truncate-end" });
+  assert.deepEqual(wrapOf("truncate-middle"), { wrap: false, wrapMode: "truncate-middle" });
+  assert.deepEqual(wrapOf("hard"), { wrap: true, wrapMode: "hard" });
+  assert.deepEqual(wrapOf("invalid"), { wrap: true, wrapMode: undefined });
   assert.deepEqual(wrapOf(undefined), { wrap: undefined, wrapMode: undefined });
 });
 

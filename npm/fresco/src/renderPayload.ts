@@ -215,9 +215,9 @@ function wrapMode(value: unknown): FrescoTextWrapMode | undefined {
   return enumValue(value, wrapModes);
 }
 
-function wrappingEnabled(value: unknown): boolean {
+function wrappingEnabled(value: unknown, mode: FrescoTextWrapMode | undefined): boolean {
   if (value === undefined || value === false) return false;
-  return !(typeof value === "string" && value.startsWith("truncate"));
+  return !(mode?.startsWith("truncate") ?? false);
 }
 
 export function frescoNodeToRenderNode(node: FrescoNode): FrescoRenderNode {
@@ -233,7 +233,7 @@ export function frescoNodeToRenderNode(node: FrescoNode): FrescoRenderNode {
     const mode = wrapMode(node.props.wrap);
     if (text !== undefined) renderNode.text = text;
     if (node.props.wrap !== undefined) {
-      renderNode.wrap = wrappingEnabled(node.props.wrap);
+      renderNode.wrap = wrappingEnabled(node.props.wrap, mode);
       if (mode) renderNode.wrapMode = mode;
     }
     return renderNode;
