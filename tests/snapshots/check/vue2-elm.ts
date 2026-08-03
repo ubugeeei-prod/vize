@@ -4,7 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { repoRoot, withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
+import {
+  type PinnedFixtureWorkspace,
+  withPinnedFixtureWorkspace,
+} from "../../_helpers/realworld-patch.ts";
 import {
   resolveTsgoBinary,
   runVizeCheck,
@@ -13,8 +16,11 @@ import {
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const SNAPSHOT_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "__snapshots__");
-const VUE2_ELM_SRC = path.join(repoRoot, "tests/_fixtures/_git/vue2-elm/src");
-const fixtureSkip = fs.existsSync(VUE2_ELM_SRC) ? false : "vue2-elm fixture checkout unavailable";
+const APP_PATH = "src/App.vue";
+const CLEAN_IMPORT = "\timport svgIcon from './components/common/svg';\n";
+const BROKEN_IMPORT = `${CLEAN_IMPORT}\tconst vizeLegacyProbe = missingVizeLegacyProbe;\n`;
+const BROKEN_DIAGNOSTIC =
+  "error:17:26 [TS2552] Cannot find name 'missingVizeLegacyProbe'. Did you mean 'vizeLegacyProbe'?";
 
 // First suite to exercise the pinned vue2-elm fixture (#2971 audit item 7).
 // The snapshot pins the exact `vize check` surface over the untouched Vue 2
@@ -30,31 +36,7 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
   await withPinnedFixtureWorkspace(
     { fixtureId: "vue2-elm", includePaths: ["src"] },
     async (fixture) => {
-      symlinkVueTypes(fixture.workspaceDir);
-      fixture.write(
-        "tsconfig.json",
-        json({
-          compilerOptions: {
-            allowJs: true,
-            // vue2-elm is a plain-JavaScript Vue 2 app: type-checking it at
-            // all is the `checkJs` opt-in, exactly as `tsc`/`vue-tsc` require
-            // for a `lang="js"` script block (#3322).
-            checkJs: true,
-            lib: ["ES2022", "DOM"],
-            paths: { "src/*": ["./src/*"] },
-            skipLibCheck: true,
-            strict: false,
-          },
-          include: ["src"],
-        }),
-      );
-      fixture.write(
-        "vize.config.json",
-        json({
-          compiler: { compatibility: { vueVersion: "2" } },
-          typeChecker: { corsaPath, legacyVue2: true },
-        }),
-      );
+      configureVue2Workspace(fixture, corsaPath);
 
       const first = runVizeCheck(fixture.workspaceDir, corsaPath, ["src/**/*.vue"]);
       const second = runVizeCheck(fixture.workspaceDir, corsaPath, ["src/**/*.vue"]);
@@ -75,9 +57,75 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
 
 test(
   "vue2-elm vize check surface over the pinned Vue 2 app stays exact",
-  { skip: fixtureSkip },
   verifyVue2ElmSnapshot,
 );
+
+test("vue2-elm detects and repairs an exact authored JavaScript type error", async () => {
+  const corsaPath = resolveTsgoBinary();
+
+  await withPinnedFixtureWorkspace(
+    { fixtureId: "vue2-elm", includePaths: ["src"] },
+    async (fixture) => {
+      configureVue2Workspace(fixture, corsaPath);
+      const pinnedSource = fixture.read(APP_PATH);
+      const clean = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
+      const cleanDiagnostics = diagnosticsFor(clean.report.files, APP_PATH);
+
+      const brokenSource = fixture.applyExactPatch(APP_PATH, CLEAN_IMPORT, BROKEN_IMPORT);
+      const brokenFirst = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
+      const brokenSecond = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
+      assert.equal(brokenSecond.stdout, brokenFirst.stdout, "broken check JSON must be byte-stable");
+      assert.equal(fixture.read(APP_PATH), brokenSource, "check must preserve the broken edit");
+      assert.deepEqual(
+        diagnosticsFor(brokenFirst.report.files, APP_PATH).filter(
+          (diagnostic) => !cleanDiagnostics.includes(diagnostic),
+        ),
+        [BROKEN_DIAGNOSTIC],
+      );
+
+      const repairedSource = fixture.applyExactPatch(APP_PATH, BROKEN_IMPORT, CLEAN_IMPORT);
+      assert.equal(repairedSource, pinnedSource, "repair must restore the exact pinned source");
+      const repaired = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
+      assert.deepEqual(repaired.report, clean.report, "repair must restore the clean diagnostic set");
+      assert.equal(repaired.stdout, clean.stdout, "repair must restore byte-stable check JSON");
+    },
+  );
+});
+
+function configureVue2Workspace(fixture: PinnedFixtureWorkspace, corsaPath: string): void {
+  symlinkVueTypes(fixture.workspaceDir);
+  fixture.write(
+    "tsconfig.json",
+    json({
+      compilerOptions: {
+        allowJs: true,
+        // vue2-elm is a plain-JavaScript Vue 2 app: type-checking it at
+        // all is the `checkJs` opt-in, exactly as `tsc`/`vue-tsc` require
+        // for a `lang="js"` script block (#3322).
+        checkJs: true,
+        lib: ["ES2022", "DOM"],
+        paths: { "src/*": ["./src/*"] },
+        skipLibCheck: true,
+        strict: false,
+      },
+      include: ["src"],
+    }),
+  );
+  fixture.write(
+    "vize.config.json",
+    json({
+      compiler: { compatibility: { vueVersion: "2" } },
+      typeChecker: { corsaPath, legacyVue2: true },
+    }),
+  );
+}
+
+function diagnosticsFor(
+  files: Array<{ diagnostics: string[]; file: string }>,
+  file: string,
+): string[] {
+  return files.find((entry) => entry.file === file)?.diagnostics ?? [];
+}
 
 function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
