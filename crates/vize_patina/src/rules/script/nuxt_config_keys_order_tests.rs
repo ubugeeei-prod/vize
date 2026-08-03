@@ -216,7 +216,7 @@ fn nuxt_two_compatibility_does_not_apply_the_nuxt_three_order() {
 
     for uncertain_override in [
         "vize: { compatibility: { nuxtVersion: 2 } }, ...override",
-        "vize: { compatibility: { nuxtVersion: 2 } }, vize: { compatibility: { nuxtVersion: 3 } }",
+        "vize: { compatibility: { nuxtVersion: 3 } }, vize: { compatibility: { nuxtVersion: 2 } }",
         "vize: { compatibility: { nuxtVersion: 2, ...override } }",
         "vize: { compatibility: { nuxtVersion: 2, [key]: value } }",
     ] {

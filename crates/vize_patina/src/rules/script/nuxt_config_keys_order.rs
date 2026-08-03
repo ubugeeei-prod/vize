@@ -122,21 +122,27 @@ fn object_property_value<'a>(
     object: &'a ObjectExpression<'a>,
     name: &str,
 ) -> Option<&'a Expression<'a>> {
-    // Read from the end to follow object-literal overwrite semantics. A later
-    // spread or computed key can replace the requested property at runtime, so
-    // it deliberately makes the compatibility value unknown.
+    // Read from the end so a later spread or computed key makes the value
+    // unknown. Duplicate static declarations are also treated as ambiguous:
+    // compatibility mode should only suppress this rule for unambiguous input.
+    let mut value = None;
     for entry in object.properties.iter().rev() {
         let ObjectPropertyKind::ObjectProperty(property) = entry else {
-            return None;
+            value?;
+            continue;
         };
         if property.computed {
-            return None;
+            value?;
+            continue;
         }
         if static_key_name(&property.key) == Some(name) {
-            return Some(&property.value);
+            if value.is_some() {
+                return None;
+            }
+            value = Some(&property.value);
         }
     }
-    None
+    value
 }
 
 fn expression_is_numeric_two(expression: &Expression<'_>) -> bool {
