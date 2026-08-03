@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 fn workspace_root() -> &'static Path {
@@ -75,7 +78,7 @@ fn resolve_test_corsa_path() -> Option<String> {
 
 #[test]
 fn check_define_props_typeof_setup_binding_resolves_in_setup_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(

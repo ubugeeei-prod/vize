@@ -1,9 +1,12 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[test]
 fn check_options_api_prop_type_long_comments_has_no_ts_parse_errors() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_options_api_long_comment_project();

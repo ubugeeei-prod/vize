@@ -1,9 +1,12 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[test]
 fn check_options_api_props_spread_with_instance_members_has_no_ts_parse_errors() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project();
@@ -52,7 +55,7 @@ fn check_options_api_props_spread_with_instance_members_has_no_ts_parse_errors()
 #[cfg(feature = "legacy")]
 #[test]
 fn check_legacy_vue2_options_api_prop_type_matrix_cli() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_prop_type_matrix_project();

@@ -130,6 +130,28 @@ test("project-root Rust CLI gates use the fail-closed Corsa helper", () => {
   }
 });
 
+test("basic SFC Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    ["check_default_imports_cli.rs", 1],
+    ["check_define_props_cli.rs", 1],
+    ["check_function_props_cli.rs", 1],
+    ["check_multistatement_v_on_cli.rs", 1],
+    ["check_sfc_string_blocks_cli.rs", 1],
+    ["options_api_props_long_comment_cli.rs", 1],
+    ["options_api_props_spread_cli.rs", 2],
+  ] as const;
+
+  for (const [file, expectedCalls] of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.equal(
+      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      expectedCalls,
+      `${file} should guard all ${expectedCalls} Corsa resolver calls`,
+    );
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });

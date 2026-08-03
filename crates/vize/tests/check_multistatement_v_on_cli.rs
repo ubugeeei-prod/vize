@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -5,7 +8,7 @@ use std::{
 
 #[test]
 fn check_accepts_asi_separated_v_on_statements() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project = create_project();
