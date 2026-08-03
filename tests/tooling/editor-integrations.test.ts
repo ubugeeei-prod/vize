@@ -345,11 +345,11 @@ test("zed-vize registers art-vue as a first-party language", () => {
   assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
   assert.match(manifest, /^"Vue" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
-  assert.match(manifest, /^\[grammars\.art_vue\]$/m);
+  assert.match(manifest, /^\[grammars\.vue\]$/m);
 
   const artConfig = readText("editors/zed/languages/art-vue/config.toml");
   assert.match(artConfig, /^name = "Art Vue"$/m);
-  assert.match(artConfig, /^grammar = "art_vue"$/m);
+  assert.match(artConfig, /^grammar = "vue"$/m);
   assert.match(artConfig, /^path_suffixes = \["art\.vue"\]$/m);
   assert.match(artConfig, /^prettier_parser_name = "vue"$/m);
 

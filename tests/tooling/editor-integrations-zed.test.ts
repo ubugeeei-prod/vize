@@ -32,11 +32,12 @@ test("zed extension.toml declares vize server, language ids, grammar pin and ver
   assert.match(manifest, /^"Vue" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
 
-  // Zed requires grammar identifiers (unlike language ids) to use snake_case.
-  assert.match(manifest, /^\[grammars\.art_vue\]$/m);
+  // Zed derives the parser export from this identifier. tree-sitter-vue
+  // exports `tree_sitter_vue`, while the language id remains `art-vue`.
+  assert.match(manifest, /^\[grammars\.vue\]$/m);
   assert.doesNotMatch(manifest, /^\[grammars\.[^\]]*-.*\]$/m);
   const grammarRepository = manifest.match(
-    /^\[grammars\.art_vue\]\n(?:.*\n)*?repository = "([^"]+)"$/m,
+    /^\[grammars\.vue\]\n(?:.*\n)*?repository = "([^"]+)"$/m,
   )?.[1];
   assert.equal(grammarRepository, "https://github.com/tree-sitter-grammars/tree-sitter-vue");
   const grammarCommit = manifest.match(/^commit = "([0-9a-f]{40})"$/m)?.[1];
@@ -60,7 +61,7 @@ test("zed extension source falls back to the recommended initialization profile"
 test("zed art-vue config.toml declares comments, brackets, autoclose and tailwind opt-in", () => {
   const config = readRepoFile("editors/zed/languages/art-vue/config.toml");
 
-  assert.match(config, /^grammar = "art_vue"$/m);
+  assert.match(config, /^grammar = "vue"$/m);
   assert.doesNotMatch(config, /^grammar = "[^"]*-.*"$/m);
 
   // Remaining identity is covered by editor-integrations; assert the behavioral knobs.
