@@ -8,9 +8,9 @@
     "version": "6.0.7"
   },
   "summary": {
-    "honored": 11,
+    "honored": 12,
     "intentional-divergence": 9,
-    "unimplemented": 20
+    "unimplemented": 19
   },
   "options": {
     "compiler": {
@@ -37,9 +37,8 @@
       "reason": "No custom-element output mode: .ce.vue files compile as ordinary components with no shadow-DOM style inlining. @vizejs/rspack-plugin implements the option, the Vite plugin does not."
     },
     "features.optionsAPI": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The config hook hard-codes __VUE_OPTIONS_API__: true, so Options API support cannot be dropped from production bundles."
+      "status": "honored",
+      "evidence": "options-api-feature"
     },
     "features.prodDevtools": {
       "status": "unimplemented",

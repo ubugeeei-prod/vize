@@ -106,6 +106,16 @@ export interface VizeCompatibilityOptions {
   webpackVersion?: 4 | 5;
 }
 
+/** Vue runtime feature flags shared with `@vitejs/plugin-vue`. */
+export interface VizeVueFeatures {
+  /**
+   * Set to `false` to allow Vue's Options API code to be tree-shaken from
+   * production bundles.
+   * @default true
+   */
+  optionsAPI?: boolean;
+}
+
 export interface VizeOptions extends ExperimentalPluginOptions {
   /**
    * Inline shared Vize config for Vite Plus-first projects.
@@ -115,6 +125,9 @@ export interface VizeOptions extends ExperimentalPluginOptions {
 
   /** Development inspector integrations exposed through Vite's dev server. */
   inspector?: VizeInspectorOptions;
+
+  /** Vue runtime feature flags compatible with `@vitejs/plugin-vue`. */
+  features?: VizeVueFeatures;
 
   /**
    * Vue major version for the host project.

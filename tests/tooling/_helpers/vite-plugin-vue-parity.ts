@@ -33,6 +33,18 @@ const nonHookPluginKeys = new Set(["api", "name"]);
 
 const requireFromBench = createRequire(path.join(repoRoot, "bench", "package.json"));
 
+/** Instantiate the pinned upstream plugin for behavioral parity probes. */
+export function createUpstreamPlugin(
+  options: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const upstreamModule = requireFromBench(upstreamPackage) as
+    | ((options?: unknown) => Record<string, unknown>)
+    | { default: (options?: unknown) => Record<string, unknown> };
+  const factory = typeof upstreamModule === "function" ? upstreamModule : upstreamModule.default;
+  assert.equal(typeof factory, "function", `${upstreamPackage} must export a plugin factory`);
+  return factory(options);
+}
+
 export interface UpstreamSurface {
   apiMembers: string[];
   hooks: string[];
@@ -143,13 +155,7 @@ function enumerateOptions(): string[] {
 
 /** The `Api` members and plugin hooks the upstream plugin instance exposes. */
 function enumeratePluginSurface(): { apiMembers: string[]; hooks: string[] } {
-  const upstreamModule = requireFromBench(upstreamPackage) as
-    | ((options?: unknown) => Record<string, unknown>)
-    | { default: (options?: unknown) => Record<string, unknown> };
-  const factory = typeof upstreamModule === "function" ? upstreamModule : upstreamModule.default;
-  assert.equal(typeof factory, "function", `${upstreamPackage} must export a plugin factory`);
-
-  const plugin = factory();
+  const plugin = createUpstreamPlugin();
   const api = plugin.api;
   assert.ok(api && typeof api === "object", `${upstreamPackage} must expose its framework api`);
 

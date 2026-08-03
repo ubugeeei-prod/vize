@@ -82,6 +82,14 @@ function resolveCompatibilityOptions(
   return compatibility;
 }
 
+function parseDefine(value: unknown): unknown {
+  try {
+    return typeof value === "string" ? JSON.parse(value) : value;
+  } catch {
+    return value;
+  }
+}
+
 export function vize(options: VizeOptions = {}): Plugin[] {
   if (isLegacyVueCompatibilityMode(options)) {
     return [createLegacyVueCompatibilityPlugin(options)];
@@ -129,7 +137,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         // Vue 3 ESM bundler build requires these compile-time feature flags.
         // @vitejs/plugin-vue normally provides them; vize must do so as its replacement.
         define: {
-          __VUE_OPTIONS_API__: true,
+          __VUE_OPTIONS_API__:
+            options.features?.optionsAPI ??
+            parseDefine(userConfig.define?.__VUE_OPTIONS_API__) ??
+            true,
           __VUE_PROD_DEVTOOLS__: env.command === "serve",
           __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
         },
