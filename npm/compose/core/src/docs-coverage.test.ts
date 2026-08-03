@@ -2,21 +2,15 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
+import ts from "typescript";
+
 const sourceDirectory = new URL(".", import.meta.url);
 
-/**
- * Top-level exported declarations that must carry documentation. Re-export
- * statements (`export {…}`, `export * from`, `export type {…}`) are exempt:
- * they forward symbols documented at their declaration site.
- */
-const EXPORT_DECLARATION =
-  /^export\s+(?:abstract\s+)?(?:async\s+)?(?:function|const|let|var|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/;
-
-/** Exported options-bag interfaces whose optional members need `@default`. */
-const OPTIONS_INTERFACE = /^export interface [A-Za-z_$][\w$]*Options\b.*\{$/;
-
-/** An optional property declaration inside an interface body. */
-const OPTIONAL_PROPERTY = /^\s*(?:readonly\s+)?([\w$]+)\?:/;
+interface DocumentationAudit {
+  readonly declarations: number;
+  readonly optionalMembers: number;
+  readonly problems: readonly string[];
+}
 
 function listSourceFiles(): readonly string[] {
   return readdirSync(sourceDirectory)
@@ -24,94 +18,190 @@ function listSourceFiles(): readonly string[] {
     .sort();
 }
 
-function readSourceLines(file: string): readonly string[] {
-  return readFileSync(new URL(file, sourceDirectory), "utf8").split("\n");
+function hasExportModifier(node: ts.Node): boolean {
+  return ts.canHaveModifiers(node)
+    ? (ts.getModifiers(node)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
+        false)
+    : false;
 }
 
-/**
- * Return the JSDoc block whose closing marker sits directly above the given
- * line, or `undefined` when the declaration is undocumented or preceded only
- * by a plain (non-JSDoc) comment.
- */
-function docBlockAbove(lines: readonly string[], declarationLine: number): string | undefined {
-  let line = declarationLine - 1;
-  const closing = lines[line]?.trim();
-  if (closing === undefined || !closing.endsWith("*/")) return undefined;
+function directDocumentation(node: ts.Node, source: ts.SourceFile): ts.JSDoc | undefined {
+  const blocks = (node as ts.Node & { readonly jsDoc?: ts.NodeArray<ts.JSDoc> }).jsDoc;
+  const documentation = blocks?.at(-1);
+  if (!documentation) return undefined;
 
-  const collected: string[] = [];
-  while (line >= 0) {
-    const text = (lines[line] ?? "").trim();
-    collected.unshift(text);
-    if (text.includes("/**")) return collected.join("\n");
-    if (text.includes("/*") || !text.startsWith("*")) return undefined;
-    line -= 1;
+  const documentationLine = source.getLineAndCharacterOfPosition(documentation.end).line;
+  const declarationLine = source.getLineAndCharacterOfPosition(node.getStart(source)).line;
+  return declarationLine === documentationLine + 1 ? documentation : undefined;
+}
+
+function lineNumber(source: ts.SourceFile, node: ts.Node): number {
+  return source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+}
+
+function declarationNames(statement: ts.Statement): readonly string[] | undefined {
+  if (ts.isVariableStatement(statement)) {
+    const names: string[] = [];
+    const collect = (binding: ts.BindingName): void => {
+      if (ts.isIdentifier(binding)) {
+        names.push(binding.text);
+        return;
+      }
+      for (const element of binding.elements) {
+        if (!ts.isOmittedExpression(element)) collect(element.name);
+      }
+    };
+    for (const declaration of statement.declarationList.declarations) collect(declaration.name);
+    return names;
+  }
+  if (
+    ts.isFunctionDeclaration(statement) ||
+    ts.isClassDeclaration(statement) ||
+    ts.isInterfaceDeclaration(statement) ||
+    ts.isTypeAliasDeclaration(statement) ||
+    ts.isEnumDeclaration(statement)
+  ) {
+    return [statement.name?.text ?? "default"];
   }
   return undefined;
 }
 
-void test("every exported declaration is directly preceded by a JSDoc block", () => {
-  const problems: string[] = [];
-  let declarations = 0;
+function propertyName(member: ts.TypeElement, source: ts.SourceFile): string {
+  if (!("name" in member) || !member.name) return "unknown";
+  return member.name.getText(source);
+}
 
-  for (const file of listSourceFiles()) {
-    const lines = readSourceLines(file);
-    const seenNames = new Set<string>();
-
-    for (const [index, lineText] of lines.entries()) {
-      const match = EXPORT_DECLARATION.exec(lineText);
-      if (!match) continue;
-      const name = match[1] ?? "";
-      // Later declarations of a seen name are overload signatures or the
-      // overload implementation; the group is documented once, on its first
-      // declaration, matching the package style.
-      if (seenNames.has(name)) continue;
-      seenNames.add(name);
-      declarations += 1;
-
-      if (docBlockAbove(lines, index) === undefined) {
-        problems.push(`${file}:${index + 1} export "${name}" has no JSDoc block directly above`);
-      }
-    }
+function optionsMembers(statement: ts.Statement): readonly ts.TypeElement[] | undefined {
+  if (ts.isInterfaceDeclaration(statement) && statement.name.text.endsWith("Options")) {
+    return statement.members;
   }
+  if (
+    ts.isTypeAliasDeclaration(statement) &&
+    statement.name.text.endsWith("Options") &&
+    ts.isTypeLiteralNode(statement.type)
+  ) {
+    return statement.type.members;
+  }
+  return undefined;
+}
 
-  // Guard the scanner itself: if the regex rots, the suite must fail loudly
-  // instead of silently checking nothing.
-  assert.ok(declarations >= 20, `expected >= 20 exported declarations, found ${declarations}`);
-  assert.deepEqual(problems, []);
-});
-
-void test("optional members of exported options interfaces document their @default", () => {
+function auditDocumentation(file: string, sourceText: string): DocumentationAudit {
+  const source = ts.createSourceFile(
+    file,
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
   const problems: string[] = [];
+  const seenFunctionNames = new Set<string>();
+  let declarations = 0;
   let optionalMembers = 0;
 
-  for (const file of listSourceFiles()) {
-    const lines = readSourceLines(file);
-    let insideOptionsInterface = false;
+  for (const statement of source.statements) {
+    if (!hasExportModifier(statement)) continue;
 
-    for (const [index, lineText] of lines.entries()) {
-      if (OPTIONS_INTERFACE.test(lineText)) {
-        insideOptionsInterface = true;
-        continue;
+    const names = declarationNames(statement);
+    if (names) {
+      declarations += names.length;
+      const namesNeedingDocumentation = ts.isFunctionDeclaration(statement)
+        ? names.filter((name) => !seenFunctionNames.has(name))
+        : names;
+      if (ts.isFunctionDeclaration(statement)) {
+        for (const name of names) seenFunctionNames.add(name);
       }
-      if (insideOptionsInterface && lineText === "}") {
-        insideOptionsInterface = false;
-        continue;
+      if (
+        namesNeedingDocumentation.length > 0 &&
+        directDocumentation(statement, source) === undefined
+      ) {
+        for (const name of namesNeedingDocumentation) {
+          problems.push(
+            `${file}:${lineNumber(source, statement)} export "${name}" has no JSDoc block directly above`,
+          );
+        }
       }
-      if (!insideOptionsInterface) continue;
+    }
 
-      const property = OPTIONAL_PROPERTY.exec(lineText);
-      if (!property) continue;
+    const members = optionsMembers(statement);
+    if (!members) continue;
+    for (const member of members) {
+      if (!("questionToken" in member) || !member.questionToken) continue;
       optionalMembers += 1;
-
-      const documentation = docBlockAbove(lines, index);
-      if (documentation === undefined || !documentation.includes("@default")) {
+      const documentation = directDocumentation(member, source);
+      if (!documentation?.getText(source).includes("@default")) {
         problems.push(
-          `${file}:${index + 1} optional option "${property[1] ?? ""}" must document @default`,
+          `${file}:${lineNumber(source, member)} optional option "${propertyName(member, source)}" must document @default`,
         );
       }
     }
   }
 
+  return { declarations, optionalMembers, problems };
+}
+
+void test("every exported declaration and optional option carries complete documentation", () => {
+  const problems: string[] = [];
+  let declarations = 0;
+  let optionalMembers = 0;
+
+  for (const file of listSourceFiles()) {
+    const audit = auditDocumentation(file, readFileSync(new URL(file, sourceDirectory), "utf8"));
+    declarations += audit.declarations;
+    optionalMembers += audit.optionalMembers;
+    problems.push(...audit.problems);
+  }
+
+  // Guard the parser itself: if source discovery rots, the suite must fail
+  // loudly instead of silently checking nothing.
+  assert.ok(declarations >= 20, `expected >= 20 exported declarations, found ${declarations}`);
   assert.ok(optionalMembers >= 15, `expected >= 15 optional options, found ${optionalMembers}`);
   assert.deepEqual(problems, []);
+});
+
+void test("formatting cannot hide exported declarations or optional options", () => {
+  const audit = auditDocumentation(
+    "fixture.ts",
+    [
+      "/** Documented despite the multiline declaration. */",
+      "export",
+      "interface MultilineOptions {",
+      "  hidden?: boolean;",
+      "}",
+      "",
+      "/** Type-alias options are part of the same contract. */",
+      "export type AliasOptions = {",
+      "  /** @default false */",
+      "  documented?: boolean;",
+      "  missing?: string;",
+      "};",
+      "",
+      "  export async function undocumented(): Promise<void> {}",
+    ].join("\n"),
+  );
+
+  assert.equal(audit.declarations, 3);
+  assert.equal(audit.optionalMembers, 3);
+  assert.deepEqual(audit.problems, [
+    'fixture.ts:4 optional option "hidden" must document @default',
+    'fixture.ts:11 optional option "missing" must document @default',
+    'fixture.ts:14 export "undocumented" has no JSDoc block directly above',
+  ]);
+});
+
+void test("re-exports are exempt and an overload group is documented once", () => {
+  const audit = auditDocumentation(
+    "fixture.ts",
+    [
+      'export * from "./dependency.ts";',
+      'export { dependency } from "./dependency.ts";',
+      "/** Documented overload group. */",
+      "export function parse(value: string): string;",
+      "export function parse(value: number): string;",
+      "export function parse(value: string | number): string { return String(value); }",
+    ].join("\n"),
+  );
+
+  assert.equal(audit.declarations, 3);
+  assert.equal(audit.optionalMembers, 0);
+  assert.deepEqual(audit.problems, []);
 });
