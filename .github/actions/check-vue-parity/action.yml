@@ -31,6 +31,15 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
+    - name: Check Tier-L batch incremental session reuse
+      shell: bash
+      env:
+        VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
+        VIZE_TIER_L_CORSA_BIN: node_modules/.bin/tsgo
+        VIZE_TIER_L_METRICS_DIR: target/vize-tests/metrics/vben-batch-incremental
+        VIZE_RUNTIME_NODE_MODULES: node_modules
+      run: cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture
+
     - name: Check glyph formatter corpus properties
       shell: bash
       env:
@@ -57,7 +66,7 @@ runs:
       if: ${{ always() }}
       shell: bash
       run: |
-        for suite in misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
+        for suite in vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
           if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
             cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -78,6 +87,15 @@ runs:
       with:
         name: vben-lsp-incremental-metrics
         path: target/vize-tests/metrics/vben-lsp-incremental/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Upload Vue Vben Admin batch incremental metrics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vben-batch-incremental-metrics
+        path: target/vize-tests/metrics/vben-batch-incremental/
         if-no-files-found: warn
         retention-days: 14
 

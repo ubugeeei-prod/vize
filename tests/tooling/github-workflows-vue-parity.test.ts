@@ -115,6 +115,20 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     "the per-PR batch repair oracle must run every registered app",
   );
 
+  const batchIncremental = steps.find(
+    (step) => step.name === "Check Tier-L batch incremental session reuse",
+  );
+  assert.deepEqual(batchIncremental?.env, {
+    VIZE_TIER_L_FIXTURE: "tests/_fixtures/_git/vue-vben-admin",
+    VIZE_TIER_L_CORSA_BIN: "node_modules/.bin/tsgo",
+    VIZE_TIER_L_METRICS_DIR: "target/vize-tests/metrics/vben-batch-incremental",
+    VIZE_RUNTIME_NODE_MODULES: "node_modules",
+  });
+  assert.equal(
+    batchIncremental?.run,
+    "cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture",
+  );
+
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
   );
@@ -141,12 +155,13 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(
     summary?.run ?? "",
-    /misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn/,
+    /vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn/,
   );
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /GITHUB_STEP_SUMMARY/);
 
   const uploads: Array<[stepName: string, suiteDir: string]> = [
+    ["Upload Vue Vben Admin batch incremental metrics", "vben-batch-incremental"],
     ["Upload Misskey incremental LSP metrics", "misskey-lsp-incremental"],
     ["Upload Vue Vben Admin incremental LSP metrics", "vben-lsp-incremental"],
     ["Upload Misskey churn LSP metrics", "misskey-lsp-churn"],
