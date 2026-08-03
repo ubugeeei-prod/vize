@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use vize_carton::{String, ToCompactString};
 
-use crate::ApplicationContract;
+use crate::{ApplicationContract, ContractDiagnostic, DiagnosticSeverity, validate_contract};
 
 /// Compatibility classification for one marquette graph change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -27,20 +27,61 @@ pub struct CompatibilityChange {
     pub message: String,
 }
 
+/// Owned validation diagnostic retained with a compatibility report.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CompatibilityInputDiagnostic {
+    /// Stable machine-readable diagnostic code.
+    pub code: String,
+    /// Validation severity used to decide whether comparison is safe.
+    pub severity: DiagnosticSeverity,
+    /// JSON-style path into the authored contract.
+    pub path: String,
+    /// Human-readable explanation and next action.
+    pub message: String,
+}
+
+impl From<ContractDiagnostic> for CompatibilityInputDiagnostic {
+    fn from(diagnostic: ContractDiagnostic) -> Self {
+        Self {
+            code: diagnostic.code.into(),
+            severity: diagnostic.severity,
+            path: diagnostic.path,
+            message: diagnostic.message,
+        }
+    }
+}
+
 /// Deterministic compatibility report between two contracts.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CompatibilityReport {
     /// All changes in stable path order.
     pub changes: Vec<CompatibilityChange>,
+    /// Validation diagnostics from the older contract.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub previous_diagnostics: Vec<CompatibilityInputDiagnostic>,
+    /// Validation diagnostics from the newer contract.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub next_diagnostics: Vec<CompatibilityInputDiagnostic>,
 }
 
 impl CompatibilityReport {
-    /// Returns `true` when any existing client or adapter may be incompatible.
+    /// Returns `true` when an invalid input or breaking change prevents compatibility.
     pub fn is_breaking(&self) -> bool {
-        self.changes
+        self.has_invalid_inputs()
+            || self
+                .changes
+                .iter()
+                .any(|change| change.kind == CompatibilityChangeKind::Breaking)
+    }
+
+    /// Returns `true` when either contract contains a validation error.
+    pub fn has_invalid_inputs(&self) -> bool {
+        self.previous_diagnostics
             .iter()
-            .any(|change| change.kind == CompatibilityChangeKind::Breaking)
+            .chain(&self.next_diagnostics)
+            .any(|diagnostic| diagnostic.severity == DiagnosticSeverity::Error)
     }
 }
 
@@ -49,6 +90,23 @@ pub fn compare_contracts(
     previous: &ApplicationContract,
     next: &ApplicationContract,
 ) -> CompatibilityReport {
+    let previous_diagnostics = validate_contract(previous)
+        .into_iter()
+        .map(CompatibilityInputDiagnostic::from)
+        .collect::<Vec<_>>();
+    let next_diagnostics = validate_contract(next)
+        .into_iter()
+        .map(CompatibilityInputDiagnostic::from)
+        .collect::<Vec<_>>();
+    let mut report = CompatibilityReport {
+        changes: Vec::new(),
+        previous_diagnostics,
+        next_diagnostics,
+    };
+    if report.has_invalid_inputs() {
+        return report;
+    }
+
     let mut changes = Vec::new();
 
     compare_by_id(
@@ -139,7 +197,8 @@ pub fn compare_contracts(
     }
 
     changes.sort_by(|left, right| (&left.path, left.kind).cmp(&(&right.path, right.kind)));
-    CompatibilityReport { changes }
+    report.changes = changes;
+    report
 }
 
 /// Compares a named collection by stable identifier.
@@ -192,6 +251,9 @@ fn change(
         message: message.into(),
     }
 }
+
+#[cfg(test)]
+mod fail_closed_tests;
 
 #[cfg(test)]
 mod tests {

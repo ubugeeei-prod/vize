@@ -61,7 +61,8 @@ pub use adapter::{
 };
 pub use canonical::{CanonicalContractError, canonical_json, contract_fingerprint};
 pub use compatibility::{
-    CompatibilityChange, CompatibilityChangeKind, CompatibilityReport, compare_contracts,
+    CompatibilityChange, CompatibilityChangeKind, CompatibilityInputDiagnostic,
+    CompatibilityReport, compare_contracts,
 };
 pub use model::{
     ApplicationContract, Backend, BackendFamily, CONTRACT_FORMAT_VERSION, CapabilityDefinition,

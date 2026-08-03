@@ -12,7 +12,7 @@ Support and deprecation guarantees are defined in the
 
 - deterministic validation diagnostics with stable machine-readable codes;
 - canonical serialization and fingerprints for cache and provenance keys;
-- compatibility reports for additive and breaking graph changes;
+- fail-closed compatibility reports for validated additive and breaking graph changes;
 - a checked JSON Schema embedded in the crate;
 - shared conformance fixtures for adapters implemented in other languages.
 
