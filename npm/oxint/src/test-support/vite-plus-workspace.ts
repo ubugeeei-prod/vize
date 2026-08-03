@@ -59,6 +59,65 @@ export async function createVizeLintConfigFromDist(): Promise<
   return bundle.createVizeLintConfig;
 }
 
+/**
+ * Type-checks a strict Vite+ consumer against the packed declarations.
+ *
+ * Source-level checks miss declaration bundling mistakes and can accidentally
+ * rely on workspace-only resolution. This project imports the package through
+ * its public name from a throwaway `node_modules`, exactly like a consumer.
+ */
+export function typecheckVitePlusConfigConsumer(source: string): void {
+  const root = createTypecheckWorkspace();
+
+  try {
+    fs.writeFileSync(path.join(root, "package.json"), '{"type":"module"}\n');
+    fs.writeFileSync(path.join(root, "vite.config.mts"), source);
+    fs.writeFileSync(
+      path.join(root, "tsconfig.json"),
+      `${JSON.stringify(
+        {
+          compilerOptions: {
+            module: "NodeNext",
+            moduleResolution: "NodeNext",
+            noEmit: true,
+            // Vite+'s declaration graph references optional tooling packages
+            // that consumers do not need for lint config. Consumer source is
+            // still checked strictly, including the @ts-expect-error probes.
+            skipLibCheck: true,
+            strict: true,
+            target: "ES2022",
+          },
+          include: ["vite.config.mts"],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    const nativePreviewDir = path.dirname(
+      packageRequire.resolve("@typescript/native-preview/package.json"),
+    );
+    execFileSync(
+      process.execPath,
+      [
+        path.join(nativePreviewDir, "bin", "tsgo.js"),
+        "--project",
+        "tsconfig.json",
+        "--pretty",
+        "false",
+      ],
+      { cwd: root, encoding: "utf8", stdio: "pipe" },
+    );
+  } catch (error) {
+    const execError = error as { stdout?: string | Buffer; stderr?: string | Buffer };
+    throw new Error(
+      `Strict Vite+ consumer typecheck failed:\n${String(execError.stdout ?? "")}${String(execError.stderr ?? "")}`,
+    );
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+}
+
 export function lintWorkspaceFixture(fixture: {
   config: VizeLintConfig;
   filename: string;
@@ -135,6 +194,24 @@ function createLintWorkspace(): string {
   fs.mkdirSync(nodeModules, { recursive: true });
   fs.symlinkSync(packageDir, path.join(nodeModules, "oxlint-plugin-vize"), "junction");
   return root;
+}
+
+function createTypecheckWorkspace(): string {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxint-vite-plus-types-"));
+  const nodeModules = path.join(root, "node_modules");
+  fs.mkdirSync(nodeModules, { recursive: true });
+  fs.symlinkSync(packageDir, path.join(nodeModules, "oxlint-plugin-vize"), "junction");
+  linkPackageFromManifest(nodeModules, "oxlint");
+  linkPackageFromManifest(nodeModules, "vite-plus");
+  linkOxlintPluginsOnly(root);
+  return root;
+}
+
+function linkPackageFromManifest(nodeModules: string, packageName: string): void {
+  const source = path.dirname(packageRequire.resolve(`${packageName}/package.json`));
+  const target = path.join(nodeModules, ...packageName.split("/"));
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.symlinkSync(source, target, "junction");
 }
 
 function linkOxlintPluginsOnly(root: string): void {

@@ -1,8 +1,9 @@
 import { getPatinaRules } from "./binding.js";
 import type { PatinaPreset, PatinaRuleMeta } from "./model.js";
 
-export type OxlintRuleSeverity = "error" | "warn";
-export type OxlintRuleConfig = Record<string, OxlintRuleSeverity>;
+export type OxlintRuleSeverity = "error" | "warn" | "off";
+export type OxlintRuleEntry = OxlintRuleSeverity | [OxlintRuleSeverity, ...unknown[]];
+export type OxlintRuleConfig = Record<string, OxlintRuleEntry>;
 export type VizeRuleConfigPreset = Exclude<PatinaPreset, "incremental"> | "all";
 
 export interface VizeRuleConfigOptions {

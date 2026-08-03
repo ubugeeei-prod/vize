@@ -12,6 +12,24 @@ export const VIZE_JS_PLUGIN_SPECIFIER = "oxlint-plugin-vize";
 
 const VIZE_RULE_PREFIX = "vize/";
 
+/** Built-in plugin names accepted by Vite+'s Oxlint configuration. */
+export type VitePlusLintPlugin =
+  | "eslint"
+  | "import"
+  | "jest"
+  | "jsdoc"
+  | "jsx-a11y"
+  | "nextjs"
+  | "node"
+  | "oxc"
+  | "promise"
+  | "react"
+  | "react-perf"
+  | "typescript"
+  | "unicorn"
+  | "vitest"
+  | "vue";
+
 /**
  * Rule bundles `createVizeLintConfig` accepts.
  *
@@ -35,7 +53,7 @@ export interface VizeLintConfigOptions {
    * here is merged rather than replaced. A `create-vue` project, for example,
    * needs `["eslint", "typescript", "unicorn", "oxc"]` carried over.
    */
-  plugins?: readonly string[];
+  plugins?: readonly VitePlusLintPlugin[];
   /**
    * Rule bundle to enable. Defaults to `"general-recommended"`, the bridge's own
    * default. `"incremental"` emits no preset rules, so only `rules` run.
@@ -57,7 +75,7 @@ export interface VizeLintConfigOptions {
 
 export interface VizeLintConfig {
   jsPlugins: string[];
-  plugins: string[];
+  plugins: VitePlusLintPlugin[];
   rules: OxlintRuleConfig;
   settings: { vize: PatinaSettings };
 }

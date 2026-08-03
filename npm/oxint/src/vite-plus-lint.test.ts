@@ -5,6 +5,7 @@ import {
   createVizeLintConfigFromDist,
   lintWorkspaceFixture,
   runIsolatedPluginLoadProbe,
+  typecheckVitePlusConfigConsumer,
 } from "./test-support/vite-plus-workspace.ts";
 
 const VIOLATING_SFC = `<script setup lang="ts">
@@ -72,6 +73,79 @@ void test("createVizeLintConfig merges built-in Oxlint plugins instead of narrow
     }).plugins,
     ["vue", "eslint", "typescript", "unicorn", "oxc"],
   );
+});
+
+void test("createVizeLintConfig preserves runtime rule forms with options", () => {
+  assert.deepEqual(
+    createVizeLintConfig({
+      preset: "incremental",
+      rules: {
+        "no-console": "off",
+        "typescript/consistent-type-imports": [
+          "error",
+          { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" },
+        ],
+      },
+    }).rules,
+    {
+      "no-console": "off",
+      "typescript/consistent-type-imports": [
+        "error",
+        { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" },
+      ],
+    },
+  );
+});
+
+void test("packed declarations type-check as a strict Vite+ lint consumer", () => {
+  typecheckVitePlusConfigConsumer(`import { createVizeLintConfig } from "oxlint-plugin-vize";
+import type { VitePlusLintPlugin } from "oxlint-plugin-vize";
+import { defineConfig } from "vite-plus";
+import type { OxlintConfig } from "vite-plus/lint";
+
+type Equal<Left, Right> =
+  (<Value>() => Value extends Left ? 1 : 2) extends
+  (<Value>() => Value extends Right ? 1 : 2) ? true : false;
+type Assert<Condition extends true> = Condition;
+type VitePlusPlugin = NonNullable<OxlintConfig["plugins"]>[number];
+type _PluginNamesStayInSync = Assert<Equal<VitePlusLintPlugin, VitePlusPlugin>>;
+
+export default defineConfig({
+  lint: {
+    ...createVizeLintConfig({
+      plugins: ["typescript"],
+      preset: "incremental",
+      rules: {
+        "no-console": "off",
+        "typescript/consistent-type-imports": [
+          "error",
+          { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" },
+        ],
+      },
+    }),
+    overrides: [
+      {
+        files: ["**/*.ts"],
+        rules: {
+          "typescript/consistent-type-imports": [
+            "warn",
+            { disallowTypeAnnotations: true, fixStyle: "separate-type-imports" },
+          ],
+        },
+      },
+    ],
+  },
+});
+
+createVizeLintConfig({
+  // @ts-expect-error Vite+ keeps built-in plugin names as a closed union.
+  plugins: ["not-a-vite-plus-plugin"],
+  rules: {
+    // @ts-expect-error Unknown severities must not be widened to string or any.
+    "no-console": "verbose",
+  },
+});
+`);
 });
 
 void test('createVizeLintConfig keeps the rule map and settings.vize.preset in lockstep for "all"', () => {
