@@ -150,6 +150,10 @@ export class LspSession {
     return result;
   }
 
+  get nextRequestId(): number {
+    return this.nextId + 1;
+  }
+
   request(method: string, params: unknown, timeoutMs = 30000): Promise<unknown> {
     const id = ++this.nextId;
 
