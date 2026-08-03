@@ -39,6 +39,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: false,
                     event_type: "any",
+                    event_handler_type: None,
                     event_listener_type: None,
                     event_name_src_range: None,
                     template_prop_names: ctx.template_prop_names,
@@ -63,6 +64,8 @@ pub(super) fn generate_event_handler_scope(
         )
         .expect("component event handler should have a target component");
         let event_type = event_types.event_type;
+        let handler_type = event_types.handler_type;
+        let handler_type_expr = event_types.handler_type_expr;
         let listener_type = event_types.listener_type;
         let listener_type_expr = event_types.listener_type_expr;
         // Type the listener against the FULL emit tuple so multi-arg emits
@@ -71,6 +74,9 @@ pub(super) fn generate_event_handler_scope(
             *ts,
             "{indent}type {listener_type} = {listener_type_expr};\n",
         );
+        if let (Some(handler_type), Some(handler_type_expr)) = (&handler_type, &handler_type_expr) {
+            append!(*ts, "{indent}type {handler_type} = {handler_type_expr};\n",);
+        }
         // Receive listener args via a rest parameter typed by
         // `Parameters<listener>` to avoid TS2556; `$event` is element 0.
         append!(
@@ -93,6 +99,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type: event_type.as_str(),
+                    event_handler_type: handler_type.as_deref(),
                     event_listener_type: Some(listener_type.as_str()),
                     event_name_src_range: event_name_source_range(
                         ctx.template_source,
@@ -126,6 +133,7 @@ pub(super) fn generate_event_handler_scope(
                     data,
                     check_emits: true,
                     event_type,
+                    event_handler_type: None,
                     // Native DOM listeners keep the identity-call shape,
                     // so there is no declared name to anchor at.
                     event_listener_type: None,

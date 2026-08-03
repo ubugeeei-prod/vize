@@ -13,6 +13,7 @@ declare module "vue" {
     MkSuspense: DefineComponent<{
       onResolved?: (result: { file: string }) => void
     }>
+    UnresolvedSuspense: DefineComponent
   }
 }
 "#;
@@ -115,6 +116,40 @@ fn unknown_global_component_array_callbacks_remain_implicit_any() {
             vize_carton::String::from("src/App.vue"),
             Some(7006),
             vize_carton::String::from("2:27:error Parameter 'value' implicitly has an 'any' type.",),
+        )]),
+    );
+}
+
+#[test]
+fn ambient_global_component_unresolved_event_callbacks_remain_implicit_any() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "ambient-global-component-unresolved-event-callback",
+        &[
+            ("src/global-components.d.ts", GLOBAL_COMPONENTS),
+            (
+                "src/App.vue",
+                r#"<template>
+  <UnresolvedSuspense v-slot="{ result }" @resolved="(result) => result.file" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Some(vec![(
+            vize_carton::String::from("src/App.vue"),
+            Some(7006),
+            vize_carton::String::from(
+                "2:55:error Parameter 'result' implicitly has an 'any' type."
+            ),
         )]),
     );
 }

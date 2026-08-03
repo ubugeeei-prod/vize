@@ -72,6 +72,28 @@ pub(super) fn generate_event_handler_expressions(
                 let mapped_end = ts.len();
                 ts.push_str(";  // handler expression (emit checks disabled)\n");
                 mapped_start..mapped_end
+            } else if let (Some(handler_type), Some(listener_type)) =
+                (ctx.event_handler_type, ctx.event_listener_type)
+                && (is_implicit_reference || inline_callback_arg.is_some())
+            {
+                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                let stmt_start = ts.len();
+                append!(*ts, "{indent}const ", indent = handler_indent);
+                let name_start = ts.len();
+                ts.push_str(handler_name.as_str());
+                let name_end = ts.len();
+                append!(*ts, ": {handler_type} | null | undefined = (");
+                let mapped_start = ts.len();
+                ts.push_str(content);
+                let mapped_end = ts.len();
+                ts.push_str(");\n");
+                listener_spans = Some((stmt_start..ts.len(), name_start..name_end));
+                append!(
+                    *ts,
+                    "{indent}if (typeof {handler_name} === \"function\") ({handler_name} as {listener_type})(...__vize_args);  // handler expression\n",
+                    indent = handler_indent,
+                );
+                mapped_start..mapped_end
             } else if let Some(listener_type) = ctx.event_listener_type
                 && (is_implicit_reference || inline_callback_arg.is_some())
             {

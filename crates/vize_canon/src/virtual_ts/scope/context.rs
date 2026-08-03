@@ -75,6 +75,7 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// so template-binding checks remain valid and parseable.
     pub(super) check_emits: bool,
     pub(super) event_type: &'a str,
+    pub(super) event_handler_type: Option<&'a str>,
     /// For component `@event` handlers, the synthesized listener type
     /// (e.g. `__Child_1_test_listener`) that captures the full emit argument
     /// tuple (or the single `$event` fallback when the emit stays unresolved).

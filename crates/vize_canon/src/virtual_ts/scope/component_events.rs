@@ -1,5 +1,8 @@
 //! Component event listener type generation.
 
+mod handler_context;
+mod reference;
+
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::croquis::PassedProp;
 use vize_croquis::{
@@ -11,9 +14,13 @@ use crate::virtual_ts::{
     expressions::rewrite_reserved_template_prop,
     helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment},
 };
+use handler_context::requires_unresolved_handler_implicit_any;
+use reference::component_reference_expression;
 
 pub(super) struct ComponentEventTypes {
     pub(super) event_type: String,
+    pub(super) handler_type: Option<String>,
+    pub(super) handler_type_expr: Option<String>,
     pub(super) listener_type: String,
     pub(super) listener_type_expr: String,
 }
@@ -143,23 +150,27 @@ pub(super) fn generate_component_event_types(
             "unknown[] extends {args_type} ? ((...args: any[]) => unknown) : ((...args: {listener_args_type}) => unknown)"
         )
     };
+    let (handler_type, handler_type_expr) = if !legacy_vue2
+        && requires_unresolved_handler_implicit_any(summary, component_name, data, scope)
+    {
+        (
+            Some(cstr!(
+                "__{component_type_name}_{scope_id}_{safe_event_name}_handler"
+            )),
+            Some(cstr!(
+                "unknown[] extends {args_type} ? unknown : {listener_type}"
+            )),
+        )
+    } else {
+        (None, None)
+    };
     Some(ComponentEventTypes {
         event_type,
+        handler_type,
+        handler_type_expr,
         listener_type,
         listener_type_expr,
     })
-}
-
-fn component_reference_expression(name: &str) -> String {
-    if name.split('.').all(|segment| {
-        let mut bytes = segment.bytes();
-        matches!(bytes.next(), Some(b'_' | b'$' | b'a'..=b'z' | b'A'..=b'Z'))
-            && bytes.all(|byte| byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric())
-    }) {
-        String::from(name)
-    } else {
-        to_safe_identifier(name)
-    }
 }
 
 struct EmitInferenceContext<'a> {
