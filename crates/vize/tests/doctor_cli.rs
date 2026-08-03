@@ -151,6 +151,115 @@ fn valid_script_module_dialects_remain_supported() {
 }
 
 #[test]
+fn component_prop_contract_errors_have_stable_codes_and_block() {
+    let directory = tempfile::tempdir().unwrap();
+    let parent = r#"<script setup lang="ts">
+import MissingCard from './TypedChild.vue'
+import CounterCard from './RuntimeChild.vue'
+</script>
+<template>
+  <MissingCard extra="value" />
+  <CounterCard count="1" />
+</template>
+"#;
+    let typed_child = r#"<script setup lang="ts">
+defineProps<{ id: number }>()
+</script>
+<template><span /></template>
+"#;
+    let runtime_child = r#"<script lang="ts">
+export const componentName = 'RuntimeChild'
+</script>
+<script setup lang="ts">
+defineProps({ count: { type: Number, required: true } })
+</script>
+<template><span /></template>
+"#;
+    write(directory.path(), "src/Parent.vue", parent);
+    write(directory.path(), "src/TypedChild.vue", typed_child);
+    write(directory.path(), "src/RuntimeChild.vue", runtime_child);
+
+    let output = doctor(directory.path(), &["src", "--format", "json"]);
+    let report: DoctorReport = serde_json::from_slice(&output.stdout).unwrap();
+    let codes = report
+        .findings()
+        .iter()
+        .map(|finding| finding.code.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(codes.contains(&"VIZE_DOCTOR_CF_MISSING_REQUIRED_PROP"));
+    assert!(codes.contains(&"VIZE_DOCTOR_CF_UNDECLARED_PROP"));
+    assert!(codes.contains(&"VIZE_DOCTOR_CF_PROP_TYPE_MISMATCH"));
+
+    let mismatch = report
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_CF_PROP_TYPE_MISMATCH")
+        .unwrap();
+    assert_eq!(mismatch.primary.path, "src/Parent.vue");
+    assert_eq!(
+        &parent[mismatch.primary.start as usize..mismatch.primary.end as usize],
+        "count=\"1\""
+    );
+    assert_eq!(mismatch.related[0].location.path, "src/RuntimeChild.vue");
+    assert_eq!(
+        mismatch.related[0].location.start as usize,
+        runtime_child.find("defineProps").unwrap()
+    );
+}
+
+#[test]
+fn valid_component_prop_contract_patterns_remain_diagnostic_free() {
+    let directory = tempfile::tempdir().unwrap();
+    write(
+        directory.path(),
+        "src/TypedChild.vue",
+        r#"<script setup lang="ts">
+defineProps<{ userName: string; id: number }>()
+</script>
+<template><span /></template>
+"#,
+    );
+    write(
+        directory.path(),
+        "src/RuntimeChild.vue",
+        r#"<script setup lang="ts">
+defineProps({ count: { type: Number, required: true } })
+</script>
+<template><span /></template>
+"#,
+    );
+    write(
+        directory.path(),
+        "src/Parent.vue",
+        r#"<script setup lang="ts">
+import ProfileCard from './TypedChild.vue'
+import RuntimeCounter from './RuntimeChild.vue'
+const remainingProps = { id: 1 }
+</script>
+<template>
+  <profile-card :user-name="'Ada'" v-bind="remainingProps" class="card" />
+  <RuntimeCounter :count="1" id="counter" />
+</template>
+"#,
+    );
+
+    let output = doctor(directory.path(), &["src", "--format", "json"]);
+    let report: DoctorReport = serde_json::from_slice(&output.stdout).unwrap();
+
+    assert!(output.status.success());
+    assert!(report.findings().iter().all(|finding| {
+        !matches!(
+            finding.code.as_str(),
+            "VIZE_DOCTOR_CF_MISSING_REQUIRED_PROP"
+                | "VIZE_DOCTOR_CF_UNDECLARED_PROP"
+                | "VIZE_DOCTOR_CF_PROP_TYPE_MISMATCH"
+        )
+    }));
+}
+
+#[test]
 fn public_sfc_contract_is_explicit_and_source_accurate() {
     let directory = tempfile::tempdir().unwrap();
     let source = "<script setup>const label = 'Save'</script>\n\

@@ -33,6 +33,12 @@ struct SfcSourceMap {
     template: Option<SourceBlock>,
 }
 
+#[derive(Clone, Copy, Debug)]
+enum SfcCoordinates {
+    Script,
+    Template,
+}
+
 pub(super) fn analyze_application(
     root: &Path,
     sources: &[DoctorSource],
@@ -219,13 +225,12 @@ impl SfcSourceMap {
         }
     }
 
-    fn map(self, kind: &CrossFileDiagnosticKind, offset: u32) -> u32 {
-        let mapped = if uses_template_coordinates(kind) {
-            self.template.map_or(offset, |block| {
+    fn map(self, coordinates: SfcCoordinates, offset: u32) -> u32 {
+        let mapped = match coordinates {
+            SfcCoordinates::Template => self.template.map_or(offset, |block| {
                 block.authored_start + offset.min(block.length)
-            })
-        } else {
-            self.map_script(offset)
+            }),
+            SfcCoordinates::Script => self.map_script(offset),
         };
         mapped.min(self.source_length)
     }
@@ -252,26 +257,49 @@ fn normalize_sfc_diagnostics(
     source_maps: &FxHashMap<FileId, SfcSourceMap>,
 ) {
     for diagnostic in diagnostics {
+        let primary_coordinates = primary_coordinates(&diagnostic.kind);
         if let Some(source_map) = source_maps.get(&diagnostic.primary_file).copied() {
-            diagnostic.primary_offset = source_map.map(&diagnostic.kind, diagnostic.primary_offset);
+            diagnostic.primary_offset =
+                source_map.map(primary_coordinates, diagnostic.primary_offset);
             diagnostic.primary_end_offset =
-                source_map.map(&diagnostic.kind, diagnostic.primary_end_offset);
+                source_map.map(primary_coordinates, diagnostic.primary_end_offset);
         }
+        let related_coordinates = related_coordinates(&diagnostic.kind);
         for (file_id, offset, _) in &mut diagnostic.related_files {
             if let Some(source_map) = source_maps.get(file_id).copied() {
-                *offset = source_map.map(&diagnostic.kind, *offset);
+                *offset = source_map.map(related_coordinates, *offset);
             }
         }
     }
 }
 
-fn uses_template_coordinates(kind: &CrossFileDiagnosticKind) -> bool {
-    matches!(
+fn primary_coordinates(kind: &CrossFileDiagnosticKind) -> SfcCoordinates {
+    if matches!(
         kind,
         CrossFileDiagnosticKind::DuplicateElementId { .. }
             | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
             | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
-    )
+            | CrossFileDiagnosticKind::UndeclaredProp { .. }
+            | CrossFileDiagnosticKind::MissingRequiredProp { .. }
+            | CrossFileDiagnosticKind::PropTypeMismatch { .. }
+    ) {
+        SfcCoordinates::Template
+    } else {
+        SfcCoordinates::Script
+    }
+}
+
+fn related_coordinates(kind: &CrossFileDiagnosticKind) -> SfcCoordinates {
+    if matches!(
+        kind,
+        CrossFileDiagnosticKind::DuplicateElementId { .. }
+            | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
+            | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
+    ) {
+        SfcCoordinates::Template
+    } else {
+        SfcCoordinates::Script
+    }
 }
 
 fn doctor_options() -> CrossFileOptions {
@@ -283,4 +311,5 @@ fn doctor_options() -> CrossFileOptions {
         .with_race_conditions(true)
         .with_setup_context(true)
         .with_circular_dependencies(true)
+        .with_props_validation(true)
 }

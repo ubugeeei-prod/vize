@@ -70,18 +70,19 @@ pub fn analyze_props_validation(
     let mut issues = Vec::new();
     let mut diagnostics = Vec::new();
 
-    // Build a map of component name -> props info
-    let mut component_props: FxHashMap<CompactString, (FileId, ComponentPropsInfo)> =
-        FxHashMap::default();
+    // Component basenames are not unique across an application. Key contracts
+    // by the resolved child identity so same-named components cannot overwrite
+    // each other's declarations or make diagnostics depend on registry order.
+    let mut component_props: FxHashMap<FileId, ComponentPropsInfo> = FxHashMap::default();
 
     for entry in registry.iter() {
         if !entry.is_vue_sfc {
             continue;
         }
 
-        let Some(ref component_name) = entry.component_name else {
+        if entry.component_name.is_none() {
             continue;
-        };
+        }
 
         let mut props_info = ComponentPropsInfo::default();
 
@@ -96,7 +97,7 @@ pub fn analyze_props_validation(
             );
         }
 
-        component_props.insert(component_name.clone(), (entry.id, props_info));
+        component_props.insert(entry.id, props_info);
     }
 
     // Now check each component usage
@@ -112,7 +113,7 @@ pub fn analyze_props_validation(
         };
 
         // Get the child's props info
-        let Some((_, child_props_info)) = component_props.get(child_component_name) else {
+        let Some(child_props_info) = component_props.get(&child_id) else {
             continue;
         };
 

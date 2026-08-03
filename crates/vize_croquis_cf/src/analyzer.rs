@@ -14,6 +14,10 @@ pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 mod tests_basic;
 
 #[cfg(test)]
+#[path = "analyzer/tests_props_validation_identity.rs"]
+mod tests_props_validation_identity;
+
+#[cfg(test)]
 #[path = "analyzer/tests_fallthrough.rs"]
 mod tests_fallthrough;
 

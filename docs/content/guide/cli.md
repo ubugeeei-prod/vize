@@ -236,12 +236,12 @@ vize doctor src packages/shared --format json
 ```
 
 `vize doctor` builds one deterministic application graph across Vue SFCs and script modules. The
-initial analyzers cover dependency injection, unique element IDs, server/client boundaries,
-reactivity flow, asynchronous mutation risks, setup-context ownership, and circular imports; Vue
-diagnostics map back to byte offsets in the authored `.vue` file, including components with both
-`<script>` and `<script setup>`. Discovery follows source-control ignore files, rejects inputs
-outside the declared workspace, fails closed when a component or script module cannot be parsed,
-and never writes source files.
+initial analyzers cover dependency injection, unique element IDs, server/client boundaries, reactivity
+flow, asynchronous mutation risks, setup-context ownership, circular imports, and cross-component
+prop contracts. Vue diagnostics map back to byte offsets in the authored `.vue` file, including
+template prop usages and related `defineProps` declarations in components with both `<script>` and
+`<script setup>`. Discovery follows source-control ignore files, rejects inputs outside the declared
+workspace, fails closed when a component or script module cannot be parsed, and never writes files.
 
 Key options:
 

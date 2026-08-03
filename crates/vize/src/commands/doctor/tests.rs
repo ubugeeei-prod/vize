@@ -104,6 +104,100 @@ const { item } = props
 }
 
 #[test]
+fn component_prop_contracts_map_template_and_script_setup_coordinates() {
+    let directory = tempfile::tempdir().unwrap();
+    let parent = r#"<script lang="ts">
+export const parentName = 'Parent'
+</script>
+<script setup lang="ts">
+import Counter from './Child.vue'
+</script>
+<template><Counter count="1" /></template>
+"#;
+    let child = r#"<script lang="ts">
+export const componentName = 'Child'
+</script>
+<script setup lang="ts">
+defineProps({ count: { type: Number, required: true } })
+</script>
+<template><span /></template>
+"#;
+    let report = analyze_application(
+        directory.path(),
+        &[
+            doctor_source("src/Child.vue", child),
+            doctor_source("src/Parent.vue", parent),
+        ],
+        false,
+    )
+    .unwrap();
+    let finding = report
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_CF_PROP_TYPE_MISMATCH")
+        .unwrap();
+
+    assert_eq!(finding.primary.path, "src/Parent.vue");
+    assert_eq!(
+        &parent[finding.primary.start as usize..finding.primary.end as usize],
+        "count=\"1\""
+    );
+    assert_eq!(finding.related.len(), 1);
+    assert_eq!(finding.related[0].location.path, "src/Child.vue");
+    assert_eq!(
+        finding.related[0].location.start as usize,
+        child.find("defineProps").unwrap()
+    );
+}
+
+#[test]
+fn component_prop_contracts_map_missing_and_undeclared_template_spans() {
+    let directory = tempfile::tempdir().unwrap();
+    let parent = r#"<script setup lang="ts">
+import ChildCard from './Child.vue'
+</script>
+<template><ChildCard extra="value" /></template>
+"#;
+    let child = r#"<script setup lang="ts">
+defineProps<{ id: number }>()
+</script>
+<template><span /></template>
+"#;
+    let report = analyze_application(
+        directory.path(),
+        &[
+            doctor_source("src/Parent.vue", parent),
+            doctor_source("src/Child.vue", child),
+        ],
+        false,
+    )
+    .unwrap();
+    let missing = report
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_CF_MISSING_REQUIRED_PROP")
+        .unwrap();
+    let undeclared = report
+        .findings()
+        .iter()
+        .find(|finding| finding.code == "VIZE_DOCTOR_CF_UNDECLARED_PROP")
+        .unwrap();
+
+    assert_eq!(
+        &parent[missing.primary.start as usize..missing.primary.end as usize],
+        "<ChildCard extra=\"value\" />"
+    );
+    assert_eq!(
+        missing.related[0].location.start as usize,
+        child.find("defineProps").unwrap()
+    );
+    assert_eq!(
+        &parent[undeclared.primary.start as usize..undeclared.primary.end as usize],
+        "extra=\"value\""
+    );
+}
+
+#[test]
 fn serialized_report_is_deterministic_for_input_order() {
     let directory = tempfile::tempdir().unwrap();
     let a = doctor_source("src/A.vue", "<template><div id=\"shared\" /></template>");
