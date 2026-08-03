@@ -107,10 +107,7 @@ pub struct RenderNodeNapi {
     /// Node ID
     pub id: i64,
     /// Node type accepted by the native renderer.
-    #[napi(
-        js_name = "nodeType",
-        ts_type = "\"root\" | \"box\" | \"text\" | \"input\""
-    )]
+    #[napi(ts_type = "\"root\" | \"box\" | \"text\" | \"input\"")]
     pub node_type: String,
     /// Text content (for text nodes)
     pub text: Option<String>,

@@ -1,5 +1,7 @@
 use super::input_size::{input_intrinsic_size, wrapped_line_count};
-use super::render::{RenderNodeKindNapi, parse_render_node_kind, validate_render_node_kinds};
+use super::render_payload::{
+    RenderNodeKindNapi, parse_render_node_kind, validate_render_node_kinds,
+};
 use super::types::{FlexStyleNapi, RenderNodeNapi};
 
 fn render_node(id: i64, node_type: &str) -> RenderNodeNapi {

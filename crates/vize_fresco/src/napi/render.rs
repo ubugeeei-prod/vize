@@ -5,54 +5,16 @@ use napi_derive::napi;
 use std::cell::RefCell;
 
 use super::input_size::input_intrinsic_size;
+use super::render_payload::{
+    RenderNodeKindNapi, parse_wrap_mode, unsupported_render_node_kind, validate_render_node_kinds,
+};
 use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
 use crate::terminal::{Color, Style};
-use crate::text::WrapMode;
 
 thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum RenderNodeKindNapi {
-    Root,
-    Box,
-    Text,
-    Input,
-}
-
-pub(super) fn parse_render_node_kind(value: &str) -> Option<RenderNodeKindNapi> {
-    match value {
-        "root" => Some(RenderNodeKindNapi::Root),
-        "box" => Some(RenderNodeKindNapi::Box),
-        "text" => Some(RenderNodeKindNapi::Text),
-        "input" => Some(RenderNodeKindNapi::Input),
-        _ => None,
-    }
-}
-
-pub(super) fn validate_render_node_kinds(
-    nodes: &[RenderNodeNapi],
-) -> std::result::Result<Vec<RenderNodeKindNapi>, &str> {
-    nodes
-        .iter()
-        .map(|node| parse_render_node_kind(&node.node_type).ok_or(node.node_type.as_str()))
-        .collect()
-}
-
-fn parse_wrap_mode(mode: Option<&str>, wrap: Option<bool>) -> WrapMode {
-    match mode {
-        Some("wrap") => WrapMode::Word,
-        Some("hard") => WrapMode::Char,
-        Some("truncate") | Some("truncate-end") => WrapMode::TruncateEnd,
-        Some("truncate-start") => WrapMode::TruncateStart,
-        Some("truncate-middle") => WrapMode::TruncateMiddle,
-        Some("false") | Some("none") => WrapMode::NoWrap,
-        _ if wrap.unwrap_or(false) => WrapMode::Word,
-        _ => WrapMode::NoWrap,
-    }
 }
 
 /// Get layout results from the most recent renderTree call.
@@ -198,16 +160,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         TextContent,
     };
 
-    // Validate the complete payload before borrowing or mutating the terminal
-    // backend so one unknown kind cannot partially render the preceding nodes.
-    let node_kinds = validate_render_node_kinds(&nodes).map_err(|node_type| {
-        Error::new(
-            Status::InvalidArg,
-            format!(
-                "Unsupported render node type `{node_type}`; expected one of: root, box, text, input"
-            ),
-        )
-    })?;
+    let node_kinds = validate_render_node_kinds(&nodes).map_err(unsupported_render_node_kind)?;
 
     with_backend(|backend| {
         let mut tree = RenderTree::new();

@@ -21,6 +21,12 @@ mod layout;
     clippy::disallowed_macros
 )]
 mod render;
+#[allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
+mod render_payload;
 #[cfg(test)]
 mod render_tests;
 #[allow(
