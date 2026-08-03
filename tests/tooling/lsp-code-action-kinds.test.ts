@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
+import { repoRoot, withPinnedFixtureWorkspace } from "../_helpers/realworld-patch.ts";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import type { LspDiagnostic, LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
@@ -10,6 +10,14 @@ import { LspSession } from "./support/lsp/session.ts";
 const CREATE_VUE_APP = "template/code/typescript-default/src/App.vue";
 const CLEAN_ATTRIBUTE = 'alt="Vue logo" class="logo"';
 const BROKEN_ATTRIBUTE = 'alt="Vue logo"  class="logo"';
+
+test("release-script CI hydrates the pinned create-vue code-action oracle", () => {
+  const workflow = fs.readFileSync(`${repoRoot}/.github/workflows/check.yml`, "utf8");
+  assert.match(
+    workflow,
+    /git submodule update --init --force --depth 1 --[^\n]*tests\/_fixtures\/_git\/create-vue/,
+  );
+});
 
 type CodeAction = {
   title: string;
