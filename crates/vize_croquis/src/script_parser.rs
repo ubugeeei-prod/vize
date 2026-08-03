@@ -38,6 +38,9 @@ pub use result::{ScriptParseResult, ScriptParserOptions};
 mod tests;
 
 #[cfg(test)]
+mod binding_classification_tests;
+
+#[cfg(test)]
 mod interface_extends_tests;
 
 #[cfg(test)]

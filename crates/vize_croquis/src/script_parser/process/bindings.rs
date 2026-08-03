@@ -83,6 +83,34 @@ pub(in crate::script_parser) fn infer_destructure_binding_type(
     }
 }
 
+pub(in crate::script_parser) fn classify_const_initializer(expr: &Expression<'_>) -> BindingType {
+    let expr = unwrap_transparent_expression(expr);
+    if is_literal_expression(expr) {
+        BindingType::LiteralConst
+    } else if is_function_expression(expr)
+        || matches!(
+            expr,
+            Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
+        )
+    {
+        BindingType::SetupConst
+    } else {
+        BindingType::SetupMaybeRef
+    }
+}
+
+fn unwrap_transparent_expression<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<'a> {
+    loop {
+        expr = match expr {
+            Expression::ParenthesizedExpression(parenthesized) => &parenthesized.expression,
+            Expression::TSAsExpression(assertion) => &assertion.expression,
+            Expression::TSSatisfiesExpression(assertion) => &assertion.expression,
+            Expression::TSNonNullExpression(non_null) => &non_null.expression,
+            _ => return expr,
+        };
+    }
+}
+
 /// Check if an expression is a literal value (number, string, boolean, null, template literal
 /// without expressions, or unary minus on a numeric literal)
 pub(in crate::script_parser) fn is_literal_expression(expr: &Expression<'_>) -> bool {

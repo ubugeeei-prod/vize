@@ -29,8 +29,8 @@ use super::super::extract::{
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
-    add_binding_pattern_names, get_binding_pattern_name, infer_destructure_binding_type,
-    is_function_expression, is_literal_expression, push_binding_pattern_names,
+    add_binding_pattern_names, classify_const_initializer, get_binding_pattern_name,
+    infer_destructure_binding_type, push_binding_pattern_names,
 };
 
 /// Process a variable declarator
@@ -211,18 +211,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // Regular binding - for const, detect literal/function expressions
             let binding_type = if kind == VariableDeclarationKind::Const {
                 if let Some(init) = &declarator.init {
-                    if is_literal_expression(init) {
-                        BindingType::LiteralConst
-                    } else if is_function_expression(init)
-                        || matches!(
-                            init,
-                            Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
-                        )
-                    {
-                        BindingType::SetupConst
-                    } else {
-                        BindingType::SetupMaybeRef
-                    }
+                    classify_const_initializer(init)
                 } else {
                     BindingType::SetupConst
                 }
