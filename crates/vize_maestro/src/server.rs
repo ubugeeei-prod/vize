@@ -22,6 +22,7 @@ mod helpers;
 mod importers;
 mod state;
 mod workspace_files;
+mod workspace_folder_events;
 
 pub use capabilities::server_capabilities;
 #[cfg(feature = "native")]
