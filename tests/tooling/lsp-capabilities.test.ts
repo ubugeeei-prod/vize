@@ -106,7 +106,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   documentSymbolProvider: true,
   workspaceSymbolProvider: true,
   codeActionProvider: {
-    codeActionKinds: ["quickfix", "refactor", "source"],
+    codeActionKinds: ["quickfix"],
     resolveProvider: false,
   },
   codeLensProvider: { resolveProvider: false },
@@ -229,11 +229,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
 
       // Lint code actions survive without the editor bundle.
       assert.ok(capabilities.codeActionProvider, "codeActionProvider should remain present");
-      assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, [
-        "quickfix",
-        "refactor",
-        "source",
-      ]);
+      assert.deepEqual(capabilities.codeActionProvider?.codeActionKinds, ["quickfix"]);
     },
   );
 });

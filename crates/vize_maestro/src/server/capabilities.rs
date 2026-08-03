@@ -65,11 +65,7 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // Code actions (quick fixes, refactoring)
         code_action_provider: (features.lint && features.code_actions).then_some(
             CodeActionProviderCapability::Options(CodeActionOptions {
-                code_action_kinds: Some(vec![
-                    CodeActionKind::QUICKFIX,
-                    CodeActionKind::REFACTOR,
-                    CodeActionKind::SOURCE,
-                ]),
+                code_action_kinds: Some(vec![CodeActionKind::QUICKFIX]),
                 work_done_progress_options: WorkDoneProgressOptions::default(),
                 resolve_provider: Some(false),
             }),
@@ -309,6 +305,8 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
     }
 }
 
+#[cfg(test)]
+mod code_action_tests;
 #[cfg(test)]
 mod file_operation_tests;
 #[cfg(test)]

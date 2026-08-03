@@ -34,9 +34,9 @@ use tower_lsp::lsp_types::{Position, Range};
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
-    CodeActionService, CompletionService, DefinitionService, DocumentHighlightService,
-    DocumentLinkService, HoverService, IdeContext, ReferencesService, RenameService,
-    SemanticTokensService, position_to_offset,
+    CompletionService, DefinitionService, DocumentHighlightService, DocumentLinkService,
+    HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService,
+    position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -393,42 +393,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        let features = self.state.lsp_features();
-        if !features.lint || !features.code_actions {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-        let range = params.range;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-
-        // `.jsx`/`.tsx`: surface the fixable Patina/JSX-compiler diagnostics as
-        // quickfix code actions. Lint-based (parse-only), so not gated on
-        // `typeChecker.jsxTypecheck`.
-        if crate::utils::is_jsx_path(uri.path()) {
-            let actions = crate::ide::JsxCodeActionService::code_actions(&content, uri, range);
-            if actions.is_empty() {
-                return Ok(None);
-            }
-            return Ok(Some(actions));
-        }
-
-        let Some(offset) = position_to_offset(&content, range.start.line, range.start.character)
-        else {
-            return Ok(None);
-        };
-
-        if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            let actions = CodeActionService::code_actions(&ctx, range);
-            if !actions.is_empty() {
-                return Ok(Some(actions));
-            }
-        }
-
-        Ok(None)
+        Ok(super::code_actions::code_actions(self, &params))
     }
 
     async fn prepare_rename(
