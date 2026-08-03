@@ -125,16 +125,28 @@ fn v_for_source_resolves_template_only_props_before_mapping_diagnostics() {
     }
     let project_root = create_project_case(
         "v-for-source-template-prop",
-        &[(
-            "src/App.vue",
-            r#"<script setup lang="ts">
-defineProps<{ messages: string[] }>()
+        &[
+            (
+                "src/contracts.ts",
+                r#"export interface DialogProps {
+  messages: Array<{ text: string }>
+}
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import type { DialogProps } from './contracts'
+defineProps<DialogProps>()
 </script>
 <template>
-  <p v-for="message in messages" :key="message">{{ message }}</p>
+  <section v-for="message in messages.slice(0, Math.max(0, messages.length))" :key="message.text">
+    <span v-for="word in message.text.split(' ')" :key="word">{{ word }}</span>
+  </section>
 </template>
 "#,
-        )],
+            ),
+        ],
     );
 
     let snapshot = snapshot_project_diagnostics(&project_root);
