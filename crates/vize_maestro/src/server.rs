@@ -14,6 +14,7 @@ use tower_lsp::jsonrpc::{Request, Response};
 mod annotations;
 mod auto_insert;
 mod capabilities;
+mod diagnostic_publishing;
 mod document_structure;
 mod format;
 mod handlers;

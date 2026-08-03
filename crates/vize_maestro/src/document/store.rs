@@ -220,12 +220,19 @@ impl DocumentStore {
         uri: &Url,
         changes: Vec<TextDocumentContentChangeEvent>,
         version: i32,
-    ) {
-        if let Some(mut doc) = self.documents.get_mut(uri) {
-            for change in changes {
-                doc.apply_change(&change, version);
-            }
+    ) -> bool {
+        let Some(mut doc) = self.documents.get_mut(uri) else {
+            return false;
+        };
+        // tower-lsp polls notification handlers concurrently. Preserve the
+        // LSP version order even if a newer didChange reaches the store first.
+        if version <= doc.version {
+            return false;
         }
+        for change in changes {
+            doc.apply_change(&change, version);
+        }
+        true
     }
 
     /// Check if a document exists.
@@ -256,3 +263,5 @@ impl DocumentStore {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod version_tests;

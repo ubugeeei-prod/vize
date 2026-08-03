@@ -111,14 +111,8 @@ impl LanguageServer for MaestroServer {
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
         let uri = params.text_document.uri;
         let version = params.text_document.version;
-
-        self.state
-            .documents
-            .apply_changes(&uri, params.content_changes, version);
-
-        if let Some(content) = self.state.documents.text(&uri) {
-            self.publish_changed_diagnostics(&uri, &content).await;
-        }
+        self.apply_document_changes(&uri, params.content_changes, version)
+            .await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
@@ -603,7 +597,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
-        super::workspace_files::did_change_watched_files(&self.state, &params);
+        super::workspace_files::did_change_watched_files(self, &params).await;
     }
 
     async fn did_create_files(&self, params: CreateFilesParams) {

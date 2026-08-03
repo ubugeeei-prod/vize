@@ -70,13 +70,43 @@ fn global_component_watcher_registration() -> Registration {
     }
 }
 
-pub(super) fn did_change_watched_files(state: &ServerState, params: &DidChangeWatchedFilesParams) {
+pub(super) async fn did_change_watched_files(
+    server: &MaestroServer,
+    params: &DidChangeWatchedFilesParams,
+) {
     #[cfg(feature = "native")]
-    state.invalidate_global_component_references(
-        params.changes.iter().map(|change| change.uri.as_str()),
-    );
+    {
+        if !server.state.invalidate_global_component_references(
+            params.changes.iter().map(|change| change.uri.as_str()),
+        ) {
+            return;
+        }
+
+        let mut dependents = params
+            .changes
+            .iter()
+            .flat_map(|change| super::importers::open_vue_dependents(&server.state, &change.uri))
+            .collect::<Vec<_>>();
+        dependents.sort();
+        dependents.dedup();
+        let dependents = dependents
+            .into_iter()
+            .filter_map(|uri| {
+                server
+                    .state
+                    .documents
+                    .version(&uri)
+                    .map(|version| (uri, version))
+            })
+            .collect::<Vec<_>>();
+        for (dependent, version) in dependents {
+            server
+                .publish_diagnostics_if_version(&dependent, version)
+                .await;
+        }
+    }
     #[cfg(not(feature = "native"))]
-    let _ = (state, params);
+    let _ = (server, params);
 }
 
 pub(super) fn did_create_files(state: &ServerState, params: &CreateFilesParams) {

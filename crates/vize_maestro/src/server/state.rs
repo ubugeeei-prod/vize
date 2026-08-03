@@ -111,6 +111,11 @@ pub struct ServerState {
     /// Serializes Corsa bridge initialization without tying us to a runtime.
     #[cfg(feature = "native")]
     corsa_init_lock: AsyncMutex<()>,
+    /// Per-document diagnostic passes. Watcher refreshes and consecutive
+    /// didChange notifications may be polled concurrently by tower-lsp, but
+    /// they must not race the same Corsa virtual document.
+    #[cfg(feature = "native")]
+    diagnostic_locks: DashMap<Url, Arc<AsyncMutex<()>>>,
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
@@ -183,6 +188,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             corsa_init_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]
+            diagnostic_locks: DashMap::new(),
+            #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
             corsa_init_failure_reason: RwLock::new(None),
@@ -217,7 +224,30 @@ impl ServerState {
     pub(crate) fn close_document(&self, uri: &Url) {
         self.documents.close(uri);
         #[cfg(feature = "native")]
-        self.corsa_overlays.remove(uri);
+        {
+            self.corsa_overlays.remove(uri);
+            self.remove_idle_diagnostic_lock(uri);
+        }
+    }
+
+    /// Owned per-document lock for a diagnostic pass. Clone the `Arc` before
+    /// awaiting so no DashMap guard survives across a suspension point.
+    #[cfg(feature = "native")]
+    pub(crate) fn diagnostic_lock(&self, uri: &Url) -> Arc<AsyncMutex<()>> {
+        self.diagnostic_locks
+            .entry(uri.clone())
+            .or_insert_with(|| Arc::new(AsyncMutex::new(())))
+            .clone()
+    }
+
+    #[cfg(feature = "native")]
+    fn remove_idle_diagnostic_lock(&self, uri: &Url) {
+        if let dashmap::mapref::entry::Entry::Occupied(entry) =
+            self.diagnostic_locks.entry(uri.clone())
+            && Arc::strong_count(entry.get()) == 1
+        {
+            entry.remove();
+        }
     }
 
     /// Rename a document while dropping the overlay cached under its old URI.

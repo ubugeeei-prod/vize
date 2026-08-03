@@ -6,7 +6,7 @@
 
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, DiagnosticSeverity, Hover, HoverContents, InsertTextFormat,
-    MarkupContent, MarkupKind, MessageType, NumberOrString, Position, Url,
+    MarkupContent, MarkupKind, NumberOrString, Position, TextDocumentContentChangeEvent, Url,
 };
 
 use crate::ide::DiagnosticService;
@@ -21,17 +21,37 @@ impl MaestroServer {
     /// Publish the changed document first, then refresh open Vue files that
     /// directly import it. Corsa has already received the changed virtual
     /// document by this point, so importer diagnostics observe the new shape.
-    pub(crate) async fn publish_changed_diagnostics(&self, uri: &Url, content: &str) {
-        self.state.update_virtual_docs(uri, content);
-        let version = self.state.documents.version(uri);
-        self.publish_diagnostics(uri).await;
+    pub(crate) async fn apply_document_changes(
+        &self,
+        uri: &Url,
+        changes: Vec<TextDocumentContentChangeEvent>,
+        version: i32,
+    ) {
+        #[cfg(feature = "native")]
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        #[cfg(feature = "native")]
+        let diagnostic_guard = diagnostic_lock.lock().await;
+
+        if !self.state.documents.apply_changes(uri, changes, version) {
+            return;
+        }
+        let Some(content) = self.state.documents.text(uri) else {
+            return;
+        };
+        self.state.update_virtual_docs(uri, &content);
+        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+
+        #[cfg(feature = "native")]
+        drop(diagnostic_guard);
+
+        if let Some((diagnostic_version, diagnostics)) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostic_version, diagnostics)
+                .await;
+        }
+
         if !self.state.is_lsp_typecheck_enabled() {
             return;
         }
-
-        let Some(version) = version else {
-            return;
-        };
         self.publish_importer_diagnostics(uri, version).await;
     }
 
@@ -71,66 +91,45 @@ impl MaestroServer {
 
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
-        let version = self
-            .state
-            .documents
-            .get(uri)
-            .map(|document| document.version);
+        // tower-lsp polls notifications concurrently. A watched declaration
+        // change can therefore overlap consecutive didChange passes for the
+        // same Vue file; serialize those passes so their shared Corsa virtual
+        // document and overlay state cannot overtake one another.
+        #[cfg(feature = "native")]
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        #[cfg(feature = "native")]
+        let diagnostic_guard = diagnostic_lock.lock().await;
 
-        if !self.state.lsp_features().has_diagnostics() {
-            self.client
-                .publish_diagnostics(uri.clone(), Vec::new(), version)
+        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+
+        #[cfg(feature = "native")]
+        drop(diagnostic_guard);
+
+        if let Some((version, diagnostics)) = diagnostics {
+            self.publish_collected_diagnostics(uri, version, diagnostics)
                 .await;
-            return;
         }
+    }
 
-        let Some(version) = version else {
-            tracing::debug!("skipping diagnostics for unopened document: {}", uri);
-            return;
+    /// Publish only if the document still has the version that scheduled the
+    /// refresh. Watcher revalidation yields to a newer didChange publish.
+    pub(crate) async fn publish_diagnostics_if_version(&self, uri: &Url, expected: i32) {
+        #[cfg(feature = "native")]
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        #[cfg(feature = "native")]
+        let diagnostic_guard = diagnostic_lock.lock().await;
+
+        let diagnostics = if self.state.documents.version(uri) == Some(expected) {
+            self.collect_diagnostics_unlocked(uri).await
+        } else {
+            None
         };
 
-        // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
-        let diagnostics = DiagnosticService::collect_async(&self.state, uri).await;
+        drop(diagnostic_guard);
 
-        #[cfg(not(feature = "native"))]
-        let diagnostics = DiagnosticService::collect(&self.state, uri);
-
-        let current_version = self
-            .state
-            .documents
-            .get(uri)
-            .map(|document| document.version);
-        if current_version != Some(version) {
-            tracing::debug!(
-                "skipping stale diagnostics for {}: collected version {}, current {:?}",
-                uri,
-                version,
-                current_version
-            );
-            return;
-        }
-
-        self.client
-            .publish_diagnostics(uri.clone(), diagnostics, Some(version))
-            .await;
-
-        // Surface a one-shot UI notification when type checking is requested
-        // but Corsa never came up. The hint diagnostic emitted by
-        // collect_async (see #708) shows up in the Problems panel; this
-        // adds a window/showMessage so users with the Problems panel
-        // collapsed also notice. See #681.
-        #[cfg(feature = "native")]
-        if self.state.is_lsp_typecheck_enabled()
-            && !self.state.has_corsa_bridge()
-            && self.state.claim_typecheck_unavailable_notice()
-        {
-            self.client
-                .show_message(
-                    MessageType::WARNING,
-                    "Vize: type checking is unavailable in this workspace. \
-                     Make sure tsconfig.json exists and the Corsa runtime is reachable.",
-                )
+        if let Some((version, diagnostics)) = diagnostics {
+            self.publish_collected_diagnostics(uri, version, diagnostics)
                 .await;
         }
     }
