@@ -6,8 +6,6 @@ import type {
 import type { VizeInspectorOptions } from "./inspector-types.ts";
 import type { VizeVueFeatures } from "./vue-features.ts";
 
-export type { VizeVueFeatures } from "./vue-features.ts";
-
 export type {
   VizeInspectorLintPlanProvider,
   VizeInspectorLintPlanRequest,
