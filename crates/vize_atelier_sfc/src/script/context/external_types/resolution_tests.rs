@@ -164,3 +164,40 @@ fn subpath_falls_back_to_wildcard_exports_types() {
 
     let _ = std::fs::remove_dir_all(package);
 }
+
+#[test]
+fn subpath_excluded_by_a_null_export_is_not_resolved() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let package = std::env::temp_dir().join(format!(
+        "vize-sfc-external-types-{}-null-export-{nonce}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(package.join("types")).unwrap();
+    std::fs::create_dir_all(package.join("private")).unwrap();
+    // The broad pattern exposes declarations, but `./private/*` is blocked.
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"exports":{"./*":{"types":"./types/*.d.ts"},"./private/*":null}}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("types/button.d.ts"),
+        "export type ButtonProps = { label: string }",
+    )
+    .unwrap();
+    // A physical declaration under the blocked subpath must stay unreachable.
+    std::fs::write(
+        package.join("private/internal.d.ts"),
+        "export type Internal = { secret: string }",
+    )
+    .unwrap();
+
+    assert!(resolve_package_types(&package, "button").is_some());
+    let blocked = resolve_package_types(&package, "private/internal");
+    assert!(blocked.is_none(), "expected no resolution, got {blocked:?}");
+
+    let _ = std::fs::remove_dir_all(package);
+}

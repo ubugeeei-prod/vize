@@ -9,6 +9,8 @@ use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 #[path = "exports_patterns.rs"]
 mod exports_patterns;
 
+use self::exports_patterns::{ExportsTypes, exports_types_entry};
+
 const RESOLVE_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".mts", ".cts", ".js", ".jsx", ".vue",
 ];
@@ -213,29 +215,19 @@ fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
     if let Some(manifest) = &manifest {
         let mut export_key = String::from("./");
         export_key.push_str(subpath);
-        if let Some(types) = exports_types_entry(manifest, export_key.as_str())
-            && let Some(path) = resolve_candidate_path(package_dir.join(types))
-        {
-            return Some(path);
+        match exports_types_entry(manifest, export_key.as_str()) {
+            // A `null` target blocks the subpath, so the physical declaration
+            // beside it must stay unreachable.
+            Some(ExportsTypes::Excluded) => return None,
+            Some(ExportsTypes::Types(types)) => {
+                if let Some(path) = resolve_candidate_path(package_dir.join(types)) {
+                    return Some(path);
+                }
+            }
+            None => {}
         }
     }
     resolve_candidate_path(package_dir.join(subpath))
-}
-
-/// Find the `types` condition for an `exports` subpath entry. An exact key
-/// wins; otherwise a `*` pattern key is matched and the captured segment is
-/// substituted into its target, so wildcard exports still yield declarations.
-fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Option<String> {
-    let exports = manifest.get("exports")?;
-    if let Some(types) = exports.get(key).and_then(find_types_condition) {
-        return Some(types);
-    }
-    let (captured, target) = exports_patterns::best_pattern_match(exports, key)?;
-    Some(
-        find_types_condition(target)?
-            .replace('*', captured)
-            .to_compact_string(),
-    )
 }
 
 /// Find the `types` condition for the package root. The root entry is either

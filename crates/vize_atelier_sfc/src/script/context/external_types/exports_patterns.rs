@@ -1,3 +1,39 @@
+use vize_carton::{String, ToCompactString};
+
+/// Outcome of an `exports` lookup for one subpath key.
+pub(super) enum ExportsTypes {
+    /// The `types` target published for the subpath.
+    Types(String),
+    /// The subpath matched a `null` target. Node treats those as explicitly
+    /// blocked, so resolution must stop instead of falling back to a path
+    /// lookup that would expose the declaration anyway.
+    Excluded,
+}
+
+/// Find the `types` condition for an `exports` subpath entry. An exact key
+/// wins; otherwise a `*` pattern key is matched and the captured segment is
+/// substituted into its target, so wildcard exports still yield declarations.
+pub(super) fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Option<ExportsTypes> {
+    let exports = manifest.get("exports")?;
+    if let Some(entry) = exports.get(key) {
+        if entry.is_null() {
+            return Some(ExportsTypes::Excluded);
+        }
+        if let Some(types) = super::find_types_condition(entry) {
+            return Some(ExportsTypes::Types(types));
+        }
+    }
+    let (captured, target) = best_pattern_match(exports, key)?;
+    if target.is_null() {
+        return Some(ExportsTypes::Excluded);
+    }
+    Some(ExportsTypes::Types(
+        super::find_types_condition(target)?
+            .replace('*', captured)
+            .to_compact_string(),
+    ))
+}
+
 /// Match `key` against Node-style `exports` pattern keys such as `"./dist/*"`,
 /// returning the captured wildcard segment and the pattern's target value.
 ///
@@ -32,7 +68,7 @@ pub(super) fn best_pattern_match<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::best_pattern_match;
+    use super::{ExportsTypes, best_pattern_match, exports_types_entry};
 
     fn exports(raw: &str) -> serde_json::Value {
         serde_json::from_str(raw).unwrap()
@@ -59,5 +95,34 @@ mod tests {
     fn ignores_condition_keys_and_unmatched_patterns() {
         let exports = exports(r#"{"types":"./root.d.ts","./dist/*":{"types":"./dist/*.d.ts"}}"#);
         assert!(best_pattern_match(&exports, "./other/foo").is_none());
+    }
+
+    #[test]
+    fn a_more_specific_null_pattern_blocks_the_subpath() {
+        let manifest =
+            exports(r#"{"exports":{"./*":{"types":"./types/*.d.ts"},"./private/*":null}}"#);
+        assert!(matches!(
+            exports_types_entry(&manifest, "./private/secret"),
+            Some(ExportsTypes::Excluded)
+        ));
+        assert!(matches!(
+            exports_types_entry(&manifest, "./button"),
+            Some(ExportsTypes::Types(types)) if types == "./types/button.d.ts"
+        ));
+    }
+
+    #[test]
+    fn an_exact_null_key_blocks_the_subpath() {
+        let manifest = exports(r#"{"exports":{"./*":{"types":"./types/*.d.ts"},"./secret":null}}"#);
+        assert!(matches!(
+            exports_types_entry(&manifest, "./secret"),
+            Some(ExportsTypes::Excluded)
+        ));
+    }
+
+    #[test]
+    fn an_unexported_subpath_stays_unmatched() {
+        let manifest = exports(r#"{"exports":{"./dist/*":{"types":"./dist/*.d.ts"}}}"#);
+        assert!(exports_types_entry(&manifest, "./other").is_none());
     }
 }
