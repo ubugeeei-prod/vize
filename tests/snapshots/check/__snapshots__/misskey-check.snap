@@ -1152,7 +1152,9 @@
     },
     {
       "file": "src/pages/admin-file.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:7:58 [TS7006] Parameter 'result' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "src/pages/admin-user.vue",
@@ -2388,7 +2390,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 36,
+  "errorCount": 37,
   "warningCount": 0,
   "fileCount": 583
 }
