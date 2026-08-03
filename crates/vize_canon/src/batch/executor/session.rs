@@ -14,6 +14,7 @@ use super::{
 };
 use crate::batch::error::CorsaResult;
 use crate::batch::executor::diagnostics::map_batch_diagnostics;
+use crate::batch::type_checker::IncrementalCheckMetrics;
 use crate::batch::virtual_project::{
     AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE,
 };
@@ -21,9 +22,7 @@ use crate::batch::virtual_project::{
 #[derive(Default)]
 pub(super) struct IncrementalSessionState {
     session: Option<IncrementalSession>,
-    starts: usize,
-    reuses: usize,
-    refreshes: usize,
+    pub(super) metrics: IncrementalCheckMetrics,
 }
 
 struct IncrementalSession {
@@ -99,6 +98,8 @@ impl CorsaExecutor {
             let result = state.check(&self.corsa_path, project, snapshot);
             if result.is_err() {
                 state.session = None;
+                state.metrics.session_to_cli_fallbacks += 1;
+                state.metrics.last_session_to_cli_fallback = true;
             }
             result
         };
@@ -111,15 +112,6 @@ impl CorsaExecutor {
             }
         }
     }
-
-    #[cfg(test)]
-    pub(crate) fn incremental_session_counts(&self) -> (usize, usize, usize) {
-        let state = self
-            .incremental_session
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        (state.starts, state.reuses, state.refreshes)
-    }
 }
 
 impl IncrementalSessionState {
@@ -129,9 +121,24 @@ impl IncrementalSessionState {
         project: &VirtualProject,
         snapshot: MaterializedSnapshot,
     ) -> CorsaResult<TypeCheckResult> {
+        self.metrics.checks += 1;
+        self.metrics.last_requested_files = snapshot.uris.len();
+        self.metrics.last_session_started = false;
+        self.metrics.last_session_reused = false;
+        self.metrics.last_session_refreshed = false;
+        self.metrics.last_session_to_cli_fallback = false;
+        self.metrics.last_changed_files = 0;
+        self.metrics.last_created_files = 0;
+        self.metrics.last_deleted_files = 0;
+
         if let Some(session) = &mut self.session {
+            self.metrics.last_session_reused = true;
             let delta = snapshot.diff(&session.snapshot);
+            self.metrics.last_changed_files = delta.changed.len();
+            self.metrics.last_created_files = delta.created.len();
+            self.metrics.last_deleted_files = delta.deleted.len();
             let refreshed = !delta.is_empty();
+            self.metrics.last_session_refreshed = refreshed;
             if refreshed {
                 profile!(
                     "canon.corsa.incremental.refresh",
@@ -144,8 +151,8 @@ impl IncrementalSessionState {
                 .map_err(map_corsa_error)?;
             }
             session.snapshot = snapshot;
-            self.reuses += 1;
-            self.refreshes += usize::from(refreshed);
+            self.metrics.session_reuses += 1;
+            self.metrics.session_refreshes += usize::from(refreshed);
         } else {
             let corsa_path = corsa_path.to_string_lossy();
             let client = profile!(
@@ -157,7 +164,8 @@ impl IncrementalSessionState {
             )
             .map_err(map_corsa_error)?;
             self.session = Some(IncrementalSession { client, snapshot });
-            self.starts += 1;
+            self.metrics.session_starts += 1;
+            self.metrics.last_session_started = true;
         }
 
         let session = self.session.as_mut().expect("session initialized above");

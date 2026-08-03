@@ -98,6 +98,11 @@ pub(super) fn classify_fallback_cause(error: &CorsaError) -> FallbackCause {
 pub(super) static FALLBACK_NOTICE_EMITTED: std::sync::atomic::AtomicBool =
     std::sync::atomic::AtomicBool::new(false);
 
+/// Serializes tests that exercise the process-global notice and environment
+/// policy while the Rust test runner executes unrelated checks in parallel.
+#[cfg(test)]
+pub(super) static FALLBACK_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 /// Emit an observable signal that the Corsa integration degraded to a
 /// slower/weaker path. Always records a structured `tracing::warn!` event
 /// (consumed by the LSP and CI which install a subscriber); additionally prints

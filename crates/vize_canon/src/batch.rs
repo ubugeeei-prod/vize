@@ -34,7 +34,7 @@ pub use import_rewriter::{ImportRewriter, ImportSourceMap, OffsetAdjustment, Rew
 pub use source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 pub use type_checker::{
     BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, DeclarationEmitResult,
-    DeclarationOutput, TypeCheckResult, TypeChecker,
+    DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
     ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform, OriginalPosition,

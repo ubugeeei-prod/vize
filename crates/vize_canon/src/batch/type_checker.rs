@@ -23,6 +23,41 @@ pub struct TypeCheckResult {
     pub success: bool,
 }
 
+/// Observable work performed by [`TypeChecker::check_incremental`].
+///
+/// Counts are cumulative for one [`BatchTypeChecker`]. `last_*` fields describe
+/// only the most recent incremental call, so embedders and performance gates can
+/// distinguish a reused Corsa session from a silent full-project CLI fallback.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct IncrementalCheckMetrics {
+    /// Number of incremental checks attempted.
+    pub checks: usize,
+    /// Number of Corsa project sessions started successfully.
+    pub session_starts: usize,
+    /// Number of checks served by an existing Corsa project session.
+    pub session_reuses: usize,
+    /// Number of reused sessions that received a non-empty materialized delta.
+    pub session_refreshes: usize,
+    /// Number of incremental checks that degraded from a session to the CLI.
+    pub session_to_cli_fallbacks: usize,
+    /// Whether the most recent incremental check started a Corsa session.
+    pub last_session_started: bool,
+    /// Whether the most recent incremental check reused a Corsa session.
+    pub last_session_reused: bool,
+    /// Whether the most recent incremental check refreshed a reused session.
+    pub last_session_refreshed: bool,
+    /// Whether the most recent incremental check degraded to the CLI.
+    pub last_session_to_cli_fallback: bool,
+    /// Diagnostic input files requested in the most recent incremental check.
+    pub last_requested_files: usize,
+    /// Materialized files whose content changed in the most recent refresh.
+    pub last_changed_files: usize,
+    /// Materialized files created in the most recent refresh.
+    pub last_created_files: usize,
+    /// Materialized files deleted in the most recent refresh.
+    pub last_deleted_files: usize,
+}
+
 impl TypeCheckResult {
     /// Check if there are any errors.
     pub fn has_errors(&self) -> bool {
@@ -102,6 +137,14 @@ pub trait TypeChecker: Send + Sync {
     ///
     /// The result must observe the latest on-disk contents and include
     /// diagnostics from dependents, not only the changed files themselves.
+    ///
+    /// This is a low-level, Corsa-facing embedding API; it currently has no
+    /// in-tree production consumer. Vize rebuilds the scanned virtual sources
+    /// and sends their materialized delta to the persistent Corsa project
+    /// session. Corsa, rather than a duplicate Vize dependency graph, owns
+    /// dependency-aware invalidation. Use
+    /// [`BatchTypeChecker::incremental_metrics`] to measure session reuse,
+    /// refresh scope, diagnostic requests, and CLI degradation.
     fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult>;
 }
 
@@ -254,6 +297,15 @@ impl BatchTypeChecker {
         self.project
             .uses_shared_helpers()
             .then_some(crate::virtual_ts::SHARED_PREAMBLE_DTS)
+    }
+
+    /// Return cumulative and most-recent incremental execution metrics.
+    ///
+    /// Reading metrics does not reset them. The cumulative fields remain safe
+    /// under concurrent use; `last_*` fields describe whichever non-empty
+    /// incremental call most recently entered the serialized Corsa session.
+    pub fn incremental_metrics(&self) -> IncrementalCheckMetrics {
+        self.executor.incremental_metrics()
     }
 
     /// Emit declaration files for the scanned project.

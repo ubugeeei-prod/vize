@@ -53,6 +53,17 @@ const total: number = 1
         "unexpected TS2322 message: {}",
         type_error.message
     );
+    assert_eq!(
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 1,
+            session_starts: 1,
+            last_session_started: true,
+            last_requested_files: 1,
+            ..Default::default()
+        },
+        "the first incremental check should expose its cold session work"
+    );
 
     std::fs::write(&app_path, clean_source).expect("repair patch should write");
     let repaired = checker
@@ -67,9 +78,19 @@ const total: number = 1
         repaired.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 1),
-        "broken and repaired patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            session_refreshes: 1,
+            last_session_reused: true,
+            last_session_refreshed: true,
+            last_requested_files: 1,
+            last_changed_files: 1,
+            ..Default::default()
+        },
+        "the repair should expose one refreshed-file request on the reused session"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -148,9 +169,19 @@ const total: Total = 1
         repaired.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 1),
-        "dependency patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            session_refreshes: 1,
+            last_session_reused: true,
+            last_session_refreshed: true,
+            last_requested_files: 2,
+            last_changed_files: 1,
+            ..Default::default()
+        },
+        "dependency repair should request both diagnostic inputs after one-file refresh"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -231,9 +262,16 @@ const outside: number = 'must stay outside the scan'
         outside_change.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 1, 0),
-        "an unchanged materialized scope should reuse without refreshing Corsa"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 2,
+            session_starts: 1,
+            session_reuses: 1,
+            last_session_reused: true,
+            last_requested_files: 1,
+            ..Default::default()
+        },
+        "an unchanged materialized scope should expose reuse without refresh work"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -319,9 +357,20 @@ const added: number = 'broken added file'
         after_delete.diagnostics
     );
     assert_eq!(
-        checker.executor.incremental_session_counts(),
-        (1, 2, 2),
-        "create, edit, and delete patches should reuse one refreshed Corsa session"
+        checker.incremental_metrics(),
+        crate::batch::IncrementalCheckMetrics {
+            checks: 3,
+            session_starts: 1,
+            session_reuses: 2,
+            session_refreshes: 2,
+            last_session_reused: true,
+            last_session_refreshed: true,
+            last_requested_files: 1,
+            last_changed_files: 1,
+            last_deleted_files: 1,
+            ..Default::default()
+        },
+        "the final delete should expose the deleted file and changed project config"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
