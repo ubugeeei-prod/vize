@@ -29,7 +29,7 @@ export {
   type FocusEvent,
   type CompositionEvent,
 } from "./app.js";
-export { createRenderer } from "./renderer.js";
+export { createRenderer, type FrescoRenderNodeKind } from "./renderer.js";
 export {
   kittyFlags,
   kittyModifiers,

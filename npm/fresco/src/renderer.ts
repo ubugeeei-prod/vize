@@ -13,9 +13,11 @@ import type { FlexStyleNapi, RenderNodeNapi, StyleNapi } from "@vizejs/fresco-na
 /**
  * Fresco node types
  */
+export type FrescoRenderNodeKind = "root" | "box" | "text" | "input";
+
 export interface FrescoNode extends RendererNode {
   id: number;
-  type: "box" | "text" | "input" | "root";
+  type: FrescoRenderNodeKind;
   props: Record<string, unknown>;
   children: FrescoNode[];
   parent: FrescoNode | null;
@@ -29,7 +31,7 @@ export interface FrescoElement extends FrescoNode, RendererElement {}
 
 let nextId = 0;
 
-function createNode(type: FrescoNode["type"]): FrescoNode {
+function createNode(type: FrescoRenderNodeKind): FrescoNode {
   return {
     id: nextId++,
     type,
@@ -122,7 +124,7 @@ const rendererOptions: RendererOptions<FrescoNode, FrescoElement> = {
 /**
  * Map Vue element types to Fresco node types
  */
-function mapElementType(type: string): FrescoNode["type"] {
+function mapElementType(type: string): FrescoRenderNodeKind {
   switch (type.toLowerCase()) {
     case "box":
     case "div":

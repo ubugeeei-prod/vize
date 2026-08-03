@@ -15,6 +15,33 @@ thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum RenderNodeKindNapi {
+    Root,
+    Box,
+    Text,
+    Input,
+}
+
+pub(super) fn parse_render_node_kind(value: &str) -> Option<RenderNodeKindNapi> {
+    match value {
+        "root" => Some(RenderNodeKindNapi::Root),
+        "box" => Some(RenderNodeKindNapi::Box),
+        "text" => Some(RenderNodeKindNapi::Text),
+        "input" => Some(RenderNodeKindNapi::Input),
+        _ => None,
+    }
+}
+
+pub(super) fn validate_render_node_kinds(
+    nodes: &[RenderNodeNapi],
+) -> std::result::Result<Vec<RenderNodeKindNapi>, &str> {
+    nodes
+        .iter()
+        .map(|node| parse_render_node_kind(&node.node_type).ok_or(node.node_type.as_str()))
+        .collect()
+}
+
 fn parse_wrap_mode(mode: Option<&str>, wrap: Option<bool>) -> WrapMode {
     match mode {
         Some("wrap") => WrapMode::Word,
@@ -171,19 +198,30 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         TextContent,
     };
 
+    // Validate the complete payload before borrowing or mutating the terminal
+    // backend so one unknown kind cannot partially render the preceding nodes.
+    let node_kinds = validate_render_node_kinds(&nodes).map_err(|node_type| {
+        Error::new(
+            Status::InvalidArg,
+            format!(
+                "Unsupported render node type `{node_type}`; expected one of: root, box, text, input"
+            ),
+        )
+    })?;
+
     with_backend(|backend| {
         let mut tree = RenderTree::new();
 
         // Build tree from NAPI nodes
-        for node in &nodes {
+        for (node, node_type) in nodes.iter().zip(&node_kinds) {
             let text_content = node.text.clone().unwrap_or_default();
-            let kind = match node.node_type.as_str() {
-                "text" => NodeKind::Text(TextContent {
+            let kind = match node_type {
+                RenderNodeKindNapi::Text => NodeKind::Text(TextContent {
                     text: text_content.clone().into(),
                     wrap: node.wrap.unwrap_or(false),
                     wrap_mode: parse_wrap_mode(node.wrap_mode.as_deref(), node.wrap),
                 }),
-                "input" => NodeKind::Input(InputContent {
+                RenderNodeKindNapi::Input => NodeKind::Input(InputContent {
                     value: node.value.clone().unwrap_or_default().into(),
                     placeholder: node.placeholder.clone().unwrap_or_default().into(),
                     cursor: node.cursor.unwrap_or(0) as usize,
@@ -195,13 +233,13 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                         .and_then(|s| s.chars().next())
                         .unwrap_or('*'),
                 }),
-                _ => NodeKind::Box,
+                RenderNodeKindNapi::Root | RenderNodeKindNapi::Box => NodeKind::Box,
             };
 
             let mut render_node = RenderNode::new(node.id as u64, kind);
 
             // For text nodes, set the size based on text content
-            if node.node_type == "text" && !text_content.is_empty() {
+            if *node_type == RenderNodeKindNapi::Text && !text_content.is_empty() {
                 use crate::text::TextWidth;
                 let text_width = TextWidth::width(&text_content) as f32;
                 let text_height = text_content.lines().count().max(1) as f32;
@@ -209,7 +247,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 render_node.style.height = Dimension::Points(text_height);
             }
 
-            if node.node_type == "input" {
+            if *node_type == RenderNodeKindNapi::Input {
                 let (input_width, height) = input_intrinsic_size(node);
                 render_node.style.width = Dimension::Points(input_width);
                 render_node.style.height = Dimension::Points(height);
@@ -485,8 +523,8 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
 
         // Find focused input and position cursor for IME
         let mut found_focused = false;
-        for node in &nodes {
-            if node.node_type == "input"
+        for (node, node_type) in nodes.iter().zip(&node_kinds) {
+            if *node_type == RenderNodeKindNapi::Input
                 && node.focused.unwrap_or(false)
                 && let Some(render_node) = tree.get(node.id as u64)
                 && let Some(layout) = render_node.layout

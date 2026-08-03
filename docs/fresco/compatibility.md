@@ -20,7 +20,7 @@ affected rows in the same PR.
 | Surface          | Audited source                                                                                            |
 | ---------------- | --------------------------------------------------------------------------------------------------------- |
 | Fresco Vue layer | `npm/fresco/src` (`index.ts`, `app.ts`, `renderer.ts`, `accessibility.ts`, `components/`, `composables/`) |
-| Native bindings  | `npm/fresco-native/index.d.ts` (hand-written N-API declarations)                                          |
+| Native bindings  | `npm/fresco-native/index.d.ts` (checked-in declarations; node kind mirrors its Rust annotation)           |
 | Rust renderer    | `crates/vize_fresco/src` (`component/`, `input/`, `layout/`, `render/`, `terminal/`, `text/`, `napi/`)    |
 | Ink              | `vadimdemedes/ink` README + v6 type declarations, retrieved 2026-07-19                                    |
 | OpenTUI          | opentui.com core-concepts/renderables documentation, retrieved 2026-07-19                                 |
@@ -159,7 +159,7 @@ parity but are intentional no-ops (see "Intentional differences"). Fresco adds `
 | Accessibility                           | —                                                                           | `aria-role`/`aria-state` props produce screen-reader text frames; `INK_SCREEN_READER`/`FRESCO_SCREEN_READER` env toggles; no semantic output contract or snapshots yet (M2). | Partial     |
 | Testing                                 | —                                                                           | `renderToString` only; no frame snapshots, input injection, or type-contract fixtures (M0).                                                                                  | Planned     |
 | Devtools/diagnostics                    | —                                                                           | `debug` JSON tree dump, `onRender` timing, `getLastRenderLayouts`; no tree inspector or event trace (M4).                                                                    | Partial     |
-| Typed render protocol                   | —                                                                           | `nodeType` is a string, props are `Record<string, unknown>`, and `index.d.ts` is hand-mirrored (M0: discriminated unions + generated declarations).                          | Partial     |
+| Typed render protocol                   | —                                                                           | Native `nodeType` is the closed `root`/`box`/`text`/`input` union; Rust rejects unknown kinds before rendering. Untyped props and the full discriminated M0 protocol remain. | Partial     |
 | SFC / Vite / HMR                        | — (Vue TermUI: SFC + dedicated Vite plugin with HMR)                        | SFC example builds with `@vizejs/vite-plugin`; dev runs re-execute via `vite-node`; no HMR pipeline (M4).                                                                    | Partial     |
 | Rust test/bench coverage                | —                                                                           | Unit tests across `input`/`layout`/`render`/`terminal`/`text`; Criterion `render` bench. No JS test suite yet (M0).                                                          | Partial     |
 

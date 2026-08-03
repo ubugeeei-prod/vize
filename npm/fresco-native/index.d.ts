@@ -54,7 +54,7 @@ export interface FlexStyleNapi {
 
 export interface RenderNodeNapi {
   id: number;
-  nodeType: string;
+  nodeType: "root" | "box" | "text" | "input";
   text?: string;
   wrap?: boolean;
   wrapMode?: string;
