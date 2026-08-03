@@ -4,6 +4,9 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 fn workspace_root() -> &'static Path {
@@ -48,7 +51,7 @@ fn resolve_test_corsa_path() -> Option<String> {
 
 #[test]
 fn check_filtered_child_workspace_keeps_package_root_for_corsa_resolution() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
 

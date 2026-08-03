@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -93,7 +96,7 @@ fn write(root: &Path, rel: &str, content: &str) {
 
 #[test]
 fn check_loads_compiler_options_types_from_tsconfig_ambient_declarations() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("compiler-options-types");
@@ -194,7 +197,7 @@ void label;
 
 #[test]
 fn check_loads_parent_type_packages_without_mirroring_them_as_sources() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let workspace = unique_case_dir("parent-types");

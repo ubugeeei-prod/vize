@@ -86,7 +86,7 @@ impl LanguageServer for MaestroServer {
 
     // Keep the per-folder configuration contexts in sync when the editor adds or removes roots mid-session (#3240).
     async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams) {
-        self.state.apply_workspace_folders_change(&params.event);
+        self.reconfigure_workspace_folders(&params.event).await;
     }
 
     async fn shutdown(&self) -> Result<()> {

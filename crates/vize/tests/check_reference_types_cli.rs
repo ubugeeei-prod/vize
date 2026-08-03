@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -93,7 +96,7 @@ fn write(root: &Path, rel: &str, content: &str) {
 
 #[test]
 fn check_loads_reference_types_from_tsconfig_ambient_declarations() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("subpath");
@@ -194,7 +197,7 @@ if (import.meta.vitest) {
 
 #[test]
 fn check_provides_define_art_for_standalone_musea_art_files() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("standalone-art");
@@ -272,7 +275,7 @@ defineArt("./MyButton.vue", {
 
 #[test]
 fn check_no_template_bindings_keeps_component_props_helper_in_project() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("no-template-helper");
