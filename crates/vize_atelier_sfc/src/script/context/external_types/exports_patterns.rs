@@ -19,9 +19,9 @@ pub(super) fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Op
         if entry.is_null() {
             return Some(ExportsTypes::Excluded);
         }
-        if let Some(types) = super::find_types_condition(entry) {
-            return Some(ExportsTypes::Types(types));
-        }
+        // An exact key ends resolution the way Node does, so an entry without a
+        // `types` condition must not borrow declarations from a wildcard key.
+        return super::find_types_condition(entry).map(ExportsTypes::Types);
     }
     let (captured, target) = best_pattern_match(exports, key)?;
     if target.is_null() {
@@ -118,6 +118,14 @@ mod tests {
             exports_types_entry(&manifest, "./secret"),
             Some(ExportsTypes::Excluded)
         ));
+    }
+
+    #[test]
+    fn an_exact_key_without_types_does_not_borrow_from_a_wildcard() {
+        let manifest = exports(
+            r#"{"exports":{"./style.css":"./dist/style.css","./*":{"types":"./types/*.d.ts"}}}"#,
+        );
+        assert!(exports_types_entry(&manifest, "./style.css").is_none());
     }
 
     #[test]
