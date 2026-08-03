@@ -4,14 +4,16 @@ use vize_atelier_sfc::{BlockLocation, SfcDescriptor};
 use vize_carton::cstr;
 use vize_doctor::{
     AnalysisProvenance, DoctorCategory, DoctorFinding, EvidenceKind, FindingAssessment,
-    FindingConfidence, FindingEvidence, FindingImpact, FindingSeverity, HealthPenalty, RuleCost,
-    SourceLocation, SuppressionPolicy,
+    FindingConfidence, FindingEvidence, FindingFix, FindingImpact, FindingSeverity, HealthPenalty,
+    RuleCost, SourceLocation, SuppressionPolicy,
 };
 
 pub(super) const RULE_CODE: &str = "VIZE_DOCTOR_SFC_EXPLICIT_SECTIONS";
 
 const CONTRACT_CAPABILITY: &str = "public-sfc-contract";
 const GATE_RULE: &str = "explicit-sfc";
+const UNAVAILABLE_FIX_REASON: &str =
+    "Canonical SFC sections require authored source changes that must be reviewed.";
 
 #[derive(Clone)]
 struct ContractProblem {
@@ -90,6 +92,7 @@ pub(super) fn finding(path: &str, descriptor: &SfcDescriptor<'_>) -> Option<Doct
          editors, and target adapters.",
     )
     .with_documentation("https://github.com/ubugeeei-prod/vize/issues/3134")
+    .with_fix(FindingFix::unavailable(UNAVAILABLE_FIX_REASON))
     .with_suppression(SuppressionPolicy::Forbidden);
 
     for problem in problems {
@@ -162,6 +165,11 @@ mod tests {
             "<script setup>"
         );
         assert_eq!(finding.evidence.len(), 2);
+        let fix = finding.fix.as_ref().unwrap();
+        assert_eq!(fix.safety, vize_doctor::FixSafety::Unavailable);
+        assert_eq!(fix.title, UNAVAILABLE_FIX_REASON);
+        assert!(fix.edits.is_empty());
+        assert!(fix.verification.is_empty());
         assert_eq!(
             finding.evidence[1].location.as_ref().unwrap().start as usize,
             style_start

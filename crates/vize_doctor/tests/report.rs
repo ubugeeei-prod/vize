@@ -1,7 +1,8 @@
 use vize_doctor::{
-    AnalysisProvenance, DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorCategory,
-    DoctorFinding, DoctorReport, EvidenceKind, FindingAssessment, FindingConfidence,
-    FindingEvidence, FindingImpact, FindingSeverity, HealthPenalty, RuleCost, SourceLocation,
+    AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DOCTOR_REPORT_FORMAT_VERSION,
+    DOCTOR_SCORING_VERSION, DoctorCategory, DoctorFinding, DoctorReport, EvidenceKind,
+    FindingAssessment, FindingConfidence, FindingEvidence, FindingImpact, FindingSeverity,
+    FixSafety, HealthPenalty, RuleCost, SourceLocation,
 };
 
 fn finding(
@@ -173,7 +174,41 @@ fn serializes_language_neutral_versioned_properties() {
     assert_eq!(value["workspace"], "app");
     assert_eq!(value["findings"][0]["category"], "production-readiness");
     assert_eq!(value["findings"][0]["provenance"]["cost"], "low");
+    assert_eq!(value["findings"][0]["fix"]["safety"], "unavailable");
+    assert_eq!(
+        value["findings"][0]["fix"]["title"],
+        DEFAULT_UNAVAILABLE_FIX_REASON
+    );
     assert_eq!(value["summary"]["hasBlockingErrors"], false);
+}
+
+#[test]
+fn normalizes_legacy_missing_fix_to_explicit_unavailable() {
+    let report = DoctorReport::new(
+        "app",
+        [finding(
+            "VIZE_DOCTOR_001",
+            DoctorCategory::Correctness,
+            FindingSeverity::Warning,
+            FindingConfidence::High,
+            FindingImpact::Medium,
+            "src/a.vue",
+            10,
+        )],
+    );
+    let mut legacy_wire = serde_json::to_value(report).unwrap();
+    legacy_wire["findings"][0]
+        .as_object_mut()
+        .unwrap()
+        .remove("fix");
+
+    let report = serde_json::from_value::<DoctorReport>(legacy_wire).unwrap();
+    let fix = report.findings()[0].fix.as_ref().unwrap();
+
+    assert_eq!(fix.safety, FixSafety::Unavailable);
+    assert_eq!(fix.title, DEFAULT_UNAVAILABLE_FIX_REASON);
+    assert!(fix.edits.is_empty());
+    assert!(fix.verification.is_empty());
 }
 
 #[test]

@@ -61,7 +61,61 @@ fn preserves_graph_sources_evidence_fixes_and_invalidation() {
         finding.fix.as_ref().unwrap().safety,
         FixSafety::ReviewRequired
     );
+    assert_eq!(
+        finding.fix.as_ref().unwrap().title,
+        "Move shared state behind an acyclic boundary"
+    );
     assert!(report.summary().has_blocking_errors);
+}
+
+#[test]
+fn distinguishes_exact_review_suggestions_from_unavailable_fixes() {
+    let (analyzer, app, _) = analyzer_with_files();
+    let diagnostic = || {
+        CrossFileDiagnostic::new(
+            CrossFileDiagnosticKind::UnregisteredComponent {
+                component_name: "MissingCard".into(),
+                template_offset: 4,
+            },
+            DiagnosticSeverity::Error,
+            app,
+            4,
+            "Component cannot be resolved",
+        )
+    };
+    let review_title = "  Register MissingCard in this component  ";
+    let result = CrossFileResult {
+        diagnostics: vec![
+            diagnostic(),
+            diagnostic().with_suggestion(" \t\n"),
+            diagnostic().with_suggestion(review_title),
+        ],
+        ..CrossFileResult::default()
+    };
+
+    let findings = findings_from_application_graph(&analyzer, &result).unwrap();
+    let unavailable_reason =
+        "No automatic fix is available because the source diagnostic did not provide a suggestion.";
+
+    for finding in &findings[..2] {
+        let fix = finding.fix.as_ref().unwrap();
+        assert_eq!(fix.safety, FixSafety::Unavailable);
+        assert_eq!(fix.title, unavailable_reason);
+        assert!(fix.edits.is_empty());
+        assert!(fix.verification.is_empty());
+        assert_eq!(
+            serde_json::to_value(fix).unwrap(),
+            serde_json::json!({
+                "safety": "unavailable",
+                "title": unavailable_reason,
+            })
+        );
+    }
+
+    let review = findings[2].fix.as_ref().unwrap();
+    assert_eq!(review.safety, FixSafety::ReviewRequired);
+    assert_eq!(review.title, review_title);
+    assert!(review.edits.is_empty());
 }
 
 #[test]

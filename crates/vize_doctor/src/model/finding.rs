@@ -9,7 +9,10 @@ use super::{
     },
 };
 
-/// Optional source fix and its verification plan.
+/// Stable fallback used when a finding producer cannot provide a source edit.
+pub const DEFAULT_UNAVAILABLE_FIX_REASON: &str = "No automatic fix is available for this finding.";
+
+/// Source fix disposition and its verification plan.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct FindingFix {
@@ -34,6 +37,11 @@ impl FindingFix {
             edits: Vec::new(),
             verification: Vec::new(),
         }
+    }
+
+    /// Creates an explicit no-fix disposition with a user-visible reason.
+    pub fn unavailable(reason: impl Into<String>) -> Self {
+        Self::new(FixSafety::Unavailable, reason)
     }
 
     /// Adds a source edit.
@@ -77,7 +85,10 @@ pub struct DoctorFinding {
     /// Supporting evidence. Defaults to empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub evidence: Vec<FindingEvidence>,
-    /// Source fix. Defaults to absent.
+    /// Source fix or explicit reason no automatic fix is available.
+    ///
+    /// The optional wire shape is retained for format-version compatibility;
+    /// constructors and reports always populate this field.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fix: Option<FindingFix>,
     /// Application graph context. Defaults to empty.
@@ -113,7 +124,7 @@ impl DoctorFinding {
             documentation: None,
             related: Vec::new(),
             evidence: Vec::new(),
-            fix: None,
+            fix: Some(FindingFix::unavailable(DEFAULT_UNAVAILABLE_FIX_REASON)),
             context: FindingContext::default(),
             provenance,
             suppression: SuppressionPolicy::ReasonRequired,
@@ -259,5 +270,15 @@ mod tests {
         let decoded: DoctorFinding = serde_json::from_value(value).unwrap();
 
         assert_eq!(decoded.suppression, SuppressionPolicy::ReasonRequired);
+    }
+    #[test]
+    fn new_findings_have_an_explicit_unavailable_fix() {
+        let finding = finding();
+        let fix = finding.fix.as_ref().unwrap();
+
+        assert_eq!(fix.safety, FixSafety::Unavailable);
+        assert_eq!(fix.title, DEFAULT_UNAVAILABLE_FIX_REASON);
+        assert!(fix.edits.is_empty());
+        assert!(fix.verification.is_empty());
     }
 }

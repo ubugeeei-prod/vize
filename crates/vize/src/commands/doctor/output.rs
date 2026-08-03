@@ -1,7 +1,7 @@
 //! Deterministic terminal and automation output.
 
 use std::io::{self, Write};
-use vize_doctor::{DoctorFinding, DoctorReport, FindingSeverity};
+use vize_doctor::{DoctorFinding, DoctorReport, FindingSeverity, FixSafety};
 
 use super::{DoctorError, DoctorFormat};
 
@@ -61,5 +61,59 @@ fn write_finding(output: &mut impl Write, finding: &DoctorFinding) -> io::Result
     if let Some(scenario) = &finding.failure_scenario {
         writeln!(output, "  Failure scenario: {scenario}")?;
     }
+    if let Some(fix) = &finding.fix {
+        let safety = match fix.safety {
+            FixSafety::Safe => "safe",
+            FixSafety::ReviewRequired => "review required",
+            FixSafety::Unavailable => "unavailable",
+        };
+        writeln!(output, "  Fix ({safety}): {}", fix.title)?;
+    }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use vize_doctor::{
+        AnalysisProvenance, DoctorCategory, FindingAssessment, FindingConfidence, FindingImpact,
+        HealthPenalty, RuleCost, SourceLocation,
+    };
+
+    #[test]
+    fn text_output_explains_unavailable_fixes_exactly() {
+        let finding = DoctorFinding::new(
+            "VIZE_DOCTOR_TEST",
+            DoctorCategory::Correctness,
+            FindingAssessment::new(
+                FindingSeverity::Warning,
+                FindingConfidence::High,
+                FindingImpact::Medium,
+                HealthPenalty::new(10, "Test penalty"),
+            ),
+            SourceLocation::new("src/App.vue", 4, 12),
+            "Test finding",
+            "Test message",
+            AnalysisProvenance::new("test-analysis", RuleCost::Low),
+        );
+        let report = DoctorReport::new(".", [finding]);
+        let mut output = Vec::new();
+
+        write_text(&mut output, &report).unwrap();
+
+        assert_eq!(
+            String::from_utf8(output).unwrap(),
+            concat!(
+                "Vize Doctor\n",
+                "Workspace: .\n",
+                "Health: 98/100\n",
+                "Findings: 0 error(s), 1 warning(s), 0 notice(s)\n",
+                "\n",
+                "[warning] VIZE_DOCTOR_TEST — Test finding\n",
+                "  src/App.vue:4..12\n",
+                "  Test message\n",
+                "  Fix (unavailable): No automatic fix is available for this finding.\n",
+            )
+        );
+    }
 }

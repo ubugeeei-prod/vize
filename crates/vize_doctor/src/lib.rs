@@ -56,10 +56,10 @@ mod model;
 mod report;
 
 pub use model::{
-    AnalysisProvenance, DoctorCategory, DoctorFinding, EvidenceKind, FindingAssessment,
-    FindingConfidence, FindingContext, FindingEvidence, FindingFix, FindingImpact, FindingSeverity,
-    FixSafety, HealthPenalty, RelatedLocation, RuleCost, SourceLocation, SuppressionPolicy,
-    TextEdit,
+    AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding,
+    EvidenceKind, FindingAssessment, FindingConfidence, FindingContext, FindingEvidence,
+    FindingFix, FindingImpact, FindingSeverity, FixSafety, HealthPenalty, RelatedLocation,
+    RuleCost, SourceLocation, SuppressionPolicy, TextEdit,
 };
 pub use report::{
     CategoryHealth, DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorReport,

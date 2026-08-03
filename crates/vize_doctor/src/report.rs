@@ -3,7 +3,10 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Deserializer, Serialize, de};
 use vize_carton::String;
 
-use crate::{DoctorCategory, DoctorFinding, FindingConfidence, FindingSeverity};
+use crate::{
+    DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding, FindingConfidence, FindingFix,
+    FindingSeverity,
+};
 
 /// Current serialized doctor report format.
 pub const DOCTOR_REPORT_FORMAT_VERSION: u32 = 1;
@@ -144,6 +147,9 @@ impl DoctorReport {
     ) -> Self {
         let mut findings = findings.into_iter().collect::<Vec<_>>();
         for finding in &mut findings {
+            if finding.fix.is_none() {
+                finding.fix = Some(FindingFix::unavailable(DEFAULT_UNAVAILABLE_FIX_REASON));
+            }
             finding.related.sort();
             finding.evidence.sort();
             finding.provenance.invalidation_inputs.sort();

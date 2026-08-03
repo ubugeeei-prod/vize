@@ -21,6 +21,9 @@ use crate::{
 
 use self::profile::{failure_scenario, profile_for};
 
+const SOURCE_DIAGNOSTIC_UNAVAILABLE_FIX_REASON: &str =
+    "No automatic fix is available because the source diagnostic did not provide a suggestion.";
+
 /// Source-integrity failure discovered while adapting an analysis result.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ApplicationAnalysisError {
@@ -141,12 +144,12 @@ fn adapt_diagnostic(
     finding.provenance = finding
         .provenance
         .with_invalidation_inputs(invalidation_inputs);
-    if let Some(suggestion) = &diagnostic.suggestion {
-        finding = finding.with_fix(FindingFix::new(
-            FixSafety::ReviewRequired,
-            suggestion.clone(),
-        ));
-    }
+    finding = finding.with_fix(match &diagnostic.suggestion {
+        Some(suggestion) if !suggestion.trim().is_empty() => {
+            FindingFix::new(FixSafety::ReviewRequired, suggestion.clone())
+        }
+        _ => FindingFix::unavailable(SOURCE_DIAGNOSTIC_UNAVAILABLE_FIX_REASON),
+    });
     Ok(finding)
 }
 

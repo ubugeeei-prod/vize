@@ -9,4 +9,4 @@ pub use assessment::{
 pub use evidence::{
     AnalysisProvenance, FindingContext, FindingEvidence, RelatedLocation, SourceLocation, TextEdit,
 };
-pub use finding::{DoctorFinding, FindingFix};
+pub use finding::{DEFAULT_UNAVAILABLE_FIX_REASON, DoctorFinding, FindingFix};
