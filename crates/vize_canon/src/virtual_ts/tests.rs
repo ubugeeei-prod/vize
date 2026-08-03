@@ -852,7 +852,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;"),
+        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  readonly __vizeRawProps?: Props;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );

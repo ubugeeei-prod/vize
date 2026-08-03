@@ -231,6 +231,10 @@ impl SetupPropsPlan {
         } else {
             append!(ts, "  $props: __VizeComponentProps<{props_type_ref}>;\n");
         }
+        // The public `$props` type relaxes camel-case keys so kebab aliases are
+        // accepted. Preserve the unmodified declaration for Vize's generated
+        // whole-object template check, whose keys are already camelized.
+        append!(ts, "  readonly __vizeRawProps?: {props_type_ref};\n");
     }
 
     pub(super) fn emit_artifact(&self, ts: &mut String, summary: &Croquis) {

@@ -9,9 +9,9 @@
 //! Expression produces a union type that is too complex to represent`, which is
 //! worse than the bug it fixed: the compiler gives up and every genuine
 //! diagnostic in the file disappears with it. The check now targets the child's
-//! props type unmodified, so nothing it emits grows with the props type — this
-//! pins that, and pins that the #3569 diagnostic still lands on a child this
-//! size.
+//! raw props marker directly, so nothing it emits grows with the props type —
+//! this pins that, and pins that the #3569 diagnostic still lands on a child
+//! this size.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use vize_carton::{String, append, cstr};
@@ -82,7 +82,7 @@ const pick = (_value: string, _index: number) => {}
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type 'Omit<Props, __VizeKebabOptionalKeys<Props>> & Partial<Pick<Props, __VizeKebabOptionalKeys<Props>>> & Partial<...> & __VizeFallthroughAttrs & __EmitProps<...> & Record<...>'.\nProperty 'title' is missing in type '{authored}' but required in type 'Omit<Props, __VizeKebabOptionalKeys<Props>>'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type 'Props & Record<string, unknown>'.\nProperty 'title' is missing in type '{authored}' but required in type 'Props'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"

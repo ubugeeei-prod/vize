@@ -121,7 +121,7 @@ function __setup() {
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   // @vize-map: component -> 0:40
-  type __LinkComp_Props_0 = typeof LinkComp extends { __vizeCheck: any } ? Record<string, unknown> : (typeof LinkComp extends { new (): { $props: infer __P } } ? __P : (typeof LinkComp extends (props: infer __P) => any ? __P : {}));
+  type __LinkComp_Props_0 = typeof LinkComp extends { __vizeCheck: any } ? Record<string, unknown> : (typeof LinkComp extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof LinkComp extends { new (): { $props: infer __P } } ? __P : (typeof LinkComp extends (props: infer __P) => any ? __P : {})));
   type __LinkComp_0_prop_to = __VizePropValue<__LinkComp_Props_0, 'to'>;
   type __LinkComp_CheckProps_0 = __LinkComp_Props_0;
   type __LinkComp_Check_0 = __VizePropChecker<typeof LinkComp, __LinkComp_CheckProps_0>;
@@ -160,6 +160,7 @@ export type Slots = {};
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props>;
+  readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

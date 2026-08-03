@@ -183,6 +183,7 @@ type __VizeStaticEmitProps = __EmitProps<Emits>;
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props> & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

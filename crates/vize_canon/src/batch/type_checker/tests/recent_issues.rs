@@ -10,6 +10,7 @@ mod optional_boolean_props;
 mod options_api_bridge_anchors;
 mod options_api_inherited_members;
 mod sequence_prop_expressions;
+mod single_required_camel_prop;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;

@@ -87,7 +87,7 @@ pub(super) fn generate_component_props(
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
             *ts,
-            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}}));\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ __vizeCheck: any }} ? Record<string, unknown> : (typeof {component_ref} extends {{ new (): {{ readonly __vizeRawProps?: infer __P }} }} ? __P : (typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}})));\n",
         );
 
         append_per_prop_aliases(ts, usage, component_type_name.as_str(), idx);

@@ -1157,8 +1157,8 @@
     {
       "file": "src/pages/admin-user.vue",
       "diagnostics": [
-        "error:190:30 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'.",
-        "error:192:30 [TS2322] Type 'string' is not assignable to type '\"active-users\" | \"ap-request\" | \"drive\" | \"drive-files\" | \"federation\" | \"instance-drive-files\" | \"instance-drive-files-total\" | \"instance-drive-usage\" | \"instance-drive-usage-total\" | ... 17 more ... | \"users-total\"'."
+        "error:190:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'.",
+        "error:192:30 [TS2322] Type 'string' is not assignable to type 'ChartSrc'."
       ]
     },
     {
@@ -1936,7 +1936,7 @@
     {
       "file": "src/pages/settings/statusbar.vue",
       "diagnostics": [
-        "error:11:4 [TS2345] Argument of type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' is not assignable to parameter of type 'Omit<Props, \"userLists\"> & Partial<Pick<Props, \"userLists\">> & Partial<__VizeKebabProps<Props>> & __VizeFallthroughAttrs & Record<...>'.\nProperty '_id' is missing in type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' but required in type 'Omit<Props, \"userLists\">'."
+        "error:11:4 [TS2345] Argument of type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' is not assignable to parameter of type 'Props & Record<string, unknown>'.\nProperty '_id' is missing in type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' but required in type 'Props'."
       ]
     },
     {

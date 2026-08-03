@@ -148,12 +148,14 @@ export type Exposed<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any
 type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props<'row' | 'cell', any>>;
+  readonly __vizeRawProps?: Props<'row' | 'cell', any>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 } & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeGenericComponentConstructor = new <Mode extends 'row' | 'cell' = any, TEvent extends Mode = any>(...args: any[]) => {
   $props: __VizeComponentProps<Props<Mode, TEvent>>;
+  readonly __vizeRawProps?: Props<Mode, TEvent>;
   $emit: __EmitFn<Emits>;
   $slots: Slots<Mode, TEvent>;
 } & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed<Mode, TEvent>>;

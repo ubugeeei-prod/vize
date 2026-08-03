@@ -165,6 +165,7 @@ type __VizeVue2ComponentInstance = {
 };
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props>;
+  readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 } & __VizeVue2ComponentInstance;

@@ -36,7 +36,8 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 }
 
 /// The target the usage's whole props object literal is checked against: the
-/// child's props type **unmodified**, for every usage.
+/// child's raw declared props type when Vize emitted one, otherwise its public
+/// props type, for every usage.
 ///
 /// That single target is what makes an unbound required prop visible (#3569).
 /// TypeScript's own object-literal elaboration then supplies the rest of the
@@ -57,7 +58,7 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 /// check produces for that prop, so `dedup_diagnostics` collapses the pair. That
 /// is why no widening is needed to keep a wrong prop from being reported twice.
 ///
-/// Checking against the unmodified type is also the cheapest thing that can be
+/// Checking against the raw type is also the cheapest thing that can be
 /// generated, which is a correctness property of its own here. An earlier
 /// attempt at #3569 inferred the authored object as a generic `A` and picked
 /// between a complete and a relaxed target by testing `A` against a projection
@@ -93,6 +94,13 @@ pub(super) fn has_inference_props(usage: &ComponentUsage) -> bool {
 ///   literal is assigned at once (#3450). With the option off the check is inert
 ///   there, because an optional property accepts `undefined` implicitly — which
 ///   is also what `vue-tsc` does.
+///
+/// Vize's public `$props` accepts camel- and kebab-case aliases, which requires
+/// camel-case keys to be optional there. The generated props literal already
+/// camelizes every authored static name, so the internal `__vizeRawProps`
+/// marker preserves the declaration's requiredness for this whole-object
+/// check without constructing every camel/kebab key combination. External
+/// components have no marker and continue to use their public `$props`.
 ///
 /// Only the **non-generic** branch of `__VizePropChecker` uses this type; a
 /// generic child resolves through its own `__vizeCheck` signature and ignores

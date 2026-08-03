@@ -167,12 +167,14 @@ type __VizeStaticEmitProps = __EmitProps<Emits>;
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props<string | number>> & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props<string | number>;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeGenericComponentConstructor = new <T extends string | number = any>(...args: any[]) => {
   $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits<T>>;
+  readonly __vizeRawProps?: Props<T>;
   $emit: __EmitFn<Emits<T>>;
   $slots: Slots;
 };

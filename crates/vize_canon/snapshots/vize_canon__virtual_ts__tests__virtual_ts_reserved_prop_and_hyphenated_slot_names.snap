@@ -125,7 +125,7 @@ function __setup() {
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   // @vize-map: component -> 0:27
-  type __TrendChart_Props_0 = typeof TrendChart extends { __vizeCheck: any } ? Record<string, unknown> : (typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {}));
+  type __TrendChart_Props_0 = typeof TrendChart extends { __vizeCheck: any } ? Record<string, unknown> : (typeof TrendChart extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {})));
   type __TrendChart_0_prop_class = __VizePropValue<__TrendChart_Props_0, 'class'>;
   type __TrendChart_CheckProps_0 = __TrendChart_Props_0;
   type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart, __TrendChart_CheckProps_0>;
@@ -165,6 +165,7 @@ export type Slots = {};
 // ========== Default Export ==========
 type __VizeComponentInstance = {
   $props: __VizeComponentProps<Props>;
+  readonly __vizeRawProps?: Props;
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };

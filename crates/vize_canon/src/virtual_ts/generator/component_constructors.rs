@@ -77,7 +77,7 @@ pub(super) fn emit_component_constructors(
     };
     append!(
         *ts,
-        "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  $emit: __EmitFn<{emits_ref}>;\n  $slots: {slots_ref};\n"
+        "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  readonly __vizeRawProps?: Props<{generic_names}>;\n  $emit: __EmitFn<{emits_ref}>;\n  $slots: {slots_ref};\n"
     );
     ts.push_str(&generic_instance_suffix(
         legacy_vue2,
