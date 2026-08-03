@@ -7,15 +7,23 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 import { materializeBaselineProject } from "../../tools/fixtures/typecheck-baseline-project.mjs";
+import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dependencyRoot =
   process.env.VIZE_TEST_WORKSPACE_NODE_MODULES ?? path.join(root, "tests/node_modules");
 const vueTsc = path.join(dependencyRoot, ".bin/vue-tsc");
+const vueTscOptions = {
+  skip: typecheckDependencySkip(
+    fs.existsSync(vueTsc) ? vueTsc : undefined,
+    "vue-tsc for the baseline-project gates",
+    "vue-tsc binary unavailable",
+  ),
+};
 
 test(
   "materialized baseline checks Vue files omitted by a solution-style config",
-  { skip: !fs.existsSync(vueTsc) },
+  vueTscOptions,
   () => {
     const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-baseline-project-"));
     const fixtureRoot = path.join(temp, "fixture");
@@ -81,7 +89,7 @@ test("materialized baseline extends an explicit generated project", () => {
 
 test(
   "materialized baseline keeps the fixture's ambient declarations in the program",
-  { skip: !fs.existsSync(vueTsc) },
+  vueTscOptions,
   () => {
     // #3738. A `files` list seeds the program with those roots and nothing else,
     // so an ambient declaration — never imported, by definition — leaves the

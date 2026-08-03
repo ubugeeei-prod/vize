@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { AutoInsertParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 type OracleCase = {
   name: string;
@@ -98,11 +99,13 @@ test("real stdio server matches the pinned Vue LS auto-insertion responses", asy
 });
 
 test("real stdio server asks Corsa type information before inserting .value", async (t) => {
-  const corsaPath = resolveCorsaBinary();
-  if (!corsaPath) {
-    t.skip("Corsa runtime is unavailable");
-    return;
-  }
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveCorsaBinary(),
+    "Corsa runtime for the auto-insertion gate",
+    "Corsa runtime is unavailable",
+  );
+  if (corsaPath == null) return;
 
   const testRootDir = path.join(testOutputRoot, "lsp-auto-insertion-dot-value");
   fs.mkdirSync(testRootDir, { recursive: true });

@@ -11,6 +11,7 @@ import { generateCorpus } from "../../bench/generate.mjs";
 // @ts-expect-error plain-JS bench module without type declarations
 import { evaluateBudget } from "../../bench/check-gate-report.mjs";
 import { resolveVizeCommand } from "../_helpers/realworld-typecheck.ts";
+import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const gateScript = path.join(root, "bench/check-gate.mjs");
@@ -338,10 +339,10 @@ test("check-gate publishes reproducibility metadata for a gated run", (t) => {
 });
 
 function requireTsgoOrSkip(t: { skip(reason: string): void }): void {
-  assert.notEqual(
-    process.env.VIZE_TEST_REQUIRE_TSGO,
-    "1",
-    "tsgo (or a built vize binary) is required but unavailable",
+  requireTypecheckDependency(
+    t,
+    undefined,
+    "tsgo (or a built vize binary) for the check benchmark gate",
+    "tsgo or a built vize binary is unavailable",
   );
-  t.skip("tsgo or a built vize binary is unavailable");
 }

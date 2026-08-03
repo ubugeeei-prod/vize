@@ -262,8 +262,8 @@ jobs:
         with:
           key: test-scripts
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
+      - name: Hydrate CLI diagnostic fixture and install JS dependencies
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/ant-design-vue && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Install vize CLI

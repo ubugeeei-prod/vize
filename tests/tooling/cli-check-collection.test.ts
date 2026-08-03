@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 /**
@@ -145,9 +147,14 @@ test("unsupported file extensions (.js) collect nothing", () => {
 
 // Kept LAST in the file: this case needs a real, runnable type checker.
 const checkerPath = resolveCheckerPath();
+const checkerSkip = typecheckDependencySkip(
+  checkerPath,
+  "a runnable corsa/tsgo binary for the CLI collection gate",
+  "no runnable corsa/tsgo found",
+);
 test(
   "tsconfig-driven default collection honors include/exclude through the CLI",
-  { skip: checkerPath === null ? "no runnable corsa/tsgo found" : false },
+  { skip: checkerSkip },
   () => {
     withWorkspace((dir) => {
       fs.mkdirSync(path.join(dir, "src/generated"), { recursive: true });

@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 /**
@@ -49,6 +51,13 @@ function resolveCheckerPath(): string | null {
 }
 
 const CHECKER = resolveCheckerPath();
+const checkerOptions = {
+  skip: typecheckDependencySkip(
+    CHECKER,
+    "a corsa/tsgo checker for the CLI JSON gates",
+    "no corsa/tsgo checker discoverable",
+  ),
+};
 
 type CheckResult = { status: number | null; stdout: string; stderr: string };
 
@@ -96,9 +105,7 @@ const GOOD_TS = "export const answer = 42 as const;\n";
 
 test(
   "vize check --format json has a stable top-level shape and key names",
-  {
-    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
-  },
+  checkerOptions,
   () => {
     withWorkspace((dir) => {
       fs.writeFileSync(path.join(dir, "bad.ts"), BAD_TS, "utf8");
@@ -138,9 +145,7 @@ test(
 
 test(
   "vize check --format json exposes declaration outputs when --declaration succeeds",
-  {
-    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
-  },
+  checkerOptions,
   () => {
     withWorkspace((dir) => {
       fs.writeFileSync(path.join(dir, "good.ts"), GOOD_TS, "utf8");
@@ -172,9 +177,7 @@ test(
 
 test(
   "vize check --format json skips declaration outputs when type errors exist",
-  {
-    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
-  },
+  checkerOptions,
   () => {
     withWorkspace((dir) => {
       fs.writeFileSync(path.join(dir, "bad.ts"), BAD_TS, "utf8");
@@ -207,9 +210,7 @@ test(
 
 test(
   "vize check --format json reports files cwd-relative, '/'-separated and sorted",
-  {
-    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
-  },
+  checkerOptions,
   () => {
     withWorkspace((dir) => {
       fs.mkdirSync(path.join(dir, "src"));
@@ -248,9 +249,7 @@ test(
 
 test(
   "vize check --format json reports only the requested subset of files",
-  {
-    skip: CHECKER == null ? "no corsa/tsgo checker discoverable" : false,
-  },
+  checkerOptions,
   () => {
     withWorkspace((dir) => {
       fs.mkdirSync(path.join(dir, "src"));

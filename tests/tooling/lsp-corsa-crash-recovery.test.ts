@@ -8,6 +8,7 @@ import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/ls
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 // Corsa mid-session crash recovery (#3240, audit item 6 of #2971): the type
 // checker backend (tsgo) is an external child process that can die at any
@@ -143,11 +144,13 @@ function typeErrorFor(publish: PublishDiagnosticsParams, marker: string): boolea
 }
 
 test("vize lsp recovers typecheck diagnostics after the Corsa backend is killed", async (t) => {
-  const corsaPath = resolveTsgoBinary();
-  if (corsaPath == null) {
-    t.skip("tsgo binary not found; skipping Corsa crash-recovery test");
-    return;
-  }
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveTsgoBinary(),
+    "tsgo binary for the Corsa crash-recovery gate",
+    "tsgo binary not found; skipping Corsa crash-recovery test",
+  );
+  if (corsaPath == null) return;
 
   const testRootDir = path.join(testOutputRoot, "lsp-corsa-crash-recovery");
   fs.mkdirSync(testRootDir, { recursive: true });

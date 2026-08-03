@@ -24,6 +24,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function resolveVizeCommand(): { command: string; prefix: string[] } {
@@ -53,7 +55,13 @@ function resolveCheckerPath(): string | null {
 }
 
 const CHECKER = resolveCheckerPath();
-const corsaSkip = CHECKER == null ? { skip: "no corsa/tsgo checker in node_modules/.bin" } : {};
+const corsaSkip = {
+  skip: typecheckDependencySkip(
+    CHECKER,
+    "a corsa/tsgo checker for the sub-package dependency gate",
+    "no corsa/tsgo checker in node_modules/.bin",
+  ),
+};
 
 type ParsedCheck = {
   files: Array<{ file: string; diagnostics: string[] }>;

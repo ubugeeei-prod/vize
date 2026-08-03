@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 /**
@@ -101,7 +103,13 @@ function stripAnsi(input: string): string {
   return input.replace(ANSI, "");
 }
 
-const corsaSkip = CHECKER == null ? { skip: "no corsa/tsgo checker in node_modules/.bin" } : {};
+const corsaSkip = {
+  skip: typecheckDependencySkip(
+    CHECKER,
+    "a corsa/tsgo checker for the CLI diagnostics gates",
+    "no corsa/tsgo checker in node_modules/.bin",
+  ),
+};
 
 const ANT_DESIGN_VUE_FIXTURE = path.join(root, "tests/_fixtures/_git/ant-design-vue");
 const ANT_DESIGN_VUE_COMPONENTS = path.join(ANT_DESIGN_VUE_FIXTURE, "components");
@@ -112,7 +120,13 @@ const antDesignVueSkip =
     ? corsaSkip
     : fs.existsSync(ANT_DESIGN_VUE_COMPONENTS)
       ? {}
-      : { skip: "ant-design-vue fixture checkout unavailable" };
+      : {
+          skip: typecheckDependencySkip(
+            undefined,
+            "the hydrated ant-design-vue fixture for the CLI diagnostics gate",
+            "ant-design-vue fixture checkout unavailable",
+          ),
+        };
 
 test(
   "SFC template parse errors reported with stable 1-based position and message",

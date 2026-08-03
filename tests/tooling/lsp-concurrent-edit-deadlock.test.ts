@@ -8,6 +8,7 @@ import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 // Concurrent-edit publish deadlock (#3315).
 //
@@ -78,11 +79,13 @@ function markersOf(publish: PublishDiagnosticsParams): string[] {
 }
 
 test("vize lsp keeps publishing when edits race an in-flight diagnostics pass", async (t) => {
-  const corsaPath = resolveTsgoBinary();
-  if (corsaPath == null) {
-    t.skip("tsgo binary not found; skipping concurrent-edit deadlock test");
-    return;
-  }
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveTsgoBinary(),
+    "tsgo binary for the concurrent-edit deadlock gate",
+    "tsgo binary not found; skipping concurrent-edit deadlock test",
+  );
+  if (corsaPath == null) return;
 
   const testRootDir = path.join(testOutputRoot, "lsp-concurrent-edit-deadlock");
   fs.mkdirSync(testRootDir, { recursive: true });

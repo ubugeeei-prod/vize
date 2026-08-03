@@ -7,13 +7,16 @@ import { hoverToText, isDiagnosticsForUri, offsetToPosition } from "./support/ls
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { requireTypecheckDependency } from "./support/typecheck-dependency.ts";
 
 test("vize lsp typecheck keeps DOM libs and template diagnostics", async (t) => {
-  const corsaPath = resolveTsgoBinary();
-  if (corsaPath == null) {
-    t.skip("tsgo binary not found; skipping LSP typecheck test");
-    return;
-  }
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveTsgoBinary(),
+    "tsgo binary for the LSP typecheck gate",
+    "tsgo binary not found; skipping LSP typecheck test",
+  );
+  if (corsaPath == null) return;
 
   const testRootDir = path.join(testOutputRoot, "lsp-typecheck-template");
   fs.mkdirSync(testRootDir, { recursive: true });
@@ -127,11 +130,13 @@ const button = document.createElement("button")
 });
 
 test("vize lsp publishes and clears exact parent diagnostics after child prop edits", async (t) => {
-  const corsaPath = resolveTsgoBinary();
-  if (corsaPath == null) {
-    t.skip("tsgo binary not found; skipping LSP typecheck test");
-    return;
-  }
+  const corsaPath = requireTypecheckDependency(
+    t,
+    resolveTsgoBinary(),
+    "tsgo binary for the dependent-component LSP gate",
+    "tsgo binary not found; skipping LSP typecheck test",
+  );
+  if (corsaPath == null) return;
 
   const testRootDir = path.join(testOutputRoot, "lsp-typecheck-dependent-component");
   fs.mkdirSync(testRootDir, { recursive: true });
