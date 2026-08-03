@@ -31,6 +31,7 @@ test("typecheck and LSP gates do not carry raw dependency skips", () => {
     "lsp-auto-insertion.test.ts",
     "lsp-concurrent-edit-deadlock.test.ts",
     "lsp-corsa-crash-recovery.test.ts",
+    "lsp-file-create-delete.test.ts",
     "lsp-typecheck-template.test.ts",
     "typecheck-baseline-project.test.ts",
   ];
