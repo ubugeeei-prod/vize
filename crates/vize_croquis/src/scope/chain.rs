@@ -1,17 +1,15 @@
 //! Scope chain management for Vue templates and scripts.
 //!
-//! This module provides the core scope management functionality:
 //! - [`Scope`] - A single scope in the scope chain
 //! - [`ScopeChain`] - Manages the hierarchical scope chain
 //!
-//! Split into:
 //! - Core types, `Scope`, and `ScopeChain` struct with basic accessors (this file)
 //! - [`builder`]: Methods for entering/creating scopes
 //! - [`resolution`]: Binding lookup, mutation tracking, and depth computation
 
 mod builder;
 mod resolution;
-
+mod v_for_offsets;
 use core::fmt;
 
 use vize_carton::{
@@ -219,10 +217,10 @@ impl Scope {
 pub struct ScopeChain {
     /// All scopes (indexed by ScopeId)
     pub(crate) scopes: Vec<Scope>,
-    /// Current scope ID
     pub(crate) current: ScopeId,
     /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
     dynamic_v_slot_scopes: FxHashSet<ScopeId>,
+    v_for_source_offsets: FxHashMap<ScopeId, u32>,
 }
 
 impl fmt::Debug for ScopeChain {
@@ -326,6 +324,7 @@ impl ScopeChain {
             scopes: vec![root],
             current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
+            v_for_source_offsets: FxHashMap::default(),
         }
     }
 
@@ -345,6 +344,7 @@ impl ScopeChain {
             scopes,
             current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
+            v_for_source_offsets: FxHashMap::default(),
         }
     }
 

@@ -245,11 +245,12 @@ fn generate_closure_component_props_recursive(
             );
             emit_v_for_loop_open(
                 ts,
+                mappings,
+                ctx.source_context.offset,
+                ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
-                data.value_alias.as_str(),
-                data.key_alias.as_deref(),
-                data.index_alias.as_deref(),
-                data.source.as_str(),
+                data,
+                ctx.template_prop_names,
             );
 
             // Mark v-for variables as used to avoid TS6133

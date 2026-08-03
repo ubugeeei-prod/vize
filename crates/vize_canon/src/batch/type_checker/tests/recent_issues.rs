@@ -17,6 +17,7 @@ mod spread_props;
 mod spread_scope_bindings;
 mod ts_extension_substitution;
 mod unmapped_template_fallback;
+mod v_for_source_callbacks;
 mod vapor_anchors;
 #[test]
 fn issue_2645_infers_generic_sfc_props_in_tsx() {

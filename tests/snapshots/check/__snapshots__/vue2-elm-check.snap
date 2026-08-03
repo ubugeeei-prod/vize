@@ -369,6 +369,7 @@
         "error:13:101 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:15:53 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:16:37 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
+        "error:23:44 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:33:33 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:33:65 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
         "error:35:47 [TS2552] Cannot find name 'orderDetail'. Did you mean 'orderData'?",
@@ -412,6 +413,7 @@
     {
       "file": "src/page/profile/children/children/address.vue",
       "diagnostics": [
+        "error:8:38 [TS2304] Cannot find name 'removeAddress'.",
         "error:38:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations.",
         "error:49:9 [TS2300] Duplicate identifier 'mounted'.",
         "error:53:9 [TS2300] Duplicate identifier 'mounted'.",
@@ -559,6 +561,8 @@
     {
       "file": "src/page/shop/children/shopDetail.vue",
       "diagnostics": [
+        "error:7:36 [TS2304] Cannot find name 'shopDetail'.",
+        "error:13:36 [TS2304] Cannot find name 'shopDetail'.",
         "error:31:52 [TS2304] Cannot find name 'shopDetail'.",
         "error:41:62 [TS2304] Cannot find name 'shopDetail'.",
         "error:46:33 [TS2304] Cannot find name 'shopDetail'.",
@@ -642,7 +646,7 @@
       ]
     }
   ],
-  "errorCount": 373,
+  "errorCount": 377,
   "warningCount": 0,
   "fileCount": 55
 }

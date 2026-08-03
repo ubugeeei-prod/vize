@@ -1,13 +1,13 @@
 //! Shared text-emission helpers for v-for loops and v-slot prop types.
 
-use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
+use vize_carton::{FxHashSet, String};
 use vize_carton::{camelize, capitalize};
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, VForScopeData};
 
-use crate::virtual_ts::helpers::to_safe_identifier;
-use crate::virtual_ts::types::VirtualTsOptions;
+use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_safe_identifier};
 
 /// Type annotation for a `v-slot` scope's props. When the slot is on a child
 /// component (`component` is `Some`), the props are inferred from that child's
@@ -155,23 +155,43 @@ pub(super) fn append_v_for_comment(
 /// object source yields `value: T[keyof T]` and `key: keyof T` (matching
 /// vue-tsc) instead of the old array-only `(source).forEach` assumption that
 /// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
-/// passed through verbatim so any `as Type` assertion flows into the helper.
+/// rewritten through the template-prop bridge so a source such as `messages`
+/// resolves to `__props.messages`; all other authored syntax stays verbatim.
 pub(super) fn emit_v_for_loop_open(
     ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    template_offset: u32,
+    source_offset: Option<u32>,
     indent: &str,
-    value_alias: &str,
-    key_alias: Option<&str>,
-    index_alias: Option<&str>,
-    source: &str,
+    data: &VForScopeData,
+    template_prop_names: &FxHashSet<String>,
 ) {
-    append!(*ts, "{indent}__vForList({source}).forEach(([{value_alias}");
-    if let Some(key) = key_alias {
+    append!(*ts, "{indent}__vForList(");
+    let source_gen_start = ts.len();
+    let rewritten_source =
+        rewrite_reserved_template_prop(data.source.as_str(), template_prop_names);
+    ts.push_str(
+        rewritten_source
+            .as_ref()
+            .map_or(data.source.as_str(), |source| source.as_str()),
+    );
+    let source_gen_end = ts.len();
+    if let Some(source_offset) = source_offset {
+        let source_start = (template_offset + source_offset) as usize;
+        mappings.push(VizeMapping {
+            gen_range: source_gen_start..source_gen_end,
+            src_range: source_start..(source_start + data.source.len()),
+            sub_spans: Vec::new(),
+        });
+    }
+    append!(*ts, ").forEach(([{}", data.value_alias);
+    if let Some(key) = data.key_alias.as_deref() {
         append!(*ts, ", {key}");
-    } else if index_alias.is_some() {
+    } else if data.index_alias.is_some() {
         // Keep the index in the third tuple slot even when no key alias is bound.
         ts.push_str(", _key");
     }
-    if let Some(index) = index_alias {
+    if let Some(index) = data.index_alias.as_deref() {
         append!(*ts, ", {index}");
     }
     ts.push_str("]) => {\n");

@@ -99,7 +99,7 @@ impl Drawer {
                 .cloned()
                 .unwrap_or_else(|| CompactString::const_new("_"));
 
-            self.croquis.scopes.enter_v_for_scope(
+            let scope_id = self.croquis.scopes.enter_v_for_scope(
                 VForScopeData {
                     value_alias: value_alias.clone(),
                     value_bindings: smallvec![value_alias],
@@ -111,6 +111,9 @@ impl Drawer {
                 for_node.loc.start.offset,
                 for_node.loc.end.offset,
             );
+            self.croquis
+                .scopes
+                .set_v_for_source_offset(scope_id, for_node.source.loc().start.offset);
             // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
             self.vfor_depth += 1;
             for var in &vars_added {

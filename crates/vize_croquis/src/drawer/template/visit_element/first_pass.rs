@@ -8,7 +8,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::bounds::element_subtree_end;
 use super::scopes::ElementDirectiveState;
-use super::v_for_scope::v_for_alias_declaration_offsets;
+use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_offset};
 
 impl Drawer {
     pub(super) fn collect_element_directive_state(
@@ -42,9 +42,15 @@ impl Drawer {
                         );
                         if let Some(aliases) = aliases {
                             let alias_offsets = v_for_alias_declaration_offsets(exp, &aliases);
+                            let source_offset = v_for_source_offset(exp, &aliases);
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
-                            state.for_scope =
-                                Some((aliases, alias_offsets, el.loc.start.offset, end));
+                            state.for_scope = Some((
+                                aliases,
+                                alias_offsets,
+                                source_offset,
+                                el.loc.start.offset,
+                                end,
+                            ));
                         }
                     }
                 } else if dir.name == "bind" {

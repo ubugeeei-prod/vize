@@ -34,6 +34,20 @@ pub(super) fn v_for_alias_declaration_offsets(
     offsets
 }
 
+pub(super) fn v_for_source_offset(
+    exp: &ExpressionNode<'_>,
+    aliases: &VForScopeAliases,
+) -> Option<u32> {
+    let (content, base_offset) = expression_content_and_offset(exp);
+    source_offset_in_expression(content, base_offset, aliases.source.as_str())
+}
+
+fn source_offset_in_expression(content: &str, base_offset: u32, source: &str) -> Option<u32> {
+    content
+        .rfind(source)
+        .map(|relative| base_offset + relative as u32)
+}
+
 fn expression_content_and_offset<'a>(exp: &'a ExpressionNode<'_>) -> (&'a str, u32) {
     let loc = exp.loc();
     let content = match exp {
@@ -85,4 +99,25 @@ fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
 
 fn is_identifier_continue(byte: u8) -> bool {
     byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::source_offset_in_expression;
+
+    #[test]
+    fn source_offsets_keep_whitespace_and_choose_the_final_duplicate() {
+        assert_eq!(
+            source_offset_in_expression("  item in item  ", 40, "item"),
+            Some(50)
+        );
+        assert_eq!(
+            source_offset_in_expression(
+                "({ id }, key) of rows.filter(row => row.id)",
+                7,
+                "rows.filter(row => row.id)"
+            ),
+            Some(24)
+        );
+    }
 }

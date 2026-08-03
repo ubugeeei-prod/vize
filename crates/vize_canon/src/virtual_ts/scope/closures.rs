@@ -237,7 +237,6 @@ pub(super) fn generate_scope_node(
             if let Some(guard) = enclosing_guard {
                 append!(*ts, "{indent}if ({guard}) {{\n");
             }
-
             append_v_for_comment(
                 ts,
                 &loop_indent,
@@ -245,16 +244,15 @@ pub(super) fn generate_scope_node(
                 data.value_alias.as_str(),
                 data.source.as_str(),
             );
-
             emit_v_for_loop_open(
                 ts,
+                mappings,
+                ctx.template_offset,
+                ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
-                data.value_alias.as_str(),
-                data.key_alias.as_deref(),
-                data.index_alias.as_deref(),
-                data.source.as_str(),
+                data,
+                ctx.template_prop_names,
             );
-
             // A positive narrowing outside a callback is not retained for captured
             // object properties. Recheck those terms so discriminated unions narrow.
             let callback_guard = enclosing_guard.and_then(callback_vif_guard);

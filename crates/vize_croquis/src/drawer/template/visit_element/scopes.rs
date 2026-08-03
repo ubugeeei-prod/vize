@@ -1,6 +1,6 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{ConditionalKind, VForScopeAliases, extract_identifiers_oxc};
-use crate::scope::{ParamNames, VForScopeData, VSlotScopeData};
+use crate::scope::{ParamNames, ScopeKind, VForScopeData, VSlotScopeData};
 use vize_carton::{CompactString, SmallVec};
 use vize_relief::ElementNode;
 
@@ -18,6 +18,7 @@ pub(super) type SlotScopeInfo = (
 pub(super) type ForScopeInfo = (
     VForScopeAliases,
     SmallVec<[(CompactString, u32); 4]>,
+    Option<u32>,
     u32,
     u32,
 );
@@ -85,7 +86,7 @@ impl Drawer {
         key_expression: Option<CompactString>,
         scope_vars: &mut Vec<CompactString>,
     ) -> usize {
-        let Some((aliases, alias_offsets, start, end)) = for_scope else {
+        let Some((aliases, alias_offsets, source_offset, start, end)) = for_scope else {
             return 0;
         };
 
@@ -98,8 +99,19 @@ impl Drawer {
         if self.options.detect_undefined {
             self.mark_v_for_source_scope_refs(aliases.source.as_str());
         }
+        // Generic slot props are not yet instantiated from sibling bindings. Mapping a
+        // callback that consumes one would expose a Vize-only implicit-any diagnostic.
+        let source_has_slot_bound_callback = aliases.source.contains("=>")
+            && extract_identifiers_oxc(aliases.source.as_str())
+                .iter()
+                .any(|name| {
+                    self.croquis
+                        .scopes
+                        .lookup(name.as_str())
+                        .is_some_and(|(scope, _)| scope.kind == ScopeKind::VSlot)
+                });
 
-        self.croquis.scopes.enter_v_for_scope(
+        let scope_id = self.croquis.scopes.enter_v_for_scope(
             VForScopeData {
                 value_alias: aliases.value_pattern,
                 value_bindings: aliases.value_bindings,
@@ -111,6 +123,11 @@ impl Drawer {
             start,
             end,
         );
+        if !source_has_slot_bound_callback && let Some(source_offset) = source_offset {
+            self.croquis
+                .scopes
+                .set_v_for_source_offset(scope_id, source_offset);
+        }
         // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
         self.vfor_depth += 1;
 
