@@ -189,6 +189,26 @@ test("template and TSX Rust CLI gates use the fail-closed Corsa helper", () => {
   }
 });
 
+test("module import Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    "check_allowjs_imports_cli.rs",
+    "check_ambient_export_assignment_cli.rs",
+    "check_ambient_imports_cli.rs",
+    "check_directory_self_imports_cli.rs",
+    "check_hoisted_workspace_cli.rs",
+  ];
+
+  for (const file of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.equal(
+      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      1,
+      `${file} should guard its Corsa resolver call`,
+    );
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });

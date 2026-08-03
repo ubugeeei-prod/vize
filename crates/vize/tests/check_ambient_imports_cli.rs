@@ -4,6 +4,9 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 #[path = "support/vue_stub.rs"]
@@ -41,7 +44,7 @@ fn resolve_test_corsa_path() -> Option<std::path::PathBuf> {
 
 #[test]
 fn explicit_check_registers_types_imported_by_ambient_declarations() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir();
