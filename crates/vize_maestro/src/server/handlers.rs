@@ -36,7 +36,7 @@ use super::{MaestroServer, server_capabilities};
 use crate::ide::{
     CodeActionService, CompletionService, DefinitionService, DocumentHighlightService,
     DocumentLinkService, HoverService, IdeContext, ReferencesService, RenameService,
-    SemanticTokensService, WorkspaceSymbolsService, position_to_offset,
+    SemanticTokensService, position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -578,18 +578,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: WorkspaceSymbolParams,
     ) -> Result<Option<Vec<SymbolInformation>>> {
-        if !self.state.lsp_features().workspace_symbols {
-            return Ok(None);
-        }
-
-        let query = &params.query;
-        let symbols = WorkspaceSymbolsService::search(&self.state, query);
-
-        if symbols.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(symbols))
-        }
+        super::workspace_symbols::search(self, &params).await
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
