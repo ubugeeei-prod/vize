@@ -59,7 +59,8 @@ export interface EventListenerControls {
    *
    * @returns Whether a new reactive watcher was started. `false` while the
    * watcher is already active (including a null-target watcher with no
-   * listener attached) and after the abort signal has fired.
+   * listener attached), after the abort signal has fired, and after the
+   * owning reactive scope has been disposed.
    */
   readonly start: () => boolean;
 
@@ -131,6 +132,7 @@ export function useEventListener(
     passive,
     ...(signal ? { signal } : {}),
   };
+  let disposed = false;
   let stopWatch: WatchHandle | undefined;
 
   const stop = (): void => {
@@ -139,7 +141,7 @@ export function useEventListener(
     isListening.value = false;
   };
   const start = (): boolean => {
-    if (stopWatch || signal?.aborted) return false;
+    if (disposed || stopWatch || signal?.aborted) return false;
 
     stopWatch = watch(
       () => toValue(target),
@@ -167,7 +169,10 @@ export function useEventListener(
     return true;
   };
 
-  tryOnScopeDispose(stop);
+  tryOnScopeDispose(() => {
+    disposed = true;
+    stop();
+  });
   if (immediate) start();
 
   return { isListening: readonly(isListening), start, stop };
