@@ -11,6 +11,8 @@ import {
   runPackagedExtensionHost,
   runVSCodeCommandWithTimeout,
 } from "../../editors/vscode/test/packaged-host-contract.mjs";
+import { readPinnedCreateVueHostResult } from "../../editors/vscode/test/pinned-create-vue-host-result.mjs";
+import { prepareRealVueWorkspace } from "../../tools/editor-e2e/real-vue-workspace.mjs";
 import { testAndBenchmarkTasks } from "../../tools/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
@@ -75,6 +77,25 @@ test("the real-server fixture workspace turns off the built-in AI code actions",
   );
 
   assert.deepEqual(settings, { "chat.disableAIFeatures": true, "vize.enable": false });
+});
+
+test("the real-server fixture can preserve a pinned oracle while adding its harness", () => {
+  const workspacePath = fs.mkdtempSync(path.join(os.tmpdir(), "vize-preserved-oracle-"));
+  const pinnedPath = path.join(workspacePath, "pinned", "App.vue");
+  fs.mkdirSync(path.dirname(pinnedPath), { recursive: true });
+  fs.writeFileSync(pinnedPath, "<template>pinned</template>\n");
+
+  try {
+    prepareRealVueWorkspace(workspacePath, { preserveExisting: true });
+
+    assert.equal(fs.readFileSync(pinnedPath, "utf8"), "<template>pinned</template>\n");
+    assert.ok(fs.existsSync(path.join(workspacePath, "src", "App.vue")));
+    assert.ok(fs.existsSync(path.join(workspacePath, ".vscode", "settings.json")));
+    assert.ok(fs.existsSync(path.join(workspacePath, "vize.config.json")));
+    assert.ok(fs.lstatSync(path.join(workspacePath, "node_modules", "vue")).isSymbolicLink());
+  } finally {
+    fs.rmSync(workspacePath, { force: true, recursive: true });
+  }
 });
 
 test("packaged host resolves exactly one installed Vize extension", () => {
@@ -218,6 +239,55 @@ test("real host runner refuses to launch without a packaged VSIX", async () => {
     assert.equal(launched, false);
   } finally {
     fs.rmSync(profilePath, { force: true, recursive: true });
+  }
+});
+
+test("packaged host result proves the pinned create-vue diagnostic transition", () => {
+  const resultDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-create-vue-host-result-"));
+  const resultPath = path.join(resultDirectory, "result.json");
+  const passingResult = {
+    brokenDiagnostics: [
+      {
+        code: 2322,
+        message: "Type 'string' is not assignable to type 'number'.",
+        range: [1, 6, 1, 11],
+        severity: 0,
+        source: "vize/types",
+      },
+    ],
+    documentDirty: true,
+    extensionActive: true,
+    fixtureId: "create-vue",
+    repairedDiagnostics: [],
+    schemaVersion: 1,
+  };
+
+  try {
+    fs.writeFileSync(resultPath, JSON.stringify(passingResult));
+    assert.deepEqual(readPinnedCreateVueHostResult(resultPath), passingResult);
+
+    fs.writeFileSync(
+      resultPath,
+      JSON.stringify({ ...passingResult, documentDirty: false, extensionActive: false }),
+    );
+    assert.throws(
+      () => readPinnedCreateVueHostResult(resultPath),
+      /Expected values to be strictly/,
+    );
+
+    fs.writeFileSync(
+      resultPath,
+      JSON.stringify({
+        ...passingResult,
+        brokenDiagnostics: [{ ...passingResult.brokenDiagnostics[0], range: [1, 7, 1, 12] }],
+      }),
+    );
+    assert.throws(
+      () => readPinnedCreateVueHostResult(resultPath),
+      /Expected values to be strictly/,
+    );
+  } finally {
+    fs.rmSync(resultDirectory, { force: true, recursive: true });
   }
 });
 

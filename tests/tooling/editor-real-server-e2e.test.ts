@@ -53,6 +53,22 @@ test("CI runs both real-server editor scenarios from one built server binary", (
   assert.match(action, /sha256sum --check --strict/);
 });
 
+test("CI hydrates the exact pinned create-vue revision before the packaged host", () => {
+  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const hydrateAt = action.indexOf("- name: Hydrate pinned create-vue fixture");
+  const hostAt = action.indexOf("- name: Run VS Code host smoke against the real server");
+
+  assert.ok(hydrateAt >= 0, "editor host CI must hydrate create-vue");
+  assert.ok(hostAt > hydrateAt, "create-vue must be pinned before the host starts");
+  const hydration = action.slice(hydrateAt, hostAt);
+  assert.match(
+    hydration,
+    /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/create-vue/,
+  );
+  assert.match(hydration, /git rev-parse HEAD:tests\/_fixtures\/_git\/create-vue/);
+  assert.match(hydration, /git -C tests\/_fixtures\/_git\/create-vue rev-parse HEAD/);
+});
+
 test("CI runs both headless editor specs", () => {
   const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 

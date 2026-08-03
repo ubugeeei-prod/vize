@@ -27,10 +27,17 @@ export const realVueFixturePath = path.join(
  * Materialize the `real-vue` fixture at `workspacePath` and wire it up for the
  * real server. Returns the workspace path so callers can chain.
  */
-export function prepareRealVueWorkspace(workspacePath) {
-  fs.rmSync(workspacePath, { force: true, recursive: true });
+export function prepareRealVueWorkspace(workspacePath, { preserveExisting = false } = {}) {
+  if (!preserveExisting) {
+    fs.rmSync(workspacePath, { force: true, recursive: true });
+  }
   fs.mkdirSync(path.dirname(workspacePath), { recursive: true });
-  fs.cpSync(realVueFixturePath, workspacePath, { recursive: true });
+  fs.mkdirSync(workspacePath, { recursive: true });
+  for (const entry of fs.readdirSync(realVueFixturePath)) {
+    fs.cpSync(path.join(realVueFixturePath, entry), path.join(workspacePath, entry), {
+      recursive: true,
+    });
+  }
   fs.mkdirSync(path.join(workspacePath, "node_modules"), { recursive: true });
   fs.symlinkSync(
     resolveVuePackagePath(),

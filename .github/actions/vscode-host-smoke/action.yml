@@ -24,6 +24,13 @@ runs:
         key: editor-host-smoke
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
+    - name: Hydrate pinned create-vue fixture
+      shell: bash
+      run: |
+        git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
+        test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
+          "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
+
     - name: Install JS dependencies
       shell: bash
       env:

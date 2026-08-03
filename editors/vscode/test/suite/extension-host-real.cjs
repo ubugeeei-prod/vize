@@ -1,10 +1,12 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const vscode = require("vscode");
 
 const { runRealServerScenario } = require("./real-scenario.cjs");
 const {
   assertPackagedExtension,
   assertStaysDiagnosticFree,
+  describeDiagnostic,
   getRealServer,
   openWorkspaceDocument,
   positionAfter,
@@ -67,6 +69,7 @@ exports.run = async function run() {
   await runRealCompletionSmoke(mismatchDocument);
   await runRealHoverSmoke(mismatchDocument);
   await runRealDidChangeRepairSmoke(mismatchDocument, extension);
+  await runPinnedCreateVuePatchOracle(extension);
 
   await runRealServerScenario();
 
@@ -175,4 +178,79 @@ async function runRealDidChangeRepairSmoke(mismatchDocument, extension) {
   // still dirty (never saved) and the same extension host instance is active.
   assert.equal(mismatchDocument.isDirty, true);
   assert.equal(extension.isActive, true);
+}
+
+async function runPinnedCreateVuePatchOracle(extension) {
+  const document = await openWorkspaceDocument("template", "bare", "typescript", "src", "App.vue");
+  await vscode.window.showTextDocument(document);
+  await assertStaysDiagnosticFree(document.uri, "clean pinned create-vue SFC");
+
+  const cleanSource = document.getText();
+  const cleanCount = "const count: number = 1";
+  const brokenCount = "const count: number = 'broken'";
+  const repairedCount = "const count: number = 2";
+  const editor = await vscode.window.showTextDocument(document);
+  const broke = await editor.edit((editBuilder) => {
+    editBuilder.replace(rangeForExactText(document, cleanCount), brokenCount);
+  });
+  assert.equal(broke, true, "expected the pinned create-vue break edit to apply");
+
+  const brokenDiagnostics = await waitForDiagnostics(
+    document.uri,
+    (diagnostics) => diagnostics.length > 0,
+    "pinned create-vue broken type diagnostic",
+    60_000,
+  );
+  assert.deepEqual(brokenDiagnostics.map(describeDiagnostic), [
+    {
+      code: 2322,
+      message: "Type 'string' is not assignable to type 'number'.",
+      range: [1, 6, 1, 11],
+      relatedInformation: undefined,
+      severity: vscode.DiagnosticSeverity.Error,
+      source: "vize/types",
+      tags: undefined,
+    },
+  ]);
+
+  const repaired = await editor.edit((editBuilder) => {
+    editBuilder.replace(rangeForExactText(document, brokenCount), repairedCount);
+  });
+  assert.equal(repaired, true, "expected the pinned create-vue repair edit to apply");
+  const repairedDiagnostics = await waitForDiagnostics(
+    document.uri,
+    (diagnostics) => diagnostics.length === 0,
+    "pinned create-vue repair clearing the type diagnostic",
+    60_000,
+  );
+  assert.deepEqual(repairedDiagnostics, []);
+  assert.equal(document.getText(), cleanSource.replace(cleanCount, repairedCount));
+  assert.equal(document.isDirty, true);
+  assert.equal(extension.isActive, true);
+
+  const resultPath = process.env.VIZE_TEST_PINNED_CREATE_VUE_RESULT_PATH;
+  assert.ok(resultPath, "missing pinned create-vue host result path");
+  fs.writeFileSync(
+    resultPath,
+    `${JSON.stringify({
+      brokenDiagnostics: brokenDiagnostics.map(describeDiagnostic),
+      documentDirty: document.isDirty,
+      extensionActive: extension.isActive,
+      fixtureId: "create-vue",
+      repairedDiagnostics: repairedDiagnostics.map(describeDiagnostic),
+      schemaVersion: 1,
+    })}\n`,
+  );
+}
+
+function rangeForExactText(document, needle) {
+  const source = document.getText();
+  const start = source.indexOf(needle);
+  assert.notEqual(start, -1, `fixture must contain ${JSON.stringify(needle)}`);
+  assert.equal(
+    source.indexOf(needle, start + needle.length),
+    -1,
+    `fixture anchor must be unique: ${JSON.stringify(needle)}`,
+  );
+  return new vscode.Range(document.positionAt(start), document.positionAt(start + needle.length));
 }

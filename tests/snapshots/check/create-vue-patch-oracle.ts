@@ -7,6 +7,13 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
+  createVueBrokenCount,
+  createVueCleanCount,
+  createVueRepairedCount,
+  createVueTypecheckAppPath,
+  materializeCreateVueTypecheckSource,
+} from "../../_helpers/create-vue-typecheck-patch.ts";
+import {
   repoRoot,
   symlinkDirectory,
   withPinnedFixtureWorkspace,
@@ -20,7 +27,7 @@ import {
 import type { PublishDiagnosticsParams } from "../../tooling/support/lsp/protocol.ts";
 import { LspSession } from "../../tooling/support/lsp/session.ts";
 
-const appPath = "template/bare/typescript/src/App.vue";
+const appPath = createVueTypecheckAppPath;
 const sourceSha256 = "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a";
 const compiledCodeSha256 = "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7";
 const formattedSourceSha256 = "c76449690404ce5538a17786fa17b812ceab69fe947dc5f29b408fc9354b4b53";
@@ -311,16 +318,7 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
         )}\n`,
       );
 
-      fixture.applyExactPatch(
-        appPath,
-        '<script setup lang="ts"></script>',
-        `<script setup lang="ts">\nconst count: number = 1\nconst label = 'ready'\n</script>`,
-      );
-      const cleanSource = fixture.applyExactPatch(
-        appPath,
-        "  <h1>You did it!</h1>",
-        "  <h1>{{ label }}</h1>\n  <p>{{ count }}</p>",
-      );
+      const cleanSource = materializeCreateVueTypecheckSource(fixture);
       const appFile = fixture.resolve(appPath);
       const appUri = pathToFileURL(appFile).href;
 
@@ -368,8 +366,8 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
 
         const brokenSource = fixture.applyExactPatch(
           appPath,
-          "const count: number = 1",
-          "const count: number = 'broken'",
+          createVueCleanCount,
+          createVueBrokenCount,
         );
         session.notify("textDocument/didChange", {
           textDocument: { uri: appUri, version: 2 },
@@ -405,8 +403,8 @@ test("create-vue clean, broken, and repaired patches agree across check and LSP"
 
         const repairedSource = fixture.applyExactPatch(
           appPath,
-          "const count: number = 'broken'",
-          "const count: number = 2",
+          createVueBrokenCount,
+          createVueRepairedCount,
         );
         session.notify("textDocument/didChange", {
           textDocument: { uri: appUri, version: 3 },
