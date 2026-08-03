@@ -36,7 +36,7 @@ overrides:
   nanotar: "0.3.0"
   nitropack: "2.13.4"
   node-forge: "1.4.0"
-  "postcss@>=8.0.0 <8.5.18": "8.5.18"
+  "postcss@>=8.0.0 <8.5.23": "8.5.23"
   nuxt: "4.4.8"
   qs: "6.15.2"
   "readdir-glob>minimatch": "10.2.5"
