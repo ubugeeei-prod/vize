@@ -14,6 +14,8 @@ mod corsa;
 mod corsa_overlays;
 #[cfg(feature = "native")]
 mod global_components;
+#[cfg(feature = "native")]
+mod workspace_vue_files;
 
 #[cfg(test)]
 mod config_tests;
@@ -72,6 +74,13 @@ pub struct ServerState {
     /// component file's length + modification time.
     component_metadata_cache:
         DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata>,
+    /// Closed `.vue` files announced through workspace file-operation events.
+    ///
+    /// These stay separate from [`Self::documents`]: document features must
+    /// only serve editor-open buffers, while workspace symbol search also
+    /// needs to follow files created and deleted on disk mid-session.
+    #[cfg(feature = "native")]
+    workspace_vue_files: DashMap<Url, ()>,
     /// Enabled LSP feature surface.
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
@@ -166,6 +175,8 @@ impl ServerState {
             virtual_docs_cache: DashMap::new(),
             open_vue_imports: super::importers::OpenVueImportIndex::default(),
             component_metadata_cache: DashMap::new(),
+            #[cfg(feature = "native")]
+            workspace_vue_files: DashMap::new(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),

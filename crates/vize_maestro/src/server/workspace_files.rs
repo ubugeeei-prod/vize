@@ -111,14 +111,28 @@ pub(super) async fn did_change_watched_files(
 
 pub(super) fn did_create_files(state: &ServerState, params: &CreateFilesParams) {
     #[cfg(feature = "native")]
-    state.invalidate_global_component_references(params.files.iter().map(|file| file.uri.as_str()));
+    {
+        state.invalidate_global_component_references(
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        for file in &params.files {
+            state.track_workspace_vue_file(file.uri.as_str());
+        }
+    }
     #[cfg(not(feature = "native"))]
     let _ = (state, params);
 }
 
 pub(super) fn did_delete_files(state: &ServerState, params: &DeleteFilesParams) {
     #[cfg(feature = "native")]
-    state.invalidate_global_component_references(params.files.iter().map(|file| file.uri.as_str()));
+    {
+        state.invalidate_global_component_references(
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        for file in &params.files {
+            state.forget_workspace_vue_file(file.uri.as_str());
+        }
+    }
     #[cfg(not(feature = "native"))]
     let _ = (state, params);
 }
@@ -135,12 +149,20 @@ pub(super) async fn will_rename_files(
 
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
     #[cfg(feature = "native")]
-    server.state.invalidate_global_component_references(
-        params
-            .files
-            .iter()
-            .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
-    );
+    {
+        server.state.invalidate_global_component_references(
+            params
+                .files
+                .iter()
+                .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
+        );
+        for file in &params.files {
+            server
+                .state
+                .forget_workspace_vue_file(file.old_uri.as_str());
+            server.state.track_workspace_vue_file(file.new_uri.as_str());
+        }
+    }
     if !server.state.lsp_features().file_rename {
         return;
     }
@@ -157,9 +179,12 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
 
 #[cfg(all(test, feature = "native"))]
 mod tests {
-    use tower_lsp::lsp_types::ClientCapabilities;
+    use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
 
-    use super::{ServerState, global_component_watcher_registration, record_watcher_support};
+    use super::{
+        ServerState, did_create_files, did_delete_files, global_component_watcher_registration,
+        record_watcher_support,
+    };
 
     #[test]
     fn declaration_watcher_tracks_create_change_and_delete_recursively() {
@@ -186,5 +211,39 @@ mod tests {
         record_watcher_support(&state, &capabilities);
 
         assert!(state.global_component_watcher_supported());
+    }
+
+    #[test]
+    fn vue_file_events_track_only_existing_created_files_and_forget_deletes() {
+        let root = tempfile::tempdir().unwrap();
+        let vue_path = root.path().join("DiskChild.vue");
+        let declaration_path = root.path().join("components.d.ts");
+        std::fs::write(&vue_path, "<template />\n").unwrap();
+        std::fs::write(&declaration_path, "export {};\n").unwrap();
+        let vue_uri = Url::from_file_path(&vue_path).unwrap();
+        let declaration_uri = Url::from_file_path(&declaration_path).unwrap();
+        let missing_uri = Url::from_file_path(root.path().join("Missing.vue")).unwrap();
+        let state = ServerState::new();
+
+        let created: CreateFilesParams = serde_json::from_value(serde_json::json!({
+            "files": [
+                { "uri": vue_uri.as_str() },
+                { "uri": declaration_uri.as_str() },
+                { "uri": missing_uri.as_str() }
+            ]
+        }))
+        .unwrap();
+        did_create_files(&state, &created);
+
+        assert_eq!(state.workspace_vue_file_uris(), vec![vue_uri.clone()]);
+
+        std::fs::remove_file(&vue_path).unwrap();
+        let deleted: DeleteFilesParams = serde_json::from_value(serde_json::json!({
+            "files": [{ "uri": vue_uri.as_str() }]
+        }))
+        .unwrap();
+        did_delete_files(&state, &deleted);
+
+        assert!(state.workspace_vue_file_uris().is_empty());
     }
 }

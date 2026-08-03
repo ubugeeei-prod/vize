@@ -39,9 +39,10 @@ async function withCapabilities(
   }
 }
 
-/** Declaration shims, the only files type checking has to watch itself. */
-const DECLARATION_FILTERS = [
+/** Closed Vue files feed workspace symbols; declarations feed type checking. */
+const FILE_EVENT_FILTERS = [
   { scheme: "file", pattern: { glob: "**/*.d.{ts,mts,cts}", matches: "file" } },
+  { scheme: "file", pattern: { glob: "**/*.vue", matches: "file" } },
 ];
 /** Everything a rename can move, plus folders. */
 const RENAME_FILTERS = [
@@ -165,10 +166,10 @@ const EDITOR_BUNDLE_CAPABILITIES = {
   workspace: {
     workspaceFolders: { supported: true, changeNotifications: true },
     fileOperations: {
-      didCreate: { filters: DECLARATION_FILTERS },
+      didCreate: { filters: FILE_EVENT_FILTERS },
       didRename: { filters: RENAME_FILTERS },
       willRename: { filters: RENAME_FILTERS },
-      didDelete: { filters: DECLARATION_FILTERS },
+      didDelete: { filters: FILE_EVENT_FILTERS },
     },
   },
   // Absent on purpose, and therefore absent from this object: the three

@@ -237,34 +237,53 @@ fn workspace_file_operations(
     features: LspFeatureConfig,
 ) -> Option<WorkspaceFileOperationsServerCapabilities> {
     let track_declarations = cfg!(feature = "native") && features.typecheck;
-    if !track_declarations && !features.file_rename {
+    let track_vue_symbols = cfg!(feature = "native") && features.workspace_symbols;
+    let track_file_events = track_declarations || track_vue_symbols;
+    if !track_file_events && !features.file_rename {
         return None;
     }
     Some(WorkspaceFileOperationsServerCapabilities {
-        did_create: track_declarations.then(declaration_file_registration_options),
+        did_create: track_file_events
+            .then(|| file_event_registration_options(track_declarations, track_vue_symbols)),
         will_create: None,
         did_rename: Some(if features.file_rename {
             file_rename_registration_options()
         } else {
-            declaration_file_registration_options()
+            file_event_registration_options(track_declarations, track_vue_symbols)
         }),
         will_rename: features.file_rename.then(file_rename_registration_options),
-        did_delete: track_declarations.then(declaration_file_registration_options),
+        did_delete: track_file_events
+            .then(|| file_event_registration_options(track_declarations, track_vue_symbols)),
         will_delete: None,
     })
 }
 
-fn declaration_file_registration_options() -> FileOperationRegistrationOptions {
-    FileOperationRegistrationOptions {
-        filters: vec![FileOperationFilter {
+fn file_event_registration_options(
+    track_declarations: bool,
+    track_vue_symbols: bool,
+) -> FileOperationRegistrationOptions {
+    let mut filters = Vec::with_capacity(2);
+    if track_declarations {
+        filters.push(FileOperationFilter {
             scheme: Some("file".to_string()),
             pattern: FileOperationPattern {
                 glob: "**/*.d.{ts,mts,cts}".to_string(),
                 matches: Some(FileOperationPatternKind::File),
                 options: None,
             },
-        }],
+        });
     }
+    if track_vue_symbols {
+        filters.push(FileOperationFilter {
+            scheme: Some("file".to_string()),
+            pattern: FileOperationPattern {
+                glob: "**/*.vue".to_string(),
+                matches: Some(FileOperationPatternKind::File),
+                options: None,
+            },
+        });
+    }
+    FileOperationRegistrationOptions { filters }
 }
 
 fn file_rename_registration_options() -> FileOperationRegistrationOptions {
@@ -290,5 +309,7 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
     }
 }
 
+#[cfg(test)]
+mod file_operation_tests;
 #[cfg(test)]
 mod tests;
