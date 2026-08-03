@@ -10,6 +10,14 @@ export interface VizeCheckSummary {
   fileCount: number;
   errorCount: number;
   durationMs: number;
+  result: VizeCheckResult;
+}
+
+export interface VizeCheckResult {
+  fileCount?: number;
+  errorCount?: number;
+  warningCount?: number;
+  files?: Array<{ file?: string; diagnostics?: string[] }>;
 }
 
 export interface VizeLintSummary {
@@ -89,22 +97,12 @@ function runVizeCheckJson(
   checkConfig: NonNullable<AppConfig["check"]>,
   patterns: string[],
   timeoutMs: number,
-): {
-  fileCount?: number;
-  errorCount?: number;
-  warningCount?: number;
-  files?: Array<{ file?: string; diagnostics?: string[] }>;
-} {
+): VizeCheckResult {
   const cmd = buildVizeCheckCommand(checkConfig, patterns);
   console.log(`Running: ${cmd}`);
 
   const stdout = readCommandStdout(cmd, checkConfig.cwd, timeoutMs);
-  return JSON.parse(stdout) as {
-    fileCount?: number;
-    errorCount?: number;
-    warningCount?: number;
-    files?: Array<{ file?: string; diagnostics?: string[] }>;
-  };
+  return JSON.parse(stdout) as VizeCheckResult;
 }
 
 export function runCrashFreeVizeCheck(
@@ -125,6 +123,7 @@ export function runCrashFreeVizeCheck(
     fileCount: parsed.fileCount ?? 0,
     errorCount: parsed.errorCount ?? 0,
     durationMs,
+    result: parsed,
   };
 }
 
@@ -240,6 +239,7 @@ const __vizeIntentionalTypeError: number = "not-a-number";
       fileCount: parsed.fileCount ?? 0,
       errorCount: parsed.errorCount ?? 0,
       durationMs,
+      result: parsed,
     };
   } finally {
     fs.rmSync(absoluteFile, { force: true });

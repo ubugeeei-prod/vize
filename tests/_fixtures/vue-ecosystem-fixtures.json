@@ -54,6 +54,10 @@
           "warmNoopSecondApp": 1500,
           "cancellationConverge": 6000
         }
+      },
+      "batchCheckBudget": {
+        "coldMs": 15000,
+        "warmMs": 10000
       }
     },
     {
@@ -411,6 +415,10 @@
         "maxPeakProcessTreeRssMiB": 384,
         "maxProcessTreeSize": 3,
         "maxTailToHeadLatencyRatio": 3
+      },
+      "batchCheckBudget": {
+        "coldMs": 60000,
+        "warmMs": 45000
       }
     },
     {

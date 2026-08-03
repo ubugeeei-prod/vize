@@ -1,16 +1,9 @@
 import { describe, it, before } from "node:test";
-import assert from "node:assert/strict";
-import { execSync } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  misskeyApp,
-  MISSKEY_WORK_DIR,
-  CORSA_BIN,
-  VIZE_BIN,
-  requireVizeAndCorsaBins,
-} from "../../_helpers/apps.ts";
+import { misskeyApp, MISSKEY_WORK_DIR, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
+import { runBudgetedBatchVizeCheck } from "../_helpers/batch-check-performance.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
@@ -22,33 +15,16 @@ describe(`${app.name} check (type checker)`, () => {
     if (app.setup) app.setup();
   });
 
-  it("vize check does not crash and snapshot matches", () => {
+  it("vize check keeps budgeted cold and warm output exact", () => {
     const checkConfig = app.check!;
-    const patterns = checkConfig.patterns.map((p) => `'${p}'`).join(" ");
-    const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --corsa-path '${CORSA_BIN}'`;
-    console.log(`Running: ${cmd}`);
-
-    let stdout: string;
-    try {
-      stdout = execSync(cmd, {
-        cwd: checkConfig.cwd,
-        timeout: 120_000,
-        maxBuffer: 100 * 1024 * 1024,
-      }).toString();
-    } catch (e: any) {
-      if (e.status === 1 && e.stdout) {
-        stdout = e.stdout.toString();
-      } else {
-        throw new Error(`vize check crashed (exit code ${e.status}): ${e.stderr?.toString()}`);
-      }
-    }
-
-    const parsed = JSON.parse(stdout);
-    console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
-    assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
+    const { cold, warm } = runBudgetedBatchVizeCheck(app);
+    console.log(
+      `fileCount=${cold.fileCount}, errorCount=${cold.errorCount}, ` +
+        `coldMs=${cold.durationMs.toFixed(0)}, warmMs=${warm.durationMs.toFixed(0)}`,
+    );
 
     const prettyOutput =
-      JSON.stringify(parsed, null, 2)
+      JSON.stringify(cold.result, null, 2)
         .replaceAll(checkConfig.cwd, "<cwd>")
         .replaceAll(MISSKEY_WORK_DIR, "<project>") + "\n";
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-check`, prettyOutput);
