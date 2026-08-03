@@ -69,6 +69,22 @@ return {
     },
   },
 
+  completion_position = { character = 16, line = 7 },
+  completion_include = { "Child", "total" },
+  completion_exclude = { "count", "v-if" },
+
+  hover_position = { character = 8, line = 3 },
+  hover = {
+    contents = {
+      kind = "markdown",
+      value = '**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n```typescript\nconst total: "3"\n```',
+    },
+    range = {
+      ["end"] = { character = 11, line = 3 },
+      start = { character = 6, line = 3 },
+    },
+  },
+
   quick_fix_range = {
     ["end"] = { character = 8, line = 7 },
     start = { character = 6, line = 7 },

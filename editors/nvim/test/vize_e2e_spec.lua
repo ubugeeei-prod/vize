@@ -1,9 +1,10 @@
 -- Headless Neovim end-to-end scenario against a real `vize lsp` process.
 --
 -- Covers the #3224 parity scorecard row for Neovim: type bug -> diagnostic at
--- the authored span -> quick fix -> format-on-save -> semantic tokens ->
--- rename. Every step asserts the COMPLETE server response with
--- `vim.deep_equal`; there is no substring or "contains" check anywhere here.
+-- the authored span -> completion -> hover -> quick fix -> format-on-save ->
+-- semantic tokens -> rename. Structured responses use `vim.deep_equal`, and
+-- completion compares exact sorted positive/negative projections; there is no
+-- substring or "contains" check anywhere here.
 --
 -- `tools/nvim-vize/run-real-server.mjs` prepares the workspace and launches
 -- this file; run it with `vp run --workspace-root test:nvim-extension:real-server`.
@@ -65,6 +66,29 @@ local function sorted_by_start(diagnostics)
   return sorted
 end
 
+local function completion_items(result)
+  if vim.islist(result) then
+    return result
+  end
+  return result ~= nil and result.items or {}
+end
+
+local function sorted_matching_labels(items, candidates)
+  local wanted = {}
+  for _, candidate in ipairs(candidates) do
+    wanted[candidate] = true
+  end
+
+  local labels = {}
+  for _, item in ipairs(items) do
+    if wanted[item.label] then
+      table.insert(labels, item.label)
+    end
+  end
+  table.sort(labels)
+  return labels
+end
+
 --- Step 1: the real server publishes both authored bugs, on authored spans.
 local function step_diagnostics(uri, published)
   local settled = vim.wait(240000, function()
@@ -82,7 +106,35 @@ local function step_diagnostics(uri, published)
   assert_eq(sorted_by_start(published[uri]), expected.diagnostics, "published diagnostics")
 end
 
---- Step 2: the quick fix the server offers on the lint warning's own span.
+--- Step 2: template-expression completion comes from the real server.
+local function step_completion(bufnr, uri)
+  local result = request(bufnr, "textDocument/completion", {
+    position = expected.completion_position,
+    textDocument = { uri = uri },
+  })
+  local items = completion_items(result)
+  assert_eq(
+    sorted_matching_labels(items, expected.completion_include),
+    expected.completion_include,
+    "template completion required labels"
+  )
+  assert_eq(
+    sorted_matching_labels(items, expected.completion_exclude),
+    {},
+    "template completion forbidden labels"
+  )
+end
+
+--- Step 3: hover reports the backend type for the script binding.
+local function step_hover(bufnr, uri)
+  local result = request(bufnr, "textDocument/hover", {
+    position = expected.hover_position,
+    textDocument = { uri = uri },
+  })
+  assert_eq(result, expected.hover, "script binding hover")
+end
+
+--- Step 4: the quick fix the server offers on the lint warning's own span.
 local function step_quick_fix(bufnr, uri, offset_encoding)
   local actions = request(bufnr, "textDocument/codeAction", {
     context = { diagnostics = {} },
@@ -95,7 +147,7 @@ local function step_quick_fix(bufnr, uri, offset_encoding)
   assert_eq(buffer_text(bufnr), expected.quick_fixed_source, "buffer after applying the quick fix")
 end
 
---- Step 3: format-on-save, wired the way a Neovim user wires it.
+--- Step 5: format-on-save, wired the way a Neovim user wires it.
 local function step_format_on_save(bufnr, uri, scenario_path)
   vim.api.nvim_create_autocmd("BufWritePre", {
     buffer = bufnr,
@@ -117,7 +169,7 @@ local function step_format_on_save(bufnr, uri, scenario_path)
   assert_eq(vim.bo[bufnr].modified, false, "format-on-save leaves the buffer saved")
 end
 
---- Step 4: semantic tokens for the formatted document.
+--- Step 6: semantic tokens for the formatted document.
 local function step_semantic_tokens(bufnr, uri)
   local tokens = request(bufnr, "textDocument/semanticTokens/full", {
     textDocument = { uri = uri },
@@ -125,7 +177,7 @@ local function step_semantic_tokens(bufnr, uri)
   assert_eq(tokens, expected.semantic_tokens, "semantic tokens")
 end
 
---- Step 5: rename the script binding the template consumes.
+--- Step 7: rename the script binding the template consumes.
 local function step_rename(bufnr, uri, offset_encoding)
   local edit = request(bufnr, "textDocument/rename", {
     newName = expected.rename_new_name,
@@ -205,6 +257,8 @@ local function main()
   assert(offset_encoding ~= nil, "the vize client negotiated no position encoding")
 
   step_diagnostics(uri, published)
+  step_completion(bufnr, uri)
+  step_hover(bufnr, uri)
   step_quick_fix(bufnr, uri, offset_encoding)
   step_format_on_save(bufnr, uri, scenario_path)
   step_semantic_tokens(bufnr, uri)

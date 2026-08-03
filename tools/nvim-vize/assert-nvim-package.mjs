@@ -117,6 +117,8 @@ assert.match(specLua, /vim\.lsp\.config\.vize/);
 // The packaged archive must be able to run the real-server scenario, not only
 // the in-process config unit spec (#3457).
 assert.match(e2eSpecLua, /vim\.lsp\.start/);
+assert.match(e2eSpecLua, /textDocument\/completion/);
+assert.match(e2eSpecLua, /textDocument\/hover/);
 assert.match(e2eSpecLua, /textDocument\/codeAction/);
 assert.match(e2eSpecLua, /textDocument\/formatting/);
 assert.match(e2eSpecLua, /textDocument\/semanticTokens\/full/);

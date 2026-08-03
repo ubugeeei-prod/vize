@@ -101,6 +101,23 @@ test("the packaged Neovim archive ships the real-server scenario", () => {
   assert.match(assertion, /\^nvim\\\/test\\\/vize_e2e_\(\?:expected\|spec\)\\\.lua\$/);
 });
 
+test("the Neovim real-server scenario pins completion and hover responses", () => {
+  const scenario = readRepoFile("editors", "nvim", "test", "vize_e2e_spec.lua");
+  const expected = readRepoFile("editors", "nvim", "test", "vize_e2e_expected.lua");
+
+  assert.match(scenario, /textDocument\/completion/);
+  assert.match(scenario, /textDocument\/hover/);
+  assert.match(scenario, /sorted_matching_labels\(items, expected\.completion_include\)/);
+  assert.match(scenario, /sorted_matching_labels\(items, expected\.completion_exclude\)/);
+  assert.match(scenario, /assert_eq\(result, expected\.hover, "script binding hover"\)/);
+  assert.doesNotMatch(scenario, /\.includes\(|\.contains\(/);
+
+  assert.match(expected, /completion_include = \{ "Child", "total" \}/);
+  assert.match(expected, /completion_exclude = \{ "count", "v-if" \}/);
+  assert.match(expected, /const total: "3"/);
+  assert.match(expected, /character = 11, line = 3/);
+});
+
 test("the VS Code real-server suite drives all five scorecard steps", () => {
   const scenario = readRepoFile("editors", "vscode", "test", "suite", "real-scenario.cjs");
 
