@@ -85,10 +85,34 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     /snapshots\/check\/zz-intentional-errors-fixtures\.ts/,
     "typecheck parity must run the batch broken-to-repaired oracle",
   );
-  assert.match(
-    readRepoFile("tests", "snapshots", "check", "zz-intentional-errors-fixtures.ts"),
-    /vueVbenAdminApp/,
+  // A bare text match would also pass on a mention in a comment or a leftover
+  // import, so pin the two facts that make the Tier-L project actually run:
+  // vueVbenAdminApp is the real app config from _helpers/apps.ts, and it is a
+  // member of the array the suite iterates.
+  const batchOracle = readRepoFile(
+    "tests",
+    "snapshots",
+    "check",
+    "zz-intentional-errors-fixtures.ts",
+  ).replace(/\/\/[^\n]*/g, "");
+  const identifiers = (list: string | undefined) =>
+    (list ?? "").split(",").map((entry) => entry.trim());
+  const appsImport = /import \{([\s\S]*?)\} from "\.\.\/\.\.\/_helpers\/apps\.ts";/.exec(
+    batchOracle,
+  );
+  assert.ok(
+    identifiers(appsImport?.[1]).includes("vueVbenAdminApp"),
+    "the per-PR batch repair oracle must import the Tier-L app config from _helpers/apps.ts",
+  );
+  const fixtureAppList = /const fixtureApps = \[([\s\S]*?)\]/.exec(batchOracle);
+  assert.ok(
+    identifiers(fixtureAppList?.[1]).includes("vueVbenAdminApp"),
     "the per-PR batch repair oracle must retain a Tier-L project",
+  );
+  assert.match(
+    batchOracle,
+    /for \(const app of fixtureApps\)/,
+    "the per-PR batch repair oracle must run every registered app",
   );
 
   const glyphProperties = steps.find(
