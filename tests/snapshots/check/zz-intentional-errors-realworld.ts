@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -88,7 +89,7 @@ describe("real-world vize check injected type errors", () => {
   it("ant-design-vue injected semantic diagnostics are tracked in #1727", { skip: true }, () => {});
 
   for (const app of realWorldApps) {
-    it(`${app.name} catches an injected TS2322`, () => {
+    it(`${app.name} catches and repairs an injected TS2322`, () => {
       const summary = runVizeCheckWithInjectedTypeError(app, {
         timeoutMs: 300_000,
         tsconfig:
@@ -98,8 +99,9 @@ describe("real-world vize check injected type errors", () => {
               ? naiveUiInjectedTsconfig
               : undefined,
       });
+      assert.deepEqual(summary.repairedDiagnostics, []);
       console.log(
-        `${app.name}: file=${summary.file}, fileCount=${summary.fileCount}, errorCount=${summary.errorCount}, durationMs=${summary.durationMs.toFixed(0)}`,
+        `${app.name}: file=${summary.file}, fileCount=${summary.fileCount}, errorCount=${summary.errorCount}, durationMs=${summary.durationMs.toFixed(0)}, repairDurationMs=${summary.repairDurationMs.toFixed(0)}`,
       );
     });
   }

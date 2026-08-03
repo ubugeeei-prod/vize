@@ -77,8 +77,10 @@ const assertionOnlyCheckTests = {
   voicevox: "real-world smoke lane is too large for a deterministic complete baseline",
   "vue-vben-admin": "real-world smoke lane is too large for a deterministic complete baseline",
   vuetify: "real-world smoke lane is too large for a deterministic complete baseline",
-  "zz-intentional-errors-fixtures": "intentional-error aggregate asserts diagnostic presence",
-  "zz-intentional-errors-realworld": "intentional-error aggregate asserts diagnostic presence",
+  "zz-intentional-errors-fixtures":
+    "intentional-error aggregate asserts exact broken diagnostics and complete clean repair",
+  "zz-intentional-errors-realworld":
+    "intentional-error aggregate asserts exact broken diagnostics and complete clean repair",
 } satisfies Record<string, string>;
 
 function snapshotFiles(...segments: string[]): string[] {

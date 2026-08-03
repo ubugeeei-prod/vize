@@ -20,6 +20,8 @@ export interface VizeLintSummary {
 export interface InjectedTypeErrorSummary extends VizeCheckSummary {
   file: string;
   diagnostics: string[];
+  repairedDiagnostics: string[];
+  repairDurationMs: number;
 }
 
 interface InjectedTypeErrorOptions {
@@ -90,6 +92,7 @@ function runVizeCheckJson(
 ): {
   fileCount?: number;
   errorCount?: number;
+  warningCount?: number;
   files?: Array<{ file?: string; diagnostics?: string[] }>;
 } {
   const cmd = buildVizeCheckCommand(checkConfig, patterns);
@@ -99,6 +102,7 @@ function runVizeCheckJson(
   return JSON.parse(stdout) as {
     fileCount?: number;
     errorCount?: number;
+    warningCount?: number;
     files?: Array<{ file?: string; diagnostics?: string[] }>;
   };
 }
@@ -159,31 +163,47 @@ export function runVizeCheckWithInjectedTypeError(
   const absoluteTempTsconfig = tempTsconfig
     ? path.join(checkConfig.cwd, tempTsconfig.relativePath)
     : null;
+  const effectiveCheckConfig = tempTsconfig
+    ? { ...checkConfig, tsconfig: tempTsconfig.relativePath }
+    : checkConfig;
+  const cleanSource = `<script setup lang="ts">
+const __vizeIntentionalTypeError: number = 1;
+</script>
 
-  fs.writeFileSync(
-    absoluteFile,
-    `<script setup lang="ts">
+<template>
+  <div>{{ __vizeIntentionalTypeError }}</div>
+</template>
+`;
+  const brokenSource = `<script setup lang="ts">
 const __vizeIntentionalTypeError: number = "not-a-number";
 </script>
 
 <template>
   <div>{{ __vizeIntentionalTypeError }}</div>
 </template>
-`,
-    "utf-8",
-  );
+`;
+  const expectedDiagnostic = "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.";
+
+  fs.writeFileSync(absoluteFile, cleanSource, "utf-8");
   if (tempTsconfig && absoluteTempTsconfig) {
     fs.mkdirSync(path.dirname(absoluteTempTsconfig), { recursive: true });
     fs.writeFileSync(absoluteTempTsconfig, tempTsconfig.content, "utf-8");
   }
 
   try {
-    const startedAt = performance.now();
-    const parsed = runVizeCheckJson(
-      tempTsconfig ? { ...checkConfig, tsconfig: tempTsconfig.relativePath } : checkConfig,
-      [relativeFile],
-      timeoutMs,
+    const clean = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
+    const cleanFile = (clean.files ?? []).find(
+      (file) => file.file?.replaceAll("\\", "/") === relativeFile,
     );
+    assert.deepEqual(
+      cleanFile?.diagnostics,
+      [],
+      `clean injected oracle should have no diagnostics in ${relativeFile}`,
+    );
+
+    fs.writeFileSync(absoluteFile, brokenSource, "utf-8");
+    const startedAt = performance.now();
+    const parsed = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
     const durationMs = performance.now() - startedAt;
     const files = parsed.files ?? [];
     const injected = files.find((file) => file.file?.replaceAll("\\", "/") === relativeFile);
@@ -191,15 +211,32 @@ const __vizeIntentionalTypeError: number = "not-a-number";
 
     assert.ok((parsed.fileCount ?? 0) > 0, "injected check fileCount should be > 0");
     assert.ok((parsed.errorCount ?? 0) > 0, "injected check should report at least one error");
-    assert.ok(
-      diagnostics.some((diagnostic) => /\[TS2322\]/.test(diagnostic)),
+    assert.deepEqual(
+      diagnostics,
+      [expectedDiagnostic],
       `expected injected TS2322 diagnostic in ${relativeFile}, got ${JSON.stringify(files)}`,
     );
     assert.ok(durationMs < timeoutMs, `injected check should finish before ${timeoutMs}ms`);
 
+    fs.writeFileSync(absoluteFile, cleanSource, "utf-8");
+    const repairStartedAt = performance.now();
+    const repaired = runVizeCheckJson(effectiveCheckConfig, [relativeFile], timeoutMs);
+    const repairDurationMs = performance.now() - repairStartedAt;
+    assert.deepEqual(
+      repaired,
+      clean,
+      `repaired check report should equal the clean baseline for ${relativeFile}`,
+    );
+    assert.ok(repairDurationMs < timeoutMs, `repaired check should finish before ${timeoutMs}ms`);
+    const repairedFile = (repaired.files ?? []).find(
+      (file) => file.file?.replaceAll("\\", "/") === relativeFile,
+    );
+
     return {
       file: relativeFile,
       diagnostics,
+      repairedDiagnostics: repairedFile?.diagnostics ?? [],
+      repairDurationMs,
       fileCount: parsed.fileCount ?? 0,
       errorCount: parsed.errorCount ?? 0,
       durationMs,

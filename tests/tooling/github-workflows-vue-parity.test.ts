@@ -80,6 +80,16 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     /snapshots\/check\/vue-benchmarks-correctness-plants\.ts/,
     "typecheck parity must run the upstream correctness plants",
   );
+  assert.match(
+    testsPackage.scripts["test:check:fixtures"],
+    /snapshots\/check\/zz-intentional-errors-fixtures\.ts/,
+    "typecheck parity must run the batch broken-to-repaired oracle",
+  );
+  assert.match(
+    readRepoFile("tests", "snapshots", "check", "zz-intentional-errors-fixtures.ts"),
+    /vueVbenAdminApp/,
+    "the per-PR batch repair oracle must retain a Tier-L project",
+  );
 
   const glyphProperties = steps.find(
     (step) => step.name === "Check glyph formatter corpus properties",
