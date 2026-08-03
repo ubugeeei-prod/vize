@@ -83,64 +83,56 @@ test("nested null values are stripped from object config", async () => {
   });
 });
 
-test("type-aware lint opt-in is exposed across config artifacts", () => {
+function bracedBody(source: string, declaration: RegExp): string {
+  const match = declaration.exec(source);
+  assert.ok(match, `missing declaration ${declaration}`);
+  const open = source.indexOf("{", match.index);
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}" && --depth === 0) return source.slice(open + 1, index);
+  }
+  throw new Error(`unterminated declaration ${declaration}`);
+}
+
+function pklClassKeys(file: string, className: string): string[] {
+  const body = bracedBody(fs.readFileSync(file, "utf8"), new RegExp(`class ${className}\\b`));
+  return [...body.matchAll(/^\s{2}([\w$]+|`[^`]+`)\s*:/gm)]
+    .map((match) => match[1].replaceAll("`", ""))
+    .sort();
+}
+
+function typescriptInterfaceKeys(source: string, interfaceName: string): string[] {
+  const body = bracedBody(source, new RegExp(`export interface ${interfaceName}\\b`));
+  return [...body.matchAll(/^\s{2}([\w$]+)\??:/gm)].map((match) => match[1]).sort();
+}
+
+const configSections = ["CompilerConfig", "LinterConfig", "TypeCheckerConfig"] as const;
+
+test("public config keys stay identical across generated artifacts", () => {
   const schema = JSON.parse(
     fs.readFileSync(path.join("npm", "cli", "schemas", "vize.config.schema.json"), "utf8"),
   ) as {
-    definitions: {
-      LinterConfig: {
-        properties: Record<string, { type?: string; description?: string }>;
-      };
-    };
+    definitions: Record<string, { properties: Record<string, unknown> }>;
   };
   const generatedTypes = fs.readFileSync(
     path.join("npm", "cli", "src", "types", "generated.ts"),
     "utf8",
   );
-  const pklLinterConfig = fs.readFileSync(
-    path.join("npm", "cli", "pkl", "LinterConfig.pkl"),
-    "utf8",
-  );
-  const pklCompatConfig = fs.readFileSync(path.join("npm", "cli", "pkl", "vize.pkl"), "utf8");
-  const pklSchemaGenerator = fs.readFileSync(
-    path.join("npm", "cli", "pkl", "jsonschema", "generate.pkl"),
-    "utf8",
-  );
+  const compatPkl = path.join("npm", "cli", "pkl", "vize.pkl");
 
-  assert.equal(schema.definitions.LinterConfig.properties.typeAware.type, "boolean");
-  assert.match(generatedTypes, /typeAware\?: boolean;/);
-  assert.match(pklLinterConfig, /typeAware: Boolean = false/);
-  assert.match(pklCompatConfig, /typeAware: Boolean\? = null/);
-  assert.match(pklSchemaGenerator, /\["typeAware"\] = new JsonSchema/);
-});
-
-test("JSX type-check opt-in is exposed across config artifacts", () => {
-  const schema = JSON.parse(
-    fs.readFileSync(path.join("npm", "cli", "schemas", "vize.config.schema.json"), "utf8"),
-  ) as {
-    definitions: {
-      TypeCheckerConfig: {
-        properties: Record<string, { type?: string; description?: string }>;
-      };
+  for (const section of configSections) {
+    const primaryKeys = pklClassKeys(path.join("npm", "cli", "pkl", `${section}.pkl`), section);
+    const artifactKeys = {
+      primaryPkl: primaryKeys,
+      compatPkl: pklClassKeys(compatPkl, section),
+      jsonSchema: Object.keys(schema.definitions[section].properties).sort(),
+      generatedTypes: typescriptInterfaceKeys(generatedTypes, section),
     };
-  };
-  const generatedTypes = fs.readFileSync(
-    path.join("npm", "cli", "src", "types", "generated.ts"),
-    "utf8",
-  );
-  const pklTypeCheckerConfig = fs.readFileSync(
-    path.join("npm", "cli", "pkl", "TypeCheckerConfig.pkl"),
-    "utf8",
-  );
-  const pklCompatConfig = fs.readFileSync(path.join("npm", "cli", "pkl", "vize.pkl"), "utf8");
-  const pklSchemaGenerator = fs.readFileSync(
-    path.join("npm", "cli", "pkl", "jsonschema", "generate.pkl"),
-    "utf8",
-  );
-
-  assert.equal(schema.definitions.TypeCheckerConfig.properties.jsxTypecheck.type, "boolean");
-  assert.match(generatedTypes, /jsxTypecheck\?: boolean;/);
-  assert.match(pklTypeCheckerConfig, /jsxTypecheck: Boolean = false/);
-  assert.match(pklCompatConfig, /jsxTypecheck: Boolean\? = null/);
-  assert.match(pklSchemaGenerator, /\["jsxTypecheck"\] = new JsonSchema/);
+    assert.deepEqual(
+      artifactKeys,
+      Object.fromEntries(Object.keys(artifactKeys).map((name) => [name, primaryKeys])),
+      `${section} public key sets must be identical`,
+    );
+  }
 });

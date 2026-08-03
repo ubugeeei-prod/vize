@@ -19,6 +19,15 @@ typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
 typealias ConfigExtends = String | Listing<String>
 
+class CompilerCompatibilityConfig {
+  vueVersion: ("3" | "2.7" | "2" | "1" | "0.11" | "0.10")? = null
+  hostCompiler: Boolean? = null
+  scriptSetupInStandalone: Boolean? = null
+  optionsApiVapor: Boolean? = null
+  nuxtVersion: Number? = null
+  webpackVersion: Number? = null
+}
+
 class CompilerConfig {
   mode: CompilerMode? = null
   vapor: Boolean? = null
@@ -34,6 +43,7 @@ class CompilerConfig {
   scriptExt: ScriptExt? = null
   runtimeModuleName: String? = null
   runtimeGlobalName: String? = null
+  compatibility: CompilerCompatibilityConfig?
 }
 
 class ExperimentalsConfig {
@@ -97,6 +107,7 @@ class TypeCheckerConfig {
   checkSetupContext: Boolean? = null
   checkInvalidExports: Boolean? = null
   checkFallthroughAttrs: Boolean? = null
+  optionsApi: Boolean? = null
   legacyVue2: Boolean? = null
   jsxTypecheck: Boolean? = null
   tsconfig: String? = null

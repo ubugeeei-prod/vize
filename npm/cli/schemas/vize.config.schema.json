@@ -1,6 +1,45 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
+    "VueVersion": {
+      "description": "Host Vue runtime version for opt-in compatibility modes",
+      "type": "string",
+      "enum": ["3", "2.7", "2", "1", "0.11", "0.10"]
+    },
+    "CompilerCompatibilityConfig": {
+      "description": "Opt-in compatibility features for unsupported host/runtime combinations",
+      "type": "object",
+      "properties": {
+        "vueVersion": {
+          "$ref": "#/definitions/VueVersion"
+        },
+        "hostCompiler": {
+          "description": "Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes",
+          "type": "boolean"
+        },
+        "scriptSetupInStandalone": {
+          "description": "Enable <script setup> when emitting function-body output for CDN/global Vue usage",
+          "default": false,
+          "type": "boolean"
+        },
+        "optionsApiVapor": {
+          "description": "Allow Vapor output for Options API SFCs when Vapor mode is enabled",
+          "default": false,
+          "type": "boolean"
+        },
+        "nuxtVersion": {
+          "description": "Nuxt major line for opt-in Nuxt compatibility behavior",
+          "type": "integer",
+          "enum": [2, 3, 4]
+        },
+        "webpackVersion": {
+          "description": "webpack major line for opt-in bundler compatibility behavior",
+          "type": "integer",
+          "enum": [4, 5]
+        }
+      },
+      "additionalProperties": false
+    },
     "CompilerConfig": {
       "description": "Vue compiler options",
       "type": "object",
@@ -84,45 +123,6 @@
       },
       "additionalProperties": false
     },
-    "VueVersion": {
-      "description": "Host Vue runtime version for opt-in compatibility modes",
-      "type": "string",
-      "enum": ["3", "2.7", "2", "1", "0.11", "0.10"]
-    },
-    "CompilerCompatibilityConfig": {
-      "description": "Opt-in compatibility features for unsupported host/runtime combinations",
-      "type": "object",
-      "properties": {
-        "vueVersion": {
-          "$ref": "#/definitions/VueVersion"
-        },
-        "hostCompiler": {
-          "description": "Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes",
-          "type": "boolean"
-        },
-        "scriptSetupInStandalone": {
-          "description": "Enable <script setup> when emitting function-body output for CDN/global Vue usage",
-          "default": false,
-          "type": "boolean"
-        },
-        "optionsApiVapor": {
-          "description": "Allow Vapor output for Options API SFCs when Vapor mode is enabled",
-          "default": false,
-          "type": "boolean"
-        },
-        "nuxtVersion": {
-          "description": "Host Nuxt major version for compatibility bridges",
-          "type": "integer",
-          "enum": [2, 3, 4]
-        },
-        "webpackVersion": {
-          "description": "Host Webpack major version for compatibility bridges",
-          "type": "integer",
-          "enum": [4, 5]
-        }
-      },
-      "additionalProperties": false
-    },
     "VitePluginConfig": {
       "type": "object",
       "properties": {
@@ -172,17 +172,21 @@
       "additionalProperties": false
     },
     "LinterConfig": {
+      "description": "Linter options",
       "type": "object",
       "properties": {
         "enabled": {
+          "description": "Enable linting",
           "type": "boolean"
         },
         "preset": {
+          "description": "Built-in lint preset",
           "default": "ecosystem",
           "type": "string",
           "enum": ["happy-path", "opinionated", "essential", "incremental", "ecosystem", "nuxt"]
         },
         "typeAware": {
+          "description": "Enable native type-aware lint rules from the active lint configuration",
           "type": "boolean"
         },
         "rules": {
@@ -192,6 +196,9 @@
             "type": "string",
             "enum": ["off", "warn", "error"]
           }
+        },
+        "ruleOptions": {
+          "$ref": "#/definitions/LintRuleOptions"
         },
         "categories": {
           "description": "Category-level severity overrides",
@@ -223,6 +230,71 @@
             }
           },
           "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RestrictedGlobal": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["name"]
+    },
+    "RestrictedMember": {
+      "type": "object",
+      "properties": {
+        "object": {
+          "type": "string"
+        },
+        "property": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": ["object", "property"]
+    },
+    "NoRestrictedGlobalsOptions": {
+      "type": "object",
+      "properties": {
+        "globals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RestrictedGlobal"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "NoRestrictedMembersOptions": {
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RestrictedMember"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LintRuleOptions": {
+      "type": "object",
+      "properties": {
+        "script/no-restricted-globals": {
+          "$ref": "#/definitions/NoRestrictedGlobalsOptions"
+        },
+        "script/no-restricted-members": {
+          "$ref": "#/definitions/NoRestrictedMembersOptions"
         }
       },
       "additionalProperties": false
@@ -276,7 +348,7 @@
           "type": "boolean"
         },
         "optionsApi": {
-          "description": "Resolve Vue 3 Options API template bindings (data/computed/methods/inject/setup/props) during type checking. Default-on (matches vue-tsc); set to false to opt out. Available in the standard build (not a legacy feature).",
+          "description": "Resolve Vue 3 Options API template bindings during type checking",
           "default": true,
           "type": "boolean"
         },
@@ -739,7 +811,23 @@
         "compiler": {
           "$ref": "#/definitions/CompilerConfig"
         },
-        "experimentals": { "type": "object" },
+        "experimentals": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
         "vite": {
           "$ref": "#/definitions/VitePluginConfig"
         },
@@ -820,7 +908,23 @@
     "compiler": {
       "$ref": "#/definitions/CompilerConfig"
     },
-    "experimentals": { "type": "object" },
+    "experimentals": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": true
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
     "vite": {
       "$ref": "#/definitions/VitePluginConfig"
     },

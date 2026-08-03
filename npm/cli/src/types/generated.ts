@@ -46,8 +46,19 @@ export interface VizeConfig {
    * Base config files or presets to compose
    */
   extends?: string | string[];
+  /**
+   * Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document
+   */
+  dialect?: "vue" | "petite-vue";
   compiler?: CompilerConfig;
-  experimentals?: Record<string, boolean | Record<string, unknown> | null>;
+  experimentals?: {
+    [k: string]:
+      | boolean
+      | {
+          [k: string]: unknown;
+        }
+      | null;
+  };
   vite?: VitePluginConfig;
   linter?: LinterConfig;
   typeChecker?: TypeCheckerConfig;
@@ -141,11 +152,11 @@ export interface CompilerCompatibilityConfig {
    */
   optionsApiVapor?: boolean;
   /**
-   * Host Nuxt major version for compatibility bridges
+   * Nuxt major line for opt-in Nuxt compatibility behavior
    */
   nuxtVersion?: 2 | 3 | 4;
   /**
-   * Host Webpack major version for compatibility bridges
+   * webpack major line for opt-in bundler compatibility behavior
    */
   webpackVersion?: 4 | 5;
 }
@@ -175,9 +186,13 @@ export interface LinterConfig {
    * Enable linting
    */
   enabled?: boolean;
-  /** Built-in lint preset */
+  /**
+   * Built-in lint preset
+   */
   preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt";
-  /** Enable native type-aware lint rules from the active lint configuration */
+  /**
+   * Enable native type-aware lint rules from the active lint configuration
+   */
   typeAware?: boolean;
   /**
    * Rules to enable/disable
@@ -185,6 +200,7 @@ export interface LinterConfig {
   rules?: {
     [k: string]: "off" | "warn" | "error";
   };
+  ruleOptions?: LintRuleOptions;
   /**
    * Category-level severity overrides
    */
@@ -196,6 +212,25 @@ export interface LinterConfig {
     a11y?: "off" | "warn" | "error";
     security?: "off" | "warn" | "error";
   };
+}
+export interface LintRuleOptions {
+  "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
+  "script/no-restricted-members"?: NoRestrictedMembersOptions;
+}
+export interface NoRestrictedGlobalsOptions {
+  globals?: RestrictedGlobal[];
+}
+export interface RestrictedGlobal {
+  name: string;
+  message?: string;
+}
+export interface NoRestrictedMembersOptions {
+  members?: RestrictedMember[];
+}
+export interface RestrictedMember {
+  object: string;
+  property: string;
+  message?: string;
 }
 export interface TypeCheckerConfig {
   /**
@@ -234,7 +269,9 @@ export interface TypeCheckerConfig {
    * Check fallthrough attrs on multi-root templates
    */
   checkFallthroughAttrs?: boolean;
-  /** Resolve Vue 3 Options API template bindings during type checking. */
+  /**
+   * Resolve Vue 3 Options API template bindings during type checking
+   */
   optionsApi?: boolean;
   /**
    * Enable Vue 2.7 / Nuxt 2 Options API template binding support
@@ -248,7 +285,9 @@ export interface TypeCheckerConfig {
    * Path to tsconfig.json
    */
   tsconfig?: string;
-  /** Path to the Corsa executable. tsgoPath is kept as a compatibility alias. */
+  /**
+   * Path to the Corsa executable. This is the canonical runtime key; tsgoPath is kept as a compatibility alias.
+   */
   corsaPath?: string;
   /**
    * Deprecated alias for typeChecker.corsaPath
@@ -583,8 +622,19 @@ export interface VizeConfigEntry {
    * Base config files or presets to compose
    */
   extends?: string | string[];
+  /**
+   * Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document
+   */
+  dialect?: "vue" | "petite-vue";
   compiler?: CompilerConfig;
-  experimentals?: Record<string, boolean | Record<string, unknown> | null>;
+  experimentals?: {
+    [k: string]:
+      | boolean
+      | {
+          [k: string]: unknown;
+        }
+      | null;
+  };
   vite?: VitePluginConfig;
   linter?: LinterConfig;
   typeChecker?: TypeCheckerConfig;

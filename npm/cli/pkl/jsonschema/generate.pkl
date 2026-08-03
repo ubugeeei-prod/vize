@@ -3,6 +3,7 @@
 /// Usage: pkl eval -f json pkl/jsonschema/generate.pkl
 module vize.jsonschema.generate
 import "@json_schema/JsonSchema.pkl"
+import "ConfigArtifactDefinitions.pkl"
 local ruleSeverityEnum: JsonSchema = new JsonSchema {
   type = "string"
   enum = new Listing { "off"; "warn"; "error" }
@@ -21,81 +22,6 @@ local configExtendsDef: JsonSchema = new JsonSchema {
     new JsonSchema { type = "string" }
     stringListDef
   }
-}
-local compilerConfigDef: JsonSchema = new JsonSchema {
-  type = "object"
-  description = "Vue compiler options"
-  properties {
-    ["mode"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "module"; "function" }
-      description = "Compilation mode"
-      default = "module"
-    }
-    ["vapor"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable Vapor mode compilation"
-      default = false
-    }
-    ["jsxMode"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "vdom"; "vapor" }
-      description = "Default output mode for .jsx/.tsx components without a \"use vue:*\" directive"
-      default = "vdom"
-    }
-    ["ssr"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable SSR mode"
-      default = false
-    }
-    ["templateSyntax"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "standard"; "strict"; "quirks" }
-      description = "Template syntax compatibility mode"
-      default = "standard"
-    }
-    ["sourceMap"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable source map generation"
-    }
-    ["prefixIdentifiers"] = new JsonSchema {
-      type = "boolean"
-      description = "Prefix template identifiers with _ctx"
-      default = false
-    }
-    ["hoistStatic"] = new JsonSchema {
-      type = "boolean"
-      description = "Hoist static nodes"
-      default = true
-    }
-    ["cacheHandlers"] = new JsonSchema {
-      type = "boolean"
-      description = "Cache v-on handlers"
-      default = true
-    }
-    ["isTs"] = new JsonSchema {
-      type = "boolean"
-      description = "Enable TypeScript parsing in <script> blocks"
-      default = true
-    }
-    ["scriptExt"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "ts"; "js" }
-      description = "Script file extension for generated output"
-      default = "ts"
-    }
-    ["runtimeModuleName"] = new JsonSchema {
-      type = "string"
-      description = "Module name for runtime imports"
-      default = "vue"
-    }
-    ["runtimeGlobalName"] = new JsonSchema {
-      type = "string"
-      description = "Global variable name for runtime (IIFE builds)"
-      default = "Vue"
-    }
-  }
-  additionalProperties = false
 }
 local vitePluginConfigDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -145,7 +71,7 @@ local linterConfigDef: JsonSchema = new JsonSchema {
       type = lintPresetEnum.type
       enum = lintPresetEnum.enum
       description = "Built-in lint preset"
-      default = "happy-path"
+      default = "ecosystem"
     }
     ["typeAware"] = new JsonSchema {
       type = "boolean"
@@ -155,6 +81,9 @@ local linterConfigDef: JsonSchema = new JsonSchema {
       type = "object"
       description = "Rules to enable/disable"
       additionalProperties = ruleSeverityEnum
+    }
+    ["ruleOptions"] = new JsonSchema {
+      `$ref` = "#/definitions/LintRuleOptions"
     }
     ["categories"] = new JsonSchema {
       type = "object"
@@ -219,6 +148,11 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
     ["checkFallthroughAttrs"] = new JsonSchema {
       type = "boolean"
       description = "Check fallthrough attrs on multi-root templates"
+      default = true
+    }
+    ["optionsApi"] = new JsonSchema {
+      type = "boolean"
+      description = "Resolve Vue 3 Options API template bindings during type checking"
       default = true
     }
     ["legacyVue2"] = new JsonSchema {
@@ -644,8 +578,13 @@ local configEntryDef: JsonSchema = new JsonSchema {
       description = "Glob patterns this entry excludes"
     }
     ["extends"] = configExtendsDef
+    ["dialect"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "vue"; "petite-vue" }
+      description = "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document"
+    }
     ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
-    ["experimentals"] = new JsonSchema { type = "object" }
+    ["experimentals"] = ConfigArtifactDefinitions.experimentalsConfigDef
     ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
     ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
     ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }
@@ -665,9 +604,16 @@ output {
     description = "Configuration file for vize - High-performance Vue.js toolchain"
     type = "object"
     definitions {
-      ["CompilerConfig"] = compilerConfigDef
+      ["VueVersion"] = ConfigArtifactDefinitions.vueVersionDef
+      ["CompilerCompatibilityConfig"] = ConfigArtifactDefinitions.compilerCompatibilityConfigDef
+      ["CompilerConfig"] = ConfigArtifactDefinitions.compilerConfigDef
       ["VitePluginConfig"] = vitePluginConfigDef
       ["LinterConfig"] = linterConfigDef
+      ["RestrictedGlobal"] = ConfigArtifactDefinitions.restrictedGlobalDef
+      ["RestrictedMember"] = ConfigArtifactDefinitions.restrictedMemberDef
+      ["NoRestrictedGlobalsOptions"] = ConfigArtifactDefinitions.noRestrictedGlobalsOptionsDef
+      ["NoRestrictedMembersOptions"] = ConfigArtifactDefinitions.noRestrictedMembersOptionsDef
+      ["LintRuleOptions"] = ConfigArtifactDefinitions.lintRuleOptionsDef
       ["TypeCheckerConfig"] = typeCheckerConfigDef
       ["FormatterConfig"] = formatterConfigDef
       ["LanguageServerConfig"] = languageServerConfigDef
@@ -704,8 +650,13 @@ output {
         description = "Glob patterns this config excludes"
       }
       ["extends"] = configExtendsDef
+      ["dialect"] = new JsonSchema {
+        type = "string"
+        enum = new Listing { "vue"; "petite-vue" }
+        description = "Vue dialect profile for standalone HTML documents; when absent the dialect is detected structurally per document"
+      }
       ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
-      ["experimentals"] = new JsonSchema { type = "object" }
+      ["experimentals"] = ConfigArtifactDefinitions.experimentalsConfigDef
       ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
       ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
       ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }

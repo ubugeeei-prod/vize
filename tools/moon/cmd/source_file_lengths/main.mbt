@@ -2,7 +2,6 @@ struct SourceFile {
   path : String
   lines : Int
 }
-
 enum FailureReason {
   NewFileExceededLimit
   CrossedLimit
@@ -58,10 +57,11 @@ fn is_excluded_path(path : String) -> Bool {
   path.has_suffix("Cargo.lock") ||
   path.has_suffix("pnpm-lock.yaml") ||
   path.has_suffix(".lock") ||
-  // Recorded benchmark artifacts are written by bench/compare-tools.mjs and
-  // grow whenever the generator records another derived field; they are not
-  // hand-maintained source and cannot be split up.
-  path.has_prefix("bench/results/") ||
+  // Generated benchmark/config artifacts cannot be split without breaking
+  // producer contracts or their public package paths.
+  (path.has_prefix("bench/results/") ||
+  path == "npm/cli/schemas/vize.config.schema.json" ||
+  path == "npm/cli/src/types/generated.ts") ||
   path.has_prefix("docs/content/ja/") || path.has_prefix("docs/content/zh-CN/") ||
   path.has_prefix("docs/content/pt-BR/") || path.has_prefix("docs/content/fr/") ||
   path.contains(".min.") ||

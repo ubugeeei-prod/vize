@@ -1,0 +1,199 @@
+/// Shared definitions used by the secondary JSON Schema compatibility output.
+module vize.jsonschema.ConfigArtifactDefinitions
+
+import "@json_schema/JsonSchema.pkl"
+
+experimentalsConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  additionalProperties = new JsonSchema {
+    oneOf = new Listing {
+      new JsonSchema { type = "boolean" }
+      new JsonSchema {
+        type = "object"
+        additionalProperties = true
+      }
+      new JsonSchema { type = "null" }
+    }
+  }
+}
+
+vueVersionDef: JsonSchema = new JsonSchema {
+  type = "string"
+  description = "Host Vue runtime version for opt-in compatibility modes"
+  enum = new Listing { "3"; "2.7"; "2"; "1"; "0.11"; "0.10" }
+}
+
+compilerCompatibilityConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Opt-in compatibility features for unsupported host/runtime combinations"
+  properties {
+    ["vueVersion"] = new JsonSchema {
+      `$ref` = "#/definitions/VueVersion"
+    }
+    ["hostCompiler"] = new JsonSchema {
+      type = "boolean"
+      description = "Delegate .vue compilation to the host Vue compiler for legacy Vue runtimes"
+    }
+    ["scriptSetupInStandalone"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable <script setup> when emitting function-body output for CDN/global Vue usage"
+      default = false
+    }
+    ["optionsApiVapor"] = new JsonSchema {
+      type = "boolean"
+      description = "Allow Vapor output for Options API SFCs when Vapor mode is enabled"
+      default = false
+    }
+    ["nuxtVersion"] = new JsonSchema {
+      type = "integer"
+      description = "Nuxt major line for opt-in Nuxt compatibility behavior"
+      enum = new Listing { 2; 3; 4 }
+    }
+    ["webpackVersion"] = new JsonSchema {
+      type = "integer"
+      description = "webpack major line for opt-in bundler compatibility behavior"
+      enum = new Listing { 4; 5 }
+    }
+  }
+  additionalProperties = false
+}
+
+compilerConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Vue compiler options"
+  properties {
+    ["mode"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "module"; "function" }
+      description = "Compilation mode"
+      default = "module"
+    }
+    ["vapor"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Vapor mode compilation"
+      default = false
+    }
+    ["jsxMode"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "vdom"; "vapor" }
+      description = "Default output mode for .jsx/.tsx components without a \"use vue:*\" directive"
+      default = "vdom"
+    }
+    ["customRenderer"] = new JsonSchema {
+      type = "boolean"
+      description = "Treat lowercase non-HTML tags as custom renderer elements"
+      default = false
+    }
+    ["ssr"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable SSR mode"
+      default = false
+    }
+    ["templateSyntax"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "standard"; "strict"; "quirks" }
+      description = "Template syntax compatibility mode"
+      default = "standard"
+    }
+    ["sourceMap"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable source map generation"
+    }
+    ["prefixIdentifiers"] = new JsonSchema {
+      type = "boolean"
+      description = "Prefix template identifiers with _ctx"
+      default = false
+    }
+    ["hoistStatic"] = new JsonSchema {
+      type = "boolean"
+      description = "Hoist static nodes"
+      default = true
+    }
+    ["cacheHandlers"] = new JsonSchema {
+      type = "boolean"
+      description = "Cache v-on handlers"
+      default = true
+    }
+    ["isTs"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable TypeScript parsing in <script> blocks"
+      default = true
+    }
+    ["scriptExt"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "ts"; "js" }
+      description = "Script file extension for generated output"
+      default = "ts"
+    }
+    ["runtimeModuleName"] = new JsonSchema {
+      type = "string"
+      description = "Module name for runtime imports"
+      default = "vue"
+    }
+    ["runtimeGlobalName"] = new JsonSchema {
+      type = "string"
+      description = "Global variable name for runtime (IIFE builds)"
+      default = "Vue"
+    }
+    ["compatibility"] = new JsonSchema {
+      `$ref` = "#/definitions/CompilerCompatibilityConfig"
+    }
+  }
+  additionalProperties = false
+}
+
+restrictedGlobalDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["name"] = new JsonSchema { type = "string" }
+    ["message"] = new JsonSchema { type = "string" }
+  }
+  required = new Listing { "name" }
+  additionalProperties = false
+}
+
+restrictedMemberDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["object"] = new JsonSchema { type = "string" }
+    ["property"] = new JsonSchema { type = "string" }
+    ["message"] = new JsonSchema { type = "string" }
+  }
+  required = new Listing { "object"; "property" }
+  additionalProperties = false
+}
+
+noRestrictedGlobalsOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["globals"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { `$ref` = "#/definitions/RestrictedGlobal" }
+    }
+  }
+  additionalProperties = false
+}
+
+noRestrictedMembersOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["members"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { `$ref` = "#/definitions/RestrictedMember" }
+    }
+  }
+  additionalProperties = false
+}
+
+lintRuleOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["script/no-restricted-globals"] = new JsonSchema {
+      `$ref` = "#/definitions/NoRestrictedGlobalsOptions"
+    }
+    ["script/no-restricted-members"] = new JsonSchema {
+      `$ref` = "#/definitions/NoRestrictedMembersOptions"
+    }
+  }
+  additionalProperties = false
+}
