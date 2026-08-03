@@ -12,6 +12,19 @@ function taskCommand(name: string): string {
   return (testAndBenchmarkTasks[name] as { command: string }).command;
 }
 
+// Composite-action steps in declaration order, so tests can assert what a step
+// actually runs and that it runs before the step depending on it. Steps written
+// as `run: |` blocks report `|`; the callers below only need single-line steps.
+function actionSteps(action: string): Array<{ name: string; run: string }> {
+  return action
+    .split(/\n {4}- name: /)
+    .slice(1)
+    .map((chunk) => {
+      const [name, ...rest] = chunk.split("\n");
+      return { name, run: /^ {6}run: (.*)$/m.exec(rest.join("\n"))?.[1] ?? "" };
+    });
+}
+
 test("the Neovim real-server scenario has a task that runs its Node launcher", () => {
   assert.equal(
     taskCommand("test:nvim-extension:real-server"),
@@ -50,15 +63,24 @@ test("CI runs both headless editor specs", () => {
 });
 
 test("CI executes the packaged Emacs ERT suite", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const steps = actionSteps(readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml"));
 
   assert.equal(
     taskCommand("test:emacs-extension:headless"),
     "emacs -Q --batch -l ert -l editors/emacs/test/vize-test.el -f ert-run-tests-batch-and-exit",
   );
-  assert.match(action, /command -v emacs/);
-  assert.match(action, /sudo apt-get install -y emacs-nox/);
-  assert.match(action, /vp run --workspace-root test:emacs-extension:headless/);
+
+  // The interpreter is only guaranteed by the emacs-nox fallback, so the setup
+  // step and its position ahead of the ERT task are one contract.
+  const setupIndex = steps.findIndex((step) => step.name === "Ensure Emacs is available");
+  const runIndex = steps.findIndex((step) => step.name === "Run the packaged Emacs ERT suite");
+
+  assert.equal(
+    steps[setupIndex]?.run,
+    "command -v emacs || (sudo apt-get update && sudo apt-get install -y emacs-nox)",
+  );
+  assert.equal(steps[runIndex]?.run, "vp run --workspace-root test:emacs-extension:headless");
+  assert.ok(setupIndex < runIndex, "Emacs setup must run before the ERT suite");
 });
 
 test("check.yml keeps the editor real-server job in the required set", () => {
