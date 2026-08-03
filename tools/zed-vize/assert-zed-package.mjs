@@ -114,7 +114,8 @@ assert.match(extensionToml, /^languages = \["Vue", "Art Vue"\]$/m);
 assert.match(extensionToml, /^\[language_servers\.vize\.language_ids\]$/m);
 assert.match(extensionToml, /^"Vue" = "vue"$/m);
 assert.match(extensionToml, /^"Art Vue" = "art-vue"$/m);
-assert.match(extensionToml, /^\[grammars\.art-vue\]$/m);
+assert.match(extensionToml, /^\[grammars\.art_vue\]$/m);
+assert.doesNotMatch(extensionToml, /^\[grammars\.[^\]]*-.*\]$/m);
 assert.match(extensionToml, /^commit = "[0-9a-f]{40}"$/m);
 
 assertTomlString(cargoToml, "name", "vize-zed-extension");
@@ -139,7 +140,7 @@ assert.match(libRs, /language_server_workspace_configuration/);
 assert.match(libRs, /zed::register_extension!\(VizeExtension\);/);
 
 assertTomlString(artVueConfig, "name", "Art Vue");
-assertTomlString(artVueConfig, "grammar", "art-vue");
+assertTomlString(artVueConfig, "grammar", "art_vue");
 assert.match(artVueConfig, /^path_suffixes = \["art\.vue"\]$/m);
 assertTomlString(artVueConfig, "prettier_parser_name", "vue");
 
