@@ -4,9 +4,12 @@ use std::{path::Path, process::Command};
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[test]
 fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-show-virtual-ts-no-shared-helpers");
@@ -56,7 +59,7 @@ fn check_legacy_vue2_show_virtual_ts_omits_shared_helpers() {
 
 #[test]
 fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-targeted-json-component-props-helper");
@@ -97,7 +100,7 @@ fn check_legacy_vue2_targeted_json_keeps_component_props_helper_available() {
 
 #[test]
 fn legacy_vue2_full_tsconfig_no_template_bindings_keeps_props_helper() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-full-tsconfig-component-props-helper");
@@ -155,7 +158,7 @@ export default {
 
 #[test]
 fn legacy_vue2_accepts_nuxt2_layout_and_head_this_bindings() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-nuxt2-layout-head-this");

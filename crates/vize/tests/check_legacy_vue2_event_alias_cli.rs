@@ -7,9 +7,12 @@ use std::{
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[test]
 fn legacy_vue2_event_alias_stays_in_scope_inside_nested_arrow_closures() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-nested-event-alias");

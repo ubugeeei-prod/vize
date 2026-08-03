@@ -7,9 +7,12 @@ use std::{
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[test]
 fn legacy_vue2_component_event_payloads_stay_variadic_when_unresolved() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-event-payload-arity");

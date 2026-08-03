@@ -4,9 +4,12 @@ use std::{path::Path, process::Command};
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[test]
 fn legacy_vue2_template_emit_marks_define_emits_result_as_used() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-template-emit-result-binding");
@@ -57,7 +60,7 @@ const emit = defineEmits<{
 
 #[test]
 fn legacy_vue2_typed_emits_do_not_report_unused_loose_emit_helper() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-no-unused-loose-emit-helper");
@@ -118,7 +121,7 @@ function handleClick(event: MouseEvent) {
 
 #[test]
 fn legacy_vue2_no_unused_locals_still_reports_user_unused_bindings() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-no-unused-user-binding");

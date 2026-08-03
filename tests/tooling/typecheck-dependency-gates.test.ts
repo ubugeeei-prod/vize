@@ -43,6 +43,25 @@ test("typecheck and LSP gates do not carry raw dependency skips", () => {
   }
 });
 
+test("legacy Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    "check_legacy_vue2_class_bindings_cli.rs",
+    "check_legacy_vue2_event_alias_cli.rs",
+    "check_legacy_vue2_event_payload_cli.rs",
+    "check_legacy_vue2_helpers_cli.rs",
+    "check_legacy_vue2_no_unused_cli.rs",
+    "check_legacy_vue2_template_scope_cli.rs",
+    "check_legacy_vue2_vfor_cli.rs",
+    "check_vue2_vuetify_props_cli.rs",
+  ];
+
+  for (const file of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.match(source, /corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/);
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });

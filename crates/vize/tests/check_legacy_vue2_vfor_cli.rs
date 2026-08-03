@@ -7,9 +7,12 @@ use std::{
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[test]
 fn legacy_vue2_nested_v_for_member_array_aliases_do_not_fall_back_to_object_keys() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("legacy-vue2-nested-vfor-member-array-aliases");
