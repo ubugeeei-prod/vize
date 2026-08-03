@@ -14,6 +14,9 @@
 
 use vize_carton::cstr;
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 #[path = "support/default_run_root.rs"]
 mod default_run_root;
 
@@ -173,7 +176,7 @@ fn default_run_through_a_symlinked_workspace_path_reports_the_wrong_root() {
 /// app's real error, and surfaces the wider scope instead of failing.
 #[test]
 fn default_run_inside_an_owning_ancestor_program_checks_the_app_and_notes_the_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         eprintln!("skipping owning-ancestor case: tsgo not found");
         return;
     };
@@ -238,7 +241,7 @@ fn default_run_inside_an_owning_ancestor_program_checks_the_app_and_notes_the_sc
 /// scope note, and the app's error is reported.
 #[test]
 fn default_run_with_a_local_tsconfig_stays_in_the_app() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         eprintln!("skipping local-tsconfig case: tsgo not found");
         return;
     };

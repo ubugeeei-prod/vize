@@ -113,6 +113,23 @@ test("Canon Rust CLI gates use the fail-closed Corsa helper", () => {
   }
 });
 
+test("project-root Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    ["check_default_run_project_root_cli.rs", 2],
+    ["check_symlinked_node_modules_cli.rs", 1],
+  ] as const;
+
+  for (const [file, expectedCalls] of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.equal(
+      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      expectedCalls,
+      `${file} should guard all ${expectedCalls} Corsa resolver calls`,
+    );
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });
