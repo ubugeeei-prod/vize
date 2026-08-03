@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +31,7 @@ export type PinnedFixtureWorkspace = {
 type PinnedFixtureOptions = {
   fixtureId: string;
   includePaths: string[];
+  outsideRepository?: boolean;
 };
 
 /**
@@ -43,7 +45,9 @@ export async function withPinnedFixtureWorkspace<T>(
 ): Promise<T> {
   const { entry, upstreamDir, initialRevision } = openPinnedFixture(options.fixtureId);
 
-  const outputRoot = path.join(repoRoot, "target/vize-tests/realworld-patches");
+  const outputRoot = options.outsideRepository
+    ? path.join(os.tmpdir(), "vize-realworld-patches")
+    : path.join(repoRoot, "target/vize-tests/realworld-patches");
   fs.mkdirSync(outputRoot, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(outputRoot, `${entry.id}-`));
 

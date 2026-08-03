@@ -37,6 +37,8 @@ const assertionOnlyCheckTests = {
     "checkJs oracle asserts exact per-case diagnostics and vue-tsc agreement on JavaScript SFCs",
   "nuxt-ui-ambient-oracle":
     "framework patch oracle asserts generated Nuxt ambient types across editor revisions",
+  "nuxt-no-tsconfig-oracle":
+    "framework patch oracle asserts clean, broken, and repaired Nuxt checking without a root tsconfig",
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
   "typescript-project-references-oracle":

@@ -24,16 +24,17 @@ export function runVizeCheck(
   workspaceDir: string,
   corsaPath: string,
   patterns: string[],
+  tsconfigPath: string | null = "tsconfig.json",
 ): VizeCheckResult {
   const [command, ...prefixArgs] = resolveVizeCommand();
+  const tsconfigArgs = tsconfigPath === null ? [] : ["--tsconfig", tsconfigPath];
   const result = runCommand(
     command,
     [
       ...prefixArgs,
       "check",
       ...patterns,
-      "--tsconfig",
-      "tsconfig.json",
+      ...tsconfigArgs,
       "--format",
       "json",
       "--quiet",
