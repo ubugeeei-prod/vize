@@ -46,9 +46,10 @@
     "dev": "vp pack --watch",
     "pretest": "vp pack && pnpm check:size",
     "test": "vp exec node --test 'src/**/*.test.ts'",
-    "check": "vp check src scripts vite.config.ts",
+    "check": "vp check src scripts vite.config.ts && pnpm check:types",
     "check:fix": "vp check --fix src scripts vite.config.ts",
     "check:size": "node scripts/check-size.mjs",
+    "check:types": "vp exec tsgo --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "dependencies": {

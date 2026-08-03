@@ -127,7 +127,9 @@ export function useAsyncResource<Data, Arguments extends readonly unknown[], Fai
     return true;
   };
 
-  const execute = async (...arguments_: Arguments) => {
+  const execute = async (
+    ...arguments_: Arguments
+  ): Promise<AsyncResourceExecution<Data, Failure>> => {
     if ((options.cancelPrevious ?? true) && active !== undefined) {
       active.superseded = true;
       active.controller.abort(createAbortReason("A newer execution started."));

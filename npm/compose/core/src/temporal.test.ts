@@ -149,7 +149,7 @@ void test("publishes an importable ESM distribution with declarations", async ()
   assert.equal(packageJson.exports["./temporal"].import, "./dist/temporal.mjs");
   assert.equal(packageJson.exports["./temporal"].types, "./dist/temporal.d.mts");
 
-  const distribution = await import("../dist/temporal.mjs");
+  const distribution = await import(new URL("../dist/temporal.mjs", import.meta.url).href);
   assert.equal(typeof distribution.useTemporalNow, "function");
   assert.equal(typeof distribution.Temporal.Instant.from, "function");
 });

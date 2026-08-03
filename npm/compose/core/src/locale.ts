@@ -87,7 +87,7 @@ export function useLocale(
       : new Intl.Locale(candidate).toString();
   });
   const details = computed(() => new Intl.Locale(locale.value));
-  const direction = computed<TextDirection>(() => details.value.getTextInfo().direction);
+  const direction = computed<TextDirection>(() => details.value.getTextInfo().direction ?? "ltr");
 
   const number = createFormatterCache<Intl.NumberFormatOptions, Intl.NumberFormat>(
     (activeLocale, formatOptions) => new Intl.NumberFormat(activeLocale, formatOptions),
