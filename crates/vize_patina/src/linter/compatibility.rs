@@ -8,6 +8,8 @@ impl Linter {
         if version.is_some_and(VueVersion::is_legacy) {
             self.disabled_rules
                 .insert(String::from("vue/no-v-for-template-key-on-child"));
+            self.disabled_rules
+                .insert(String::from("vue/prefer-props-shorthand"));
         }
         self
     }
