@@ -47,12 +47,7 @@ export class LspSession {
     reject: (error: Error) => void;
     timeout: NodeJS.Timeout;
   }> = [];
-  /**
-   * Passive observers invoked for every server notification before waiter
-   * matching and backlog storage. Stream audits (for example the churn-stress
-   * suite's publish ordering oracle) record from here without consuming the
-   * notifications that `waitForNotification` callers race for.
-   */
+  /** Passive notification observers that do not consume waiter/backlog entries. */
   readonly notificationObservers: Array<(method: string, params: unknown) => void> = [];
   private buffer = Buffer.alloc(0);
   private nextId = 0;
@@ -150,11 +145,12 @@ export class LspSession {
     return result;
   }
 
-  get nextRequestId(): number {
-    return this.nextId + 1;
-  }
-
-  request(method: string, params: unknown, timeoutMs = 30000): Promise<unknown> {
+  request(
+    method: string,
+    params: unknown,
+    timeoutMs = 30000,
+    following: (id: number) => JsonRpcMessage[] = () => [],
+  ): Promise<unknown> {
     const id = ++this.nextId;
 
     return new Promise((resolve, reject) => {
@@ -164,7 +160,7 @@ export class LspSession {
       }, timeoutMs);
 
       this.pending.set(id, { resolve, reject, method, timeout });
-      this.send({ jsonrpc: "2.0", id, method, params });
+      this.send({ jsonrpc: "2.0", id, method, params }, ...following(id));
     });
   }
 
@@ -259,9 +255,8 @@ export class LspSession {
     });
   }
 
-  private send(message: JsonRpcMessage): void {
-    const payload = JSON.stringify(message);
-    const frame = `Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`;
+  private send(...messages: JsonRpcMessage[]): void {
+    const frame = messages.map((message) => frameMessage(message)).join("");
     this.process.stdin.write(frame, "utf8");
   }
 
@@ -347,4 +342,9 @@ export class LspSession {
     clearTimeout(notification.timeout);
     notification.resolve(message.params);
   }
+}
+
+function frameMessage(message: JsonRpcMessage): string {
+  const payload = JSON.stringify(message);
+  return `Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`;
 }

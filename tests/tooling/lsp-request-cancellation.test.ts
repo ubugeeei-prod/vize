@@ -32,9 +32,12 @@ test("vize lsp cancels an in-flight request and remains usable", async () => {
       isDiagnosticsForUri(params, uri),
     );
 
-    const requestId = session.nextRequestId;
-    const cancelled = session.request("workspace/symbol", { query: "cancellableSymbol" });
-    session.notify("$/cancelRequest", { id: requestId });
+    const cancelled = session.request(
+      "workspace/symbol",
+      { query: "cancellableSymbol" },
+      30000,
+      (id) => [{ jsonrpc: "2.0", method: "$/cancelRequest", params: { id } }],
+    );
 
     await assert.rejects(
       cancelled,
