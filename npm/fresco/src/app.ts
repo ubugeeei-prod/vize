@@ -29,6 +29,7 @@ import {
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
+import { normalizeKeyEventType } from "./nativeInput.js";
 import type {
   CompositionEvent,
   FocusEvent,
@@ -56,7 +57,6 @@ export type {
   ResizeEvent,
 } from "./protocol.js";
 
-// Global event state
 export const lastKeyEvent: Ref<KeyEvent | null> = ref(null);
 export const lastPasteEvent: Ref<PasteEvent | null> = ref(null);
 export const lastResizeEvent: Ref<ResizeEvent | null> = ref(null);
@@ -802,7 +802,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         hyper: modifiers.hyper ?? false,
         capsLock: modifiers.capsLock ?? false,
         numLock: modifiers.numLock ?? false,
-        eventType: event.keyEventType ?? undefined,
+        eventType: normalizeKeyEventType(event.keyEventType),
       };
     }
   }

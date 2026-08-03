@@ -8,6 +8,7 @@ const localGeneratedIgnorePatterns = [
   ".cache/**",
   ".direnv/**",
   "editors/vscode/.vscode-test/**",
+  "npm/fresco-native/index.d.ts",
   "target/**",
 ];
 const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
