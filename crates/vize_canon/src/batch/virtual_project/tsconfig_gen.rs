@@ -1,4 +1,5 @@
 mod compiler_options;
+mod control_alias;
 mod native_options;
 mod path_rebase;
 mod vue_alias;
@@ -12,6 +13,7 @@ use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::write_if_changed;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject};
+use control_alias::protect_control_file_aliases;
 use native_options::normalize_native_removed_options;
 use vue_alias::remap_path_targets;
 
@@ -292,6 +294,7 @@ impl VirtualProject {
                 Value::Array(remap_path_targets(targets, &up)),
             );
         }
+        protect_control_file_aliases(paths, &mut remapped, &up);
         remapped
     }
 
