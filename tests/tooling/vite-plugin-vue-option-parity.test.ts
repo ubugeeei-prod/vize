@@ -205,7 +205,10 @@ async function probeOptionsApiFeature(): Promise<void> {
   ] as const;
 
   for (const { expected, options, userDefine } of cases) {
-    const userConfig = { define: userDefine };
+    // Each hook gets its own config object so the parity assertion does not
+    // depend on either plugin leaving its input untouched.
+    const upstreamConfig = { define: { ...userDefine } };
+    const vizeConfig = { define: { ...userDefine } };
     const env = { command: "build", mode: "production" } as const;
     const upstream = createUpstreamPlugin(options) as Plugin;
     const vizePlugin = vize({ configMode: false, ...options }).find(
@@ -213,8 +216,8 @@ async function probeOptionsApiFeature(): Promise<void> {
     );
     assert.ok(vizePlugin);
 
-    const upstreamResult = await hook<AnyHook>(upstream.config).call({}, userConfig, env);
-    const vizeResult = await hook<AnyHook>(vizePlugin.config).call({}, userConfig, env);
+    const upstreamResult = await hook<AnyHook>(upstream.config).call({}, upstreamConfig, env);
+    const vizeResult = await hook<AnyHook>(vizePlugin.config).call({}, vizeConfig, env);
     const upstreamDefine = (upstreamResult as { define: Record<string, unknown> }).define
       .__VUE_OPTIONS_API__;
     const vizeDefine = (vizeResult as { define: Record<string, unknown> }).define

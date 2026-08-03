@@ -20,6 +20,7 @@ export type {
   UserConfigExport,
   LoadConfigOptions,
   VizeVueVersion,
+  VizeVueFeatures,
   VizeCompatibilityOptions,
   VizeInspectorLintPlanProvider,
   VizeInspectorLintPlanRequest,
