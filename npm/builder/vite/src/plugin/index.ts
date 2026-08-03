@@ -17,11 +17,8 @@ import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { compileAll } from "./precompile-run.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
-import {
-  handleHotUpdateHook,
-  handleGenerateBundleHook,
-  resolveComponentsCssFileName,
-} from "./hmr.ts";
+import { handleGenerateBundleHook, resolveComponentsCssFileName } from "./hmr.ts";
+import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
 import {
   createPostTransformPlugin,
   createStylePostTransformPlugin,
@@ -314,8 +311,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       return transformHook(state, code, id, transformOptions);
     },
 
-    async handleHotUpdate(ctx) {
-      return handleHotUpdateHook(state, ctx);
+    async hotUpdate(options) {
+      return handleHotUpdateEnvironmentHook(state, this.environment, options);
     },
 
     generateBundle(_, bundle) {

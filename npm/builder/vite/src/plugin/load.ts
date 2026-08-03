@@ -153,9 +153,6 @@ function loadCompiledSfcModule(
   rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
-  if (!loadOptions?.ssr) {
-    state.pendingHmrUpdateTypes.delete(realPath);
-  }
   return { code: rewritten.code, map: rewritten.map };
 }
 

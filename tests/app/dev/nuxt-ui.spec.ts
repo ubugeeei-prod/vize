@@ -11,11 +11,13 @@ import {
 } from "../../_helpers/assertions";
 import {
   ensurePortFree,
+  getProcessLogs,
   killProcess,
   startDevServer,
   waitForHttpReady,
   waitForServerReady,
 } from "../../_helpers/server";
+import { verifyNuxtUiAuthoredSourceHmr } from "./nuxt-ui-hmr";
 
 const app = nuxtUiApp;
 
@@ -147,7 +149,7 @@ async function waitForVueHydration(page: Page, buttonName: string): Promise<void
   await page.waitForFunction(
     (name) => {
       const button = Array.from(document.querySelectorAll("button")).find(
-        (el) => el.textContent?.trim() === name,
+        (el) => el.textContent?.trim() === name || el.ariaLabel === name,
       ) as (HTMLButtonElement & { __vueParentComponent?: unknown }) | undefined;
       return Boolean(button?.__vueParentComponent);
     },
@@ -174,6 +176,7 @@ function normalizeNuxtUiSnapshotHtml(html: string): string {
 
 test.describe("nuxt-ui dev", () => {
   let devServer: ChildProcess;
+  let hmrStartupLogStart = 0;
 
   test.beforeAll(async ({ browser }) => {
     // setup + install + dev:prepare + server start + route warmup can exceed the
@@ -184,6 +187,7 @@ test.describe("nuxt-ui dev", () => {
 
     console.log(`Starting dev server for ${app.name}...`);
     devServer = startDevServer(app);
+    hmrStartupLogStart = getProcessLogs(devServer).length;
     devServer.on("exit", (code) => {
       console.log(`[${app.name}] dev server exited with code ${code}`);
     });
@@ -266,6 +270,20 @@ test.describe("nuxt-ui dev", () => {
     expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
     const unexpectedHydrationErrors = hydrationErrors.filter((error) => !/Hydration/i.test(error));
     expect(unexpectedHydrationErrors).toHaveLength(0);
+  });
+
+  test("authored component source hot-updates without reloading", async ({ page }) => {
+    test.setTimeout(360_000);
+    await verifyNuxtUiAuthoredSourceHmr({
+      page,
+      devServer,
+      startupLogStart: hmrStartupLogStart,
+      cwd: app.cwd,
+      mountSelector: app.mountSelector,
+      appName: app.name,
+      goto: () => gotoNuxtUi(page, "/components/button"),
+      waitForHydration: () => waitForVueHydration(page, "Button"),
+    });
   });
 
   test("screenshot", async ({ page }) => {

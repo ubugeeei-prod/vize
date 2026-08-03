@@ -8,7 +8,14 @@ import { ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
 import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
-import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
+import {
+  fromPluginVisibleVirtualId,
+  isPluginVisibleSsrVirtualId,
+  isVizeSsrVirtual,
+  isVizeVirtual,
+  toPluginVisibleVirtualId,
+  toVirtualId,
+} from "../virtual.ts";
 import { resolveCssImports } from "../utils/css.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
@@ -86,20 +93,36 @@ function getStyleModuleFileCandidates(styleId: string): string[] {
   return unique([styleId, `${styleId}.css`]);
 }
 
-function collectModulesByFile(server: ViteDevServer, fileIds: readonly string[]): Set<ModuleNode> {
+async function collectModulesByFile(
+  server: ViteDevServer,
+  fileIds: readonly string[],
+): Promise<Set<ModuleNode>> {
   const modules = new Set<ModuleNode>();
-
+  const graph = server.moduleGraph;
   for (const fileId of fileIds) {
-    const matched = server.moduleGraph.getModulesByFile(fileId);
-    if (!matched) {
-      continue;
-    }
-    for (const mod of matched) {
-      modules.add(mod);
-    }
+    const add = (module: ModuleNode | undefined) => {
+      if (module) modules.add(module);
+    };
+    add(graph.getModuleById?.(fileId));
+    if (!fileId.startsWith("\0")) add(await graph.getModuleByUrl?.(fileId));
+    for (const module of graph.getModulesByFile(fileId) ?? []) add(module);
   }
 
   return modules;
+}
+
+function preferAcceptingClientModules(
+  modules: Set<ModuleNode>,
+  requireAcceptingClientModule = false,
+): Set<ModuleNode> {
+  const accepting = [...modules].filter((module) => {
+    if (isVizeVirtual(module.url)) return !isVizeSsrVirtual(module.url);
+    return (
+      fromPluginVisibleVirtualId(module.url) !== null && !isPluginVisibleSsrVirtualId(module.url)
+    );
+  });
+  if (accepting.length > 0) return new Set(accepting);
+  return requireAcceptingClientModule ? new Set() : modules;
 }
 
 function invalidateModules(server: ViteDevServer, modules: Iterable<ModuleNode>): void {
@@ -111,6 +134,7 @@ function invalidateModules(server: ViteDevServer, modules: Iterable<ModuleNode>)
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
+  options: { requireAcceptingClientModule?: boolean } = {},
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
@@ -119,13 +143,20 @@ export async function handleHotUpdateHook(
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
 
     for (const vueFile of dependencyOwners) {
+      const collectedModules = await collectModulesByFile(
+        server,
+        getVueModuleFileCandidates(vueFile),
+      );
+      const modules = options.requireAcceptingClientModule
+        ? preferAcceptingClientModules(collectedModules, true)
+        : collectedModules;
+      if (options.requireAcceptingClientModule && modules.size === 0) continue;
+
       state.cache.delete(vueFile);
       state.ssrCache.delete(vueFile);
       state.collectedCss.delete(vueFile);
       state.precompileMetadata.delete(vueFile);
       state.pendingHmrUpdateTypes.set(vueFile, "full-reload");
-
-      const modules = collectModulesByFile(server, getVueModuleFileCandidates(vueFile));
 
       for (const module of modules) {
         server.moduleGraph.invalidateModule(module);
@@ -145,6 +176,13 @@ export async function handleHotUpdateHook(
 
   if (file.endsWith(".vue") && state.filter(file)) {
     try {
+      const initialModules = options.requireAcceptingClientModule
+        ? preferAcceptingClientModules(
+            await collectModulesByFile(server, getVueModuleFileCandidates(file)),
+            true,
+          )
+        : undefined;
+      if (initialModules?.size === 0) return [];
       const source = await read();
 
       const prevCompiled = state.cache.get(file);
@@ -173,7 +211,12 @@ export async function handleHotUpdateHook(
 
       state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (${updateType})`);
 
-      const modules = collectModulesByFile(server, getVueModuleFileCandidates(file));
+      const collectedModules =
+        initialModules ?? (await collectModulesByFile(server, getVueModuleFileCandidates(file)));
+      const modules = preferAcceptingClientModules(
+        collectedModules,
+        options.requireAcceptingClientModule,
+      );
 
       const hasDelegated = hasDelegatedStyles(newCompiled);
 
@@ -190,7 +233,10 @@ export async function handleHotUpdateHook(
             params.set("module", typeof block.module === "string" ? block.module : "");
           }
           const styleId = `${file}?${params.toString()}`;
-          const styleMods = collectModulesByFile(server, getStyleModuleFileCandidates(styleId));
+          const styleMods = await collectModulesByFile(
+            server,
+            getStyleModuleFileCandidates(styleId),
+          );
           for (const mod of styleMods) {
             affectedModules.add(mod);
           }

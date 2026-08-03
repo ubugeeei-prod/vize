@@ -358,8 +358,8 @@ assert.match(
 );
 assert.equal(
   hmrState.pendingHmrUpdateTypes.has(realPath),
-  false,
-  "Pending HMR updates should be consumed after the client load",
+  true,
+  "The latest HMR update type should remain available to every client representation",
 );
 
 const secondLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
@@ -369,8 +369,8 @@ assert.ok(
 );
 assert.match(
   secondLoad.code,
-  /__hmrUpdateType = "full-reload"/,
-  "Consumed pending updates must fall back to the default HMR mode",
+  /__hmrUpdateType = "template-only"/,
+  "Repeated client loads for one update must keep the same HMR mode",
 );
 
 const watchedDependency = "/src/external.css";
