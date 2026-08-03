@@ -2,23 +2,12 @@ import assert from "node:assert/strict";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { LspRequestError } from "./errors.ts";
 import { resolveVizeLaunchCommand } from "./launch.ts";
 import { root } from "./paths.ts";
 import type { JsonRpcId, JsonRpcMessage, LspInitializationOptions } from "./protocol.ts";
 
-export class LspRequestError extends Error {
-  readonly code: number;
-  readonly data: unknown;
-  readonly method: string;
-
-  constructor(method: string, error: { code: number; message: string; data?: unknown }) {
-    super(`${method}: ${error.message}`);
-    this.name = "LspRequestError";
-    this.code = error.code;
-    this.data = error.data;
-    this.method = method;
-  }
-}
+export { LspRequestError };
 
 /**
  * Minimal JSON-RPC client for production LSP smoke tests.
@@ -296,7 +285,7 @@ export class LspSession {
       this.pending.delete(message.id);
 
       if (message.error) {
-        pending.reject(new LspRequestError(pending.method, message.error));
+        pending.reject(new LspRequestError(message.id, pending.method, message.error));
         return;
       }
 
