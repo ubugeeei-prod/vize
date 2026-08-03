@@ -23,7 +23,7 @@ overrides:
   "@hono/node-server": "2.0.11"
   "@unhead/vue": "2.1.15"
   "brace-expansion@2": "2.1.2"
-  "brace-expansion@>=5.0.0 <5.0.8": "5.0.8"
+  "brace-expansion@>=5.0.0 <5.0.9": "5.0.9"
   defu: "6.1.7"
   devalue: "5.8.1"
   dompurify: "3.4.11"
