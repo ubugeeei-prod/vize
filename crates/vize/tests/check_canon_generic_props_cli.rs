@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -140,7 +143,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path) {
 }
 
 fn run_generic_props_case(name: &str, files: &[(&str, &str)]) {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         skip_case(name, "tsgo not found");
         return;
     };

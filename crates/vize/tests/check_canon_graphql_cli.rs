@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -121,7 +124,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path) -> String {
 
 #[test]
 fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project = temp_case_dir("dedupe");
@@ -225,7 +228,7 @@ void childComponents
 /// positives vue-tsc does not raise.
 #[test]
 fn check_barrel_reexport_preserves_generated_graphql_identity() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project = temp_case_dir("barrel");

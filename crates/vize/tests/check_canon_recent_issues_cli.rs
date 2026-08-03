@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -143,7 +146,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path, target: &str) -> Strin
 
 #[test]
 fn check_with_defaults_preserves_loose_required_props() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -185,7 +188,7 @@ readModelValue({ props })
 
 #[test]
 fn check_with_defaults_undefined_default_preserves_optional_prop_value() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -228,7 +231,7 @@ useModel({
 
 #[test]
 fn check_v_for_infers_items_from_union_of_arrays() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -263,7 +266,7 @@ const items = computed<ItemA[] | ItemB[]>(() => (
 
 #[test]
 fn check_define_props_return_assignable_to_record_helpers() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -295,7 +298,7 @@ forwardProps(props)
 
 #[test]
 fn check_extended_interface_props_are_available_in_template_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(

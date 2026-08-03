@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -152,7 +155,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path) {
 
 #[test]
 fn check_component_derived_reserved_prop_shorthand_in_template_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(

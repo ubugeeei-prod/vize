@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -146,7 +149,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path) {
 
 #[test]
 fn check_generic_sfc_infers_type_from_template_props() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -181,7 +184,7 @@ import Child from "./Child.vue"
 
 #[test]
 fn check_generic_child_infers_model_type_from_v_model() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(
@@ -220,7 +223,7 @@ const modelValue = shallowRef<T | null>(null)
 
 #[test]
 fn check_generic_model_type_infers_from_value_key_prop() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case(

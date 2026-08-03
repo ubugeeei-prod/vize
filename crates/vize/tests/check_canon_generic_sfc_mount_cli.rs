@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -148,7 +151,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path, target: &str) {
 
 #[test]
 fn check_generic_sfc_props_infer_from_typescript_mount_options() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(

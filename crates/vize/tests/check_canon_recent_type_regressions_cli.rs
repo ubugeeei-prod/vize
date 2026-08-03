@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -149,7 +152,7 @@ fn run_check_json(project_root: &Path, corsa_path: &Path, target: &str) -> Strin
 
 #[test]
 fn check_imported_base_interface_props_are_available_in_template_scope() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
@@ -179,7 +182,7 @@ const props = withDefaults(defineProps<FooProps>(), { orientation: "horizontal" 
 
 #[test]
 fn check_contextmenu_accepts_pointer_event_handler() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
@@ -201,7 +204,7 @@ async function onPointer(event: PointerEvent) { event.preventDefault(); }
 
 #[test]
 fn check_generic_sfc_value_can_be_specialized_from_typescript() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
@@ -229,7 +232,7 @@ defineProps<{ modelValue?: T }>();
 
 #[test]
 fn check_exposed_template_ref_is_unwrapped_on_component_instance() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
@@ -276,7 +279,7 @@ const child = useTemplateRef<InstanceType<typeof Child>>("child");
 
 #[test]
 fn check_with_defaults_generic_props_do_not_gain_boolean_intersections() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
@@ -312,7 +315,7 @@ getKey(props.value);
 
 #[test]
 fn check_generic_define_props_preserves_local_boolean_keys() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_case_with_files(
