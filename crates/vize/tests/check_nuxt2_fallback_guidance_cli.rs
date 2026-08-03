@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -7,7 +10,7 @@ use vize_carton::cstr;
 
 #[test]
 fn check_nuxt2_compiler_compat_warning_does_not_suggest_nuxi_prepare() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("nuxt2-fallback-guidance");

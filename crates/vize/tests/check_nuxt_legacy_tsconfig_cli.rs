@@ -7,6 +7,9 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -114,7 +117,7 @@ fn output_text(output: &Output) -> (String, String) {
 
 #[test]
 fn check_accepts_a_nuxt_fallback_over_a_ts5_era_config() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let root = project("clean", "const count: number = 1;\nvoid count;");
@@ -135,7 +138,7 @@ fn check_accepts_a_nuxt_fallback_over_a_ts5_era_config() {
 
 #[test]
 fn check_still_reports_source_errors_with_the_nuxt_fallback() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let root = project(
@@ -163,7 +166,7 @@ fn check_still_reports_source_errors_with_the_nuxt_fallback() {
 
 #[test]
 fn check_still_reports_unrelated_config_errors_with_the_nuxt_fallback() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let root = project("config-error", "const count: number = 1;\nvoid count;");

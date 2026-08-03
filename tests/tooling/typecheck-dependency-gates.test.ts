@@ -62,6 +62,32 @@ test("legacy Rust CLI gates use the fail-closed Corsa helper", () => {
   }
 });
 
+test("Nuxt Rust CLI gates use the fail-closed Corsa helper", () => {
+  const files = [
+    ["check_nuxt2_classic_plugin_bindings_cli.rs", 1],
+    ["check_nuxt2_fallback_guidance_cli.rs", 1],
+    ["check_nuxt2_plugin_injections_cli.rs", 2],
+    ["check_nuxt2_template_globals_cli.rs", 1],
+    ["check_nuxt_ambient_cli.rs", 2],
+    ["check_nuxt_bridge_shims_cli.rs", 1],
+    ["check_nuxt_composition_api_cli.rs", 2],
+    ["check_nuxt_composition_api_plugin_augmentation_cli.rs", 1],
+    ["check_nuxt_legacy_tsconfig_cli.rs", 3],
+    ["check_nuxt_monorepo_cli.rs", 2],
+    ["check_nuxt_tsconfig_paths_cli.rs", 2],
+  ] as const;
+
+  for (const [file, expectedCalls] of files) {
+    const source = readRepoFile("crates", "vize", "tests", file);
+    assert.equal(
+      source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
+      expectedCalls,
+      `${file} should guard all ${expectedCalls} Corsa resolver calls`,
+    );
+    assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
+  }
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });

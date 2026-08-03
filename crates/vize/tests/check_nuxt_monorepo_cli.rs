@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -5,7 +8,7 @@ use std::{
 
 #[test]
 fn check_explicit_nuxt_app_tsconfig_in_monorepo_keeps_app_root_detection() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("monorepo-nuxt-app-tsconfig");
@@ -116,7 +119,7 @@ declare global {
 
 #[test]
 fn check_non_nuxt_child_package_does_not_warn_about_root_nuxt_generated_types() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("monorepo-non-nuxt-child");

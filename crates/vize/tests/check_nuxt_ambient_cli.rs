@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -40,7 +43,7 @@ fn write(root: &Path, rel: &str, content: &str) {
 
 #[test]
 fn check_tsconfig_default_run_loads_nuxt_ambient_declarations() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("import-meta");
@@ -115,7 +118,7 @@ fn check_tsconfig_default_run_loads_nuxt_ambient_declarations() {
 
 #[test]
 fn check_explicit_nuxt_build_dir_loads_generated_context_types() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("custom-build-dir-context");

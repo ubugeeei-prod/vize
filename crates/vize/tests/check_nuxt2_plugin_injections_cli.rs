@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -5,7 +8,7 @@ use std::{
 
 #[test]
 fn check_nuxt2_use_context_sees_plugin_injections() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("nuxt2-plugin-injections");
@@ -106,7 +109,7 @@ context.app.$logger.info(context.app.i18n.t("ready"));
 #[cfg(feature = "legacy")]
 #[test]
 fn check_nuxt2_false_positive_fixture_matrix() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("nuxt2-false-positive-matrix");

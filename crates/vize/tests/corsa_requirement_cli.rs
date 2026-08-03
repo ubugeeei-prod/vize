@@ -19,9 +19,13 @@ fn missing_optional_corsa_keeps_the_local_skip() {
 }
 
 #[test]
-fn explicit_disable_keeps_the_opt_out() {
+fn explicit_disable_keeps_the_opt_out_with_or_without_corsa() {
     assert_eq!(
         corsa_requirement::required_or_skip_with(Some("tsgo"), true, true),
+        None
+    );
+    assert_eq!(
+        corsa_requirement::required_or_skip_with::<()>(None, true, true),
         None
     );
 }

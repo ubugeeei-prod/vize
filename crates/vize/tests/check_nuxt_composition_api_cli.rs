@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -92,7 +95,7 @@ export declare function useRoute(): { value: { path: string } };
 
 #[test]
 fn check_resolves_nuxt2_composition_api_named_exports_in_sfc() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("exports");
@@ -173,7 +176,7 @@ export default defineComponent({
 
 #[test]
 fn check_deduplicates_nuxt_global_with_setup_return_spread() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("global-spread");

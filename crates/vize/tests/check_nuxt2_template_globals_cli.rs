@@ -1,5 +1,8 @@
 #![cfg(feature = "legacy")]
 
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -9,7 +12,7 @@ use vize_carton::cstr;
 
 #[test]
 fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = unique_case_dir("legacy-nuxt2-template-globals");

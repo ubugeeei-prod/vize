@@ -1,3 +1,6 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -5,7 +8,7 @@ use std::{
 
 #[test]
 fn check_nuxt_sfc_virtual_ts_prefers_explicit_tsconfig_paths_over_fallback_modules() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("nuxt-explicit-alias-shims");
@@ -162,7 +165,7 @@ export function useRouter(): {
 
 #[test]
 fn check_nuxt2_options_api_component_event_payloads_resolve_through_aliases() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_project("nuxt2-options-api-emits-alias");
