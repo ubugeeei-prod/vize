@@ -24,11 +24,23 @@ export async function handleHotUpdateEnvironmentHook(
       send: environment.hot.send.bind(environment.hot),
     },
   } as unknown as ViteDevServer;
+  let recompileFailed = false;
   const modules = await handleHotUpdateHook(
     state,
     { ...options, server } as unknown as HmrContext,
-    { requireAcceptingClientModule: true },
+    {
+      requireAcceptingClientModule: true,
+      onRecompileError: () => {
+        recompileFailed = true;
+      },
+    },
   );
+
+  // A failed re-compilation must keep Vite's default handling so the developer
+  // gets an update or an error overlay instead of a silently stale page.
+  if (recompileFailed) {
+    return undefined;
+  }
 
   if (modules === undefined && options.file.endsWith(".vue") && state.filter(options.file)) {
     return [];

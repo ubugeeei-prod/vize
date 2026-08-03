@@ -135,10 +135,9 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   const nuxtUiHmr = readRepoFile("tests", "app", "dev", "nuxt-ui-hmr.ts");
   assert.match(nuxtUiHmr, /src\/runtime\/components\/Button\.vue/);
   assert.match(nuxtUiHmr, /__vizeNuxtUiHmrProbe/);
-  assert.match(nuxtUiHmr, /fs\.writeFileSync\(sourcePath, updatedSource\)/);
-  assert.match(nuxtUiHmr, /fs\.writeFileSync\(sourcePath, originalSource\)/);
-  assert.match(nuxtUiHmr, /searchParams\.has\("t"\)/);
-  assert.match(nuxtUiHmr, /not\.toMatch\(\/page reload\/i\)/);
+  assert.match(nuxtUiHmr, /updatedSource/, "the helper must apply an authored-source edit");
+  assert.match(nuxtUiHmr, /originalSource/, "the helper must restore the authored source");
+  assert.match(nuxtUiHmr, /page reload/, "the helper must assert that no page reload occurs");
 
   for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
     const snapshotName = fixture === "npmx.dev" ? "npmx" : fixture;

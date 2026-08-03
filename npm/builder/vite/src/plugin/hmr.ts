@@ -104,7 +104,16 @@ async function collectModulesByFile(
       if (module) modules.add(module);
     };
     add(graph.getModuleById?.(fileId));
-    if (!fileId.startsWith("\0")) add(await graph.getModuleByUrl?.(fileId));
+    if (!fileId.startsWith("\0")) {
+      // Speculative candidates are resolved through the plugin container, so an
+      // ID that no plugin claims can reject. One bad candidate must not abort
+      // the rest of the hot update.
+      try {
+        add(await graph.getModuleByUrl?.(fileId));
+      } catch {
+        // Not a module in this graph.
+      }
+    }
     for (const module of graph.getModulesByFile(fileId) ?? []) add(module);
   }
 
@@ -134,7 +143,10 @@ function invalidateModules(server: ViteDevServer, modules: Iterable<ModuleNode>)
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
-  options: { requireAcceptingClientModule?: boolean } = {},
+  options: {
+    requireAcceptingClientModule?: boolean;
+    onRecompileError?: (error: unknown) => void;
+  } = {},
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
@@ -279,6 +291,7 @@ export async function handleHotUpdateHook(
       state.pendingHmrUpdateTypes.delete(file);
     } catch (e) {
       state.logger.error(`Re-compilation failed for ${file}:`, e);
+      options.onRecompileError?.(e);
     }
   }
 }

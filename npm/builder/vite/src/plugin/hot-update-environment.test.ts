@@ -157,6 +157,31 @@ function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): 
 
 {
   const state = createState();
+  const rawModule = { url: vueFile } as EnvironmentModuleNode;
+  const clientModule = {
+    id: toPluginVisibleVirtualId(vueFile),
+    url: toPluginVisibleVirtualId(vueFile),
+  } as EnvironmentModuleNode;
+  const options = createOptions([rawModule]);
+  options.read = async () => {
+    throw new Error("re-compilation failed");
+  };
+
+  const modules = await handleHotUpdateEnvironmentHook(
+    state,
+    createEnvironment("client", clientModule),
+    options,
+  );
+
+  assert.equal(
+    modules,
+    undefined,
+    "a failed re-compilation should keep Vite's default handling instead of reporting no update",
+  );
+}
+
+{
+  const state = createState();
   const previous = state.cache.get(vueFile);
   const rawModule = { url: vueFile } as EnvironmentModuleNode;
   const originalModules = [rawModule];

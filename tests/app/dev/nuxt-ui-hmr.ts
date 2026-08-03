@@ -26,7 +26,6 @@ export async function waitForNuxtUiHmrReady(
   devServer: ChildProcess,
   logStart: number,
   rehydrate: () => Promise<void>,
-  requireRouteRulesReload = false,
 ): Promise<void> {
   const deadline = Date.now() + 120_000;
   const probe = `nuxt-ui-ready-${Date.now()}`;
@@ -62,24 +61,14 @@ export async function waitForNuxtUiHmrReady(
     }
 
     const stableFor = Date.now() - stableSince;
-    if (!requireRouteRulesReload && lastOptimizeReload < 0 && stableFor >= 15_000) return;
+    if (lastOptimizeReload < 0 && stableFor >= 15_000) return;
     if (lastRouteRulesReload > lastOptimizeReload) {
       routeRulesObservedAt ??= Date.now();
       if (Date.now() - routeRulesObservedAt >= 5_000 && stableFor >= 5_000) return;
     } else {
       routeRulesObservedAt = undefined;
-      if (
-        requireRouteRulesReload &&
-        lastRouteRulesReload >= 0 &&
-        Date.now() - Math.max(stableSince, startupActivityAt) >= 15_000
-      )
-        return;
     }
-    if (
-      !requireRouteRulesReload &&
-      lastOptimizeReload >= 0 &&
-      Date.now() - Math.max(stableSince, startupActivityAt) >= 75_000
-    )
+    if (lastOptimizeReload >= 0 && Date.now() - Math.max(stableSince, startupActivityAt) >= 75_000)
       return;
     await sleep(500);
   }
@@ -156,6 +145,33 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;
   let forwardCompleted = false;
+  // A killed worker (Playwright global timeout, CI cancellation) skips `finally`
+  // and would leave the tracked fixture source edited, so restore on the way out
+  // of the process too.
+  let restored = false;
+  const restore = () => {
+    if (restored) return;
+    restored = true;
+    try {
+      fs.writeFileSync(sourcePath, originalSource);
+    } catch {
+      // Best effort during abrupt shutdown.
+    }
+  };
+  const signals: NodeJS.Signals[] = ["SIGINT", "SIGTERM"];
+  const onSignal = (signal: NodeJS.Signals) => {
+    restore();
+    process.off("exit", restore);
+    for (const other of signals) process.off(other, onSignal);
+    // Re-raise so termination keeps its default meaning for the worker.
+    process.kill(process.pid, signal);
+  };
+  const detach = () => {
+    process.off("exit", restore);
+    for (const signal of signals) process.off(signal, onSignal);
+  };
+  process.on("exit", restore);
+  for (const signal of signals) process.on(signal, onSignal);
   try {
     await page.evaluate((value) => {
       (window as Window & { __vizeNuxtUiHmrProbe?: string }).__vizeNuxtUiHmrProbe = value;
@@ -178,13 +194,18 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   } finally {
     const requestStart = hmrRequests.length;
     const completionStart = completedHmrUpdates.length;
-    fs.writeFileSync(sourcePath, originalSource);
-    if (forwardCompleted) {
-      await expect(original).toBeVisible({ timeout: 60_000 });
-      await expect(updated).toHaveCount(0, { timeout: 60_000 });
-      expect(hmrRequests.length).toBeGreaterThan(requestStart);
-      await expect.poll(() => completedHmrUpdates.length).toBeGreaterThan(completionStart);
-      await page.waitForTimeout(2_000);
+    try {
+      fs.writeFileSync(sourcePath, originalSource);
+      restored = true;
+      if (forwardCompleted) {
+        await expect(original).toBeVisible({ timeout: 60_000 });
+        await expect(updated).toHaveCount(0, { timeout: 60_000 });
+        expect(hmrRequests.length).toBeGreaterThan(requestStart);
+        await expect.poll(() => completedHmrUpdates.length).toBeGreaterThan(completionStart);
+        await page.waitForTimeout(2_000);
+      }
+    } finally {
+      detach();
     }
   }
 

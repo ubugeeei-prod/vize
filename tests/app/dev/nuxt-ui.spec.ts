@@ -273,7 +273,10 @@ test.describe("nuxt-ui dev", () => {
   });
 
   test("authored component source hot-updates without reloading", async ({ page }) => {
-    test.setTimeout(360_000);
+    // Above the sum of the helper's inner budgets (180s initial client module,
+    // 120s readiness, 60s per DOM assertion plus fixed sleeps), so a failure
+    // surfaces as the specific inner assertion instead of a generic timeout.
+    test.setTimeout(540_000);
     await verifyNuxtUiAuthoredSourceHmr({
       page,
       devServer,
