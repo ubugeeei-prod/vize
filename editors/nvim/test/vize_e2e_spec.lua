@@ -34,13 +34,11 @@ local function assert_eq(actual, want, label)
   end
 end
 
-local function request(bufnr, method, params)
-  local responses, request_error = vim.lsp.buf_request_sync(bufnr, method, params, 120000)
+local function request(client, bufnr, method, params)
+  local response, request_error = client:request_sync(method, params, 120000, bufnr)
   assert(request_error == nil, method .. " failed: " .. tostring(request_error))
-  assert(responses ~= nil, method .. " timed out")
-  local _, response = next(responses)
   assert(response ~= nil, method .. " produced no response")
-  assert(response.error == nil, method .. " returned an error: " .. vim.inspect(response.error))
+  assert(response.err == nil, method .. " returned an error: " .. vim.inspect(response.err))
   return response.result
 end
 
@@ -107,8 +105,8 @@ local function step_diagnostics(uri, published)
 end
 
 --- Step 2: template-expression completion comes from the real server.
-local function step_completion(bufnr, uri)
-  local result = request(bufnr, "textDocument/completion", {
+local function step_completion(client, bufnr, uri)
+  local result = request(client, bufnr, "textDocument/completion", {
     position = expected.completion_position,
     textDocument = { uri = uri },
   })
@@ -126,8 +124,8 @@ local function step_completion(bufnr, uri)
 end
 
 --- Step 3: hover reports the backend type for the script binding.
-local function step_hover(bufnr, uri)
-  local result = request(bufnr, "textDocument/hover", {
+local function step_hover(client, bufnr, uri)
+  local result = request(client, bufnr, "textDocument/hover", {
     position = expected.hover_position,
     textDocument = { uri = uri },
   })
@@ -135,8 +133,8 @@ local function step_hover(bufnr, uri)
 end
 
 --- Step 4: the quick fix the server offers on the lint warning's own span.
-local function step_quick_fix(bufnr, uri, offset_encoding)
-  local actions = request(bufnr, "textDocument/codeAction", {
+local function step_quick_fix(client, bufnr, uri, offset_encoding)
+  local actions = request(client, bufnr, "textDocument/codeAction", {
     context = { diagnostics = {} },
     range = expected.quick_fix_range,
     textDocument = { uri = uri },
@@ -147,8 +145,28 @@ local function step_quick_fix(bufnr, uri, offset_encoding)
   assert_eq(buffer_text(bufnr), expected.quick_fixed_source, "buffer after applying the quick fix")
 end
 
+local function wait_for_post_save_diagnostics(bufnr, uri, published_version_counts)
+  local buffer_version = vim.lsp.util.buf_versions[bufnr]
+  assert(buffer_version ~= nil, "Neovim tracks no LSP version for the scenario buffer")
+
+  -- Formatting changes the buffer immediately before `:write`, so Neovim
+  -- flushes one didChange and then one didSave. Vize publishes diagnostics for
+  -- both notifications. Drain both passes before another Corsa-backed request
+  -- so the scenario measures rename instead of racing background diagnostics.
+  local settled = vim.wait(120000, function()
+    local version_counts = published_version_counts[uri] or {}
+    return (version_counts[buffer_version] or 0) >= 2
+  end, 100)
+  if not settled then
+    fail("post-save diagnostics did not drain for the current buffer version", {
+      buffer_version = buffer_version,
+      published_version_counts = published_version_counts[uri],
+    })
+  end
+end
+
 --- Step 5: format-on-save, wired the way a Neovim user wires it.
-local function step_format_on_save(bufnr, uri, scenario_path)
+local function step_format_on_save(client, bufnr, uri, scenario_path, published_version_counts)
   vim.api.nvim_create_autocmd("BufWritePre", {
     buffer = bufnr,
     callback = function()
@@ -156,7 +174,7 @@ local function step_format_on_save(bufnr, uri, scenario_path)
     end,
   })
 
-  local edits = request(bufnr, "textDocument/formatting", {
+  local edits = request(client, bufnr, "textDocument/formatting", {
     options = { insertSpaces = true, tabSize = 2 },
     textDocument = { uri = uri },
   })
@@ -167,19 +185,20 @@ local function step_format_on_save(bufnr, uri, scenario_path)
   assert_eq(buffer_text(bufnr), expected.formatted_source, "buffer after format-on-save")
   assert_eq(read_file(scenario_path), expected.formatted_source, "file on disk after format-on-save")
   assert_eq(vim.bo[bufnr].modified, false, "format-on-save leaves the buffer saved")
+  wait_for_post_save_diagnostics(bufnr, uri, published_version_counts)
 end
 
 --- Step 6: semantic tokens for the formatted document.
-local function step_semantic_tokens(bufnr, uri)
-  local tokens = request(bufnr, "textDocument/semanticTokens/full", {
+local function step_semantic_tokens(client, bufnr, uri)
+  local tokens = request(client, bufnr, "textDocument/semanticTokens/full", {
     textDocument = { uri = uri },
   })
   assert_eq(tokens, expected.semantic_tokens, "semantic tokens")
 end
 
 --- Step 7: rename the script binding the template consumes.
-local function step_rename(bufnr, uri, offset_encoding)
-  local edit = request(bufnr, "textDocument/rename", {
+local function step_rename(client, bufnr, uri, offset_encoding)
+  local edit = request(client, bufnr, "textDocument/rename", {
     newName = expected.rename_new_name,
     position = expected.rename_position,
     textDocument = { uri = uri },
@@ -190,7 +209,7 @@ local function step_rename(bufnr, uri, offset_encoding)
   assert_eq(buffer_text(bufnr), expected.renamed_source, "buffer after applying the rename")
 end
 
-local function start_client(bufnr, published)
+local function start_client(bufnr, published, published_version_counts)
   -- The packaged `recommended` profile leaves formatting off, matching the
   -- server default. Format-on-save is an explicit opt-in, so the scenario
   -- turns it on the same way a user would: through `init_options`.
@@ -214,6 +233,11 @@ local function start_client(bufnr, published)
       ["textDocument/publishDiagnostics"] = function(_, result)
         if result ~= nil then
           published[result.uri] = result.diagnostics
+          if result.version ~= nil then
+            published_version_counts[result.uri] = published_version_counts[result.uri] or {}
+            local counts = published_version_counts[result.uri]
+            counts[result.version] = (counts[result.version] or 0) + 1
+          end
         end
       end,
     },
@@ -245,7 +269,8 @@ local function main()
   assert_eq(buffer_text(bufnr), expected.authored_source, "authored fixture source")
 
   local published = {}
-  local client_id = start_client(bufnr, published)
+  local published_version_counts = {}
+  local client_id = start_client(bufnr, published, published_version_counts)
   local uri = vim.uri_from_bufnr(bufnr)
 
   -- Apply edits with the position encoding the client actually negotiated
@@ -257,12 +282,12 @@ local function main()
   assert(offset_encoding ~= nil, "the vize client negotiated no position encoding")
 
   step_diagnostics(uri, published)
-  step_completion(bufnr, uri)
-  step_hover(bufnr, uri)
-  step_quick_fix(bufnr, uri, offset_encoding)
-  step_format_on_save(bufnr, uri, scenario_path)
-  step_semantic_tokens(bufnr, uri)
-  step_rename(bufnr, uri, offset_encoding)
+  step_completion(client, bufnr, uri)
+  step_hover(client, bufnr, uri)
+  step_quick_fix(client, bufnr, uri, offset_encoding)
+  step_format_on_save(client, bufnr, uri, scenario_path, published_version_counts)
+  step_semantic_tokens(client, bufnr, uri)
+  step_rename(client, bufnr, uri, offset_encoding)
 
   vim.lsp.stop_client(client_id, true)
 end

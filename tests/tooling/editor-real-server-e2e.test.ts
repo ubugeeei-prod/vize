@@ -134,6 +134,31 @@ test("the Neovim real-server scenario pins completion and hover responses", () =
   assert.match(expected, /character = 11, line = 3/);
 });
 
+test("the Neovim real-server scenario drains post-save diagnostics before rename", () => {
+  const scenario = readRepoFile("editors", "nvim", "test", "vize_e2e_spec.lua");
+
+  // A buffer-wide synchronous request waits for every attached client and can
+  // turn a disappearing client into a full timeout. This scenario starts one
+  // known Vize client, so requests must target that client directly.
+  assert.match(scenario, /client:request_sync\(method, params, 120000, bufnr\)/);
+  assert.doesNotMatch(scenario, /vim\.lsp\.buf_request_sync/);
+
+  // `:write` schedules didChange/didSave diagnostics. Do not race a Corsa
+  // rename against those passes: wait until Vize publishes the current buffer
+  // version, then continue with semantic tokens and rename.
+  assert.match(scenario, /counts\[result\.version\] = \(counts\[result\.version\] or 0\) \+ 1/);
+  assert.match(scenario, /\(version_counts\[buffer_version\] or 0\) >= 2/);
+  assert.match(
+    scenario,
+    /vim\.cmd\("write"\)[\s\S]*?wait_for_post_save_diagnostics\(bufnr, uri, published_version_counts\)/,
+  );
+
+  const waitAt = scenario.indexOf("step_format_on_save(");
+  const semanticTokensAt = scenario.indexOf("step_semantic_tokens(", waitAt);
+  const renameAt = scenario.indexOf("step_rename(", semanticTokensAt);
+  assert.ok(waitAt >= 0 && semanticTokensAt > waitAt && renameAt > semanticTokensAt);
+});
+
 test("the VS Code real-server suite drives all five scorecard steps", () => {
   const scenario = readRepoFile("editors", "vscode", "test", "suite", "real-scenario.cjs");
 
