@@ -58,6 +58,12 @@
       "batchCheckBudget": {
         "coldMs": 15000,
         "warmMs": 10000
+      },
+      "batchIncrementalBudget": {
+        "coldMs": 15000,
+        "warmMs": 10000,
+        "maxRequestedFiles": 500,
+        "maxChangedFiles": 1
       }
     },
     {
