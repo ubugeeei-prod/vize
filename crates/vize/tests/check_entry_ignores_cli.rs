@@ -1,10 +1,13 @@
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{path::Path, process::Command};
 
 use vize_carton::cstr;
 
 #[test]
 fn check_config_entry_ignores_explicit_inputs() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
@@ -61,7 +64,7 @@ const count: string = 0;
 
 #[test]
 fn check_config_entry_ignores_default_and_explicit_path_matrix() {
-    let Some(corsa_path) = resolve_test_corsa_path() else {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
     let project_root = create_cli_project(
