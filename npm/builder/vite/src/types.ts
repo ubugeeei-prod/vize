@@ -4,6 +4,7 @@ import type {
   ExperimentalPluginOptions,
 } from "./experimental-options.ts";
 import type { VizeInspectorOptions } from "./inspector-types.ts";
+import type { VizeVueFeatures } from "./vue-features.ts";
 
 export type {
   VizeInspectorLintPlanProvider,
@@ -104,16 +105,6 @@ export interface VizeCompatibilityOptions {
    * Override the host Webpack major when this option object is shared with unplugin.
    */
   webpackVersion?: 4 | 5;
-}
-
-/** Vue runtime feature flags shared with `@vitejs/plugin-vue`. */
-export interface VizeVueFeatures {
-  /**
-   * Set to `false` to allow Vue's Options API code to be tree-shaken from
-   * production bundles.
-   * @default true
-   */
-  optionsAPI?: boolean;
 }
 
 export interface VizeOptions extends ExperimentalPluginOptions {
