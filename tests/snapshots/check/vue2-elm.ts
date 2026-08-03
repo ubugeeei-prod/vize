@@ -55,10 +55,7 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
   );
 }
 
-test(
-  "vue2-elm vize check surface over the pinned Vue 2 app stays exact",
-  verifyVue2ElmSnapshot,
-);
+test("vue2-elm vize check surface over the pinned Vue 2 app stays exact", verifyVue2ElmSnapshot);
 
 test("vue2-elm detects and repairs an exact authored JavaScript type error", async () => {
   const corsaPath = resolveTsgoBinary();
@@ -74,7 +71,11 @@ test("vue2-elm detects and repairs an exact authored JavaScript type error", asy
       const brokenSource = fixture.applyExactPatch(APP_PATH, CLEAN_IMPORT, BROKEN_IMPORT);
       const brokenFirst = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
       const brokenSecond = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
-      assert.equal(brokenSecond.stdout, brokenFirst.stdout, "broken check JSON must be byte-stable");
+      assert.equal(
+        brokenSecond.stdout,
+        brokenFirst.stdout,
+        "broken check JSON must be byte-stable",
+      );
       assert.equal(fixture.read(APP_PATH), brokenSource, "check must preserve the broken edit");
       assert.deepEqual(
         diagnosticsFor(brokenFirst.report.files, APP_PATH).filter(
@@ -86,7 +87,11 @@ test("vue2-elm detects and repairs an exact authored JavaScript type error", asy
       const repairedSource = fixture.applyExactPatch(APP_PATH, BROKEN_IMPORT, CLEAN_IMPORT);
       assert.equal(repairedSource, pinnedSource, "repair must restore the exact pinned source");
       const repaired = runVizeCheck(fixture.workspaceDir, corsaPath, [APP_PATH]);
-      assert.deepEqual(repaired.report, clean.report, "repair must restore the clean diagnostic set");
+      assert.deepEqual(
+        repaired.report,
+        clean.report,
+        "repair must restore the clean diagnostic set",
+      );
       assert.equal(repaired.stdout, clean.stdout, "repair must restore byte-stable check JSON");
     },
   );
