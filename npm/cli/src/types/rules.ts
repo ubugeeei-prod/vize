@@ -80,6 +80,7 @@ export const LINT_RULE_NAMES = [
   "script/no-boolean-default",
   "script/no-deep-destructure-in-props",
   "script/no-deprecated-data-object-declaration",
+  "script/no-deprecated-destroyed-lifecycle",
   "script/no-deprecated-dollar-listeners-api",
   "script/no-deprecated-dollar-scopedslots-api",
   "script/no-deprecated-events-api",

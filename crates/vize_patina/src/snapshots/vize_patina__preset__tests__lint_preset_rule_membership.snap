@@ -586,6 +586,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/return-in-computed-property",
     "script/no-deprecated-dollar-scopedslots-api",
     "script/no-deprecated-data-object-declaration",
+    "script/no-deprecated-destroyed-lifecycle",
     "script/no-deprecated-events-api",
     "script/component-options-name-casing",
     "script/require-prop-type-constructor",

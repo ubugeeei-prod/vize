@@ -30,7 +30,7 @@ pub use parse::{
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
-pub use process::{collect_options_descriptor, process_statement};
+pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
 

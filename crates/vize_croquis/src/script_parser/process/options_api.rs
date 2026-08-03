@@ -820,18 +820,10 @@ pub(super) fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str>
 // Options descriptor (shared single-source-of-truth options-object view).
 // ---------------------------------------------------------------------------
 
-/// Resolve the component's Options API options object from `program` and build
-/// its [`OptionsDescriptor`], reusing the same authoritative
-/// `export default` / `defineComponent(...)` / identifier-bound /
-/// `as`/`satisfies`/non-null/paren resolution that drives template-binding
-/// collection.
-///
-/// Returns the descriptor for the first resolved options object (matching the
-/// resolution order of the existing collectors), or `None` when the script does
-/// not declare an Options API component via `export default`.
-///
-/// Spans are program-relative; callers add their block offset.
-pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescriptor> {
+/// Resolve the first Options API object using the same authoritative path that
+/// drives component metadata collection. The returned AST node is borrowed
+/// from `program`; callers must not retain it beyond that parse.
+pub fn collect_options_object<'a>(program: &'a Program<'a>) -> Option<&'a ObjectExpression<'a>> {
     let mut component_option_bindings = FxHashMap::default();
     collect_component_options_bindings(program, &mut component_option_bindings);
 
@@ -848,10 +840,16 @@ pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescri
         else {
             continue;
         };
-        return Some(build_options_descriptor(options.object));
+        return Some(options.object);
     }
 
     None
+}
+
+/// Resolve the component Options API object and build its shared descriptor.
+/// Spans are program-relative; callers add their own block offset.
+pub fn collect_options_descriptor(program: &Program<'_>) -> Option<OptionsDescriptor> {
+    collect_options_object(program).map(build_options_descriptor)
 }
 
 /// Build an [`OptionsDescriptor`] from an already-resolved options object.

@@ -9,6 +9,7 @@ pub use super::no_async_in_computed::NoAsyncInComputed;
 pub use super::no_boolean_default::NoBooleanDefault;
 pub use super::no_deep_destructure_in_props::NoDeepDestructureInProps;
 pub use super::no_deprecated_data_object_declaration::NoDeprecatedDataObjectDeclaration;
+pub use super::no_deprecated_destroyed_lifecycle::NoDeprecatedDestroyedLifecycle;
 pub use super::no_deprecated_dollar_listeners_api::NoDeprecatedDollarListenersApi;
 pub use super::no_deprecated_dollar_scopedslots_api::NoDeprecatedDollarScopedSlotsApi;
 pub use super::no_deprecated_events_api::NoDeprecatedEventsApi;

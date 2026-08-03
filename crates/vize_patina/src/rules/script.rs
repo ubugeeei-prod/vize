@@ -1,6 +1,5 @@
-//! Script-level lint rules for Vue.js SFC files. These rules check
-//! TypeScript/JavaScript code in `<script>` and `<script setup>` blocks and
-//! are **opt-in**: enable them via `[rules.script]` in your configuration.
+//! Script-level lint rules for Vue.js SFC files. They check TypeScript/JavaScript
+//! in `<script>` and `<script setup>` blocks and are **opt-in** via `[rules.script]`.
 
 mod component_options_name_casing;
 mod custom_event_name_casing;
@@ -14,6 +13,7 @@ mod no_async_in_computed;
 mod no_boolean_default;
 mod no_deep_destructure_in_props;
 mod no_deprecated_data_object_declaration;
+mod no_deprecated_destroyed_lifecycle;
 mod no_deprecated_dollar_listeners_api;
 mod no_deprecated_dollar_scopedslots_api;
 mod no_deprecated_events_api;
@@ -296,8 +296,7 @@ impl ScriptLinter {
         } else {
             None
         };
-        // AST rules only run when parsing succeeded (matching the previous
-        // per-rule `parsed.panicked || !errors.is_empty()` early-return).
+        // AST rules only run when parsing succeeded, as per-rule guards did.
         let program = parsed.as_ref().and_then(|parsed| {
             if parsed.panicked || !parsed.diagnostics.is_empty() {
                 None
