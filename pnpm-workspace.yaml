@@ -28,7 +28,7 @@ overrides:
   devalue: "5.8.1"
   dompurify: "3.4.11"
   esbuild: "0.28.1"
-  fast-uri: "3.1.4"
+  fast-uri: "3.1.5"
   "glob>minimatch": "10.2.5"
   h3: "1.15.11"
   hono: "4.12.31"
