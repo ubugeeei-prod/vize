@@ -56,7 +56,7 @@ impl Rule for NoUseVIfWithVFor {
         for prop in element.props.iter() {
             if let PropNode::Directive(dir) = prop {
                 match dir.name.as_str() {
-                    "if" | "else-if" => {
+                    "if" => {
                         v_if_info = Some((dir.loc.clone(), dir.exp.as_ref()));
                     }
                     "for" => {
@@ -179,13 +179,13 @@ mod tests {
     }
 
     #[test]
-    fn test_v_else_if_with_v_for() {
+    fn test_v_else_if_with_v_for_is_owned_by_its_dedicated_rule() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div v-for="item in items" v-else-if="condition" :key="item.id">{{ item }}</div>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

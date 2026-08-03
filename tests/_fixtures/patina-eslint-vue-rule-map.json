@@ -6,8 +6,8 @@
     "ruleCount": 252
   },
   "summary": {
-    "mapped": 122,
-    "unimplemented": 130
+    "mapped": 123,
+    "unimplemented": 129
   },
   "entries": {
     "vue/array-bracket-newline": {
@@ -623,8 +623,8 @@
       "patinaRule": "script/no-use-computed-property-like-method"
     },
     "vue/no-use-v-else-with-v-for": {
-      "status": "unimplemented",
-      "issue": 3223
+      "status": "mapped",
+      "patinaRule": "vue/no-use-v-else-with-v-for"
     },
     "vue/no-use-v-if-with-v-for": {
       "status": "mapped",

@@ -31,6 +31,7 @@ mod no_reserved_component_names;
 mod no_template_key;
 mod no_textarea_mustache;
 mod no_unused_vars;
+mod no_use_v_else_with_v_for;
 mod no_use_v_if_with_v_for;
 mod no_useless_template_attributes;
 mod no_v_for_template_key_on_child;
@@ -114,6 +115,7 @@ pub use no_reserved_component_names::NoReservedComponentNames;
 pub use no_template_key::NoTemplateKey;
 pub use no_textarea_mustache::NoTextareaMustache;
 pub use no_unused_vars::NoUnusedVars;
+pub use no_use_v_else_with_v_for::NoUseVElseWithVFor;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
 pub use no_v_for_template_key_on_child::NoVForTemplateKeyOnChild;
@@ -235,6 +237,9 @@ pub(crate) fn register_security(registry: &mut crate::rule::RuleRegistry) {
 pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("vue/no-multiple-template-root") {
         registry.register(Box::new(NoMultipleTemplateRoot));
+    }
+    if !registry.has_rule("vue/no-use-v-else-with-v-for") {
+        registry.register(Box::new(NoUseVElseWithVFor));
     }
     if !registry.has_rule("vue/no-deprecated-v-on-native-modifier") {
         registry.register(Box::new(NoDeprecatedVOnNativeModifier));

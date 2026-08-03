@@ -7,9 +7,5 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
 
   assert.equal(ruleMap.upstream.version, "10.9.2");
   assert.equal(ruleMap.upstream.ruleCount, 252);
-  assert.ok(ruleMap.summary.mapped > 100, "the scorecard must expose existing Patina coverage");
-  assert.ok(
-    ruleMap.summary.unimplemented > 0,
-    "the scorecard must keep uncovered upstream rules explicit",
-  );
+  assert.deepEqual(ruleMap.summary, { mapped: 123, unimplemented: 129 });
 });
