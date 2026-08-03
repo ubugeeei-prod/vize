@@ -130,3 +130,37 @@ fn package_root_ignores_subpath_only_exports_map() {
 
     let _ = std::fs::remove_dir_all(package);
 }
+
+#[test]
+fn subpath_falls_back_to_wildcard_exports_types() {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let package = std::env::temp_dir().join(format!(
+        "vize-sfc-external-types-{}-wildcard-{nonce}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(package.join("types")).unwrap();
+    std::fs::create_dir_all(package.join("dist")).unwrap();
+    // Only a `*` pattern subpath is exported, as bundlers commonly emit.
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"exports":{"./*":{"types":"./types/*.d.ts","import":"./dist/*.mjs"}}}"#,
+    )
+    .unwrap();
+    std::fs::write(package.join("dist/button.mjs"), "export default {}").unwrap();
+    std::fs::write(
+        package.join("types/button.d.ts"),
+        "export type ButtonProps = { label: string }",
+    )
+    .unwrap();
+
+    let resolved = resolve_package_types(&package, "button").unwrap();
+    assert!(
+        resolved.ends_with("types/button.d.ts"),
+        "expected wildcard exports types entry, got {resolved:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(package);
+}
