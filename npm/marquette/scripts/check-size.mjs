@@ -7,6 +7,11 @@ const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const budgets = [
   { entry: "@vizejs/marquette", file: "dist/index.mjs", maximumGzipBytes: 1024 },
   {
+    entry: "@vizejs/marquette/adapter",
+    file: "dist/adapter.mjs",
+    maximumGzipBytes: 4096,
+  },
+  {
     entry: "@vizejs/marquette/validate",
     file: "dist/validate.mjs",
     maximumGzipBytes: 3072,

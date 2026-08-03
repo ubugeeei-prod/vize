@@ -1,0 +1,42 @@
+[
+  {
+    "code": "invalid-adapter-id",
+    "path": "adapter",
+    "message": "adapter must be a lowercase portable identifier"
+  },
+  {
+    "code": "invalid-version",
+    "path": "capabilities.0.maxVersion",
+    "message": "maximum supported version must be greater than zero"
+  },
+  {
+    "code": "invalid-version",
+    "path": "capabilities.0.minVersion",
+    "message": "minimum supported version must be greater than zero"
+  },
+  {
+    "code": "invalid-version-range",
+    "path": "capabilities.1",
+    "message": "minimum supported version must not exceed maximum supported version"
+  },
+  {
+    "code": "invalid-capability-id",
+    "path": "capabilities.1.id",
+    "message": "capability id must be a lowercase portable identifier"
+  },
+  {
+    "code": "invalid-capability-id",
+    "path": "capabilities.2.id",
+    "message": "capability id must be a lowercase portable identifier"
+  },
+  {
+    "code": "duplicate-capability",
+    "path": "capabilities.2.id",
+    "message": "capability id must be unique within the adapter manifest"
+  },
+  {
+    "code": "invalid-format-version",
+    "path": "formatVersion",
+    "message": "unsupported adapter capability manifest format version"
+  }
+]

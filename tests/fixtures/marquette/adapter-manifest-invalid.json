@@ -1,0 +1,9 @@
+{
+  "formatVersion": 2,
+  "adapter": "Bad Adapter",
+  "capabilities": [
+    { "id": "zero", "minVersion": 0, "maxVersion": 0 },
+    { "id": "Bad Id", "minVersion": 4, "maxVersion": 2 },
+    { "id": "Bad Id", "minVersion": 1, "maxVersion": 1 }
+  ]
+}

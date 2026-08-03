@@ -1,0 +1,4 @@
+{
+  "adapter": "fixture.adapter",
+  "capabilities": [{ "id": "known", "minVersion": 1, "maxVersion": 1, "unexpected": true }]
+}

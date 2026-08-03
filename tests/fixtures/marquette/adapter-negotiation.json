@@ -1,0 +1,147 @@
+{
+  "contract": {
+    "formatVersion": 1,
+    "application": "adapter-fixture",
+    "capabilities": {
+      "exact": { "id": "exact", "description": "Exact version", "version": 2 },
+      "lower-bound": { "id": "lower-bound", "description": "Inclusive lower bound", "version": 1 },
+      "upper-bound": { "id": "upper-bound", "description": "Inclusive upper bound", "version": 3 },
+      "missing": { "id": "missing", "description": "Missing adapter support", "version": 1 },
+      "old.application": {
+        "id": "old.application",
+        "description": "Older than adapter range",
+        "version": 1
+      },
+      "new.application": {
+        "id": "new.application",
+        "description": "Newer than adapter range",
+        "version": 5
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "boundaries-missing-and-extra",
+      "required": [
+        "upper-bound",
+        "old.application",
+        "missing",
+        "exact",
+        "new.application",
+        "lower-bound"
+      ],
+      "manifest": {
+        "formatVersion": 1,
+        "adapter": "fixture.adapter",
+        "capabilities": [
+          { "id": "extra.adapter-only", "minVersion": 1, "maxVersion": 1 },
+          { "id": "new.application", "minVersion": 1, "maxVersion": 4 },
+          { "id": "exact", "minVersion": 2, "maxVersion": 2 },
+          { "id": "upper-bound", "minVersion": 1, "maxVersion": 3 },
+          { "id": "old.application", "minVersion": 2, "maxVersion": 4 },
+          { "id": "lower-bound", "minVersion": 1, "maxVersion": 3 }
+        ]
+      },
+      "expected": {
+        "adapter": "fixture.adapter",
+        "compatible": false,
+        "diagnostics": [],
+        "mismatches": [
+          { "code": "missing-capability", "capability": "missing", "requiredVersion": 1 },
+          {
+            "code": "version-above-maximum",
+            "capability": "new.application",
+            "requiredVersion": 5,
+            "minVersion": 1,
+            "maxVersion": 4
+          },
+          {
+            "code": "version-below-minimum",
+            "capability": "old.application",
+            "requiredVersion": 1,
+            "minVersion": 2,
+            "maxVersion": 4
+          }
+        ]
+      }
+    },
+    {
+      "name": "permutation-is-identical",
+      "required": [
+        "lower-bound",
+        "new.application",
+        "exact",
+        "missing",
+        "old.application",
+        "upper-bound",
+        "missing"
+      ],
+      "manifest": {
+        "adapter": "fixture.adapter",
+        "capabilities": [
+          { "id": "lower-bound", "minVersion": 1, "maxVersion": 3 },
+          { "id": "old.application", "minVersion": 2, "maxVersion": 4 },
+          { "id": "upper-bound", "minVersion": 1, "maxVersion": 3 },
+          { "id": "exact", "minVersion": 2, "maxVersion": 2 },
+          { "id": "new.application", "minVersion": 1, "maxVersion": 4 },
+          { "id": "extra.adapter-only", "minVersion": 1, "maxVersion": 1 }
+        ]
+      },
+      "expected": {
+        "adapter": "fixture.adapter",
+        "compatible": false,
+        "diagnostics": [],
+        "mismatches": [
+          { "code": "missing-capability", "capability": "missing", "requiredVersion": 1 },
+          {
+            "code": "version-above-maximum",
+            "capability": "new.application",
+            "requiredVersion": 5,
+            "minVersion": 1,
+            "maxVersion": 4
+          },
+          {
+            "code": "version-below-minimum",
+            "capability": "old.application",
+            "requiredVersion": 1,
+            "minVersion": 2,
+            "maxVersion": 4
+          }
+        ]
+      }
+    },
+    {
+      "name": "supported-boundaries-and-extra",
+      "required": ["exact", "lower-bound", "upper-bound"],
+      "manifest": {
+        "adapter": "fixture.adapter",
+        "capabilities": [
+          { "id": "exact", "minVersion": 2, "maxVersion": 2 },
+          { "id": "lower-bound", "minVersion": 1, "maxVersion": 3 },
+          { "id": "upper-bound", "minVersion": 1, "maxVersion": 3 },
+          { "id": "extra.adapter-only", "minVersion": 1, "maxVersion": 99 }
+        ]
+      },
+      "expected": {
+        "adapter": "fixture.adapter",
+        "compatible": true,
+        "diagnostics": [],
+        "mismatches": []
+      }
+    },
+    {
+      "name": "unknown-requirement-fails-closed",
+      "required": ["unknown.capability", "unknown.capability"],
+      "manifest": {
+        "adapter": "fixture.adapter",
+        "capabilities": [{ "id": "unknown.capability", "minVersion": 1, "maxVersion": 99 }]
+      },
+      "expected": {
+        "adapter": "fixture.adapter",
+        "compatible": false,
+        "diagnostics": [],
+        "mismatches": [{ "code": "unknown-requirement", "capability": "unknown.capability" }]
+      }
+    }
+  ]
+}

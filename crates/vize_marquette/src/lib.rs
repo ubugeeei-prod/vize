@@ -42,6 +42,7 @@
 //! assert!(contract.validate().is_empty());
 //! ```
 
+mod adapter;
 mod canonical;
 mod compatibility;
 mod model;
@@ -51,6 +52,13 @@ mod validate;
 #[cfg(test)]
 mod model_tests;
 
+pub use adapter::{
+    ADAPTER_CAPABILITY_FORMAT_VERSION, AdapterCapabilityDiagnostic,
+    AdapterCapabilityDiagnosticCode, AdapterCapabilityManifest, AdapterCapabilityMismatch,
+    AdapterCapabilityMismatchCode, AdapterCapabilityNegotiation, AdapterCapabilitySupport,
+    compare_adapter_capabilities, negotiate_adapter_capabilities,
+    validate_adapter_capability_manifest,
+};
 pub use canonical::{CanonicalContractError, canonical_json, contract_fingerprint};
 pub use compatibility::{
     CompatibilityChange, CompatibilityChangeKind, CompatibilityReport, compare_contracts,
@@ -84,6 +92,10 @@ pub use validate::{ContractDiagnostic, DiagnosticSeverity, validate_contract};
 /// consumers can expose the exact contract without resolving a filesystem path.
 pub const APPLICATION_CONTRACT_JSON_SCHEMA: &str =
     include_str!("../schema/application-contract.schema.json");
+
+/// Canonical JSON Schema for serialized adapter capability manifests.
+pub const ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA: &str =
+    include_str!("../schema/adapter-capability-manifest.schema.json");
 
 /// Canonical JSON Schema for serialized test-run evidence records.
 ///
@@ -123,6 +135,16 @@ pub const TEST_RUN_TRANSITION_JSON_SCHEMA: &str =
 
 #[cfg(test)]
 mod schema_tests {
+    #[test]
+    fn embedded_adapter_schema_tracks_the_current_format() {
+        let schema: serde_json::Value =
+            serde_json::from_str(super::ADAPTER_CAPABILITY_MANIFEST_JSON_SCHEMA).unwrap();
+        assert_eq!(
+            schema["$defs"]["manifest"]["properties"]["formatVersion"]["const"],
+            super::ADAPTER_CAPABILITY_FORMAT_VERSION
+        );
+    }
+
     #[test]
     fn embedded_schema_is_valid_json_and_tracks_the_current_format() {
         let schema: serde_json::Value =

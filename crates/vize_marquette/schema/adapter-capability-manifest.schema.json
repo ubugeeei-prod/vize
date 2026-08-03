@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vizejs.dev/schemas/marquette/adapter-capability-manifest.schema.json",
+  "title": "Vize Adapter Capability Manifest",
+  "description": "Versioned language-neutral capability ranges offered by one Vize adapter.",
+  "$ref": "#/$defs/manifest",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "minVersion", "maxVersion"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "minVersion": { "type": "integer", "minimum": 1 },
+        "maxVersion": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter"],
+      "properties": {
+        "formatVersion": { "const": 1, "default": 1 },
+        "adapter": { "$ref": "#/$defs/identifier" },
+        "capabilities": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/support" },
+          "default": []
+        }
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ import { defineConfig } from "vite-plus";
  * task cache, so a cache hit could restore `dist/` without the schemas.
  */
 const contractSchemas = [
+  "adapter-capability-manifest.schema.json",
   "application-contract.schema.json",
   "test-run-evidence.schema.json",
   "test-run-admission.schema.json",
@@ -28,6 +29,7 @@ export default defineConfig({
   pack: {
     entry: [
       "src/index.ts",
+      "src/adapter.ts",
       "src/validate.ts",
       "src/test-run.ts",
       "src/test-run-validate.ts",

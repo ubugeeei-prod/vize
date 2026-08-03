@@ -90,6 +90,44 @@ stable codes shared with the native contract implementation. Keeping it in a
 separate entry means authoring-only applications do not include validation
 code.
 
+## Adapter capability negotiation
+
+Adapters publish inclusive capability-version ranges independently from the
+application marquette. Application capability definitions are the authority
+for requirements; an undeclared requirement fails closed even when an adapter
+offers a capability with the same identifier. Adapter-only capabilities are
+allowed and remain additive until an application requires them.
+
+```ts
+import {
+  negotiateAdapterCapabilities,
+  type AdapterCapabilityManifest,
+} from "@vizejs/marquette/adapter";
+
+const adapter = {
+  adapter: "terminal.fresco",
+  capabilities: [{ id: "terminal.color", minVersion: 1, maxVersion: 3 }],
+} satisfies AdapterCapabilityManifest;
+
+const result = negotiateAdapterCapabilities(
+  marquette,
+  marquette.environments?.[0]?.capabilities ?? [],
+  adapter,
+);
+if (!result.compatible) {
+  console.error(result.diagnostics, result.mismatches);
+}
+```
+
+Exact and inclusive-bound matches are compatible. Missing support,
+requirements below an adapter's minimum, and requirements above its maximum
+use the stable `missing-capability`, `version-below-minimum`, and
+`version-above-maximum` codes. Adding a support range or widening either bound
+is additive; removing support or narrowing either bound is breaking. Both
+negotiation and compatibility reports are sorted deterministically and do not
+mutate their inputs. The published manifest schema is available from
+`@vizejs/marquette/adapter/schema`.
+
 ## Test-run evidence
 
 Release-bound test-run evidence records live in their own lazy entries so
@@ -141,6 +179,8 @@ available from `@vizejs/marquette/test-run/schema`, the decision contract from
   normalization.
 - The published application-contract schema is available from
   `@vizejs/marquette/schema`.
+- The published adapter manifest schema is available from
+  `@vizejs/marquette/adapter/schema`.
 - Every optional contract field documents its default in JSDoc.
 - Package builds enforce a 1 KiB gzip budget for authoring entries and 3 KiB
   or 4 KiB budgets for the validation entries.

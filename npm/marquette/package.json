@@ -36,6 +36,11 @@
       "import": "./dist/validate.mjs",
       "default": "./dist/validate.mjs"
     },
+    "./adapter": {
+      "types": "./dist/adapter.d.mts",
+      "import": "./dist/adapter.mjs",
+      "default": "./dist/adapter.mjs"
+    },
     "./test-run": {
       "types": "./dist/test-run.d.mts",
       "import": "./dist/test-run.mjs",
@@ -67,6 +72,7 @@
       "default": "./dist/test-run-transition.mjs"
     },
     "./schema": "./dist/application-contract.schema.json",
+    "./adapter/schema": "./dist/adapter-capability-manifest.schema.json",
     "./test-run/schema": "./dist/test-run-evidence.schema.json",
     "./test-run/admission/schema": "./dist/test-run-admission.schema.json",
     "./test-run/check/schema": "./dist/test-run-check.schema.json",

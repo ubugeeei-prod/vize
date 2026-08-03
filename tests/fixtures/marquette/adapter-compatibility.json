@@ -1,0 +1,78 @@
+[
+  {
+    "name": "addition-removal-and-widening",
+    "previous": {
+      "adapter": "fixture.adapter",
+      "capabilities": [
+        { "id": "range", "minVersion": 2, "maxVersion": 4 },
+        { "id": "removed", "minVersion": 1, "maxVersion": 1 },
+        { "id": "same", "minVersion": 1, "maxVersion": 1 }
+      ]
+    },
+    "next": {
+      "adapter": "fixture.adapter",
+      "capabilities": [
+        { "id": "added", "minVersion": 1, "maxVersion": 1 },
+        { "id": "same", "minVersion": 1, "maxVersion": 1 },
+        { "id": "range", "minVersion": 1, "maxVersion": 5 }
+      ]
+    },
+    "expected": {
+      "changes": [
+        {
+          "kind": "additive",
+          "path": "capabilities.added",
+          "message": "capability support was added"
+        },
+        {
+          "kind": "additive",
+          "path": "capabilities.range.maxVersion",
+          "message": "maximum supported version increased"
+        },
+        {
+          "kind": "additive",
+          "path": "capabilities.range.minVersion",
+          "message": "minimum supported version decreased"
+        },
+        {
+          "kind": "breaking",
+          "path": "capabilities.removed",
+          "message": "capability support was removed"
+        }
+      ]
+    }
+  },
+  {
+    "name": "narrowing-is-breaking",
+    "previous": {
+      "adapter": "fixture.adapter",
+      "capabilities": [{ "id": "range", "minVersion": 1, "maxVersion": 5 }]
+    },
+    "next": {
+      "adapter": "fixture.adapter",
+      "capabilities": [{ "id": "range", "minVersion": 2, "maxVersion": 4 }]
+    },
+    "expected": {
+      "changes": [
+        {
+          "kind": "breaking",
+          "path": "capabilities.range.maxVersion",
+          "message": "maximum supported version decreased"
+        },
+        {
+          "kind": "breaking",
+          "path": "capabilities.range.minVersion",
+          "message": "minimum supported version increased"
+        }
+      ]
+    }
+  },
+  {
+    "name": "adapter-identity-is-breaking",
+    "previous": { "adapter": "fixture.adapter", "capabilities": [] },
+    "next": { "adapter": "other.adapter", "capabilities": [] },
+    "expected": {
+      "changes": [{ "kind": "breaking", "path": "adapter", "message": "adapter identity changed" }]
+    }
+  }
+]
