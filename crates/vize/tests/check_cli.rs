@@ -1,3 +1,8 @@
+#[path = "support/corsa_path.rs"]
+mod corsa_path;
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+
 use std::{
     io::{BufRead, Write},
     path::Path,
@@ -3434,104 +3439,7 @@ fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf 
 }
 
 fn resolve_test_corsa_path() -> Option<String> {
-    let workspace_root = workspace_root();
-    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
-    if sibling_cache.exists() {
-        return Some(sibling_cache.display().to_string());
-    }
-
-    if let Some(native_tsgo) = resolve_workspace_native_tsgo(workspace_root) {
-        return Some(native_tsgo.display().to_string());
-    }
-
-    for candidate in [
-        workspace_root.join("node_modules/.bin/tsgo"),
-        workspace_root.join("examples/vite-musea/node_modules/.bin/tsgo"),
-    ] {
-        if candidate.exists() {
-            return Some(candidate.display().to_string());
-        }
-    }
-
-    None
-}
-
-fn resolve_workspace_native_tsgo(workspace_root: &Path) -> Option<std::path::PathBuf> {
-    let platform_suffix = native_preview_platform_suffix();
-    let package_name = cstr!("@typescript/native-preview-{platform_suffix}");
-
-    let pnpm_root = workspace_root.join("node_modules/.pnpm");
-    if let Ok(entries) = std::fs::read_dir(&pnpm_root) {
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if !name.starts_with(cstr!("@typescript+native-preview-{platform_suffix}@").as_str()) {
-                continue;
-            }
-
-            if let Some(path) = first_existing_tsgo_binary(
-                entry
-                    .path()
-                    .join("node_modules")
-                    .join("@typescript")
-                    .join(package_name.as_str())
-                    .join("lib"),
-            ) {
-                return Some(path);
-            }
-        }
-    }
-
-    first_existing_tsgo_binary(
-        workspace_root
-            .join("node_modules")
-            .join("@typescript")
-            .join(package_name.as_str())
-            .join("lib"),
-    )
-}
-
-fn first_existing_tsgo_binary(lib_dir: std::path::PathBuf) -> Option<std::path::PathBuf> {
-    for executable in test_corsa_executable_names() {
-        let candidate = lib_dir.join(executable);
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-
-    None
-}
-
-fn test_corsa_executable_names() -> &'static [&'static str] {
-    if cfg!(windows) {
-        &["tsgo.exe", "tsgo", "corsa.exe", "corsa"]
-    } else {
-        &["tsgo", "corsa"]
-    }
-}
-
-fn native_preview_platform_suffix() -> &'static str {
-    if cfg!(target_os = "macos") {
-        if cfg!(target_arch = "aarch64") {
-            "darwin-arm64"
-        } else {
-            "darwin-x64"
-        }
-    } else if cfg!(target_os = "linux") {
-        if cfg!(target_arch = "aarch64") {
-            "linux-arm64"
-        } else {
-            "linux-x64"
-        }
-    } else if cfg!(target_os = "windows") {
-        if cfg!(target_arch = "aarch64") {
-            "win32-arm64"
-        } else {
-            "win32-x64"
-        }
-    } else {
-        ""
-    }
+    corsa_requirement::required_or_skip(corsa_path::resolve(workspace_root()))
 }
 
 fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {

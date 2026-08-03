@@ -249,6 +249,19 @@ test("project resolution Rust CLI gates use the fail-closed Corsa helper", () =>
   }
 });
 
+test("main Rust CLI gate uses the fail-closed Corsa resolver", () => {
+  const source = readRepoFile("crates", "vize", "tests", "check_cli.rs");
+  assert.match(
+    source,
+    /fn resolve_test_corsa_path\(\) -> Option<String> \{\n    corsa_requirement::required_or_skip\(corsa_path::resolve\(workspace_root\(\)\)\)\n\}/,
+  );
+  assert.equal(
+    source.match(/(?:let Some|if let Some)\(corsa_path\) = resolve_test_corsa_path\(\)/g)?.length,
+    36,
+    "check_cli.rs should route all 36 Corsa resolver calls through the guarded boundary",
+  );
+});
+
 test("available dependencies never skip", () => {
   assert.equal(typecheckDependencySkip("/tmp/tsgo", "tsgo", "missing", true), false);
 });
