@@ -34,6 +34,20 @@ fn nuxt_preset_reports_fixable_config_order() {
 }
 
 #[test]
+fn nuxt_preset_keeps_explicit_nuxt_two_config_order_quiet() {
+    let source = "export default defineNuxtConfig({ plugins: [], buildModules: [], modules: [], vize: { compatibility: { nuxtVersion: 2 } } })";
+    let result = Linter::with_preset(LintPreset::Nuxt).lint_script(source, "nuxt.config.ts");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "nuxt/nuxt-config-keys-order"),
+        "{:#?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn nuxt_preset_ignores_unrelated_default_export_configs() {
     let linter = Linter::with_preset(LintPreset::Nuxt);
     for (filename, source) in [

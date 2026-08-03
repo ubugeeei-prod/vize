@@ -154,6 +154,24 @@ assert.match(
   /nuxt\.config\.ts[\s\S]*2:3[\s\S]*Expected config key "ssr" to come after "modules"[\s\S]*vize\(nuxt\/nuxt-config-keys-order\)/u,
 );
 
+fs.writeFileSync(
+  nuxtConfigPath,
+  `export default defineNuxtConfig({
+  plugins: [],
+  buildModules: [],
+  modules: [],
+  vize: { compatibility: { nuxtVersion: 2 } },
+})
+`,
+);
+const nuxtTwoConfigRun = runOxlint(["-c", ".oxlintrc.json", "-f", "stylish", "nuxt.config.ts"]);
+assert.equal(
+  nuxtTwoConfigRun.exitCode,
+  0,
+  `nuxt preset should not enforce Nuxt 3 ordering in Nuxt 2 compatibility mode:\n${nuxtTwoConfigRun.output}`,
+);
+assert.doesNotMatch(nuxtTwoConfigRun.output, /vize\(nuxt\/nuxt-config-keys-order\)/u);
+
 console.log("oxlint-plugin-vize Nuxt preset tests passed!");
 await import("./type-aware.test.ts");
 

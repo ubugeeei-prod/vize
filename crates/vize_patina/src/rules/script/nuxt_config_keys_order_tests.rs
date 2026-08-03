@@ -190,6 +190,50 @@ fn reports_the_actual_issue_3768_key_pair_at_the_authored_property() {
 }
 
 #[test]
+fn nuxt_two_compatibility_does_not_apply_the_nuxt_three_order() {
+    for source in [
+        "export default defineNuxtConfig({ plugins: [], buildModules: [], modules: [], vize: { compatibility: { nuxtVersion: 2 } } })",
+        "export default { 'plugins': [], modules: [], 'vize': ({ 'compatibility': ({ 'nuxtVersion': (2) }) }) }",
+        "export default { plugins: [], modules: [], ...base, vize: { ...defaults, compatibility: { ...compatibility, nuxtVersion: 2 } } }",
+    ] {
+        let result = lint(source);
+        assert!(result.diagnostics.is_empty(), "{source}: {result:#?}");
+    }
+
+    for version in ["3", "4", "detectedVersion"] {
+        let source = cstr!(
+            "export default defineNuxtConfig({{ plugins: [], modules: [], vize: {{ compatibility: {{ nuxtVersion: {version} }} }} }})"
+        );
+        let result = lint(&source);
+        assert_eq!(result.diagnostics.len(), 1, "{source}");
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Expected config key \"plugins\" to come after \"modules\"",
+            "{source}"
+        );
+        assert!(result.diagnostics[0].fix.is_some(), "{source}");
+    }
+
+    for uncertain_override in [
+        "vize: { compatibility: { nuxtVersion: 2 } }, ...override",
+        "vize: { compatibility: { nuxtVersion: 2 } }, vize: { compatibility: { nuxtVersion: 3 } }",
+        "vize: { compatibility: { nuxtVersion: 2, ...override } }",
+        "vize: { compatibility: { nuxtVersion: 2, [key]: value } }",
+    ] {
+        let source = cstr!(
+            "export default defineNuxtConfig({{ plugins: [], modules: [], {uncertain_override} }})"
+        );
+        let result = lint(&source);
+        assert_eq!(result.diagnostics.len(), 1, "{source}");
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Expected config key \"plugins\" to come after \"modules\"",
+            "{source}"
+        );
+    }
+}
+
+#[test]
 fn unknown_and_literal_keys_follow_upstream_collation() {
     assert_eq!(
         fix_until_stable("export default { zebra: 1, Zebra: 2, alpha: 3, Alpha: 4 }"),
