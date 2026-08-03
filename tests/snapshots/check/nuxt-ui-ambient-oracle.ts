@@ -28,8 +28,10 @@ import { LspSession } from "../../tooling/support/lsp/session.ts";
 const appPath = "docs/app/components/content/examples/tabs/TabsRouteQueryExample.vue";
 const cleanExpression = "route.query.tab";
 const brokenExpression = "route.missing";
+const importAnchor = "import type { TabsItem } from '@nuxt/ui'";
+const virtualImport = "import { computed, useRoute, useRouter } from '#imports'";
 
-test("Nuxt UI generated ambient types stay exact across editor revisions", async () => {
+test("Nuxt UI generated ambient and #imports types stay exact across editor revisions", async () => {
   const corsaPath = resolveTsgoBinary();
   const vueTscPath = resolveVueTscBinary();
 
@@ -42,6 +44,7 @@ test("Nuxt UI generated ambient types stay exact across editor revisions", async
       fixture.write("node_modules/nuxt/package.json", nuxtPackageManifest);
       fixture.write("node_modules/nuxt/app.d.ts", nuxtAppDeclaration);
       fixture.write(".nuxt/imports.d.ts", generatedImportsDeclaration);
+      fixture.write(".nuxt/virtual-imports.d.ts", generatedVirtualImportsDeclaration);
       fixture.write(".nuxt/components.d.cts", generatedComponentsDeclaration);
       fixture.write(".nuxt/tsconfig.json", json(generatedTsconfig));
       fixture.write("tsconfig.json", json(tsconfig));
@@ -54,7 +57,11 @@ test("Nuxt UI generated ambient types stay exact across editor revisions", async
         }),
       );
 
-      const cleanSource = fixture.read(appPath);
+      const cleanSource = fixture.applyExactPatch(
+        appPath,
+        importAnchor,
+        `${importAnchor}\n${virtualImport}`,
+      );
       const appUri = pathToFileURL(fixture.resolve(appPath)).href;
       assertCleanParity(
         runVizeCheck(fixture.workspaceDir, corsaPath, []),
@@ -253,13 +260,14 @@ export function useRouter(): NuxtRouter
 
 const generatedImportsDeclaration = `
 declare global {
-  const computed: typeof import('vue')['computed']
   const defineNuxtConfig: <T extends Record<string, unknown>>(config: T) => T
-  const useRoute: typeof import('nuxt/app')['useRoute']
-  const useRouter: typeof import('nuxt/app')['useRouter']
 }
 
 export {}
+`;
+
+const generatedVirtualImportsDeclaration = `export { computed } from 'vue'
+export { useRoute, useRouter } from 'nuxt/app'
 `;
 
 const generatedComponentsDeclaration = `declare module 'vue' {
@@ -277,14 +285,15 @@ const generatedTsconfig = {
     module: "ESNext",
     moduleResolution: "bundler",
     noEmit: true,
+    paths: { "#imports": ["./virtual-imports"] },
     skipLibCheck: true,
     strict: true,
     target: "ES2022",
   },
-  include: ["./imports.d.ts", "./components.d.cts", `../${appPath}`],
+  include: ["./imports.d.ts", "./virtual-imports.d.ts", "./components.d.cts", `../${appPath}`],
 };
 
 const tsconfig = {
   extends: "./.nuxt/tsconfig.json",
-  include: [".nuxt/imports.d.ts", ".nuxt/components.d.cts", appPath],
+  include: [".nuxt/imports.d.ts", ".nuxt/virtual-imports.d.ts", ".nuxt/components.d.cts", appPath],
 };
