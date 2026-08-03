@@ -17,7 +17,7 @@ test("test:scripts requires its typecheck dependencies", () => {
   );
   assert.match(
     workflow,
-    /\n  test-scripts:\n[\s\S]*?git submodule update --init --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue && vp install --frozen-lockfile --prefer-offline[\s\S]*?\n  editor-extensions:\n/,
+    /\n  test-scripts:\n[\s\S]*?git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue && vp install --frozen-lockfile --prefer-offline[\s\S]*?\n  editor-extensions:\n/,
   );
 });
 
