@@ -39,7 +39,7 @@ import {
 } from "./vue-version.ts";
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
-import { resolveOptionsApiFlag } from "./vue-feature-defines.ts";
+import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -128,14 +128,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       return {
         // Vue 3 ESM bundler flags normally injected by @vitejs/plugin-vue.
-        define: {
-          __VUE_OPTIONS_API__: resolveOptionsApiFlag(
-            options.features?.optionsAPI,
-            userConfig.define?.__VUE_OPTIONS_API__,
-          ),
-          __VUE_PROD_DEVTOOLS__: env.command === "serve",
-          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
-        },
+        define: resolveVueFeatureDefines(options.features, userConfig.define, env.command),
         optimizeDeps: {
           exclude: ["virtual:vize-styles"],
         },

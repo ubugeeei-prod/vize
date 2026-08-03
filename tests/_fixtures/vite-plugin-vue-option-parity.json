@@ -8,9 +8,9 @@
     "version": "6.0.7"
   },
   "summary": {
-    "honored": 12,
+    "honored": 13,
     "intentional-divergence": 9,
-    "unimplemented": 19
+    "unimplemented": 18
   },
   "options": {
     "compiler": {
@@ -46,9 +46,8 @@
       "reason": "The config hook hard-codes __VUE_PROD_DEVTOOLS__ to `command === \"serve\"`, so devtools cannot be enabled in production builds."
     },
     "features.prodHydrationMismatchDetails": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The config hook hard-codes __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false, so detailed production hydration errors cannot be enabled."
+      "status": "honored",
+      "evidence": "prod-hydration-mismatch-details-feature"
     },
     "features.propsDestructure": {
       "status": "unimplemented",

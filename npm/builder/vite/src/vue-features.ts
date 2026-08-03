@@ -6,4 +6,10 @@ export interface VizeVueFeatures {
    * @default true
    */
   optionsAPI?: boolean;
+
+  /**
+   * Enable detailed hydration mismatch errors in production bundles.
+   * @default false
+   */
+  prodHydrationMismatchDetails?: boolean;
 }
