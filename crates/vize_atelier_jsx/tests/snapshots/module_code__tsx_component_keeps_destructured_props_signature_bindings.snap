@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_jsx/tests/compile.rs
+source: crates/vize_atelier_jsx/tests/module_code.rs
 expression: module
 ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
