@@ -261,3 +261,23 @@ fn jsx_in_a_parameter_default_falls_back_to_plain_render_exports() {
     assert!(!module.contains("_defineComponent"), "{module}");
     assert!(!module.contains("setup("), "{module}");
 }
+
+#[test]
+fn module_code_leaves_synchronous_components_without_an_async_setup() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const SyncApp = () => {
+          const data = load();
+          return <div>{data}</div>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("  setup() {"), "{module}");
+    assert!(!module.contains("async setup"), "{module}");
+}
