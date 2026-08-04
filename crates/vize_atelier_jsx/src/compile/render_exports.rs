@@ -111,7 +111,13 @@ fn push_component_wrapper(
     module.push_str(name);
     module.push_str(" = _defineComponent({\n  name: \"");
     module.push_str(&escape_js_string(name));
-    module.push_str("\",\n  setup");
+    module.push_str("\",\n  ");
+    if setup.is_async {
+        // The authored body may `await`, so dropping the modifier would emit a
+        // module that does not parse.
+        module.push_str("async ");
+    }
+    module.push_str("setup");
     let type_params = setup_type_params(source, setup);
     if !type_params.is_empty() {
         module.push('<');

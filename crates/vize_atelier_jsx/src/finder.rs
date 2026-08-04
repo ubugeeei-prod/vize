@@ -125,6 +125,7 @@ impl RootLowerer<'_, '_, '_, '_> {
         params: &FormalParameters<'_>,
         body: &FunctionBody<'_>,
         declaration_span: Span,
+        is_async: bool,
     ) -> Option<ComponentSetupSpan> {
         let return_stmt = body.statements.iter().find_map(|stmt| {
             let Statement::ReturnStatement(return_stmt) = stmt else {
@@ -143,6 +144,7 @@ impl RootLowerer<'_, '_, '_, '_> {
             params_end,
             type_params_start,
             type_params_end,
+            is_async,
             setup_start: body.span.start.saturating_add(1),
             setup_end: return_stmt.0.start,
             render_start: return_stmt.1.start,
@@ -291,6 +293,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
                     &it.params,
                     &it.body,
                     span,
+                    it.r#async,
                 )
             })
         };

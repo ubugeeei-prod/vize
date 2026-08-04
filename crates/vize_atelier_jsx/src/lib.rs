@@ -131,6 +131,10 @@ pub struct ComponentSetupSpan {
     /// End of the type parameter list. Equal to [`Self::type_params_start`] when
     /// the component is not generic.
     pub type_params_end: u32,
+    /// Whether the component function was authored `async`. Its body may contain
+    /// `await`, so the generated method has to stay `async setup()` to remain
+    /// syntactically valid (#3856).
+    pub is_async: bool,
     /// Start of setup statements inside the component body.
     pub setup_start: u32,
     /// End of setup statements, immediately before the `return <jsx>` statement.
