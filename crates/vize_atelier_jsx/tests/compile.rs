@@ -214,6 +214,30 @@ fn tsx_component_keeps_destructured_props_signature_bindings() {
 }
 
 #[test]
+fn tsx_generic_component_keeps_its_type_parameters_on_setup() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const GenericList = <T extends string,>({ items }: { items: Array<T> }) => {
+          const first = items[0];
+          return <ul>{first}</ul>;
+        };
+
+        export default GenericList;
+        "#,
+        JsxLang::Tsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(
+        module.contains("setup<T extends string>({ items }: { items: Array<T> }) {"),
+        "{module}"
+    );
+}
+
+#[test]
 fn module_code_forwards_plain_props_and_context_parameters_to_setup() {
     let bump = Bump::new();
     let out = compile_jsx(
@@ -343,4 +367,27 @@ fn invalid_directive_produces_a_diagnostic() {
         "expected a diagnostic for the typo'd directive"
     );
     insta::assert_debug_snapshot!(out.diagnostics);
+}
+
+#[test]
+fn jsx_in_a_parameter_default_falls_back_to_plain_render_exports() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const Fallback = () => <i/>;
+        const App = ({ slot = <Fallback /> }) => {
+          const node = slot;
+          return <div>{node}</div>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    // The default's JSX is its own render root without setup metadata, so the
+    // stateful wrapper is skipped and no raw JSX can leak into `setup(...)`.
+    assert!(!module.contains("_defineComponent"), "{module}");
+    assert!(!module.contains("setup("), "{module}");
 }

@@ -14,7 +14,8 @@
 
 use oxc_ast::ast::{
     ArrowFunctionExpression, Expression, FormalParameters, Function, FunctionBody, JSXElement,
-    JSXFragment, Program, Statement, VariableDeclaration, VariableDeclarator,
+    JSXFragment, Program, Statement, TSTypeParameterDeclaration, VariableDeclaration,
+    VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
@@ -120,6 +121,7 @@ impl RootLowerer<'_, '_, '_, '_> {
 
     fn block_body_setup_span(
         &self,
+        type_parameters: Option<&TSTypeParameterDeclaration<'_>>,
         params: &FormalParameters<'_>,
         body: &FunctionBody<'_>,
         declaration_span: Span,
@@ -133,11 +135,14 @@ impl RootLowerer<'_, '_, '_, '_> {
         })?;
 
         let (params_start, params_end) = formal_parameters_range(params);
+        let (type_params_start, type_params_end) = type_parameters_range(type_parameters);
         Some(ComponentSetupSpan {
             declaration_start: declaration_span.start,
             declaration_end: declaration_span.end,
             params_start,
             params_end,
+            type_params_start,
+            type_params_end,
             setup_start: body.span.start.saturating_add(1),
             setup_end: return_stmt.0.start,
             render_start: return_stmt.1.start,
@@ -218,6 +223,24 @@ fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u32) {
     }
 }
 
+/// Byte range covering the authored type parameter list, angle brackets excluded.
+///
+/// A generic component (`const List = <T,>(props: Props<T>) => { … }`) annotates
+/// its parameters with type names that are only bound by this declaration, so the
+/// range is re-emitted on the generated `setup<T>()` method. A non-generic
+/// component collapses to an empty range.
+fn type_parameters_range(type_parameters: Option<&TSTypeParameterDeclaration<'_>>) -> (u32, u32) {
+    let Some(declaration) = type_parameters else {
+        return (0, 0);
+    };
+    let start = declaration.params.first().map(GetSpan::span);
+    let end = declaration.params.last().map(GetSpan::span);
+    match (start, end) {
+        (Some(start), Some(end)) => (start.start, end.end),
+        _ => (0, 0),
+    }
+}
+
 fn jsx_expression_span(expression: &Expression<'_>) -> Option<Span> {
     match expression {
         Expression::JSXElement(_) | Expression::JSXFragment(_) => Some(expression.span()),
@@ -262,8 +285,14 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         let setup = if it.expression {
             None
         } else {
-            self.pending_declaration_span
-                .and_then(|span| self.block_body_setup_span(&it.params, &it.body, span))
+            self.pending_declaration_span.and_then(|span| {
+                self.block_body_setup_span(
+                    it.type_parameters.as_deref(),
+                    &it.params,
+                    &it.body,
+                    span,
+                )
+            })
         };
         self.push_scope(Some(&it.body), name, setup);
         walk::walk_arrow_function_expression(self, it);

@@ -111,7 +111,14 @@ fn push_component_wrapper(
     module.push_str(name);
     module.push_str(" = _defineComponent({\n  name: \"");
     module.push_str(&escape_js_string(name));
-    module.push_str("\",\n  setup(");
+    module.push_str("\",\n  setup");
+    let type_params = setup_type_params(source, setup);
+    if !type_params.is_empty() {
+        module.push('<');
+        module.push_str(type_params);
+        module.push('>');
+    }
+    module.push('(');
     module.push_str(setup_params(source, setup));
     module.push_str(") {\n");
 
@@ -131,6 +138,17 @@ fn push_component_wrapper(
 fn setup_params<'a>(source: &'a str, setup: &crate::ComponentSetupSpan) -> &'a str {
     source
         .get(setup.params_start as usize..setup.params_end as usize)
+        .map_or("", str::trim)
+}
+
+/// The component function's own type parameter list, re-emitted as a generic
+/// `setup<T>()` method.
+///
+/// Without it, a generic component's forwarded parameter annotations would
+/// reference type names that the replaced declaration no longer binds.
+fn setup_type_params<'a>(source: &'a str, setup: &crate::ComponentSetupSpan) -> &'a str {
+    source
+        .get(setup.type_params_start as usize..setup.type_params_end as usize)
         .map_or("", str::trim)
 }
 

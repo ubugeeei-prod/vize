@@ -123,6 +123,14 @@ pub struct ComponentSetupSpan {
     /// End of the formal parameter list. Equal to [`Self::params_start`] when the
     /// component declares no parameters.
     pub params_end: u32,
+    /// Start of the component function's type parameter list, excluding the
+    /// enclosing angle brackets. A generic component keeps its declaration on the
+    /// generated `setup<T>()` method so type names used by the forwarded
+    /// parameter annotations stay bound (#3856).
+    pub type_params_start: u32,
+    /// End of the type parameter list. Equal to [`Self::type_params_start`] when
+    /// the component is not generic.
+    pub type_params_end: u32,
     /// Start of setup statements inside the component body.
     pub setup_start: u32,
     /// End of setup statements, immediately before the `return <jsx>` statement.
