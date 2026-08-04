@@ -263,6 +263,41 @@ fn expression_guard_ends_line_comments_at_every_line_terminator() {
 }
 
 #[test]
+fn expression_guard_treats_slash_after_a_type_argument_close_as_division() {
+    // Minimized from the js_ts_expression fuzz reproducer (#3858), whose
+    // `…Props<{pilest c\n}>/(((…` lines repeat for 2.6 KiB. A `>` that pays back
+    // an open angle closes a type-argument list, and a `/` after one is
+    // division — but the guard used to allow a regex after every `>`, so
+    // `skip_regex` swallowed the rest of each line and hid its bracket run from
+    // the depth budget. The guard reported depth 28 on an input carrying 1394
+    // unclosed brackets, so OXC saw it and recursed until the stack overflowed.
+    let hidden = ["Props<{a}>/", &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+    assert_eq!(
+        expression_nesting_depth(&hidden),
+        MAX_EXPRESSION_NESTING_DEPTH + 1
+    );
+    assert!(expression_exceeds_max_depth(&hidden));
+    assert!(!expression_has_balanced_delimiters(&hidden));
+    assert!(!expression_is_safe_to_parse(&hidden));
+    assert_eq!(
+        prefix_identifiers_in_expression(&hidden).as_str(),
+        hidden.as_str()
+    );
+
+    // Only the angle-closing `>` loses its regex position. A relational `>` with
+    // nothing outstanding still precedes one, so the brackets inside stay hidden.
+    let relational = [
+        "a > /",
+        &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        "/.test(b)",
+    ]
+    .concat();
+    assert_eq!(expression_nesting_depth(&relational), 1);
+    assert!(!expression_exceeds_max_depth(&relational));
+    assert!(expression_is_safe_to_parse(&relational));
+}
+
+#[test]
 fn expression_guard_ends_regex_at_line_terminator_after_backslash() {
     // A regex literal cannot span a line terminator, and `\` immediately before
     // one is not a valid escape: the lexer ends the regex there. The guard's

@@ -138,9 +138,17 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
                 }
                 can_start_regex = true;
             }
+            // A `>` that pays back an open angle closes a type-argument list, and
+            // a `/` after one is division — OXC never starts a regex there. The
+            // arm used to allow a regex after every `>`, so `Props<{ … }>/(((…`
+            // handed `skip_regex` the rest of the line and hid its bracket run
+            // from the depth budget while OXC kept every paren live and recursed
+            // to a stack overflow (#3858). Only a relational `>`, with no angle
+            // outstanding, can precede a regex (`a > /re/.test(b)`).
             b'>' => {
+                let closed_type_angle = angle_depth > 0;
                 angle_depth = angle_depth.saturating_sub(1);
-                can_start_regex = true;
+                can_start_regex = !closed_type_angle;
             }
             b'@' => {
                 decorator_depth += 1;
