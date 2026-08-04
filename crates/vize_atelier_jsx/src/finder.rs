@@ -12,6 +12,8 @@
 //! - the enclosing component function's name (`function App` or
 //!   `const App = () => …`).
 
+mod signature;
+
 use oxc_ast::ast::{
     ArrowFunctionExpression, Expression, FormalParameters, Function, FunctionBody, JSXElement,
     JSXFragment, Program, Statement, TSTypeParameterDeclaration, VariableDeclaration,
@@ -21,6 +23,8 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
 use vize_carton::String;
+
+use self::signature::{destructured_prop_names, formal_parameters_range, type_parameters_range};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
@@ -137,7 +141,9 @@ impl RootLowerer<'_, '_, '_, '_> {
 
         let (params_start, params_end) = formal_parameters_range(params);
         let (type_params_start, type_params_end) = type_parameters_range(type_parameters);
+        let destructured_props = destructured_prop_names(params);
         Some(ComponentSetupSpan {
+            destructured_props,
             declaration_start: declaration_span.start,
             declaration_end: declaration_span.end,
             params_start,
@@ -199,47 +205,6 @@ impl RootLowerer<'_, '_, '_, '_> {
             }
         }
         resolved
-    }
-}
-
-/// Byte range covering the authored formal parameter list, parentheses excluded.
-///
-/// The range spans from the first parameter to the last one (or to the rest
-/// element when present) so the original text — type annotations, defaults, and
-/// any interleaved comments — is preserved verbatim. An empty parameter list
-/// collapses to an empty range.
-fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u32) {
-    let start = params
-        .items
-        .first()
-        .map(GetSpan::span)
-        .or_else(|| params.rest.as_deref().map(GetSpan::span));
-    let end = params
-        .rest
-        .as_deref()
-        .map(GetSpan::span)
-        .or_else(|| params.items.last().map(GetSpan::span));
-    match (start, end) {
-        (Some(start), Some(end)) => (start.start, end.end),
-        _ => (0, 0),
-    }
-}
-
-/// Byte range covering the authored type parameter list, angle brackets excluded.
-///
-/// A generic component (`const List = <T,>(props: Props<T>) => { … }`) annotates
-/// its parameters with type names that are only bound by this declaration, so the
-/// range is re-emitted on the generated `setup<T>()` method. A non-generic
-/// component collapses to an empty range.
-fn type_parameters_range(type_parameters: Option<&TSTypeParameterDeclaration<'_>>) -> (u32, u32) {
-    let Some(declaration) = type_parameters else {
-        return (0, 0);
-    };
-    let start = declaration.params.first().map(GetSpan::span);
-    let end = declaration.params.last().map(GetSpan::span);
-    match (start, end) {
-        (Some(start), Some(end)) => (start.start, end.end),
-        _ => (0, 0),
     }
 }
 

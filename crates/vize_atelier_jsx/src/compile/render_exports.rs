@@ -111,7 +111,9 @@ fn push_component_wrapper(
     module.push_str(name);
     module.push_str(" = _defineComponent({\n  name: \"");
     module.push_str(&escape_js_string(name));
-    module.push_str("\",\n  ");
+    module.push_str("\",\n");
+    push_props_option(module, &setup.destructured_props);
+    module.push_str("  ");
     if setup.is_async {
         // The authored body may `await`, so dropping the modifier would emit a
         // module that does not parse.
@@ -133,6 +135,27 @@ fn push_component_wrapper(
     push_indented_trimmed(module, render, "    ");
 
     module.push_str("    return render\n  }\n});");
+}
+
+/// Declare the destructured prop names so Vue routes caller values to `setup`'s
+/// first argument instead of to `attrs` (#3861).
+///
+/// Defaults stay in the destructuring pattern, mirroring how SFC reactive props
+/// destructure behaves, so only the names belong here.
+fn push_props_option(module: &mut String, props: &[String]) {
+    if props.is_empty() {
+        return;
+    }
+    module.push_str("  props: [");
+    for (index, prop) in props.iter().enumerate() {
+        if index > 0 {
+            module.push_str(", ");
+        }
+        module.push('"');
+        module.push_str(&escape_js_string(prop));
+        module.push('"');
+    }
+    module.push_str("],\n");
 }
 
 /// The component function's own parameter list, reused verbatim as the `setup()`

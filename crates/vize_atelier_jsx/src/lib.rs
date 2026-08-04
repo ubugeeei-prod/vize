@@ -135,6 +135,15 @@ pub struct ComponentSetupSpan {
     /// `await`, so the generated method has to stay `async setup()` to remain
     /// syntactically valid (#3856).
     pub is_async: bool,
+    /// Prop names read off the first parameter's object destructuring pattern, in
+    /// source order. Vue only fills `setup`'s first argument with *declared*
+    /// props, so these are emitted as the wrapper's `props` option — otherwise a
+    /// value the caller passes lands in `attrs` and the destructured binding
+    /// keeps its default (#3861).
+    ///
+    /// Empty whenever the names cannot be enumerated exactly: a plain `props`
+    /// parameter, a rest element, or a computed key.
+    pub destructured_props: Vec<String>,
     /// Start of setup statements inside the component body.
     pub setup_start: u32,
     /// End of setup statements, immediately before the `return <jsx>` statement.

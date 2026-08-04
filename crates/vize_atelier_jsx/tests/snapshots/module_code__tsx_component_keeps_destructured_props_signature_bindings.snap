@@ -13,6 +13,7 @@ import { defineComponent as _defineComponent } from "vue"
 
         const TsxCounter = _defineComponent({
   name: "TsxCounter",
+  props: ["label"],
   setup({ label = "TSX" }: TsxCounterProps, _ctx: Ctx) {
     const count = ref(0);
               const increment = () => count.value++;
