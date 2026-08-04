@@ -62,9 +62,12 @@ enum Outcome {
     UpstreamPureCommentAssertion,
 }
 
+/// The panic hook is deliberately left alone: swapping it out around
+/// `catch_unwind` races with the other tests in this file, which run in
+/// parallel on the same process-wide hook. The expected panics therefore print
+/// their message, which `cargo test` captures per test and only shows on
+/// failure.
 fn parse(source: &str) -> Outcome {
-    let previous = std::panic::take_hook();
-    std::panic::set_hook(Box::new(|_| {}));
     let result = std::panic::catch_unwind(|| {
         let allocator = Allocator::default();
         let _ = Parser::new(
@@ -76,12 +79,23 @@ fn parse(source: &str) -> Outcome {
         )
         .parse_expression();
     });
-    std::panic::set_hook(previous);
 
-    if result.is_err() {
-        Outcome::UpstreamPureCommentAssertion
-    } else {
-        Outcome::Parsed
+    let payload = match result {
+        Ok(()) => return Outcome::Parsed,
+        Err(payload) => payload,
+    };
+
+    // Only the pure-comment assertion counts. Anything else is a real parser
+    // bug and has to keep failing loudly instead of satisfying a row here.
+    let message = payload
+        .downcast_ref::<&str>()
+        .map(|message| (*message).to_string())
+        .or_else(|| payload.downcast_ref::<String>().cloned());
+    match message {
+        Some(message) if message.contains("comment.is_pure()") => {
+            Outcome::UpstreamPureCommentAssertion
+        }
+        _ => std::panic::resume_unwind(payload),
     }
 }
 
