@@ -1,0 +1,23 @@
+# cargo-audit configuration.
+#
+# `ignore` is a last resort for advisories that have no upgrade path and that
+# Vize provably cannot reach. Every entry must carry a `why:` line explaining
+# why the vulnerable code path is unreachable here and a `tracking:` line
+# pointing at the issue that removes the waiver, so a temporary suppression
+# cannot quietly become permanent. `tests/tooling/cargo-audit-ignores.test.ts`
+# enforces that shape.
+
+[advisories]
+ignore = [
+  # RUSTSEC-2026-0235 — rkyv 0.7 performs insufficient archive validation, so an
+  # archive containing Rc/Arc can cause out-of-bounds reads while deserializing.
+  # why: rkyv is a non-optional dependency of parcel_sourcemap, which lightningcss
+  # pulls in through its default `bundler` feature. Vize uses that bundler only to
+  # build a stylesheet — crates/vize_atelier_sfc/src/css/parser.rs calls
+  # Bundler::new(&fs, None, parser_options) with None for the source map — so no
+  # parcel_sourcemap::SourceMap is ever constructed and no rkyv archive is ever
+  # deserialized. parcel_sourcemap 2.1.1 is the newest release and still requires
+  # rkyv 0.7, so there is no version to upgrade to.
+  # tracking: #3864
+  "RUSTSEC-2026-0235",
+]
