@@ -13,8 +13,8 @@
 //!   `const App = () => …`).
 
 use oxc_ast::ast::{
-    ArrowFunctionExpression, Expression, Function, FunctionBody, JSXElement, JSXFragment, Program,
-    Statement, VariableDeclaration, VariableDeclarator,
+    ArrowFunctionExpression, Expression, FormalParameters, Function, FunctionBody, JSXElement,
+    JSXFragment, Program, Statement, VariableDeclaration, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
@@ -120,6 +120,7 @@ impl RootLowerer<'_, '_, '_, '_> {
 
     fn block_body_setup_span(
         &self,
+        params: &FormalParameters<'_>,
         body: &FunctionBody<'_>,
         declaration_span: Span,
     ) -> Option<ComponentSetupSpan> {
@@ -131,9 +132,12 @@ impl RootLowerer<'_, '_, '_, '_> {
             jsx_expression_span(argument).map(|span| (return_stmt.span, span))
         })?;
 
+        let (params_start, params_end) = formal_parameters_range(params);
         Some(ComponentSetupSpan {
             declaration_start: declaration_span.start,
             declaration_end: declaration_span.end,
+            params_start,
+            params_end,
             setup_start: body.span.start.saturating_add(1),
             setup_end: return_stmt.0.start,
             render_start: return_stmt.1.start,
@@ -191,6 +195,29 @@ impl RootLowerer<'_, '_, '_, '_> {
     }
 }
 
+/// Byte range covering the authored formal parameter list, parentheses excluded.
+///
+/// The range spans from the first parameter to the last one (or to the rest
+/// element when present) so the original text — type annotations, defaults, and
+/// any interleaved comments — is preserved verbatim. An empty parameter list
+/// collapses to an empty range.
+fn formal_parameters_range(params: &FormalParameters<'_>) -> (u32, u32) {
+    let start = params
+        .items
+        .first()
+        .map(GetSpan::span)
+        .or_else(|| params.rest.as_deref().map(GetSpan::span));
+    let end = params
+        .rest
+        .as_deref()
+        .map(GetSpan::span)
+        .or_else(|| params.items.last().map(GetSpan::span));
+    match (start, end) {
+        (Some(start), Some(end)) => (start.start, end.end),
+        _ => (0, 0),
+    }
+}
+
 fn jsx_expression_span(expression: &Expression<'_>) -> Option<Span> {
     match expression {
         Expression::JSXElement(_) | Expression::JSXFragment(_) => Some(expression.span()),
@@ -236,7 +263,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             None
         } else {
             self.pending_declaration_span
-                .and_then(|span| self.block_body_setup_span(&it.body, span))
+                .and_then(|span| self.block_body_setup_span(&it.params, &it.body, span))
         };
         self.push_scope(Some(&it.body), name, setup);
         walk::walk_arrow_function_expression(self, it);

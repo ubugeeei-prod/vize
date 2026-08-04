@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_jsx/tests/compile.rs
+expression: module
+---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { defineComponent as _defineComponent } from "vue"
+
+        import { ref } from "vue";
+
+        type TsxCounterProps = {
+          label?: string;
+        };
+
+        const TsxCounter = _defineComponent({
+  name: "TsxCounter",
+  setup({ label = "TSX" }: TsxCounterProps, _ctx: Ctx) {
+    const count = ref(0);
+              const increment = () => count.value++;
+    function render(_ctx, _cache) {
+      return (_openBlock(), _createElementBlock("button", {
+        type: "button",
+        class: "tsx-counter",
+        onClick: increment
+      }, _toDisplayString(label) + ": " + _toDisplayString(count.value), 9 /* TEXT, PROPS */, ["onClick"]))
+    }
+    return render
+  }
+});
+
+        export default TsxCounter;

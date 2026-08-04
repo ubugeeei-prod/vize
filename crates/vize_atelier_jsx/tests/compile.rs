@@ -177,6 +177,124 @@ fn module_code_wraps_block_body_component_setup_state() {
 }
 
 #[test]
+fn tsx_component_keeps_destructured_props_signature_bindings() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        import { ref } from "vue";
+
+        type TsxCounterProps = {
+          label?: string;
+        };
+
+        const TsxCounter = ({ label = "TSX" }: TsxCounterProps, _ctx: Ctx) => {
+          const count = ref(0);
+          const increment = () => count.value++;
+          return (
+            <button type="button" class="tsx-counter" onClick={increment}>
+              {label}: {count.value}
+            </button>
+          );
+        };
+
+        export default TsxCounter;
+        "#,
+        JsxLang::Tsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(
+        module.contains(r#"setup({ label = "TSX" }: TsxCounterProps, _ctx: Ctx) {"#),
+        "{module}"
+    );
+    assert!(!module.contains("setup() {"), "{module}");
+    insta::assert_snapshot!(module);
+}
+
+#[test]
+fn module_code_forwards_plain_props_and_context_parameters_to_setup() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const Greeting = (props, { emit }) => {
+          const shout = () => emit("shout");
+          return <button onClick={shout}>{props.label}</button>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("setup(props, { emit }) {"), "{module}");
+}
+
+#[test]
+fn module_code_forwards_rest_parameters_to_setup() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const Spread = (props, ...rest) => {
+          const first = rest[0];
+          return <div>{first}</div>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("setup(props, ...rest) {"), "{module}");
+}
+
+#[test]
+fn module_code_keeps_an_empty_setup_signature_for_parameterless_components() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const Standalone = () => {
+          const label = "hi";
+          return <div>{label}</div>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("setup() {"), "{module}");
+}
+
+#[test]
+fn module_code_forwards_each_components_own_parameters() {
+    let bump = Bump::new();
+    let out = compile_jsx(
+        &bump,
+        r#"
+        const First = ({ a }) => {
+          const one = a;
+          return <p>{one}</p>;
+        };
+        const Second = ({ b }) => {
+          const two = b;
+          return <p>{two}</p>;
+        };
+        "#,
+        JsxLang::Jsx,
+        &JsxCompileConfig::default(),
+    );
+    let module = out.module_code();
+
+    assert!(module.contains("setup({ a }) {"), "{module}");
+    assert!(module.contains("setup({ b }) {"), "{module}");
+}
+
+#[test]
 fn ssr_config_routes_components_to_ssr_and_preserves_client_mode_metadata() {
     let config = JsxCompileConfig {
         ssr: true,
