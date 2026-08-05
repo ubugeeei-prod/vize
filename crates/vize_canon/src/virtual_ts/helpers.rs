@@ -472,18 +472,11 @@ mod event_type_tests {
 
 /// Resolve a template attribute name to the prop key Vue matches it against.
 ///
-/// This mirrors Vue's `camelize` (`str.replace(/-(\w)/g, …)`) exactly: a hyphen
-/// is dropped and the character after it uppercased, and nothing else changes.
-/// Two details matter, because a key that does not match the declared prop is
-/// reported missing even though the parent clearly bound it (#3863):
-///
-/// - the leading character keeps its case, so `:Template` resolves to `Template`
-///   rather than being renamed to `template`;
-/// - an underscore is an ordinary identifier character, not a separator, so a
-///   snake_case prop keeps its name instead of becoming camelCase.
-///
-/// Examples: `"my-prop"` -> `"myProp"`, `"MyProp"` -> `"MyProp"`,
-/// `"my_prop"` -> `"my_prop"`.
+/// Mirrors Vue's `camelize` (`str.replace(/-(\w)/g, …)`) exactly: a hyphen is
+/// dropped and the character after it uppercased, nothing else changes. The
+/// leading character keeps its case and `_` is not a separator; renaming either
+/// way looks up a key no declared prop matches, so a bound prop reads as missing
+/// (#3863). `"my-prop"` -> `"myProp"`, `"MyProp"` -> `"MyProp"`, `"my_prop"` -> `"my_prop"`.
 pub(crate) fn to_camel_case(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let mut capitalize_next = false;
