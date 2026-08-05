@@ -84,18 +84,12 @@ ${components}  setup() {
 });
 `;
   }
-  if (componentTagName) {
-    return `
-export const ${variantComponentName} = {
-  name: '${variantComponentName}',
-${components}  template: \`${fullTemplate}\`,
-};
-`;
-  }
+  // Without a setup block `components` is empty unless a component tag was
+  // resolved, so one template covers both cases.
   return `
 export const ${variantComponentName} = {
   name: '${variantComponentName}',
-  template: \`${fullTemplate}\`,
+${components}  template: \`${fullTemplate}\`,
 };
 `;
 }

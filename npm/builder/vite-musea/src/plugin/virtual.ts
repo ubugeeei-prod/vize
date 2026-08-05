@@ -45,6 +45,21 @@ export interface VirtualModuleState {
   processArtFile: (filePath: string) => Promise<void>;
 }
 
+/**
+ * Recover a variant name from a virtual module id.
+ *
+ * `generateArtModule` percent-encodes it, so a hand-written import with an
+ * invalid escape still falls back to the raw text instead of throwing a
+ * `URIError` out of `load`.
+ */
+function decodeVariantName(encoded: string): string {
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return encoded;
+  }
+}
+
 export function createResolveId(state: VirtualModuleState) {
   return function resolveId(id: string): string | null {
     const root = state.getConfigRoot();
@@ -135,7 +150,8 @@ export function createLoad(state: VirtualModuleState) {
       const lastColonIndex = rest.lastIndexOf(":");
       if (lastColonIndex !== -1) {
         const artPath = rest.slice(0, lastColonIndex);
-        const variantName = rest.slice(lastColonIndex + 1);
+        // The producer encodes the name so the delimiter stays unambiguous.
+        const variantName = decodeVariantName(rest.slice(lastColonIndex + 1));
         const art = state.artFiles.get(artPath);
         const variant = art?.variants.find((candidate) => candidate.name === variantName);
         if (art && variant) {

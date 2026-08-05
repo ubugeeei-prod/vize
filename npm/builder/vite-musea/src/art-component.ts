@@ -85,7 +85,9 @@ export function resolveArtComponent(
 /** Expand `<Self>` in a variant template to the resolved component tag. */
 export function expandSelfTag(template: string, componentTagName: string | undefined): string {
   if (!componentTagName) return template;
+  // Match the complete tag name only, so `<Selfish>` and `<Self-Preview>` are
+  // left alone while `<Self>`, `<Self />`, and `<Self ...>` expand.
   return template
-    .replace(/<Self/g, `<${componentTagName}`)
-    .replace(/<\/Self>/g, `</${componentTagName}>`);
+    .replace(/<Self(?=[\s/>])/g, `<${componentTagName}`)
+    .replace(/<\/Self\s*>/g, `</${componentTagName}>`);
 }

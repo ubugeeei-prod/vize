@@ -11,6 +11,7 @@ import { allowedSourceRoots, resolveComponentSourcePath } from "./component-sour
 import type { ArtFileInfo } from "./types/index.js";
 import { toPascalCase } from "./utils.js";
 import { emitLegacyVariant } from "./art-module-vue2.js";
+import { expandSelfTag } from "./art-component.js";
 
 /**
  * Extract the content of the first <script setup> block from a Vue SFC source.
@@ -460,6 +461,14 @@ export function generateArtModule(
 // Auto-generated module for: ${path.basename(filePath)}
 `;
 
+  // Vue 2 variants stay runtime-compiled (see art-module-vue2.ts), and the
+  // wrapper they are emitted with needs its `defineComponent` binding. The alias
+  // keeps it from colliding with an art file that imports `defineComponent`
+  // itself.
+  if (options.vueVersion === 2) {
+    code += `import { defineComponent as __museaDefineComponent } from 'vue';\n`;
+  }
+
   // Add script setup imports at module level
   // Resolve relative paths to absolute since this code runs inside a virtual module
   if (scriptSetup) {
@@ -505,25 +514,10 @@ ${scriptSetup.setupBody.join("\n")}
   for (const variant of art.variants) {
     const variantComponentName = toPascalCase(variant.name);
 
-    let template = variant.template;
-
     // Replace <Self> with the actual component name (for inline art)
-    if (componentTagName) {
-      template = template
-        .replace(/<Self/g, `<${componentTagName}`)
-        .replace(/<\/Self>/g, `</${componentTagName}>`);
-    }
+    const template = expandSelfTag(variant.template, componentTagName);
 
-    // Vue 2 has no `openBlock`/`createElementBlock` runtime, so a compiled Vue 3
-    // render function cannot load there. Legacy galleries keep the
-    // runtime-compiled `template:` string they always had; the TypeScript fix
-    // below applies to Vue 3, which is what `.art.vue` with
-    // `<script setup lang="ts">` targets (#3857).
-    // Vue 2 has no `openBlock`/`createElementBlock` runtime, so a compiled Vue 3
-    // render function cannot load there. Legacy galleries keep the
-    // runtime-compiled `template:` string they always had; the TypeScript fix
-    // applies to Vue 3, which is what `.art.vue` with `<script setup lang="ts">`
-    // targets (#3857).
+    // Vue 2 keeps the runtime-compiled `template:` string; see art-module-vue2.ts (#3857).
     if (options.vueVersion === 2) {
       code += emitLegacyVariant({
         variantComponentName,
@@ -544,7 +538,11 @@ ${scriptSetup.setupBody.join("\n")}
     // module (#3857): `compileSfc` emits a complete module with its own default
     // export, so it cannot be inlined here, and only that pipeline strips the
     // TypeScript in template expressions and resolves bindings correctly.
-    const variantModuleId = `virtual:musea-variant:${filePath}:${variant.name}`;
+    // Variant names are free-form author text, so encode the name to keep the
+    // path/name delimiter unambiguous for the resolver, which splits on the last
+    // colon. A name containing one would otherwise move the split point and the
+    // art path would never match.
+    const variantModuleId = `virtual:musea-variant:${filePath}:${encodeURIComponent(variant.name)}`;
     code += `
 import ${variantComponentName} from ${JSON.stringify(variantModuleId)};
 export { ${variantComponentName} };
