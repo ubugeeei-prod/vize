@@ -1,0 +1,80 @@
+//! Regex-literal boundaries in the expression nesting guard.
+//!
+//! The byte scanner has to stop exactly where OXC's lexer stops. Skipping more
+//! than the lexer does hides brackets and type angles from the depth budget
+//! while OXC still recurses over them.
+
+use vize_atelier_core::steps::expression::{
+    MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_is_safe_to_parse,
+    expression_nesting_depth,
+};
+
+#[test]
+fn an_unterminated_regex_does_not_swallow_the_rest_of_the_input() {
+    // Minimized from the js_ts_expression fuzz OOM (#3873). Its 1409 bytes held
+    // 189 unclosed type angles and exactly one `/`, at byte 37 with no line
+    // terminator after it. The `<` before that slash put the scanner in
+    // regex-start position, `skip_regex` found no closing `/` and ran to the end
+    // of the input, and the 183 angles behind it never reached the depth budget:
+    // the guard scored the whole thing at depth 6 and passed it to OXC, which
+    // speculated over every angle until it ran out of memory.
+    let hidden = ["a</", &"s<".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+
+    assert!(
+        expression_nesting_depth(&hidden) > MAX_EXPRESSION_NESTING_DEPTH,
+        "angles behind an unterminated regex must reach the depth budget: {}",
+        expression_nesting_depth(&hidden)
+    );
+    assert!(expression_exceeds_max_depth(&hidden));
+    assert!(!expression_is_safe_to_parse(&hidden));
+}
+
+#[test]
+fn a_terminated_regex_still_hides_its_contents() {
+    // The other direction: a real literal must stay skipped, or ordinary code
+    // with brackets inside a character class starts failing the guard.
+    let literal = [
+        "a = /[",
+        &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        "]/.test(b)",
+    ]
+    .concat();
+
+    assert_eq!(expression_nesting_depth(&literal), 1);
+    assert!(!expression_exceeds_max_depth(&literal));
+    assert!(expression_is_safe_to_parse(&literal));
+}
+
+#[test]
+fn a_line_terminator_still_ends_an_unclosed_regex() {
+    // Already handled before #3873 — the scanner resumes at the terminator — so
+    // this pins that the `Option` refactor did not regress it.
+    for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+        let hidden = [
+            "a = /x",
+            terminator,
+            &"[".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+        ]
+        .concat();
+
+        assert!(
+            expression_exceeds_max_depth(&hidden),
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+        assert!(!expression_is_safe_to_parse(&hidden));
+    }
+}
+
+#[test]
+fn an_unterminated_regex_keeps_scanning_its_own_bytes() {
+    // The bytes inside the never-closed literal are ordinary source to the
+    // recovering lexer, so their brackets count too.
+    let hidden = ["a = /", &"(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)].concat();
+
+    assert_eq!(
+        expression_nesting_depth(&hidden),
+        MAX_EXPRESSION_NESTING_DEPTH + 1
+    );
+    assert!(!expression_is_safe_to_parse(&hidden));
+}

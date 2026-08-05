@@ -142,7 +142,14 @@ pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {
     bytes.len()
 }
 
-pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
+/// Skip a regex literal, returning where it ends.
+///
+/// `None` means the literal never terminated: no closing `/`, and no line
+/// terminator to end it either, so the scan ran to the end of the input. The
+/// lexer reports that as an unterminated regex and recovers, leaving those
+/// bytes live for the parser, so the caller must scan them rather than treat
+/// them as skipped literal text (#3873).
+pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut in_character_class = false;
     while i < bytes.len() {
         match bytes[i] {
@@ -152,12 +159,12 @@ pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
             // its 0xE2 lead byte (LS/PS), hiding the following source from the
             // guard, so bail before consuming it.
             b'\\' => match bytes.get(i + 1) {
-                Some(&b'\n' | &b'\r') => return i,
+                Some(&b'\n' | &b'\r') => return Some(i),
                 Some(&0xe2)
                     if bytes.get(i + 2) == Some(&0x80)
                         && matches!(bytes.get(i + 3), Some(&0xa8) | Some(&0xa9)) =>
                 {
-                    return i;
+                    return Some(i);
                 }
                 _ => i = i.saturating_add(2),
             },
@@ -169,18 +176,18 @@ pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> usize {
                 in_character_class = false;
                 i += 1;
             }
-            b'/' if !in_character_class => return skip_identifier(bytes, i + 1),
-            b'\n' | b'\r' => return i,
+            b'/' if !in_character_class => return Some(skip_identifier(bytes, i + 1)),
+            b'\n' | b'\r' => return Some(i),
             // LS/PS terminate an (unterminated) regex literal like LF/CR.
             0xe2 if bytes.get(i + 1) == Some(&0x80)
                 && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
             {
-                return i;
+                return Some(i);
             }
             _ => i += 1,
         }
     }
-    i
+    None
 }
 
 pub(super) fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
