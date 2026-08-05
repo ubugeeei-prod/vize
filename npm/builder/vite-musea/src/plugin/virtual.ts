@@ -177,6 +177,13 @@ export function createLoad(state: VirtualModuleState) {
               `Failed to compile <art> variant "${variantName}" in ${artPath}:\n${compiled.errors.join("\n")}`,
             );
           }
+          // An empty module is a valid module to Vite, so it would surface far
+          // from here as a variant that resolves to `undefined` at render time.
+          if (!compiled.code) {
+            throw new Error(
+              `The compiler produced no code for <art> variant "${variantName}" in ${artPath}.`,
+            );
+          }
           return compiled.code;
         }
       }

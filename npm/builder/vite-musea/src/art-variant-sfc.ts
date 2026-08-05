@@ -74,8 +74,19 @@ export function buildVariantSfcSource(
   if (options.sharedBindings && options.sharedBindings.names.length > 0) {
     const { moduleId, names } = options.sharedBindings;
     const escapedShared = variantName.replace(/"/g, "&quot;");
+    // The demonstrated component is not necessarily a shared binding: an art
+    // file can name it through `defineArt`/`component` without importing it in
+    // `<script setup>`. Import it here too, unless the shared module already
+    // exports that name, or `<Self>` expands to a tag the variant cannot resolve.
+    const sharedComponentImport =
+      options.componentImportPath &&
+      options.componentBindingName &&
+      !names.includes(options.componentBindingName)
+        ? `import ${options.componentBindingName} from ${JSON.stringify(options.componentImportPath)}\n`
+        : "";
     return (
       `<script setup lang="ts">\n` +
+      sharedComponentImport +
       `import { ${names.join(", ")} } from ${JSON.stringify(moduleId)}\n` +
       `</script>\n` +
       `<template><div data-variant="${escapedShared}">${variantTemplate}</div></template>\n`

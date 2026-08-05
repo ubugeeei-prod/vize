@@ -150,3 +150,55 @@ const count = ref(0)
   assert.match(variant, /import \{ Button, count \} from "virtual:musea-shared:/);
   assert.doesNotMatch(variant, /const count = ref\(0\)/, "the variant must not re-declare it");
 });
+
+void test("a shared variant imports the demonstrated component when setup does not", () => {
+  const art: ArtFileInfo = {
+    path: "/repo/components/Button.art.vue",
+    metadata: {
+      title: "Button",
+      // Named through metadata rather than imported in `<script setup>`, so the
+      // component is not one of the shared bindings.
+      component: "./Button.vue",
+      tags: [],
+      status: "ready",
+    },
+    variants: [
+      { name: "Primary", template: `<Button :count="count" />`, isDefault: true, skipVrt: false },
+    ],
+    hasScriptSetup: true,
+    scriptSetupContent: `
+import { ref } from "vue"
+const count = ref(0)
+`.trim(),
+    scriptSetupIsolated: false,
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const sharedBindings = {
+    moduleId: `virtual:musea-shared:${art.path}`,
+    names: ["count"],
+  };
+
+  // `<Self>` expands to `<Button>`, so the variant needs that binding even
+  // though the shared module does not export it.
+  const variant = buildVariantSfcSource(art, `<Button :count="count" />`, "Primary", {
+    artFilePath: art.path,
+    componentImportPath: "/repo/components/Button.vue",
+    componentBindingName: "Button",
+    sharedBindings,
+  });
+  assert.match(variant, /import Button from "\/repo\/components\/Button\.vue"/);
+  assert.match(variant, /import \{ count \} from "virtual:musea-shared:/);
+
+  // When the shared module does export it, importing it again would redeclare
+  // the binding.
+  const shared = buildVariantSfcSource(art, `<Button :count="count" />`, "Primary", {
+    artFilePath: art.path,
+    componentImportPath: "/repo/components/Button.vue",
+    componentBindingName: "Button",
+    sharedBindings: { ...sharedBindings, names: ["Button", "count"] },
+  });
+  assert.doesNotMatch(shared, /import Button from "\/repo\/components\/Button\.vue"/);
+  assert.match(shared, /import \{ Button, count \} from "virtual:musea-shared:/);
+});
