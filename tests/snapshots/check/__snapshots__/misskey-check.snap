@@ -1937,9 +1937,7 @@
     },
     {
       "file": "src/pages/settings/statusbar.vue",
-      "diagnostics": [
-        "error:11:4 [TS2345] Argument of type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' is not assignable to parameter of type 'Props & Record<string, unknown>'.\nProperty '_id' is missing in type '{ Id: string; userLists: { id: string; createdAt: string; name: string; userIds?: string[]; isPublic: boolean; }[] | null; }' but required in type 'Props'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/settings/theme.install.vue",
@@ -2390,7 +2388,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 37,
+  "errorCount": 36,
   "warningCount": 0,
   "fileCount": 583
 }
