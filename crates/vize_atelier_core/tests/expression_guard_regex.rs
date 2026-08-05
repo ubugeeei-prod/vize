@@ -52,14 +52,61 @@ fn a_regex_closed_only_by_a_line_terminator_does_not_hide_what_it_spans() {
     // "ended" that literal, so the scanner skipped everything between and saw
     // depth 22 instead of 6211. A line terminator does not close a regex — the
     // lexer errors and recovers — so the span has to be scanned.
-    let hidden = ["a</", &"s<".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1), "\n"].concat();
+    //
+    // The trailing `/` matters: without it the scan would run out of input and
+    // report the literal as unterminated anyway, so only a later slash proves
+    // the terminator itself is what stops the skip.
+    for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+        let hidden = [
+            "a</",
+            &"s<".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+            terminator,
+            "/",
+        ]
+        .concat();
 
-    assert!(
-        expression_nesting_depth(&hidden) > MAX_EXPRESSION_NESTING_DEPTH,
-        "angles spanned by an unclosed regex must reach the budget: {}",
-        expression_nesting_depth(&hidden)
-    );
-    assert!(!expression_is_safe_to_parse(&hidden));
+        assert!(
+            expression_nesting_depth(&hidden) > MAX_EXPRESSION_NESTING_DEPTH,
+            "angles spanned by an unclosed regex must reach the budget: terminator {:?} depth {}",
+            terminator.escape_unicode(),
+            expression_nesting_depth(&hidden)
+        );
+        assert!(
+            !expression_is_safe_to_parse(&hidden),
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+    }
+}
+
+#[test]
+fn an_escaped_line_terminator_does_not_extend_a_regex_to_a_later_slash() {
+    // A `\` before a line terminator is not an escape: the lexer still ends the
+    // unterminated literal at the terminator. Consuming the pair as one escape
+    // would step over LF/CR — or over the 0xE2 lead byte of LS/PS — and let a
+    // later `/` "close" the literal, hiding the spanned angles again.
+    for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
+        let hidden = [
+            "a</",
+            &"s<".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1),
+            "\\",
+            terminator,
+            "/",
+        ]
+        .concat();
+
+        assert!(
+            expression_nesting_depth(&hidden) > MAX_EXPRESSION_NESTING_DEPTH,
+            "angles spanned by an escaped terminator must reach the budget: terminator {:?} depth {}",
+            terminator.escape_unicode(),
+            expression_nesting_depth(&hidden)
+        );
+        assert!(
+            !expression_is_safe_to_parse(&hidden),
+            "terminator {:?}",
+            terminator.escape_unicode()
+        );
+    }
 }
 
 #[test]
