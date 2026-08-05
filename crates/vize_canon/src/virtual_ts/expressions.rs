@@ -16,6 +16,8 @@ mod generic_props_call;
 mod native_props;
 #[cfg(test)]
 mod native_props_tests;
+#[cfg(test)]
+mod prop_name_casing_tests;
 mod prop_sources;
 mod reserved_props;
 #[cfg(test)]

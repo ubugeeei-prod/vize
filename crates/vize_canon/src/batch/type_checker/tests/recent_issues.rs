@@ -10,6 +10,7 @@ mod native_prop_anchors;
 mod optional_boolean_props;
 mod options_api_bridge_anchors;
 mod options_api_inherited_members;
+mod pascal_case_prop_names;
 mod sequence_prop_expressions;
 mod single_required_camel_prop;
 mod split_script_diagnostic_anchors;
