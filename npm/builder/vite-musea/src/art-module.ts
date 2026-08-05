@@ -457,6 +457,9 @@ export function generateArtModule(
     componentBindingName = componentTagName;
   }
 
+  const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
+  const hasSetup = !!scriptSetup && (hasSetupBody || scriptSetup.returnNames.length > 0);
+
   let code = `
 // Auto-generated module for: ${path.basename(filePath)}
 `;
@@ -464,8 +467,10 @@ export function generateArtModule(
   // Vue 2 variants stay runtime-compiled (see art-module-vue2.ts), and the
   // wrapper they are emitted with needs its `defineComponent` binding. The alias
   // keeps it from colliding with an art file that imports `defineComponent`
-  // itself.
-  if (options.vueVersion === 2) {
+  // itself. Only a variant with a setup block is wrapped, and `defineComponent`
+  // is a Vue 2.7+ export, so the import is skipped otherwise to keep art files
+  // without `<script setup>` loadable on Vue 2.6.
+  if (options.vueVersion === 2 && hasSetup) {
     code += `import { defineComponent as __museaDefineComponent } from 'vue';\n`;
   }
 
@@ -496,8 +501,6 @@ export const variants = ${JSON.stringify(art.variants)};
 export const __styles__ = ${JSON.stringify(art.styleBlocks ?? [])};
 `;
 
-  const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
-  const hasSetup = !!scriptSetup && (hasSetupBody || scriptSetup.returnNames.length > 0);
   const setupReturn = `{ ${scriptSetup?.returnNames.join(", ") ?? ""} }`;
   const isolatedSetup = art.scriptSetupIsolated !== false;
 

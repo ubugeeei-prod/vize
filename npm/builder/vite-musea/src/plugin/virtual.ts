@@ -52,7 +52,7 @@ export interface VirtualModuleState {
  * invalid escape still falls back to the raw text instead of throwing a
  * `URIError` out of `load`.
  */
-function decodeVariantName(encoded: string): string {
+export function decodeVariantName(encoded: string): string {
   try {
     return decodeURIComponent(encoded);
   } catch {

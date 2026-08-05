@@ -6,6 +6,7 @@ import { build, type Plugin, type ResolvedConfig } from "vite";
 
 import { generateArtModule } from "./art-module.js";
 import { compileVariantSfc } from "./art-variant-sfc.js";
+import { decodeVariantName } from "./plugin/virtual.js";
 import { generatePreviewModule } from "./preview/index.js";
 import {
   emitStaticGallery,
@@ -117,7 +118,7 @@ function createVue2StaticBuildPlugin(
         const rest = id.slice("\0musea-variant-test:".length);
         const separator = rest.lastIndexOf(":");
         const artPath = rest.slice(0, separator);
-        const variantName = decodeURIComponent(rest.slice(separator + 1));
+        const variantName = decodeVariantName(rest.slice(separator + 1));
         const art = artFiles.get(artPath)!;
         const variant = art.variants.find((candidate) => candidate.name === variantName)!;
         return compileVariantSfc(art, variant.template, variant.name, artPath).code;
