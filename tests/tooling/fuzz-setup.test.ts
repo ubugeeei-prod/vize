@@ -58,7 +58,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   assert.match(workflow, /name:\s*Fuzz/);
   assert.match(
     workflow,
-    /^run-name:\s*Fuzz\s+\$\{\{\s*github\.event_name\s*==\s*'workflow_dispatch'\s*&&\s*format\(\s*'\{0\}s'\s*,\s*inputs\.max-total-time\s*\)\s*\|\|\s*github\.event_name\s*\}\}\s+@\s+\$\{\{\s*github\.sha\s*\}\}\s*$/m,
+    /^run-name:\s*Fuzz\s+\$\{\{.*inputs\.mode\s*==\s*'replay'.*inputs\.max-total-time.*\}\}\s+@\s+\$\{\{\s*github\.sha\s*\}\}\s*$/m,
   );
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
   assert.match(workflow, /pull_request:[\s\S]*paths:/);
@@ -78,11 +78,16 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 
   assert.match(workflow, /cargo \+nightly fuzz run/);
   assert.match(workflow, /-max_total_time=/);
+  // Replay is the release gate: `-runs=0` executes each corpus input once and
+  // exits, so the verdict comes from the known corpus rather than a randomized
+  // search that could fail a tag over a brand-new discovery.
+  assert.match(workflow, /-runs=0/);
   const fuzzJob = parsed.jobs.fuzz;
   assert.equal(fuzzJob["continue-on-error"], "${{ github.event_name == 'pull_request' }}");
   const budgetStep = fuzzJob.steps.find((step) => step.id === "budget");
   assert.deepEqual(budgetStep?.env, {
     REQUESTED_MAX_TOTAL_TIME: "${{ inputs.max-total-time }}",
+    FUZZ_MODE: "${{ inputs.mode || 'campaign' }}",
   });
   assert.match(budgetStep?.run ?? "", /seconds="\$REQUESTED_MAX_TOTAL_TIME"/);
   assert.match(budgetStep?.run ?? "", /max-total-time must be an integer from 1 to 3600 seconds/);
@@ -125,6 +130,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   assert.deepEqual(fuzzStep?.env, {
     FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
     FUZZ_TARGET: "${{ matrix.target }}",
+    FUZZ_MODE: "${{ inputs.mode || 'campaign' }}",
   });
   const enforceStep = fuzzJob.steps.find((step) => step.id === "enforce");
   assert.match(enforceStep?.run ?? "", /tools\/fuzz\/enforce-result\.mjs/);

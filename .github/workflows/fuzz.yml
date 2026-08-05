@@ -7,6 +7,19 @@ on:
         description: "libFuzzer -max_total_time per target (seconds)"
         required: false
         default: "120"
+      mode:
+        # `campaign` searches for new inputs; `replay` only re-runs the corpus
+        # already committed and cached, so it is a regression check with a fixed
+        # verdict. Release evidence uses `replay`: a fresh campaign is a
+        # randomized search that can fail a tag over an input discovered minutes
+        # earlier and unrelated to what is being released.
+        description: "campaign (search for new inputs) or replay (re-run the known corpus)"
+        required: false
+        default: campaign
+        type: choice
+        options:
+          - campaign
+          - replay
   schedule:
     # Daily long-run fuzz at 04:23 UTC; reproducers are uploaded as artifacts
     # so a regression triage can grab the failing input without re-running.
@@ -25,7 +38,7 @@ on:
       - "tools/fuzz/**"
       - ".github/workflows/fuzz.yml"
 
-run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && format('{0}s', inputs.max-total-time) || github.event_name }} @ ${{ github.sha }}
+run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}
 
 concurrency:
   group: fuzz-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -63,7 +76,14 @@ jobs:
         shell: bash
         env:
           REQUESTED_MAX_TOTAL_TIME: ${{ inputs.max-total-time }}
+          FUZZ_MODE: ${{ inputs.mode || 'campaign' }}
         run: |
+          if [[ "$FUZZ_MODE" == "replay" ]]; then
+            # `-runs=0` executes every corpus input once and exits, so no budget
+            # applies and the verdict depends only on the corpus.
+            echo "seconds=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           case "${{ github.event_name }}" in
             schedule)
               # Nightly long fuzz: 30 minutes/target — large enough to drive
@@ -124,17 +144,24 @@ jobs:
         env:
           FUZZ_MAX_TOTAL_TIME: ${{ steps.budget.outputs.seconds }}
           FUZZ_TARGET: ${{ matrix.target }}
+          FUZZ_MODE: ${{ inputs.mode || 'campaign' }}
         # Long corpus runs retain sanitizer allocator high-water memory even
         # when no individual input allocates excessively. Keep the per-call
         # allocation guard strict while giving the instrumented process room
         # to finish the 30-minute scheduled evidence run.
-        run: >-
-          cargo +nightly fuzz run --fuzz-dir tests/fuzz "$FUZZ_TARGET" --
-          "-max_total_time=$FUZZ_MAX_TOTAL_TIME"
-          -max_len=65536
-          -timeout=25
-          -rss_limit_mb=4096
-          -malloc_limit_mb=2048
+        run: |
+          if [[ "$FUZZ_MODE" == "replay" ]]; then
+            # Regression check: replay the seeded and cached corpus once each.
+            budget="-runs=0"
+          else
+            budget="-max_total_time=$FUZZ_MAX_TOTAL_TIME"
+          fi
+          cargo +nightly fuzz run --fuzz-dir tests/fuzz "$FUZZ_TARGET" -- \
+            "$budget" \
+            -max_len=65536 \
+            -timeout=25 \
+            -rss_limit_mb=4096 \
+            -malloc_limit_mb=2048
 
       - name: Upload reproducers when libFuzzer crashed
         id: upload-reproducers

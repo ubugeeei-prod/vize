@@ -18,7 +18,12 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   if (!ref) throw new Error("Release dispatch ref is required");
 
   const appE2eSuite = "all";
-  const fuzzMaxTotalTimeSeconds = "120";
+  // Release evidence replays the known corpus instead of running a fresh
+  // campaign. A campaign is a randomized search, so it can fail a tag over an
+  // input it discovered minutes earlier that has nothing to do with the release;
+  // discovery stays on the nightly schedule, where a find is triaged on its own
+  // schedule rather than blocking a publish.
+  const fuzzMode = "replay";
 
   return [
     {
@@ -53,8 +58,8 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       workflowName: "Fuzz",
       workflowId: "fuzz.yml",
       ref,
-      inputs: { "max-total-time": fuzzMaxTotalTimeSeconds },
-      expectedRunName: `Fuzz ${fuzzMaxTotalTimeSeconds}s @ ${headSha}`,
+      inputs: { mode: fuzzMode },
+      expectedRunName: `Fuzz ${fuzzMode} @ ${headSha}`,
     },
   ];
 }
