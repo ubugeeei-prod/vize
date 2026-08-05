@@ -100,7 +100,7 @@
     "style.trim": {
       "status": "unimplemented",
       "issue": 3227,
-      "reason": "No style trim toggle is accepted or forwarded to the native style pipeline, and the behavior behind it differs: Vize emits the author's CSS verbatim, which is byte-for-byte plugin-vue's `trim: false`, while plugin-vue defaults to `trim: true` and normalizes the whitespace around every rule and at-rule to a single newline. Vite minifies production CSS, so the difference is confined to unminified output."
+      "reason": "No style trim toggle is accepted or forwarded to the native style pipeline, and the behavior behind it differs: Vize emits the author's CSS verbatim, which is byte-for-byte plugin-vue's `trim: false`, while plugin-vue defaults to `trim: true` and normalizes the whitespace around every rule and at-rule to a single newline. Vite's production CSS minification (`build.cssMinify`, on by default) collapses the difference away, so it is only observable when minification is disabled."
     },
     "template.compiler": {
       "status": "intentional-divergence",
