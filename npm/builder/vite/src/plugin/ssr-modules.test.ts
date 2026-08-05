@@ -23,6 +23,13 @@ void test("a path outside the root keeps its absolute form instead of a ../ chai
   assert.ok(!outside.startsWith(".."));
 });
 
+void test("a root-relative filename beginning with .. is still keyed relative to the root", () => {
+  // `path.relative` yields "..widget.vue" here: no parent step, so the manifest
+  // key stays root-relative rather than falling back to the absolute path.
+  assert.equal(toManifestModuleId("/project/..widget.vue", ROOT), "..widget.vue");
+  assert.equal(toManifestModuleId("/project/app/..widget.vue", ROOT), "app/..widget.vue");
+});
+
 void test("the registration wraps setup and adds the module to ssrContext", () => {
   const code = ssrModuleRegistrationCode(PAGE, ROOT);
 
@@ -58,7 +65,38 @@ void test("a module with no component object is left untouched", () => {
   for (const emitted of [
     "export function render(_ctx, _cache) { return null }",
     'import { defineComponent } from "vue";\nexport default defineComponent({});',
+    // `_sfc_main` occurs only as text, so there is still nothing to wrap.
+    'export function render(_ctx) { return _ctx.h("pre", "_sfc_main") }',
+    "// _sfc_main is attached by the client output, not here\nexport function render() {}",
   ]) {
     assert.equal(appendSsrModuleRegistration(emitted, PAGE, ROOT, true), emitted);
   }
+});
+
+void test("an SFC that already uses the helper names still registers, with fresh names", () => {
+  // Keying idempotency on `__vize_useSSRContext` would skip this component and
+  // cost it its initial stylesheet; re-declaring the name would be a SyntaxError.
+  const emitted = [
+    'import { useSSRContext as __vize_useSSRContext } from "vue";',
+    "const __vize_sfc_setup = 1;",
+    'const _sfc_main = { name: "Index" };',
+    "export default _sfc_main;",
+  ].join("\n");
+
+  const once = appendSsrModuleRegistration(emitted, PAGE, ROOT, true);
+  assert.ok(once.startsWith(emitted), "the emitted module must be preserved verbatim");
+  assert.match(once, /import \{ useSSRContext as __vize_useSSRContext2 \} from "vue";/);
+  assert.match(once, /const __vize_sfc_setup2 = _sfc_main\.setup;/);
+  assert.match(once, /\(ssrContext\.modules \|\| \(ssrContext\.modules = new Set\(\)\)\)\.add\(/);
+  assert.equal(
+    once.match(/const __vize_sfc_setup\b/g)?.length,
+    1,
+    "the existing binding must not be re-declared",
+  );
+
+  assert.equal(
+    appendSsrModuleRegistration(once, PAGE, ROOT, true),
+    once,
+    "appending again is a no-op",
+  );
 });
