@@ -9,7 +9,7 @@ import path from "node:path";
 
 import { allowedSourceRoots, resolveComponentSourcePath } from "./component-source.js";
 import type { ArtFileInfo } from "./types/index.js";
-import { escapeHtml, toPascalCase } from "./utils.js";
+import { toPascalCase } from "./utils.js";
 
 /**
  * Extract the content of the first <script setup> block from a Vue SFC source.
@@ -35,7 +35,7 @@ function resolveRelativeSpecifier(specifier: string, artDir: string): string {
   return path.resolve(artDir, specifier);
 }
 
-function rewriteRelativeImportStatement(statement: string, artDir: string): string {
+export function rewriteRelativeImportStatement(statement: string, artDir: string): string {
   const rewrittenFromImports = statement.replace(
     /\bfrom\s+(['"])([^'"]+)\1/g,
     (_match, quote: string, specifier: string) =>
@@ -47,10 +47,6 @@ function rewriteRelativeImportStatement(statement: string, artDir: string): stri
     (_match, prefix: string, quote: string, specifier: string, suffix: string) =>
       `${prefix}${quote}${resolveRelativeSpecifier(specifier, artDir)}${quote}${suffix}`,
   );
-}
-
-function escapeTemplateLiteral(str: string): string {
-  return str.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$/g, "\\$");
 }
 
 function countCharBalance(source: string, openChar: string, closeChar: string): number {
@@ -516,68 +512,15 @@ ${scriptSetup.setupBody.join("\n")}
         .replace(/<\/Self>/g, `</${componentTagName}>`);
     }
 
-    // Escape the template for use in a JS string
-    const escapedTemplate = escapeTemplateLiteral(template);
-    const escapedVariantName = escapeTemplateLiteral(escapeHtml(variant.name));
-
-    // Wrap template with the variant container (no .musea-variant class -- the
-    // outer mount container already carries it; duplicating causes double padding)
-    const fullTemplate = `<div data-variant="${escapedVariantName}">${escapedTemplate}</div>`;
-
-    // Collect component names for the `components` option.
-    // Runtime-compiled templates use resolveComponent() which checks the
-    // `components` option, NOT setup return values.
-    const componentNames = new Map<string, string>();
-    if (componentTagName) componentNames.set(componentTagName, componentBindingName);
-    if (scriptSetup) {
-      for (const name of scriptSetup.returnNames)
-        if (/^[A-Z]/.test(name) && scriptSetup.imports.some((imp) => importDeclaresName(imp, name)))
-          componentNames.set(name, name);
-    }
-    const components =
-      componentNames.size > 0
-        ? `  components: { ${[...componentNames]
-            .map(([name, value]) => `${JSON.stringify(name)}: ${value}`)
-            .join(", ")} },\n`
-        : "";
-
-    if (scriptSetup && hasSetup && isolatedSetup) {
-      // Generate variant with setup function from art file's <script setup>
-      code += `
-export const ${variantComponentName} = __museaDefineComponent({
-  name: '${variantComponentName}',
-${components}  setup() {
-${scriptSetup.setupBody.join("\n")}
-    return ${setupReturn};
-  },
-  template: \`${fullTemplate}\`,
-});
+    // Each variant is compiled through the SFC pipeline in its own virtual
+    // module (#3857): `compileSfc` emits a complete module with its own default
+    // export, so it cannot be inlined here, and only that pipeline strips the
+    // TypeScript in template expressions and resolves bindings correctly.
+    const variantModuleId = `virtual:musea-variant:${filePath}:${variant.name}`;
+    code += `
+import ${variantComponentName} from ${JSON.stringify(variantModuleId)};
+export { ${variantComponentName} };
 `;
-    } else if (scriptSetup && hasSetup) {
-      code += `
-export const ${variantComponentName} = __museaDefineComponent({
-  name: '${variantComponentName}',
-${components}  setup() {
-    return __museaSharedSetup;
-  },
-  template: \`${fullTemplate}\`,
-});
-`;
-    } else if (componentTagName) {
-      code += `
-export const ${variantComponentName} = {
-  name: '${variantComponentName}',
-${components}  template: \`${fullTemplate}\`,
-};
-`;
-    } else {
-      code += `
-export const ${variantComponentName} = {
-  name: '${variantComponentName}',
-  template: \`${fullTemplate}\`,
-};
-`;
-    }
   }
 
   // Default export

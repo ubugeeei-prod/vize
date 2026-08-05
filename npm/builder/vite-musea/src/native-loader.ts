@@ -36,6 +36,14 @@ export interface NativeBinding {
     hasScript: boolean;
     styleCount: number;
   };
+  /** Compile a Vue SFC the same way the enclosing `.art.vue` file is compiled. */
+  compileSfc: (
+    source: string,
+    options?: { filename?: string },
+  ) => {
+    code?: string;
+    errors?: Array<string | { message?: string }>;
+  };
   artToCsf: (
     source: string,
     options?: { filename?: string },

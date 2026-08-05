@@ -15,6 +15,9 @@ import { generateGalleryModule } from "../gallery/module.js";
 import { generatePreviewModule } from "../preview/index.js";
 import { generateManifestModule } from "../manifest.js";
 import { generateArtModule } from "../art-module.js";
+import { compileVariantSfc } from "../art-variant-sfc.js";
+import { generateSharedSetupModule, sharedBindingNames } from "../art-shared-setup.js";
+import { parseScriptSetupForArt } from "../art-module.js";
 import { toPascalCase } from "../utils.js";
 
 // Virtual module prefixes
@@ -55,6 +58,17 @@ export function createResolveId(state: VirtualModuleState) {
     // Handle virtual:musea-preview: prefix for preview modules
     if (id.startsWith("virtual:musea-preview:")) {
       return "\0musea-preview:" + id.slice("virtual:musea-preview:".length);
+    }
+    // One module per variant, compiled through the SFC pipeline (#3857). Each
+    // one is a complete module with its own default export, so they cannot be
+    // concatenated into the art module.
+    if (id.startsWith("virtual:musea-variant:")) {
+      return "\0musea-variant:" + id.slice("virtual:musea-variant:".length) + "?musea-virtual";
+    }
+    // One shared setup instance for art files that opt out of per-variant
+    // isolation, so `scriptSetupIsolated: false` keeps meaning one instance.
+    if (id.startsWith("virtual:musea-shared:")) {
+      return "\0musea-shared:" + id.slice("virtual:musea-shared:".length) + "?musea-virtual";
     }
     // Handle virtual:musea-art: prefix for preview modules
     // Append ?musea-virtual to prevent other plugins (e.g. unplugin-vue-i18n)
@@ -108,6 +122,46 @@ export function createLoad(state: VirtualModuleState) {
             state.resolvedPreviewSetup,
             state.getVueVersion(),
           );
+        }
+      }
+    }
+    if (id.startsWith("\0musea-shared:")) {
+      const artPath = id.slice("\0musea-shared:".length).replace(/\?musea-virtual$/, "");
+      const art = state.artFiles.get(artPath);
+      if (art) return generateSharedSetupModule(art, artPath);
+    }
+    if (id.startsWith("\0musea-variant:")) {
+      const rest = id.slice("\0musea-variant:".length).replace(/\?musea-virtual$/, "");
+      const lastColonIndex = rest.lastIndexOf(":");
+      if (lastColonIndex !== -1) {
+        const artPath = rest.slice(0, lastColonIndex);
+        const variantName = rest.slice(lastColonIndex + 1);
+        const art = state.artFiles.get(artPath);
+        const variant = art?.variants.find((candidate) => candidate.name === variantName);
+        if (art && variant) {
+          const parsedScriptSetup = art.scriptSetupContent
+            ? parseScriptSetupForArt(art.scriptSetupContent)
+            : null;
+          const shared =
+            art.scriptSetupIsolated === false && parsedScriptSetup
+              ? {
+                  moduleId: `virtual:musea-shared:${artPath}`,
+                  names: sharedBindingNames(parsedScriptSetup),
+                }
+              : undefined;
+          const compiled = compileVariantSfc(art, variant.template, variant.name, artPath, {
+            scriptSetup: art.scriptSetupContent,
+            parsedScriptSetup,
+            root: state.getConfigRoot(),
+            scanRoots: state.getScanRoots(),
+            sharedBindings: shared,
+          });
+          if (compiled.errors.length > 0) {
+            throw new Error(
+              `Failed to compile <art> variant "${variantName}" in ${artPath}:\n${compiled.errors.join("\n")}`,
+            );
+          }
+          return compiled.code;
         }
       }
     }
