@@ -9,13 +9,26 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
+import type { VizeOptions } from "../types.ts";
 import { compileFile } from "../compiler.ts";
 import { generateOutput } from "../utils/index.ts";
+import { DEFAULT_EXCLUDE_PATTERN, DEFAULT_INCLUDE_PATTERN } from "../utils/filter.ts";
 import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
 import { transformVirtualTypeScript } from "./vite-transform.ts";
 
-export function createVueCompatPlugin(state: VizePluginState): Plugin {
+type FilterPatterns = string | RegExp | (string | RegExp)[];
+
+/**
+ * The `vite:vue` shim a host framework probes for a Vue plugin.
+ *
+ * `api.include` / `api.exclude` report the patterns behind `state.filter`, and
+ * assigning them rewrites the plugin's own options — the only window where that
+ * is meaningful is before `configResolved` builds the filter, so a later write
+ * throws rather than silently doing nothing (#3227). Upstream guards the same
+ * way, keyed on its `options` hook instead.
+ */
+export function createVueCompatPlugin(state: VizePluginState, options: VizeOptions): Plugin {
   let compilerSfc: unknown = null;
   const loadCompilerSfc = () => {
     if (!compilerSfc) {
@@ -29,6 +42,16 @@ export function createVueCompatPlugin(state: VizePluginState): Plugin {
     return compilerSfc;
   };
 
+  // Before `configResolved`, `state.mergedOptions` is still the raw options
+  // object, so `state.initialized` — set at the end of that hook — is what
+  // distinguishes a resolved filter from a configured one.
+  const configured = () => (state.initialized ? state.mergedOptions : options);
+  const assertUnresolved = (name: string) => {
+    if (state.initialized) {
+      throw new Error(`${name} cannot be updated after the filter is resolved`);
+    }
+  };
+
   return {
     name: "vite:vue",
     api: {
@@ -39,6 +62,20 @@ export function createVueCompatPlugin(state: VizePluginState): Plugin {
           root: state.root ?? process.cwd(),
           template: {},
         };
+      },
+      get include() {
+        return configured().include ?? DEFAULT_INCLUDE_PATTERN;
+      },
+      set include(value: FilterPatterns) {
+        assertUnresolved("include");
+        options.include = value;
+      },
+      get exclude() {
+        return configured().exclude ?? DEFAULT_EXCLUDE_PATTERN;
+      },
+      set exclude(value: FilterPatterns) {
+        assertUnresolved("exclude");
+        options.exclude = value;
       },
     },
   };

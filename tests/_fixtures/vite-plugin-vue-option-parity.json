@@ -8,9 +8,9 @@
     "version": "6.0.7"
   },
   "summary": {
-    "honored": 14,
+    "honored": 16,
     "intentional-divergence": 9,
-    "unimplemented": 17
+    "unimplemented": 15
   },
   "options": {
     "compiler": {
@@ -133,14 +133,12 @@
   },
   "api": {
     "exclude": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The vite:vue shim exposes no exclude accessor, so host frameworks cannot read or extend the file filter through the plugin api."
+      "status": "honored",
+      "evidence": "filter-api-assignment"
     },
     "include": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The vite:vue shim exposes no include accessor, so host frameworks cannot read or extend the file filter through the plugin api."
+      "status": "honored",
+      "evidence": "filter-api"
     },
     "options": {
       "status": "intentional-divergence",

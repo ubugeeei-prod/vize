@@ -342,7 +342,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
   };
 
   return [
-    createVueCompatPlugin(state),
+    createVueCompatPlugin(state, options),
     mainPlugin,
     createStylePostTransformPlugin(),
     createPostTransformPlugin(state),

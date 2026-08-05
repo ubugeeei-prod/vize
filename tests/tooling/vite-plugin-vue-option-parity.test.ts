@@ -26,6 +26,7 @@ import {
   probeProdDevtoolsFeature,
   probeProdHydrationMismatchDetailsFeature,
 } from "./_helpers/vite-plugin-vue-define-probes.ts";
+import { probeFilterApi, probeFilterApiAssignment } from "./_helpers/vite-plugin-vue-api-probes.ts";
 import { vize } from "../../npm/builder/vite/src/plugin/index.ts";
 
 type AnyHook = (...args: never[]) => unknown;
@@ -216,6 +217,8 @@ const probes = new Map<string, () => Promise<void> | void>([
   ["options-api-feature", probeOptionsApiFeature],
   ["prod-devtools-feature", probeProdDevtoolsFeature],
   ["prod-hydration-mismatch-details-feature", probeProdHydrationMismatchDetailsFeature],
+  ["filter-api", probeFilterApi],
+  ["filter-api-assignment", probeFilterApiAssignment],
 ]);
 
 test("the parity ledger stays exhaustive over the pinned @vitejs/plugin-vue surface", () => {

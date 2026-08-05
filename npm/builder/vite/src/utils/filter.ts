@@ -1,13 +1,29 @@
+/**
+ * Defaults the filter falls back to, and what the `vite:vue` shim reports
+ * through `api.include` / `api.exclude` when neither is configured (#3227).
+ *
+ * `DEFAULT_INCLUDE_PATTERN` is `@vitejs/plugin-vue`'s own default.
+ * `DEFAULT_EXCLUDE_PATTERN` has no upstream counterpart — plugin-vue leaves
+ * `exclude` undefined — so the shim reports the pattern Vize actually filters
+ * on rather than an upstream-shaped `undefined` it does not honor.
+ */
+export const DEFAULT_INCLUDE_PATTERN = /\.vue$/;
+export const DEFAULT_EXCLUDE_PATTERN = /node_modules/;
+
 export function createFilter(
   include?: string | RegExp | (string | RegExp)[],
   exclude?: string | RegExp | (string | RegExp)[],
 ): (id: string) => boolean {
-  const includePatterns = include ? (Array.isArray(include) ? include : [include]) : [/\.vue$/];
+  const includePatterns = include
+    ? Array.isArray(include)
+      ? include
+      : [include]
+    : [DEFAULT_INCLUDE_PATTERN];
   const excludePatterns = exclude
     ? Array.isArray(exclude)
       ? exclude
       : [exclude]
-    : [/node_modules/];
+    : [DEFAULT_EXCLUDE_PATTERN];
 
   return (id: string) => {
     const matchInclude = includePatterns.some((pattern) => matchesFilterPattern(pattern, id));
