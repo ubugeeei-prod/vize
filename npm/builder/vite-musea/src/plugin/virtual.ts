@@ -173,6 +173,7 @@ export function createLoad(state: VirtualModuleState) {
         return generateArtModule(art, artPath, {
           root: state.getConfigRoot(),
           scanRoots: state.getScanRoots(),
+          vueVersion: state.getVueVersion(),
         });
       }
     }
@@ -183,6 +184,7 @@ export function createLoad(state: VirtualModuleState) {
         return generateArtModule(art, realPath, {
           root: state.getConfigRoot(),
           scanRoots: state.getScanRoots(),
+          vueVersion: state.getVueVersion(),
         });
       }
     }

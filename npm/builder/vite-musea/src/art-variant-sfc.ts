@@ -17,9 +17,29 @@
  *     @u="(f: File | null) => …"      ->   onU: (f) => file.value = f
  */
 
+import path from "node:path";
+
 import { loadNative } from "./native-loader.js";
 import { expandSelfTag, resolveArtComponent } from "./art-component.js";
+import { parseScriptSetupForArt, rewriteRelativeImportStatement } from "./art-module.js";
 import type { ArtFileInfo } from "./types/index.js";
+
+/**
+ * Rebase the art file's `<script setup>` for a virtual module.
+ *
+ * A variant compiles into a virtual module, and a relative specifier cannot be
+ * resolved from one — the art module rebases its own imports for exactly this
+ * reason, and the variant needs the same treatment or every relative import in
+ * an art file fails to resolve.
+ */
+function rebaseScriptSetup(scriptSetup: string, artDir: string): string {
+  if (!scriptSetup.trim()) return "";
+  const parsed = parseScriptSetupForArt(scriptSetup);
+  const imports = parsed.imports.map((statement) =>
+    rewriteRelativeImportStatement(statement, artDir),
+  );
+  return [...imports, ...parsed.setupBody].join("\n").trim();
+}
 
 export type VariantSfcResult = {
   code: string;
@@ -41,6 +61,7 @@ export function buildVariantSfcSource(
     scriptSetup?: string | null;
     componentImportPath?: string;
     componentBindingName?: string;
+    artFilePath?: string;
     /**
      * Bindings to import from the art file's shared setup module instead of
      * declaring locally. `scriptSetupIsolated: false` means every variant sees
@@ -60,7 +81,10 @@ export function buildVariantSfcSource(
       `<template><div data-variant="${escapedShared}">${variantTemplate}</div></template>\n`
     );
   }
-  const scriptSetup = options.scriptSetup ?? art.scriptSetupContent ?? "";
+  const scriptSetup = rebaseScriptSetup(
+    options.scriptSetup ?? art.scriptSetupContent ?? "",
+    path.dirname(options.artFilePath ?? art.path),
+  );
   // The demonstrated component is imported into the variant's own setup scope so
   // `<Self>` — and any tag the art file referenced — resolves through the SFC's
   // binding resolution rather than a `components` option.
@@ -111,6 +135,7 @@ export function compileVariantSfc(
       scriptSetup: options.scriptSetup,
       componentImportPath: component.componentImportPath,
       componentBindingName: component.componentBindingName,
+      artFilePath: filename,
       sharedBindings: options.sharedBindings,
     },
   );

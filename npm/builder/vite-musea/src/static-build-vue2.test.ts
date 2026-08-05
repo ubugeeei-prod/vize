@@ -5,6 +5,7 @@ import test from "node:test";
 import { build, type Plugin, type ResolvedConfig } from "vite";
 
 import { generateArtModule } from "./art-module.js";
+import { compileVariantSfc } from "./art-variant-sfc.js";
 import { generatePreviewModule } from "./preview/index.js";
 import {
   emitStaticGallery,
@@ -95,6 +96,11 @@ function createVue2StaticBuildPlugin(
       if (id.startsWith("virtual:musea-art:")) {
         return "\0musea-art-test:" + id.slice("virtual:musea-art:".length);
       }
+      // The art module imports one module per variant now (#3857), so anything
+      // resolving art modules has to resolve these too.
+      if (id.startsWith("virtual:musea-variant:")) {
+        return "\0musea-variant-test:" + id.slice("virtual:musea-variant:".length);
+      }
       return resolveStaticRuntimeId(id);
     },
     load(id) {
@@ -105,7 +111,16 @@ function createVue2StaticBuildPlugin(
       }
       if (id.startsWith("\0musea-art-test:")) {
         const artPath = id.slice("\0musea-art-test:".length);
-        return generateArtModule(artFiles.get(artPath)!, artPath);
+        return generateArtModule(artFiles.get(artPath)!, artPath, { vueVersion: 2 });
+      }
+      if (id.startsWith("\0musea-variant-test:")) {
+        const rest = id.slice("\0musea-variant-test:".length);
+        const separator = rest.lastIndexOf(":");
+        const artPath = rest.slice(0, separator);
+        const variantName = rest.slice(separator + 1);
+        const art = artFiles.get(artPath)!;
+        const variant = art.variants.find((candidate) => candidate.name === variantName)!;
+        return compileVariantSfc(art, variant.template, variant.name, artPath).code;
       }
       return loadStaticRuntimeModule(id, artFiles);
     },

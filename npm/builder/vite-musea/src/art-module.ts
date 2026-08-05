@@ -10,6 +10,7 @@ import path from "node:path";
 import { allowedSourceRoots, resolveComponentSourcePath } from "./component-source.js";
 import type { ArtFileInfo } from "./types/index.js";
 import { toPascalCase } from "./utils.js";
+import { emitLegacyVariant } from "./art-module-vue2.js";
 
 /**
  * Extract the content of the first <script setup> block from a Vue SFC source.
@@ -401,6 +402,8 @@ function isDefineArtLine(trimmed: string): boolean {
 }
 
 interface GenerateArtModuleOptions {
+  /** Legacy galleries keep runtime-compiled templates; see the Vue 2 branch below. */
+  vueVersion?: 2 | 3;
   root?: string;
   scanRoots?: string[];
 }
@@ -455,7 +458,6 @@ export function generateArtModule(
 
   let code = `
 // Auto-generated module for: ${path.basename(filePath)}
-import { defineComponent as __museaDefineComponent } from 'vue';
 `;
 
   // Add script setup imports at module level
@@ -510,6 +512,32 @@ ${scriptSetup.setupBody.join("\n")}
       template = template
         .replace(/<Self/g, `<${componentTagName}`)
         .replace(/<\/Self>/g, `</${componentTagName}>`);
+    }
+
+    // Vue 2 has no `openBlock`/`createElementBlock` runtime, so a compiled Vue 3
+    // render function cannot load there. Legacy galleries keep the
+    // runtime-compiled `template:` string they always had; the TypeScript fix
+    // below applies to Vue 3, which is what `.art.vue` with
+    // `<script setup lang="ts">` targets (#3857).
+    // Vue 2 has no `openBlock`/`createElementBlock` runtime, so a compiled Vue 3
+    // render function cannot load there. Legacy galleries keep the
+    // runtime-compiled `template:` string they always had; the TypeScript fix
+    // applies to Vue 3, which is what `.art.vue` with `<script setup lang="ts">`
+    // targets (#3857).
+    if (options.vueVersion === 2) {
+      code += emitLegacyVariant({
+        variantComponentName,
+        variantName: variant.name,
+        template,
+        componentTagName,
+        componentBindingName,
+        scriptSetup,
+        hasSetup,
+        isolatedSetup,
+        setupReturn,
+        importDeclaresName,
+      });
+      continue;
     }
 
     // Each variant is compiled through the SFC pipeline in its own virtual
