@@ -11,7 +11,6 @@ import {
   type VizePluginState,
 } from "./state.ts";
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
-import { appendSsrModuleRegistration, normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
@@ -32,8 +31,6 @@ import {
   rewriteStaticAssetUrls,
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
-
-export { normalizeVueServerRendererImport };
 
 /** What `load` hands Vite: emitted code plus its map, when one was produced. */
 type LoadResult = { code: string; map: SourceMapV3 | null };
@@ -56,6 +53,10 @@ export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): stri
     return SERVER_PLACEHOLDER_CODE;
   }
   return null;
+}
+
+export function normalizeVueServerRendererImport(code: string): string {
+  return code.replace(/\bfrom\s+(['"])@vue\/server-renderer\1/g, 'from "vue/server-renderer"');
 }
 
 function findMacroArtifactModule(
@@ -152,7 +153,6 @@ function loadCompiledSfcModule(
   rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
-  rewritten.edit(appendSsrModuleRegistration(rewritten.code, realPath, state.root, isSsr));
   return { code: rewritten.code, map: rewritten.map };
 }
 
