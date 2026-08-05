@@ -41,6 +41,7 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
 test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () => {
   const workflow = readRepoFile(".github/workflows/fuzz.yml");
   const parsed = parse(workflow) as {
+    "run-name": string;
     jobs: {
       fuzz: {
         "continue-on-error": string;
@@ -56,10 +57,12 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   };
 
   assert.match(workflow, /name:\s*Fuzz/);
-  assert.match(
-    workflow,
-    /^run-name:\s*Fuzz\s+\$\{\{.*inputs\.mode\s*==\s*'replay'.*inputs\.max-total-time.*\}\}\s+@\s+\$\{\{\s*github\.sha\s*\}\}\s*$/m,
-  );
+  // Assert the resolved `run-name` value, not how the YAML wraps it: the
+  // release gate correlates evidence by expanded display title.
+  assert.match(parsed["run-name"], /^Fuzz \$\{\{/);
+  assert.match(parsed["run-name"], /inputs\.mode == 'replay'/);
+  assert.match(parsed["run-name"], /inputs\.max-total-time/);
+  assert.match(parsed["run-name"], /@ \$\{\{ github\.sha \}\}$/);
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
   assert.match(workflow, /pull_request:[\s\S]*paths:/);
   assert.match(workflow, /"tests\/fuzz\/\*\*"/);
@@ -76,12 +79,6 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
     );
   }
 
-  assert.match(workflow, /cargo \+nightly fuzz run/);
-  assert.match(workflow, /-max_total_time=/);
-  // Replay is the release gate: `-runs=0` executes each corpus input once and
-  // exits, so the verdict comes from the known corpus rather than a randomized
-  // search that could fail a tag over a brand-new discovery.
-  assert.match(workflow, /-runs=0/);
   const fuzzJob = parsed.jobs.fuzz;
   assert.equal(fuzzJob["continue-on-error"], "${{ github.event_name == 'pull_request' }}");
   const budgetStep = fuzzJob.steps.find((step) => step.id === "budget");
@@ -127,6 +124,11 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   );
   assert.match(fuzzStep?.run ?? "", /-rss_limit_mb=4096/);
   assert.match(fuzzStep?.run ?? "", /-malloc_limit_mb=2048/);
+  // Mode selection belongs to this step: replay executes each corpus input once
+  // and exits, campaigns keep their budget. `release-fuzz-gate.test.ts` runs the
+  // script per mode to pin which argument each one actually gets.
+  assert.match(fuzzStep?.run ?? "", /budget="-runs=0"/);
+  assert.match(fuzzStep?.run ?? "", /budget="-max_total_time=\$FUZZ_MAX_TOTAL_TIME"/);
   assert.deepEqual(fuzzStep?.env, {
     FUZZ_MAX_TOTAL_TIME: "${{ steps.budget.outputs.seconds }}",
     FUZZ_TARGET: "${{ matrix.target }}",

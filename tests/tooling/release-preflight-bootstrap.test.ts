@@ -214,9 +214,11 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
 test("release gate bootstrap reuses exact-SHA scheduled evidence", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  const benchmarkPlan = findReleasePlan("Benchmark");
-  const benchmark = findEvidenceRun(runs, "Benchmark");
-  benchmark.display_title = benchmarkPlan.expectedRunName;
+  for (const workflowName of ["Benchmark", "Fuzz"]) {
+    const run = findEvidenceRun(runs, workflowName);
+    run.display_title = findReleasePlan(workflowName).expectedRunName;
+    run.event = "workflow_dispatch";
+  }
   const dispatched: string[] = [];
 
   const selected = await bootstrapRequiredWorkflowRuns({
@@ -228,7 +230,7 @@ test("release gate bootstrap reuses exact-SHA scheduled evidence", async () => {
 
   assert.deepEqual(dispatched, []);
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
-  for (const workflowName of ["App E2E", "Native Smoke", "Fuzz"]) {
+  for (const workflowName of ["App E2E", "Native Smoke"]) {
     assert.equal(findEvidenceRun(runs, workflowName).event, "schedule");
   }
 });

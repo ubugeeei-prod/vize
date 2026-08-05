@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { createReleaseGateDispatchPlans } from "../../tools/github/release-preflight-bootstrap.mjs";
+import {
+  createReleaseGateDispatchPlans,
+  releaseGateRunQualifiers,
+} from "../../tools/github/release-preflight-bootstrap.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import { releaseSha } from "./support/release-preflight.ts";
 
@@ -22,6 +29,32 @@ function fuzzWorkflow() {
     on?: { workflow_dispatch?: { inputs?: Record<string, Record<string, unknown>> } };
     jobs?: { fuzz?: { steps?: Array<{ id?: string; run?: string }> } };
   };
+}
+
+// Run the fuzz step's script with a `cargo` stub on PATH so the assertion sees
+// the arguments the workflow actually assembles for a mode, not just tokens
+// present somewhere in the file.
+function fuzzCommand(mode: string): string {
+  const script = fuzzWorkflow().jobs?.fuzz?.steps?.find((step) => step.id === "fuzz")?.run;
+  assert.ok(script, "fuzz workflow must have a step with id: fuzz");
+  const stubDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fuzz-command-"));
+  fs.writeFileSync(path.join(stubDirectory, "cargo"), '#!/usr/bin/env bash\necho "$@"\n', {
+    mode: 0o755,
+  });
+
+  const result = spawnSync("bash", ["-c", script], {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: `${stubDirectory}${path.delimiter}${process.env.PATH ?? ""}`,
+      FUZZ_MAX_TOTAL_TIME: "120",
+      FUZZ_MODE: mode,
+      FUZZ_TARGET: "sfc_parse",
+    },
+  });
+
+  assert.equal(result.status, 0, `${result.stderr}${result.stdout}`);
+  return result.stdout;
 }
 
 test("release evidence replays the corpus instead of searching for new inputs", () => {
@@ -52,8 +85,22 @@ test("replay mode is an explicit choice the workflow understands", () => {
 });
 
 test("replay runs every corpus input exactly once", () => {
-  const run = fuzzWorkflow().jobs?.fuzz?.steps?.find((step) => step.id === "fuzz")?.run ?? "";
+  const replay = fuzzCommand("replay");
+  assert.match(replay, /-runs=0/, "replay must execute the corpus and exit");
+  assert.doesNotMatch(replay, /-max_total_time/, "replay must not run a timed search");
 
-  assert.match(run, /-runs=0/, "replay must execute the corpus and exit");
-  assert.match(run, /-max_total_time=\$FUZZ_MAX_TOTAL_TIME/, "campaigns keep their budget");
+  const campaign = fuzzCommand("campaign");
+  assert.match(campaign, /-max_total_time=120/, "campaigns keep their budget");
+  assert.doesNotMatch(campaign, /-runs=0/, "campaigns must keep searching for new inputs");
+});
+
+test("the release gate rejects the nightly campaign as replay evidence", () => {
+  const plan = fuzzPlan();
+  const qualify = releaseGateRunQualifiers([plan]).get("Fuzz");
+  assert.ok(qualify);
+
+  // The nightly campaign runs on main, so a tag can share its head SHA. Reusing
+  // it as evidence would put the randomized search back on the release path.
+  assert.equal(qualify({ event: "schedule", display_title: "Fuzz schedule" }), false);
+  assert.equal(qualify({ event: "workflow_dispatch", display_title: plan.expectedRunName }), true);
 });

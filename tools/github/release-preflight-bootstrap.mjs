@@ -32,6 +32,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: { base_sha: baseSha, head_sha: headSha },
       expectedRunName: `Benchmark ${baseSha}...${headSha}`,
+      acceptsScheduledEvidence: false,
     },
     {
       workflowName: "App E2E",
@@ -39,6 +40,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: { suite: appE2eSuite, target_sha: headSha },
       expectedRunName: `App E2E ${appE2eSuite} @ ${headSha}`,
+      acceptsScheduledEvidence: true,
     },
     {
       workflowName: "Native Smoke",
@@ -46,6 +48,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: {},
       expectedRunName: "Native Smoke",
+      acceptsScheduledEvidence: true,
     },
     {
       workflowName: "Real Project Matrix",
@@ -53,6 +56,7 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: {},
       expectedRunName: `Real Project Matrix @ ${headSha}`,
+      acceptsScheduledEvidence: true,
     },
     {
       workflowName: "Fuzz",
@@ -60,6 +64,9 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       ref,
       inputs: { mode: fuzzMode },
       expectedRunName: `Fuzz ${fuzzMode} @ ${headSha}`,
+      // The nightly schedule runs a campaign, so a scheduled run at the tag SHA
+      // is not replay evidence: it must not stand in for the dispatched replay.
+      acceptsScheduledEvidence: false,
     },
   ];
 }
@@ -68,7 +75,9 @@ export function releaseGateRunQualifiers(dispatchPlans) {
   return new Map(
     dispatchPlans.map((plan) => [
       plan.workflowName,
-      (run) => run.event === "schedule" || run.display_title === plan.expectedRunName,
+      (run) =>
+        (plan.acceptsScheduledEvidence === true && run.event === "schedule") ||
+        run.display_title === plan.expectedRunName,
     ]),
   );
 }
