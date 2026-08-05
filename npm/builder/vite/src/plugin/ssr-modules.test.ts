@@ -39,12 +39,17 @@ void test("the registration wraps setup and adds the module to ssrContext", () =
 void test("appending leaves the emitted module intact and adds the registration once", () => {
   const emitted = 'const _sfc_main = { name: "Index" };\nexport default _sfc_main;';
 
-  const once = appendSsrModuleRegistration(emitted, PAGE, ROOT);
+  const once = appendSsrModuleRegistration(emitted, PAGE, ROOT, true);
   assert.ok(once.startsWith(emitted), "the emitted module must be preserved verbatim");
   assert.equal(once.match(/__vize_useSSRContext/g)?.length, 2, "one import, one call");
 
-  const twice = appendSsrModuleRegistration(once, PAGE, ROOT);
+  const twice = appendSsrModuleRegistration(once, PAGE, ROOT, true);
   assert.equal(twice, once, "appending again must be a no-op");
+});
+
+void test("a client build is a no-op", () => {
+  const emitted = "const _sfc_main = {};\nexport default _sfc_main;";
+  assert.equal(appendSsrModuleRegistration(emitted, PAGE, ROOT, false), emitted);
 });
 
 void test("a module with no component object is left untouched", () => {
@@ -54,6 +59,6 @@ void test("a module with no component object is left untouched", () => {
     "export function render(_ctx, _cache) { return null }",
     'import { defineComponent } from "vue";\nexport default defineComponent({});',
   ]) {
-    assert.equal(appendSsrModuleRegistration(emitted, PAGE, ROOT), emitted);
+    assert.equal(appendSsrModuleRegistration(emitted, PAGE, ROOT, true), emitted);
   }
 });

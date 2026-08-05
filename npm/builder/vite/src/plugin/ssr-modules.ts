@@ -1,6 +1,16 @@
 import path from "node:path";
 
 /**
+ * Point a compiled SSR module at the `vue/server-renderer` subpath.
+ *
+ * The compiler emits `@vue/server-renderer`, which is not a dependency every
+ * app declares; the subpath re-export always resolves alongside `vue` itself.
+ */
+export function normalizeVueServerRendererImport(code: string): string {
+  return code.replace(/\bfrom\s+(['"])@vue\/server-renderer\1/g, 'from "vue/server-renderer"');
+}
+
+/**
  * Register an SFC in `ssrContext.modules` during SSR, the way
  * `@vitejs/plugin-vue` does.
  *
@@ -42,14 +52,21 @@ export function toManifestModuleId(filePath: string, root: string): string {
 }
 
 /**
- * Append the registration to an emitted SSR module.
+ * Append the registration to an emitted module.
  *
- * Modules without an `_sfc_main` binding — a render-function-only output, or a
- * boundary placeholder — have no component object to wrap and are returned
- * untouched.
+ * Call this last, so the wrapper closes over whatever `setup` the emitter's own
+ * rewrites left in place. `useSSRContext()` throws outside a render, so this is
+ * a no-op unless `isSsr`. Modules without an `_sfc_main` binding — a
+ * render-function-only output, or a boundary placeholder — have no component
+ * object to wrap and are returned untouched.
  */
-export function appendSsrModuleRegistration(code: string, filePath: string, root: string): string {
-  if (!/\b_sfc_main\b/.test(code)) {
+export function appendSsrModuleRegistration(
+  code: string,
+  filePath: string,
+  root: string,
+  isSsr: boolean,
+): string {
+  if (!isSsr || !/\b_sfc_main\b/.test(code)) {
     return code;
   }
   if (code.includes("__vize_useSSRContext")) {
