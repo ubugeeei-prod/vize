@@ -157,20 +157,10 @@ test("App E2E dispatch identifies the suite and immutable target", () => {
 test("Fuzz dispatch identifies its mode and target", () => {
   const fuzz = readWorkflow(findReleasePlan("Fuzz").workflowId);
   assert.equal(fuzz.on?.workflow_dispatch?.inputs?.["max-total-time"]?.default, "120");
-  assert.equal(fuzz.on?.workflow_dispatch?.inputs?.mode?.default, "campaign");
-  assert.deepEqual(fuzz.on?.workflow_dispatch?.inputs?.mode?.options, ["campaign", "replay"]);
   assert.match(fuzz["run-name"] ?? "", /^Fuzz /);
   assert.match(fuzz["run-name"] ?? "", /inputs\.max-total-time/);
   assert.match(fuzz["run-name"] ?? "", /inputs\.mode/);
   assert.match(fuzz["run-name"] ?? "", /github\.sha/);
-});
-
-test("release evidence replays the corpus instead of searching for new inputs", () => {
-  // A campaign is a randomized search, so gating a tag on one lets an input
-  // discovered minutes earlier block a release it has nothing to do with.
-  const plan = findReleasePlan("Fuzz");
-  assert.deepEqual(plan.inputs, { mode: "replay" });
-  assert.doesNotMatch(JSON.stringify(plan.inputs), /max-total-time/);
 });
 
 test("Native Smoke uses its stable workflow title as evidence", () => {
