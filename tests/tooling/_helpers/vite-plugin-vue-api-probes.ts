@@ -7,6 +7,9 @@
  */
 
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import type { Plugin } from "vite";
 
 import { createUpstreamPlugin } from "./vite-plugin-vue-parity.ts";
@@ -16,6 +19,40 @@ type FilterApi = {
   exclude?: unknown;
   include?: unknown;
 };
+
+type AnyHook = (...args: never[]) => unknown;
+
+function hook<T extends AnyHook>(candidate: unknown): T {
+  const handler =
+    typeof candidate === "function" ? candidate : (candidate as { handler?: T })?.handler;
+  assert.equal(typeof handler, "function", "expected an implemented plugin hook");
+  return handler as T;
+}
+
+function resolvedConfig(root: string): unknown {
+  return {
+    root,
+    base: "/",
+    build: { assetsDir: "assets", ssr: false },
+    command: "serve",
+    define: {},
+    isProduction: false,
+    mode: "development",
+    plugins: [],
+    resolve: { alias: [] },
+  };
+}
+
+/** Whether the main plugin claims `file`, which is what `state.filter` gates. */
+async function claimsVueFile(plugin: Plugin, file: string): Promise<boolean> {
+  const resolved = await hook<AnyHook>(plugin.resolveId).call(
+    { resolve: () => null },
+    file as never,
+    undefined as never,
+    {} as never,
+  );
+  return typeof resolved === "string";
+}
 
 function shimApi(options: Record<string, unknown> = {}): FilterApi {
   const plugin = (vize({ configMode: false, scanPatterns: [], ...options }) as Plugin[]).find(
@@ -63,8 +100,20 @@ export function probeFilterApi(): void {
   assert.deepEqual(shimApi().exclude, /node_modules/);
 }
 
-/** Assigning `api.include` / `api.exclude` rewrites the filter the plugin builds. */
+/**
+ * Assigning `api.include` / `api.exclude` rewrites the filter the plugin builds.
+ *
+ * The api promise is about the filter, not about the accessors, so the
+ * assignments are checked through `resolveId` (the consumer-visible hook
+ * `state.filter` gates) once `configResolved` has built the filter from them.
+ */
 export async function probeFilterApiAssignment(): Promise<void> {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vue-api-probe-"));
+  const sfc = `<template><div class="probe">probe</div></template>\n`;
+  for (const name of ["Kept.probe.vue", "Other.vue", "Skipped.probe.vue"]) {
+    fs.writeFileSync(path.join(root, name), sfc);
+  }
+
   const plugins = vize({ configMode: false, scanPatterns: [] }) as Plugin[];
   const shim = plugins.find((candidate) => candidate.name === "vite:vue");
   const main = plugins.find((candidate) => candidate.name === "vite-plugin-vize");
@@ -73,35 +122,36 @@ export async function probeFilterApiAssignment(): Promise<void> {
 
   const api = (shim as { api?: FilterApi }).api as FilterApi;
   api.include = [/\.probe\.vue$/];
+  api.exclude = [/Skipped\.probe\.vue$/];
   assert.deepEqual(
     api.include,
     [/\.probe\.vue$/],
     "the assignment must be visible through the api",
   );
+  assert.deepEqual(api.exclude, [/Skipped\.probe\.vue$/]);
+
+  await hook<(config: unknown) => Promise<void>>(main.configResolved).call(
+    {},
+    resolvedConfig(root),
+  );
+
+  assert.ok(
+    await claimsVueFile(main, path.join(root, "Kept.probe.vue")),
+    "the assigned `include` must claim the files it matches",
+  );
+  assert.equal(
+    await claimsVueFile(main, path.join(root, "Other.vue")),
+    false,
+    "the assigned `include` must release the default `.vue` claim",
+  );
+  assert.equal(
+    await claimsVueFile(main, path.join(root, "Skipped.probe.vue")),
+    false,
+    "the assigned `exclude` must release a file the `include` matches",
+  );
 
   // Upstream refuses the same write once its filter is resolved; silently
   // dropping it would leave the host believing it changed the filter.
-  const configResolved = (main as { configResolved?: unknown }).configResolved;
-  const handler =
-    typeof configResolved === "function"
-      ? configResolved
-      : (configResolved as { handler?: (config: unknown) => unknown } | undefined)?.handler;
-  assert.equal(typeof handler, "function");
-  await (handler as (config: unknown) => unknown).call(
-    {},
-    {
-      root: process.cwd(),
-      base: "/",
-      build: { assetsDir: "assets", ssr: false },
-      command: "serve",
-      define: {},
-      isProduction: false,
-      mode: "development",
-      plugins: [],
-      resolve: { alias: [] },
-    },
-  );
-
   assert.throws(
     () => {
       api.exclude = [/late\.vue$/];
