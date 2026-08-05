@@ -41,6 +41,13 @@ const SFC_MAIN_DECLARATION = /\b(?:const|let|var)\s+_sfc_main\s*=/;
  *
  * The key must be the module's path relative to the Vite root with POSIX
  * separators, because that is what the client manifest is keyed on.
+ *
+ * `useSSRContext()` returns `undefined` when nothing provided a context — a
+ * component rendered outside Nuxt's request render, such as by a prerender-time
+ * module doing its own `renderToString`. Dereferencing that is a `TypeError`
+ * inside `setup`, which surfaces as a bare `[500] Server Error` and fails the
+ * whole prerender, so the registration is skipped instead. Such a render has no
+ * manifest consumer waiting on `modules`, so there is nothing to lose.
  */
 export function ssrModuleRegistrationCode(
   filePath: string,
@@ -56,7 +63,9 @@ export function ssrModuleRegistrationCode(
     `const ${sfcSetup} = _sfc_main.setup;`,
     `_sfc_main.setup = (props, ctx) => {`,
     `  const ssrContext = ${useSSRContext}();`,
-    `  (ssrContext.modules || (ssrContext.modules = new Set())).add(${moduleId});`,
+    `  if (ssrContext) {`,
+    `    (ssrContext.modules || (ssrContext.modules = new Set())).add(${moduleId});`,
+    `  }`,
     `  return ${sfcSetup} ? ${sfcSetup}(props, ctx) : undefined;`,
     `};`,
   ].join("\n");

@@ -35,10 +35,17 @@ void test("the registration wraps setup and adds the module to ssrContext", () =
 
   assert.match(code, /import \{ useSSRContext as __vize_useSSRContext \} from "vue";/);
   assert.match(code, /const __vize_sfc_setup = _sfc_main\.setup;/);
+  // `useSSRContext()` returns undefined outside a request render. Dereferencing
+  // it there is a TypeError inside setup, which fails the whole prerender with a
+  // bare 500 rather than just losing a stylesheet link.
+  assert.match(code, /if \(ssrContext\) \{/);
   assert.match(
     code,
     /\(ssrContext\.modules \|\| \(ssrContext\.modules = new Set\(\)\)\)\.add\("app\/pages\/index\.vue"\);/,
   );
+  // `useSSRContext()` is undefined outside a request render; dereferencing it
+  // there is a TypeError that fails the whole prerender.
+  assert.match(code, /if \(ssrContext\) \{/);
   // An SFC without its own `setup` must still render.
   assert.match(code, /return __vize_sfc_setup \? __vize_sfc_setup\(props, ctx\) : undefined;/);
 });
