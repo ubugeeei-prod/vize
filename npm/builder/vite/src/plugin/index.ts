@@ -124,12 +124,12 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     name: "vite-plugin-vize",
     enforce: "pre",
 
-    config(userConfig, env) {
+    config(userConfig) {
       patchCssModuleGenerateScopedName(userConfig);
 
       return {
         // Vue 3 ESM bundler flags normally injected by @vitejs/plugin-vue.
-        define: resolveVueFeatureDefines(options.features, userConfig.define, env.command),
+        define: resolveVueFeatureDefines(options.features, userConfig.define),
         optimizeDeps: {
           exclude: ["virtual:vize-styles"],
         },

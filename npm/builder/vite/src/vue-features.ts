@@ -8,6 +8,12 @@ export interface VizeVueFeatures {
   optionsAPI?: boolean;
 
   /**
+   * Enable Vue devtools support in production bundles.
+   * @default false
+   */
+  prodDevtools?: boolean;
+
+  /**
    * Enable detailed hydration mismatch errors in production bundles.
    * @default false
    */

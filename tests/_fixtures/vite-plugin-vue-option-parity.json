@@ -8,9 +8,9 @@
     "version": "6.0.7"
   },
   "summary": {
-    "honored": 13,
+    "honored": 14,
     "intentional-divergence": 9,
-    "unimplemented": 18
+    "unimplemented": 17
   },
   "options": {
     "compiler": {
@@ -41,9 +41,8 @@
       "evidence": "options-api-feature"
     },
     "features.prodDevtools": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The config hook hard-codes __VUE_PROD_DEVTOOLS__ to `command === \"serve\"`, so devtools cannot be enabled in production builds."
+      "status": "honored",
+      "evidence": "prod-devtools-feature"
     },
     "features.prodHydrationMismatchDetails": {
       "status": "honored",

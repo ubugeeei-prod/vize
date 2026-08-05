@@ -16,12 +16,16 @@ import { test } from "node:test";
 import type { Plugin, ResolvedConfig } from "vite";
 
 import {
-  createUpstreamPlugin,
   honoredEvidence,
   readLedger,
   upstreamSurface,
   validateLedger,
 } from "./_helpers/vite-plugin-vue-parity.ts";
+import {
+  probeOptionsApiFeature,
+  probeProdDevtoolsFeature,
+  probeProdHydrationMismatchDetailsFeature,
+} from "./_helpers/vite-plugin-vue-define-probes.ts";
 import { vize } from "../../npm/builder/vite/src/plugin/index.ts";
 
 type AnyHook = (...args: never[]) => unknown;
@@ -191,100 +195,6 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
   assert.match(sent[0].data?.css ?? "", /color:\s*blue/, "the payload carries the new CSS");
 }
 
-/** `features.optionsAPI` produces the same Vue runtime define as plugin-vue. */
-async function probeOptionsApiFeature(): Promise<void> {
-  const cases = [
-    { expected: true, options: {}, userDefine: {} },
-    { expected: false, options: { features: { optionsAPI: false } }, userDefine: {} },
-    {
-      expected: true,
-      options: { features: { optionsAPI: true } },
-      userDefine: { __VUE_OPTIONS_API__: false },
-    },
-    { expected: false, options: {}, userDefine: { __VUE_OPTIONS_API__: "false" } },
-  ] as const;
-
-  for (const { expected, options, userDefine } of cases) {
-    // Each hook gets its own config object so the parity assertion does not
-    // depend on either plugin leaving its input untouched.
-    const upstreamConfig = { define: { ...userDefine } };
-    const vizeConfig = { define: { ...userDefine } };
-    const env = { command: "build", mode: "production" } as const;
-    const upstream = createUpstreamPlugin(options) as Plugin;
-    const vizePlugin = vize({ configMode: false, ...options }).find(
-      (candidate) => candidate.name === "vite-plugin-vize",
-    );
-    assert.ok(vizePlugin);
-
-    const upstreamResult = await hook<AnyHook>(upstream.config).call({}, upstreamConfig, env);
-    const vizeResult = await hook<AnyHook>(vizePlugin.config).call({}, vizeConfig, env);
-    const upstreamDefine = (upstreamResult as { define: Record<string, unknown> }).define
-      .__VUE_OPTIONS_API__;
-    const vizeDefine = (vizeResult as { define: Record<string, unknown> }).define
-      .__VUE_OPTIONS_API__;
-
-    assert.equal(upstreamDefine, expected, "the pinned upstream oracle must stay stable");
-    assert.equal(vizeDefine, upstreamDefine, "Vize must match plugin-vue's Options API define");
-  }
-}
-
-/** `features.prodHydrationMismatchDetails` matches plugin-vue's OR semantics. */
-async function probeProdHydrationMismatchDetailsFeature(): Promise<void> {
-  const cases: ReadonlyArray<{
-    expected: boolean;
-    options: Record<string, unknown>;
-    userDefine: Record<string, unknown>;
-  }> = [
-    { expected: false, options: {}, userDefine: {} },
-    {
-      expected: false,
-      options: { features: { prodHydrationMismatchDetails: false } },
-      userDefine: {},
-    },
-    {
-      expected: true,
-      options: { features: { prodHydrationMismatchDetails: true } },
-      userDefine: { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false },
-    },
-    {
-      expected: true,
-      options: { features: { prodHydrationMismatchDetails: false } },
-      userDefine: { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true },
-    },
-    {
-      expected: true,
-      options: {},
-      userDefine: { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true" },
-    },
-    {
-      expected: false,
-      options: {},
-      userDefine: { __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "false" },
-    },
-  ];
-
-  for (const { expected, options, userDefine } of cases) {
-    const upstreamConfig = { define: { ...userDefine } };
-    const vizeConfig = { define: { ...userDefine } };
-    const env = { command: "build", mode: "production" } as const;
-    const upstream = createUpstreamPlugin(options) as Plugin;
-    const vizePlugin = vize({ configMode: false, ...options }).find(
-      (candidate) => candidate.name === "vite-plugin-vize",
-    );
-    assert.ok(vizePlugin);
-
-    const upstreamResult = await hook<AnyHook>(upstream.config).call({}, upstreamConfig, env);
-    const vizeResult = await hook<AnyHook>(vizePlugin.config).call({}, vizeConfig, env);
-    const upstreamDefine = (upstreamResult as { define: Record<string, unknown> }).define
-      .__VUE_PROD_HYDRATION_MISMATCH_DETAILS__;
-    const vizeDefine = (vizeResult as { define: Record<string, unknown> }).define
-      .__VUE_PROD_HYDRATION_MISMATCH_DETAILS__;
-
-    assert.equal(upstreamDefine, expected, "the pinned upstream oracle must stay stable");
-    assert.equal(vizeDefine, upstreamDefine, "Vize must match plugin-vue's hydration define");
-  }
-}
-
 /** The named hook is implemented by one of the plugins Vize contributes. */
 function probeHookImplemented(name: string): void {
   const plugins = vize({ configMode: false }) as Plugin[];
@@ -304,6 +214,7 @@ const probes = new Map<string, () => Promise<void> | void>([
   ["production-css-import", probeProductionCssImport],
   ["hot-update-style-only", probeHotUpdateStyleOnly],
   ["options-api-feature", probeOptionsApiFeature],
+  ["prod-devtools-feature", probeProdDevtoolsFeature],
   ["prod-hydration-mismatch-details-feature", probeProdHydrationMismatchDetailsFeature],
 ]);
 
