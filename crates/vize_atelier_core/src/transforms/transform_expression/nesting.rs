@@ -84,10 +84,11 @@ fn analyze_expression_nesting(content: &str) -> (usize, bool) {
             // A regex literal that never closes is not one: the lexer reports an
             // unterminated regex and recovers, so the bytes stay live for the
             // parser. Skipping them anyway hid 183 unclosed type angles behind a
-            // single `/` — the guard scored the input at depth 6 while OXC
-            // speculated over every angle until it ran out of memory (#3873).
-            // Falling through scans them as ordinary source instead, which can
-            // only over-count.
+            // single `/` running to EOF — the guard scored that input at depth 6
+            // while OXC speculated over every angle until it ran out of memory
+            // (#3873) — and 6182 more behind a `/` that a line terminator closed
+            // 27 KiB later (#3875). Falling through scans them as ordinary
+            // source instead, which can only over-count.
             b'/' if can_start_regex => {
                 if let Some(next) = skip_regex(bytes, i + 1) {
                     i = next;

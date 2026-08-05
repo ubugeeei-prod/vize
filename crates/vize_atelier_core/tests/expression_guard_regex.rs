@@ -46,9 +46,26 @@ fn a_terminated_regex_still_hides_its_contents() {
 }
 
 #[test]
+fn a_regex_closed_only_by_a_line_terminator_does_not_hide_what_it_spans() {
+    // The `slow-unit` reproducers behind #3875 are ~26 KiB with ~6000 unclosed
+    // type angles and a single `/` at byte 177. A line terminator 27 KiB later
+    // "ended" that literal, so the scanner skipped everything between and saw
+    // depth 22 instead of 6211. A line terminator does not close a regex — the
+    // lexer errors and recovers — so the span has to be scanned.
+    let hidden = ["a</", &"s<".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1), "\n"].concat();
+
+    assert!(
+        expression_nesting_depth(&hidden) > MAX_EXPRESSION_NESTING_DEPTH,
+        "angles spanned by an unclosed regex must reach the budget: {}",
+        expression_nesting_depth(&hidden)
+    );
+    assert!(!expression_is_safe_to_parse(&hidden));
+}
+
+#[test]
 fn a_line_terminator_still_ends_an_unclosed_regex() {
-    // Already handled before #3873 — the scanner resumes at the terminator — so
-    // this pins that the `Option` refactor did not regress it.
+    // Bytes *after* the terminator were always scanned; this pins that they
+    // still are.
     for terminator in ["\n", "\r", "\u{2028}", "\u{2029}"] {
         let hidden = [
             "a = /x",
