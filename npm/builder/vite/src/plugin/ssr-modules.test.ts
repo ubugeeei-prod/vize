@@ -1,0 +1,59 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import {
+  appendSsrModuleRegistration,
+  ssrModuleRegistrationCode,
+  toManifestModuleId,
+} from "./ssr-modules.ts";
+
+const ROOT = "/project";
+const PAGE = "/project/app/pages/index.vue";
+
+void test("the manifest key is the root-relative path with POSIX separators", () => {
+  assert.equal(toManifestModuleId(PAGE, ROOT), "app/pages/index.vue");
+  assert.equal(toManifestModuleId("/project/App.vue", ROOT), "App.vue");
+});
+
+void test("a path outside the root keeps its absolute form instead of a ../ chain", () => {
+  // `vue-bundle-renderer` looks the key up in the client manifest; a `../`
+  // chain matches nothing there and would silently drop the stylesheet.
+  const outside = toManifestModuleId("/elsewhere/lib/Widget.vue", ROOT);
+  assert.equal(outside, "/elsewhere/lib/Widget.vue");
+  assert.ok(!outside.startsWith(".."));
+});
+
+void test("the registration wraps setup and adds the module to ssrContext", () => {
+  const code = ssrModuleRegistrationCode(PAGE, ROOT);
+
+  assert.match(code, /import \{ useSSRContext as __vize_useSSRContext \} from "vue";/);
+  assert.match(code, /const __vize_sfc_setup = _sfc_main\.setup;/);
+  assert.match(
+    code,
+    /\(ssrContext\.modules \|\| \(ssrContext\.modules = new Set\(\)\)\)\.add\("app\/pages\/index\.vue"\);/,
+  );
+  // An SFC without its own `setup` must still render.
+  assert.match(code, /return __vize_sfc_setup \? __vize_sfc_setup\(props, ctx\) : undefined;/);
+});
+
+void test("appending leaves the emitted module intact and adds the registration once", () => {
+  const emitted = 'const _sfc_main = { name: "Index" };\nexport default _sfc_main;';
+
+  const once = appendSsrModuleRegistration(emitted, PAGE, ROOT);
+  assert.ok(once.startsWith(emitted), "the emitted module must be preserved verbatim");
+  assert.equal(once.match(/__vize_useSSRContext/g)?.length, 2, "one import, one call");
+
+  const twice = appendSsrModuleRegistration(once, PAGE, ROOT);
+  assert.equal(twice, once, "appending again must be a no-op");
+});
+
+void test("a module with no component object is left untouched", () => {
+  // Render-function-only output and boundary placeholders have no `_sfc_main`
+  // to wrap; wrapping a missing binding would be a ReferenceError at runtime.
+  for (const emitted of [
+    "export function render(_ctx, _cache) { return null }",
+    'import { defineComponent } from "vue";\nexport default defineComponent({});',
+  ]) {
+    assert.equal(appendSsrModuleRegistration(emitted, PAGE, ROOT), emitted);
+  }
+});

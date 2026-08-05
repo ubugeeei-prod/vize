@@ -11,6 +11,7 @@ import {
   type VizePluginState,
 } from "./state.ts";
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
+import { appendSsrModuleRegistration } from "./ssr-modules.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
@@ -153,6 +154,11 @@ function loadCompiledSfcModule(
   rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
+  if (isSsr) {
+    // Appended last so the registration wraps whatever `setup` the rewrites
+    // above left in place.
+    rewritten.edit(appendSsrModuleRegistration(rewritten.code, realPath, state.root));
+  }
   return { code: rewritten.code, map: rewritten.map };
 }
 
