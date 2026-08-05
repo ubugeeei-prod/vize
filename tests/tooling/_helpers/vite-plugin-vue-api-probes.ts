@@ -109,54 +109,58 @@ export function probeFilterApi(): void {
  */
 export async function probeFilterApiAssignment(): Promise<void> {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vue-api-probe-"));
-  const sfc = `<template><div class="probe">probe</div></template>\n`;
-  for (const name of ["Kept.probe.vue", "Other.vue", "Skipped.probe.vue"]) {
-    fs.writeFileSync(path.join(root, name), sfc);
+  try {
+    const sfc = `<template><div class="probe">probe</div></template>\n`;
+    for (const name of ["Kept.probe.vue", "Other.vue", "Skipped.probe.vue"]) {
+      fs.writeFileSync(path.join(root, name), sfc);
+    }
+
+    const plugins = vize({ configMode: false, scanPatterns: [] }) as Plugin[];
+    const shim = plugins.find((candidate) => candidate.name === "vite:vue");
+    const main = plugins.find((candidate) => candidate.name === "vite-plugin-vize");
+    assert.ok(shim);
+    assert.ok(main);
+
+    const api = (shim as { api?: FilterApi }).api as FilterApi;
+    api.include = [/\.probe\.vue$/];
+    api.exclude = [/Skipped\.probe\.vue$/];
+    assert.deepEqual(
+      api.include,
+      [/\.probe\.vue$/],
+      "the assignment must be visible through the api",
+    );
+    assert.deepEqual(api.exclude, [/Skipped\.probe\.vue$/]);
+
+    await hook<(config: unknown) => Promise<void>>(main.configResolved).call(
+      {},
+      resolvedConfig(root),
+    );
+
+    assert.ok(
+      await claimsVueFile(main, path.join(root, "Kept.probe.vue")),
+      "the assigned `include` must claim the files it matches",
+    );
+    assert.equal(
+      await claimsVueFile(main, path.join(root, "Other.vue")),
+      false,
+      "the assigned `include` must release the default `.vue` claim",
+    );
+    assert.equal(
+      await claimsVueFile(main, path.join(root, "Skipped.probe.vue")),
+      false,
+      "the assigned `exclude` must release a file the `include` matches",
+    );
+
+    // Upstream refuses the same write once its filter is resolved; silently
+    // dropping it would leave the host believing it changed the filter.
+    assert.throws(
+      () => {
+        api.exclude = [/late\.vue$/];
+      },
+      /cannot be updated/,
+      "a write after the filter is resolved must fail loudly",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
-
-  const plugins = vize({ configMode: false, scanPatterns: [] }) as Plugin[];
-  const shim = plugins.find((candidate) => candidate.name === "vite:vue");
-  const main = plugins.find((candidate) => candidate.name === "vite-plugin-vize");
-  assert.ok(shim);
-  assert.ok(main);
-
-  const api = (shim as { api?: FilterApi }).api as FilterApi;
-  api.include = [/\.probe\.vue$/];
-  api.exclude = [/Skipped\.probe\.vue$/];
-  assert.deepEqual(
-    api.include,
-    [/\.probe\.vue$/],
-    "the assignment must be visible through the api",
-  );
-  assert.deepEqual(api.exclude, [/Skipped\.probe\.vue$/]);
-
-  await hook<(config: unknown) => Promise<void>>(main.configResolved).call(
-    {},
-    resolvedConfig(root),
-  );
-
-  assert.ok(
-    await claimsVueFile(main, path.join(root, "Kept.probe.vue")),
-    "the assigned `include` must claim the files it matches",
-  );
-  assert.equal(
-    await claimsVueFile(main, path.join(root, "Other.vue")),
-    false,
-    "the assigned `include` must release the default `.vue` claim",
-  );
-  assert.equal(
-    await claimsVueFile(main, path.join(root, "Skipped.probe.vue")),
-    false,
-    "the assigned `exclude` must release a file the `include` matches",
-  );
-
-  // Upstream refuses the same write once its filter is resolved; silently
-  // dropping it would leave the host believing it changed the filter.
-  assert.throws(
-    () => {
-      api.exclude = [/late\.vue$/];
-    },
-    /cannot be updated/,
-    "a write after the filter is resolved must fail loudly",
-  );
 }
