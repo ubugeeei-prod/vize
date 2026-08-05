@@ -464,12 +464,10 @@ export function generateArtModule(
 // Auto-generated module for: ${path.basename(filePath)}
 `;
 
-  // Vue 2 variants stay runtime-compiled (see art-module-vue2.ts), and the
-  // wrapper they are emitted with needs its `defineComponent` binding. The alias
-  // keeps it from colliding with an art file that imports `defineComponent`
-  // itself. Only a variant with a setup block is wrapped, and `defineComponent`
-  // is a Vue 2.7+ export, so the import is skipped otherwise to keep art files
-  // without `<script setup>` loadable on Vue 2.6.
+  // Vue 2 variants stay runtime-compiled (see art-module-vue2.ts), and only a
+  // variant with a setup block is wrapped in `defineComponent`, a Vue 2.7+
+  // export that therefore stays unimported otherwise. The alias keeps it from
+  // colliding with an art file that imports `defineComponent` itself.
   if (options.vueVersion === 2 && hasSetup) {
     code += `import { defineComponent as __museaDefineComponent } from 'vue';\n`;
   }
