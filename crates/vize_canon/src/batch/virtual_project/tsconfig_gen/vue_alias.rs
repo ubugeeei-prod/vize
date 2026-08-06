@@ -34,9 +34,18 @@ pub(super) fn remap_path_targets(targets: &[Value], up: &str) -> Vec<Value> {
             continue;
         };
         if Path::new(target).is_absolute() {
-            // Absolute targets are not mirrored, so a `.vue.ts` sibling of one
-            // never exists; pass them through untouched.
+            // An absolute target escaped the project root during rebase. Its
+            // reachable first-party files mirror into the external escape
+            // subtree (#3887), so that copy — generated `.vue.ts` companions
+            // and rewritten barrels — resolves ahead of the real tree, which
+            // stays as the fallback for anything not mirrored.
+            candidates.push(Value::String(external_candidate(target).into()));
             candidates.push(Value::String(target.to_owned()));
+            if !has_source_extension(target) {
+                vue_candidates.push(Value::String(
+                    cstr!("{}.vue.ts", external_candidate(target)).into(),
+                ));
+            }
             continue;
         }
         let core = target.strip_prefix("./").unwrap_or(target);
@@ -48,6 +57,29 @@ pub(super) fn remap_path_targets(targets: &[Value], up: &str) -> Vec<Value> {
     }
     candidates.extend(vue_candidates);
     candidates
+}
+
+/// The external-mirror candidate for an escaped absolute target, spelled
+/// relative to the virtual tsconfig: the absolute path replayed as
+/// subdirectories under the escape subtree, matching
+/// `external_mirror::external_mirror_path`.
+fn external_candidate(target: &str) -> vize_carton::String {
+    let mut replayed = vize_carton::String::from("./__vize_external__");
+    for component in Path::new(target).components() {
+        use std::path::Component;
+        match component {
+            Component::Normal(part) => {
+                replayed.push('/');
+                replayed.push_str(&part.to_string_lossy());
+            }
+            Component::Prefix(prefix) => {
+                replayed.push('/');
+                replayed.push_str(&prefix.as_os_str().to_string_lossy().replace(':', "%3A"));
+            }
+            _ => {}
+        }
+    }
+    replayed
 }
 
 fn has_source_extension(target: &str) -> bool {
@@ -123,13 +155,34 @@ mod tests {
     }
 
     #[test]
-    fn absolute_and_non_string_targets_pass_through() {
-        let separator = if cfg!(windows) {
-            "C:\\lib\\*"
-        } else {
-            "/lib/*"
-        };
-        assert_eq!(remap(json!([separator])), json!([separator]));
+    fn absolute_targets_gain_the_external_mirror_candidate_first() {
+        // An absolute target escaped the project root during rebase; its
+        // first-party files mirror into the external subtree (#3887), which
+        // must win over the real tree so rewritten barrels and generated
+        // `.vue.ts` companions resolve, while the real path stays the
+        // fallback for anything not mirrored.
+        if cfg!(windows) {
+            return;
+        }
+        assert_eq!(
+            remap(json!(["/ws/pkg/src/index.ts"])),
+            json!([
+                "./__vize_external__/ws/pkg/src/index.ts",
+                "/ws/pkg/src/index.ts"
+            ])
+        );
+        assert_eq!(
+            remap(json!(["/ws/pkg/src/*"])),
+            json!([
+                "./__vize_external__/ws/pkg/src/*",
+                "/ws/pkg/src/*",
+                "./__vize_external__/ws/pkg/src/*.vue.ts"
+            ])
+        );
+    }
+
+    #[test]
+    fn non_string_targets_pass_through() {
         assert_eq!(remap(json!([42])), json!([42]));
     }
 }

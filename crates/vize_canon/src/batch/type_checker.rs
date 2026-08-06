@@ -219,6 +219,10 @@ impl BatchTypeChecker {
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.project.register_paths(paths)?;
+        // Out-of-root workspace files reachable through imports register too,
+        // so their consumers keep real types instead of the ambient stub
+        // (#3887).
+        self.project.register_reachable_dependencies()?;
         self.scanned = true;
         self.incremental_paths.after_explicit_scan(paths);
         Ok(())

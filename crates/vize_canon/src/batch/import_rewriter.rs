@@ -239,6 +239,27 @@ impl ImportRewriter {
         specifiers
     }
 
+    /// Every module specifier in `source`, in order, without filtering —
+    /// the reachability pass (#3887) resolves them itself.
+    pub(crate) fn collect_all_specifiers(
+        &self,
+        source: &str,
+        source_type: SourceType,
+    ) -> Vec<String> {
+        let allocator = Allocator::default();
+        let parser = Parser::new(&allocator, source, source_type);
+        let result = parser.parse();
+        let mut collector = ModuleSpecifierCollector::new();
+        collector.visit_program(&result.program);
+        let mut specifiers: Vec<String> = Vec::new();
+        for (_, _, path) in collector.specifiers {
+            if !specifiers.iter().any(|seen| *seen == path) {
+                specifiers.push(path);
+            }
+        }
+        specifiers
+    }
+
     fn rewrite_module_specifier(&self, path: &str, source_dir: Option<&Path>) -> Option<String> {
         if let Some(collision) = authored_vue_ts_collides_with_sfc(path, source_dir) {
             let marker = match collision {

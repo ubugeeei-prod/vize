@@ -1,0 +1,196 @@
+//! Reachability registration for out-of-root workspace `.vue` files (#3887).
+//!
+//! `register_paths` covers the scanned roots; an import that resolves to a
+//! `.vue` outside them previously fell back to the ambient `*.vue` stub, so
+//! its props and emits silently stopped being checked. This pass walks the
+//! import graph of everything registered and registers reachable first-party
+//! files — a `.vue`, or a TypeScript file that can re-export one (a barrel) —
+//! to a fixpoint. Published packages are left alone: a canonical path that
+//! stays inside `node_modules` keeps the stub (that half is #3282), while a
+//! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
+//! first-party source.
+//!
+//! Specifiers are collected from the *generated* content (always valid TS,
+//! one collector for `.vue` and script files alike) and resolved against the
+//! *original* file's directory; a `.vue.ts` spelling the import rewriter
+//! produced is folded back to `.vue` first. Resolution covers relative
+//! specifiers and tsconfig `paths` aliases — the shapes the monorepo defect
+//! reproduces with; bare workspace-package specifiers resolve only through
+//! their `paths` alias today.
+
+use std::path::{Component, Path, PathBuf};
+
+use oxc_span::SourceType;
+use vize_carton::{FxHashSet, cstr};
+
+use crate::batch::error::CorsaResult;
+
+use super::VirtualProject;
+
+#[allow(clippy::disallowed_types)]
+impl VirtualProject {
+    /// Register every reachable first-party dependency, to a fixpoint.
+    pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
+        let aliases = self.dependency_alias_map();
+        let mut queue: Vec<PathBuf> = self
+            .virtual_files_sorted()
+            .iter()
+            .map(|file| file.original_path.clone())
+            .collect();
+        let mut visited: FxHashSet<PathBuf> = queue
+            .iter()
+            .filter_map(|path| canonical_key(path))
+            .collect();
+
+        while let Some(importer) = queue.pop() {
+            let Some(virtual_file) = self.find_by_original(&importer) else {
+                continue;
+            };
+            let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
+                continue;
+            };
+            let source_type = if virtual_file
+                .virtual_path
+                .extension()
+                .is_some_and(|extension| extension == "tsx")
+            {
+                SourceType::tsx()
+            } else {
+                SourceType::ts()
+            };
+            let specifiers = self
+                .rewriter()
+                .collect_all_specifiers(&virtual_file.content, source_type);
+
+            for specifier in specifiers {
+                let Some(target) =
+                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases)
+                else {
+                    continue;
+                };
+                let Some(key) = canonical_key(&target) else {
+                    continue;
+                };
+                if inside_node_modules(&key) || !visited.insert(key) {
+                    continue;
+                }
+                if self.register_path(&target).is_ok() {
+                    queue.push(target);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// The effective `paths` aliases with project-root-relative targets, as
+    /// (pattern, target) pairs. Both come from the flattened chain, so the
+    /// anchors match what the generated tsconfig resolves (#3886).
+    fn dependency_alias_map(&self) -> Vec<(String, String)> {
+        let Ok(flattened) =
+            self.load_compiler_options_flattened(self.resolved_tsconfig_path().as_deref())
+        else {
+            return Vec::new();
+        };
+        let Some(paths) = flattened
+            .options
+            .get("paths")
+            .and_then(serde_json::Value::as_object)
+        else {
+            return Vec::new();
+        };
+        let mut aliases = Vec::new();
+        for (pattern, targets) in paths {
+            let Some(targets) = targets.as_array() else {
+                continue;
+            };
+            for target in targets.iter().filter_map(serde_json::Value::as_str) {
+                aliases.push((pattern.clone(), target.to_owned()));
+            }
+        }
+        aliases
+    }
+}
+
+/// First-party classification key: the canonical path, so a pnpm workspace
+/// symlink is judged by where it actually lives.
+fn canonical_key(path: &Path) -> Option<PathBuf> {
+    let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+    canonical.is_file().then_some(canonical)
+}
+
+fn inside_node_modules(path: &Path) -> bool {
+    path.components()
+        .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
+}
+
+/// Resolve one specifier to a registrable first-party file, or `None`.
+#[allow(clippy::disallowed_types)]
+fn resolve_dependency(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(String, String)],
+) -> Option<PathBuf> {
+    // Fold the rewriter's `.vue.ts` spelling back to the real file.
+    let specifier = specifier
+        .strip_suffix(".vue.ts")
+        .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
+
+    if specifier.starts_with("./") || specifier.starts_with("../") {
+        return probe_candidates(&importer_dir.join(&specifier));
+    }
+
+    // Longest matching alias pattern wins, mirroring TypeScript's `paths`.
+    let mut best: Option<(usize, PathBuf)> = None;
+    for (pattern, target) in aliases {
+        let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
+            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
+                (Some(rest), Some(target_prefix)) => {
+                    let mut joined = target_prefix.to_owned();
+                    joined.push_str(rest);
+                    Some(joined)
+                }
+                _ => None,
+            }
+        } else if specifier == *pattern {
+            Some(target.clone())
+        } else {
+            None
+        };
+        let Some(substituted) = substituted else {
+            continue;
+        };
+        let absolute = if Path::new(&substituted).is_absolute() {
+            PathBuf::from(&substituted)
+        } else {
+            project_root.join(&substituted)
+        };
+        if let Some(resolved) = probe_candidates(&absolute)
+            && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
+        {
+            best = Some((pattern.len(), resolved));
+        }
+    }
+    best.map(|(_, path)| path)
+}
+
+/// Extension and index probing for a resolved base path, in TypeScript's
+/// order. Only extensions the registration pipeline accepts are produced.
+fn probe_candidates(base: &Path) -> Option<PathBuf> {
+    if base.extension().is_some() && base.is_file() {
+        return Some(base.to_path_buf());
+    }
+    for extension in ["ts", "tsx", "d.ts", "vue"] {
+        let candidate = PathBuf::from(cstr!("{}.{extension}", base.display()).as_str());
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    for index in ["index.ts", "index.tsx"] {
+        let candidate = base.join(index);
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    None
+}

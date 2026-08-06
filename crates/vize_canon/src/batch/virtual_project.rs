@@ -33,12 +33,14 @@ pub use content_mapper::{
 };
 mod css_var_usage;
 mod declaration_emit;
+mod dependency_scan;
 mod document;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
 mod diagnostics;
+mod external_mirror;
 mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;

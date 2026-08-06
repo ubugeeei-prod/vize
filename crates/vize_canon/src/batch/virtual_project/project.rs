@@ -156,6 +156,10 @@ impl VirtualProject {
     }
 
     /// Register a supported file path.
+    pub(super) fn rewriter(&self) -> &crate::batch::import_rewriter::ImportRewriter {
+        &self.rewriter
+    }
+
     pub fn register_path(&mut self, path: &Path) -> CorsaResult<()> {
         let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
         self.register_path_with_content(path, &content)
