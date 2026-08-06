@@ -10,7 +10,6 @@ use super::types::CorsaBridgeError;
 use super::vue_dependencies::{collect_dependency_documents, tsx_vue_import_shim};
 use crate::batch::{
     ImportRewriter, ImportSourceMap, VueDocumentVirtualTs, VueDocumentVirtualTsOptions,
-    generate_vue_document_virtual_ts_with_options,
 };
 use crate::file_uri::path_to_file_uri;
 use crate::virtual_ts::{VirtualTsOptions, VizeMapping};
@@ -221,24 +220,7 @@ fn build_vue_virtual_project_with_overlays_and_options(
         documents,
     })
 }
-
-pub(super) fn generate_vue_document(
-    source_path: &Path,
-    content: &str,
-    options: CorsaVueVirtualDocumentOptions,
-    rewriter: &ImportRewriter,
-) -> Result<GeneratedVueDocument, CorsaBridgeError> {
-    generate_vue_document_with_options(
-        source_path,
-        content,
-        options,
-        &VirtualTsOptions::default(),
-        rewriter,
-        None,
-    )
-}
-
-/// [`generate_vue_document`] with alias-aware import rewriting: non-relative
+/// Generate a Vue document with alias-aware import rewriting: non-relative
 /// specifiers the context resolves are pointed at the synced overlay
 /// identities through the offset-preserving rewriter (#3900).
 pub(super) fn generate_vue_document_with_alias(
@@ -282,7 +264,7 @@ fn generate_vue_document_with_options(
         },
         alias_resolver
             .as_ref()
-            .map(|resolver| resolver as &dyn Fn(&str) -> Option<std::string::String>),
+            .map(|resolver| resolver as crate::batch::import_rewriter_alias::AliasSpecifierResolver<'_>),
     )
     .map_err(|error| CorsaBridgeError::CommunicationError(cstr!("{error}")))?;
     let virtual_path = source_path.with_file_name(cstr!(

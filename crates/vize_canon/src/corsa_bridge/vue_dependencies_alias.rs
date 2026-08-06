@@ -16,16 +16,14 @@ use std::path::{Component, Path, PathBuf};
 
 use oxc_span::SourceType;
 
-use super::bridge::normalize_document_uri;
 use super::vue_dependencies::{
     DependencyScan, ImportQueue, dependency_content, fallback_vue_virtual_uri, parent_dir,
     source_type_for_path, tsx_vue_import_shim,
 };
-use super::vue_document::{CorsaVueVirtualDocumentOptions, generate_vue_document};
+use super::vue_document::CorsaVueVirtualDocumentOptions;
 use crate::batch::ImportRewriter;
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
-use crate::file_uri::path_to_file_uri;
 
 /// The alias map for the host document's package, resolved once per open,
 /// plus the materialized mirror the resolutions point into.
@@ -85,6 +83,7 @@ impl AliasContext {
 impl AliasContext {
     /// Resolve one non-relative specifier to a relative path targeting the
     /// synced overlay identities, for the offset-preserving rewriter.
+    #[allow(clippy::disallowed_types)]
     pub(super) fn resolve_specifier_to_relative(
         &self,
         specifier: &str,
@@ -107,67 +106,23 @@ impl AliasContext {
         // extensionless script imports resolve.
         let mirror = self.mirror.as_ref()?;
         let target = mirror.find_by_original(&key)?.virtual_path.clone();
-        // A/B probe (#3900): shadow-copy outside node_modules.
-        let target = match target
-            .to_string_lossy()
-            .split_once("node_modules/.vize/canon/")
-        {
-            Some((root, tail)) => {
-                let shadow = Path::new(root).join(".vize-editor").join(tail);
-                if let Some(parent) = shadow.parent() {
-                    let _ = std::fs::create_dir_all(parent);
-                }
-                let _ = std::fs::copy(&target, &shadow);
-                shadow
-            }
-            None => target,
-        };
-        let relative = relative_specifier(importer_dir, &target)?;
+
+        // The session client may relocate virtual documents to an overlay
+        // root, so a relative specifier would anchor at the wrong directory.
+        // An absolute specifier resolves identically from anywhere; the
+        // trailing extension is stripped because the governing tsconfig need
+        // not enable `allowImportingTsExtensions`, and the checker then
+        // appends it itself (`…/UiButton.vue` → the on-disk `.vue.ts`
+        // companion).
+        let spelled = target.to_string_lossy().replace('\\', "/");
         Some(
-            relative
+            spelled
                 .strip_suffix(".tsx")
-                .or_else(|| relative.strip_suffix(".ts"))
-                .unwrap_or(&relative)
+                .or_else(|| spelled.strip_suffix(".ts"))
+                .unwrap_or(&spelled)
                 .to_owned(),
         )
     }
-}
-
-/// The non-disk sync identity for an out-of-root script.
-///
-/// A path that exists on disk splits identity inside the checker: the program
-/// loads the disk file while the rewritten overlay sits unused, and the disk
-/// spelling's `.vue` import falls back to the ambient wildcard (`any`). The
-/// appended suffix guarantees a path no real tree contains, giving the barrel
-/// the same clean open-document identity the generated `.vue.ts` docs have.
-pub(super) fn virtual_script_identity(path: &Path) -> PathBuf {
-    let mut spelled = path.as_os_str().to_os_string();
-    spelled.push(".vize.ts");
-    PathBuf::from(spelled)
-}
-
-/// `to` spelled relative to `from_dir`, POSIX separators, always `./`-anchored.
-fn relative_specifier(from_dir: &Path, to: &Path) -> Option<std::string::String> {
-    let from: Vec<_> = from_dir.components().collect();
-    let to_components: Vec<_> = to.components().collect();
-    let common = from
-        .iter()
-        .zip(to_components.iter())
-        .take_while(|(a, b)| a == b)
-        .count();
-    let mut parts: Vec<std::string::String> = Vec::new();
-    for _ in common..from.len() {
-        parts.push("..".into());
-    }
-    for component in &to_components[common..] {
-        parts.push(component.as_os_str().to_str()?.to_owned());
-    }
-    let joined = parts.join("/");
-    Some(if joined.starts_with("..") {
-        joined
-    } else {
-        format!("./{joined}")
-    })
 }
 
 /// Queue alias-resolved first-party dependencies of one document.
@@ -199,7 +154,7 @@ pub(super) fn queue_alias_imports(
         if key.extension().is_some_and(|extension| extension == "vue") {
             queue_alias_vue(imports, options, rewriter, context, &key);
         } else if !key.starts_with(&context.project_root) && !is_declaration(&key) {
-            queue_alias_script(imports, rewriter, context, &key);
+            queue_alias_script(imports, &key);
         }
     }
 }
@@ -242,27 +197,16 @@ fn queue_alias_vue(
     });
 }
 
-fn queue_alias_script(
-    imports: &mut ImportQueue<'_>,
-    rewriter: &ImportRewriter,
-    context: &AliasContext,
-    path: &Path,
-) {
+fn queue_alias_script(imports: &mut ImportQueue<'_>, path: &Path) {
     if !imports.visited_ts.insert(path.to_path_buf()) {
         return;
     }
     let Some(content) = dependency_content(path, imports.overlays) else {
         return;
     };
+    // No document is synced for the barrel: the mirror's on-disk copy is the
+    // resolution target. Queueing it keeps the walk following its re-exports.
     let dependency_source_type = source_type_for_path(path);
-    let dir = parent_dir(path);
-    let rewritten = rewriter
-        .rewrite_with_alias_resolver(&content, dependency_source_type, path.parent(), &|spec| {
-            context.resolve_specifier_to_relative(spec, &dir)
-        })
-        .code;
-    let uri = normalize_document_uri(path_to_file_uri(&virtual_script_identity(path)).as_str());
-    imports.documents.push((uri, rewritten));
     imports.queue.push_back(DependencyScan::Script {
         path: path.to_path_buf(),
         source_type: dependency_source_type,

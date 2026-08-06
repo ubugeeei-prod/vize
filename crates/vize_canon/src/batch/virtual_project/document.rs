@@ -83,7 +83,7 @@ pub fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     rewriter: &ImportRewriter,
     hoist_shared_preamble: bool,
     document_options: VueDocumentVirtualTsOptions,
-    alias_resolver: Option<&dyn Fn(&str) -> Option<std::string::String>>,
+    alias_resolver: Option<crate::batch::import_rewriter_alias::AliasSpecifierResolver<'_>>,
 ) -> CorsaResult<VueDocumentVirtualTs> {
     let descriptor = parse_sfc(
         content,

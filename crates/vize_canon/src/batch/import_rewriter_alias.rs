@@ -12,6 +12,10 @@ use oxc_span::SourceType;
 
 use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue_specifier};
 
+/// Resolver consulted for non-relative specifiers.
+#[allow(clippy::disallowed_types)]
+pub type AliasSpecifierResolver<'a> = &'a dyn Fn(&str) -> Option<std::string::String>;
+
 impl ImportRewriter {
     /// Like [`ImportRewriter::rewrite`], additionally consulting
     /// `alias_resolver` for non-relative specifiers.
@@ -20,7 +24,7 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
         source_dir: Option<&Path>,
-        alias_resolver: &dyn Fn(&str) -> Option<std::string::String>,
+        alias_resolver: AliasSpecifierResolver<'_>,
     ) -> RewriteResult {
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_module_specifier(path, source_dir)

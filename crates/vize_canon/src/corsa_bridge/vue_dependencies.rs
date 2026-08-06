@@ -8,9 +8,7 @@ use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
-use super::vue_document::{
-    CorsaVueVirtualDocumentOptions, GeneratedVueDocument, generate_vue_document,
-};
+use super::vue_document::{CorsaVueVirtualDocumentOptions, GeneratedVueDocument};
 use crate::batch::ImportRewriter;
 use crate::file_uri::path_to_file_uri;
 
@@ -51,7 +49,7 @@ pub(super) fn collect_dependency_documents(
                 },
                 options,
                 rewriter,
-                &alias_context,
+                alias_context,
                 &dir,
                 &pre_rewrite_code,
                 source_type,
@@ -70,7 +68,7 @@ pub(super) fn collect_dependency_documents(
                 },
                 options,
                 rewriter,
-                &alias_context,
+                alias_context,
                 &parent_dir(&path),
                 &content,
                 source_type,
