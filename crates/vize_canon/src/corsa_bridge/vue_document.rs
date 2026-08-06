@@ -250,7 +250,7 @@ fn generate_vue_document_with_options(
 ) -> Result<GeneratedVueDocument, CorsaBridgeError> {
     let source_dir = source_path.parent().map(std::path::Path::to_path_buf);
     let alias_resolver = alias_context.zip(source_dir).map(|(context, dir)| {
-        move |specifier: &str| context.resolve_specifier_to_relative(specifier, &dir)
+        move |specifier: &str| context.resolve_specifier_to_mirror_path(specifier, &dir)
     });
     let generated = crate::batch::virtual_project::generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         source_path,

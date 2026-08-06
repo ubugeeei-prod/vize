@@ -17,8 +17,7 @@ use std::path::{Component, Path, PathBuf};
 use oxc_span::SourceType;
 
 use super::vue_dependencies::{
-    DependencyScan, ImportQueue, dependency_content, fallback_vue_virtual_uri, parent_dir,
-    source_type_for_path, tsx_vue_import_shim,
+    DependencyScan, ImportQueue, dependency_content, queue_vue_dependency, source_type_for_path,
 };
 use super::vue_document::CorsaVueVirtualDocumentOptions;
 use crate::batch::ImportRewriter;
@@ -56,12 +55,14 @@ impl AliasContext {
                     let aliases = project.dependency_alias_map();
                     // Register the host and everything reachable, then put the
                     // companions on disk where the checker can resolve them.
-                    let mirror = (aliases.is_empty()
-                        || (project.register_path(source_path).is_ok()
+                    let mirror = if aliases.is_empty() {
+                        None
+                    } else {
+                        (project.register_path(source_path).is_ok()
                             && project.register_reachable_dependencies().is_ok()
-                            && project.materialize().is_ok()))
-                    .then_some(project)
-                    .filter(|_| !aliases.is_empty());
+                            && project.materialize().is_ok())
+                        .then_some(project)
+                    };
                     (root, aliases, mirror)
                 }
                 Err(_) => (root, Vec::new(), None),
@@ -81,10 +82,10 @@ impl AliasContext {
 }
 
 impl AliasContext {
-    /// Resolve one non-relative specifier to a relative path targeting the
-    /// synced overlay identities, for the offset-preserving rewriter.
+    /// Resolve one non-relative specifier to an absolute mirror path, for the
+    /// offset-preserving rewriter.
     #[allow(clippy::disallowed_types)]
-    pub(super) fn resolve_specifier_to_relative(
+    pub(super) fn resolve_specifier_to_mirror_path(
         &self,
         specifier: &str,
         importer_dir: &Path,
@@ -98,22 +99,18 @@ impl AliasContext {
             return None;
         }
         // Resolution must land on a real file: the mirror's generated
-        // companion for a registered dependency, or nothing. The trailing
-        // `.ts`/`.tsx` is stripped because the governing tsconfig is the
-        // user's, which need not enable `allowImportingTsExtensions`; the
-        // checker then appends the extension itself, so `…/UiButton.vue`
-        // resolves to the on-disk `UiButton.vue.ts` companion exactly the way
-        // extensionless script imports resolve.
+        // companion for a registered dependency, or nothing.
         let mirror = self.mirror.as_ref()?;
         let target = mirror.find_by_original(&key)?.virtual_path.clone();
 
-        // The session client may relocate virtual documents to an overlay
-        // root, so a relative specifier would anchor at the wrong directory.
-        // An absolute specifier resolves identically from anywhere; the
-        // trailing extension is stripped because the governing tsconfig need
-        // not enable `allowImportingTsExtensions`, and the checker then
-        // appends it itself (`…/UiButton.vue` → the on-disk `.vue.ts`
-        // companion).
+        // The path is absolute because the session client may relocate virtual
+        // documents to an overlay root, where a relative specifier would
+        // anchor at the wrong directory; an absolute one resolves identically
+        // from anywhere. The trailing extension is stripped because the
+        // governing tsconfig is the user's, which need not enable
+        // `allowImportingTsExtensions`; the checker appends it itself, so
+        // `…/UiButton.vue` resolves to the on-disk `.vue.ts` companion exactly
+        // the way extensionless script imports resolve.
         let spelled = target.to_string_lossy().replace('\\', "/");
         Some(
             spelled
@@ -138,9 +135,21 @@ pub(super) fn queue_alias_imports(
     if context.aliases.is_empty() {
         return;
     }
+    // Only a specifier under a configured alias prefix can resolve here, so
+    // pre-filter before touching the filesystem: `resolve_dependency` probes up
+    // to seven candidate paths per alias, and this walk runs on the request
+    // thread for every bare package name (`vue`, `pinia`, `@vueuse/core`) in
+    // every scanned document. The batch pass filters the same way (#3898).
     for specifier in rewriter.collect_all_specifiers(code, source_type) {
         if specifier.starts_with("./") || specifier.starts_with("../") {
             continue; // the relative walk owns these
+        }
+        if !context
+            .aliases
+            .iter()
+            .any(|(pattern, _)| specifier.starts_with(pattern.trim_end_matches('*')))
+        {
+            continue;
         }
         let Some(path) =
             resolve_dependency(&specifier, dir, &context.project_root, &context.aliases)
@@ -152,49 +161,11 @@ pub(super) fn queue_alias_imports(
             continue;
         }
         if key.extension().is_some_and(|extension| extension == "vue") {
-            queue_alias_vue(imports, options, rewriter, context, &key);
+            queue_vue_dependency(imports, options, rewriter, context, &key);
         } else if !key.starts_with(&context.project_root) && !is_declaration(&key) {
             queue_alias_script(imports, &key);
         }
     }
-}
-
-fn queue_alias_vue(
-    imports: &mut ImportQueue<'_>,
-    options: CorsaVueVirtualDocumentOptions,
-    rewriter: &ImportRewriter,
-    context: &AliasContext,
-    path: &Path,
-) {
-    if !imports.visited_vue.insert(path.to_path_buf()) {
-        return;
-    }
-    let Some(content) = dependency_content(path, imports.overlays) else {
-        return;
-    };
-    let generated = match super::vue_document::generate_vue_document_with_alias(
-        path, &content, options, rewriter, context,
-    ) {
-        Ok(generated) => generated,
-        Err(_) => {
-            imports
-                .documents
-                .push((fallback_vue_virtual_uri(path), FALLBACK.into()));
-            return;
-        }
-    };
-    imports.documents.push((
-        generated.virtual_uri.clone(),
-        generated.generated.code.clone(),
-    ));
-    if generated.generated.virtual_suffix == ".tsx" {
-        imports.documents.push(tsx_vue_import_shim(path));
-    }
-    imports.queue.push_back(DependencyScan::Vue {
-        dir: parent_dir(&generated.source_path),
-        source_type: generated.generated.source_type,
-        pre_rewrite_code: generated.generated.pre_rewrite_code,
-    });
 }
 
 fn queue_alias_script(imports: &mut ImportQueue<'_>, path: &Path) {
@@ -214,8 +185,6 @@ fn queue_alias_script(imports: &mut ImportQueue<'_>, path: &Path) {
     });
 }
 
-const FALLBACK: &str = "const component: any = undefined;\nexport default component;\n";
-
 fn inside_node_modules(path: &Path) -> bool {
     path.components()
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
@@ -224,5 +193,7 @@ fn inside_node_modules(path: &Path) -> bool {
 fn is_declaration(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".d.ts") || name.ends_with(".d.mts"))
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }

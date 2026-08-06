@@ -76,7 +76,7 @@ pub fn generate_vue_document_virtual_ts_with_options(
     )
 }
 
-pub fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
+pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     path: &Path,
     content: &str,
     options: &VirtualTsOptions,

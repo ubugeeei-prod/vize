@@ -27,15 +27,19 @@ impl ImportRewriter {
         alias_resolver: AliasSpecifierResolver<'_>,
     ) -> RewriteResult {
         self.rewrite_with(source, source_type, |path| {
-            self.rewrite_module_specifier(path, source_dir)
+            if path.starts_with("./") || path.starts_with("../") {
+                return self.rewrite_module_specifier(path, source_dir).or_else(|| {
+                    source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir))
+                });
+            }
+            // A resolvable alias wins over the generic `.vue` → `.vue.ts`
+            // rewrite: `is_rewritable_vue_specifier` also matches `@/Foo.vue`
+            // and `~/Foo.vue`, so rewriting first would emit `@/Foo.vue.ts` and
+            // leave the alias prefix unresolved in the generated module.
+            alias_resolver(path)
+                .map(Into::into)
+                .or_else(|| self.rewrite_module_specifier(path, source_dir))
                 .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
-                .or_else(|| {
-                    if path.starts_with("./") || path.starts_with("../") {
-                        None
-                    } else {
-                        alias_resolver(path).map(Into::into)
-                    }
-                })
         })
     }
 }

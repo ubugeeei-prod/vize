@@ -147,42 +147,55 @@ fn queue_vue_imports(
 ) {
     for specifier in rewriter.collect_relative_vue_specifiers(code, source_type, Some(dir)) {
         let path = normalize_path(&dir.join(specifier.as_str()));
-        let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
-        if !imports.visited_vue.insert(key) {
-            continue;
-        }
-        let Some(content) = dependency_content(&path, imports.overlays) else {
-            continue;
-        };
-        let generated = match super::vue_document::generate_vue_document_with_alias(
-            &path,
-            &content,
-            options,
-            rewriter,
-            alias_context,
-        ) {
-            Ok(generated) => generated,
-            Err(_) => {
-                imports.documents.push((
-                    fallback_vue_virtual_uri(&path),
-                    VUE_DEPENDENCY_FALLBACK.into(),
-                ));
-                continue;
-            }
-        };
-        imports.documents.push((
-            generated.virtual_uri.clone(),
-            generated.generated.code.clone(),
-        ));
-        if generated.generated.virtual_suffix == ".tsx" {
-            imports.documents.push(tsx_vue_import_shim(&path));
-        }
-        imports.queue.push_back(DependencyScan::Vue {
-            dir: parent_dir(&generated.source_path),
-            source_type: generated.generated.source_type,
-            pre_rewrite_code: generated.generated.pre_rewrite_code,
-        });
+        queue_vue_dependency(imports, options, rewriter, alias_context, &path);
     }
+}
+
+/// Generate one resolved `.vue` dependency, push its document, and queue the
+/// component's own imports. Shared with the alias walk so both spellings of a
+/// dependency produce the same document and the same ambient fallback.
+pub(super) fn queue_vue_dependency(
+    imports: &mut ImportQueue<'_>,
+    options: CorsaVueVirtualDocumentOptions,
+    rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
+    path: &Path,
+) {
+    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    if !imports.visited_vue.insert(key) {
+        return;
+    }
+    let Some(content) = dependency_content(path, imports.overlays) else {
+        return;
+    };
+    let generated = match super::vue_document::generate_vue_document_with_alias(
+        path,
+        &content,
+        options,
+        rewriter,
+        alias_context,
+    ) {
+        Ok(generated) => generated,
+        Err(_) => {
+            imports.documents.push((
+                fallback_vue_virtual_uri(path),
+                VUE_DEPENDENCY_FALLBACK.into(),
+            ));
+            return;
+        }
+    };
+    imports.documents.push((
+        generated.virtual_uri.clone(),
+        generated.generated.code.clone(),
+    ));
+    if generated.generated.virtual_suffix == ".tsx" {
+        imports.documents.push(tsx_vue_import_shim(path));
+    }
+    imports.queue.push_back(DependencyScan::Vue {
+        dir: parent_dir(&generated.source_path),
+        source_type: generated.generated.source_type,
+        pre_rewrite_code: generated.generated.pre_rewrite_code,
+    });
 }
 
 pub(super) fn fallback_vue_virtual_uri(path: &Path) -> String {
@@ -238,7 +251,7 @@ fn queue_ts_imports(
         let script_dir = parent_dir(&path);
         let rewritten = rewriter
             .rewrite_with_alias_resolver(&content, dependency_source_type, path.parent(), &|spec| {
-                alias_context.resolve_specifier_to_relative(spec, &script_dir)
+                alias_context.resolve_specifier_to_mirror_path(spec, &script_dir)
             })
             .code;
         let uri = normalize_document_uri(path_to_file_uri(&path).as_str());
