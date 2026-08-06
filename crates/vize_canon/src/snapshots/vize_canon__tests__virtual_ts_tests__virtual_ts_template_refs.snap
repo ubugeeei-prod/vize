@@ -65,7 +65,7 @@ export type Props = {};
 
 // ========== Setup Scope ==========
 function __setup() {
-  type __VizeDomElement<_Tag extends string> = _Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : _Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element;
+  type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : _Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element);
   type __VizeTemplateRefs = { "inputRef": __VizeDomElement<"input">; "btn": __VizeDomElement<"button">; };
   type __VizeUseTemplateRef = { <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };
   // Compiler macros (only valid in setup scope, not global)
@@ -94,7 +94,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 8132:8236 -> 0:135
+  // @vize-map: 8267:8371 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

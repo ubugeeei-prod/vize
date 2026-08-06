@@ -11,12 +11,19 @@
 //! false negative, never invent a diagnostic.
 
 use vize_carton::{FxHashSet, String, append};
-use vize_relief::{ElementNode, ElementType, PropNode, RootNode, TemplateChildNode};
+use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
+
+use super::setup_helpers::push_ts_string_literal;
 
 /// One registry entry: the authored ref name and the element tag it names.
 struct RegisteredRef {
     name: String,
     tag: String,
+    /// SVG elements resolve through `SVGElementTagNameMap` first. The parser
+    /// already propagates the namespace to descendants, so a nested
+    /// `<svg><a ref="link" /></svg>` is distinguishable from a top-level
+    /// `<a ref="link" />` even though both register the tag `a`.
+    is_svg: bool,
 }
 
 /// The rendered `__VizeTemplateRefs` object-type body, or `None` when no
@@ -47,11 +54,18 @@ pub(super) fn template_ref_registry(template_ast: Option<&RootNode<'_>>) -> Opti
         .iter()
         .filter(|entry| !duplicated.contains(&entry.name))
     {
+        // Both values are authored text, so they are escaped as TypeScript
+        // string literals: a raw `\` in `ref="path\name"` would otherwise open
+        // an escape sequence and silently key the registry under a different
+        // name, and a trailing one would invalidate the whole virtual file.
+        let mut name_literal = String::default();
+        push_ts_string_literal(&mut name_literal, entry.name.as_str());
+        let mut tag_literal = String::default();
+        push_ts_string_literal(&mut tag_literal, entry.tag.as_str());
+        let svg_argument = if entry.is_svg { ", true" } else { "" };
         append!(
             body,
-            " \"{}\": __VizeDomElement<\"{}\">;",
-            entry.name,
-            entry.tag
+            " {name_literal}: __VizeDomElement<{tag_literal}{svg_argument}>;"
         );
     }
     if body.is_empty() {
@@ -101,10 +115,11 @@ fn collect_element(element: &ElementNode<'_>, in_v_for: bool, refs: &mut Vec<Reg
                 continue;
             };
             let name = value.content.as_str();
-            if !name.is_empty() && !name.contains('"') && !element.tag.contains('"') {
+            if !name.is_empty() {
                 refs.push(RegisteredRef {
                     name: String::from(name),
                     tag: element.tag.clone(),
+                    is_svg: matches!(element.ns, Namespace::Svg),
                 });
             }
         }
@@ -126,7 +141,36 @@ mod tests {
     fn static_plain_element_refs_register_their_tag() {
         assert_eq!(
             registry_of(r#"<div ref="box" /><svg ref="pic" />"#).as_deref(),
-            Some(r#" "box": __VizeDomElement<"div">; "pic": __VizeDomElement<"svg">; "#)
+            Some(r#" "box": __VizeDomElement<"div">; "pic": __VizeDomElement<"svg", true>; "#)
+        );
+    }
+
+    #[test]
+    fn svg_descendants_resolve_through_the_svg_tag_map() {
+        // `a`, `script`, `style` and `title` live in both DOM tag-name maps, so
+        // the namespace is what separates `SVGAElement` from
+        // `HTMLAnchorElement` here.
+        assert_eq!(
+            registry_of(r#"<a ref="html" /><svg><a ref="vector" /></svg>"#).as_deref(),
+            Some(r#" "html": __VizeDomElement<"a">; "vector": __VizeDomElement<"a", true>; "#)
+        );
+        // `<foreignObject>` is an HTML integration point: its subtree is HTML
+        // again, so the inner `<a>` must not claim `SVGAElement`.
+        assert_eq!(
+            registry_of(r#"<svg><foreignObject><a ref="escaped" /></foreignObject></svg>"#)
+                .as_deref(),
+            Some(r#" "escaped": __VizeDomElement<"a">; "#)
+        );
+    }
+
+    #[test]
+    fn ref_names_are_escaped_as_typescript_string_literals() {
+        // A raw backslash would open an escape sequence in the generated key
+        // (`\n` becoming a newline), and a trailing one would invalidate the
+        // virtual file and take every diagnostic for the SFC with it.
+        assert_eq!(
+            registry_of(r#"<div ref="path\name" />"#).as_deref(),
+            Some(r#" "path\\name": __VizeDomElement<"div">; "#)
         );
     }
 
