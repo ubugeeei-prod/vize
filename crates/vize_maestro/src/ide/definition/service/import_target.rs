@@ -15,10 +15,8 @@ use std::path::{Path, PathBuf};
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 use vize_carton::cstr;
 
-use super::IdeContext;
-use super::helpers;
-use super::module_specifier;
-use super::script;
+use crate::ide::IdeContext;
+use crate::ide::definition::{helpers, module_specifier, script};
 
 /// Barrels can chain; three hops covers a package barrel re-exporting a
 /// directory barrel re-exporting the module, without risking a cycle walk.

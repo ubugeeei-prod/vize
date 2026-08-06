@@ -6,7 +6,6 @@ pub(crate) mod helpers;
 mod html;
 #[cfg(all(test, feature = "native"))]
 mod html_tests;
-mod import_target;
 mod inline_art;
 mod module_specifier;
 pub(crate) mod script;
