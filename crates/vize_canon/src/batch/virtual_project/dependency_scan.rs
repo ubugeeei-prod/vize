@@ -34,6 +34,9 @@ impl VirtualProject {
         let aliases = self.dependency_alias_map();
         let alias_prefixes: Vec<CompactString> = aliases
             .iter()
+            .filter(|(pattern, target)| {
+                alias_may_reach_first_party(pattern, target, &self.project_root)
+            })
             .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
             .collect();
         let mut queue: Vec<PathBuf> = self
@@ -146,6 +149,36 @@ fn inside_node_modules(path: &Path) -> bool {
 /// generated file here would be a plain regression on projects that import
 /// nothing first-party (#3898). Deliberately a conservative superset: alias
 /// prefixes are matched anywhere in the text.
+/// Whether an alias can ever contribute a first-party file, judged once per
+/// alias rather than once per module. A wildcard pattern always can: its target
+/// is a directory prefix whose entries may each be a pnpm workspace symlink out
+/// of `node_modules`. A wildcard-free pattern names one target, so when that
+/// target still lives inside `node_modules` after canonicalization it is a
+/// published package and the walk below rejects it anyway — its prefix must not
+/// make [`may_resolve_a_dependency`] parse every module in the project. The
+/// `vue` alias a Vue tsconfig carries is exactly that shape, and matching it as
+/// a bare substring defeated the prefilter for every generated file (#3898).
+#[allow(clippy::disallowed_types)]
+fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path) -> bool {
+    if pattern.contains('*') {
+        return true;
+    }
+    let absolute = if Path::new(target).is_absolute() {
+        PathBuf::from(target)
+    } else {
+        project_root.join(target)
+    };
+    if !inside_node_modules(&absolute) {
+        return true;
+    }
+    // Resolve exactly as the walk would, so dropping the prefix can only ever
+    // drop a target the walk itself refuses.
+    let Some(resolved) = probe_candidates(&absolute) else {
+        return true;
+    };
+    canonical_key(&resolved).is_none_or(|key| !inside_node_modules(&key))
+}
+
 fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
     crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
         || alias_prefixes
@@ -223,4 +256,69 @@ fn probe_candidates(base: &Path) -> Option<PathBuf> {
         }
     }
     None
+}
+
+#[cfg(test)]
+#[allow(clippy::disallowed_types)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn case_dir(name: &str) -> PathBuf {
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests")
+            .join("dependency-scan")
+            .join(cstr!("{name}-{}", std::process::id()).as_str());
+        let _ = fs::remove_dir_all(&dir);
+        dir
+    }
+
+    #[test]
+    fn a_published_package_alias_does_not_force_a_parse() {
+        // #3898: the `vue` alias every Vue tsconfig carries is wildcard-free and
+        // points into `node_modules`, so the walk always rejects it. Matching it
+        // as a bare substring made `may_resolve_a_dependency` true for every
+        // generated file — each one contains "vue" — and reintroduced the
+        // per-file parse the prefilter exists to avoid.
+        let root = case_dir("published-alias");
+        let package = root.join("node_modules").join("vue");
+        fs::create_dir_all(&package).unwrap();
+        fs::write(package.join("index.d.ts"), "export declare const a: 1;\n").unwrap();
+
+        assert!(!alias_may_reach_first_party(
+            "vue",
+            "./node_modules/vue",
+            &root
+        ));
+        assert!(!may_resolve_a_dependency(
+            "import { ref } from 'vue'\n",
+            &[]
+        ));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_wildcard_alias_into_node_modules_is_kept() {
+        // A pnpm workspace link lives under `node_modules/<scope>/<pkg>`, so a
+        // wildcard target's entries can each canonicalize out and be first
+        // party. Only the wildcard-free shape is provably rejectable.
+        let root = case_dir("wildcard-alias");
+        fs::create_dir_all(root.join("node_modules").join("@scope")).unwrap();
+        assert!(alias_may_reach_first_party(
+            "@scope/*",
+            "./node_modules/@scope/*",
+            &root
+        ));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_first_party_alias_is_kept() {
+        let root = case_dir("first-party-alias");
+        fs::create_dir_all(root.join("packages").join("ui")).unwrap();
+        fs::write(root.join("packages").join("ui").join("index.ts"), "\n").unwrap();
+        assert!(alias_may_reach_first_party("@ui", "./packages/ui", &root));
+        let _ = fs::remove_dir_all(&root);
+    }
 }
