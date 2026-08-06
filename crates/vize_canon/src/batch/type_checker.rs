@@ -232,6 +232,9 @@ impl BatchTypeChecker {
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let paths = collect_project_paths(self.project.project_root())?;
         self.project.register_paths(&paths)?;
+        // Same reachability pass as `scan_paths`: imports that leave the
+        // project root register instead of falling back to the stub (#3887).
+        self.project.register_reachable_dependencies()?;
         self.scanned = true;
         self.incremental_paths.after_project_scan(&self.project);
         Ok(())

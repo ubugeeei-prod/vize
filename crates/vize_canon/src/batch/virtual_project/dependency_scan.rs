@@ -8,7 +8,10 @@
 //! to a fixpoint. Published packages are left alone: a canonical path that
 //! stays inside `node_modules` keeps the stub (that half is #3282), while a
 //! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source.
+//! first-party source. Declaration files are left alone too: they hold no
+//! component to check and their ambient declarations are program-wide, so the
+//! tsconfig decides which ones a program includes (see
+//! [`is_declaration_file`]).
 //!
 //! Specifiers are collected from the *generated* content (always valid TS,
 //! one collector for `.vue` and script files alike) and resolved against the
@@ -21,7 +24,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, cstr};
+use vize_carton::{FxHashSet, String as CompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 
@@ -32,6 +35,13 @@ impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
+        let alias_prefixes: Vec<CompactString> = aliases
+            .iter()
+            .filter(|(pattern, target)| {
+                alias_may_reach_first_party(pattern, target, &self.project_root)
+            })
+            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .collect();
         let mut queue: Vec<PathBuf> = self
             .virtual_files_sorted()
             .iter()
@@ -46,6 +56,9 @@ impl VirtualProject {
             let Some(virtual_file) = self.find_by_original(&importer) else {
                 continue;
             };
+            if !may_resolve_a_dependency(&virtual_file.content, &alias_prefixes) {
+                continue;
+            }
             let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
                 continue;
             };
@@ -71,11 +84,22 @@ impl VirtualProject {
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                if inside_node_modules(&key) || !visited.insert(key) {
+                if inside_node_modules(&key)
+                    || is_declaration_file(&key)
+                    || !visited.insert(key.clone())
+                {
                     continue;
                 }
-                if self.register_path(&target).is_ok() {
-                    queue.push(target);
+                // Register the canonical path: a workspace symlink is
+                // first-party where it actually lives, so it must not enter the
+                // virtual tree under `node_modules`.
+                // A reachable dependency is inferred, not requested: an
+                // unreadable file or a malformed sibling-package SFC must not
+                // abort the check the user actually asked for, so registration
+                // failure degrades to the pre-#3887 ambient stub for that one
+                // import instead of propagating (#3898).
+                if self.register_path(&key).is_ok() {
+                    queue.push(key);
                 }
             }
         }
@@ -121,6 +145,77 @@ fn canonical_key(path: &Path) -> Option<PathBuf> {
 fn inside_node_modules(path: &Path) -> bool {
     path.components()
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
+}
+
+/// Whether `path` is a TypeScript declaration file.
+///
+/// Reachability never registers one. A declaration file cannot *be* a `.vue`
+/// component, so it adds nothing this pass exists to check, while its ambient
+/// declarations are program-wide: a `declare module "vue"` in a script `.d.ts`
+/// is an ambient module declaration rather than an augmentation, so pulling one
+/// in replaces Vue's real typings and every `import { ref } from "vue"` in the
+/// project becomes `TS2305` (#3898). Which declaration files a program includes
+/// is the tsconfig's decision, not this inference pass's.
+///
+/// [`probe_candidates`] still resolves them: [`alias_may_reach_first_party`]
+/// classifies an alias by what the walk would resolve, and the `vue` alias of a
+/// Vue tsconfig resolves to `node_modules/vue/index.d.ts`.
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
+}
+
+/// Whether any specifier in `content` could resolve, cheaply and without a
+/// parse. [`resolve_dependency`] only ever succeeds for a relative specifier or
+/// one matching a `paths` alias, so a module whose text contains neither shape
+/// cannot register anything. This pass runs on every check, and registration
+/// itself skips parsing a module with no rewritable specifier, so parsing every
+/// generated file here would be a plain regression on projects that import
+/// nothing first-party (#3898). Deliberately a conservative superset: alias
+/// prefixes are matched anywhere in the text.
+/// Whether an alias can ever contribute a first-party file, judged once per
+/// alias rather than once per module. A wildcard pattern always can: its target
+/// is a directory prefix whose entries may each be a pnpm workspace symlink out
+/// of `node_modules`. A wildcard-free pattern names exactly one target, so it is
+/// resolved here the same way the walk resolves it and kept only when the walk
+/// would accept the result. Its prefix must not make
+/// [`may_resolve_a_dependency`] parse every module in the project: the `vue`
+/// alias a Vue tsconfig carries is that shape, and matching it as a bare
+/// substring defeated the prefilter for every generated file (#3898).
+///
+/// A probe that finds nothing means the walk resolves nothing either, so the
+/// prefix is dropped. Treating that as "keep, to be safe" is what kept the
+/// benchmark regression alive: `vue` publishes its types as `dist/vue.d.ts` with
+/// no root `index.d.ts`, so probing the package directory legitimately fails.
+#[allow(clippy::disallowed_types)]
+fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path) -> bool {
+    if pattern.contains('*') {
+        return true;
+    }
+    let absolute = if Path::new(target).is_absolute() {
+        PathBuf::from(target)
+    } else {
+        project_root.join(target)
+    };
+    // Resolve exactly as the walk would, so dropping the prefix can only ever
+    // drop a target the walk itself refuses.
+    let Some(resolved) = probe_candidates(&absolute) else {
+        return false;
+    };
+    let Some(key) = canonical_key(&resolved) else {
+        return false;
+    };
+    !inside_node_modules(&key) && !is_declaration_file(&key)
+}
+
+fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
+    crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
+        || alias_prefixes
+            .iter()
+            .any(|prefix| prefix.is_empty() || content.contains(prefix.as_str()))
 }
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
@@ -186,7 +281,7 @@ fn probe_candidates(base: &Path) -> Option<PathBuf> {
             return Some(candidate);
         }
     }
-    for index in ["index.ts", "index.tsx"] {
+    for index in ["index.ts", "index.tsx", "index.d.ts"] {
         let candidate = base.join(index);
         if candidate.is_file() {
             return Some(candidate);
@@ -194,3 +289,7 @@ fn probe_candidates(base: &Path) -> Option<PathBuf> {
     }
     None
 }
+
+#[cfg(test)]
+#[path = "dependency_scan_tests.rs"]
+mod tests;
