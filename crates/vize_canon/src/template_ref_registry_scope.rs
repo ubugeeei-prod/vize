@@ -24,7 +24,9 @@ const label = 'hi'
 
     let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
     let result = type_check_sfc(source, &options);
-    let virtual_ts = result.virtual_ts.unwrap_or_default();
+    let virtual_ts = result
+        .virtual_ts
+        .expect("type_check_sfc must produce virtual TypeScript");
 
     assert!(
         !virtual_ts.contains("__VizeTemplateRefs"),
