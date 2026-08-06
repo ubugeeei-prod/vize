@@ -183,6 +183,50 @@ export default {
     );
 }
 
+/// A `<script setup>` block next to the plain script keeps the form off: there
+/// the plain default export carries only the options the setup form cannot
+/// express (`inheritAttrs`, `name`, ...), so its instance type describes none of
+/// the template's real bindings, and every setup binding or auto-imported name
+/// would gain an invented `TS2339` (measured on the Elk and Nuxt UI surfaces).
+#[test]
+fn test_options_api_script_setup_next_to_plain_script_disables_the_instance_form() {
+    let setup = r#"const props = defineProps<{ toaster: boolean }>()
+"#;
+    let script = r#"export default {
+    inheritAttrs: false,
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ toaster }} {{ missingThing }}</div>");
+    // The split-script shape the SFC pipeline builds: the setup summary is the
+    // base, the plain script is merged into it, then the template is drawn.
+    let options = vize_croquis::AnalyzerOptions::full();
+    let mut setup_analyzer = vize_croquis::Analyzer::with_options(options).with_options_api();
+    setup_analyzer.analyze_script_setup(setup);
+    let mut summary = setup_analyzer.finish();
+    let mut plain_analyzer = vize_croquis::Analyzer::with_options(options).with_options_api();
+    plain_analyzer.analyze_script_plain(script);
+    summary.merge_plain_script(plain_analyzer.finish());
+    let mut analyzer =
+        vize_croquis::Analyzer::with_summary(options, summary, true).with_options_api();
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output.code.contains("__vize_template_instance"),
+        "a `<script setup>` block must keep the public-instance form off:\n{}",
+        output.code
+    );
+}
+
 /// A configured `globalTypes` entry already declares the name in the template
 /// closure, so the `var` the instance form hoists would redeclare it
 /// (`TS2451 Cannot redeclare block-scoped variable`).

@@ -9,7 +9,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifiers_oxc};
+use vize_croquis::{BindingMetadata, Croquis, ScopeKind, analyzer::extract_identifiers_oxc};
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
@@ -23,6 +23,11 @@ use super::context::ScopeGenerationOptions;
 /// export is a plain options object — not a constructor — so the conditional
 /// would degrade to `{}` and turn every filter or runtime-resolved name into
 /// a `TS2339` the pinned Vue 2 parity surfaces do not contain.
+///
+/// A `<script setup>` block alongside the plain script keeps the form off too:
+/// there the plain script's default export is a partial options object
+/// (`inheritAttrs`, `name`, ...) whose instance type describes none of the
+/// template's real bindings, which live in the setup scope.
 pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -33,8 +38,10 @@ pub(super) fn generate_undefined_refs(
     if summary.undefined_refs.is_empty() {
         return;
     }
-    let resolve_on_instance =
-        options.options_api && options.has_default_alias && !options.legacy_vue2;
+    let resolve_on_instance = options.options_api
+        && options.has_default_alias
+        && !options.legacy_vue2
+        && !has_script_setup(summary);
     let script_content = options.script_content;
     // Names the plain script declares itself resolve from an enclosing scope of
     // the template closure even when the analyzer never tracked them as
@@ -136,6 +143,16 @@ pub(super) fn generate_undefined_refs(
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
     }
+}
+
+/// Whether the SFC authored a `<script setup>` block: its bindings are the
+/// template's real surface, and the plain script's default export next to it
+/// carries only the options the setup form cannot express.
+fn has_script_setup(summary: &Croquis) -> bool {
+    summary
+        .scopes
+        .iter()
+        .any(|scope| matches!(scope.kind, ScopeKind::ScriptSetup))
 }
 
 /// Names bound at the plain script's own top level, including the TypeScript-only
