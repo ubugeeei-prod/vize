@@ -258,10 +258,7 @@ pub(super) fn mirrored_virtual_path(
         return Ok(virtual_root.join(relative));
     }
     // Out-of-root files land in the external escape subtree (#3887).
-    Ok(super::external_mirror::external_mirror_path(
-        virtual_root,
-        path,
-    )?)
+    super::external_mirror::external_mirror_path(virtual_root, path)
 }
 
 fn build_tsx_vue_import_shim(
