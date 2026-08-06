@@ -123,6 +123,12 @@ impl VirtualProject {
         Ok(FlattenedCompilerOptions { options, base_url })
     }
 
+    /// `seen` is the *active* `extends` path, not a set of everything already
+    /// loaded: each config is removed again once its own chain is flattened.
+    /// Only a config currently being recursed into is a cycle. A visited set
+    /// would also short-circuit an ancestor two sibling `extends` entries share,
+    /// handing the later sibling nothing and leaving the earlier one's overrides
+    /// in place where TypeScript gives the later sibling's inherited values.
     #[allow(clippy::disallowed_types)]
     fn load_compiler_options_inner(
         &self,
@@ -137,8 +143,21 @@ impl VirtualProject {
         if !seen.insert(normalized.clone()) {
             return Ok((Map::new(), DeclarationDirs::default()));
         }
+        let flattened = self.load_extended_compiler_options(&normalized, seen, path_options);
+        seen.remove(&normalized);
+        flattened
+    }
 
-        let content = profile!("canon.tsconfig.read", std::fs::read_to_string(&normalized))?;
+    /// The chain rooted at an already-normalized config, with `seen` holding the
+    /// configs between it and the entry point.
+    #[allow(clippy::disallowed_types)]
+    fn load_extended_compiler_options(
+        &self,
+        normalized: &Path,
+        seen: &mut FxHashSet<PathBuf>,
+        path_options: PathOptions,
+    ) -> CorsaResult<(Map<std::string::String, Value>, DeclarationDirs)> {
+        let content = profile!("canon.tsconfig.read", std::fs::read_to_string(normalized))?;
         let config = profile!("canon.tsconfig.parse", parse_jsonc_value(&content))?;
         let mut compiler_options = config
             .get("compilerOptions")
@@ -164,7 +183,7 @@ impl VirtualProject {
         let mut inherited_dirs = DeclarationDirs::default();
         match config.get("extends") {
             Some(Value::String(extends)) => {
-                if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends) {
+                if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
                     let (parent, parent_dirs) =
                         self.load_compiler_options_inner(&parent_path, seen, path_options)?;
                     inherited = parent;
@@ -173,8 +192,7 @@ impl VirtualProject {
             }
             Some(Value::Array(entries)) => {
                 for extends in entries.iter().filter_map(Value::as_str) {
-                    if let Some(parent_path) = resolve_extended_tsconfig_path(&normalized, extends)
-                    {
+                    if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
                         let (parent, parent_dirs) =
                             self.load_compiler_options_inner(&parent_path, seen, path_options)?;
                         inherited.extend(parent);
