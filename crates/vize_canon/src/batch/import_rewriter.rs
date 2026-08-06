@@ -253,7 +253,7 @@ impl ImportRewriter {
         collector.visit_program(&result.program);
         let mut specifiers: Vec<String> = Vec::new();
         for (_, _, path) in collector.specifiers {
-            if !specifiers.iter().any(|seen| *seen == path) {
+            if !specifiers.contains(&path) {
                 specifiers.push(path);
             }
         }
