@@ -181,14 +181,7 @@ pub(crate) fn generate_scope_closures(
     if check_options.check_template_bindings {
         profile!(
             "canon.virtual_ts.undefined_refs",
-            generate_undefined_refs(
-                ts,
-                mappings,
-                summary,
-                template_offset,
-                options.options_api && options.has_default_alias,
-                options.script_content,
-            )
+            generate_undefined_refs(ts, mappings, summary, template_offset, &options)
         );
     }
     if check_options.check_props {

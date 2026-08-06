@@ -17,21 +17,25 @@ use super::context::ScopeGenerationOptions;
 
 /// Handle undefined references from template.
 ///
-/// `resolve_on_instance` is the Options API opt-in: it is set only when the
-/// script rewrite actually declared the `__default__` alias the instance form
-/// reads, so a shape without one keeps the free-name emission rather than
-/// referencing an alias that was never generated.
+/// The public-instance form is the Vue 3 Options API opt-in: it requires the
+/// script rewrite to have actually declared the `__default__` alias the
+/// instance conditional reads, and stays off for legacy Vue 2, whose default
+/// export is a plain options object — not a constructor — so the conditional
+/// would degrade to `{}` and turn every filter or runtime-resolved name into
+/// a `TS2339` the pinned Vue 2 parity surfaces do not contain.
 pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,
-    resolve_on_instance: bool,
-    script_content: Option<&str>,
+    options: &ScopeGenerationOptions<'_, '_>,
 ) {
     if summary.undefined_refs.is_empty() {
         return;
     }
+    let resolve_on_instance =
+        options.options_api && options.has_default_alias && !options.legacy_vue2;
+    let script_content = options.script_content;
     // Names the plain script declares itself resolve from an enclosing scope of
     // the template closure even when the analyzer never tracked them as
     // bindings (a `namespace` is the measured case). Those are not unknown
