@@ -24,7 +24,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String as CompactString, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 
@@ -34,6 +34,21 @@ use super::VirtualProject;
 impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
+        self.register_reachable_dependencies_with_overlays(&FxHashMap::default())
+    }
+
+    /// The same walk, with unsaved editor buffers standing in for their on-disk
+    /// contents.
+    ///
+    /// An editor session must see the buffer the user is typing in: a dependency
+    /// reachable only through an import that exists in an unsaved file is
+    /// invisible to a disk-only walk, so nothing registers it, its mirror
+    /// companion is never generated, and the alias rewrite has no real file to
+    /// point at until the buffer is saved (#3900).
+    pub(crate) fn register_reachable_dependencies_with_overlays(
+        &mut self,
+        overlays: &FxHashMap<PathBuf, &str>,
+    ) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
         let alias_prefixes: Vec<CompactString> = aliases
             .iter()
@@ -109,7 +124,11 @@ impl VirtualProject {
                 // abort the check the user actually asked for, so registration
                 // failure degrades to the pre-#3887 ambient stub for that one
                 // import instead of propagating (#3898).
-                if self.register_path(&key).is_ok() {
+                let registered = match overlays.get(&key) {
+                    Some(content) => self.register_path_with_content(&key, content),
+                    None => self.register_path(&key),
+                };
+                if registered.is_ok() {
                     queue.push(key);
                 }
             }

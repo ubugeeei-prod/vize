@@ -15,6 +15,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use oxc_span::SourceType;
+use vize_carton::FxHashMap;
 
 use super::vue_dependencies::{
     DependencyScan, ImportQueue, dependency_content, queue_vue_dependency, source_type_for_path,
@@ -43,7 +44,15 @@ pub(super) struct AliasContext {
 impl AliasContext {
     /// Anchor at the nearest ancestor with a `tsconfig.json` — the same
     /// package-local config `vize check` treats as authoritative.
-    pub(super) fn for_host(source_path: &Path) -> Self {
+    ///
+    /// `content` is the host's editor buffer and `overlays` the unsaved
+    /// dependency buffers: the mirror is built from those rather than from disk,
+    /// so an alias import the user just typed still materializes its target.
+    pub(super) fn for_host(
+        source_path: &Path,
+        content: &str,
+        overlays: &FxHashMap<PathBuf, &str>,
+    ) -> Self {
         let root = source_path
             .ancestors()
             .skip(1)
@@ -55,11 +64,17 @@ impl AliasContext {
                     let aliases = project.dependency_alias_map();
                     // Register the host and everything reachable, then put the
                     // companions on disk where the checker can resolve them.
+                    // Buffer text wins over disk on both steps, so the mirror
+                    // describes the session the user is editing.
                     let mirror = if aliases.is_empty() {
                         None
                     } else {
-                        (project.register_path(source_path).is_ok()
-                            && project.register_reachable_dependencies().is_ok()
+                        (project
+                            .register_path_with_content(source_path, content)
+                            .is_ok()
+                            && project
+                                .register_reachable_dependencies_with_overlays(overlays)
+                                .is_ok()
                             && project.materialize().is_ok())
                         .then_some(project)
                     };

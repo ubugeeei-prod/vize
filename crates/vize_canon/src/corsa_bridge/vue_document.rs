@@ -177,7 +177,18 @@ fn build_vue_virtual_project_with_overlays_and_options(
     virtual_ts_options: &VirtualTsOptions,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
-    let alias_context = super::vue_dependencies_alias::AliasContext::for_host(source_path);
+    let overlays = overlays
+        .iter()
+        .map(|(path, content)| {
+            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            (key, *content)
+        })
+        .collect::<FxHashMap<_, _>>();
+    // The alias mirror is built before generation, and from the same buffers the
+    // dependency walk reads, so a specifier the resolver rewrites always has a
+    // materialized target (#3900).
+    let alias_context =
+        super::vue_dependencies_alias::AliasContext::for_host(source_path, content, &overlays);
     let host = generate_vue_document_with_options(
         source_path,
         content,
@@ -190,13 +201,6 @@ fn build_vue_virtual_project_with_overlays_and_options(
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path));
     }
-    let overlays = overlays
-        .iter()
-        .map(|(path, content)| {
-            let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.clone());
-            (key, *content)
-        })
-        .collect::<FxHashMap<_, _>>();
     collect_dependency_documents(
         &mut documents,
         &host,
