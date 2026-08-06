@@ -39,17 +39,37 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return;
     };
-    if let Some(aligned) = align_leading_var(&markup.value, &script_setup.content, word) {
+    let lang = script_setup.lang.as_deref();
+    if let Some(aligned) = align_leading_var(&markup.value, &script_setup.content, lang, word) {
         markup.value = aligned;
+    }
+}
+
+/// The oxc source type for a `<script setup lang="…">` block. `tsx`/`jsx` need
+/// the JSX variant, or a JSX initializer derails the parse and the synthesized
+/// `var` survives. Everything else parses as TypeScript, a superset of the
+/// plain-JS default that only has to yield declaration kinds and patterns here.
+fn script_source_type(lang: Option<&str>) -> SourceType {
+    let lang = lang.unwrap_or_default().trim();
+    if lang.eq_ignore_ascii_case("tsx") {
+        SourceType::tsx()
+    } else if lang.eq_ignore_ascii_case("jsx") {
+        SourceType::jsx()
+    } else {
+        SourceType::ts()
     }
 }
 
 /// The authored declaration keyword for `word`, when its top-level
 /// `<script setup>` declaration is a `const` or `let` binding (including
 /// destructuring patterns and default values).
-pub(super) fn authored_keyword(script_setup: &str, word: &str) -> Option<&'static str> {
+pub(super) fn authored_keyword(
+    script_setup: &str,
+    lang: Option<&str>,
+    word: &str,
+) -> Option<&'static str> {
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script_setup, SourceType::ts()).parse();
+    let parsed = Parser::new(&allocator, script_setup, script_source_type(lang)).parse();
     let mut found: Option<&'static str> = None;
     for statement in &parsed.program.body {
         let declaration = match statement {
@@ -110,7 +130,12 @@ fn pattern_binds(pattern: &BindingPattern<'_>, word: &str) -> bool {
 
 /// Rewrite a quick-info markdown block whose code fence opens with
 /// `var {word}` to the authored keyword. Returns `None` when nothing applies.
-pub(super) fn align_leading_var(markdown: &str, script_setup: &str, word: &str) -> Option<String> {
+pub(super) fn align_leading_var(
+    markdown: &str,
+    script_setup: &str,
+    lang: Option<&str>,
+    word: &str,
+) -> Option<String> {
     if word.is_empty() {
         return None;
     }
@@ -125,7 +150,7 @@ pub(super) fn align_leading_var(markdown: &str, script_setup: &str, word: &str) 
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
         return None;
     }
-    let keyword = authored_keyword(script_setup, word)?;
+    let keyword = authored_keyword(script_setup, lang, word)?;
     let mut rewritten = String::with_capacity(markdown.len());
     rewritten.push_str(&markdown[..after_fence]);
     rewritten.push_str(keyword);
@@ -140,12 +165,12 @@ mod tests {
         let script = "const { errors, meta } = useForm()\nlet attempts = 0\n";
         let hover = "```typescript\nvar errors: Ref<string[]>\n```";
         assert_eq!(
-            super::align_leading_var(hover, script, "errors").as_deref(),
+            super::align_leading_var(hover, script, Some("ts"), "errors").as_deref(),
             Some("```typescript\nconst errors: Ref<string[]>\n```")
         );
         let hover = "```typescript\nvar attempts: number\n```";
         assert_eq!(
-            super::align_leading_var(hover, script, "attempts").as_deref(),
+            super::align_leading_var(hover, script, Some("ts"), "attempts").as_deref(),
             Some("```typescript\nlet attempts: number\n```")
         );
     }
@@ -155,11 +180,43 @@ mod tests {
         let script = "const counter = 1\n";
         // Hover text names a longer identifier than the hovered word.
         let hover = "```typescript\nvar counter: number\n```";
-        assert_eq!(super::align_leading_var(hover, script, "count"), None);
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("ts"), "count"),
+            None
+        );
         // The word has no top-level declaration.
-        assert_eq!(super::align_leading_var(hover, script, "missing"), None);
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("ts"), "missing"),
+            None
+        );
         // The quick info does not open with `var`.
         let hover = "```typescript\nconst counter: 1\n```";
-        assert_eq!(super::align_leading_var(hover, script, "counter"), None);
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("ts"), "counter"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_jsx_initializer_resolves_under_tsx_and_jsx_langs() {
+        // `<script setup lang="tsx">`: parsed as TypeScript, `<Badge />` reads as
+        // a type assertion and the declaration never resolves.
+        let script = "const badge = <Badge count={1} />\n";
+        let hover = "```typescript\nvar badge: JSX.Element\n```";
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("tsx"), "badge").as_deref(),
+            Some("```typescript\nconst badge: JSX.Element\n```")
+        );
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("jsx"), "badge").as_deref(),
+            Some("```typescript\nconst badge: JSX.Element\n```")
+        );
+        // A JSX statement ahead of the hovered `let` must not derail the parse.
+        let script = "const badge = <Badge count={1} />\nlet attempts = 0\n";
+        let hover = "```typescript\nvar attempts: number\n```";
+        assert_eq!(
+            super::align_leading_var(hover, script, Some("tsx"), "attempts").as_deref(),
+            Some("```typescript\nlet attempts: number\n```")
+        );
     }
 }
