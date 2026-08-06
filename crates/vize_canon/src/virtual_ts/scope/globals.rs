@@ -16,27 +16,28 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 use super::context::ScopeGenerationOptions;
 
 /// Handle undefined references from template.
+///
+/// `resolve_on_instance` is the Options API opt-in: it is set only when the
+/// script rewrite actually declared the `__default__` alias the instance form
+/// reads, so a shape without one keeps the free-name emission rather than
+/// referencing an alias that was never generated.
 pub(super) fn generate_undefined_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,
-    options_api: bool,
+    resolve_on_instance: bool,
     script_content: Option<&str>,
 ) {
     if summary.undefined_refs.is_empty() {
         return;
     }
-    // The instance form leans on the `__default__` alias the script rewrite
-    // declares; an Options API shape without one (no plain default export)
-    // keeps the free-name emission rather than minting an unresolved alias.
-    let options_api = options_api && ts.contains("__default__");
     // Names the plain script declares itself resolve from an enclosing scope of
     // the template closure even when the analyzer never tracked them as
     // bindings (a `namespace` is the measured case). Those are not unknown
     // template names, so they keep the free-name emission: a property access on
     // the instance would invent a `TS2339` `vue-tsc` does not report.
-    let script_scope_names = if options_api {
+    let script_scope_names = if resolve_on_instance {
         script_content.map_or_else(FxHashSet::default, script_top_level_binding_names)
     } else {
         FxHashSet::default()
@@ -66,7 +67,7 @@ pub(super) fn generate_undefined_refs(
 
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
-        let on_instance = options_api && !script_scope_names.contains(undef.name.as_str());
+        let on_instance = resolve_on_instance && !script_scope_names.contains(undef.name.as_str());
 
         if !emitted_header {
             ts.push_str("\n  // Undefined references from template:\n");

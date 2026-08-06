@@ -309,6 +309,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     };
 
     namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
+    // Whether the default-export rewrite actually declared the `__default__`
+    // alias. Template-scope generation reads `typeof __default__`, so the fact
+    // has to be tracked as state: the generated text also mentions
+    // `__default__` in helper type positions, and a user script can mention the
+    // name without ever exporting a default.
+    let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
@@ -371,12 +377,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     };
                     let span_relative_object = default_export_object.and_then(rebase);
                     let span_relative_expr = default_export_expr.and_then(rebase);
-                    let text = rewrite_export_default_for_module_scope(
+                    let rewritten = rewrite_export_default_for_module_scope(
                         text,
                         span_relative_object,
                         span_relative_expr,
                     );
-                    ts.push_str(&text);
+                    // Both rewrite shapes replace the `export default` keyword
+                    // with the `const __default__ =` alias, and a span with no
+                    // rewriteable default export (`export { default } from
+                    // './x'`) comes back untouched.
+                    declared_default_alias |= rewritten.as_str() != text;
+                    ts.push_str(&rewritten);
                     ts.push_str("void __default__;\n");
                 } else {
                     ts.push_str(text);
@@ -567,6 +578,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     .filter(|rest| options_api_support::follows_default_keyword(rest))
                 {
                     emitted_default_alias = true;
+                    declared_default_alias = true;
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
                     // A class default export (the class-component shape) stays
                     // a real class declaration so `@Component()` decorators
@@ -802,6 +814,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
                             options_api,
+                            has_default_alias: declared_default_alias,
                             script_content,
                         },
                     )

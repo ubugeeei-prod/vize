@@ -186,7 +186,7 @@ pub(crate) fn generate_scope_closures(
                 mappings,
                 summary,
                 template_offset,
-                options.options_api,
+                options.options_api && options.has_default_alias,
                 options.script_content,
             )
         );
