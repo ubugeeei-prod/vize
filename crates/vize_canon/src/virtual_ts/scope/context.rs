@@ -57,6 +57,11 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Options API generation declares `__default__`; template names outside
     /// the known bindings then resolve on the public instance (#3888).
     pub(crate) options_api: bool,
+    /// Plain `<script>` content, when the component has one. Names it declares
+    /// stay resolvable from template scope (a relocated `namespace`, a class, a
+    /// plain binding), so those keep the free-name emission instead of the
+    /// public-instance property access.
+    pub(crate) script_content: Option<&'a str>,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.

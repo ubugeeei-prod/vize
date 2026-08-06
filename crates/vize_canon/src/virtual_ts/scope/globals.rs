@@ -1,5 +1,9 @@
 //! Generation of undefined-reference checks and instance-global declarations.
 
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::SourceType;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
@@ -18,6 +22,7 @@ pub(super) fn generate_undefined_refs(
     summary: &Croquis,
     template_offset: u32,
     options_api: bool,
+    script_content: Option<&str>,
 ) {
     if summary.undefined_refs.is_empty() {
         return;
@@ -26,6 +31,16 @@ pub(super) fn generate_undefined_refs(
     // declares; an Options API shape without one (no plain default export)
     // keeps the free-name emission rather than minting an unresolved alias.
     let options_api = options_api && ts.contains("__default__");
+    // Names the plain script declares itself resolve from an enclosing scope of
+    // the template closure even when the analyzer never tracked them as
+    // bindings (a `namespace` is the measured case). Those are not unknown
+    // template names, so they keep the free-name emission: a property access on
+    // the instance would invent a `TS2339` `vue-tsc` does not report.
+    let script_scope_names = if options_api {
+        script_content.map_or_else(FxHashSet::default, script_top_level_binding_names)
+    } else {
+        FxHashSet::default()
+    };
 
     // Collect type export names to exclude from undefined refs
     let type_export_names: FxHashSet<&str> = summary
@@ -36,6 +51,7 @@ pub(super) fn generate_undefined_refs(
 
     let mut seen_names: FxHashSet<&str> = FxHashSet::default();
     let mut emitted_header = false;
+    let mut emitted_instance = false;
     for undef in &summary.undefined_refs {
         if !seen_names.insert(undef.name.as_str()) {
             continue;
@@ -50,26 +66,27 @@ pub(super) fn generate_undefined_refs(
 
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
+        let on_instance = options_api && !script_scope_names.contains(undef.name.as_str());
 
         if !emitted_header {
             ts.push_str("\n  // Undefined references from template:\n");
-            if options_api {
-                // A declaration typed as an indexed access on the public
-                // instance: the missing key reports `TS2339` naming the
-                // instance type — the code and shape `vue-tsc` emits for
-                // Options API templates — while the declared binding lets the
-                // interpolation expression itself resolve, so the bare
-                // `TS2304` disappears instead of doubling up (#3888).
-                ts.push_str(
-                    "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n",
-                );
-            }
             emitted_header = true;
+        }
+        if on_instance && !emitted_instance {
+            // A value typed as the public instance: the missing key reports
+            // `TS2339` naming the instance type (the code and shape `vue-tsc`
+            // emits for Options API templates), while the declared binding lets
+            // the interpolation expression itself resolve, so the bare `TS2304`
+            // disappears instead of doubling up (#3888).
+            ts.push_str(
+                "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n",
+            );
+            emitted_instance = true;
         }
 
         let gen_start = ts.len();
         // Use void expression to reference the name without creating an unused variable
-        let expr_code = if options_api {
+        let expr_code = if on_instance {
             cstr!(
                 "  var {}: any = undefined; void ({});\n  void (__vize_template_instance.{});\n",
                 undef.name,
@@ -79,7 +96,7 @@ pub(super) fn generate_undefined_refs(
         } else {
             cstr!("  void ({});\n", undef.name)
         };
-        let name_offset = if options_api {
+        let name_offset = if on_instance {
             expr_code.rfind(undef.name.as_str()).unwrap_or(0)
         } else {
             expr_code.find(undef.name.as_str()).unwrap_or(0)
@@ -98,6 +115,26 @@ pub(super) fn generate_undefined_refs(
             "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
         );
     }
+}
+
+/// Names bound at the plain script's own top level, including the TypeScript-only
+/// declaration forms the analyzer does not model (`namespace`, `enum`,
+/// `interface`, `type`). The generated module keeps the script verbatim in a
+/// scope that encloses the template closure, so every one of these stays
+/// resolvable from a template expression.
+fn script_top_level_binding_names(script: &str) -> FxHashSet<String> {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
+    if parsed.panicked {
+        return FxHashSet::default();
+    }
+    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+    let scoping = semantic.scoping();
+    let mut names = FxHashSet::default();
+    for (name, _) in scoping.get_bindings(scoping.root_scope_id()) {
+        names.insert(String::from(name.as_str()));
+    }
+    names
 }
 
 pub(super) fn generate_instance_global_refs(
