@@ -107,6 +107,21 @@ impl AliasContext {
         // extensionless script imports resolve.
         let mirror = self.mirror.as_ref()?;
         let target = mirror.find_by_original(&key)?.virtual_path.clone();
+        // A/B probe (#3900): shadow-copy outside node_modules.
+        let target = match target
+            .to_string_lossy()
+            .split_once("node_modules/.vize/canon/")
+        {
+            Some((root, tail)) => {
+                let shadow = Path::new(root).join(".vize-editor").join(tail);
+                if let Some(parent) = shadow.parent() {
+                    let _ = std::fs::create_dir_all(parent);
+                }
+                let _ = std::fs::copy(&target, &shadow);
+                shadow
+            }
+            None => target,
+        };
         let relative = relative_specifier(importer_dir, &target)?;
         Some(
             relative
