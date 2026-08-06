@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
-use vize_carton::{FxHashSet, profile};
+use vize_carton::{FxHashMap, FxHashSet, profile};
 
 use crate::batch::error::CorsaResult;
 
@@ -28,7 +28,7 @@ enum PathOptions {
 /// directory of the config declaring the winning `paths` map otherwise.
 /// `extends` merging replaces whole values, so each anchor is simply the
 /// directory of the config whose declaration won.
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct DeclarationDirs {
     paths: Option<PathBuf>,
     base_url: Option<PathBuf>,
@@ -43,6 +43,28 @@ impl DeclarationDirs {
             self.base_url = overriding.base_url;
         }
     }
+}
+
+/// A flattened `extends` chain: the effective options plus the directories the
+/// surviving `paths` and `baseUrl` declarations came from.
+#[allow(clippy::disallowed_types)]
+type FlattenedChain = (Map<std::string::String, Value>, DeclarationDirs);
+
+/// The state of one flattening operation.
+#[derive(Default)]
+struct ChainLoad {
+    /// The configs between the entry point and the one being flattened. Only
+    /// these can close a cycle.
+    active: FxHashSet<PathBuf>,
+    /// Chains already flattened during this operation. A config reachable
+    /// through several `extends` paths is read, parsed and merged once instead
+    /// of once per path, which keeps a diamond graph linear rather than
+    /// exponential in its depth.
+    completed: FxHashMap<PathBuf, FlattenedChain>,
+    /// Whether a cycle was cut while flattening the current chain. That result
+    /// depends on which configs happened to be active, so it is not reusable
+    /// from anywhere else in the graph and must not be cached.
+    cycle_cut: bool,
 }
 
 /// Flattened options plus the effective `baseUrl` (#3886).
@@ -74,9 +96,9 @@ impl VirtualProject {
         let Some(tsconfig_path) = tsconfig_path else {
             return Ok(Map::new());
         };
-        let mut seen = FxHashSet::default();
+        let mut load = ChainLoad::default();
         Ok(self
-            .load_compiler_options_inner(tsconfig_path, &mut seen, PathOptions::Verbatim)?
+            .load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Verbatim)?
             .0)
     }
 
@@ -94,9 +116,9 @@ impl VirtualProject {
                 base_url: None,
             });
         };
-        let mut seen = FxHashSet::default();
+        let mut load = ChainLoad::default();
         let (mut options, dirs) =
-            self.load_compiler_options_inner(tsconfig_path, &mut seen, PathOptions::Rebase)?;
+            self.load_compiler_options_inner(tsconfig_path, &mut load, PathOptions::Rebase)?;
 
         let raw_base_url = options
             .get("baseUrl")
@@ -123,40 +145,52 @@ impl VirtualProject {
         Ok(FlattenedCompilerOptions { options, base_url })
     }
 
-    /// `seen` is the *active* `extends` path, not a set of everything already
-    /// loaded: each config is removed again once its own chain is flattened.
-    /// Only a config currently being recursed into is a cycle. A visited set
-    /// would also short-circuit an ancestor two sibling `extends` entries share,
-    /// handing the later sibling nothing and leaving the earlier one's overrides
-    /// in place where TypeScript gives the later sibling's inherited values.
+    /// `load.active` is the *active* `extends` path, not a set of everything
+    /// already loaded: each config is removed again once its own chain is
+    /// flattened. Only a config currently being recursed into is a cycle. A
+    /// visited set would also short-circuit an ancestor two sibling `extends`
+    /// entries share, handing the later sibling nothing and leaving the earlier
+    /// one's overrides in place where TypeScript gives the later sibling's
+    /// inherited values. Repeated work is avoided by `load.completed` instead,
+    /// which reuses the flattened chain rather than suppressing it.
     #[allow(clippy::disallowed_types)]
     fn load_compiler_options_inner(
         &self,
         tsconfig_path: &Path,
-        seen: &mut FxHashSet<PathBuf>,
+        load: &mut ChainLoad,
         path_options: PathOptions,
-    ) -> CorsaResult<(Map<std::string::String, Value>, DeclarationDirs)> {
+    ) -> CorsaResult<FlattenedChain> {
         if !tsconfig_path.exists() {
             return Ok((Map::new(), DeclarationDirs::default()));
         }
         let normalized = normalize_path_lexically(tsconfig_path);
-        if !seen.insert(normalized.clone()) {
+        if let Some(cached) = load.completed.get(&normalized) {
+            return Ok(cached.clone());
+        }
+        if !load.active.insert(normalized.clone()) {
+            load.cycle_cut = true;
             return Ok((Map::new(), DeclarationDirs::default()));
         }
-        let flattened = self.load_extended_compiler_options(&normalized, seen, path_options);
-        seen.remove(&normalized);
+        let enclosing_cycle_cut = std::mem::replace(&mut load.cycle_cut, false);
+        let flattened = self.load_extended_compiler_options(&normalized, load, path_options);
+        load.active.remove(&normalized);
+        let chain_cycle_cut = load.cycle_cut;
+        load.cycle_cut = enclosing_cycle_cut || chain_cycle_cut;
+        if !chain_cycle_cut && let Ok(flattened) = &flattened {
+            load.completed.insert(normalized, flattened.clone());
+        }
         flattened
     }
 
-    /// The chain rooted at an already-normalized config, with `seen` holding the
-    /// configs between it and the entry point.
+    /// The chain rooted at an already-normalized config, with `load.active`
+    /// holding the configs between it and the entry point.
     #[allow(clippy::disallowed_types)]
     fn load_extended_compiler_options(
         &self,
         normalized: &Path,
-        seen: &mut FxHashSet<PathBuf>,
+        load: &mut ChainLoad,
         path_options: PathOptions,
-    ) -> CorsaResult<(Map<std::string::String, Value>, DeclarationDirs)> {
+    ) -> CorsaResult<FlattenedChain> {
         let content = profile!("canon.tsconfig.read", std::fs::read_to_string(normalized))?;
         let config = profile!("canon.tsconfig.parse", parse_jsonc_value(&content))?;
         let mut compiler_options = config
@@ -185,7 +219,7 @@ impl VirtualProject {
             Some(Value::String(extends)) => {
                 if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
                     let (parent, parent_dirs) =
-                        self.load_compiler_options_inner(&parent_path, seen, path_options)?;
+                        self.load_compiler_options_inner(&parent_path, load, path_options)?;
                     inherited = parent;
                     inherited_dirs = parent_dirs;
                 }
@@ -194,7 +228,7 @@ impl VirtualProject {
                 for extends in entries.iter().filter_map(Value::as_str) {
                     if let Some(parent_path) = resolve_extended_tsconfig_path(normalized, extends) {
                         let (parent, parent_dirs) =
-                            self.load_compiler_options_inner(&parent_path, seen, path_options)?;
+                            self.load_compiler_options_inner(&parent_path, load, path_options)?;
                         inherited.extend(parent);
                         inherited_dirs.absorb_overriding(parent_dirs);
                     }
