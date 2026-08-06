@@ -24,6 +24,7 @@ pub(super) fn collect_dependency_documents(
     rewriter: &ImportRewriter,
     overlays: &FxHashMap<PathBuf, &str>,
 ) {
+    let alias_context = super::vue_dependencies_alias::AliasContext::for_host(&host.source_path);
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     visited_vue.insert(host.source_path.clone());
     let mut visited_ts = FxHashSet::<PathBuf>::default();
@@ -50,6 +51,7 @@ pub(super) fn collect_dependency_documents(
                 },
                 options,
                 rewriter,
+                &alias_context,
                 &dir,
                 &pre_rewrite_code,
                 source_type,
@@ -68,6 +70,7 @@ pub(super) fn collect_dependency_documents(
                 },
                 options,
                 rewriter,
+                &alias_context,
                 &parent_dir(&path),
                 &content,
                 source_type,
@@ -76,15 +79,15 @@ pub(super) fn collect_dependency_documents(
     }
 }
 
-struct ImportQueue<'a> {
-    documents: &'a mut Vec<(String, String)>,
-    queue: &'a mut VecDeque<DependencyScan>,
-    visited_vue: &'a mut FxHashSet<PathBuf>,
-    visited_ts: &'a mut FxHashSet<PathBuf>,
-    overlays: &'a FxHashMap<PathBuf, &'a str>,
+pub(super) struct ImportQueue<'a> {
+    pub(super) documents: &'a mut Vec<(String, String)>,
+    pub(super) queue: &'a mut VecDeque<DependencyScan>,
+    pub(super) visited_vue: &'a mut FxHashSet<PathBuf>,
+    pub(super) visited_ts: &'a mut FxHashSet<PathBuf>,
+    pub(super) overlays: &'a FxHashMap<PathBuf, &'a str>,
 }
 
-enum DependencyScan {
+pub(super) enum DependencyScan {
     Vue {
         dir: PathBuf,
         source_type: SourceType,
@@ -101,12 +104,22 @@ fn queue_imports(
     mut imports: ImportQueue<'_>,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
     dir: &Path,
     code: &str,
     source_type: SourceType,
 ) {
     queue_vue_imports(&mut imports, options, rewriter, dir, code, source_type);
     queue_ts_imports(&mut imports, rewriter, dir, code, source_type);
+    super::vue_dependencies_alias::queue_alias_imports(
+        &mut imports,
+        options,
+        rewriter,
+        alias_context,
+        dir,
+        code,
+        source_type,
+    );
 }
 
 fn queue_vue_imports(
@@ -151,7 +164,7 @@ fn queue_vue_imports(
     }
 }
 
-fn fallback_vue_virtual_uri(path: &Path) -> String {
+pub(super) fn fallback_vue_virtual_uri(path: &Path) -> String {
     let virtual_path = path.with_file_name(cstr!(
         "{}.ts",
         path.file_name()
@@ -213,7 +226,10 @@ fn queue_ts_imports(
     }
 }
 
-fn dependency_content(path: &Path, overlays: &FxHashMap<PathBuf, &str>) -> Option<String> {
+pub(super) fn dependency_content(
+    path: &Path,
+    overlays: &FxHashMap<PathBuf, &str>,
+) -> Option<String> {
     let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
     overlays
         .get(&key)
@@ -271,11 +287,11 @@ fn known_script_path(path: &Path) -> bool {
             || name.ends_with(".cjs"))
 }
 
-fn source_type_for_path(path: &Path) -> SourceType {
+pub(super) fn source_type_for_path(path: &Path) -> SourceType {
     SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts())
 }
 
-fn parent_dir(path: &Path) -> PathBuf {
+pub(super) fn parent_dir(path: &Path) -> PathBuf {
     path.parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| path.to_path_buf())

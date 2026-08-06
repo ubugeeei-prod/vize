@@ -120,7 +120,7 @@ impl VirtualProject {
     /// The effective `paths` aliases with project-root-relative targets, as
     /// (pattern, target) pairs. Both come from the flattened chain, so the
     /// anchors match what the generated tsconfig resolves (#3886).
-    fn dependency_alias_map(&self) -> Vec<(String, String)> {
+    pub(crate) fn dependency_alias_map(&self) -> Vec<(String, String)> {
         let Ok(flattened) =
             self.load_compiler_options_flattened(self.resolved_tsconfig_path().as_deref())
         else {
@@ -231,7 +231,7 @@ fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> 
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
 #[allow(clippy::disallowed_types)]
-fn resolve_dependency(
+pub(crate) fn resolve_dependency(
     specifier: &str,
     importer_dir: &Path,
     project_root: &Path,

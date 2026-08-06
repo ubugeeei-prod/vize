@@ -33,7 +33,7 @@ pub use content_mapper::{
 };
 mod css_var_usage;
 mod declaration_emit;
-mod dependency_scan;
+pub(crate) mod dependency_scan;
 mod document;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
