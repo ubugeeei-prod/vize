@@ -20,9 +20,10 @@ use collect::ModuleSpecifierCollector;
 
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
+pub(super) use virtual_rewrite::rewrite_relative_vue_specifier;
 use virtual_rewrite::{
     absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
-    is_rewritable_vue_specifier, rewrite_relative_vue_specifier,
+    is_rewritable_vue_specifier,
 };
 
 #[path = "import_rewriter_dts.rs"]
@@ -151,7 +152,7 @@ impl ImportRewriter {
         })
     }
 
-    fn rewrite_with<F>(
+    pub(super) fn rewrite_with<F>(
         &self,
         source: &str,
         source_type: SourceType,
@@ -260,7 +261,11 @@ impl ImportRewriter {
         specifiers
     }
 
-    fn rewrite_module_specifier(&self, path: &str, source_dir: Option<&Path>) -> Option<String> {
+    pub(super) fn rewrite_module_specifier(
+        &self,
+        path: &str,
+        source_dir: Option<&Path>,
+    ) -> Option<String> {
         if let Some(collision) = authored_vue_ts_collides_with_sfc(path, source_dir) {
             let marker = match collision {
                 VueTsCollision::Unresolved => AUTHORED_VUE_TS_SENTINEL,

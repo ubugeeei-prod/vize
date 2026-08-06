@@ -22,9 +22,9 @@ pub(super) fn collect_dependency_documents(
     host: &GeneratedVueDocument,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
     overlays: &FxHashMap<PathBuf, &str>,
 ) {
-    let alias_context = super::vue_dependencies_alias::AliasContext::for_host(&host.source_path);
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     visited_vue.insert(host.source_path.clone());
     let mut visited_ts = FxHashSet::<PathBuf>::default();
@@ -109,8 +109,23 @@ fn queue_imports(
     code: &str,
     source_type: SourceType,
 ) {
-    queue_vue_imports(&mut imports, options, rewriter, dir, code, source_type);
-    queue_ts_imports(&mut imports, rewriter, dir, code, source_type);
+    queue_vue_imports(
+        &mut imports,
+        options,
+        rewriter,
+        alias_context,
+        dir,
+        code,
+        source_type,
+    );
+    queue_ts_imports(
+        &mut imports,
+        rewriter,
+        alias_context,
+        dir,
+        code,
+        source_type,
+    );
     super::vue_dependencies_alias::queue_alias_imports(
         &mut imports,
         options,
@@ -126,6 +141,7 @@ fn queue_vue_imports(
     imports: &mut ImportQueue<'_>,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
     dir: &Path,
     code: &str,
     source_type: SourceType,
@@ -139,7 +155,13 @@ fn queue_vue_imports(
         let Some(content) = dependency_content(&path, imports.overlays) else {
             continue;
         };
-        let generated = match generate_vue_document(&path, &content, options, rewriter) {
+        let generated = match super::vue_document::generate_vue_document_with_alias(
+            &path,
+            &content,
+            options,
+            rewriter,
+            alias_context,
+        ) {
             Ok(generated) => generated,
             Err(_) => {
                 imports.documents.push((
@@ -197,6 +219,7 @@ pub(super) fn tsx_vue_import_shim(path: &Path) -> (String, String) {
 fn queue_ts_imports(
     imports: &mut ImportQueue<'_>,
     rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
     dir: &Path,
     code: &str,
     source_type: SourceType,
@@ -213,8 +236,11 @@ fn queue_ts_imports(
             continue;
         };
         let dependency_source_type = source_type_for_path(&path);
+        let script_dir = parent_dir(&path);
         let rewritten = rewriter
-            .rewrite(&content, dependency_source_type, path.parent())
+            .rewrite_with_alias_resolver(&content, dependency_source_type, path.parent(), &|spec| {
+                alias_context.resolve_specifier_to_relative(spec, &script_dir)
+            })
             .code;
         let uri = normalize_document_uri(path_to_file_uri(&path).as_str());
         imports.documents.push((uri, rewritten));

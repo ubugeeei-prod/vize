@@ -131,7 +131,7 @@ pub(super) fn is_rewritable_project_specifier(path: &Path) -> bool {
 /// Like that alias candidate, this only ever turns a failing resolution into a
 /// successful one: a specifier TypeScript already resolves through an ordinary
 /// source sibling or directory module keeps its original spelling.
-pub(super) fn rewrite_relative_vue_specifier(specifier: &str, source_dir: &Path) -> Option<String> {
+pub(crate) fn rewrite_relative_vue_specifier(specifier: &str, source_dir: &Path) -> Option<String> {
     // `.`/`..` name a directory module, not a stem an extension can be appended
     // to, so only the `./`-prefixed spellings are candidates here.
     if !(specifier.starts_with("./") || specifier.starts_with("../")) {

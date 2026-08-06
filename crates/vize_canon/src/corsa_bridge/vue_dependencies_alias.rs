@@ -62,6 +62,72 @@ impl AliasContext {
     }
 }
 
+impl AliasContext {
+    /// Resolve one non-relative specifier to a relative path targeting the
+    /// synced overlay identities, for the offset-preserving rewriter.
+    pub(super) fn resolve_specifier_to_relative(
+        &self,
+        specifier: &str,
+        importer_dir: &Path,
+    ) -> Option<std::string::String> {
+        if self.aliases.is_empty() {
+            return None;
+        }
+        let path = resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)?;
+        let key = std::fs::canonicalize(&path).unwrap_or(path);
+        if inside_node_modules(&key) || is_declaration(&key) {
+            return None;
+        }
+        let target = if key.extension().is_some_and(|extension| extension == "vue") {
+            let mut spelled = key.as_os_str().to_os_string();
+            spelled.push(".ts");
+            PathBuf::from(spelled)
+        } else if !key.starts_with(&self.project_root) {
+            virtual_script_identity(&key)
+        } else {
+            return None;
+        };
+        relative_specifier(importer_dir, &target)
+    }
+}
+
+/// The non-disk sync identity for an out-of-root script.
+///
+/// A path that exists on disk splits identity inside the checker: the program
+/// loads the disk file while the rewritten overlay sits unused, and the disk
+/// spelling's `.vue` import falls back to the ambient wildcard (`any`). The
+/// appended suffix guarantees a path no real tree contains, giving the barrel
+/// the same clean open-document identity the generated `.vue.ts` docs have.
+pub(super) fn virtual_script_identity(path: &Path) -> PathBuf {
+    let mut spelled = path.as_os_str().to_os_string();
+    spelled.push(".vize.ts");
+    PathBuf::from(spelled)
+}
+
+/// `to` spelled relative to `from_dir`, POSIX separators, always `./`-anchored.
+fn relative_specifier(from_dir: &Path, to: &Path) -> Option<std::string::String> {
+    let from: Vec<_> = from_dir.components().collect();
+    let to_components: Vec<_> = to.components().collect();
+    let common = from
+        .iter()
+        .zip(to_components.iter())
+        .take_while(|(a, b)| a == b)
+        .count();
+    let mut parts: Vec<std::string::String> = Vec::new();
+    for _ in common..from.len() {
+        parts.push("..".into());
+    }
+    for component in &to_components[common..] {
+        parts.push(component.as_os_str().to_str()?.to_owned());
+    }
+    let joined = parts.join("/");
+    Some(if joined.starts_with("..") {
+        joined
+    } else {
+        format!("./{joined}")
+    })
+}
+
 /// Queue alias-resolved first-party dependencies of one document.
 pub(super) fn queue_alias_imports(
     imports: &mut ImportQueue<'_>,
@@ -89,9 +155,9 @@ pub(super) fn queue_alias_imports(
             continue;
         }
         if key.extension().is_some_and(|extension| extension == "vue") {
-            queue_alias_vue(imports, options, rewriter, &key);
+            queue_alias_vue(imports, options, rewriter, context, &key);
         } else if !key.starts_with(&context.project_root) && !is_declaration(&key) {
-            queue_alias_script(imports, rewriter, &key);
+            queue_alias_script(imports, rewriter, context, &key);
         }
     }
 }
@@ -100,6 +166,7 @@ fn queue_alias_vue(
     imports: &mut ImportQueue<'_>,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
+    context: &AliasContext,
     path: &Path,
 ) {
     if !imports.visited_vue.insert(path.to_path_buf()) {
@@ -108,7 +175,9 @@ fn queue_alias_vue(
     let Some(content) = dependency_content(path, imports.overlays) else {
         return;
     };
-    let generated = match generate_vue_document(path, &content, options, rewriter) {
+    let generated = match super::vue_document::generate_vue_document_with_alias(
+        path, &content, options, rewriter, context,
+    ) {
         Ok(generated) => generated,
         Err(_) => {
             imports
@@ -131,7 +200,12 @@ fn queue_alias_vue(
     });
 }
 
-fn queue_alias_script(imports: &mut ImportQueue<'_>, rewriter: &ImportRewriter, path: &Path) {
+fn queue_alias_script(
+    imports: &mut ImportQueue<'_>,
+    rewriter: &ImportRewriter,
+    context: &AliasContext,
+    path: &Path,
+) {
     if !imports.visited_ts.insert(path.to_path_buf()) {
         return;
     }
@@ -139,10 +213,13 @@ fn queue_alias_script(imports: &mut ImportQueue<'_>, rewriter: &ImportRewriter, 
         return;
     };
     let dependency_source_type = source_type_for_path(path);
+    let dir = parent_dir(path);
     let rewritten = rewriter
-        .rewrite(&content, dependency_source_type, path.parent())
+        .rewrite_with_alias_resolver(&content, dependency_source_type, path.parent(), &|spec| {
+            context.resolve_specifier_to_relative(spec, &dir)
+        })
         .code;
-    let uri = normalize_document_uri(path_to_file_uri(path).as_str());
+    let uri = normalize_document_uri(path_to_file_uri(&virtual_script_identity(path)).as_str());
     imports.documents.push((uri, rewritten));
     imports.queue.push_back(DependencyScan::Script {
         path: path.to_path_buf(),

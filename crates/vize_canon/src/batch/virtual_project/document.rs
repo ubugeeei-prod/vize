@@ -60,10 +60,30 @@ pub fn generate_vue_document_virtual_ts(
 pub fn generate_vue_document_virtual_ts_with_options(
     path: &Path,
     content: &str,
+    virtual_ts_options: &VirtualTsOptions,
+    rewriter: &ImportRewriter,
+    hoist_shared_preamble: bool,
+    options: VueDocumentVirtualTsOptions,
+) -> CorsaResult<VueDocumentVirtualTs> {
+    generate_vue_document_virtual_ts_with_options_and_alias_resolver(
+        path,
+        content,
+        virtual_ts_options,
+        rewriter,
+        hoist_shared_preamble,
+        options,
+        None,
+    )
+}
+
+pub fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
+    path: &Path,
+    content: &str,
     options: &VirtualTsOptions,
     rewriter: &ImportRewriter,
     hoist_shared_preamble: bool,
     document_options: VueDocumentVirtualTsOptions,
+    alias_resolver: Option<&dyn Fn(&str) -> Option<std::string::String>>,
 ) -> CorsaResult<VueDocumentVirtualTs> {
     let descriptor = parse_sfc(
         content,
@@ -106,7 +126,12 @@ pub fn generate_vue_document_virtual_ts_with_options(
         prepend_vue_jsx_reference(&mut code, &mut mappings);
     }
 
-    let rewritten = rewriter.rewrite(&code, source_type, path.parent());
+    let rewritten = match alias_resolver {
+        Some(resolver) => {
+            rewriter.rewrite_with_alias_resolver(&code, source_type, path.parent(), resolver)
+        }
+        None => rewriter.rewrite(&code, source_type, path.parent()),
+    };
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,
         pre_rewrite_code: code,

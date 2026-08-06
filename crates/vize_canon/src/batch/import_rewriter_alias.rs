@@ -1,0 +1,37 @@
+//! Alias-aware import rewriting for editor dependency documents (#3900).
+//!
+//! Lives beside [`super::import_rewriter`] to keep that file inside its source
+//! budget; the method needs the rewriter's offset-tracking core so downstream
+//! `@vize-map` source maps stay valid — a plain string replacement shifts every
+//! byte offset after the first substitution and silently breaks position
+//! mapping for hover and definition.
+
+use std::path::Path;
+
+use oxc_span::SourceType;
+
+use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue_specifier};
+
+impl ImportRewriter {
+    /// Like [`ImportRewriter::rewrite`], additionally consulting
+    /// `alias_resolver` for non-relative specifiers.
+    pub fn rewrite_with_alias_resolver(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        source_dir: Option<&Path>,
+        alias_resolver: &dyn Fn(&str) -> Option<std::string::String>,
+    ) -> RewriteResult {
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_module_specifier(path, source_dir)
+                .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
+                .or_else(|| {
+                    if path.starts_with("./") || path.starts_with("../") {
+                        None
+                    } else {
+                        alias_resolver(path).map(Into::into)
+                    }
+                })
+        })
+    }
+}

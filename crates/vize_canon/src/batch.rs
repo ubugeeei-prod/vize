@@ -9,6 +9,7 @@ mod declaration_path;
 mod error;
 mod executor;
 mod import_rewriter;
+mod import_rewriter_alias;
 #[cfg(test)]
 mod import_rewriter_authored_vue_ts_tests;
 #[cfg(test)]

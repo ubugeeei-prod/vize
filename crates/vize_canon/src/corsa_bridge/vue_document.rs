@@ -178,12 +178,14 @@ fn build_vue_virtual_project_with_overlays_and_options(
     virtual_ts_options: &VirtualTsOptions,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
+    let alias_context = super::vue_dependencies_alias::AliasContext::for_host(source_path);
     let host = generate_vue_document_with_options(
         source_path,
         content,
         options,
         virtual_ts_options,
         &rewriter,
+        Some(&alias_context),
     )?;
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
     if host.generated.virtual_suffix == ".tsx" {
@@ -196,7 +198,14 @@ fn build_vue_virtual_project_with_overlays_and_options(
             (key, *content)
         })
         .collect::<FxHashMap<_, _>>();
-    collect_dependency_documents(&mut documents, &host, options, &rewriter, &overlays);
+    collect_dependency_documents(
+        &mut documents,
+        &host,
+        options,
+        &rewriter,
+        &alias_context,
+        &overlays,
+    );
 
     let generated = host.generated;
     Ok(CorsaVueVirtualProject {
@@ -225,6 +234,27 @@ pub(super) fn generate_vue_document(
         options,
         &VirtualTsOptions::default(),
         rewriter,
+        None,
+    )
+}
+
+/// [`generate_vue_document`] with alias-aware import rewriting: non-relative
+/// specifiers the context resolves are pointed at the synced overlay
+/// identities through the offset-preserving rewriter (#3900).
+pub(super) fn generate_vue_document_with_alias(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    rewriter: &ImportRewriter,
+    context: &super::vue_dependencies_alias::AliasContext,
+) -> Result<GeneratedVueDocument, CorsaBridgeError> {
+    generate_vue_document_with_options(
+        source_path,
+        content,
+        options,
+        &VirtualTsOptions::default(),
+        rewriter,
+        Some(context),
     )
 }
 
@@ -234,8 +264,13 @@ fn generate_vue_document_with_options(
     options: CorsaVueVirtualDocumentOptions,
     virtual_ts_options: &VirtualTsOptions,
     rewriter: &ImportRewriter,
+    alias_context: Option<&super::vue_dependencies_alias::AliasContext>,
 ) -> Result<GeneratedVueDocument, CorsaBridgeError> {
-    let generated = generate_vue_document_virtual_ts_with_options(
+    let source_dir = source_path.parent().map(std::path::Path::to_path_buf);
+    let alias_resolver = alias_context.zip(source_dir).map(|(context, dir)| {
+        move |specifier: &str| context.resolve_specifier_to_relative(specifier, &dir)
+    });
+    let generated = crate::batch::virtual_project::generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         source_path,
         content,
         virtual_ts_options,
@@ -245,6 +280,9 @@ fn generate_vue_document_with_options(
             options_api: options.options_api,
             legacy_vue2: options.legacy_vue2,
         },
+        alias_resolver
+            .as_ref()
+            .map(|resolver| resolver as &dyn Fn(&str) -> Option<std::string::String>),
     )
     .map_err(|error| CorsaBridgeError::CommunicationError(cstr!("{error}")))?;
     let virtual_path = source_path.with_file_name(cstr!(
