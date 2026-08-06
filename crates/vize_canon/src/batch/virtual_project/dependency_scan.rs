@@ -179,12 +179,17 @@ fn is_declaration_file(path: &Path) -> bool {
 /// Whether an alias can ever contribute a first-party file, judged once per
 /// alias rather than once per module. A wildcard pattern always can: its target
 /// is a directory prefix whose entries may each be a pnpm workspace symlink out
-/// of `node_modules`. A wildcard-free pattern names one target, so when that
-/// target still lives inside `node_modules` after canonicalization it is a
-/// published package and the walk below rejects it anyway — its prefix must not
-/// make [`may_resolve_a_dependency`] parse every module in the project. The
-/// `vue` alias a Vue tsconfig carries is exactly that shape, and matching it as
-/// a bare substring defeated the prefilter for every generated file (#3898).
+/// of `node_modules`. A wildcard-free pattern names exactly one target, so it is
+/// resolved here the same way the walk resolves it and kept only when the walk
+/// would accept the result. Its prefix must not make
+/// [`may_resolve_a_dependency`] parse every module in the project: the `vue`
+/// alias a Vue tsconfig carries is that shape, and matching it as a bare
+/// substring defeated the prefilter for every generated file (#3898).
+///
+/// A probe that finds nothing means the walk resolves nothing either, so the
+/// prefix is dropped. Treating that as "keep, to be safe" is what kept the
+/// benchmark regression alive: `vue` publishes its types as `dist/vue.d.ts` with
+/// no root `index.d.ts`, so probing the package directory legitimately fails.
 #[allow(clippy::disallowed_types)]
 fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path) -> bool {
     if pattern.contains('*') {
@@ -195,15 +200,15 @@ fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path)
     } else {
         project_root.join(target)
     };
-    if !inside_node_modules(&absolute) {
-        return true;
-    }
     // Resolve exactly as the walk would, so dropping the prefix can only ever
     // drop a target the walk itself refuses.
     let Some(resolved) = probe_candidates(&absolute) else {
-        return true;
+        return false;
     };
-    canonical_key(&resolved).is_none_or(|key| !inside_node_modules(&key))
+    let Some(key) = canonical_key(&resolved) else {
+        return false;
+    };
+    !inside_node_modules(&key) && !is_declaration_file(&key)
 }
 
 fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
@@ -308,10 +313,20 @@ mod tests {
         // as a bare substring made `may_resolve_a_dependency` true for every
         // generated file — each one contains "vue" — and reintroduced the
         // per-file parse the prefilter exists to avoid.
+        //
+        // The layout matters: `vue` declares `dist/vue.d.ts` through `types` and
+        // ships no root `index.d.ts`, so probing the package directory finds
+        // nothing. An earlier fix kept the prefix on probe failure and left the
+        // benchmark regression in place.
         let root = case_dir("published-alias");
         let package = root.join("node_modules").join("vue");
-        fs::create_dir_all(&package).unwrap();
-        fs::write(package.join("index.d.ts"), "export declare const a: 1;\n").unwrap();
+        fs::create_dir_all(package.join("dist")).unwrap();
+        fs::write(
+            package.join("package.json"),
+            "{ \"types\": \"dist/vue.d.ts\" }\n",
+        )
+        .unwrap();
+        fs::write(package.join("dist").join("vue.d.ts"), "export {};\n").unwrap();
 
         assert!(!alias_may_reach_first_party(
             "vue",
@@ -322,6 +337,34 @@ mod tests {
             "import { ref } from 'vue'\n",
             &[]
         ));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_published_package_alias_with_a_declaration_barrel_does_not_force_a_parse() {
+        // The other published layout: a root `index.d.ts` does probe, and the
+        // walk still refuses it for being a declaration file inside
+        // `node_modules`, so the prefix is just as droppable.
+        let root = case_dir("published-alias-barrel");
+        let package = root.join("node_modules").join("vue");
+        fs::create_dir_all(&package).unwrap();
+        fs::write(package.join("index.d.ts"), "export declare const a: 1;\n").unwrap();
+
+        assert!(!alias_may_reach_first_party(
+            "vue",
+            "./node_modules/vue",
+            &root
+        ));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn an_unresolvable_first_party_alias_does_not_force_a_parse() {
+        // Nothing to probe means the walk resolves nothing from this alias, so
+        // its prefix must not drag every module through a parse either.
+        let root = case_dir("missing-alias");
+        fs::create_dir_all(&root).unwrap();
+        assert!(!alias_may_reach_first_party("@ui", "./packages/ui", &root));
         let _ = fs::remove_dir_all(&root);
     }
 
