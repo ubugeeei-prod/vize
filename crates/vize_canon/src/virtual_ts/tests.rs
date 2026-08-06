@@ -22,9 +22,7 @@ mod slot_component_bindings;
 mod unused_refs;
 mod vif_chain;
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
-    insta::with_settings!({
-        snapshot_path => "../../snapshots"
-    }, {
+    insta::with_settings!({ snapshot_path => "../../snapshots" }, {
         insta::assert_snapshot!(name, value);
     });
 }
