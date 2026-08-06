@@ -179,14 +179,6 @@ fn is_declaration_file(path: &Path) -> bool {
         })
 }
 
-/// Whether any specifier in `content` could resolve, cheaply and without a
-/// parse. [`resolve_dependency`] only ever succeeds for a relative specifier or
-/// one matching a `paths` alias, so a module whose text contains neither shape
-/// cannot register anything. This pass runs on every check, and registration
-/// itself skips parsing a module with no rewritable specifier, so parsing every
-/// generated file here would be a plain regression on projects that import
-/// nothing first-party (#3898). Deliberately a conservative superset: alias
-/// prefixes are matched anywhere in the text.
 /// Whether an alias can ever contribute a first-party file, judged once per
 /// alias rather than once per module. A wildcard pattern always can: its target
 /// is a directory prefix whose entries may each be a pnpm workspace symlink out
@@ -222,6 +214,14 @@ fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path)
     !inside_node_modules(&key) && !is_declaration_file(&key)
 }
 
+/// Whether any specifier in `content` could resolve, cheaply and without a
+/// parse. [`resolve_dependency`] only ever succeeds for a relative specifier or
+/// one matching a `paths` alias, so a module whose text contains neither shape
+/// cannot register anything. This pass runs on every check, and registration
+/// itself skips parsing a module with no rewritable specifier, so parsing every
+/// generated file here would be a plain regression on projects that import
+/// nothing first-party (#3898). Deliberately a conservative superset: alias
+/// prefixes are matched anywhere in the text.
 fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
     crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
         || alias_prefixes
