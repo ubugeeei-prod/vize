@@ -307,9 +307,7 @@
     },
     {
       "file": "src/components/MkImageEffectorDialog.vue",
-      "diagnostics": [
-        "error:202:25 [TS7006] Parameter 'blob' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkImageEffectorFxForm.vue",
@@ -403,10 +401,7 @@
     },
     {
       "file": "src/components/MkMenu.vue",
-      "diagnostics": [
-        "error:409:70 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'.",
-        "error:421:70 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(input: MaybeHTMLElement | null | undefined) => input is HTMLElement' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => unknown'.\nTypes of parameters 'input' and 'value' are incompatible.\nType 'unknown' is not assignable to type 'MaybeHTMLElement | null | undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkMiniChart.vue",
@@ -414,9 +409,7 @@
     },
     {
       "file": "src/components/MkModal.vue",
-      "diagnostics": [
-        "error:298:36 [TS7006] Parameter 'ev' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkModalWindow.vue",
@@ -708,9 +701,7 @@
     },
     {
       "file": "src/components/MkSuperMenu.vue",
-      "diagnostics": [
-        "error:221:23 [TS2347] Untyped function calls may not accept type arguments."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkSwiper.vue",
@@ -2195,9 +2186,7 @@
     },
     {
       "file": "src/ui/deck/main-column.vue",
-      "diagnostics": [
-        "error:82:19 [TS2347] Untyped function calls may not accept type arguments."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/deck/mentions-column.vue",
@@ -2388,7 +2377,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 36,
+  "errorCount": 30,
   "warningCount": 0,
   "fileCount": 583
 }

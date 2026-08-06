@@ -68,13 +68,7 @@
     },
     {
       "file": "app/components/Code/Viewer.vue",
-      "diagnostics": [
-        "error:41:18 [TS7006] Parameter 'line' implicitly has an 'any' type.",
-        "error:41:24 [TS7006] Parameter 'index' implicitly has an 'any' type.",
-        "error:65:19 [TS2347] Untyped function calls may not accept type arguments.",
-        "error:66:19 [TS7006] Parameter 'anchor' implicitly has an 'any' type.",
-        "error:68:38 [TS7006] Parameter 'event' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/CollapsibleSection.vue",
@@ -322,8 +316,7 @@
     {
       "file": "app/components/Package/Playgrounds.vue",
       "diagnostics": [
-        "error:58:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:115:17 [TS2347] Untyped function calls may not accept type arguments."
+        "error:58:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
     },
     {
@@ -747,7 +740,7 @@
       ]
     }
   ],
-  "errorCount": 160,
+  "errorCount": 154,
   "warningCount": 0,
   "fileCount": 134
 }
