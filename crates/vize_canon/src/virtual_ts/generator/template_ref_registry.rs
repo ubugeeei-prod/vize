@@ -84,9 +84,10 @@ fn collect_element(element: &ElementNode<'_>, in_v_for: bool, refs: &mut Vec<Reg
     // Before the structural transform, an inline `v-for` is still a directive
     // on the element itself, not a wrapping `For` node.
     let in_v_for = in_v_for
-        || element.props.iter().any(|prop| {
-            matches!(prop, PropNode::Directive(directive) if directive.name == "for")
-        });
+        || element
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "for"));
     let is_plain_element = matches!(element.tag_type, ElementType::Element);
     if is_plain_element && !in_v_for {
         for prop in element.props.iter() {
