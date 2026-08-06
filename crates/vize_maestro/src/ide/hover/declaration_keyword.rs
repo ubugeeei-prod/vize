@@ -48,16 +48,25 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
         }
     }
     if let Some(template) = descriptor.template.as_ref()
-        && let Some(aligned) = align_v_for_parameter(&markup.value, &template.content, word)
+        && ctx.offset >= template.loc.start
+        && ctx.offset < template.loc.end
+        && let Ok(offset) = u32::try_from(ctx.offset - template.loc.start)
+        && let Some(aligned) = align_v_for_parameter(&markup.value, &template.content, word, offset)
     {
         markup.value = aligned;
     }
 }
 
 /// Rewrite a quick-info block opening with `(parameter) {word}` to
-/// `const {word}` when the word is a `v-for` value, key, or index alias of
-/// the authored template. Anything else keeps the checker's answer.
-fn align_v_for_parameter(markdown: &str, template: &str, word: &str) -> Option<String> {
+/// `const {word}` when the hovered position resolves to a `v-for` value, key,
+/// or index alias. `offset` is the hovered position relative to the template
+/// block's content. Anything else keeps the checker's answer.
+fn align_v_for_parameter(
+    markdown: &str,
+    template: &str,
+    word: &str,
+    offset: u32,
+) -> Option<String> {
     if word.is_empty() {
         return None;
     }
@@ -71,7 +80,7 @@ fn align_v_for_parameter(markdown: &str, template: &str, word: &str) -> Option<S
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
         return None;
     }
-    if !is_v_for_alias(template, word) {
+    if !is_v_for_alias(template, word, offset) {
         return None;
     }
     let mut rewritten = String::with_capacity(markdown.len());
@@ -81,23 +90,28 @@ fn align_v_for_parameter(markdown: &str, template: &str, word: &str) -> Option<S
     Some(rewritten)
 }
 
-/// Whether the template declares `word` as a `v-for` alias (value binding,
-/// key alias, or index alias), resolved through the same analyzer the
-/// generator uses rather than a textual scan.
-fn is_v_for_alias(template: &str, word: &str) -> bool {
+/// Whether `word` resolves to a `v-for` alias (value binding, key alias, or
+/// index alias) at `offset`, resolved through the same analyzer the generator
+/// uses rather than a textual scan.
+///
+/// The binding is looked up by position, not by name: a name is only an alias
+/// where the enclosing `v-for` is in effect, and an inner scope may shadow it.
+/// `bindings_visible_at` walks outward from the innermost scope containing the
+/// offset and lets the first declaration of a name win, so an event handler's
+/// or callback's parameter named like the alias — inside the loop element or
+/// anywhere else in the template — keeps the checker's `(parameter)` answer.
+fn is_v_for_alias(template: &str, word: &str, offset: u32) -> bool {
     let allocator = vize_carton::Bump::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
-    summary.scopes.iter().any(|scope| {
-        let vize_croquis::ScopeData::VFor(data) = scope.data() else {
-            return false;
-        };
-        data.value_bindings.iter().any(|name| name == word)
-            || data.key_alias.as_deref() == Some(word)
-            || data.index_alias.as_deref() == Some(word)
-    })
+    summary
+        .scopes
+        .bindings_visible_at(offset)
+        .into_iter()
+        .find(|(name, _, _)| *name == word)
+        .is_some_and(|(_, _, kind)| kind == vize_croquis::ScopeKind::VFor)
 }
 
 /// The oxc source type for a `<script setup lang="…">` block. `tsx`/`jsx` need
@@ -275,22 +289,77 @@ mod tests {
         );
     }
 
+    /// The offset of `needle`'s nth occurrence, as a template-relative
+    /// hover position.
+    fn offset_of(template: &str, needle: &str, nth: usize) -> u32 {
+        template.match_indices(needle).nth(nth).unwrap().0 as u32
+    }
+
     #[test]
     fn a_v_for_alias_parameter_rewrites_to_const() {
         let template =
             "<ul><li v-for=\"(it, index) in users\" :key=\"it.id\">{{ it.name }}</li></ul>";
+        // The alias at a use site and at its own declaration.
         let hover = "```typescript\n(parameter) it: User\n```";
         assert_eq!(
-            super::align_v_for_parameter(hover, template, "it").as_deref(),
+            super::align_v_for_parameter(hover, template, "it", offset_of(template, "it.name", 0))
+                .as_deref(),
             Some("```typescript\nconst it: User\n```")
         );
         let hover = "```typescript\n(parameter) index: number\n```";
         assert_eq!(
-            super::align_v_for_parameter(hover, template, "index").as_deref(),
+            super::align_v_for_parameter(hover, template, "index", offset_of(template, "index", 0))
+                .as_deref(),
             Some("```typescript\nconst index: number\n```")
         );
         // A non-alias parameter (an event handler's) keeps the checker's answer.
         let hover = "```typescript\n(parameter) event: MouseEvent\n```";
-        assert_eq!(super::align_v_for_parameter(hover, template, "event"), None);
+        assert_eq!(
+            super::align_v_for_parameter(hover, template, "event", offset_of(template, "users", 0)),
+            None
+        );
+    }
+
+    #[test]
+    fn a_parameter_named_like_an_alias_keeps_the_checker_answer() {
+        // The handler parameter shadows the alias inside the loop element, and
+        // names it again outside the loop entirely.
+        let template = concat!(
+            "<ul><li v-for=\"item in items\" @click=\"(item) => item.id\">{{ item.name }}</li></ul>",
+            "<button @click=\"(item) => item.id\">x</button>"
+        );
+        let hover = "```typescript\n(parameter) item: MouseEvent\n```";
+        // Shadowing parameter inside the v-for element: the handler's binding wins.
+        assert_eq!(
+            super::align_v_for_parameter(
+                hover,
+                template,
+                "item",
+                offset_of(template, "item.id", 0)
+            ),
+            None
+        );
+        // Same name in a handler outside the loop: the alias is not in effect.
+        assert_eq!(
+            super::align_v_for_parameter(
+                hover,
+                template,
+                "item",
+                offset_of(template, "item.id", 1)
+            ),
+            None
+        );
+        // The alias itself still resolves inside the loop body.
+        let hover = "```typescript\n(parameter) item: Item\n```";
+        assert_eq!(
+            super::align_v_for_parameter(
+                hover,
+                template,
+                "item",
+                offset_of(template, "item.name", 0)
+            )
+            .as_deref(),
+            Some("```typescript\nconst item: Item\n```")
+        );
     }
 }

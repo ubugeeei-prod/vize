@@ -83,27 +83,55 @@ fn find_v_for_separator(expr: &str) -> Option<usize> {
     None
 }
 
+/// The offset at which `name` is declared inside a `v-for` alias list.
+///
+/// Canon's `pattern_identifier_offset` mirrors this to anchor the generated
+/// alias identifiers, so both sides must pick the same token.
 fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
-    text.match_indices(name).find_map(|(index, _)| {
-        let before = index
-            .checked_sub(1)
-            .and_then(|prev| text.as_bytes().get(prev))
-            .is_none_or(|byte| !is_identifier_continue(*byte));
-        let after = text
-            .as_bytes()
-            .get(index + name.len())
-            .is_none_or(|byte| !is_identifier_continue(*byte));
-        (before && after).then_some(index)
-    })
+    text.match_indices(name)
+        .find(|(index, _)| is_declaration_token(text, *index, name.len()))
+        .map(|(index, _)| index)
 }
 
-fn is_identifier_continue(byte: u8) -> bool {
-    byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric()
+/// Whether the `[at, at + len)` slice of `text` declares a binding.
+///
+/// It must not be part of a longer identifier — checked over `char`s, so `it`
+/// does not match inside `éit` the way a byte-wise ASCII test would — and must
+/// not be the property of a member access (`{ kind = other.it, it }`), which
+/// references another binding instead of declaring this one. A rest element
+/// (`[first, ...rest]`) is a declaration and stays eligible.
+fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
+    let leading = &text[..at];
+    let before = leading.chars().next_back();
+    let after = text[at + len..].chars().next();
+    if before.is_some_and(is_identifier_continue) || after.is_some_and(is_identifier_continue) {
+        return false;
+    }
+    before != Some('.') || leading.ends_with("..")
+}
+
+fn is_identifier_continue(c: char) -> bool {
+    c == '_' || c == '$' || c.is_alphanumeric()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::source_offset_in_expression;
+    use super::{find_identifier_token, source_offset_in_expression};
+
+    #[test]
+    fn alias_tokens_are_declarations_not_references() {
+        assert_eq!(find_identifier_token("({ id, name }, i)", "name"), Some(7));
+        // A longer identifier never yields its suffix, ASCII or not.
+        assert_eq!(find_identifier_token("item", "it"), None);
+        assert_eq!(find_identifier_token("{ éit, it }", "it"), Some(8));
+        // A default value's member access references another binding.
+        assert_eq!(
+            find_identifier_token("{ kind = other.it, it }", "it"),
+            Some(19)
+        );
+        // A rest element declares its binding.
+        assert_eq!(find_identifier_token("[first, ...it]", "it"), Some(11));
+    }
 
     #[test]
     fn source_offsets_keep_whitespace_and_choose_the_final_duplicate() {

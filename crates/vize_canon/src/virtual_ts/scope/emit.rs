@@ -224,22 +224,38 @@ pub(super) fn emit_v_for_loop_open(
     ts.push_str("]) => {\n");
 }
 
-/// The byte offset of `name` as a whole identifier inside the authored alias
+/// The byte offset at which `name` is declared inside the authored alias
 /// pattern (`it`, `{ id, name }`, `[first, second]`).
+///
+/// Mirrors croquis' `find_identifier_token`, which derives the source-side
+/// declaration offsets this maps to: both sides must pick the same token, or
+/// the generated and authored ranges would name different identifiers.
 fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
-    let bytes = pattern.as_bytes();
-    let mut from = 0;
-    while let Some(relative) = pattern[from..].find(name) {
-        let at = from + relative;
-        let before = at.checked_sub(1).map(|i| bytes[i]);
-        let after = bytes.get(at + name.len());
-        let is_ident = |b: &u8| b.is_ascii_alphanumeric() || *b == b'_' || *b == b'$';
-        if !before.as_ref().is_some_and(is_ident) && !after.is_some_and(is_ident) {
-            return Some(at);
-        }
-        from = at + name.len();
+    pattern
+        .match_indices(name)
+        .find(|(at, _)| is_declaration_token(pattern, *at, name.len()))
+        .map(|(at, _)| at)
+}
+
+/// Whether the `[at, at + len)` slice of `text` is a binding declaration.
+///
+/// It must not be part of a longer identifier — checked over `char`s, so `it`
+/// does not match inside `éit` the way a byte-wise ASCII test would — and must
+/// not be the property of a member access (`{ kind = other.it, it }`), which
+/// references another binding instead of declaring this one. A rest element
+/// (`[first, ...rest]`) is a declaration and stays eligible.
+fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
+    let leading = &text[..at];
+    let before = leading.chars().next_back();
+    let after = text[at + len..].chars().next();
+    if before.is_some_and(is_identifier_char) || after.is_some_and(is_identifier_char) {
+        return false;
     }
-    None
+    before != Some('.') || leading.ends_with("..")
+}
+
+fn is_identifier_char(c: char) -> bool {
+    c == '_' || c == '$' || c.is_alphanumeric()
 }
 
 /// Map one emitted alias identifier back to its authored declaration span.
@@ -281,6 +297,24 @@ mod tests {
         assert_eq!(
             super::pattern_identifier_offset("{ kind = fallback, it }", "it"),
             Some(19)
+        );
+        // A default value referencing a member named like the binding is a
+        // reference, not the declaration.
+        assert_eq!(
+            super::pattern_identifier_offset("{ kind = other.it, it }", "it"),
+            Some(19)
+        );
+        // A non-ASCII identifier that ends with the binding name is a
+        // different identifier.
+        // `é` is two bytes, so the declared `it` starts at byte 8.
+        assert_eq!(
+            super::pattern_identifier_offset("{ éit, it }", "it"),
+            Some(8)
+        );
+        // A rest element declares its binding.
+        assert_eq!(
+            super::pattern_identifier_offset("[first, ...it]", "it"),
+            Some(11)
         );
     }
 }
