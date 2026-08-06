@@ -54,6 +54,9 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     pub(crate) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(crate) check_unresolved_global_components: GlobalComponentCheck,
     pub(crate) legacy_vue2: bool,
+    /// Options API generation declares `__default__`; template names outside
+    /// the known bindings then resolve on the public instance (#3888).
+    pub(crate) options_api: bool,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.

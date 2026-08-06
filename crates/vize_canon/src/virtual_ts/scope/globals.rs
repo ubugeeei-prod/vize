@@ -17,10 +17,15 @@ pub(super) fn generate_undefined_refs(
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     template_offset: u32,
+    options_api: bool,
 ) {
     if summary.undefined_refs.is_empty() {
         return;
     }
+    // The instance form leans on the `__default__` alias the script rewrite
+    // declares; an Options API shape without one (no plain default export)
+    // keeps the free-name emission rather than minting an unresolved alias.
+    let options_api = options_api && ts.contains("__default__");
 
     // Collect type export names to exclude from undefined refs
     let type_export_names: FxHashSet<&str> = summary
@@ -48,13 +53,37 @@ pub(super) fn generate_undefined_refs(
 
         if !emitted_header {
             ts.push_str("\n  // Undefined references from template:\n");
+            if options_api {
+                // A declaration typed as an indexed access on the public
+                // instance: the missing key reports `TS2339` naming the
+                // instance type — the code and shape `vue-tsc` emits for
+                // Options API templates — while the declared binding lets the
+                // interpolation expression itself resolve, so the bare
+                // `TS2304` disappears instead of doubling up (#3888).
+                ts.push_str(
+                    "  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n",
+                );
+            }
             emitted_header = true;
         }
 
         let gen_start = ts.len();
         // Use void expression to reference the name without creating an unused variable
-        let expr_code = cstr!("  void ({});\n", undef.name);
-        let name_offset = expr_code.find(undef.name.as_str()).unwrap_or(0);
+        let expr_code = if options_api {
+            cstr!(
+                "  var {}: any = undefined; void ({});\n  void (__vize_template_instance.{});\n",
+                undef.name,
+                undef.name,
+                undef.name
+            )
+        } else {
+            cstr!("  void ({});\n", undef.name)
+        };
+        let name_offset = if options_api {
+            expr_code.rfind(undef.name.as_str()).unwrap_or(0)
+        } else {
+            expr_code.find(undef.name.as_str()).unwrap_or(0)
+        };
         let gen_name_start = gen_start + name_offset;
         let gen_name_end = gen_name_start + undef.name.len();
 

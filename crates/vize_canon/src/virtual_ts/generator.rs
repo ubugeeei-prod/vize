@@ -801,6 +801,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             template_ast,
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
+                            options_api,
                         },
                     )
                 );
