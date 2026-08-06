@@ -1,5 +1,6 @@
 //! Shared text-emission helpers for v-for loops and v-slot prop types.
 
+use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::{FxHashSet, String};
@@ -239,23 +240,21 @@ fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
 
 /// Whether the `[at, at + len)` slice of `text` is a binding declaration.
 ///
-/// It must not be part of a longer identifier — checked over `char`s, so `it`
-/// does not match inside `éit` the way a byte-wise ASCII test would — and must
-/// not be the property of a member access (`{ kind = other.it, it }`), which
-/// references another binding instead of declaring this one. A rest element
-/// (`[first, ...rest]`) is a declaration and stays eligible.
+/// It must not be part of a longer identifier — bounded by ECMAScript's
+/// `IdentifierPart`, so `it` matches neither inside `éit` the way a byte-wise
+/// ASCII test would nor inside `a\u{301}it` or `it\u{200C}tail`, which a
+/// `char::is_alphanumeric` test would miss — and must not be the property of a
+/// member access (`{ kind = other.it, it }`), which references another binding
+/// instead of declaring this one. A rest element (`[first, ...rest]`) is a
+/// declaration and stays eligible.
 fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
     let leading = &text[..at];
     let before = leading.chars().next_back();
     let after = text[at + len..].chars().next();
-    if before.is_some_and(is_identifier_char) || after.is_some_and(is_identifier_char) {
+    if before.is_some_and(is_identifier_part) || after.is_some_and(is_identifier_part) {
         return false;
     }
     before != Some('.') || leading.ends_with("..")
-}
-
-fn is_identifier_char(c: char) -> bool {
-    c == '_' || c == '$' || c.is_alphanumeric()
 }
 
 /// Map one emitted alias identifier back to its authored declaration span.
@@ -310,6 +309,16 @@ mod tests {
         assert_eq!(
             super::pattern_identifier_offset("{ éit, it }", "it"),
             Some(8)
+        );
+        // A combining mark and a zero-width joiner continue an identifier too,
+        // so neither host identifier yields the binding position.
+        assert_eq!(
+            super::pattern_identifier_offset("{ a\u{301}it, it }", "it"),
+            Some(9)
+        );
+        assert_eq!(
+            super::pattern_identifier_offset("{ it\u{200c}tail, it }", "it"),
+            Some(13)
         );
         // A rest element declares its binding.
         assert_eq!(

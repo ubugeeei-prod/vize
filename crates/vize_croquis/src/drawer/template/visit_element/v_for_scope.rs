@@ -1,3 +1,5 @@
+use oxc_syntax::identifier::is_identifier_part;
+
 use crate::drawer::helpers::VForScopeAliases;
 use crate::scope::ParamNames;
 use vize_carton::{CompactString, SmallVec};
@@ -95,23 +97,21 @@ fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
 
 /// Whether the `[at, at + len)` slice of `text` declares a binding.
 ///
-/// It must not be part of a longer identifier — checked over `char`s, so `it`
-/// does not match inside `éit` the way a byte-wise ASCII test would — and must
-/// not be the property of a member access (`{ kind = other.it, it }`), which
-/// references another binding instead of declaring this one. A rest element
-/// (`[first, ...rest]`) is a declaration and stays eligible.
+/// It must not be part of a longer identifier — bounded by ECMAScript's
+/// `IdentifierPart`, so `it` matches neither inside `éit` the way a byte-wise
+/// ASCII test would nor inside `a\u{301}it` or `it\u{200C}tail`, which a
+/// `char::is_alphanumeric` test would miss — and must not be the property of a
+/// member access (`{ kind = other.it, it }`), which references another binding
+/// instead of declaring this one. A rest element (`[first, ...rest]`) is a
+/// declaration and stays eligible.
 fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
     let leading = &text[..at];
     let before = leading.chars().next_back();
     let after = text[at + len..].chars().next();
-    if before.is_some_and(is_identifier_continue) || after.is_some_and(is_identifier_continue) {
+    if before.is_some_and(is_identifier_part) || after.is_some_and(is_identifier_part) {
         return false;
     }
     before != Some('.') || leading.ends_with("..")
-}
-
-fn is_identifier_continue(c: char) -> bool {
-    c == '_' || c == '$' || c.is_alphanumeric()
 }
 
 #[cfg(test)]
@@ -124,6 +124,12 @@ mod tests {
         // A longer identifier never yields its suffix, ASCII or not.
         assert_eq!(find_identifier_token("item", "it"), None);
         assert_eq!(find_identifier_token("{ éit, it }", "it"), Some(8));
+        // A combining mark and a zero-width joiner continue an identifier too.
+        assert_eq!(find_identifier_token("{ a\u{301}it, it }", "it"), Some(9));
+        assert_eq!(
+            find_identifier_token("{ it\u{200c}tail, it }", "it"),
+            Some(13)
+        );
         // A default value's member access references another binding.
         assert_eq!(
             find_identifier_token("{ kind = other.it, it }", "it"),
