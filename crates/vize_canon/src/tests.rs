@@ -359,6 +359,27 @@ const buttonEl = useTemplateRef('btn')
         insta::assert_snapshot!("virtual_ts_template_refs", virtual_ts);
     }
 
+    /// Retyping the `useTemplateRef` shim is the registry's only route to a
+    /// diagnostic, so an SFC that never names it must not pay for the extra
+    /// declarations: `ref="name"` alone is far more common than the macro.
+    #[test]
+    fn template_ref_registry_is_omitted_without_use_template_ref() {
+        let source = r#"<script setup lang="ts">
+const label = 'hi'
+</script>
+
+<template>
+  <div>
+    <input ref="inputRef" />
+    <span>{{ label }}</span>
+  </div>
+</template>"#;
+
+        let virtual_ts = generate_virtual_ts_from_sfc(source);
+        assert!(!virtual_ts.contains("__VizeTemplateRefs"));
+        assert!(!virtual_ts.contains("__VizeDomElement"));
+    }
+
     #[test]
     fn snapshot_virtual_ts_generic_component() {
         let source = r#"<script setup lang="ts" generic="T extends string | number">

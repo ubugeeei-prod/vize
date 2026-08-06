@@ -93,7 +93,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Static `ref="name"` attributes on plain elements, keyed for
     // `useTemplateRef` (#3896). Computed before setup emission so the typed
     // shim can reference the per-SFC registry.
-    let template_ref_registry = template_ref_registry(template_ast);
+    //
+    // Retyping the shim is the registry's only route to a diagnostic, so a
+    // setup scope that never names `useTemplateRef` cannot observe it: skip
+    // both the collection walk and the extra type declarations there rather
+    // than make every SFC with a `ref="name"` attribute pay for them.
+    let template_ref_registry =
+        if script_content.is_some_and(|script| script.contains("useTemplateRef")) {
+            template_ref_registry(template_ast)
+        } else {
+            None
+        };
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
