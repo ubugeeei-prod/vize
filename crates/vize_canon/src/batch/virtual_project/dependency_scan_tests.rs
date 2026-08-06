@@ -117,8 +117,12 @@ fn a_reachable_declaration_file_is_not_registered() {
         !registered.iter().any(|name| name == "shims.d.ts"),
         "{registered:?}"
     );
+    // An in-root script stays out too: real-tree resolution already serves
+    // its types, the scan collector owns in-root discovery, and registering
+    // it would grow the scanned set that incremental sessions and the Tier-L
+    // gate pin to an exact count.
     assert!(
-        registered.iter().any(|name| name == "types.ts"),
+        !registered.iter().any(|name| name == "types.ts"),
         "{registered:?}"
     );
     let _ = fs::remove_dir_all(&root);

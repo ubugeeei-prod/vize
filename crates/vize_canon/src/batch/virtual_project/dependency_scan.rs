@@ -84,10 +84,21 @@ impl VirtualProject {
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                if inside_node_modules(&key)
-                    || is_declaration_file(&key)
-                    || !visited.insert(key.clone())
-                {
+                if inside_node_modules(&key) || is_declaration_file(&key) {
+                    continue;
+                }
+                // Only `.vue` files gain anything from registration — their
+                // generated companion is what consumers resolve. A script
+                // registers only when it lives *outside* the project root (a
+                // workspace barrel whose `.vue` re-export must be rewritten in
+                // mirror space); in-root scripts are the scan collector's job,
+                // and force-registering them would change the scanned set that
+                // incremental sessions and Tier-L pin (#3898).
+                let is_vue = key.extension().is_some_and(|extension| extension == "vue");
+                if !is_vue && key.starts_with(&self.project_root) {
+                    continue;
+                }
+                if !visited.insert(key.clone()) {
                     continue;
                 }
                 // Register the canonical path: a workspace symlink is
