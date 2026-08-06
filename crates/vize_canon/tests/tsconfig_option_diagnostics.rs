@@ -77,6 +77,18 @@ fn project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>)>
 fn write_case(name: &str, extra_options: &str) -> PathBuf {
     let root = case_dir(name);
     std::fs::create_dir_all(root.join("node_modules")).unwrap();
+    // The removal family is forwarded only when the project's installed
+    // `typescript` reports the same options; that install is `vue-tsc`'s peer,
+    // so it decides whose verdict an option diagnostic represents (#3886).
+    // Pinning 6.0.3 states the baseline these cases measure against instead of
+    // inheriting whatever happens to resolve above the case directory. The 5.x
+    // baseline, where the family is dropped, is covered end to end by
+    // `crates/vize/tests/check_base_url_cli.rs`.
+    write(
+        &root,
+        "node_modules/typescript/package.json",
+        "{ \"name\": \"typescript\", \"version\": \"6.0.3\" }\n",
+    );
     write(&root, "src/main.ts", "export const answer = 42;\n");
     write(
         &root,
