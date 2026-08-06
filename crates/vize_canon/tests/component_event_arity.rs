@@ -21,7 +21,7 @@ function handleSelect(key: string, path: string[]) {
     .virtual_ts
     .expect("virtual TypeScript should be generated");
     assert!(
-        virtual_ts.contains("? ((...args: any[]) => unknown) :"),
+        virtual_ts.contains("? ((...args: any[]) => any) :"),
         "an unresolved component emit must preserve unknown arity:\n{virtual_ts}"
     );
 

@@ -143,11 +143,16 @@ pub(super) fn generate_component_event_types(
         );
         args_type.clone()
     };
+    // The modern listener returns `any`, matching the handler props Vue's own
+    // `EmitFn`/Volar synthesis produce (`(user: User) => any`); an emit-payload
+    // mismatch then elaborates with the same expected type `vue-tsc` prints.
+    // `unknown` behaves identically in the expected-return position, so this is
+    // display parity only (#3889).
     let listener_type_expr = if legacy_vue2 {
         cstr!("(...args: {listener_args_type}) => unknown")
     } else {
         cstr!(
-            "unknown[] extends {args_type} ? ((...args: any[]) => unknown) : ((...args: {listener_args_type}) => unknown)"
+            "unknown[] extends {args_type} ? ((...args: any[]) => any) : ((...args: {listener_args_type}) => any)"
         )
     };
     let handler_type_expr = (!legacy_vue2

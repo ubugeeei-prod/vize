@@ -2007,7 +2007,7 @@ function handleTest(value1: string, value2: number) {
     // to variadic arguments when the emit stays unresolved).
     assert!(
         output.code.contains(
-            "type __Test_8_test_listener = unknown[] extends __Test_8_test_args ? ((...args: any[]) => unknown) : ((...args: __Test_8_test_args) => unknown);"
+            "type __Test_8_test_listener = unknown[] extends __Test_8_test_args ? ((...args: any[]) => any) : ((...args: __Test_8_test_args) => any);"
         ),
         "component event listener must expand to the full emit argument tuple:\n{}",
         output.code

@@ -24,7 +24,7 @@ use vize_carton::String;
 /// byte-identical and must stay on the authored bytes.
 ///
 /// The message still diverges: vize's listener type is
-/// `(...args: [value: number]) => unknown` where vue-tsc's prop type is
+/// `(...args: [value: number]) => any` where vue-tsc's prop type is
 /// `(value: number) => any`, so the rendered return type and the elaboration's
 /// parameter name (`args` versus `value`) differ. That is a message-only
 /// divergence, which the ledger now scores as one (#3447).
@@ -74,7 +74,7 @@ const take = (value: string) => value
                 String::from("src/Parent.vue"),
                 Some(2322),
                 String::from(
-                    "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => unknown'.\n\
+                    "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\n\
                      Types of parameters 'value' and 'args' are incompatible.\n\
                      Type 'number' is not assignable to type 'string'."
                 ),
@@ -83,7 +83,7 @@ const take = (value: string) => value
                 String::from("src/Parent.vue"),
                 Some(2322),
                 String::from(
-                    "7:24:error Type '(value: string) => string' is not assignable to type '() => unknown'.\n\
+                    "7:24:error Type '(value: string) => string' is not assignable to type '() => any'.\n\
                      Target signature provides too few arguments. Expected 1 or more, but got 0."
                 ),
             ),
