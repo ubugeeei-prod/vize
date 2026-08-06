@@ -111,11 +111,8 @@ test("Element Plus badge slot contracts stay exact across editor revisions", asy
         // Answered by the backend since #3321. The slot scope parameter still
         // widens to `any` in the generated virtual TS — a separate gap, but the
         // provenance is now the type backend rather than a generic fallback.
-        assert.equal(
-          hoverText,
-          "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n" +
-            "```typescript\n(parameter) value: any\n```",
-        );
+        // Backend-answered: the body opens with the signature fence (#3894).
+        assert.equal(hoverText, "```typescript\n(parameter) value: any\n```");
 
         const brokenSource = fixture.applyExactPatch(appPath, cleanExpression, brokenExpression);
         session.notify("textDocument/didChange", {

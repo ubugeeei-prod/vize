@@ -143,7 +143,7 @@ test("ref-unwrap probe proves backend liveness and rejects heuristic hovers", as
       cleanSource.indexOf("const message") + "const mes".length,
     );
     assert.match(scriptHover, /const message: Ref<string, string>/);
-    assert.match(scriptHover, /_Resolved through Vize virtual TypeScript_/);
+    assert.match(scriptHover, /^```typescript\n/);
     assert.doesNotMatch(scriptHover, /_Script binding_/);
 
     // Template-side hovers: the backend presents the unwrapped `string` at the
@@ -154,7 +154,7 @@ test("ref-unwrap probe proves backend liveness and rejects heuristic hovers", as
       uri,
       cleanSource.indexOf("{{ message") + "{{ mes".length,
     );
-    assert.match(templateMessageHover, /var message: string/);
+    assert.match(templateMessageHover, /const message: string/);
     assert.doesNotMatch(templateMessageHover, /_Template binding from script_/);
     assert.doesNotMatch(templateMessageHover, /Ref</);
     assert.equal(classifyTemplateHover(templateMessageHover, "message"), "backend-template-type");
@@ -164,7 +164,7 @@ test("ref-unwrap probe proves backend liveness and rejects heuristic hovers", as
       uri,
       cleanSource.lastIndexOf("upper }}") + 2,
     );
-    assert.match(templateUpperHover, /var upper: string/);
+    assert.match(templateUpperHover, /const upper: string/);
     assert.doesNotMatch(templateUpperHover, /MaybeRef<unknown>/);
     assert.equal(classifyTemplateHover(templateUpperHover, "upper"), "backend-template-type");
 
@@ -248,14 +248,14 @@ test("template hover presents the backend-unwrapped string type", async () => {
     );
 
     const message = await hover(session, uri, cleanSource.indexOf("{{ message") + "{{ mes".length);
-    assert.match(hoverToText(message), /var message: string/);
+    assert.match(hoverToText(message), /const message: string/);
     assert.deepEqual(message?.range, {
       start: { line: 7, character: 8 },
       end: { line: 7, character: 15 },
     });
 
     const upper = await hover(session, uri, cleanSource.lastIndexOf("upper }}") + 2);
-    assert.match(hoverToText(upper), /var upper: string/);
+    assert.match(hoverToText(upper), /const upper: string/);
     assert.deepEqual(upper?.range, {
       start: { line: 7, character: 35 },
       end: { line: 7, character: 40 },

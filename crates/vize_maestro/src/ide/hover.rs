@@ -21,6 +21,7 @@ mod component_tag;
 mod corsa;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
+mod declaration_keyword;
 #[cfg(feature = "native")]
 mod html;
 mod petite_vue;
@@ -598,9 +599,8 @@ const message = ref('hello')
         });
         let value = hover_markdown(hover);
 
-        assert!(value.contains("TypeScript quick info"));
-        assert!(value.contains("Resolved through Vize virtual TypeScript"));
-        assert!(value.contains("```typescript"));
+        // The signature is the whole body: no preamble above the fence (#3894).
+        assert!(value.starts_with("```typescript"));
         assert!(value.contains("count: number"));
     }
 

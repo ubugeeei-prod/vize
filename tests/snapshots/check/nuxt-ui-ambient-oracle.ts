@@ -105,7 +105,9 @@ test("Nuxt UI generated ambient and #imports types stay exact across editor revi
         // Backend-answered since #3321. The `v-model` binding still widens to
         // `any` against the generated ambient component types; the point pinned
         // here is the provenance, not the precision.
-        assert.match(hoverText, /_Resolved through Vize virtual TypeScript_/);
+        // Backend-answered: the body is the signature fence, not the
+        // croquis fallback prose (#3894).
+        assert.match(hoverText, /^```typescript\n/);
         assert.doesNotMatch(hoverText, /Template binding from script/);
 
         const definition = (await session.request("textDocument/definition", {

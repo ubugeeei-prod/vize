@@ -166,6 +166,7 @@ impl HoverService {
             if mapped_range.is_some() {
                 converted.range = mapped_range;
             }
+            super::declaration_keyword::align_hover(ctx, &word, &mut converted);
             return Some(converted);
         }
 
@@ -317,17 +318,12 @@ impl HoverService {
         }
     }
 
+    /// The hover body is the signature itself. The former
+    /// `**TypeScript quick info**` / `_Resolved through Vize virtual
+    /// TypeScript_` preamble named an implementation detail no user acts on
+    /// and pushed the signature below the fold in small popups (#3894);
+    /// Volar and tsserver open with the code block.
     fn decorate_corsa_hover_markdown(value: &str) -> String {
-        let value = value.trim();
-        if value.is_empty() {
-            return String::new();
-        }
-
-        #[allow(clippy::disallowed_macros)]
-        {
-            format!(
-                "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n{value}"
-            )
-        }
+        value.trim().to_string()
     }
 }

@@ -97,9 +97,10 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
           };
           assert.equal(hover.contents.kind, "markdown");
           // Template scope, so the backend reports the *unwrapped* computed
-          // value rather than the script-side `ComputedRef` wrapper (#3321).
-          assert.equal(fencedBlock(hover.contents.value), "var doubled: number");
-          assert.match(hover.contents.value, /_Resolved through Vize virtual TypeScript_/);
+          // value rather than the script-side `ComputedRef` wrapper (#3321),
+          // and the synthesized `var` yields to the authored `const` (#3894).
+          assert.equal(fencedBlock(hover.contents.value), "const doubled: number");
+          assert.match(hover.contents.value, /^```typescript\n/);
 
           const scriptHover = (await ask("textDocument/hover", {
             position: scriptVisitCount,
@@ -108,7 +109,7 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
             fencedBlock(scriptHover.contents.value),
             "const visitCount: Ref<number, number>",
           );
-          assert.match(scriptHover.contents.value, /_Resolved through Vize virtual TypeScript_/);
+          assert.match(scriptHover.contents.value, /^```typescript\n/);
         });
 
         // Closed with #3321: backend-answered hovers carry the range tsgo

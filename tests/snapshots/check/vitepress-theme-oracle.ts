@@ -125,8 +125,7 @@ test("VitePress theme exports refresh exact template diagnostics", async () => {
         // template-expression hover.
         assert.equal(
           hoverText,
-          "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n" +
-            "```typescript\n(property) DefaultTheme.NotFoundOptions.code?: string | undefined\n```",
+          "```typescript\n(property) DefaultTheme.NotFoundOptions.code?: string | undefined\n```",
         );
 
         const themeUsage = source.indexOf("theme.notFound");
