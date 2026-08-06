@@ -111,6 +111,24 @@ impl EmitsInfo {
     }
 }
 
+/// The `update:` emit payload for a model.
+///
+/// An optional model without a default holds `T | undefined` (that is its
+/// `ModelRef` type), and the update event can carry that `undefined` back —
+/// vue-tsc's synthesized listener accepts exactly `T | undefined`, so a
+/// handler typed for bare `T` must be rejected (#3904). A required model, a
+/// model with a default, and an untyped model keep the bare payload. The base
+/// is parenthesized so a function-typed model does not absorb the union into
+/// its return type.
+fn model_update_payload(model: &vize_croquis::macros::ModelDefinition) -> String {
+    let base = model.model_type.as_deref().unwrap_or("unknown");
+    if model.required || model.default_value.is_some() || base == "unknown" || base == "any" {
+        String::from(base)
+    } else {
+        cstr!("({base}) | undefined")
+    }
+}
+
 pub(super) fn emit_emits_type(
     ts: &mut String,
     summary: &Croquis,
@@ -152,7 +170,7 @@ pub(super) fn emit_emits_type(
                 );
                 for model in models {
                     let name = model.name.as_str();
-                    let payload = model.model_type.as_deref().unwrap_or("unknown");
+                    let payload = model_update_payload(model);
                     append!(*ts, "  \"update:{name}\": [value: {payload}];\n");
                 }
                 ts.push_str("};\n");
@@ -169,7 +187,7 @@ pub(super) fn emit_emits_type(
             );
             for model in models {
                 let name = model.name.as_str();
-                let payload = model.model_type.as_deref().unwrap_or("unknown");
+                let payload = model_update_payload(model);
                 append!(
                     *ts,
                     " & ((event: \"update:{name}\", value: {payload}) => void)"
@@ -189,7 +207,7 @@ pub(super) fn emit_emits_type(
                 if emitted_names.contains(event_name.as_str()) {
                     continue;
                 }
-                let payload = model.model_type.as_deref().unwrap_or("unknown");
+                let payload = model_update_payload(model);
                 append!(*ts, "  \"{event_name}\": [value: {payload}];\n");
             }
             ts.push_str("};\n");
