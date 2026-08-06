@@ -250,7 +250,7 @@ pub(super) fn generate_scope_node(
                 ctx.template_offset,
                 ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
-                data,
+                scope,
                 ctx.template_prop_names,
             );
             // A positive narrowing outside a callback is not retained for captured

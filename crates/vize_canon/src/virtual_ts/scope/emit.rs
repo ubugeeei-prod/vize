@@ -4,7 +4,7 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::{FxHashSet, String};
 use vize_carton::{camelize, capitalize};
-use vize_croquis::{Croquis, VForScopeData};
+use vize_croquis::{Croquis, Scope, ScopeData};
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_safe_identifier};
@@ -163,9 +163,14 @@ pub(super) fn emit_v_for_loop_open(
     template_offset: u32,
     source_offset: Option<u32>,
     indent: &str,
-    data: &VForScopeData,
+    scope: &Scope,
     template_prop_names: &FxHashSet<String>,
 ) {
+    // The scope is authoritative for both the loop shape and the alias
+    // declaration offsets, so the v-for data is read from it directly.
+    let ScopeData::VFor(data) = scope.data() else {
+        return;
+    };
     append!(*ts, "{indent}__vForList(");
     let source_gen_start = ts.len();
     let rewritten_source =
@@ -184,15 +189,98 @@ pub(super) fn emit_v_for_loop_open(
             sub_spans: Vec::new(),
         });
     }
-    append!(*ts, ").forEach(([{}", data.value_alias);
+    append!(*ts, ").forEach(([");
+    // The alias pattern is emitted verbatim, so each binding identifier sits at
+    // the same relative offset in the generated pattern as in the authored one.
+    // Mapping it to the binding's declaration offset makes hover, definition
+    // and references answer at the `v-for="it in …"` declaration itself, not
+    // only at use sites (#3894).
+    let pattern_gen_start = ts.len();
+    ts.push_str(data.value_alias.as_str());
+    for name in &data.value_bindings {
+        if let Some(relative) = pattern_identifier_offset(data.value_alias.as_str(), name) {
+            map_alias(
+                mappings,
+                scope,
+                template_offset,
+                name,
+                pattern_gen_start + relative,
+            );
+        }
+    }
     if let Some(key) = data.key_alias.as_deref() {
-        append!(*ts, ", {key}");
+        ts.push_str(", ");
+        map_alias(mappings, scope, template_offset, key, ts.len());
+        ts.push_str(key);
     } else if data.index_alias.is_some() {
         // Keep the index in the third tuple slot even when no key alias is bound.
         ts.push_str(", _key");
     }
     if let Some(index) = data.index_alias.as_deref() {
-        append!(*ts, ", {index}");
+        ts.push_str(", ");
+        map_alias(mappings, scope, template_offset, index, ts.len());
+        ts.push_str(index);
     }
     ts.push_str("]) => {\n");
+}
+
+/// The byte offset of `name` as a whole identifier inside the authored alias
+/// pattern (`it`, `{ id, name }`, `[first, second]`).
+fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usize> {
+    let bytes = pattern.as_bytes();
+    let mut from = 0;
+    while let Some(relative) = pattern[from..].find(name) {
+        let at = from + relative;
+        let before = at.checked_sub(1).map(|i| bytes[i]);
+        let after = bytes.get(at + name.len());
+        let is_ident = |b: &u8| b.is_ascii_alphanumeric() || *b == b'_' || *b == b'$';
+        if !before.as_ref().is_some_and(is_ident) && !after.is_some_and(is_ident) {
+            return Some(at);
+        }
+        from = at + name.len();
+    }
+    None
+}
+
+/// Map one emitted alias identifier back to its authored declaration span.
+fn map_alias(
+    mappings: &mut Vec<VizeMapping>,
+    scope: &Scope,
+    template_offset: u32,
+    name: &str,
+    gen_start: usize,
+) {
+    let Some(binding) = scope.get_binding(name) else {
+        return;
+    };
+    // Offset zero is the drawer's "never recorded" default; a real alias can
+    // never start the template.
+    if binding.declaration_offset == 0 {
+        return;
+    }
+    let src_start = (template_offset + binding.declaration_offset) as usize;
+    mappings.push(VizeMapping {
+        gen_range: gen_start..(gen_start + name.len()),
+        src_range: src_start..(src_start + name.len()),
+        sub_spans: Vec::new(),
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn pattern_identifier_offsets_respect_word_boundaries() {
+        assert_eq!(super::pattern_identifier_offset("it", "it"), Some(0));
+        assert_eq!(
+            super::pattern_identifier_offset("{ id, name }", "name"),
+            Some(6)
+        );
+        // `item` must not match the `it` prefix.
+        assert_eq!(super::pattern_identifier_offset("item", "it"), None);
+        // A different binding's default value does not shadow the position.
+        assert_eq!(
+            super::pattern_identifier_offset("{ kind = fallback, it }", "it"),
+            Some(19)
+        );
+    }
 }

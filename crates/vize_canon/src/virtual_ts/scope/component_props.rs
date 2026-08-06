@@ -249,7 +249,7 @@ fn generate_closure_component_props_recursive(
                 ctx.source_context.offset,
                 ctx.summary.scopes.v_for_source_offset(scope.id),
                 &loop_indent,
-                data,
+                scope,
                 ctx.template_prop_names,
             );
 

@@ -24,7 +24,11 @@ use tower_lsp::lsp_types::{Hover, HoverContents};
 use crate::ide::IdeContext;
 
 /// Replace a leading synthesized `var` in a Corsa hover with the authored
-/// declaration keyword for the hovered template binding.
+/// declaration keyword for the hovered template binding, and a leading
+/// `(parameter)` with `const` when the word is a `v-for` alias: the virtual
+/// TS lowers `v-for` to a callback, but the authored construct is an
+/// immutable per-iteration binding, and Volar's for-of lowering presents it
+/// as `const` (#3894).
 pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
     let HoverContents::Markup(ref mut markup) = hover.contents else {
         return;
@@ -36,13 +40,64 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
     let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
         return;
     };
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return;
-    };
-    let lang = script_setup.lang.as_deref();
-    if let Some(aligned) = align_leading_var(&markup.value, &script_setup.content, lang, word) {
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        let lang = script_setup.lang.as_deref();
+        if let Some(aligned) = align_leading_var(&markup.value, &script_setup.content, lang, word) {
+            markup.value = aligned;
+            return;
+        }
+    }
+    if let Some(template) = descriptor.template.as_ref()
+        && let Some(aligned) = align_v_for_parameter(&markup.value, &template.content, word)
+    {
         markup.value = aligned;
     }
+}
+
+/// Rewrite a quick-info block opening with `(parameter) {word}` to
+/// `const {word}` when the word is a `v-for` value, key, or index alias of
+/// the authored template. Anything else keeps the checker's answer.
+fn align_v_for_parameter(markdown: &str, template: &str, word: &str) -> Option<String> {
+    if word.is_empty() {
+        return None;
+    }
+    let fence_start = markdown.find("```")?;
+    let after_fence = markdown[fence_start..].find('\n')? + fence_start + 1;
+    let synthesized = format!("(parameter) {word}");
+    if !markdown[after_fence..].starts_with(&synthesized) {
+        return None;
+    }
+    let following = markdown[after_fence + synthesized.len()..].chars().next();
+    if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
+        return None;
+    }
+    if !is_v_for_alias(template, word) {
+        return None;
+    }
+    let mut rewritten = String::with_capacity(markdown.len());
+    rewritten.push_str(&markdown[..after_fence]);
+    rewritten.push_str("const");
+    rewritten.push_str(&markdown[after_fence + "(parameter)".len()..]);
+    Some(rewritten)
+}
+
+/// Whether the template declares `word` as a `v-for` alias (value binding,
+/// key alias, or index alias), resolved through the same analyzer the
+/// generator uses rather than a textual scan.
+fn is_v_for_alias(template: &str, word: &str) -> bool {
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    summary.scopes.iter().any(|scope| {
+        let vize_croquis::ScopeData::VFor(data) = scope.data() else {
+            return false;
+        };
+        data.value_bindings.iter().any(|name| name == word)
+            || data.key_alias.as_deref() == Some(word)
+            || data.index_alias.as_deref() == Some(word)
+    })
 }
 
 /// The oxc source type for a `<script setup lang="…">` block. `tsx`/`jsx` need
@@ -218,5 +273,24 @@ mod tests {
             super::align_leading_var(hover, script, Some("tsx"), "attempts").as_deref(),
             Some("```typescript\nlet attempts: number\n```")
         );
+    }
+
+    #[test]
+    fn a_v_for_alias_parameter_rewrites_to_const() {
+        let template =
+            "<ul><li v-for=\"(it, index) in users\" :key=\"it.id\">{{ it.name }}</li></ul>";
+        let hover = "```typescript\n(parameter) it: User\n```";
+        assert_eq!(
+            super::align_v_for_parameter(hover, template, "it").as_deref(),
+            Some("```typescript\nconst it: User\n```")
+        );
+        let hover = "```typescript\n(parameter) index: number\n```";
+        assert_eq!(
+            super::align_v_for_parameter(hover, template, "index").as_deref(),
+            Some("```typescript\nconst index: number\n```")
+        );
+        // A non-alias parameter (an event handler's) keeps the checker's answer.
+        let hover = "```typescript\n(parameter) event: MouseEvent\n```";
+        assert_eq!(super::align_v_for_parameter(hover, template, "event"), None);
     }
 }
