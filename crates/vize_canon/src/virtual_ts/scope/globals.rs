@@ -41,10 +41,17 @@ pub(super) fn generate_undefined_refs(
     // bindings (a `namespace` is the measured case). Those are not unknown
     // template names, so they keep the free-name emission: a property access on
     // the instance would invent a `TS2339` `vue-tsc` does not report.
+    //
+    // `None` turns the form off for the whole template: either this shape never
+    // resolves one, or the script did not parse, in which case which names it
+    // declares is unknown and the free-name emission is the only safe one.
     let script_scope_names = if resolve_on_instance {
-        script_content.map_or_else(FxHashSet::default, script_top_level_binding_names)
+        match script_content {
+            Some(script) => script_top_level_binding_names(script),
+            None => Some(FxHashSet::default()),
+        }
     } else {
-        FxHashSet::default()
+        None
     };
 
     // Collect type export names to exclude from undefined refs
@@ -71,7 +78,16 @@ pub(super) fn generate_undefined_refs(
 
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
-        let on_instance = resolve_on_instance && !script_scope_names.contains(undef.name.as_str());
+        // A name a configured `globalTypes` entry or a CSS module already
+        // declares in this scope keeps the free-name emission too: the `var` the
+        // instance form hoists would redeclare it (`TS2451`).
+        let on_instance = script_scope_names.as_ref().is_some_and(|names| {
+            !names.contains(undef.name.as_str())
+                && !is_declared_template_context_name(
+                    undef.name.as_str(),
+                    options.virtual_ts_options,
+                )
+        });
 
         if !emitted_header {
             ts.push_str("\n  // Undefined references from template:\n");
@@ -127,19 +143,27 @@ pub(super) fn generate_undefined_refs(
 /// `interface`, `type`). The generated module keeps the script verbatim in a
 /// scope that encloses the template closure, so every one of these stays
 /// resolvable from a template expression.
-fn script_top_level_binding_names(script: &str) -> FxHashSet<String> {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts().with_module(true)).parse();
-    if parsed.panicked {
-        return FxHashSet::default();
+///
+/// `<script lang="ts">` may hold JSX, which only the TSX dialect parses, so the
+/// plain source type is tried first and TSX second. `None` means neither parsed
+/// the script cleanly: its top-level names are then unknown, and no template
+/// name may be classified against the public instance on a partial program.
+fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
+    for source_type in [SourceType::ts(), SourceType::tsx()] {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, script, source_type.with_module(true)).parse();
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            continue;
+        }
+        let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+        let scoping = semantic.scoping();
+        let mut names = FxHashSet::default();
+        for (name, _) in scoping.get_bindings(scoping.root_scope_id()) {
+            names.insert(String::from(name.as_str()));
+        }
+        return Some(names);
     }
-    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
-    let scoping = semantic.scoping();
-    let mut names = FxHashSet::default();
-    for (name, _) in scoping.get_bindings(scoping.root_scope_id()) {
-        names.insert(String::from(name.as_str()));
-    }
-    names
+    None
 }
 
 pub(super) fn generate_instance_global_refs(

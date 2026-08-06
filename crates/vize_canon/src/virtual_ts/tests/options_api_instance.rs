@@ -2,7 +2,9 @@
 //! opted in only for a Vue 3 plain default export, and never for names the
 //! script itself declares.
 
-use crate::virtual_ts::generate_virtual_ts_with_offsets_options_api;
+use crate::virtual_ts::{
+    TemplateGlobal, VirtualTsOptions, generate_virtual_ts_with_offsets_options_api,
+};
 
 #[test]
 fn test_options_api_template_bindings_use_default_instance_type() {
@@ -102,6 +104,128 @@ export default {
             .code
             .contains("__vize_template_instance.missingThing"),
         "a name the script never declares still resolves on the public instance:\n{}",
+        output.code
+    );
+}
+
+/// `<script lang="ts">` may hold JSX, which only the TSX dialect parses: the
+/// script's top-level names must still be found so they are not checked on the
+/// public instance.
+#[test]
+fn test_options_api_tsx_script_names_are_not_checked_on_the_instance() {
+    let script = r#"const icon = () => <span>ok</span>
+
+export default {
+    name: 'Tsx',
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ icon }} {{ missingThing }}</div>");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output.code.contains("__vize_template_instance.icon"),
+        "a name a TSX script declares must not be checked against the public instance:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("__vize_template_instance.missingThing"),
+        "a name the script never declares still resolves on the public instance:\n{}",
+        output.code
+    );
+}
+
+/// A script the parser cannot read leaves its top-level names unknown, so no
+/// template name may be classified against the public instance: a name the
+/// broken script does declare would otherwise gain an invented `TS2339`.
+#[test]
+fn test_options_api_unparseable_script_disables_the_instance_form() {
+    let script = r#"const broken = (
+
+export default {
+    name: 'Broken',
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ missingThing }}</div>");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output.code.contains("__vize_template_instance"),
+        "an unparseable script must keep the public-instance form off:\n{}",
+        output.code
+    );
+}
+
+/// A configured `globalTypes` entry already declares the name in the template
+/// closure, so the `var` the instance form hoists would redeclare it
+/// (`TS2451 Cannot redeclare block-scoped variable`).
+#[test]
+fn test_options_api_configured_globals_are_not_redeclared_by_the_instance_form() {
+    let script = r#"export default {
+    name: 'Globals',
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ toThousandFilter(1) }}</div>");
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
+        .with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let options = VirtualTsOptions {
+        template_globals: vec![TemplateGlobal {
+            name: "toThousandFilter".into(),
+            type_annotation: "any".into(),
+            default_value: "undefined as any".into(),
+        }],
+        ..Default::default()
+    };
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &options,
+    );
+
+    assert!(
+        !output
+            .code
+            .contains("__vize_template_instance.toThousandFilter"),
+        "a configured template global must not be checked against the public instance:\n{}",
+        output.code
+    );
+    assert!(
+        !output.code.contains("var toThousandFilter"),
+        "a configured template global must not be redeclared by the instance form:\n{}",
         output.code
     );
 }
