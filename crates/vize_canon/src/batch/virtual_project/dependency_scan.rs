@@ -71,11 +71,14 @@ impl VirtualProject {
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                if inside_node_modules(&key) || !visited.insert(key) {
+                if inside_node_modules(&key) || !visited.insert(key.clone()) {
                     continue;
                 }
-                if self.register_path(&target).is_ok() {
-                    queue.push(target);
+                // Register the canonical path: a workspace symlink is
+                // first-party where it actually lives, so it must not enter the
+                // virtual tree under `node_modules`.
+                if self.register_path(&key).is_ok() {
+                    queue.push(key);
                 }
             }
         }
@@ -186,7 +189,7 @@ fn probe_candidates(base: &Path) -> Option<PathBuf> {
             return Some(candidate);
         }
     }
-    for index in ["index.ts", "index.tsx"] {
+    for index in ["index.ts", "index.tsx", "index.d.ts"] {
         let candidate = base.join(index);
         if candidate.is_file() {
             return Some(candidate);
