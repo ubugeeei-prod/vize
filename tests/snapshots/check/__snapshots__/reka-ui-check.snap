@@ -251,7 +251,7 @@
       "diagnostics": [
         "error:2:22 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
         "error:3:69 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:65:12 [TS2322] Type '(newLocale: string) => void' is not assignable to type '(value: AcceptableValue) => unknown'.\nTypes of parameters 'newLocale' and 'args' are incompatible.\nType 'AcceptableValue' is not assignable to type 'string'.\nType 'null' is not assignable to type 'string'."
+        "error:65:12 [TS2322] Type '(newLocale: string) => void' is not assignable to type '(value: AcceptableValue) => any'.\nTypes of parameters 'newLocale' and 'args' are incompatible.\nType 'AcceptableValue' is not assignable to type 'string'.\nType 'null' is not assignable to type 'string'."
       ]
     },
     {
