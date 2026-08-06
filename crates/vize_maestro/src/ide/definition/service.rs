@@ -200,6 +200,13 @@ impl super::DefinitionService {
             return Some(definition);
         }
 
+        // An imported name unwraps to the exported declaration before any
+        // checker round-trip: the checker answers with the local alias — the
+        // import statement itself — which reads as a self-jump (#3893).
+        if let Some(definition) = super::import_target::definition(ctx) {
+            return Some(definition);
+        }
+
         if let Some(definition) = script::definition_in_script(ctx) {
             let is_define_art_source =
                 crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
