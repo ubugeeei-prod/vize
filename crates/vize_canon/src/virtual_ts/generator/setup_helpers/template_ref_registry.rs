@@ -13,7 +13,7 @@
 use vize_carton::{FxHashSet, String, append};
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
 
-use super::setup_helpers::push_ts_string_literal;
+use super::push_ts_string_literal;
 
 /// One registry entry: the authored ref name and the element tag it names.
 struct RegisteredRef {
@@ -28,7 +28,18 @@ struct RegisteredRef {
 
 /// The rendered `__VizeTemplateRefs` object-type body, or `None` when no
 /// static plain-element ref exists (generation then keeps the untyped shim).
-pub(super) fn template_ref_registry(template_ast: Option<&RootNode<'_>>) -> Option<String> {
+///
+/// Retyping the shim is the registry's only route to a diagnostic, so a setup
+/// scope that never names `useTemplateRef` cannot observe it: skip both the
+/// collection walk and the extra type declarations there rather than make
+/// every SFC with a `ref="name"` attribute pay for them.
+pub(super) fn template_ref_registry(
+    script_content: Option<&str>,
+    template_ast: Option<&RootNode<'_>>,
+) -> Option<String> {
+    if !script_content.is_some_and(|script| script.contains("useTemplateRef")) {
+        return None;
+    }
     let root = template_ast?;
     let mut refs: Vec<RegisteredRef> = Vec::new();
     for child in root.children.iter() {
@@ -132,9 +143,21 @@ fn collect_element(element: &ElementNode<'_>, in_v_for: bool, refs: &mut Vec<Reg
 #[cfg(test)]
 mod tests {
     fn registry_of(template: &str) -> Option<vize_carton::String> {
+        registry_for("const box = useTemplateRef('box')", template)
+    }
+
+    fn registry_for(script: &str, template: &str) -> Option<vize_carton::String> {
         let allocator = vize_carton::Bump::new();
         let (root, _) = vize_armature::parse(&allocator, template);
-        super::template_ref_registry(Some(&root))
+        super::template_ref_registry(Some(script), Some(&root))
+    }
+
+    #[test]
+    fn a_script_that_never_names_use_template_ref_registers_nothing() {
+        assert_eq!(
+            registry_for("const label = 'hi'", r#"<div ref="box" />"#),
+            None
+        );
     }
 
     #[test]

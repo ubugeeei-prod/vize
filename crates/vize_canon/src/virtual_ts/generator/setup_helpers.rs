@@ -7,20 +7,28 @@
 //! setup scopes.
 
 use vize_carton::{String, append};
+use vize_relief::RootNode;
 
 use crate::virtual_ts::helpers::{VUE_SETUP_HELPERS, VUE_SETUP_HELPERS_HOISTED};
 
 mod boolean_keys;
+mod template_ref_registry;
 
 use boolean_keys::{DefinePropsBooleanKeys, collect_define_props_boolean_keys};
+use template_ref_registry::template_ref_registry;
 
 pub(super) fn emit_setup_helpers(
     ts: &mut String,
     script_content: Option<&str>,
     generic_param: Option<&str>,
     hoist_shared_preamble: bool,
-    template_refs: Option<&str>,
+    template_ast: Option<&RootNode<'_>>,
 ) {
+    // Static `ref="name"` attributes on plain elements, keyed for
+    // `useTemplateRef` (#3896): the registry exists only to retype this
+    // scope's shim, so it is collected here rather than by the caller.
+    let registry = template_ref_registry(script_content, template_ast);
+    let template_refs = registry.as_deref();
     if let Some(registry) = template_refs {
         // `NativeElements` maps tags to their *props* for template checking;
         // a template ref holds the mounted DOM node, so the registry resolves
@@ -157,7 +165,7 @@ fn emit_embedded_setup_helpers(ts: &mut String) {
     );
 }
 
-pub(super) fn push_ts_string_literal(out: &mut String, value: &str) {
+fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
     for ch in value.chars() {
         match ch {

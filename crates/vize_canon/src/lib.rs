@@ -81,6 +81,9 @@ pub mod corsa_server;
 pub mod typecheck_service;
 
 #[cfg(all(test, feature = "native"))]
+mod template_ref_registry_scope;
+
+#[cfg(all(test, feature = "native"))]
 mod tests;
 
 #[cfg(all(test, feature = "native"))]

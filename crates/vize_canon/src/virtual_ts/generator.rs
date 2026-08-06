@@ -18,7 +18,6 @@ mod setup_helpers;
 mod setup_props;
 mod setup_type_exports;
 mod spans;
-mod template_ref_registry;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
@@ -48,7 +47,6 @@ use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
     template_usage,
 };
-use self::template_ref_registry::template_ref_registry;
 use super::{
     helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
     import_meta::emit_import_meta_augmentation,
@@ -62,7 +60,7 @@ use super::{
         VizeMapping, emit_lib_reference_directives,
     },
 };
-use vize_carton::{FxHashMap, FxHashSet, String, append, cstr, profile};
+use vize_carton::{FxHashMap, FxHashSet, String, append, config::VueVersion, cstr, profile};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
 pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
@@ -82,28 +80,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // (e.g. a Vue 2 `this`/template shape with `$listeners`,
     // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
     let dialect = generation_options.dialect;
-    let legacy_vue2 = generation_options.legacy_vue2
-        || matches!(
-            dialect,
-            vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
-        );
+    let legacy_vue2 =
+        generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
     let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
-    // Static `ref="name"` attributes on plain elements, keyed for
-    // `useTemplateRef` (#3896). Computed before setup emission so the typed
-    // shim can reference the per-SFC registry.
-    //
-    // Retyping the shim is the registry's only route to a diagnostic, so a
-    // setup scope that never names `useTemplateRef` cannot observe it: skip
-    // both the collection walk and the extra type declarations there rather
-    // than make every SFC with a `ref="name"` attribute pay for them.
-    let template_ref_registry =
-        if script_content.is_some_and(|script| script.contains("useTemplateRef")) {
-            template_ref_registry(template_ast)
-        } else {
-            None
-        };
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
@@ -452,7 +433,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_param,
         hoist_shared_preamble,
-        template_ref_registry.as_deref(),
+        template_ast,
     );
     ts.push_str("\n\n");
 
