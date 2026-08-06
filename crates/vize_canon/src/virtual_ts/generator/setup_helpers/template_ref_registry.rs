@@ -184,6 +184,14 @@ mod tests {
                 .as_deref(),
             Some(r#" "escaped": __VizeDomElement<"a">; "#)
         );
+        // An SVG-only tag seeds the namespace by itself here (the parser's
+        // `foreign_namespace_for`), so it is the SVG branch that resolves an
+        // unwrapped `<circle>`, never an SVG fallback inside the HTML branch:
+        // a tag the parser did put in the HTML namespace stops at `Element`.
+        assert_eq!(
+            registry_of(r#"<circle ref="shape" />"#).as_deref(),
+            Some(r#" "shape": __VizeDomElement<"circle", true>; "#)
+        );
     }
 
     #[test]

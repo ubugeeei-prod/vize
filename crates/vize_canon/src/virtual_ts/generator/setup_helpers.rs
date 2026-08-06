@@ -34,15 +34,18 @@ pub(super) fn emit_setup_helpers(
         // a template ref holds the mounted DOM node, so the registry resolves
         // through the DOM tag-name maps instead (#3896).
         //
-        // `_Svg` picks the map to consult first because the two overlap on
-        // `a`, `script`, `style` and `title`: an HTML-first lookup would pin
-        // `<svg><a ref="link" /></svg>` to `HTMLAnchorElement`, whose `href`
-        // is a `string` where `SVGAElement` has an `SVGAnimatedString`. An SVG
-        // tag missing from the map stops at `Element` rather than borrowing
-        // the HTML interface of the same name.
+        // `_Svg` selects the map, and neither branch falls back to the other.
+        // The two overlap on `a`, `script`, `style` and `title`, so an
+        // HTML-first lookup would pin `<svg><a ref="link" /></svg>` to
+        // `HTMLAnchorElement`, whose `href` is a `string` where `SVGAElement`
+        // has an `SVGAnimatedString`; symmetrically, an SVG-map fallback in the
+        // HTML branch would hand an element the parser placed in the HTML
+        // namespace an SVG interface it cannot have (a custom renderer forces
+        // HTML even for SVG tag names). A tag missing from its own map stops at
+        // `Element`, which is what a custom element resolves to.
         append!(
             *ts,
-            "  type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : _Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element);\n  type __VizeTemplateRefs = {{{registry}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
+            "  type __VizeDomElement<_Tag extends string, _Svg extends boolean = false> = _Svg extends true ? (_Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element) : (_Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : Element);\n  type __VizeTemplateRefs = {{{registry}}};\n  type __VizeUseTemplateRef = {{ <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; }};\n"
         );
     }
     let shims_start = ts.len();
