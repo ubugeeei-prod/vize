@@ -27,11 +27,20 @@ use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 use crate::file_uri::path_to_file_uri;
 
-/// The alias map for the host document's package, resolved once per open.
+/// The alias map for the host document's package, resolved once per open,
+/// plus the materialized mirror the resolutions point into.
+///
+/// The checker resolves modules from the disk only — open in-memory documents
+/// are never resolution targets — so alias imports must land on real files.
+/// The batch pipeline already materializes exactly those (#3898): reachable
+/// `.vue` companions and out-of-root barrels inside `node_modules/.vize/canon`.
+/// Editor sessions reuse that machinery and rewrite their imports to relative
+/// paths into the mirror.
 #[allow(clippy::disallowed_types)]
 pub(super) struct AliasContext {
     project_root: PathBuf,
     aliases: Vec<(std::string::String, std::string::String)>,
+    mirror: Option<VirtualProject>,
 }
 
 impl AliasContext {
@@ -43,21 +52,32 @@ impl AliasContext {
             .skip(1)
             .find(|dir| dir.join("tsconfig.json").is_file())
             .map(Path::to_path_buf);
-        let (project_root, aliases) = match root {
-            Some(root) => {
-                let aliases = VirtualProject::new(&root)
-                    .map(|project| project.dependency_alias_map())
-                    .unwrap_or_default();
-                (root, aliases)
-            }
+        let (project_root, aliases, mirror) = match root {
+            Some(root) => match VirtualProject::new(&root) {
+                Ok(mut project) => {
+                    let aliases = project.dependency_alias_map();
+                    // Register the host and everything reachable, then put the
+                    // companions on disk where the checker can resolve them.
+                    let mirror = (aliases.is_empty()
+                        || (project.register_path(source_path).is_ok()
+                            && project.register_reachable_dependencies().is_ok()
+                            && project.materialize().is_ok()))
+                    .then_some(project)
+                    .filter(|_| !aliases.is_empty());
+                    (root, aliases, mirror)
+                }
+                Err(_) => (root, Vec::new(), None),
+            },
             None => (
                 source_path.parent().unwrap_or(source_path).to_path_buf(),
                 Vec::new(),
+                None,
             ),
         };
         Self {
             project_root,
             aliases,
+            mirror,
         }
     }
 }
@@ -78,16 +98,23 @@ impl AliasContext {
         if inside_node_modules(&key) || is_declaration(&key) {
             return None;
         }
-        let target = if key.extension().is_some_and(|extension| extension == "vue") {
-            let mut spelled = key.as_os_str().to_os_string();
-            spelled.push(".ts");
-            PathBuf::from(spelled)
-        } else if !key.starts_with(&self.project_root) {
-            virtual_script_identity(&key)
-        } else {
-            return None;
-        };
-        relative_specifier(importer_dir, &target)
+        // Resolution must land on a real file: the mirror's generated
+        // companion for a registered dependency, or nothing. The trailing
+        // `.ts`/`.tsx` is stripped because the governing tsconfig is the
+        // user's, which need not enable `allowImportingTsExtensions`; the
+        // checker then appends the extension itself, so `…/UiButton.vue`
+        // resolves to the on-disk `UiButton.vue.ts` companion exactly the way
+        // extensionless script imports resolve.
+        let mirror = self.mirror.as_ref()?;
+        let target = mirror.find_by_original(&key)?.virtual_path.clone();
+        let relative = relative_specifier(importer_dir, &target)?;
+        Some(
+            relative
+                .strip_suffix(".tsx")
+                .or_else(|| relative.strip_suffix(".ts"))
+                .unwrap_or(&relative)
+                .to_owned(),
+        )
     }
 }
 
