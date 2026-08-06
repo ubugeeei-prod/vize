@@ -77,7 +77,7 @@ return {
   hover = {
     contents = {
       kind = "markdown",
-      value = '**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n```typescript\nconst total: "3"\n```',
+      value = '```typescript\nconst total: "3"\n```',
     },
     range = {
       ["end"] = { character = 11, line = 3 },
