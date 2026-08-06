@@ -74,15 +74,18 @@ const pick = (_value: string, _index: number) => {}
 
     // One row, `TS2345`, not `TS2590`: the first usage omits `title` and the
     // second one passes it. A compiler that gave up would show here as a missing
-    // row plus a complexity error.
+    // row plus a complexity error. The readonly flatten (#3890) keeps the wide
+    // instantiation inside the checker's limits, and the display elides the
+    // middle members instead of overflowing.
     let authored = "{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }";
+    let flattened = "{ readonly title: string; readonly variant0?: \"ghost\" | \"link\" | \"outline\" | \"solid\" | undefined; readonly onSelect0?: ((value: string, index: number) => void) | undefined; readonly itemList0?: readonly { ...; }[] | undefined; ... 118 more ...; readonly onClose?: (() => any) | undefined; }";
     assert_eq!(
         snapshot,
         vec![(
             String::from("src/Parent.vue"),
             Some(2345),
             cstr!(
-                "7:4:error Argument of type '{authored}' is not assignable to parameter of type 'Props & Record<string, unknown>'.\nProperty 'title' is missing in type '{authored}' but required in type 'Props'."
+                "7:4:error Argument of type '{authored}' is not assignable to parameter of type '{flattened} & Record<...>'.\nProperty 'title' is missing in type '{authored}' but required in type '{flattened}'."
             ),
         )],
         "a 121-prop child reports exactly its missing required prop, with no complexity error"

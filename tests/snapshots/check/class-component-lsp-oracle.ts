@@ -136,9 +136,9 @@ const missingRequiredPropTypeDiagnostic = {
   source: "vize/types",
   message:
     "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
-    "'Props & Record<string, unknown>'.\n" +
+    "'{ readonly name: string; } & Record<string, unknown>'.\n" +
     "  Property 'name' is missing in type '{ nme: string; }' but required in type " +
-    "'Props'.",
+    "'{ readonly name: string; }'.",
 };
 
 const propTypeMismatchDiagnostic = {

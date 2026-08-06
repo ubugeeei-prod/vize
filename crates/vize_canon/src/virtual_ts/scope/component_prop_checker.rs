@@ -119,9 +119,14 @@ pub(super) fn append_prop_checker_alias(
     component_ref: &str,
     idx: usize,
 ) {
+    // The listener props synthesized from the child's `emits` join the check
+    // target (#3890): they are part of Vue's public props contract, `vue-tsc`
+    // lists them in the displayed parameter type, and their presence is what
+    // types an authored `:on-save` binding instead of absorbing it as
+    // `unknown`. A component without the marker contributes `{}`.
     append!(
         *ts,
-        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx};\n",
+        "  type __{component_type_name}_CheckProps_{idx} = __{component_type_name}_Props_{idx} & __VizeEmitListeners<typeof {component_ref}>;\n",
     );
     append!(
         *ts,
@@ -143,8 +148,26 @@ pub(super) fn append_prop_checker_alias(
 /// nor affordable.
 pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &ComponentUsage)]) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    // The parameter type is written inline so the instantiation stays
+    // anonymous: an aliased mapped type would print as its alias name in the
+    // `TS2345` message, and the whole point of the shape is what it displays.
+    // `{ readonly [K in keyof P]: P[K] }` flattens the declared-props/model/
+    // listener intersection into the single readonly object literal `vue-tsc`
+    // shows (#3890); the homomorphic map preserves per-property optionality,
+    // which keeps the `exactOptionalPropertyTypes` rejection (#3450) and the
+    // contextual typing of inline callback props intact — both re-measured
+    // against the same compiler build. The `Record<string, unknown>` tail
+    // still absorbs fallthrough attrs, suppresses object-literal excess
+    // checks, and keeps the failure an argument-level `TS2345`; against an
+    // exact target the same literal reports member-level `TS2741` instead,
+    // which `vue-tsc` does not. On a realistic props type the flattened
+    // members exceed the display truncation budget, so the tail is elided
+    // exactly the way `vue-tsc`'s own fallthrough members are.
     ts.push_str(
-        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: P & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: P & Record<string, unknown>) => void) : (props: P & Record<string, unknown>) => void;\n",
+        "  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};\n",
+    );
+    ts.push_str(
+        "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;\n",
     );
     ts.push_str(
         "  type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;\n",

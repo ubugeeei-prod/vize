@@ -87,34 +87,36 @@ const stringHandler = (_value: string) => {}
         return;
     };
 
-    // `TypedOnlyChild` spells its props inline, so TypeScript prints the type
-    // rather than the `Props` alias the other three share. Every usage binds a
-    // declared `on*` prop and none of them binds `count`: before #3569 a named
-    // binding switched the whole-props target to one where every unbound key was
+    // The readonly flatten (#3890) prints one structural shape for all four:
+    // the `Props` alias the first three share and `TypedOnlyChild`'s inline
+    // spelling flatten to the same object. Every usage binds a declared `on*`
+    // prop and none of them binds `count`: before #3569 a named binding
+    // switched the whole-props target to one where every unbound key was
     // optional, and all four were silent.
-    let inline_props = "{ count: number; onSave?: ((value: string) => void) | undefined; }";
+    let flattened =
+        "{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }";
     assert_eq!(
         snapshot,
         vec![
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(10, inline_props),
+                missing_count(10, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(7, "Props"),
+                missing_count(7, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(8, "Props"),
+                missing_count(8, flattened),
             ),
             (
                 String::from("src/Parent.vue"),
                 Some(2345),
-                missing_count(9, "Props"),
+                missing_count(9, flattened),
             ),
         ],
         "generic-first and generic-last overloads must share one result, and every usage reports the required `count` it never binds"
