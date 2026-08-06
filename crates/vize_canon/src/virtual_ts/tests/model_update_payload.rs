@@ -42,3 +42,57 @@ fn required_and_defaulted_models_keep_the_bare_payload() {
         "defaulted model keeps the bare payload:\n{defaulted}"
     );
 }
+
+#[test]
+fn an_untyped_model_keeps_the_bare_unknown_payload() {
+    let emits = emits_of("const model = defineModel()\nvoid model;\n");
+    assert!(
+        emits.contains("\"update:modelValue\": [value: unknown]"),
+        "an untyped model keeps the bare `unknown` payload:\n{emits}"
+    );
+}
+
+#[test]
+fn a_function_typed_model_parenthesizes_the_base() {
+    let emits = emits_of("const model = defineModel<() => string>()\nvoid model;\n");
+    assert!(
+        emits.contains("\"update:modelValue\": [value: (() => string) | undefined]"),
+        "a function-typed model must not absorb the union into its return type:\n{emits}"
+    );
+}
+
+#[test]
+fn a_typed_define_emits_intersection_carries_the_same_payload() {
+    let optional = emits_of(
+        "const emit = defineEmits<{ change: [] }>()\nconst model = defineModel<string>()\nvoid emit;\nvoid model;\n",
+    );
+    assert!(
+        optional.contains("\"update:modelValue\": [value: (string) | undefined]"),
+        "the typed `defineEmits` intersection accepts undefined for an optional model:\n{optional}"
+    );
+    let required = emits_of(
+        "const emit = defineEmits<{ change: [] }>()\nconst model = defineModel<string>({ required: true })\nvoid emit;\nvoid model;\n",
+    );
+    assert!(
+        required.contains("\"update:modelValue\": [value: string]"),
+        "the typed `defineEmits` intersection keeps the bare payload for a required model:\n{required}"
+    );
+}
+
+#[test]
+fn runtime_emits_carry_the_same_payload() {
+    let optional = emits_of(
+        "const emit = defineEmits([\"change\"])\nconst model = defineModel<string>()\nvoid emit;\nvoid model;\n",
+    );
+    assert!(
+        optional.contains("(event: \"update:modelValue\", value: (string) | undefined) => void"),
+        "runtime emits accept undefined for an optional model:\n{optional}"
+    );
+    let required = emits_of(
+        "const emit = defineEmits([\"change\"])\nconst model = defineModel<string>({ required: true })\nvoid emit;\nvoid model;\n",
+    );
+    assert!(
+        required.contains("(event: \"update:modelValue\", value: string) => void"),
+        "runtime emits keep the bare payload for a required model:\n{required}"
+    );
+}
