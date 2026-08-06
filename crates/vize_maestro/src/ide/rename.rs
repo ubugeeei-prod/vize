@@ -46,6 +46,13 @@ impl RenameService {
     }
 
     /// Perform rename operation.
+    ///
+    /// Edits are built from the references provider rather than a textual
+    /// sweep, so the two can never disagree about symbol identity: the sweep
+    /// used to rewrite `:count` *attribute names* — the child component's own
+    /// prop — when renaming an unrelated local `count`, silently breaking the
+    /// call sites, while references classified the same spans correctly by
+    /// searching template *expressions* only (#3892).
     pub fn rename(ctx: &IdeContext, new_name: &str) -> Option<WorkspaceEdit> {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset)?;
 
@@ -53,24 +60,18 @@ impl RenameService {
             return None;
         }
 
-        // Find all occurrences across the SFC
-        let edits = Self::find_all_occurrences(ctx, &word);
-
-        if edits.is_empty() {
-            return None;
-        }
-
-        // Create text edits
-        let text_edits: Vec<TextEdit> = edits
+        let locations = crate::ide::references::ReferencesService::references(ctx, true)?;
+        let text_edits: Vec<TextEdit> = locations
             .into_iter()
-            .map(|(start, end)| {
-                let range = Self::offset_range_to_lsp(&ctx.content, start, end);
-                TextEdit {
-                    range,
-                    new_text: new_name.to_string(),
-                }
+            .filter(|location| location.uri == *ctx.uri)
+            .map(|location| TextEdit {
+                range: location.range,
+                new_text: new_name.to_string(),
             })
             .collect();
+        if text_edits.is_empty() {
+            return None;
+        }
 
         let mut changes = HashMap::new();
         changes.insert(ctx.uri.clone(), text_edits);
@@ -340,114 +341,6 @@ impl RenameService {
         Self::is_valid_identifier(word)
     }
 
-    /// Find all occurrences of an identifier in the SFC.
-    fn find_all_occurrences(ctx: &IdeContext, word: &str) -> Vec<(usize, usize)> {
-        let mut occurrences = Vec::new();
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
-            return occurrences;
-        };
-
-        // Find in template
-        if let Some(ref template) = descriptor.template {
-            let template_start = template.loc.start;
-            for (offset, len) in Self::find_identifier_occurrences(&template.content, word) {
-                occurrences.push((template_start + offset, template_start + offset + len));
-            }
-        }
-
-        // Find in script setup
-        if let Some(ref script_setup) = descriptor.script_setup {
-            let script_start = script_setup.loc.start;
-            for (offset, len) in Self::find_identifier_occurrences(&script_setup.content, word) {
-                occurrences.push((script_start + offset, script_start + offset + len));
-            }
-        }
-
-        // Find in script
-        if let Some(ref script) = descriptor.script {
-            let script_start = script.loc.start;
-            for (offset, len) in Self::find_identifier_occurrences(&script.content, word) {
-                occurrences.push((script_start + offset, script_start + offset + len));
-            }
-        }
-
-        // Find in styles (v-bind usage)
-        for style in &descriptor.styles {
-            let style_start = style.loc.start;
-            for (offset, len) in Self::find_vbind_occurrences(&style.content, word) {
-                occurrences.push((style_start + offset, style_start + offset + len));
-            }
-        }
-
-        // Sort by offset and deduplicate
-        occurrences.sort_by_key(|(start, _)| *start);
-        occurrences.dedup();
-
-        occurrences
-    }
-
-    /// Find all occurrences of an identifier in text.
-    fn find_identifier_occurrences(text: &str, word: &str) -> Vec<(usize, usize)> {
-        let mut occurrences = Vec::new();
-        let bytes = text.as_bytes();
-        let word_len = word.len();
-
-        let mut pos = 0;
-        while let Some(found) = text[pos..].find(word) {
-            let abs_pos = pos + found;
-
-            // Check word boundaries
-            let before_ok = abs_pos == 0 || !Self::is_ident_char(bytes[abs_pos - 1] as char);
-            let after_ok = abs_pos + word_len >= bytes.len()
-                || !Self::is_ident_char(bytes[abs_pos + word_len] as char);
-
-            if before_ok && after_ok {
-                occurrences.push((abs_pos, word_len));
-            }
-
-            pos = abs_pos + 1;
-        }
-
-        occurrences
-    }
-
-    /// Find v-bind() occurrences in CSS.
-    fn find_vbind_occurrences(css: &str, word: &str) -> Vec<(usize, usize)> {
-        let mut occurrences = Vec::new();
-        let pattern = "v-bind(";
-
-        let mut pos = 0;
-        while let Some(start) = css[pos..].find(pattern) {
-            let abs_start = pos + start + pattern.len();
-
-            // Find the closing paren
-            if let Some(end) = css[abs_start..].find(')') {
-                let content = css[abs_start..abs_start + end].trim();
-
-                // Remove quotes if present
-                let var_name = content.trim_matches(|c| c == '"' || c == '\'');
-
-                if var_name == word {
-                    // Calculate the actual position of the variable name
-                    let name_start = abs_start + content.find(var_name).unwrap_or(0);
-                    occurrences.push((name_start, word.len()));
-                }
-
-                pos = abs_start + end + 1;
-            } else {
-                break;
-            }
-        }
-
-        occurrences
-    }
-
     /// Get the word at the given offset.
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
         crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
@@ -591,6 +484,70 @@ impl RenameService {
 mod tests {
     use super::RenameService;
 
+    /// Renaming a local binding must not rewrite a same-named prop
+    /// *attribute name* on a component usage — that token belongs to the
+    /// child's own prop symbol, and rewriting it silently breaks the call
+    /// site (#3892). Building rename from the references provider makes the
+    /// invariant structural: every edit is a reference (or the declaration).
+    #[test]
+    fn rename_leaves_same_named_prop_attribute_names_alone() {
+        let content = r#"<script setup lang="ts">
+import Child from './Child.vue'
+const count = 1
+</script>
+
+<template>
+  <Child :count="count" />
+</template>
+"#;
+        let uri = tower_lsp::lsp_types::Url::parse("file:///ws/Parent.vue").unwrap();
+        let state = crate::server::ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), content.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, content);
+        let offset = content.find("const count").unwrap() + "const ".len();
+        let ctx = crate::ide::IdeContext::new(&state, &uri, offset).unwrap();
+
+        let edit = RenameService::rename(&ctx, "tally").unwrap();
+        let edits = &edit.changes.unwrap()[&uri];
+
+        let attr_name_line = content[..content.find(":count=").unwrap()]
+            .matches('\n')
+            .count() as u32;
+        for edit in edits {
+            let touches_attr_name = edit.range.start.line == attr_name_line
+                && edit.range.start.character
+                    == content
+                        .lines()
+                        .nth(attr_name_line as usize)
+                        .unwrap()
+                        .find(":count")
+                        .unwrap() as u32
+                        + 1;
+            assert!(
+                !touches_attr_name,
+                "the :count attribute name must not be renamed: {edits:?}"
+            );
+        }
+
+        // The invariant that pins the providers together: every rename edit is
+        // one of the reference locations.
+        let references = crate::ide::references::ReferencesService::references(&ctx, true).unwrap();
+        for edit in edits {
+            assert!(
+                references
+                    .iter()
+                    .any(|reference| reference.range == edit.range),
+                "rename edit {edit:?} is not a reference: {references:?}"
+            );
+        }
+        assert!(
+            edits.len() >= 2,
+            "the declaration and the binding value must still rename: {edits:?}"
+        );
+    }
+
     #[test]
     fn test_get_word_at_offset() {
         let content = "const count = ref(0)";
@@ -610,13 +567,6 @@ mod tests {
     }
 
     #[test]
-    fn test_find_identifier_occurrences() {
-        let text = "const count = count + 1; console.log(count)";
-        let occurrences = RenameService::find_identifier_occurrences(text, "count");
-        assert_eq!(occurrences.len(), 3);
-    }
-
-    #[test]
     fn test_is_valid_identifier() {
         assert!(RenameService::is_valid_identifier("count"));
         assert!(RenameService::is_valid_identifier("_private"));
@@ -630,13 +580,6 @@ mod tests {
         assert!(RenameService::is_keyword("const"));
         assert!(RenameService::is_keyword("function"));
         assert!(!RenameService::is_keyword("count"));
-    }
-
-    #[test]
-    fn test_find_vbind_occurrences() {
-        let css = ".container { color: v-bind(textColor); width: v-bind('width'); }";
-        let occurrences = RenameService::find_vbind_occurrences(css, "textColor");
-        assert_eq!(occurrences.len(), 1);
     }
 
     #[test]
