@@ -8,7 +8,10 @@
 //! to a fixpoint. Published packages are left alone: a canonical path that
 //! stays inside `node_modules` keeps the stub (that half is #3282), while a
 //! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source.
+//! first-party source. Declaration files are left alone too: they hold no
+//! component to check and their ambient declarations are program-wide, so the
+//! tsconfig decides which ones a program includes (see
+//! [`is_declaration_file`]).
 //!
 //! Specifiers are collected from the *generated* content (always valid TS,
 //! one collector for `.vue` and script files alike) and resolved against the
@@ -81,7 +84,10 @@ impl VirtualProject {
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                if inside_node_modules(&key) || !visited.insert(key.clone()) {
+                if inside_node_modules(&key)
+                    || is_declaration_file(&key)
+                    || !visited.insert(key.clone())
+                {
                     continue;
                 }
                 // Register the canonical path: a workspace symlink is
@@ -139,6 +145,27 @@ fn canonical_key(path: &Path) -> Option<PathBuf> {
 fn inside_node_modules(path: &Path) -> bool {
     path.components()
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
+}
+
+/// Whether `path` is a TypeScript declaration file.
+///
+/// Reachability never registers one. A declaration file cannot *be* a `.vue`
+/// component, so it adds nothing this pass exists to check, while its ambient
+/// declarations are program-wide: a `declare module "vue"` in a script `.d.ts`
+/// is an ambient module declaration rather than an augmentation, so pulling one
+/// in replaces Vue's real typings and every `import { ref } from "vue"` in the
+/// project becomes `TS2305` (#3898). Which declaration files a program includes
+/// is the tsconfig's decision, not this inference pass's.
+///
+/// [`probe_candidates`] still resolves them: [`alias_may_reach_first_party`]
+/// classifies an alias by what the walk would resolve, and the `vue` alias of a
+/// Vue tsconfig resolves to `node_modules/vue/index.d.ts`.
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 /// Whether any specifier in `content` could resolve, cheaply and without a
@@ -295,6 +322,55 @@ mod tests {
             "import { ref } from 'vue'\n",
             &[]
         ));
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn a_reachable_declaration_file_is_not_registered() {
+        // #3898: `ecosystem-products` keeps its ambient shims in a script
+        // `src/shims.d.ts` that every SFC pulls in with `import type {} from
+        // "./shims"`. Registering it made its `declare module "vue"` an ambient
+        // module declaration in the generated program, replacing Vue's real
+        // typings, and every `import { computed, ref, watch } from "vue"`
+        // collapsed into `TS2305`. Sibling implementation modules must still
+        // register.
+        let root = case_dir("declaration-file");
+        let src = root.join("src");
+        fs::create_dir_all(&src).unwrap();
+        fs::write(
+            src.join("shims.d.ts"),
+            "declare module \"vue\" {\n  export interface GlobalComponents {}\n}\n",
+        )
+        .unwrap();
+        fs::write(
+            src.join("types.ts"),
+            "export type Product = { id: string };\n",
+        )
+        .unwrap();
+        let vue_path = src.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">\nimport type {} from \"./shims\";\nimport type { Product } from \"./types\";\nconst product: Product = { id: \"a\" };\n</script>\n",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&root).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.register_reachable_dependencies().unwrap();
+
+        let registered: Vec<CompactString> = project
+            .registered_original_paths_sorted()
+            .iter()
+            .filter_map(|path| path.file_name()?.to_str().map(CompactString::from))
+            .collect();
+        assert!(
+            !registered.iter().any(|name| name == "shims.d.ts"),
+            "{registered:?}"
+        );
+        assert!(
+            registered.iter().any(|name| name == "types.ts"),
+            "{registered:?}"
+        );
         let _ = fs::remove_dir_all(&root);
     }
 
