@@ -65,6 +65,9 @@ export type Props = {};
 
 // ========== Setup Scope ==========
 function __setup() {
+  type __VizeDomElement<_Tag extends string> = _Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[_Tag] : _Tag extends keyof SVGElementTagNameMap ? SVGElementTagNameMap[_Tag] : Element;
+  type __VizeTemplateRefs = { "inputRef": __VizeDomElement<"input">; "btn": __VizeDomElement<"button">; };
+  type __VizeUseTemplateRef = { <_K extends string>(_key: _K): Readonly<import('vue').ShallowRef<(_K extends keyof __VizeTemplateRefs ? __VizeTemplateRefs[_K] : any) | null>>; <_T>(_key: string): Readonly<import('vue').ShallowRef<_T | null>>; };
   // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
@@ -81,7 +84,7 @@ function __setup() {
   function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T, _BKeys extends keyof _T, const _D extends __WithDefaultsArgs<_T>>(_props: __DefineProps<_T, _BKeys>, _defaults: _D): __WithDefaultsResult<_T, _D>; function withDefaults(_props: any, _defaults: any) { void _props; void _defaults; return undefined as any; }
-  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
+  const useTemplateRef = (undefined as unknown as __VizeUseTemplateRef); void ((_key: string) => useTemplateRef(_key));
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
@@ -91,7 +94,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 7605:7709 -> 0:135
+  // @vize-map: 8132:8236 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

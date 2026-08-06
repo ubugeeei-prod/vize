@@ -18,6 +18,7 @@ mod setup_helpers;
 mod setup_props;
 mod setup_type_exports;
 mod spans;
+mod template_ref_registry;
 mod template_refs;
 use self::anchors::emit_setup_binding_anchors;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
@@ -47,6 +48,7 @@ use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
     template_usage,
 };
+use self::template_ref_registry::template_ref_registry;
 use super::{
     helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
     import_meta::emit_import_meta_augmentation,
@@ -88,6 +90,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let _ = generation_options.template_syntax_quirks;
     let options_api = generation_options.options_api || legacy_vue2;
     let hoist_shared_preamble = generation_options.hoist_shared_preamble;
+    // Static `ref="name"` attributes on plain elements, keyed for
+    // `useTemplateRef` (#3896). Computed before setup emission so the typed
+    // shim can reference the per-SFC registry.
+    let template_ref_registry = template_ref_registry(template_ast);
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
@@ -436,6 +442,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         script_content,
         generic_param,
         hoist_shared_preamble,
+        template_ref_registry.as_deref(),
     );
     ts.push_str("\n\n");
 
