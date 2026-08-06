@@ -818,7 +818,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
         "error:116:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:231:148 [TS2322] Type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to type '((...args: any[]) => unknown) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => unknown'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): unknown'."
+        "error:231:148 [TS2322] Type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to type '((...args: any[]) => any) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => any'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): any'."
       ]
     },
     {
