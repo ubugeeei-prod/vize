@@ -28,6 +28,7 @@ use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 use crate::file_uri::path_to_file_uri;
 
 /// The alias map for the host document's package, resolved once per open.
+#[allow(clippy::disallowed_types)]
 pub(super) struct AliasContext {
     project_root: PathBuf,
     aliases: Vec<(std::string::String, std::string::String)>,
