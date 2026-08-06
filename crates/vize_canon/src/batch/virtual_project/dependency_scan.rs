@@ -84,6 +84,11 @@ impl VirtualProject {
                 // Register the canonical path: a workspace symlink is
                 // first-party where it actually lives, so it must not enter the
                 // virtual tree under `node_modules`.
+                // A reachable dependency is inferred, not requested: an
+                // unreadable file or a malformed sibling-package SFC must not
+                // abort the check the user actually asked for, so registration
+                // failure degrades to the pre-#3887 ambient stub for that one
+                // import instead of propagating (#3898).
                 if self.register_path(&key).is_ok() {
                     queue.push(key);
                 }
