@@ -50,13 +50,20 @@ pub(super) fn onto_project_root(
         }
     }
 
-    let Some(paths) = compiler_options
-        .get_mut("paths")
-        .and_then(Value::as_object_mut)
-    else {
-        return;
-    };
+    // `paths` targets are deliberately not rebased here: they anchor to the
+    // effective `baseUrl` when one is declared anywhere in the chain, which is
+    // only known after the whole chain merges. `paths_onto_project_root` runs
+    // as a post-pass with the resolved anchor (#3886).
+}
 
+/// Rebase relative `paths` targets from `anchor_dir` — the effective `baseUrl`
+/// directory, or the winning map's declaring directory — onto the project root.
+#[allow(clippy::disallowed_types)]
+pub(super) fn paths_onto_project_root(
+    paths: &mut Map<std::string::String, Value>,
+    anchor_dir: &Path,
+    project_root: &Path,
+) {
     for targets in paths.values_mut() {
         let Some(targets) = targets.as_array_mut() else {
             continue;
@@ -69,7 +76,7 @@ pub(super) fn onto_project_root(
                 continue;
             }
             *target = Value::String(
-                normalize_tsconfig_path_target(base_dir, project_root, raw_target).into(),
+                normalize_tsconfig_path_target(anchor_dir, project_root, raw_target).into(),
             );
         }
     }

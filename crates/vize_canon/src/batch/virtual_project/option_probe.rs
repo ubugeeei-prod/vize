@@ -59,7 +59,10 @@ impl VirtualProject {
             return Ok(None);
         }
 
-        let narrowing = OptionDiagnosticNarrowing::from_declared(&declared);
+        let narrowing = OptionDiagnosticNarrowing::from_declared(
+            &declared,
+            installed_typescript_reports_removals(&self.project_root),
+        );
         let path = self.virtual_root.join(OPTION_PROBE_CONFIG);
         let content = serde_json::to_string_pretty(&option_probe_value(declared))?;
         profile!(
@@ -88,17 +91,22 @@ impl VirtualProject {
     }
 }
 
-/// Which of the probe's option diagnostics TypeScript 6 — the compiler
-/// `vue-tsc` runs — would also report.
+/// Which of the probe's option diagnostics the user's own `vue-tsc` toolchain
+/// would also report.
 ///
 /// vize's checker is `@typescript/native-preview`, i.e. TypeScript 7, which
-/// *removed* options that TypeScript 6 merely deprecates. For a bare deprecated
-/// option the two agree that the config is an error and differ only in the code
-/// (`TS5101`/`TS5107` against `TS5102`/`TS5108`), so those are forwarded as they
-/// come. In the two shapes below they disagree about whether there is a
-/// diagnostic at all, and forwarding TypeScript 7's verdict would report an
-/// error on a config `vue-tsc` accepts today — a false positive against the very
-/// tool this measures (#3448).
+/// *removed* options that TypeScript 6 merely deprecates and TypeScript 5.x
+/// accepts silently. Its `TS5102`/`TS5108` "has been removed" family therefore
+/// names exactly the 6.0-era deprecations — measured against `tsc` 6.0.3 and
+/// 5.8.3, every option the family fires on (`baseUrl`, `downlevelIteration`,
+/// `target=ES5`, `moduleResolution=node10`) errors under 6 as
+/// `TS5101`/`TS5107` and is silent under 5.x, while 5.0-era removals surface
+/// from the native checker as `TS5023`/`TS6046` instead and stay forwarded.
+/// So the family is forwarded when the project's installed `typescript` is 6+
+/// (same verdict, different code) and dropped below that (or when no
+/// `typescript` is resolvable), where forwarding would report an error on a
+/// config the user's `vue-tsc` accepts today — a false positive against the
+/// very tool this measures (#3448, #3886).
 ///
 /// This is the deliberate answer to "whose verdict does a vize option diagnostic
 /// represent": the user's `vue-tsc` toolchain, not vize's own checker. The cost
@@ -118,6 +126,10 @@ pub(crate) struct OptionDiagnosticNarrowing {
     /// project that did exactly what TypeScript told it to do would be clean
     /// under `vue-tsc` and an error under `vize` (#3505).
     ignores_deprecations: bool,
+    /// The installed `typescript` is 6+, where the 6.0-era deprecations the
+    /// removal family names are errors too. Below 6 they are silent, so the
+    /// family is dropped wholesale (#3886).
+    removals_in_baseline: bool,
 }
 
 /// `TS5090: Non-relative paths are not allowed. Did you forget a leading './'?`
@@ -130,10 +142,14 @@ const DEPRECATION_CODES: [u32; 4] = [5101, 5102, 5107, 5108];
 
 impl OptionDiagnosticNarrowing {
     #[allow(clippy::disallowed_types)]
-    pub(crate) fn from_declared(declared: &Map<std::string::String, Value>) -> Self {
+    pub(crate) fn from_declared(
+        declared: &Map<std::string::String, Value>,
+        removals_in_baseline: bool,
+    ) -> Self {
         Self {
             declares_base_url: declared.contains_key("baseUrl"),
             ignores_deprecations: declared.contains_key("ignoreDeprecations"),
+            removals_in_baseline,
         }
     }
 
@@ -142,11 +158,38 @@ impl OptionDiagnosticNarrowing {
         if code == NON_RELATIVE_PATHS && self.declares_base_url {
             return false;
         }
-        if self.ignores_deprecations && DEPRECATION_CODES.contains(&code) {
+        if DEPRECATION_CODES.contains(&code)
+            && (self.ignores_deprecations || !self.removals_in_baseline)
+        {
             return false;
         }
         true
     }
+}
+
+/// Whether the project's installed TypeScript reports the 6.0-era deprecations
+/// the removal family names.
+///
+/// The nearest `node_modules/typescript/package.json` above the project root is
+/// the one Node resolution — and therefore `vue-tsc`'s `typescript` peer — would
+/// load. No resolvable install means there is no `vue-tsc` verdict to diverge
+/// from, so the conservative answer is `false`: report nothing the user's own
+/// toolchain cannot reproduce.
+fn installed_typescript_reports_removals(project_root: &std::path::Path) -> bool {
+    for dir in project_root.ancestors() {
+        let manifest = dir.join("node_modules/typescript/package.json");
+        let Ok(content) = std::fs::read_to_string(&manifest) else {
+            continue;
+        };
+        let major = parse_jsonc_value(&content)
+            .ok()
+            .as_ref()
+            .and_then(|package| package.get("version"))
+            .and_then(Value::as_str)
+            .and_then(|version| version.split('.').next()?.parse::<u32>().ok());
+        return major.is_some_and(|major| major >= 6);
+    }
+    false
 }
 
 /// Whether the generated config lost or rewrote an option the user declared.

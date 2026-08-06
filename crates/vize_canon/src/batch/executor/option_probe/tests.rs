@@ -5,14 +5,25 @@ use crate::batch::Diagnostic;
 use crate::batch::virtual_project::option_probe::OptionDiagnosticNarrowing;
 
 /// A narrowing derived from the options named in `declared`, using the same
-/// derivation the probe itself uses.
+/// derivation the probe itself uses. The baseline is TypeScript 6 — the pinned
+/// toolchain of the repo's own parity fixtures — so the removal family is
+/// forwarded; [`the_removal_family_is_dropped_on_a_typescript_5_baseline`]
+/// covers the 5.x side.
 #[allow(clippy::disallowed_types)]
 fn narrowing(declared: &[&str]) -> OptionDiagnosticNarrowing {
+    narrowing_with_baseline(declared, true)
+}
+
+#[allow(clippy::disallowed_types)]
+fn narrowing_with_baseline(
+    declared: &[&str],
+    removals_in_baseline: bool,
+) -> OptionDiagnosticNarrowing {
     let mut options = serde_json::Map::new();
     for name in declared {
         options.insert((*name).into(), serde_json::Value::Bool(true));
     }
-    OptionDiagnosticNarrowing::from_declared(&options)
+    OptionDiagnosticNarrowing::from_declared(&options, removals_in_baseline)
 }
 
 /// Verbatim `tsgo --pretty false` output for a probe config declaring
@@ -234,6 +245,33 @@ fn the_deprecation_family_survives_without_ignore_deprecations() {
         collected.iter().map(|entry| entry.0).collect::<Vec<_>>(),
         vec![Some(5102), Some(5108)],
         "{collected:?}"
+    );
+}
+
+/// TypeScript 5.x accepts every option the removal family names — measured
+/// against `tsc` 5.8.3, `baseUrl`, `downlevelIteration`, `target=ES5` and
+/// `moduleResolution=node10` are all silent — so on a 5.x baseline the whole
+/// family is dropped. A 5.0-era removal never reaches this filter: the native
+/// checker reports those as `TS5023`/`TS6046` (`importsNotUsedAsValues` and
+/// `target=ES3` in the captured output), which survive and match 5.x's own
+/// error verdict.
+#[test]
+fn the_removal_family_is_dropped_on_a_typescript_5_baseline() {
+    let mut diagnostics = Vec::new();
+    collect_option_diagnostics(
+        PROBE_OUTPUT,
+        Path::new("tsconfig.options.json"),
+        &PathBuf::from("/project/tsconfig.json"),
+        narrowing_with_baseline(&["baseUrl", "downlevelIteration"], false),
+        &mut diagnostics,
+    );
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.code)
+            .collect::<Vec<_>>(),
+        vec![Some(5023)],
+        "{diagnostics:?}"
     );
 }
 

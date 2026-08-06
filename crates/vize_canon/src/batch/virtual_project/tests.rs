@@ -1,11 +1,11 @@
 use super::build::source_type_for_path;
 use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
-use crate::batch::{Diagnostic, SfcBlockType};
-use crate::virtual_ts::VirtualTsOptions;
+use crate::{batch::Diagnostic, batch::SfcBlockType, virtual_ts::VirtualTsOptions};
 use std::{fs, path::Path, path::PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
+mod base_url;
 mod declaration_root_dir;
 mod graphql_generated;
 mod macro_scope;

@@ -1,3 +1,4 @@
+mod base_url;
 mod compiler_options;
 mod control_alias;
 mod native_options;
@@ -128,16 +129,20 @@ impl VirtualProject {
         // Flatten the effective compiler options instead of `extends`-ing the
         // user's tsconfig, so Corsa does not re-parse the source chain or inherit
         // real-tree `files`/`include` entries into the virtual program.
-        let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
+        let flattened = self.load_compiler_options_flattened(original_tsconfig.as_deref())?;
+        let mut compiler_options = flattened.options;
 
         // Capture the original path-alias map and type roots before stripping
         // path-sensitive options, so they can be re-anchored into the virtual
-        // mirror below.
-        let original_paths = compiler_options
+        // mirror below. A declared `baseUrl` becomes a synthesized `"*"` alias
+        // so bare specifiers keep resolving after the option itself is
+        // stripped (#3886).
+        let mut original_paths = compiler_options
             .get("paths")
             .and_then(Value::as_object)
             .cloned()
             .unwrap_or_default();
+        base_url::insert_wildcard_alias(&mut original_paths, flattened.base_url.as_deref());
         let original_type_roots = compiler_options
             .get("typeRoots")
             .and_then(Value::as_array)
