@@ -21,7 +21,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, cstr};
+use vize_carton::{FxHashSet, String as CompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 
@@ -32,6 +32,10 @@ impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
+        let alias_prefixes: Vec<CompactString> = aliases
+            .iter()
+            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .collect();
         let mut queue: Vec<PathBuf> = self
             .virtual_files_sorted()
             .iter()
@@ -46,6 +50,9 @@ impl VirtualProject {
             let Some(virtual_file) = self.find_by_original(&importer) else {
                 continue;
             };
+            if !may_resolve_a_dependency(&virtual_file.content, &alias_prefixes) {
+                continue;
+            }
             let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
                 continue;
             };
@@ -124,6 +131,21 @@ fn canonical_key(path: &Path) -> Option<PathBuf> {
 fn inside_node_modules(path: &Path) -> bool {
     path.components()
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
+}
+
+/// Whether any specifier in `content` could resolve, cheaply and without a
+/// parse. [`resolve_dependency`] only ever succeeds for a relative specifier or
+/// one matching a `paths` alias, so a module whose text contains neither shape
+/// cannot register anything. This pass runs on every check, and registration
+/// itself skips parsing a module with no rewritable specifier, so parsing every
+/// generated file here would be a plain regression on projects that import
+/// nothing first-party (#3898). Deliberately a conservative superset: alias
+/// prefixes are matched anywhere in the text.
+fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
+    crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
+        || alias_prefixes
+            .iter()
+            .any(|prefix| prefix.is_empty() || content.contains(prefix.as_str()))
 }
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
