@@ -48,6 +48,50 @@ impl AliasContext {
     /// `content` is the host's editor buffer and `overlays` the unsaved
     /// dependency buffers: the mirror is built from those rather than from disk,
     /// so an alias import the user just typed still materializes its target.
+    /// Cached per project root (#3923): the walk + materialize dominate large
+    /// apps, and a collect cycle runs on every keystroke. A cached context is
+    /// reused only while everything it depends on is provably unchanged —
+    /// the host's import lines, every open overlay's content, the governing
+    /// tsconfigs, and the mtime of every file the mirror registered — so the
+    /// watched-refresh contract (#3918) keeps holding: a disk edit to a
+    /// dependency changes its mtime and forces a rebuild.
+    #[allow(clippy::disallowed_types)]
+    pub(super) fn for_host_cached(
+        source_path: &Path,
+        content: &str,
+        overlays: &FxHashMap<PathBuf, &str>,
+    ) -> std::sync::Arc<Self> {
+        let fingerprint = ContextFingerprint::capture(source_path, content, overlays);
+        let cache = session_cache();
+        if let Ok(mut slots) = cache.lock() {
+            if let Some(cached) = slots.get(source_path)
+                && cached.fingerprint == fingerprint
+                && cached.fingerprint.stamps_still_valid()
+            {
+                return std::sync::Arc::clone(&cached.context);
+            }
+            slots.remove(source_path);
+        }
+        let context = std::sync::Arc::new(Self::for_host(source_path, content, overlays));
+        let mut fingerprint = fingerprint;
+        fingerprint.stamp(context.as_ref());
+        if let Ok(mut slots) = cache.lock() {
+            // A handful of concurrently edited packages at most; refuse to
+            // grow without bound rather than manage recency.
+            if slots.len() >= 8 {
+                slots.clear();
+            }
+            slots.insert(
+                source_path.to_path_buf(),
+                CachedContext {
+                    fingerprint,
+                    context: std::sync::Arc::clone(&context),
+                },
+            );
+        }
+        context
+    }
+
     pub(super) fn for_host(
         source_path: &Path,
         content: &str,
@@ -135,6 +179,86 @@ impl AliasContext {
                 .unwrap_or(&spelled)
                 .to_owned(),
         )
+    }
+}
+
+#[allow(clippy::disallowed_types)]
+struct CachedContext {
+    fingerprint: ContextFingerprint,
+    context: std::sync::Arc<AliasContext>,
+}
+
+#[allow(clippy::disallowed_types)]
+fn session_cache() -> &'static std::sync::Mutex<FxHashMap<PathBuf, CachedContext>> {
+    static CACHE: std::sync::OnceLock<std::sync::Mutex<FxHashMap<PathBuf, CachedContext>>> =
+        std::sync::OnceLock::new();
+    CACHE.get_or_init(|| std::sync::Mutex::new(FxHashMap::default()))
+}
+
+/// Everything a cached context's validity depends on. The host is keyed by
+/// its import lines, not its full text: edits that cannot change the
+/// dependency closure (typing in the template, a type tweak) reuse the
+/// mirror, which is the hot path the bridge bound was tripping over.
+#[derive(PartialEq)]
+#[allow(clippy::disallowed_types)]
+struct ContextFingerprint {
+    host_imports: u64,
+    overlays: u64,
+    stamps: Vec<(PathBuf, Option<std::time::SystemTime>)>,
+}
+
+impl ContextFingerprint {
+    #[allow(clippy::disallowed_methods)]
+    fn capture(source_path: &Path, content: &str, overlays: &FxHashMap<PathBuf, &str>) -> Self {
+        use std::hash::{Hash, Hasher};
+        let mut host = std::hash::DefaultHasher::new();
+        source_path.hash(&mut host);
+        for line in content.lines() {
+            let trimmed = line.trim_start();
+            if trimmed.contains("import") || trimmed.contains("require(") {
+                trimmed.hash(&mut host);
+            }
+        }
+        let mut overlay_entries: Vec<_> = overlays.iter().collect();
+        overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
+        let mut overlay_hash = std::hash::DefaultHasher::new();
+        for (path, text) in overlay_entries {
+            path.hash(&mut overlay_hash);
+            text.hash(&mut overlay_hash);
+        }
+        Self {
+            host_imports: host.finish(),
+            overlays: overlay_hash.finish(),
+            stamps: Vec::new(),
+        }
+    }
+
+    /// Record the disk state the freshly built context depends on: governing
+    /// configs and every file the mirror registered.
+    fn stamp(&mut self, context: &AliasContext) {
+        let mut paths = vec![context.project_root.join("tsconfig.json")];
+        if let Some(mirror) = context.mirror.as_ref() {
+            paths.extend(mirror.governing_config_paths());
+            paths.extend(mirror.registered_original_paths_sorted());
+        }
+        self.stamps = paths
+            .into_iter()
+            .map(|path| {
+                let stamp = std::fs::metadata(&path)
+                    .and_then(|metadata| metadata.modified())
+                    .ok();
+                (path, stamp)
+            })
+            .collect();
+    }
+
+    fn stamps_still_valid(&self) -> bool {
+        self.stamps.iter().all(|(path, stamp)| {
+            std::fs::metadata(path)
+                .and_then(|metadata| metadata.modified())
+                .ok()
+                == *stamp
+        })
     }
 }
 

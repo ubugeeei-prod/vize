@@ -187,8 +187,11 @@ fn build_vue_virtual_project_with_overlays_and_options(
     // The alias mirror is built before generation, and from the same buffers the
     // dependency walk reads, so a specifier the resolver rewrites always has a
     // materialized target (#3900).
-    let alias_context =
-        super::vue_dependencies_alias::AliasContext::for_host(source_path, content, &overlays);
+    let alias_context = super::vue_dependencies_alias::AliasContext::for_host_cached(
+        source_path,
+        content,
+        &overlays,
+    );
     let host = generate_vue_document_with_options(
         source_path,
         content,

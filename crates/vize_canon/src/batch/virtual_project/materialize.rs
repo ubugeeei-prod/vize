@@ -236,6 +236,20 @@ impl VirtualProject {
         tsconfig.exists().then_some(tsconfig)
     }
 
+    /// The configs whose contents govern this project's alias map: the
+    /// anchored tsconfig plus, for a solution-style shell, everything it
+    /// references (#3923 cache invalidation).
+    pub(crate) fn governing_config_paths(&self) -> Vec<PathBuf> {
+        let Some(anchored) = self.resolved_tsconfig_path() else {
+            return Vec::new();
+        };
+        let mut paths = vec![anchored.clone()];
+        paths.extend(super::tsconfig_gen::references::referenced_project_configs(
+            &anchored,
+        ));
+        paths
+    }
+
     /// File that project-level (file-less) diagnostics are attributed to:
     /// the effective tsconfig when one exists, otherwise the project root.
     pub(crate) fn project_diagnostics_anchor(&self) -> PathBuf {
