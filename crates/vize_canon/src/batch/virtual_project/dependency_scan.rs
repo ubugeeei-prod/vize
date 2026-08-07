@@ -140,9 +140,29 @@ impl VirtualProject {
     /// (pattern, target) pairs. Both come from the flattened chain, so the
     /// anchors match what the generated tsconfig resolves (#3886).
     pub(crate) fn dependency_alias_map(&self) -> Vec<(String, String)> {
-        let Ok(flattened) =
-            self.load_compiler_options_flattened(self.resolved_tsconfig_path().as_deref())
-        else {
+        let anchored = self.resolved_tsconfig_path();
+        let aliases = self.alias_map_of(anchored.as_deref());
+        if !aliases.is_empty() {
+            return aliases;
+        }
+        // A solution-style shell (create-vue's default) declares nothing
+        // itself; the aliases live in the referenced project configs. The
+        // first referenced config that yields paths wins — the standard
+        // app/node split has exactly one (#3915).
+        let Some(anchored) = anchored else {
+            return aliases;
+        };
+        for referenced in super::tsconfig_gen::references::referenced_project_configs(&anchored) {
+            let referenced_aliases = self.alias_map_of(Some(&referenced));
+            if !referenced_aliases.is_empty() {
+                return referenced_aliases;
+            }
+        }
+        aliases
+    }
+
+    fn alias_map_of(&self, tsconfig_path: Option<&Path>) -> Vec<(String, String)> {
+        let Ok(flattened) = self.load_compiler_options_flattened(tsconfig_path) else {
             return Vec::new();
         };
         let Some(paths) = flattened

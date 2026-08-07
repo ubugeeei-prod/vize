@@ -3,6 +3,7 @@ mod compiler_options;
 mod control_alias;
 mod native_options;
 mod path_rebase;
+pub(super) mod references;
 mod vue_alias;
 
 use std::path::{Path, PathBuf};
