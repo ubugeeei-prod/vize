@@ -41,30 +41,50 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
         offset -= 1;
     }
 
-    let bytes = content.as_bytes();
-    let mut pos = offset;
-    // Step back over the partial member name already typed.
-    while pos > 0 && is_member_name_byte(bytes[pos - 1]) {
-        pos -= 1;
+    // Step back over the partial member name already typed. Member names are
+    // identifiers, so this walks characters rather than ASCII bytes: `it.名|`
+    // reads a member exactly like `it.na|` does.
+    let mut pos = identifier_start(content, offset);
+    // Skip any whitespace between the `.` and the name (`it. na|`).
+    while let Some(ch) = content[..pos].chars().next_back() {
+        if !ch.is_whitespace() {
+            break;
+        }
+        pos -= ch.len_utf8();
     }
-    // A digit-led token is a numeric literal fragment (`1.5`), not a member.
-    if pos < offset && bytes[pos].is_ascii_digit() {
+    if !content[..pos].ends_with('.') {
         return false;
     }
-    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
-        pos -= 1;
-    }
-    if pos == 0 || bytes[pos - 1] != b'.' {
-        return false;
-    }
+
+    let dot = pos - 1;
     // `...rest` spreads an expression rather than reading a member off it.
-    pos -= 1;
-    pos == 0 || bytes[pos - 1] != b'.'
+    if content[..dot].ends_with('.') {
+        return false;
+    }
+    // A digit-led receiver means the `.` belongs to a numeric literal rather
+    // than to a member read, which covers every fragment of one (`1.`, `1.5`,
+    // `1.na`). An identifier that merely contains digits (`foo1.bar`) is still
+    // a member read, so this tests the start of the receiver token, not the
+    // character next to the dot.
+    !content[identifier_start(content, dot)..dot].starts_with(|ch: char| ch.is_ascii_digit())
+}
+
+/// Walk back from `end` over identifier characters and return the token start.
+#[cfg(feature = "native")]
+fn identifier_start(content: &str, end: usize) -> usize {
+    let mut start = end;
+    while let Some(ch) = content[..start].chars().next_back() {
+        if !is_identifier_char(ch) {
+            break;
+        }
+        start -= ch.len_utf8();
+    }
+    start
 }
 
 #[cfg(feature = "native")]
-fn is_member_name_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
+fn is_identifier_char(ch: char) -> bool {
+    ch.is_alphanumeric() || ch == '_' || ch == '$'
 }
 
 fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
@@ -194,6 +214,15 @@ mod member_access_tests {
     }
 
     #[test]
+    fn member_names_may_be_unicode_identifiers() {
+        assert!(is_member_access("{{ it.名| }}"));
+        assert!(is_member_access("{{ it.名前| }}"));
+        assert!(is_member_access("{{ 名.前| }}"));
+        // A digit inside the receiver keeps it an identifier, not a literal.
+        assert!(is_member_access("{{ foo1.ba| }}"));
+    }
+
+    #[test]
     fn identifier_positions_are_not_member_access() {
         assert!(!is_member_access("{{ | }}"));
         assert!(!is_member_access("{{ cou| }}"));
@@ -206,5 +235,10 @@ mod member_access_tests {
     fn spreads_and_numeric_literals_are_not_member_access() {
         assert!(!is_member_access("{{ f(...arg| ) }}"));
         assert!(!is_member_access("{{ 1.5| }}"));
+        // Every fragment of a numeric literal, not just the one with a digit
+        // under the caret.
+        assert!(!is_member_access("{{ 1.| }}"));
+        assert!(!is_member_access("{{ 1.na| }}"));
+        assert!(!is_member_access("{{ 42.toStrin| }}"));
     }
 }
