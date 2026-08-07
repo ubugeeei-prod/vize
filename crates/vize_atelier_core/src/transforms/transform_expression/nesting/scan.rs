@@ -7,7 +7,7 @@
 //! stop exactly where the lexer stops, or hidden brackets slip past the guard
 //! while OXC still recurses into the overflow path.
 
-pub(super) fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
+pub(crate) fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
     while i < bytes.len() {
         match bytes[i] {
             b'\\' => {
@@ -151,7 +151,7 @@ pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {
 /// between from the depth budget: an unclosed `/` swallowed to EOF hid 183 type
 /// angles (#3873), and one closed by a line terminator 27 KiB later hid 6182
 /// more (#3875). The caller scans them instead, which can only over-count.
-pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
+pub(crate) fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut in_character_class = false;
     while i < bytes.len() {
         match bytes[i] {
@@ -192,7 +192,7 @@ pub(super) fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
     None
 }
 
-pub(super) fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
+pub(crate) fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len()
         && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'$')
     {
@@ -201,7 +201,7 @@ pub(super) fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
     i
 }
 
-pub(super) fn skip_number(bytes: &[u8], mut i: usize) -> usize {
+pub(crate) fn skip_number(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len()
         && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.')
     {
@@ -210,7 +210,7 @@ pub(super) fn skip_number(bytes: &[u8], mut i: usize) -> usize {
     i
 }
 
-pub(super) fn keyword_allows_regex_after(identifier: &[u8]) -> bool {
+pub(crate) fn keyword_allows_regex_after(identifier: &[u8]) -> bool {
     matches!(
         identifier,
         b"await"

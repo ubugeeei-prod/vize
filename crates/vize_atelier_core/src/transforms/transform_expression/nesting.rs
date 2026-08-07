@@ -1,5 +1,5 @@
 #[path = "nesting/scan.rs"]
-mod scan;
+pub(crate) mod scan;
 
 use scan::{
     is_speculative_type_angle_open, keyword_allows_regex_after, skip_block_comment,

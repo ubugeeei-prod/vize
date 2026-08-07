@@ -4,6 +4,7 @@
 //! handlers, including TypeScript stripping, identifier prefixing, and
 //! comment conversion.
 
+mod comment_rewrite;
 mod generate;
 pub(crate) mod helpers;
 pub(crate) mod scope_prefix;
@@ -14,7 +15,7 @@ use crate::{
 
 use super::{context::CodegenContext, helpers::escape_js_string};
 
-use helpers::convert_line_comments_to_block;
+use comment_rewrite::convert_line_comments_to_block;
 use scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params};
 use vize_carton::String;
 use vize_carton::ToCompactString;

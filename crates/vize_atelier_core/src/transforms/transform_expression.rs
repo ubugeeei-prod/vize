@@ -5,7 +5,7 @@ mod collector;
 #[path = "transform_expression/inline_handler.rs"]
 mod inline_handler;
 #[path = "transform_expression/nesting.rs"]
-mod nesting;
+pub(crate) mod nesting;
 #[path = "transform_expression/prefix.rs"]
 pub(crate) mod prefix;
 #[path = "transform_expression/rewrite.rs"]
