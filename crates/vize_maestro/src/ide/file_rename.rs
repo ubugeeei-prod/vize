@@ -1,6 +1,9 @@
 //! File rename support for workspace import updates.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+mod alias;
+#[cfg(all(test, feature = "native"))]
+mod alias_tests;
 #[cfg(all(test, feature = "native"))]
 mod declaration_index_tests;
 mod manual;

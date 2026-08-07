@@ -19,7 +19,7 @@ use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
 use crate::{ide::offset_to_position, server::ServerState};
 
 const SCRIPT_EXTENSIONS: &[&str] = &["ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
-const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] = &[
+pub(super) const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] = &[
     "ts", "tsx", "d.ts", "d.mts", "d.cts", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue",
 ];
 #[derive(Clone)]
@@ -403,9 +403,6 @@ fn collect_script_content_edits(
     let mut collector = ModuleSpecifierCollector::default();
     collector.visit_program(&parsed.program);
 
-    let Some(current_dir) = context.current_path.parent() else {
-        return Vec::new();
-    };
     let Some(future_dir) = context.future_path.parent() else {
         return Vec::new();
     };
@@ -414,9 +411,9 @@ fn collect_script_content_edits(
         .specifiers
         .into_iter()
         .filter_map(|specifier| {
-            let new_text = rewrite_relative_specifier(
+            let new_text = super::alias::rewrite_specifier(
                 context.state,
-                current_dir,
+                context.current_path,
                 future_dir,
                 &specifier.specifier,
                 context.rename_targets,
@@ -493,7 +490,7 @@ fn render_module_specifier(
     relative_module_path(importer_dir, &rendered_target)
 }
 
-fn relative_module_path(from_dir: &Path, to_path: &Path) -> Option<std::string::String> {
+pub(super) fn relative_module_path(from_dir: &Path, to_path: &Path) -> Option<std::string::String> {
     let from_dir = normalize_path_buf(from_dir);
     let to_path = normalize_path_buf(to_path);
 
@@ -604,7 +601,7 @@ fn apply_all_uri_renames(uri: &Url, renames: &[RenameTarget]) -> Option<Url> {
     Url::from_file_path(path).ok()
 }
 
-fn apply_all_path_renames(path: &Path, renames: &[RenameTarget]) -> Option<PathBuf> {
+pub(super) fn apply_all_path_renames(path: &Path, renames: &[RenameTarget]) -> Option<PathBuf> {
     let mut updated = normalize_path_buf(path);
     let mut changed = false;
 
@@ -632,7 +629,7 @@ fn apply_path_rename(path: &Path, rename: &RenameTarget) -> Option<PathBuf> {
     }
 }
 
-fn candidate_exists(state: &ServerState, path: &Path) -> bool {
+pub(super) fn candidate_exists(state: &ServerState, path: &Path) -> bool {
     if path.exists() {
         return true;
     }
@@ -671,7 +668,7 @@ fn read_workspace_source(state: &ServerState, path: &Path) -> Option<std::string
     fs::read_to_string(path).ok()
 }
 
-fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
+pub(super) fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
     let split_at = specifier.find(['?', '#']).unwrap_or(specifier.len());
     (&specifier[..split_at], &specifier[split_at..])
 }
@@ -701,7 +698,7 @@ fn script_source_type(lang: Option<&str>) -> SourceType {
     }
 }
 
-fn normalize_path_buf(path: &Path) -> PathBuf {
+pub(super) fn normalize_path_buf(path: &Path) -> PathBuf {
     let mut normalized = PathBuf::new();
 
     for component in path.components() {
@@ -719,7 +716,7 @@ fn normalize_path_buf(path: &Path) -> PathBuf {
     normalized
 }
 
-fn strip_extension(path: &Path) -> PathBuf {
+pub(super) fn strip_extension(path: &Path) -> PathBuf {
     let mut stripped = normalize_path_buf(path);
     let path = stripped.to_string_lossy();
     let extension_depth = 1 + usize::from(

@@ -1,6 +1,5 @@
-//! IDE features for the LSP server.
-//!
-//! Core IDE functionality; the module list below is the authoritative inventory:
+//! IDE features for the LSP server. The module list below is the
+//! authoritative inventory:
 //! - Correctness: diagnostics, type checking and type information
 //! - Authoring: hover, completion, definition, references, code actions, rename, linked editing
 //! - Structure: document/workspace symbols, selection ranges, semantic tokens, inlay hints
@@ -32,6 +31,7 @@ pub mod semantic_tokens;
 pub(crate) mod sfc_region;
 pub(crate) mod tag_pair;
 mod template_expression;
+pub(crate) mod tsconfig_paths;
 pub mod type_service;
 pub mod workspace_symbols;
 pub use auto_insert::AutoInsertService;

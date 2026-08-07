@@ -1,0 +1,121 @@
+#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+
+//! Rename edits for `paths`-aliased specifiers (#3917).
+
+use super::manual::collect_import_rename_edits;
+use super::manual_tests::{file_uri, normalize_edit, test_dir};
+use crate::server::ServerState;
+use insta::assert_snapshot;
+use std::fs;
+use tower_lsp::lsp_types::FileRename;
+
+#[test]
+fn aliased_specifiers_follow_the_move_and_leave_the_subtree_relative() {
+    let dir = test_dir();
+    let root = dir.path();
+    fs::create_dir_all(root.join("src/widgets")).unwrap();
+    fs::create_dir_all(root.join("lib")).unwrap();
+    // Solution-style shell: paths live in the referenced app config (#3915).
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{ "files": [], "references": [{ "path": "./tsconfig.app.json" }] }"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("tsconfig.app.json"),
+        r#"{
+  // aliases govern src only
+  "compilerOptions": { "paths": { "@/*": ["./src/*"] } }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("src/App.vue"),
+        r#"<script setup lang="ts">
+import Child from "./Child.vue";
+import AliasChild from "@/Child.vue";
+import { helper } from "@/util";
+</script>
+"#,
+    )
+    .unwrap();
+    fs::write(root.join("src/Child.vue"), "<template><i /></template>").unwrap();
+    fs::write(root.join("src/util.ts"), "export const helper = 1;").unwrap();
+
+    let state = ServerState::new();
+    state.set_workspace_root(root.to_path_buf());
+
+    // Move within the alias subtree: both spellings survive, style preserved.
+    let edit = collect_import_rename_edits(
+        &state,
+        &[FileRename {
+            old_uri: file_uri(&root.join("src/Child.vue")),
+            new_uri: file_uri(&root.join("src/widgets/Kid.vue")),
+        }],
+        true,
+    )
+    .unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&normalize_edit(root, &edit)).unwrap(), @r###"
+    {
+      "src/App.vue": [
+        {
+          "newText": "./widgets/Kid.vue",
+          "range": {
+            "end": {
+              "character": 30,
+              "line": 1
+            },
+            "start": {
+              "character": 19,
+              "line": 1
+            }
+          }
+        },
+        {
+          "newText": "@/widgets/Kid.vue",
+          "range": {
+            "end": {
+              "character": 35,
+              "line": 2
+            },
+            "start": {
+              "character": 24,
+              "line": 2
+            }
+          }
+        }
+      ]
+    }
+    "###);
+
+    // Move an extensionless script target out of the alias subtree: the alias
+    // has no spelling there, so the specifier falls back to a relative path.
+    let edit = collect_import_rename_edits(
+        &state,
+        &[FileRename {
+            old_uri: file_uri(&root.join("src/util.ts")),
+            new_uri: file_uri(&root.join("lib/util.ts")),
+        }],
+        true,
+    )
+    .unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&normalize_edit(root, &edit)).unwrap(), @r###"
+    {
+      "src/App.vue": [
+        {
+          "newText": "../lib/util",
+          "range": {
+            "end": {
+              "character": 30,
+              "line": 3
+            },
+            "start": {
+              "character": 24,
+              "line": 3
+            }
+          }
+        }
+      ]
+    }
+    "###);
+}

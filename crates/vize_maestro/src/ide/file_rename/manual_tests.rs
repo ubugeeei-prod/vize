@@ -8,7 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use tower_lsp::lsp_types::{FileRename, Url, WorkspaceEdit};
 
-fn test_dir() -> tempfile::TempDir {
+pub(super) fn test_dir() -> tempfile::TempDir {
     let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("target")
         .join("vize-tests");
@@ -16,11 +16,11 @@ fn test_dir() -> tempfile::TempDir {
     tempfile::tempdir_in(base).unwrap()
 }
 
-fn file_uri(path: &Path) -> std::string::String {
+pub(super) fn file_uri(path: &Path) -> std::string::String {
     Url::from_file_path(path).unwrap().to_string()
 }
 
-fn normalize_edit(root: &Path, edit: &WorkspaceEdit) -> serde_json::Value {
+pub(super) fn normalize_edit(root: &Path, edit: &WorkspaceEdit) -> serde_json::Value {
     let mut files = BTreeMap::<std::string::String, Vec<serde_json::Value>>::new();
 
     for (uri, edits) in edit.changes.as_ref().unwrap() {

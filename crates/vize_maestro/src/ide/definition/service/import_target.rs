@@ -109,38 +109,29 @@ fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
     if let Some(path) = module_specifier::resolve_specifier(uri, specifier) {
         return Some(path);
     }
+    // The shared reader anchors like the session does: nearest tsconfig,
+    // following a solution-style shell's references, with string-aware jsonc
+    // stripping — a naive stripper eats every `"@/*"` pattern (#3915, #3917).
     let file = uri.to_file_path().ok()?;
-    let tsconfig_dir = file
-        .ancestors()
-        .skip(1)
-        .find(|dir| dir.join("tsconfig.json").is_file())?;
-    let manifest = fs::read_to_string(tsconfig_dir.join("tsconfig.json")).ok()?;
-    let manifest: serde_json::Value = serde_json::from_str(&manifest)
-        .ok()
-        .or_else(|| serde_json::from_str(&strip_jsonc_comments(&manifest)).ok())?;
-    let paths = manifest.get("compilerOptions")?.get("paths")?.as_object()?;
+    let paths = crate::ide::tsconfig_paths::project_paths(&file)?;
     let mut best: Option<(usize, PathBuf)> = None;
-    for (pattern, targets) in paths {
+    for (pattern, target) in &paths.entries {
         let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
-            specifier.strip_prefix(prefix).and_then(|rest| {
-                targets.as_array()?.iter().find_map(|target| {
-                    let target = target.as_str()?.strip_suffix('*')?;
-                    Some(cstr!("{target}{rest}").to_string())
-                })
-            })
+            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
+                (Some(rest), Some(target_prefix)) => {
+                    Some(cstr!("{target_prefix}{rest}").to_string())
+                }
+                _ => None,
+            }
         } else if specifier == pattern {
-            targets
-                .as_array()
-                .and_then(|targets| targets.first())
-                .and_then(|target| target.as_str())
-                .map(str::to_owned)
+            Some(target.clone())
         } else {
             None
         };
         let Some(substituted) = substituted else {
             continue;
         };
-        let base = tsconfig_dir.join(substituted);
+        let base = paths.anchor.join(substituted);
         if let Some(resolved) = probe(&base)
             && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
         {
@@ -148,36 +139,6 @@ fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
         }
     }
     best.map(|(_, path)| path)
-}
-
-/// Line and block comments stripped, so real-world tsconfigs parse. Naive
-/// about comment markers inside strings, which tsconfig paths do not contain
-/// in practice; a failed parse simply skips alias resolution.
-fn strip_jsonc_comments(source: &str) -> String {
-    let mut out = String::with_capacity(source.len());
-    let mut chars = source.chars().peekable();
-    while let Some(ch) = chars.next() {
-        if ch == '/' && chars.peek() == Some(&'/') {
-            for skipped in chars.by_ref() {
-                if skipped == '\n' {
-                    out.push('\n');
-                    break;
-                }
-            }
-        } else if ch == '/' && chars.peek() == Some(&'*') {
-            chars.next();
-            let mut previous = ' ';
-            for skipped in chars.by_ref() {
-                if previous == '*' && skipped == '/' {
-                    break;
-                }
-                previous = skipped;
-            }
-        } else {
-            out.push(ch);
-        }
-    }
-    out
 }
 
 fn probe(base: &Path) -> Option<PathBuf> {
