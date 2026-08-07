@@ -47,6 +47,7 @@ impl VirtualProject {
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
+            session_scripts: false,
             legacy_vue2: false,
             jsx_typecheck: false,
             dialect: vize_carton::config::VueVersion::default(),
@@ -66,11 +67,9 @@ impl VirtualProject {
         Ok(project)
     }
 
-    /// Create an empty project snapshot with the same generation settings.
-    ///
-    /// This is used by correctness-safe refreshes: source files are registered
-    /// again from disk, while every caller-configured Vue dialect and virtual
-    /// TypeScript option remains identical to the original scan.
+    /// Create an empty project snapshot with the same generation settings:
+    /// correctness-safe refreshes register source files again from disk while
+    /// every caller-configured dialect and virtual TS option stays identical.
     pub(crate) fn empty_with_same_options(&self) -> CorsaResult<Self> {
         let mut project = Self::new(&self.project_root)?;
         project.set_tsconfig_path(self.tsconfig_path.clone());

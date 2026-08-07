@@ -124,6 +124,13 @@ pub struct VirtualProject {
 
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
+
+    /// Editor sessions register reachable in-root scripts too: they have no
+    /// generated tsconfig aliasing `.vue` imports into the mirror, so a barrel
+    /// like `src/Primitive/index.ts` must be mirrored for its `.vue`
+    /// re-exports to rewrite (#3915). Batch keeps the narrow set that
+    /// incremental sessions and Tier-L pin (#3898).
+    session_scripts: bool,
     legacy_vue2: bool,
 
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:

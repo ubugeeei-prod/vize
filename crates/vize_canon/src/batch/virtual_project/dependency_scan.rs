@@ -110,7 +110,7 @@ impl VirtualProject {
                 // and force-registering them would change the scanned set that
                 // incremental sessions and Tier-L pin (#3898).
                 let is_vue = key.extension().is_some_and(|extension| extension == "vue");
-                if !is_vue && key.starts_with(&self.project_root) {
+                if !is_vue && !self.session_scripts && key.starts_with(&self.project_root) {
                     continue;
                 }
                 if !visited.insert(key.clone()) {
@@ -139,6 +139,11 @@ impl VirtualProject {
     /// The effective `paths` aliases with project-root-relative targets, as
     /// (pattern, target) pairs. Both come from the flattened chain, so the
     /// anchors match what the generated tsconfig resolves (#3886).
+    /// Opt an editor session into registering reachable in-root scripts (#3915).
+    pub(crate) fn set_session_script_registration(&mut self, enabled: bool) {
+        self.session_scripts = enabled;
+    }
+
     pub(crate) fn dependency_alias_map(&self) -> Vec<(String, String)> {
         let anchored = self.resolved_tsconfig_path();
         let aliases = self.alias_map_of(anchored.as_deref());
@@ -146,9 +151,8 @@ impl VirtualProject {
             return aliases;
         }
         // A solution-style shell (create-vue's default) declares nothing
-        // itself; the aliases live in the referenced project configs. The
-        // first referenced config that yields paths wins — the standard
-        // app/node split has exactly one (#3915).
+        // itself; the first referenced config that yields paths wins — the
+        // standard app/node split has exactly one (#3915).
         let Some(anchored) = anchored else {
             return aliases;
         };
