@@ -10,7 +10,8 @@
 //! with the same fuzz-hardened primitives the expression nesting guard uses.
 
 use crate::steps::expression::nesting::scan::{
-    keyword_allows_regex_after, skip_identifier, skip_number, skip_quoted, skip_regex,
+    keyword_allows_regex_after, skip_identifier, skip_line_comment, skip_number, skip_quoted,
+    skip_regex,
 };
 use vize_carton::String;
 
@@ -40,19 +41,21 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
                 let comment_start = i + 2;
-                let mut comment_end = comment_start;
-                while comment_end < bytes.len() && bytes[comment_end] != b'\n' {
-                    comment_end += 1;
-                }
+                // A line comment ends at any ECMAScript line terminator — LF,
+                // CR, LS, or PS — not LF alone: stopping only at LF pulled the
+                // code after a bare CR (or LS/PS) into the generated block
+                // comment. The terminator itself is left for a later iteration,
+                // which copies it through unchanged.
+                let comment_end = skip_line_comment(bytes, comment_start);
                 let comment_text = content[comment_start..comment_end].trim_end();
                 result.push_str("/* ");
-                result.push_str(comment_text);
+                // A line comment may legally contain `*/`, which would close the
+                // generated block comment early — exposing the rest as live code
+                // or producing invalid JavaScript. Neutralize it; comment text
+                // carries no semantics.
+                result.push_str(&comment_text.replace("*/", "* /"));
                 result.push_str(" */");
                 i = comment_end;
-                if i < bytes.len() && bytes[i] == b'\n' {
-                    result.push('\n');
-                    i += 1;
-                }
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 let mut end = i + 2;
@@ -96,6 +99,16 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
             b')' | b']' | b'}' => {
                 result.push(b as char);
                 i += 1;
+                can_start_regex = false;
+            }
+            // `++`/`--`: the fallback arm would see two operator bytes and claim
+            // operand position, so the division in `a++ / b // note` was lexed
+            // as a regex that swallowed the real comment's first `/`. A `/`
+            // after an increment/decrement is always division, as the nesting
+            // scanner also tracks.
+            b'+' | b'-' if bytes.get(i + 1) == Some(&b) => {
+                result.push_str(&content[i..i + 2]);
+                i += 2;
                 can_start_regex = false;
             }
             _ => {
@@ -151,6 +164,47 @@ mod tests {
         assert_eq!(
             convert_line_comments_to_block("f(x) / 2 // note"),
             "f(x) / 2 /*  note */"
+        );
+        // After `++`/`--` a slash is division too; the comment still converts.
+        assert_eq!(
+            convert_line_comments_to_block("a++ / b // note"),
+            "a++ / b /*  note */"
+        );
+        assert_eq!(
+            convert_line_comments_to_block("a-- / b // note"),
+            "a-- / b /*  note */"
+        );
+    }
+
+    #[test]
+    fn every_line_terminator_ends_the_comment() {
+        // CR, LS (U+2028), and PS (U+2029) end a line comment just like LF, and
+        // the terminator is copied through unchanged.
+        assert_eq!(
+            convert_line_comments_to_block("count // note\r next"),
+            "count /*  note */\r next"
+        );
+        assert_eq!(
+            convert_line_comments_to_block("count // note\u{2028}next"),
+            "count /*  note */\u{2028}next"
+        );
+        assert_eq!(
+            convert_line_comments_to_block("count // note\u{2029}next"),
+            "count /*  note */\u{2029}next"
+        );
+        assert_eq!(
+            convert_line_comments_to_block("count // note\nnext"),
+            "count /*  note */\nnext"
+        );
+    }
+
+    #[test]
+    fn block_comment_terminator_inside_a_line_comment_is_neutralized() {
+        // `*/` in the comment text must not close the generated block comment
+        // and revive the code after it.
+        assert_eq!(
+            convert_line_comments_to_block("value // */ + sideEffect() /*"),
+            "value /*  * / + sideEffect() /* */"
         );
     }
 

@@ -114,7 +114,7 @@ fn is_ecmascript_whitespace(c: char) -> bool {
     c == '\u{feff}' || (c.is_whitespace() && c != '\u{0085}')
 }
 
-pub(super) fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
+pub(crate) fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len() {
         // Line comments end at any ECMAScript line terminator: LF, CR, LS
         // (U+2028), or PS (U+2029). Stopping only at LF let a bare CR hide
