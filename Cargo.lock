@@ -3870,6 +3870,7 @@ dependencies = [
  "oxc_diagnostics",
  "oxc_parser",
  "oxc_span",
+ "oxc_syntax",
  "parking_lot",
  "ropey",
  "serde",

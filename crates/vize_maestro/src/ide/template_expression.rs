@@ -98,9 +98,13 @@ fn identifier_start(content: &str, end: usize) -> usize {
     start
 }
 
+/// ECMAScript `IdentifierPart`, so the scan keeps every character an editor can
+/// have already typed into a member name: `is_alphanumeric` alone drops the
+/// combining marks of decomposed text (`café` as `cafe` + U+0301) and the
+/// zero-width joiners, both of which end the token one character too early.
 #[cfg(feature = "native")]
 fn is_identifier_char(ch: char) -> bool {
-    ch.is_alphanumeric() || ch == '_' || ch == '$'
+    oxc_syntax::identifier::is_identifier_part(ch)
 }
 
 fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
@@ -236,6 +240,12 @@ mod member_access_tests {
         assert!(is_member_access("{{ 名.前| }}"));
         // A digit inside the receiver keeps it an identifier, not a literal.
         assert!(is_member_access("{{ foo1.ba| }}"));
+        // Decomposed text: the caret sits on a combining mark, which is an
+        // identifier part rather than a token boundary.
+        assert!(is_member_access("{{ it.cafe\u{301}| }}"));
+        assert!(is_member_access("{{ cafe\u{301}.na| }}"));
+        // Zero-width joiners are identifier parts too.
+        assert!(is_member_access("{{ it.a\u{200D}b| }}"));
     }
 
     #[test]
