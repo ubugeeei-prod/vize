@@ -24,9 +24,9 @@ const MAX_REEXPORT_HOPS: usize = 3;
 
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
-    let specifier = importing_specifier(&ctx.content, ctx.offset, &word)?;
+    let (specifier, exported) = importing_specifier(&ctx.content, ctx.offset, &word)?;
     let target = resolve_import_specifier(ctx.uri, &specifier)?;
-    locate_export(&target, &word, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
+    locate_export(&target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
 }
 
 /// Definition on a component tag whose import the manual finder cannot
@@ -42,9 +42,13 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
     }
     let pascal = crate::ide::kebab_to_pascal(&tag_name);
     for name in [tag_name.as_str(), pascal.as_str()] {
+        // `import { Widget as LocalWidget }` declares `Widget` in the target,
+        // so the lookup key is the exported name, not the local alias.
+        let exported = bound_import(&ctx.content, name)
+            .map_or_else(|| name.to_owned(), |(_, exported)| exported);
         if let Some(specifier) = helpers::find_import_path(ctx, name)
             && let Some(target) = resolve_import_specifier(ctx.uri, &specifier)
-            && let Some(location) = locate_export(&target, name, MAX_REEXPORT_HOPS)
+            && let Some(location) = locate_export(&target, &exported, MAX_REEXPORT_HOPS)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
         }
@@ -52,26 +56,49 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
     None
 }
 
-/// The module specifier of the import statement that both contains `offset`
-/// and binds `word`. `None` when the cursor is not on an imported name.
-fn importing_specifier(content: &str, offset: usize, word: &str) -> Option<String> {
+/// The module specifier and exported name of the import statement that both
+/// contains `offset` and binds `word`. `None` when the cursor is not on an
+/// imported name.
+fn importing_specifier(content: &str, offset: usize, word: &str) -> Option<(String, String)> {
+    let (_, _, clause, specifier) = import_statements(content)
+        .into_iter()
+        .find(|(start, end, _, _)| offset >= *start && offset <= *end)?;
+    let exported = bound_source_name(clause, word)?;
+    Some((specifier.to_owned(), exported))
+}
+
+/// The specifier and exported name for local binding `word`, scanning every
+/// import statement — the component-tag path has no cursor offset on the
+/// import statement to anchor on.
+fn bound_import(content: &str, word: &str) -> Option<(String, String)> {
+    import_statements(content)
+        .into_iter()
+        .find_map(|(_, _, clause, specifier)| {
+            bound_source_name(clause, word).map(|exported| (specifier.to_owned(), exported))
+        })
+}
+
+/// The import statements in `content` as `(statement_start, statement_end,
+/// clause, specifier)`, where the clause is everything before the specifier's
+/// opening quote.
+fn import_statements(content: &str) -> Vec<(usize, usize, &str, &str)> {
+    let mut statements = Vec::new();
     let mut search_start = 0;
     while let Some(position) = content[search_start..].find("import") {
         let statement_start = search_start + position;
         search_start = statement_start + "import".len();
         let rest = &content[statement_start..];
-        let from_quote = find_specifier_span(rest)?;
-        let statement_end = statement_start + from_quote.1;
-        if offset < statement_start || offset > statement_end {
+        let Some((quote_start, quote_end)) = find_specifier_span(rest) else {
             continue;
-        }
-        let clause = &rest[..from_quote.0];
-        if !binds_name(clause, word) {
-            return None;
-        }
-        return Some(rest[from_quote.0 + 1..from_quote.1].to_owned());
+        };
+        statements.push((
+            statement_start,
+            statement_start + quote_end,
+            &rest[..quote_start],
+            &rest[quote_start + 1..quote_end],
+        ));
     }
-    None
+    statements
 }
 
 /// `(opening_quote_index, closing_quote_index)` of the statement's specifier,
@@ -96,33 +123,41 @@ fn find_specifier_span(rest: &str) -> Option<(usize, usize)> {
     Some((quote_start, quote_end))
 }
 
-/// Whether the import clause binds `word` — as a named import (respecting
-/// `as` renames), a default import, or a namespace import.
-fn binds_name(clause: &str, word: &str) -> bool {
+/// The name the target module exports for local binding `word` — the left
+/// side of an `as` rename in a named-import clause. `None` when the clause
+/// does not bind `word`. Default and namespace imports have no exported name
+/// to follow, so the local binding stays the lookup key.
+fn bound_source_name(clause: &str, word: &str) -> Option<String> {
     if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
         for part in clause[open + 1..close].split(',') {
-            let bound = part
-                .rsplit(" as ")
-                .next()
-                .unwrap_or(part)
-                .trim()
-                .trim_start_matches("type ")
-                .trim();
+            let part = part.trim().trim_start_matches("type ").trim();
+            let (source, bound) = split_rename(part);
             if bound == word {
-                return true;
+                return Some(source.to_owned());
             }
         }
     }
     let head = clause.split('{').next().unwrap_or(clause);
-    head.split(',').any(|part| {
-        let part = part
-            .trim()
-            .trim_start_matches("import")
-            .trim()
-            .trim_end_matches("from")
-            .trim();
-        part == word || part.strip_prefix("* as ").map(str::trim) == Some(word)
-    })
+    head.split(',')
+        .any(|part| {
+            let part = part
+                .trim()
+                .trim_start_matches("import")
+                .trim()
+                .trim_end_matches("from")
+                .trim();
+            part == word || part.strip_prefix("* as ").map(str::trim) == Some(word)
+        })
+        .then(|| word.to_owned())
+}
+
+/// `(source, bound)` for a specifier-list entry: `Widget as LocalWidget`
+/// splits, a plain `Widget` names both sides.
+fn split_rename(part: &str) -> (&str, &str) {
+    match part.split_once(" as ") {
+        Some((source, bound)) => (source.trim(), bound.trim()),
+        None => (part, part),
+    }
 }
 
 /// Resolve relative and bare specifiers through the shared resolver, and
@@ -198,10 +233,10 @@ fn locate_export(target: &Path, word: &str, hops: usize) -> Option<Location> {
     // A barrel both names the word and points elsewhere; the re-export hop
     // comes first so the jump lands on the real declaration, not the alias.
     if hops > 0
-        && let Some(specifier) = reexport_specifier(&content, word)
+        && let Some((specifier, exported)) = reexport_specifier(&content, word)
         && let Some(uri) = Url::from_file_path(target).ok()
         && let Some(next) = resolve_import_specifier(&uri, &specifier)
-        && let Some(location) = locate_export(&next, word, hops - 1)
+        && let Some(location) = locate_export(&next, &exported, hops - 1)
     {
         return Some(location);
     }
@@ -210,7 +245,11 @@ fn locate_export(target: &Path, word: &str, hops: usize) -> Option<Location> {
         let (line, character) = helpers::offset_to_position(&content, binding.offset);
         let uri = Url::from_file_path(target).ok()?;
         let position = Position::new(line, character);
-        let end = Position::new(line, character + word.len() as u32);
+        // The end must be a UTF-16 position too: `word.len()` is bytes, so a
+        // non-ASCII identifier would overshoot the column.
+        let (end_line, end_character) =
+            helpers::offset_to_position(&content, binding.offset + word.len());
+        let end = Position::new(end_line, end_character);
         return Some(Location {
             uri,
             range: Range::new(position, end),
@@ -220,8 +259,10 @@ fn locate_export(target: &Path, word: &str, hops: usize) -> Option<Location> {
     None
 }
 
-/// The source specifier of an `export … from` clause covering `word`.
-fn reexport_specifier(content: &str, word: &str) -> Option<String> {
+/// The source specifier of an `export … from` clause covering `word`, with the
+/// name the next module exports it under — `export { Widget as LocalWidget }`
+/// must continue the walk looking for `Widget`.
+fn reexport_specifier(content: &str, word: &str) -> Option<(String, String)> {
     let mut search_start = 0;
     while let Some(position) = content[search_start..].find("export") {
         let statement_start = search_start + position;
@@ -234,17 +275,27 @@ fn reexport_specifier(content: &str, word: &str) -> Option<String> {
         if !clause.contains("from") {
             continue;
         }
-        let covers = if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
-            clause[open + 1..close].split(',').any(|part| {
-                let part = part.trim();
-                let exported = part.rsplit(" as ").next().unwrap_or(part).trim();
-                exported == word
+        let source = if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
+            clause[open + 1..close].split(',').find_map(|part| {
+                let part = part.trim().trim_start_matches("type ").trim();
+                let (source, exported) = split_rename(part);
+                (exported == word).then(|| source.to_owned())
             })
+        } else if clause.contains('*') {
+            Some(word.to_owned())
         } else {
-            clause.contains('*')
+            None
         };
-        if covers {
-            return Some(rest[quote_start + 1..quote_end].to_owned());
+        if let Some(source) = source {
+            // `default` is not a locatable declaration name, so keep the
+            // requested name for that hop — `export { default as UiButton }`
+            // still lands on the module the way it did before.
+            let exported = if source == "default" {
+                word.to_owned()
+            } else {
+                source
+            };
+            return Some((rest[quote_start + 1..quote_end].to_owned(), exported));
         }
     }
     None
@@ -257,14 +308,17 @@ mod tests {
         let content = "import { a } from \"./a\";\nimport { useCounter, type User } from \"../composables/useCounter\";\n";
         let offset = content.find("useCounter").unwrap() + 2;
         assert_eq!(
-            super::importing_specifier(content, offset, "useCounter").as_deref(),
-            Some("../composables/useCounter"),
+            super::importing_specifier(content, offset, "useCounter"),
+            Some((
+                "../composables/useCounter".to_owned(),
+                "useCounter".to_owned()
+            )),
         );
         // Same statement, different word: `type User` binds too.
         let offset = content.find("User").unwrap();
         assert_eq!(
-            super::importing_specifier(content, offset, "User").as_deref(),
-            Some("../composables/useCounter"),
+            super::importing_specifier(content, offset, "User"),
+            Some(("../composables/useCounter".to_owned(), "User".to_owned())),
         );
         // Outside any import statement: no match.
         assert_eq!(
@@ -275,22 +329,57 @@ mod tests {
 
     #[test]
     fn renamed_default_and_namespace_imports_bind() {
-        assert!(super::binds_name("import { long as short } from", "short"));
-        assert!(!super::binds_name("import { long as short } from", "long"));
-        assert!(super::binds_name("import Default, { x } from", "Default"));
-        assert!(super::binds_name("import * as ns from", "ns"));
+        // The alias is local; the target declares the source name.
+        assert_eq!(
+            super::bound_source_name("import { long as short } from", "short").as_deref(),
+            Some("long"),
+        );
+        assert_eq!(
+            super::bound_source_name("import { long as short } from", "long"),
+            None
+        );
+        assert_eq!(
+            super::bound_source_name("import { type User as U } from", "U").as_deref(),
+            Some("User"),
+        );
+        assert_eq!(
+            super::bound_source_name("import Default, { x } from", "Default").as_deref(),
+            Some("Default"),
+        );
+        assert_eq!(
+            super::bound_source_name("import * as ns from", "ns").as_deref(),
+            Some("ns")
+        );
+    }
+
+    #[test]
+    fn tag_imports_resolve_through_aliases_anywhere_in_the_file() {
+        let content = "import { Widget as LocalWidget } from \"@/comps\";\n";
+        assert_eq!(
+            super::bound_import(content, "LocalWidget"),
+            Some(("@/comps".to_owned(), "Widget".to_owned())),
+        );
+        assert_eq!(super::bound_import(content, "Widget"), None);
     }
 
     #[test]
     fn reexports_cover_named_renames_and_stars() {
         let barrel = "export { default as UiButton } from \"./UiButton.vue\";\nexport * from \"./tokens\";\n";
+        // `default` has no locatable declaration name, so the hop keeps the
+        // requested name.
         assert_eq!(
-            super::reexport_specifier(barrel, "UiButton").as_deref(),
-            Some("./UiButton.vue"),
+            super::reexport_specifier(barrel, "UiButton"),
+            Some(("./UiButton.vue".to_owned(), "UiButton".to_owned())),
         );
         assert_eq!(
-            super::reexport_specifier(barrel, "anything").as_deref(),
-            Some("./tokens")
+            super::reexport_specifier(barrel, "anything"),
+            Some(("./tokens".to_owned(), "anything".to_owned())),
+        );
+        // A renaming barrel hop continues under the source name.
+        let renaming = "export { Widget as LocalWidget } from \"./Widget\";\n";
+        assert_eq!(
+            super::reexport_specifier(renaming, "LocalWidget"),
+            Some(("./Widget".to_owned(), "Widget".to_owned())),
         );
     }
 }
