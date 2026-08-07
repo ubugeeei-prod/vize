@@ -10,9 +10,9 @@
 
 use std::path::{Path, PathBuf};
 
-/// The effective `paths` map for `source_path`: the declaring config's
-/// directory (targets resolve against it) and the (pattern, target) pairs
-/// spelled as written.
+/// The effective `paths` map for `source_path`: the directory targets resolve
+/// against — `compilerOptions.baseUrl` when set, otherwise the declaring
+/// config's own directory — and the (pattern, target) pairs spelled as written.
 pub(crate) struct ProjectPaths {
     pub(crate) anchor: PathBuf,
     pub(crate) entries: Vec<(std::string::String, std::string::String)>,
@@ -34,8 +34,15 @@ pub(crate) fn project_paths(source_path: &Path) -> Option<ProjectPaths> {
 
 fn paths_of(config_path: &Path) -> Option<ProjectPaths> {
     let value = read_jsonc(config_path)?;
-    let paths = value.get("compilerOptions")?.get("paths")?.as_object()?;
-    let anchor = config_path.parent()?.to_path_buf();
+    let compiler_options = value.get("compilerOptions")?;
+    let paths = compiler_options.get("paths")?.as_object()?;
+    let config_dir = config_path.parent()?;
+    // TypeScript resolves `paths` targets against `baseUrl` when it is set,
+    // falling back to the declaring config's directory otherwise.
+    let anchor = match compiler_options.get("baseUrl").and_then(|v| v.as_str()) {
+        Some(base_url) => config_dir.join(base_url),
+        None => config_dir.to_path_buf(),
+    };
     let mut entries = Vec::new();
     for (pattern, targets) in paths {
         for target in targets.as_array().into_iter().flatten() {
@@ -126,6 +133,50 @@ fn strip_jsonc_comments(source: &str) -> std::string::String {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
+    fn temp_dir() -> tempfile::TempDir {
+        let base = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests");
+        fs::create_dir_all(&base).unwrap();
+        tempfile::tempdir_in(base).unwrap()
+    }
+
+    #[test]
+    fn base_url_anchors_path_targets() {
+        let dir = temp_dir();
+        let root = dir.path();
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "compilerOptions": { "baseUrl": "./src", "paths": { "@/*": ["*"] } } }"#,
+        )
+        .unwrap();
+        let paths = super::project_paths(&root.join("src/App.vue")).unwrap();
+        // `Path` equality normalizes the `.` away, so `<root>/./src` matches.
+        assert_eq!(paths.anchor, root.join("src"));
+        assert_eq!(
+            paths.entries,
+            vec![("@/*".to_string(), "*".to_string())],
+            "targets stay spelled as written"
+        );
+    }
+
+    #[test]
+    fn config_directory_anchors_path_targets_without_base_url() {
+        let dir = temp_dir();
+        let root = dir.path();
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }"#,
+        )
+        .unwrap();
+        let paths = super::project_paths(&root.join("src/App.vue")).unwrap();
+        assert_eq!(paths.anchor, root);
+    }
+
     #[test]
     fn comments_strip_without_touching_path_patterns() {
         let source = r#"{

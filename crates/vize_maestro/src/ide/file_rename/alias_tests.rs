@@ -197,3 +197,63 @@ fn nuxt_alias_rename_edits_use_the_open_importer_buffer() {
     }
     "###);
 }
+
+#[test]
+fn aliased_directory_index_specifiers_keep_the_barrel_spelling() {
+    let dir = test_dir();
+    let root = dir.path();
+    fs::create_dir_all(root.join("src/components/Button")).unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        // `baseUrl` anchors the targets, so `@/*` maps to `<root>/src/*`.
+        r#"{ "compilerOptions": { "baseUrl": "./src", "paths": { "@/*": ["*"] } } }"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("src/components/Button/index.ts"),
+        "export const Button = 1;",
+    )
+    .unwrap();
+    fs::write(
+        root.join("src/App.vue"),
+        r#"<script setup lang="ts">
+import { Button } from "@/components/Button";
+</script>
+"#,
+    )
+    .unwrap();
+
+    let state = ServerState::new();
+    state.set_workspace_root(root.to_path_buf());
+
+    // Moving the barrel directory: the target is still an `index.*`, so the
+    // directory-index spelling survives rather than gaining an `/index` tail.
+    let edit = collect_import_rename_edits(
+        &state,
+        &[FileRename {
+            old_uri: file_uri(&root.join("src/components/Button")),
+            new_uri: file_uri(&root.join("src/widgets/Button")),
+        }],
+        true,
+    )
+    .unwrap();
+    assert_snapshot!(serde_json::to_string_pretty(&normalize_edit(root, &edit)).unwrap(), @r###"
+    {
+      "src/App.vue": [
+        {
+          "newText": "@/widgets/Button",
+          "range": {
+            "end": {
+              "character": 43,
+              "line": 1
+            },
+            "start": {
+              "character": 24,
+              "line": 1
+            }
+          }
+        }
+      ]
+    }
+    "###);
+}
