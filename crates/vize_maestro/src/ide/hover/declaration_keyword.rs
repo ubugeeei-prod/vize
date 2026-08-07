@@ -16,7 +16,9 @@
 )]
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{BindingPattern, Declaration, Statement, VariableDeclarationKind};
+use oxc_ast::ast::{
+    BindingPattern, Declaration, ImportDeclarationSpecifier, Statement, VariableDeclarationKind,
+};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Hover, HoverContents};
@@ -85,10 +87,21 @@ fn imported_component_quick_info(
         let Statement::ImportDeclaration(import) = statement else {
             return false;
         };
+        // `import type { Child }` binds a type, not a runtime component, so it
+        // never backs a component tag: keep the checker's answer.
+        if import.import_kind.is_type() {
+            return false;
+        }
         import.specifiers.as_ref().is_some_and(|specifiers| {
-            specifiers
-                .iter()
-                .any(|specifier| specifier.local().name == word)
+            specifiers.iter().any(|specifier| {
+                // Same for a specifier-level `{ type Child }`.
+                if let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier
+                    && named.import_kind.is_type()
+                {
+                    return false;
+                }
+                specifier.local().name == word
+            })
         })
     });
     binds_word.then(|| format!("```typescript\nimport {word}\n```"))

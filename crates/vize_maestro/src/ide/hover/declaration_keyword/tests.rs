@@ -138,3 +138,24 @@ fn an_imported_component_presents_its_import_not_the_machinery() {
         None
     );
 }
+
+#[test]
+fn a_type_only_import_keeps_the_checker_answer() {
+    // A declaration-level `import type` binds a type, not a component.
+    let script = "import type Child from \"./Child.vue\";\n";
+    assert_eq!(
+        super::imported_component_quick_info(script, Some("ts"), "Child"),
+        None
+    );
+    // Same for a specifier-level `type` qualifier, while a runtime specifier
+    // in the very same declaration still resolves.
+    let script = "import { type Child, Widget } from \"./kit\";\n";
+    assert_eq!(
+        super::imported_component_quick_info(script, Some("ts"), "Child"),
+        None
+    );
+    assert_eq!(
+        super::imported_component_quick_info(script, Some("ts"), "Widget").as_deref(),
+        Some("```typescript\nimport Widget\n```")
+    );
+}
