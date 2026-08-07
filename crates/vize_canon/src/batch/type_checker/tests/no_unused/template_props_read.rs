@@ -36,7 +36,7 @@ const orphan = 1
 </script>
 
 <template>
-  <button v-bind="props">{{ props.label }}</button>
+  <button v-bind="props"></button>
 </template>
 "#,
         )],
