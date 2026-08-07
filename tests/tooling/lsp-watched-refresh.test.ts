@@ -80,8 +80,7 @@ test("watched dependency changes refresh the open importer", async (t) => {
     const childUri = pathToFileURL(childPath).href;
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
-    const counted = (params: unknown) =>
-      (params as { diagnostics: unknown[] }).diagnostics.length;
+    const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
 
     session.notify("textDocument/didOpen", {
       textDocument: { uri: appUri, languageId: "vue", version: 1, text: APP },
