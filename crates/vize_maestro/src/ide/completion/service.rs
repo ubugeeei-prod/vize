@@ -244,15 +244,29 @@ impl super::CompletionService {
         vec![]
     }
 
-    /// Get completions for template with Corsa: the canonical-document route
-    /// hover takes (#3321), so member access answers with the target type's
-    /// properties instead of the legacy per-block scope list; generated
-    /// machinery in scope at the mapped position is filtered out (#3911).
+    /// Get completions for a template *member access* with Corsa, over the
+    /// canonical-document route hover and definition take (#3321), so `it.`
+    /// answers with the target type's properties instead of the legacy
+    /// per-block scope list (#3911).
+    ///
+    /// Deliberately scoped to member access. An identifier position is answered
+    /// by the structural template list, which knows the SFC's bindings, ranks
+    /// them for a template author (#3224), and never offers the generated
+    /// machinery or the DOM globals the raw checker scope carries. Member names,
+    /// by contrast, are properties of an authored type, so the checker's answer
+    /// needs no curation: filtering it by label would eat authored members that
+    /// happen to be named `__user` or `defineProps`.
     #[cfg(feature = "native")]
     async fn complete_template_with_corsa(
         ctx: &IdeContext<'_>,
         bridge: &Arc<CorsaBridge>,
     ) -> Vec<CompletionItem> {
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+            || !crate::ide::is_at_member_access_position(&ctx.content, ctx.offset)
+        {
+            return vec![];
+        }
+
         if bridge.is_initialized()
             && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
             && let Some((line, character)) =
@@ -261,7 +275,6 @@ impl super::CompletionService {
         {
             return items
                 .into_iter()
-                .filter(|item| !super::generated_symbols::is_generated_template_symbol(&item.label))
                 .map(Self::convert_lsp_completion)
                 .collect();
         }

@@ -16,6 +16,57 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
         || is_in_vue_directive_attribute_value(content, offset)
 }
 
+/// Check if a cursor offset completes a *member* of the expression to its left,
+/// i.e. the partial name under the caret is introduced by `.`, `?.`, or `!.`.
+///
+/// Member access is the one template position whose answer only the type checker
+/// knows: the structural binding list cannot enumerate the properties of an
+/// arbitrary type (#3911). Identifier positions keep the structural answer, so
+/// this predicate is what separates the two routes.
+///
+/// Deliberately not `CursorContext::MemberAccess`, which only recognizes a caret
+/// sitting directly on the `.`. A completion request arrives with the member
+/// name partially typed (`it.na|`, `theme.notFound?.co|`), and its receiver may
+/// end in `?`/`!`, both of which that detector reports as an identifier. Widening
+/// it would change what hover, definition, and references see at the same
+/// position, so the routing question is answered here instead.
+#[cfg(feature = "native")]
+pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool {
+    if content.is_empty() {
+        return false;
+    }
+
+    let mut offset = offset.min(content.len());
+    while offset > 0 && !content.is_char_boundary(offset) {
+        offset -= 1;
+    }
+
+    let bytes = content.as_bytes();
+    let mut pos = offset;
+    // Step back over the partial member name already typed.
+    while pos > 0 && is_member_name_byte(bytes[pos - 1]) {
+        pos -= 1;
+    }
+    // A digit-led token is a numeric literal fragment (`1.5`), not a member.
+    if pos < offset && bytes[pos].is_ascii_digit() {
+        return false;
+    }
+    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
+        pos -= 1;
+    }
+    if pos == 0 || bytes[pos - 1] != b'.' {
+        return false;
+    }
+    // `...rest` spreads an expression rather than reading a member off it.
+    pos -= 1;
+    pos == 0 || bytes[pos - 1] != b'.'
+}
+
+#[cfg(feature = "native")]
+fn is_member_name_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
+}
+
 fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
     let before = &content[..offset];
     let Some(mustache_start) = before.rfind("{{") else {
@@ -112,4 +163,48 @@ fn is_vue_expression_attribute(attr_name: &str) -> bool {
         || attr_name.starts_with('@')
         || attr_name.starts_with('#')
         || attr_name.starts_with("v-")
+}
+
+#[cfg(all(test, feature = "native"))]
+mod member_access_tests {
+    use super::is_at_member_access_position;
+
+    /// Offset of the caret marker `|`, with the marker removed.
+    fn at_caret(marked: &str) -> (String, usize) {
+        let offset = marked.find('|').expect("test input needs a `|` caret");
+        (marked.replace('|', ""), offset)
+    }
+
+    fn is_member_access(marked: &str) -> bool {
+        let (content, offset) = at_caret(marked);
+        is_at_member_access_position(&content, offset)
+    }
+
+    #[test]
+    fn member_access_covers_dot_optional_and_non_null_chains() {
+        assert!(is_member_access("{{ it.| }}"));
+        assert!(is_member_access("{{ it.na| }}"));
+        assert!(is_member_access("{{ theme.notFound?.co| }}"));
+        assert!(is_member_access("{{ user!.na| }}"));
+        assert!(is_member_access("{{ a.b.c.| }}"));
+        assert!(is_member_access("{{ items[0].| }}"));
+        assert!(is_member_access("{{ f().| }}"));
+        assert!(is_member_access("{{ it.$pr| }}"));
+        assert!(is_member_access("{{ it._pr| }}"));
+    }
+
+    #[test]
+    fn identifier_positions_are_not_member_access() {
+        assert!(!is_member_access("{{ | }}"));
+        assert!(!is_member_access("{{ cou| }}"));
+        assert!(!is_member_access("{{ val| }}"));
+        assert!(!is_member_access("{{ it.name + val| }}"));
+        assert!(!is_member_access("{{ f(arg| ) }}"));
+    }
+
+    #[test]
+    fn spreads_and_numeric_literals_are_not_member_access() {
+        assert!(!is_member_access("{{ f(...arg| ) }}"));
+        assert!(!is_member_access("{{ 1.5| }}"));
+    }
 }

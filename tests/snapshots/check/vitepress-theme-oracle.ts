@@ -31,7 +31,10 @@ const langsPath = "src/client/theme-default/composables/langs.ts";
 const themeDeclarationPath = "node_modules/vitepress/theme.d.ts";
 const cleanCodeDeclaration = "    code?: string";
 const brokenCodeDeclaration = "    knownCode?: string";
-const expectedCompletionLabels = ["theme", "useLangs", "currentLang", "useData", "withBase"];
+// `theme.notFound?.co|` is a member position, so the answer is the declared
+// surface of `DefaultTheme.NotFoundOptions` in declaration order (what Volar
+// answers there) rather than the setup-binding list this used to pin (#3911).
+const expectedCompletionLabels = ["title?", "quote?", "link?", "linkLabel?", "linkText?", "code?"];
 
 test("VitePress theme exports refresh exact template diagnostics", async () => {
   const corsaPath = resolveTsgoBinary();
