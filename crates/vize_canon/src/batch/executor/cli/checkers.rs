@@ -10,8 +10,13 @@
 /// `VIZE_CHECKERS` opts back into width where throughput matters more than
 /// oracle fidelity.
 pub(super) fn checker_count() -> usize {
-    std::env::var("VIZE_CHECKERS")
-        .ok()
+    parse_checker_count(std::env::var("VIZE_CHECKERS").ok().as_deref())
+}
+
+/// Pure half of [`checker_count`], so the pinning rules are testable without
+/// mutating the process environment shared by every other test.
+fn parse_checker_count(value: Option<&str>) -> usize {
+    value
         .and_then(|value| value.parse::<usize>().ok())
         .filter(|&count| count >= 1)
         .unwrap_or(1)
@@ -19,18 +24,27 @@ pub(super) fn checker_count() -> usize {
 
 #[cfg(test)]
 mod tests {
+    use super::parse_checker_count;
+
     /// The default is pinned, not machine-derived — the whole point of #3905.
     #[test]
-    fn default_is_one_checker_env_overrides() {
-        // Serialized by cargo's per-process test env: mutate and restore.
-        unsafe { std::env::remove_var("VIZE_CHECKERS") };
-        assert_eq!(super::checker_count(), 1);
-        unsafe { std::env::set_var("VIZE_CHECKERS", "6") };
-        assert_eq!(super::checker_count(), 6);
-        unsafe { std::env::set_var("VIZE_CHECKERS", "0") };
-        assert_eq!(super::checker_count(), 1);
-        unsafe { std::env::set_var("VIZE_CHECKERS", "wide") };
-        assert_eq!(super::checker_count(), 1);
-        unsafe { std::env::remove_var("VIZE_CHECKERS") };
+    fn default_is_one_checker() {
+        assert_eq!(parse_checker_count(None), 1);
+    }
+
+    #[test]
+    fn env_opts_back_into_width() {
+        assert_eq!(parse_checker_count(Some("6")), 6);
+        assert_eq!(parse_checker_count(Some("1")), 1);
+    }
+
+    /// A zero or unparsable value must not disable checking or panic; it falls
+    /// back to the pinned default.
+    #[test]
+    fn rejects_zero_and_unparsable_values() {
+        assert_eq!(parse_checker_count(Some("0")), 1);
+        assert_eq!(parse_checker_count(Some("wide")), 1);
+        assert_eq!(parse_checker_count(Some("")), 1);
+        assert_eq!(parse_checker_count(Some("-4")), 1);
     }
 }

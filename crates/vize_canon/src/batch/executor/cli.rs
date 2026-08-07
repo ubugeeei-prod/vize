@@ -27,7 +27,7 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    run_cli_for_config(corsa_path, project, &config_path, Some(checker_count()))
+    run_cli_for_config(corsa_path, project, &config_path, checker_count())
 }
 
 /// Run the project check sharded across `servers` concurrent Corsa CLI
@@ -68,7 +68,7 @@ pub(super) fn check_with_cli_sharded(
                 .iter()
                 .map(|config_path| {
                     scope.spawn(move || {
-                        run_cli_for_config(corsa_path, project, config_path, Some(checkers))
+                        run_cli_for_config(corsa_path, project, config_path, checkers)
                     })
                 })
                 .collect();
@@ -416,16 +416,14 @@ fn run_cli_for_config(
     corsa_path: &Path,
     project: &VirtualProject,
     config_path: &Path,
-    checkers: Option<usize>,
+    checkers: usize,
 ) -> CorsaResult<TypeCheckResult> {
     let output = profile!("canon.corsa.cli.command", {
         let mut command = Command::new(corsa_path);
         command.current_dir(project.virtual_root());
-        // Corsa's checker pool defaults to four workers; size it to the share
-        // of the machine this program gets so wide machines are not idle.
-        if let Some(checkers) = checkers {
-            command.arg("--checkers").arg(cstr!("{checkers}").as_str());
-        }
+        // The checker count decides the diagnostic set, so it is always pinned
+        // explicitly (see `checker_count`) rather than left to Corsa's default.
+        command.arg("--checkers").arg(cstr!("{checkers}").as_str());
         command
             .arg("--pretty")
             .arg("false")
@@ -439,14 +437,23 @@ fn run_cli_for_config(
     );
 
     // An older runtime without `--checkers` support rejects the whole
-    // invocation with TS5023; retry once without the option.
-    if checkers.is_some()
-        && !output.status.success()
+    // invocation with TS5023. Retrying without the option would silently check
+    // the project at Corsa's default checker width, which reports a different
+    // diagnostic set than the pinned one-checker oracle (#3905) — the exact
+    // machine-dependent drift this pin exists to remove. Fail instead.
+    if !output.status.success()
         && diagnostics.iter().any(|diagnostic| {
             diagnostic.code == Some(5023) && diagnostic.message.contains("checkers")
         })
     {
-        return run_cli_for_config(corsa_path, project, config_path, None);
+        return Err(CorsaError::CorsaExecution {
+            exit_code: output.status.code().unwrap_or(-1),
+            message: cstr!(
+                "corsa runtime does not support `--checkers`, which vize requires for \
+                 deterministic diagnostics (#3905); upgrade the pinned corsa runtime.\n{}",
+                output_message(&output)
+            ),
+        });
     }
 
     let success = output.status.success()

@@ -347,3 +347,42 @@ fn parses_materialized_tsconfig_diagnostics_as_project_level_errors() {
 
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+/// A runtime that rejects `--checkers` must fail the run. Retrying without the
+/// option would check the project at Corsa's default checker width, whose
+/// diagnostic set differs from the pinned one-checker oracle (#3905).
+#[cfg(unix)]
+#[test]
+fn corsa_without_checkers_support_fails_instead_of_retrying() {
+    use super::run_cli_for_config;
+    use crate::batch::error::CorsaError;
+    use std::os::unix::fs::PermissionsExt;
+
+    let case_dir = unique_case_dir("checkers-unsupported");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    // Stub Corsa: rejects the whole invocation the way an older runtime does.
+    let stub = case_dir.join("corsa-stub.sh");
+    fs::write(
+        &stub,
+        "#!/bin/sh\necho \"error TS5023: Unknown compiler option '--checkers'.\"\nexit 1\n",
+    )
+    .unwrap();
+    fs::set_permissions(&stub, fs::Permissions::from_mode(0o755)).unwrap();
+
+    let project = VirtualProject::new(&case_dir).unwrap();
+    fs::create_dir_all(project.virtual_root()).unwrap();
+    let config_path = project.virtual_root().join("tsconfig.json");
+    fs::write(&config_path, "{}\n").unwrap();
+
+    let error = run_cli_for_config(&stub, &project, &config_path, 1).unwrap_err();
+    match error {
+        CorsaError::CorsaExecution { message, .. } => assert!(
+            message.contains("does not support `--checkers`"),
+            "expected an unsupported-`--checkers` failure, got: {message}"
+        ),
+        other => panic!("expected a corsa execution failure, got {other:?}"),
+    }
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
