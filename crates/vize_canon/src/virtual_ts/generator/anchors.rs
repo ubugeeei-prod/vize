@@ -2,7 +2,7 @@
 
 use super::imports::collect_setup_binding_anchor_names;
 use vize_carton::{FxHashSet, String, append};
-use vize_croquis::Croquis;
+use vize_croquis::{BindingType, Croquis};
 
 /// Header comment for the anchor list; the wording differs when unused-local
 /// diagnostics are preserved because the list is then narrowed to
@@ -21,25 +21,45 @@ pub(super) fn setup_binding_anchor_comment(preserve_unused_diagnostics: bool) ->
 /// The closure's synthetic `const props` shadows a setup binding of the same
 /// name, so the in-closure anchor list can no longer mark it read — a
 /// `const props = defineProps(...)` used only through the template
-/// (`v-bind="props"`) reported a false TS6133. The narrowing matches the
-/// anchor list: with unused-local diagnostics preserved, only a template that
-/// references `props` itself counts as a read.
+/// (`v-bind="props"`) reported a false TS6133.
+///
+/// Only a template that spells `props` itself counts as a read, so a component
+/// whose template reads prop names directly (`{{ label }}`) keeps its genuine
+/// unused-`props` report. Unlike the in-closure anchor list this narrowing is
+/// unconditional: the LSP generates with unused-local diagnostics unpreserved
+/// yet still surfaces TS6133 as a hint, so anchoring on binding kind alone
+/// would suppress true positives there.
 pub(super) fn emit_props_shadow_anchor(
     ts: &mut String,
     summary: &Croquis,
-    template_referenced_names: Option<&FxHashSet<String>>,
+    template_referenced_names: &FxHashSet<String>,
 ) {
     if summary
         .bindings
         .bindings
         .get("props")
-        .is_some_and(|kind| kind.is_setup_variable())
+        .is_some_and(is_setup_variable)
         && template_referenced_names
-            .is_none_or(|names| names.iter().any(|name| name.as_str() == "props"))
+            .iter()
+            .any(|name| name.as_str() == "props")
     {
         ts.push_str("  // Anchor before the template scope shadows `props`\n");
         ts.push_str("  void props;\n");
     }
+}
+
+/// True for bindings declared as variables in `<script setup>` scope
+/// (let/const/ref/reactive), as opposed to props, Options API members,
+/// globals, or imports.
+fn is_setup_variable(kind: &BindingType) -> bool {
+    matches!(
+        kind,
+        BindingType::SetupLet
+            | BindingType::SetupMaybeRef
+            | BindingType::SetupRef
+            | BindingType::SetupReactiveConst
+            | BindingType::SetupConst
+    )
 }
 
 pub(super) fn emit_setup_binding_anchors(

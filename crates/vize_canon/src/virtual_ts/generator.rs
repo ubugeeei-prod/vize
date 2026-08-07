@@ -689,7 +689,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
 
-            emit_props_shadow_anchor(&mut ts, summary, template_referenced_names);
+            emit_props_shadow_anchor(&mut ts, summary, &template_usage_names);
 
             // Semicolon prevents ASI issues when user script doesn't end with `;`
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
