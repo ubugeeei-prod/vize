@@ -74,6 +74,24 @@ const max = 7
 }
 
 #[test]
+fn a_setup_that_only_parses_with_recovery_hoists_nothing() {
+    // oxc reports a syntax error either by setting `panicked` or by returning a
+    // recovered program with diagnostics attached. In the recovered case the
+    // statements it salvaged around the error are not a trustworthy basis for
+    // moving a declaration out of setup scope, so nothing hoists.
+    let source = r#"
+const label = 'plain'
+function () {}
+"#;
+    let output = compile(source);
+    let component = output.find("export default").expect("component wrapper");
+    assert!(
+        !output[..component].contains("const label"),
+        "a setup with a syntax error hoists nothing:\n{output}"
+    );
+}
+
+#[test]
 fn non_literal_and_multi_declarator_consts_stay_in_setup() {
     let source = r#"
 const label = 'plain'
@@ -94,5 +112,17 @@ const a = 1, b = 2
     assert!(
         !hoisted_region.contains("const a"),
         "multi-declarator statements stay in setup:\n{output}"
+    );
+
+    // Not hoisting is only half the contract: the declarations must still be
+    // emitted inside setup rather than dropped.
+    let body_region = &output[component..];
+    assert!(
+        body_region.contains("computed_like"),
+        "computed initializers remain in setup:\n{output}"
+    );
+    assert!(
+        body_region.contains("const a"),
+        "multi-declarator statements remain in setup:\n{output}"
     );
 }

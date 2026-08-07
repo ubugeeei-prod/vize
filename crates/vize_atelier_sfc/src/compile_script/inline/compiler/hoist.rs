@@ -37,8 +37,11 @@ pub(super) fn separate_hoisted_consts(
     // TS parses a superset of the transformed setup in either lang.
     let source_type = SourceType::ts();
     let parsed = Parser::new(&allocator, transformed_setup, source_type).parse();
-    if parsed.panicked {
-        // Unparseable setup: hoist nothing rather than guess textually.
+    // `panicked` alone only covers an unrecoverable abort: oxc also returns a
+    // recovered program with diagnostics attached, and the statements it
+    // salvaged around a syntax error are not a trustworthy basis for moving
+    // declarations between scopes. Either way, hoist nothing rather than guess.
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return keep_everything();
     }
 
