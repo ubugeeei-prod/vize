@@ -40,10 +40,27 @@ function resolveCorsaBinary(): string | undefined {
   ].find((candidate) => fs.existsSync(candidate));
 }
 
-async function request(session: LspSession, uri: string, fixture: OracleCase): Promise<unknown> {
+async function request(
+  session: LspSession,
+  uri: string,
+  fixture: OracleCase,
+  options: { settle?: boolean } = {},
+): Promise<unknown> {
   session.notify("textDocument/didOpen", {
     textDocument: { uri, languageId: "vue", version: 1, text: fixture.source },
   });
+  if (options.settle) {
+    // The `.value` decision asks the type backend; before the opened document
+    // has produced its first diagnostics the backend can answer cold and the
+    // gate degrades to no-insert. A real editing session types after the file
+    // settles, so the probe waits for that signal — the recurring release
+    // flake was exactly this race on slow runners.
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => (params as { uri: string }).uri === uri,
+      60000,
+    );
+  }
   const params: AutoInsertParams = {
     textDocument: { uri },
     selection: fixture.selection,
@@ -136,7 +153,10 @@ test("real stdio server asks Corsa type information before inserting .value", as
       autoInsert: true,
     });
     const uri = pathToFileURL(path.join(workspaceDir, "Ref.vue")).href;
-    assert.deepEqual(await request(session, uri, oracle.dotValue), oracle.dotValue.response);
+    assert.deepEqual(
+      await request(session, uri, oracle.dotValue, { settle: true }),
+      oracle.dotValue.response,
+    );
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
