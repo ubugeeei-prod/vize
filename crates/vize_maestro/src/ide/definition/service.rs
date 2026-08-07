@@ -74,6 +74,11 @@ impl super::DefinitionService {
             return Some(def);
         }
 
+        // Tags imported through a `paths` alias or package barrel (#3932).
+        if let Some(def) = import_target::component_tag_definition(ctx) {
+            return Some(def);
+        }
+
         if let Some(def) = template::find_component_prop_definition(ctx) {
             return Some(def);
         }
@@ -153,6 +158,11 @@ impl super::DefinitionService {
             && is_component_tag(&tag_name)
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
         {
+            return Some(def);
+        }
+
+        // Tags imported through a `paths` alias or package barrel (#3932).
+        if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
         }
 

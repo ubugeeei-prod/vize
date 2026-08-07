@@ -29,6 +29,29 @@ pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse>
     locate_export(&target, &word, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
 }
 
+/// Definition on a component tag whose import the manual finder cannot
+/// resolve (#3932): that path handles only relative specifiers, so a tag
+/// imported through a tsconfig `paths` alias or a package barrel —
+/// `import { Primitive } from '@/Primitive'` resolving through
+/// `src/Primitive/index.ts` — answered null while hover was typed. Follows
+/// the same import-resolution and re-export hops as the imported-name jump.
+pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
+    let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+    if !crate::ide::is_component_tag(&tag_name) {
+        return None;
+    }
+    let pascal = crate::ide::kebab_to_pascal(&tag_name);
+    for name in [tag_name.as_str(), pascal.as_str()] {
+        if let Some(specifier) = helpers::find_import_path(ctx, name)
+            && let Some(target) = resolve_import_specifier(ctx.uri, &specifier)
+            && let Some(location) = locate_export(&target, name, MAX_REEXPORT_HOPS)
+        {
+            return Some(GotoDefinitionResponse::Scalar(location));
+        }
+    }
+    None
+}
+
 /// The module specifier of the import statement that both contains `offset`
 /// and binds `word`. `None` when the cursor is not on an imported name.
 fn importing_specifier(content: &str, offset: usize, word: &str) -> Option<String> {
