@@ -4,13 +4,14 @@ expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 
+const _: SomeType<
+  false
+> = true;
+
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
   setup(__props) {
 
-const _: SomeType<
-  false
-> = true;
 
 return (_ctx: any,_cache: any) => {
   return null

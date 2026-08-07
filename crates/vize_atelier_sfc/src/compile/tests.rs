@@ -610,7 +610,7 @@ const { color: bannerColor } = defineProps<{
 }
 
 #[test]
-fn test_script_setup_multiline_type_annotation_is_not_hoisted() {
+fn test_script_setup_multiline_type_annotation_hoists_intact() {
     let source = r#"<script setup lang="ts">
 const _: SomeType<
   false
@@ -627,7 +627,7 @@ const _: SomeType<
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(
-        "script_setup_multiline_type_annotation_is_not_hoisted",
+        "script_setup_multiline_type_annotation_hoists_intact",
         result.code.as_str()
     );
 }

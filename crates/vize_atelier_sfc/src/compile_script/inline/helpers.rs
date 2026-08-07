@@ -3,7 +3,7 @@
 //! Provides utility functions for comment stripping and const name extraction
 //! used during script parsing.
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::String;
 /// Strip comments from a line for bracket/paren counting.
 /// Removes `// ...` line comments and `/* ... */` block comments while preserving string content.
 pub(crate) fn strip_comments_for_counting(line: &str) -> String {
@@ -51,23 +51,4 @@ pub(crate) fn strip_comments_for_counting(line: &str) -> String {
         }
     }
     result
-}
-
-/// Extract the variable name from a const declaration line.
-/// e.g., "const msg = 'hello'" -> Some("msg")
-/// e.g., "const count = ref(0)" -> Some("count")
-/// e.g., "const { a, b } = obj" -> None (destructure)
-pub(crate) fn extract_const_name(line: &str) -> Option<String> {
-    let rest = line.trim().strip_prefix("const ")?;
-    // Skip destructuring patterns
-    if rest.starts_with('{') || rest.starts_with('[') {
-        return None;
-    }
-    // Extract identifier before = or : (type annotation)
-    let name_end = rest.find(|c: char| c == '=' || c == ':' || c.is_whitespace())?;
-    let name = rest[..name_end].trim();
-    if name.is_empty() {
-        return None;
-    }
-    Some(name.to_compact_string())
 }

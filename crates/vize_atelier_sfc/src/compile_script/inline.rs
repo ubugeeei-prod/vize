@@ -5,6 +5,8 @@
 
 mod compiler;
 #[cfg(test)]
+mod const_hoist_tests;
+#[cfg(test)]
 mod define_model_tests;
 pub(crate) mod helpers;
 #[cfg(test)]
