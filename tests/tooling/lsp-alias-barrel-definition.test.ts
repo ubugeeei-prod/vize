@@ -36,7 +36,7 @@ import { WidgetA, WidgetB } from "@/comps";
 // specifiers, so these tags answered null while hover was typed. reka-ui's
 // `import { Primitive } from '@/Primitive'` is this shape. No type checker is
 // required — the import-follow path is manual.
-test("definition on an alias-barrel component tag reaches the source", async (t) => {
+test("definition on an alias-barrel component tag reaches the source", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-alias-barrel-definition");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
