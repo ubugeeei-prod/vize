@@ -25,6 +25,9 @@ use tower_lsp::lsp_types::{Hover, HoverContents};
 
 use crate::ide::IdeContext;
 
+mod imported_tag;
+use imported_tag::imported_tag_property_keyword;
+
 /// Replace a leading synthesized `var` in a Corsa hover with the authored
 /// declaration keyword for the hovered template binding, and a leading
 /// `(parameter)` with `const` when the word is a `v-for` alias: the virtual
@@ -59,6 +62,21 @@ pub(super) fn align_hover(ctx: &IdeContext<'_>, word: &str, hover: &mut Hover) {
             markup.value = aligned;
             return;
         }
+        // A tag whose import carries no marker — a .ts `defineComponent`
+        // export like reka-ui's Primitive — hovers with the synthesized `var`
+        // and a type body that already matches the oracle; Volar opens with
+        // its ctx-property keyword there. Rewrite the keyword only (#3937).
+        if let Some(aligned) = imported_tag_property_keyword(
+            &markup.value,
+            &ctx.content,
+            ctx.offset,
+            &script_setup.content,
+            lang,
+            word,
+        ) {
+            markup.value = aligned;
+            return;
+        }
     }
     if let Some(template) = descriptor.template.as_ref()
         && ctx.offset >= template.loc.start
@@ -78,12 +96,19 @@ fn imported_component_quick_info(
     lang: Option<&str>,
     word: &str,
 ) -> Option<String> {
+    import_binds_word(script_setup, lang, word)
+        .then(|| format!("```typescript\nimport {word}\n```"))
+}
+
+/// Whether a value import declaration in `script_setup` binds `word`
+/// (default, named, aliased, or namespace).
+fn import_binds_word(script_setup: &str, lang: Option<&str>, word: &str) -> bool {
     if word.is_empty() {
-        return None;
+        return false;
     }
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, script_setup, script_source_type(lang)).parse();
-    let binds_word = parsed.program.body.iter().any(|statement| {
+    parsed.program.body.iter().any(|statement| {
         let Statement::ImportDeclaration(import) = statement else {
             return false;
         };
@@ -103,8 +128,7 @@ fn imported_component_quick_info(
                 specifier.local().name == word
             })
         })
-    });
-    binds_word.then(|| format!("```typescript\nimport {word}\n```"))
+    })
 }
 
 /// Rewrite a quick-info block opening with `(parameter) {word}` to
