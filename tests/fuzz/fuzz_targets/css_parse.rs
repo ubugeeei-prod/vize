@@ -108,9 +108,39 @@ const COLOR_FUNCTIONS: [&str; 12] = [
     "light-dark(",
 ];
 
+/// Returns the index just past the `/* ... */` comment starting at `i`, or
+/// `bytes.len()` when it never closes.
+fn skip_comment(bytes: &[u8], i: usize) -> usize {
+    let mut j = i + 2;
+    while j < bytes.len() {
+        if bytes[j] == b'*' && bytes.get(j + 1) == Some(&b'/') {
+            return j + 2;
+        }
+        j += 1;
+    }
+    bytes.len()
+}
+
+/// Returns the index just past the quoted string starting at `i` (whose byte is
+/// the opening quote), or `bytes.len()` when it never closes.
+fn skip_string(bytes: &[u8], i: usize) -> usize {
+    let quote = bytes[i];
+    let mut j = i + 1;
+    while j < bytes.len() {
+        match bytes[j] {
+            b'\\' => j += 2,
+            b if b == quote => return j + 1,
+            _ => j += 1,
+        }
+    }
+    bytes.len()
+}
+
 /// Returns true when `name` occurs and its parenthesis group is still open at
-/// end of input. Parens inside strings and comments count like the tokenizer's
-/// wouldn't — the same deliberate coarseness as the other skip scanners.
+/// end of input. Parens inside CSS comments and quoted strings are skipped like
+/// the tokenizer skips them, so `rgb(/* ) */` and `rgb(")")` still count as
+/// unterminated; this mirrors the lexical handling of the production guard in
+/// `vize_atelier_sfc::css::parser::engine_boundary::value_guard`.
 fn function_group_unterminated(lower: &str, name: &str) -> bool {
     let bytes = lower.as_bytes();
     let mut from = 0;
@@ -120,11 +150,18 @@ fn function_group_unterminated(lower: &str, name: &str) -> bool {
         let mut i = open + 1;
         while i < bytes.len() && depth > 0 {
             match bytes[i] {
-                b'(' => depth += 1,
-                b')' => depth -= 1,
-                _ => {}
+                b'/' if bytes.get(i + 1) == Some(&b'*') => i = skip_comment(bytes, i),
+                b'"' | b'\'' => i = skip_string(bytes, i),
+                b'(' => {
+                    depth += 1;
+                    i += 1;
+                }
+                b')' => {
+                    depth -= 1;
+                    i += 1;
+                }
+                _ => i += 1,
             }
-            i += 1;
         }
         if depth > 0 {
             return true;
