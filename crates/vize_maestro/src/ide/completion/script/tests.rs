@@ -116,6 +116,10 @@ fn member_positions_suppress_extras_identifier_positions_keep_them() {
         ("const x = fil", 13, false),
         ("", 0, false),
         ("rootContext", 11, false),
+        // An in-progress decimal literal is not member access, matching
+        // `complete_script`'s receiver classification.
+        ("1.", 2, false),
+        ("const n = 42.", 13, false),
     ];
     for (content, offset, expected) in cases {
         assert_eq!(
