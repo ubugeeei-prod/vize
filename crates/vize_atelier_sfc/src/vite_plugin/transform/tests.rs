@@ -109,6 +109,17 @@ fn concatenation_prefixes_and_non_src_keys_never_become_imports() {
     let other_key = r#"const n = { data_src: '/images/a.jpg' };"#;
     assert_eq!(rewrite_static_asset_urls(other_key, &rules), other_key);
 
+    // Neither is a Unicode prop name whose tail happens to be `src`.
+    let unicode_key = r#"const n = { ésrc: '/images/a.jpg' };"#;
+    assert_eq!(rewrite_static_asset_urls(unicode_key, &rules), unicode_key);
+
+    // An escaped quote does not end the literal, so the value is not static.
+    let escaped_quote = r#"const n = { src: '/images/a\', b.jpg' };"#;
+    assert_eq!(
+        rewrite_static_asset_urls(escaped_quote, &rules),
+        escaped_quote
+    );
+
     // Fully static values still rewrite, whatever ends the property.
     let static_comma = r#"const n = { src: '/images/a.jpg', other: true };"#;
     insta::assert_snapshot!(rewrite_static_asset_urls(static_comma, &rules), @r###"

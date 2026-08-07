@@ -400,8 +400,11 @@ fn parse_src_candidate(code: &str, cursor: usize) -> Option<SrcCandidate> {
     let key_end =
         if bytes.get(cursor) == Some(&b's') && bytes.get(cursor..cursor + 3) == Some(&b"src"[..]) {
             // A bare `src` key must start at an identifier boundary, or the
-            // tail of `data_src`/`lazysrc` props would be rewritten too.
-            if cursor > 0 && is_define_tail_byte(bytes[cursor - 1]) {
+            // tail of `data_src`/`lazysrc` props would be rewritten too. Any
+            // non-ASCII byte is part of a multi-byte character that may itself
+            // be an identifier tail (`ésrc`), so reject it as well.
+            let preceding = cursor.checked_sub(1).map(|index| bytes[index]);
+            if preceding.is_some_and(|byte| !byte.is_ascii() || is_define_tail_byte(byte)) {
                 return None;
             }
             cursor + 3
@@ -426,10 +429,25 @@ fn parse_src_candidate(code: &str, cursor: usize) -> Option<SrcCandidate> {
 
     let value_start = quote_index + 1;
     let mut value_end = value_start;
-    while value_end < bytes.len() && bytes[value_end] != quote {
-        value_end += 1;
+    let mut has_escape = false;
+    while value_end < bytes.len() {
+        if bytes[value_end] == b'\\' {
+            // A backslash escapes the next byte, so an escaped quote does not
+            // terminate the literal (`src: '/images/a\', b.jpg'`).
+            has_escape = true;
+            value_end += 2;
+        } else if bytes[value_end] == quote {
+            break;
+        } else {
+            value_end += 1;
+        }
     }
     if value_end >= bytes.len() {
+        return None;
+    }
+    // An escaped literal is not a plain path: its raw slice would be emitted as
+    // an import specifier with the backslash still in it.
+    if has_escape {
         return None;
     }
     // Only a fully static value may become an import. A bound expression like
