@@ -714,33 +714,51 @@
         "error:5:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
         "error:82:30 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:91:38 [TS7006] Parameter 'r' implicitly has an 'any' type.",
-        "error:128:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
-        "error:168:17 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly algolia: 500; readonly npm: 500; }'.",
-        "error:177:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
+        "error:129:31 [TS7006] Parameter 'k' implicitly has an 'any' type.",
         "error:355:44 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:364:5 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:380:9 [TS7006] Parameter 's' implicitly has an 'any' type."
+        "error:380:9 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:400:12 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:400:15 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:408:12 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:408:15 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:490:43 [TS7006] Parameter 'el' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/pages/settings.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:39:45 [TS7006] Parameter 'locale' implicitly has an 'any' type.",
+        "error:225:39 [TS7006] Parameter 'loc' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "app/pages/~[username]/index.vue",
       "diagnostics": [
-        "error:2:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations."
+        "error:2:26 [TS2307] Cannot find module 'perfect-debounce' or its corresponding type declarations.",
+        "error:74:7 [TS7006] Parameter 'pkg' implicitly has an 'any' type.",
+        "error:83:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:83:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:90:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:90:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:93:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:93:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:97:18 [TS7006] Parameter 'a' implicitly has an 'any' type.",
+        "error:97:21 [TS7006] Parameter 'b' implicitly has an 'any' type.",
+        "error:108:43 [TS7006] Parameter 'sum' implicitly has an 'any' type.",
+        "error:108:48 [TS7006] Parameter 'pkg' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/pages/~[username]/orgs.vue",
       "diagnostics": [
-        "error:44:7 [TS2322] Type '{} | null' is not assignable to type '\"admin\" | \"developer\" | \"owner\" | null'.\nType '{}' is not assignable to type '\"admin\" | \"developer\" | \"owner\" | null'.",
-        "error:65:32 [TS7006] Parameter 'name' implicitly has an 'any' type."
+        "error:43:50 [TS7031] Binding element 'k' implicitly has an 'any' type.",
+        "error:65:32 [TS7006] Parameter 'name' implicitly has an 'any' type.",
+        "error:73:40 [TS7006] Parameter 'org' implicitly has an 'any' type."
       ]
     }
   ],
-  "errorCount": 154,
+  "errorCount": 171,
   "warningCount": 0,
   "fileCount": 134
 }

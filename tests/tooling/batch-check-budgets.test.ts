@@ -18,9 +18,12 @@ test("Vben and Misskey own complete batch cold and warm budgets", () => {
     coldMs: 15_000,
     warmMs: 10_000,
   });
+  // Raised with the deterministic single-checker pin (#3905): the one-program
+  // misskey check measured 61s cold on an M-series darwin, and CI runners
+  // need headroom above that.
   assert.deepEqual(loadBatchCheckBudget("misskey"), {
-    coldMs: 60_000,
-    warmMs: 45_000,
+    coldMs: 180_000,
+    warmMs: 150_000,
   });
 });
 

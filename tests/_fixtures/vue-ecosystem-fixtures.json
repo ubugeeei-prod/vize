@@ -423,8 +423,8 @@
         "maxTailToHeadLatencyRatio": 3
       },
       "batchCheckBudget": {
-        "coldMs": 60000,
-        "warmMs": 45000
+        "coldMs": 180000,
+        "warmMs": 150000
       }
     },
     {

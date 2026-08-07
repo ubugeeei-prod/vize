@@ -13,10 +13,12 @@ use crate::batch::executor::diagnostics::{
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
 
+mod checkers;
 mod diagnostic_paths;
 mod import_resolution;
 mod project_diagnostics;
 
+use checkers::checker_count;
 use diagnostic_paths::normalize_cli_path;
 use import_resolution::resolve_virtual_import;
 
@@ -25,13 +27,7 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    run_cli_for_config(corsa_path, project, &config_path, Some(available_threads()))
-}
-
-fn available_threads() -> usize {
-    std::thread::available_parallelism()
-        .map(std::num::NonZero::get)
-        .unwrap_or(1)
+    run_cli_for_config(corsa_path, project, &config_path, Some(checker_count()))
 }
 
 /// Run the project check sharded across `servers` concurrent Corsa CLI
@@ -63,8 +59,9 @@ pub(super) fn check_with_cli_sharded(
     }
 
     let owners = &plan.owners;
-    // Split the machine's checker budget across the concurrent programs.
-    let checkers = (available_threads() / config_paths.len()).max(4);
+    // Shards already parallelize across processes; each process keeps the
+    // deterministic per-program checker count (see `checker_count`).
+    let checkers = checker_count();
     let results = profile!("canon.corsa.cli.sharded", {
         std::thread::scope(|scope| {
             let handles: Vec<_> = config_paths
