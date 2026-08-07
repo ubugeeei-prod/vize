@@ -361,11 +361,21 @@ fn corsa_without_checkers_support_fails_instead_of_retrying() {
     let case_dir = unique_case_dir("checkers-unsupported");
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(&case_dir).unwrap();
-    // Stub Corsa: rejects the whole invocation the way an older runtime does.
+    // Stub Corsa: rejects `--checkers` the way an older runtime does, and
+    // succeeds without it, so the failure can only come from an invocation that
+    // actually passes the option.
     let stub = case_dir.join("corsa-stub.sh");
     fs::write(
         &stub,
-        "#!/bin/sh\necho \"error TS5023: Unknown compiler option '--checkers'.\"\nexit 1\n",
+        r#"#!/bin/sh
+for arg in "$@"; do
+  if [ "$arg" = "--checkers" ]; then
+    echo "error TS5023: Unknown compiler option '--checkers'."
+    exit 1
+  fi
+done
+exit 0
+"#,
     )
     .unwrap();
     fs::set_permissions(&stub, fs::Permissions::from_mode(0o755)).unwrap();
@@ -377,10 +387,13 @@ fn corsa_without_checkers_support_fails_instead_of_retrying() {
 
     let error = run_cli_for_config(&stub, &project, &config_path, 1).unwrap_err();
     match error {
-        CorsaError::CorsaExecution { message, .. } => assert!(
-            message.contains("does not support `--checkers`"),
-            "expected an unsupported-`--checkers` failure, got: {message}"
-        ),
+        CorsaError::CorsaExecution { exit_code, message } => {
+            assert_eq!(exit_code, 1);
+            assert!(
+                message.contains("does not support `--checkers`"),
+                "expected an unsupported-`--checkers` failure, got: {message}"
+            );
+        }
         other => panic!("expected a corsa execution failure, got {other:?}"),
     }
 
