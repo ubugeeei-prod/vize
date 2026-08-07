@@ -17,10 +17,12 @@ mod checkers;
 mod diagnostic_paths;
 mod import_resolution;
 mod project_diagnostics;
+mod shard_sizing;
 
 use checkers::checker_count;
 use diagnostic_paths::normalize_cli_path;
 use import_resolution::resolve_virtual_import;
+use shard_sizing::shard_count;
 
 pub(super) fn check_with_cli(
     corsa_path: &Path,
@@ -116,22 +118,6 @@ pub(super) fn auto_server_count(project: &VirtualProject) -> usize {
         .map(std::num::NonZero::get)
         .unwrap_or(1);
     shard_count(threads, checker_count(), vue_files)
-}
-
-/// How many concurrent Corsa programs to run on a machine of `threads` cores.
-///
-/// A process occupies about `checkers` cores, since that is the width of its
-/// checker pool — one by default now that the count is pinned for determinism
-/// (#3905), not Corsa's old four-wide default. Dividing by that width is what
-/// keeps the processes covering the machine: with the pin, a divisor of 4 left
-/// three quarters of a wide runner idle. Sharding only pays off once there are
-/// enough Vue files to amortize each extra program's fixed parse/bind cost, and
-/// the upper bound keeps that duplicated cost contained.
-fn shard_count(threads: usize, checkers: usize, vue_files: usize) -> usize {
-    threads
-        .div_ceil(checkers.max(1))
-        .min(vue_files / 64)
-        .clamp(1, 8)
 }
 
 struct ShardPlan<'a> {
