@@ -34,8 +34,8 @@ import Child from "./Child.vue";
 
 // A dependency changed outside the editor — a git checkout, a codegen run, a
 // delete — must refresh the open importer's diagnostics without any editor
-// edit (#3918). The lifecycle mirrors the Volar oracle: clean on open, two
-// mismatches after the prop narrows on disk, still broken while the file is
+// edit (#3918). The lifecycle mirrors the Volar oracle: clean on open, one
+// mismatch after the prop type changes on disk, still broken while the file is
 // gone, clean again once it is restored.
 test("watched dependency changes refresh the open importer", async (t) => {
   const corsaPath = requireTypecheckDependency(
@@ -81,6 +81,12 @@ test("watched dependency changes refresh the open importer", async (t) => {
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
+    // The deleted state is only distinguishable by content: a stale republish of
+    // the phase-1 mismatch also carries `appUri` with a non-zero count.
+    const mentionsChild = (params: unknown) =>
+      (params as { diagnostics: { message?: string }[] }).diagnostics.some((diagnostic) =>
+        (diagnostic.message ?? "").includes("Child.vue"),
+      );
 
     session.notify("textDocument/didOpen", {
       textDocument: { uri: appUri, languageId: "vue", version: 1, text: APP },
@@ -111,7 +117,7 @@ test("watched dependency changes refresh the open importer", async (t) => {
     });
     const afterDelete = await session.waitForNotification(
       "textDocument/publishDiagnostics",
-      diagnosticsFor(appUri),
+      (params) => diagnosticsFor(appUri)(params) && mentionsChild(params),
       60000,
     );
     assert.ok(counted(afterDelete) > 0, "a deleted dependency keeps the importer broken");
