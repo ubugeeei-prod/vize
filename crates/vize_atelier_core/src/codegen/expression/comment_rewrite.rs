@@ -34,7 +34,10 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
         let b = bytes[i];
         match b {
             b'\'' | b'"' | b'`' => {
-                let end = skip_quoted(bytes, i + 1, b);
+                // `skip_quoted` is a cursor, not a slice bound: an unterminated
+                // literal whose last byte is `\` overshoots to len+1 (the
+                // nesting guard only ever compares it). Clamp before slicing.
+                let end = skip_quoted(bytes, i + 1, b).min(bytes.len());
                 result.push_str(&content[i..end]);
                 i = end;
                 can_start_regex = false;
@@ -206,6 +209,17 @@ mod tests {
             convert_line_comments_to_block("value // */ + sideEffect() /*"),
             "value /*  * / + sideEffect() /* */"
         );
+    }
+
+    #[test]
+    fn an_unterminated_string_ending_in_a_backslash_does_not_slice_past_the_end() {
+        // The template_compile fuzz corpus caught the ported scanner slicing
+        // with skip_quoted's cursor, which overshoots to len+1 when the last
+        // byte is an escape lead (crash-43ea1164, v0.344.0 release gate).
+        for source in ["'\\", "\"unterminated \\", "'//p+\\\\\\\\:\\"] {
+            let converted = convert_line_comments_to_block(source);
+            assert_eq!(converted, source);
+        }
     }
 
     #[test]
