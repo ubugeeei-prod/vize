@@ -76,11 +76,13 @@ pub(super) async fn did_change_watched_files(
 ) {
     #[cfg(feature = "native")]
     {
-        if !server.state.invalidate_global_component_references(
+        // A change to a discoverable global-component declaration invalidates
+        // that cache — but any watched change can break open importers (a git
+        // checkout rewriting a child SFC's props, a codegen run, a delete), so
+        // the dependent refresh below is not gated on it (#3918).
+        let global_components_invalidated = server.state.invalidate_global_component_references(
             params.changes.iter().map(|change| change.uri.as_str()),
-        ) {
-            return;
-        }
+        );
 
         let mut dependents = params
             .changes
@@ -99,6 +101,11 @@ pub(super) async fn did_change_watched_files(
                     .map(|version| (uri, version))
             })
             .collect::<Vec<_>>();
+        if dependents.is_empty() && !global_components_invalidated {
+            return;
+        }
+        // Recomputation must read the changed files fresh from disk.
+        server.state.invalidate_batch_cache();
         for (dependent, version) in dependents {
             server
                 .publish_diagnostics_if_version(&dependent, version)
