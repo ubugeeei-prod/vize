@@ -13,6 +13,8 @@ mod dispatch;
 mod items;
 mod script;
 mod service;
+#[cfg(feature = "native")]
+mod service_corsa_template;
 mod service_inline_art;
 mod style;
 pub(crate) mod template;

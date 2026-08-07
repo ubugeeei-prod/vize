@@ -56,8 +56,6 @@ pub use references::ReferencesService;
 pub use rename::RenameService;
 pub use selection_range::SelectionRangeService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
-#[cfg(feature = "native")]
-pub(crate) use template_expression::is_at_member_access_position;
 pub(crate) use template_expression::is_in_vue_template_expression;
 pub use type_service::{LspTypeCheckOptions, TypeService};
 pub use workspace_symbols::WorkspaceSymbolsService;

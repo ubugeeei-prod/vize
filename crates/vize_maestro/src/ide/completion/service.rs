@@ -15,6 +15,8 @@ use tower_lsp::lsp_types::{
 #[cfg(feature = "native")]
 use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 
+#[cfg(feature = "native")]
+use super::service_corsa_template;
 use super::{is_inside_html_comment, script, service_inline_art, style, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
@@ -164,7 +166,7 @@ impl super::CompletionService {
         // Try Corsa completion first.
         if let Some(bridge) = corsa_bridge {
             let corsa_items = match block_type {
-                BlockType::Template => Self::complete_template_with_corsa(ctx, &bridge).await,
+                BlockType::Template => service_corsa_template::complete(ctx, &bridge).await,
                 BlockType::Script => Self::complete_script_with_corsa(ctx, false, &bridge).await,
                 BlockType::ScriptSetup => {
                     Self::complete_script_with_corsa(ctx, true, &bridge).await
@@ -239,44 +241,6 @@ impl super::CompletionService {
                         .collect();
                 }
             }
-        }
-
-        vec![]
-    }
-
-    /// Get completions for a template *member access* with Corsa, over the
-    /// canonical-document route hover and definition take (#3321), so `it.`
-    /// answers with the target type's properties instead of the legacy
-    /// per-block scope list (#3911).
-    ///
-    /// Deliberately scoped to member access. An identifier position is answered
-    /// by the structural template list, which knows the SFC's bindings, ranks
-    /// them for a template author (#3224), and never offers the generated
-    /// machinery or the DOM globals the raw checker scope carries. Member names,
-    /// by contrast, are properties of an authored type, so the checker's answer
-    /// needs no curation: filtering it by label would eat authored members that
-    /// happen to be named `__user` or `defineProps`.
-    #[cfg(feature = "native")]
-    async fn complete_template_with_corsa(
-        ctx: &IdeContext<'_>,
-        bridge: &Arc<CorsaBridge>,
-    ) -> Vec<CompletionItem> {
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
-            || !crate::ide::is_at_member_access_position(&ctx.content, ctx.offset)
-        {
-            return vec![];
-        }
-
-        if bridge.is_initialized()
-            && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
-            && let Some((line, character)) =
-                corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
-            && let Ok(items) = bridge.completion(&doc.request_uri, line, character).await
-        {
-            return items
-                .into_iter()
-                .map(Self::convert_lsp_completion)
-                .collect();
         }
 
         vec![]
