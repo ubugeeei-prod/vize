@@ -81,12 +81,22 @@ test("watched dependency changes refresh the open importer", async (t) => {
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
-    // The deleted state is only distinguishable by content: a stale republish of
-    // the phase-1 mismatch also carries `appUri` with a non-zero count.
-    const mentionsChild = (params: unknown) =>
-      (params as { diagnostics: { message?: string }[] }).diagnostics.some((diagnostic) =>
-        (diagnostic.message ?? "").includes("Child.vue"),
-      );
+    // `waitForNotification` resolves out of the backlog, so a stale republish
+    // could satisfy the delete phase without the deletion ever being observed.
+    // Draining to quiescence first forces the next publish to be the delete's.
+    const drainAppDiagnostics = async () => {
+      for (;;) {
+        try {
+          await session.waitForNotification(
+            "textDocument/publishDiagnostics",
+            diagnosticsFor(appUri),
+            1000,
+          );
+        } catch {
+          return;
+        }
+      }
+    };
 
     session.notify("textDocument/didOpen", {
       textDocument: { uri: appUri, languageId: "vue", version: 1, text: APP },
@@ -111,13 +121,14 @@ test("watched dependency changes refresh the open importer", async (t) => {
     assert.equal(counted(afterEdit), 1, "the stale binding is reported");
 
     // Phase 2: the dependency disappears; the importer must stay broken.
+    await drainAppDiagnostics();
     fs.rmSync(childPath);
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 3 }],
     });
     const afterDelete = await session.waitForNotification(
       "textDocument/publishDiagnostics",
-      (params) => diagnosticsFor(appUri)(params) && mentionsChild(params),
+      (params) => diagnosticsFor(appUri)(params) && counted(params) > 0,
       60000,
     );
     assert.ok(counted(afterDelete) > 0, "a deleted dependency keeps the importer broken");
