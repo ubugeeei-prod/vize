@@ -115,3 +115,26 @@ fn a_parameter_named_like_an_alias_keeps_the_checker_answer() {
         Some("```typescript\nconst item: Item\n```")
     );
 }
+
+#[test]
+fn an_imported_component_presents_its_import_not_the_machinery() {
+    let script = "import Child from \"./Child.vue\";\nimport { Widget as W } from \"./kit\";\nconst local = 1;\nvoid local;\n";
+    assert_eq!(
+        super::imported_component_quick_info(script, None, "Child").as_deref(),
+        Some("```typescript\nimport Child\n```")
+    );
+    // Aliased named imports bind their local name.
+    assert_eq!(
+        super::imported_component_quick_info(script, None, "W").as_deref(),
+        Some("```typescript\nimport W\n```")
+    );
+    // A non-imported name keeps the checker's answer.
+    assert_eq!(
+        super::imported_component_quick_info(script, None, "local"),
+        None
+    );
+    assert_eq!(
+        super::imported_component_quick_info(script, None, "Missing"),
+        None
+    );
+}
