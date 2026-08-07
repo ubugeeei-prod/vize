@@ -61,6 +61,7 @@ impl AliasContext {
         let (project_root, aliases, mirror) = match root {
             Some(root) => match VirtualProject::new(&root) {
                 Ok(mut project) => {
+                    project.set_session_script_registration(true);
                     let aliases = project.dependency_alias_map();
                     // Register the host and everything reachable, then put the
                     // companions on disk where the checker can resolve them.
