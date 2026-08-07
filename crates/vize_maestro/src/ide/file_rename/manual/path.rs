@@ -12,7 +12,7 @@ pub(in crate::ide::file_rename) const RESOLVABLE_SCRIPT_EXTENSIONS: &[&str] = &[
     "ts", "tsx", "d.ts", "d.mts", "d.cts", "js", "jsx", "mts", "cts", "mjs", "cjs", "vue",
 ];
 #[derive(Clone, Copy)]
-pub(super) enum RenderStyle {
+pub(in crate::ide::file_rename) enum RenderStyle {
     Explicit,
     Extensionless,
     DirectoryIndex,
@@ -62,7 +62,7 @@ pub(in crate::ide::file_rename) fn rewrite_relative_specifier(
     Some(rewritten)
 }
 
-pub(super) fn render_module_specifier(
+pub(in crate::ide::file_rename) fn render_module_specifier(
     importer_dir: &Path,
     target_path: &Path,
     style: RenderStyle,
@@ -253,6 +253,6 @@ pub(in crate::ide::file_rename) fn strip_extension(path: &Path) -> PathBuf {
     stripped
 }
 
-pub(super) fn is_index_file(path: &Path) -> bool {
+pub(in crate::ide::file_rename) fn is_index_file(path: &Path) -> bool {
     strip_extension(path).ends_with("index")
 }

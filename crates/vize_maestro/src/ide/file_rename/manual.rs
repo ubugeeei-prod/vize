@@ -16,8 +16,8 @@ use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
 
 pub(super) use self::path::{
     RESOLVABLE_SCRIPT_EXTENSIONS, RenderStyle, apply_all_path_renames, candidate_exists,
-    is_index_file, normalize_path_buf, relative_module_path, render_module_specifier,
-    rewrite_relative_specifier, split_specifier_suffix, strip_extension,
+    is_index_file, normalize_path_buf, render_module_specifier, rewrite_relative_specifier,
+    split_specifier_suffix, strip_extension,
 };
 use self::script::{collect_script_file_edits, collect_vue_edits};
 use crate::{ide::offset_to_position, server::ServerState};
