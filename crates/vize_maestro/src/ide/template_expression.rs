@@ -57,16 +57,32 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
     }
 
     let dot = pos - 1;
-    // `...rest` spreads an expression rather than reading a member off it.
-    if content[..dot].ends_with('.') {
+    // `...rest` spreads an expression rather than reading a member off it. A
+    // spread is always three dots, so this looks for the other two rather than
+    // for any preceding dot: in `42..toStrin` the first dot closes the numeric
+    // literal `42.` and the second one still reads a member off it.
+    if content[..dot].ends_with("..") {
         return false;
     }
-    // A digit-led receiver means the `.` belongs to a numeric literal rather
-    // than to a member read, which covers every fragment of one (`1.`, `1.5`,
-    // `1.na`). An identifier that merely contains digits (`foo1.bar`) is still
-    // a member read, so this tests the start of the receiver token, not the
-    // character next to the dot.
-    !content[identifier_start(content, dot)..dot].starts_with(|ch: char| ch.is_ascii_digit())
+    !is_decimal_point(content, dot)
+}
+
+/// Whether the `.` at `dot` is the decimal point of a numeric literal rather
+/// than a member-access operator.
+#[cfg(feature = "native")]
+fn is_decimal_point(content: &str, dot: usize) -> bool {
+    let start = identifier_start(content, dot);
+    // A digit-led token before the `.` is the integer part of a literal, which
+    // covers every fragment of one (`1.`, `1.5`, `1.na`). An identifier that
+    // merely contains digits (`foo1.bar`) is still a member read, so this tests
+    // the start of the token, not the character next to the dot.
+    if !content[start..dot].starts_with(|ch: char| ch.is_ascii_digit()) {
+        return false;
+    }
+    // Unless the literal already spent its decimal point, in which case this
+    // `.` reads a member off the finished number (`1.5.toFixed`).
+    let before = &content[..start];
+    !(before.ends_with('.') && before[..before.len() - 1].ends_with(|ch: char| ch.is_ascii_digit()))
 }
 
 /// Walk back from `end` over identifier characters and return the token start.
@@ -240,5 +256,16 @@ mod member_access_tests {
         assert!(!is_member_access("{{ 1.| }}"));
         assert!(!is_member_access("{{ 1.na| }}"));
         assert!(!is_member_access("{{ 42.toStrin| }}"));
+    }
+
+    #[test]
+    fn numbers_still_expose_their_members() {
+        // Both spellings that let a `.` follow an integer literal read a member
+        // off the number: the second dot of `42..x`, and a dot separated from
+        // the literal by whitespace.
+        assert!(is_member_access("{{ 42..toStrin| }}"));
+        assert!(is_member_access("{{ 42..| }}"));
+        assert!(is_member_access("{{ 42 .toStrin| }}"));
+        assert!(is_member_access("{{ 1.5.toFixe| }}"));
     }
 }
