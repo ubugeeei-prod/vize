@@ -1,5 +1,7 @@
 //! Deterministic Corsa checker sizing (#3905).
 
+use crate::batch::Diagnostic;
+
 /// Checker workers per Corsa process. Corsa's parallel checker partitions the
 /// program and inference diverges across partitions: measured on the bare
 /// npmx.dev fixture against tsc 6.0.3 (315 diagnostics), worker counts of
@@ -20,6 +22,17 @@ fn parse_checker_count(value: Option<&str>) -> usize {
         .and_then(|value| value.parse::<usize>().ok())
         .filter(|&count| count >= 1)
         .unwrap_or(1)
+}
+
+/// Whether the run failed because the runtime does not know `--checkers`: an
+/// older Corsa rejects the whole invocation with TS5023. Retrying without the
+/// option would silently check the project at Corsa's default checker width,
+/// whose diagnostic set differs from the pinned one-checker oracle (#3905),
+/// the exact machine-dependent drift this pin removes, so callers must fail.
+pub(super) fn rejects_checkers_flag(diagnostics: &[Diagnostic]) -> bool {
+    diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.code == Some(5023) && diagnostic.message.contains("checkers"))
 }
 
 #[cfg(test)]

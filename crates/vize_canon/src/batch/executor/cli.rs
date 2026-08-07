@@ -18,7 +18,7 @@ mod diagnostic_paths;
 mod import_resolution;
 mod project_diagnostics;
 
-use checkers::checker_count;
+use checkers::{checker_count, rejects_checkers_flag};
 use diagnostic_paths::normalize_cli_path;
 use import_resolution::resolve_virtual_import;
 
@@ -436,16 +436,7 @@ fn run_cli_for_config(
         parse_output_diagnostics(&output, project)
     );
 
-    // An older runtime without `--checkers` support rejects the whole
-    // invocation with TS5023. Retrying without the option would silently check
-    // the project at Corsa's default checker width, which reports a different
-    // diagnostic set than the pinned one-checker oracle (#3905) — the exact
-    // machine-dependent drift this pin exists to remove. Fail instead.
-    if !output.status.success()
-        && diagnostics.iter().any(|diagnostic| {
-            diagnostic.code == Some(5023) && diagnostic.message.contains("checkers")
-        })
-    {
+    if !output.status.success() && rejects_checkers_flag(&diagnostics) {
         return Err(CorsaError::CorsaExecution {
             exit_code: output.status.code().unwrap_or(-1),
             message: cstr!(
