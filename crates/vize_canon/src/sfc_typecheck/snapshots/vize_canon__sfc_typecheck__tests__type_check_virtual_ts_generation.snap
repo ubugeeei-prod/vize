@@ -92,6 +92,8 @@ function __setup() {
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
   type __R_message = typeof message;
+  // Anchor before the template scope shadows `props`
+  void props;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
     type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;

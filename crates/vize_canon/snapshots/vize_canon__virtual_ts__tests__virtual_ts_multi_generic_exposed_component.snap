@@ -104,6 +104,8 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   // @vize-map: 7719:7955 -> 0:207
 
   // ========== Template Scope (inherits from setup) ==========
+  // Anchor before the template scope shadows `props`
+  void props;
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;

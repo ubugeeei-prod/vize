@@ -97,6 +97,8 @@ function __setup() {
   // @vize-map: 7590:7669 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
+  // Anchor before the template scope shadows `props`
+  void props;
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;

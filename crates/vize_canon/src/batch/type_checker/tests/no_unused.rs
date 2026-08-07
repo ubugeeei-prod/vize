@@ -6,6 +6,7 @@ use vize_carton::cstr;
 
 mod css_v_bind;
 mod define_emits_unused;
+mod template_props_read;
 
 #[test]
 fn batch_type_checker_marks_art_bindings_as_used_with_no_unused_locals() {

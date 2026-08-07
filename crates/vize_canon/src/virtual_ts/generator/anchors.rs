@@ -4,6 +4,44 @@ use super::imports::collect_setup_binding_anchor_names;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::Croquis;
 
+/// Header comment for the anchor list; the wording differs when unused-local
+/// diagnostics are preserved because the list is then narrowed to
+/// template-referenced names.
+pub(super) fn setup_binding_anchor_comment(preserve_unused_diagnostics: bool) -> &'static str {
+    if preserve_unused_diagnostics {
+        "Reference setup bindings used by template generation"
+    } else {
+        "Reference setup bindings (used in template/CSS v-bind)"
+    }
+}
+
+/// Anchor a setup binding named `props` at setup scope, before the template
+/// closure opens.
+///
+/// The closure's synthetic `const props` shadows a setup binding of the same
+/// name, so the in-closure anchor list can no longer mark it read — a
+/// `const props = defineProps(...)` used only through the template
+/// (`v-bind="props"`) reported a false TS6133. The narrowing matches the
+/// anchor list: with unused-local diagnostics preserved, only a template that
+/// references `props` itself counts as a read.
+pub(super) fn emit_props_shadow_anchor(
+    ts: &mut String,
+    summary: &Croquis,
+    template_referenced_names: Option<&FxHashSet<String>>,
+) {
+    if summary
+        .bindings
+        .bindings
+        .get("props")
+        .is_some_and(|kind| kind.is_setup_variable())
+        && template_referenced_names
+            .is_none_or(|names| names.iter().any(|name| name.as_str() == "props"))
+    {
+        ts.push_str("  // Anchor before the template scope shadows `props`\n");
+        ts.push_str("  void props;\n");
+    }
+}
+
 pub(super) fn emit_setup_binding_anchors(
     ts: &mut String,
     summary: &Croquis,

@@ -242,6 +242,21 @@ pub enum BindingType {
 }
 
 impl BindingType {
+    /// True for bindings declared as variables in `<script setup>` scope
+    /// (let/const/ref/reactive), as opposed to props, Options API members,
+    /// globals, or imports.
+    #[inline]
+    pub const fn is_setup_variable(self) -> bool {
+        matches!(
+            self,
+            Self::SetupLet
+                | Self::SetupMaybeRef
+                | Self::SetupRef
+                | Self::SetupReactiveConst
+                | Self::SetupConst
+        )
+    }
+
     /// Short display code for VIR output (zero allocation)
     /// - st = state (ref, needs .value)
     /// - ist = implicit state (reactive, props - no .value needed)

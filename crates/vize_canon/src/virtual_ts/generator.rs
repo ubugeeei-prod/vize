@@ -19,7 +19,7 @@ mod setup_props;
 mod setup_type_exports;
 mod spans;
 mod template_refs;
-use self::anchors::emit_setup_binding_anchors;
+use self::anchors::{emit_props_shadow_anchor, emit_setup_binding_anchors};
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::emit_default_export_declaration;
 use self::css_modules::CssModuleAssertions;
@@ -91,11 +91,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let (template_usage_names, has_template_scope) =
         template_usage(summary, template_ast, generation_options);
     let template_referenced_names = preserve_unused_diagnostics.then_some(&template_usage_names);
-    let reference_setup_bindings_comment = if preserve_unused_diagnostics {
-        "Reference setup bindings used by template generation"
-    } else {
-        "Reference setup bindings (used in template/CSS v-bind)"
-    };
+    let reference_setup_bindings_comment =
+        self::anchors::setup_binding_anchor_comment(preserve_unused_diagnostics);
     let lib_references = generation_options
         .lib_references
         .unwrap_or(DEFAULT_LIB_REFERENCES);
@@ -691,6 +688,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 script_content,
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
+
+            emit_props_shadow_anchor(&mut ts, summary, template_referenced_names);
 
             // Semicolon prevents ASI issues when user script doesn't end with `;`
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)

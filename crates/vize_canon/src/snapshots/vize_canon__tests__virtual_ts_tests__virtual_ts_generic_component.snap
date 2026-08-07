@@ -106,6 +106,8 @@ function __setup<T extends string | number>() {
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
   type __R_activeItem = typeof activeItem;
+  // Anchor before the template scope shadows `props`
+  void props;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
     type __U<T> = T extends import('vue').Ref ? T['value'] : T;
