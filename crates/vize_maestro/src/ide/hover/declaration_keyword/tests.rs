@@ -219,3 +219,39 @@ fn a_marker_less_imported_tag_hover_rewrites_var_to_property() {
         None,
     );
 }
+
+#[test]
+fn a_non_ascii_imported_tag_name_still_rewrites_var_to_property() {
+    let script = "import { ÅButton } from '@/ÅButton'\n";
+    let content = "<script setup lang=\"ts\">\nimport { ÅButton } from '@/ÅButton'\n</script>\n<template>\n  <ÅButton as=\"button\" />\n</template>\n";
+    let hover = "```typescript\nvar ÅButton: DefineComponent<{ as: string }>\n```";
+    // Land inside the name past the two-byte leading letter.
+    let on_tag = content.find("<ÅButton").unwrap() + "<Å".len() + 1;
+    assert_eq!(
+        super::imported_tag::imported_tag_property_keyword(
+            hover,
+            content,
+            on_tag,
+            script,
+            Some("ts"),
+            "ÅButton"
+        )
+        .as_deref(),
+        Some("```typescript\n(property) ÅButton: DefineComponent<{ as: string }>\n```"),
+    );
+
+    // A non-ASCII letter directly after the word means the quick info names a
+    // longer identifier — decline rather than rewrite someone else's keyword.
+    let longer = "```typescript\nvar ÅButtonÅ: DefineComponent<{ as: string }>\n```";
+    assert_eq!(
+        super::imported_tag::imported_tag_property_keyword(
+            longer,
+            content,
+            on_tag,
+            script,
+            Some("ts"),
+            "ÅButton"
+        ),
+        None,
+    );
+}

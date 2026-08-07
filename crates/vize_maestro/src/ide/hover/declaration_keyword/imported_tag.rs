@@ -24,7 +24,7 @@ pub(super) fn imported_tag_property_keyword(
         return None;
     }
     let following = markdown[after_fence + synthesized.len()..].chars().next();
-    if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
+    if following.is_some_and(|c| c == '_' || c == '$' || c.is_alphanumeric()) {
         return None;
     }
     if !hover_is_on_tag(content, offset, word) {
@@ -43,14 +43,21 @@ pub(super) fn imported_tag_property_keyword(
 /// Whether `offset` sits inside an occurrence of `word` that is written as a
 /// tag name — immediately preceded by `<`. A hover on the same identifier in
 /// an expression keeps the checker's answer.
+///
+/// The identifier scan is Unicode-aware: a non-ASCII letter such as the `Å` of
+/// `<ÅButton` continues the name rather than ending it, and `index` advances by
+/// the separator's full UTF-8 width so the resulting byte offset stays on a
+/// char boundary.
 fn hover_is_on_tag(content: &str, offset: usize, word: &str) -> bool {
     let clamped = offset.min(content.len());
     let Some(before) = content.get(..clamped) else {
         return false;
     };
     let word_start = before
-        .rfind(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$' || c == '-'))
-        .map_or(0, |index| index + 1);
+        .char_indices()
+        .rev()
+        .find(|(_, c)| !(c.is_alphanumeric() || *c == '_' || *c == '$' || *c == '-'))
+        .map_or(0, |(index, c)| index + c.len_utf8());
     content
         .get(word_start..)
         .is_some_and(|rest| rest.starts_with(word))
