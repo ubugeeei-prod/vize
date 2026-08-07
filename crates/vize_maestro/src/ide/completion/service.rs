@@ -115,9 +115,7 @@ impl super::CompletionService {
                         let items = Self::complete_script_with_corsa(ctx, true, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
-                            let mut v = script::composition_api_completions();
-                            v.extend(script::macro_completions());
-                            all.extend(v);
+                            all.extend(script::script_extras(ctx, true));
                             return Some(CompletionResponse::Array(all));
                         }
                     }
@@ -128,7 +126,7 @@ impl super::CompletionService {
                         let items = Self::complete_script_with_corsa(ctx, false, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
-                            all.extend(script::composition_api_completions());
+                            all.extend(script::script_extras(ctx, false));
                             return Some(CompletionResponse::Array(all));
                         }
                     }
@@ -186,12 +184,8 @@ impl super::CompletionService {
                         vec![]
                     }
                     BlockType::Template => template::corsa_template_completions(ctx),
-                    BlockType::Script => script::composition_api_completions(),
-                    BlockType::ScriptSetup => {
-                        let mut v = script::composition_api_completions();
-                        v.extend(script::macro_completions());
-                        v
-                    }
+                    BlockType::Script => script::script_extras(ctx, false),
+                    BlockType::ScriptSetup => script::script_extras(ctx, true),
                     BlockType::Style(_) => style::vue_css_completions(),
                     BlockType::Art(_) => vec![],
                 });

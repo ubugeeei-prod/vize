@@ -102,3 +102,26 @@ fn pins_negative_and_non_inferrable_cases() {
     // A space between callee and `<` defeats the heuristic (preserved).
     assert_eq!(infer("const s = ref <Foo>()", "s", ReactiveKind::Ref), None);
 }
+
+#[test]
+fn member_positions_suppress_extras_identifier_positions_keep_them() {
+    // Bare dot, dot with a typed prefix, optional chaining, and whitespace
+    // after the dot are member positions (#3933).
+    let cases = [
+        ("rootContext.", 12, true),
+        ("rootContext.fil", 15, true),
+        ("rootContext?.fil", 16, true),
+        ("rootContext.  ", 14, true),
+        // Identifier positions keep the extras.
+        ("const x = fil", 13, false),
+        ("", 0, false),
+        ("rootContext", 11, false),
+    ];
+    for (content, offset, expected) in cases {
+        assert_eq!(
+            super::completes_a_member(content, offset),
+            expected,
+            "content={content:?} offset={offset}"
+        );
+    }
+}
