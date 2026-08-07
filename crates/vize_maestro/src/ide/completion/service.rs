@@ -176,6 +176,13 @@ impl super::CompletionService {
             if !corsa_items.is_empty() {
                 let mut items = corsa_items;
                 items.extend(match block_type {
+                    // Inside a template expression the checker's answer is
+                    // the whole story; markup completions are noise (#3911).
+                    BlockType::Template
+                        if crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) =>
+                    {
+                        vec![]
+                    }
                     BlockType::Template => template::corsa_template_completions(ctx),
                     BlockType::Script => script::composition_api_completions(),
                     BlockType::ScriptSetup => {
@@ -237,35 +244,26 @@ impl super::CompletionService {
         vec![]
     }
 
-    /// Get completions for template with Corsa.
+    /// Get completions for template with Corsa: the canonical-document route
+    /// hover takes (#3321), so member access answers with the target type's
+    /// properties instead of the legacy per-block scope list; generated
+    /// machinery in scope at the mapped position is filtered out (#3911).
     #[cfg(feature = "native")]
     async fn complete_template_with_corsa(
         ctx: &IdeContext<'_>,
-        bridge: &CorsaBridge,
+        bridge: &Arc<CorsaBridge>,
     ) -> Vec<CompletionItem> {
-        if let Some(ref virtual_docs) = ctx.virtual_docs
-            && let Some(ref tmpl) = virtual_docs.template
-            && let Some(vts_offset) =
-                crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)
+        if bridge.is_initialized()
+            && let Some(doc) = corsa_support::open_canonical_virtual_document(ctx, bridge).await
+            && let Some((line, character)) =
+                corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)
+            && let Ok(items) = bridge.completion(&doc.request_uri, line, character).await
         {
-            let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
-
-            if bridge.is_initialized() {
-                let request_path = corsa_support::template_request_path(ctx.uri);
-                let Ok(uri) = bridge
-                    .open_or_update_virtual_document(&request_path, &tmpl.content)
-                    .await
-                else {
-                    return vec![];
-                };
-
-                if let Ok(items) = bridge.completion(&uri, line, character).await {
-                    return items
-                        .into_iter()
-                        .map(Self::convert_lsp_completion)
-                        .collect();
-                }
-            }
+            return items
+                .into_iter()
+                .filter(|item| !super::generated_symbols::is_generated_template_symbol(&item.label))
+                .map(Self::convert_lsp_completion)
+                .collect();
         }
 
         vec![]

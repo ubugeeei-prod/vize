@@ -137,10 +137,13 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
+        // Like hover, the project-session API rejects completion as
+        // unsupported on every pinned runtime (corsa-bind#409); the editor LSP
+        // transport on the same runtime does serve it (#3911).
         let Some(position) =
             self.api_position(uri, line, character, self.supports_completion_api())?
         else {
-            return Ok(None);
+            return self.completion_via_editor_lsp(uri, line, character);
         };
 
         let context = CompletionContext {
@@ -148,13 +151,15 @@ impl CorsaProjectClient {
             trigger_character: None,
         };
         let document_uri = self.session_document_uri(uri);
-        let response = block_on(self.session.get_completion_at_position(
+        match block_on(self.session.get_completion_at_position(
             uri_document_identifier(document_uri.as_str()),
             position,
             Some(context),
-        ))
-        .map_err(|error| cstr!("Failed to request completion: {error}"))?;
-        self.serialize_with_remapped_uris(response)
+        )) {
+            Ok(response) => self.serialize_with_remapped_uris(response),
+            Err(CorsaError::Unsupported(_)) => self.completion_via_editor_lsp(uri, line, character),
+            Err(error) => Err(cstr!("Failed to request completion: {error}")),
+        }
     }
 
     fn api_position(

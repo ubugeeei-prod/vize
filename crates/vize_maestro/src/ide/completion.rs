@@ -10,6 +10,7 @@
 #![allow(clippy::disallowed_methods)]
 
 mod dispatch;
+mod generated_symbols;
 mod items;
 mod script;
 mod service;
