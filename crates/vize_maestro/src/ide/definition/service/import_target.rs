@@ -10,7 +10,7 @@
 //! target — following `export … from` barrels a bounded number of hops.
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 use vize_carton::cstr;
@@ -201,18 +201,34 @@ fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
 
 fn probe(base: &Path) -> Option<PathBuf> {
     if base.extension().is_some() && base.is_file() {
-        return Some(base.to_path_buf());
+        return Some(normalize_absolute_path(base));
     }
     for extension in ["ts", "tsx", "d.ts", "vue"] {
         let candidate = PathBuf::from(cstr!("{}.{extension}", base.display()).as_str());
         if candidate.is_file() {
-            return Some(candidate);
+            return Some(normalize_absolute_path(&candidate));
         }
     }
-    ["index.ts", "index.tsx"]
+    let candidate = ["index.ts", "index.tsx"]
         .iter()
         .map(|index| base.join(index))
-        .find(|candidate| candidate.is_file())
+        .find(|candidate| candidate.is_file())?;
+    Some(normalize_absolute_path(&candidate))
+}
+
+fn normalize_absolute_path(path: &Path) -> PathBuf {
+    debug_assert!(path.is_absolute());
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            component => normalized.push(component.as_os_str()),
+        }
+    }
+    normalized
 }
 
 /// The declaration of `word` inside `target`, following re-export barrels.
