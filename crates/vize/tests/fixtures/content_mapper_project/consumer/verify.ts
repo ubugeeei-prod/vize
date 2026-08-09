@@ -15,7 +15,7 @@ const optionsCountMustBeTyped: IsAny<OptionsInstance["count"]> = false;
 const optionsLabelMustBeTyped: IsAny<OptionsInstance["label"]> = false;
 const optionsComputedMustBeTyped: IsAny<OptionsInstance["doubled"]> = false;
 const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
-const options = undefined as unknown as OptionsInstance;
+declare const options: OptionsInstance;
 const optionsCount: number = options.count;
 const optionsLabel: string = options.label;
 const optionsComputed: number = options.doubled;
