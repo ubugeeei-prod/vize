@@ -9,6 +9,8 @@ mod canonical;
 #[cfg(all(test, feature = "native"))]
 mod canonical_dependency_tests;
 #[cfg(all(test, feature = "native"))]
+mod canonical_rename_tests;
+#[cfg(all(test, feature = "native"))]
 mod canonical_tests;
 #[cfg(feature = "native")]
 mod html_attribute;

@@ -9,7 +9,7 @@ use super::request_file_uri;
 use crate::ide::{DiagnosticService, IdeContext, offset_to_position, position_to_offset};
 use crate::server::ServerState;
 
-fn mapped_document(uri: &Url, source: &str) -> CanonicalDependencyDocument {
+pub(super) fn mapped_document(uri: &Url, source: &str) -> CanonicalDependencyDocument {
     CanonicalDependencyDocument {
         source_uri: uri.clone(),
         source: source.into(),
@@ -19,7 +19,7 @@ fn mapped_document(uri: &Url, source: &str) -> CanonicalDependencyDocument {
     }
 }
 
-fn host_document(uri: &Url, source: &str) -> CanonicalVirtualDocument {
+pub(super) fn host_document(uri: &Url, source: &str) -> CanonicalVirtualDocument {
     CanonicalVirtualDocument {
         request_uri: request_file_uri(canonical_request_path(uri).as_str()),
         virtual_result: DiagnosticService::generate_virtual_ts(uri, source, false, false)
@@ -162,7 +162,7 @@ fn path_uri(path: &std::path::Path) -> String {
     Url::from_file_path(path).expect("file uri").to_string()
 }
 
-fn generated_offset_for_source(
+pub(super) fn generated_offset_for_source(
     document: &CanonicalDependencyDocument,
     source_offset: usize,
 ) -> usize {

@@ -7,6 +7,7 @@ use crate::ide::diagnostics::VirtualTsResult;
 
 mod open;
 mod project;
+pub(super) mod rename;
 mod semantic_links;
 
 pub(crate) use open::open_canonical_virtual_document;
