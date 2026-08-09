@@ -10,6 +10,7 @@ use super::tsconfig_inputs::{parse_jsonc_value, read_extends_entries, resolve_ex
 #[derive(Default)]
 pub(super) struct PathAliasResolver {
     aliases: Vec<PathAlias>,
+    base_url: Option<PathBuf>,
 }
 
 struct PathAlias {
@@ -52,7 +53,9 @@ impl PathAliasResolver {
                 }
             }
         }
-        None
+        self.base_url
+            .as_ref()
+            .and_then(|base_url| resolve_base(&base_url.join(specifier), canonical_paths, options))
     }
 }
 
@@ -92,14 +95,20 @@ fn load_aliases(
     let Some(options) = value.get("compilerOptions").and_then(Value::as_object) else {
         return Ok(resolver);
     };
-    let base_dir = options
+    if let Some(base_url) = options
         .get("baseUrl")
         .and_then(Value::as_str)
         .map(|base| dir.join(base))
-        .unwrap_or_else(|| dir.to_path_buf());
+    {
+        resolver.base_url = Some(base_url);
+    }
     let Some(paths) = options.get("paths").and_then(Value::as_object) else {
         return Ok(resolver);
     };
+    let base_dir = resolver
+        .base_url
+        .clone()
+        .unwrap_or_else(|| dir.to_path_buf());
 
     resolver.aliases.clear();
     for (pattern, targets) in paths {
