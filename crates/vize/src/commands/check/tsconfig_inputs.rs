@@ -17,6 +17,7 @@ mod implicit_exclude;
 mod jsonc;
 mod loader;
 mod matching;
+mod ownership;
 mod spec;
 mod type_references;
 
@@ -34,10 +35,10 @@ mod tests;
 pub(crate) use ambient::{
     collect_ambient_declaration_files, collect_hidden_ambient_declaration_files,
 };
-pub(crate) use collect::resolve_tsconfig_for_files;
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
+pub(crate) use ownership::{resolve_tsconfig_for_files, resolve_tsconfig_program_inputs};
 pub(crate) use spec::TsconfigDeclarationOptions;
 pub(crate) use type_references::{
     collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,

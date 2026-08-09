@@ -1,0 +1,465 @@
+//! Aggregates diagnostics and declarations from one or more tsconfig programs.
+
+use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
+
+use vize_carton::{FxHashSet, String, cstr, profiler::global_profiler};
+use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
+
+use super::{
+    CheckArgs, JsonFileResult, JsonOutput, ProgramExecution,
+    diagnostics::{
+        emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
+        save_virtual_ts_targets, write_profile_virtual_ts,
+    },
+    display_path, resolve_declaration_emit_options,
+};
+use crate::{commands::check::path_cache::CanonicalPathCache, profile_support};
+
+#[allow(clippy::disallowed_types)]
+type RenderedDiagnostics =
+    std::collections::BTreeMap<std::string::String, Vec<std::string::String>>;
+
+struct DeclarationSummary {
+    files: BTreeSet<std::path::PathBuf>,
+    directories: BTreeSet<std::path::PathBuf>,
+    elapsed: Duration,
+}
+
+pub(super) fn report_executions(
+    args: &CheckArgs,
+    cwd: &Path,
+    start: Instant,
+    collect_time: Duration,
+    executions: &[ProgramExecution],
+    canonical_paths: &mut CanonicalPathCache,
+) {
+    let virtual_files = executions
+        .iter()
+        .flat_map(|execution| execution.checker.virtual_files())
+        .collect::<Vec<_>>();
+    if virtual_files.is_empty() {
+        if args.format == "json" {
+            emit_json_output(JsonOutput {
+                files: Vec::new(),
+                error_count: 0,
+                warning_count: 0,
+                file_count: 0,
+                declarations: None,
+            });
+        } else {
+            eprintln!("No files were registered for type checking");
+        }
+        return;
+    }
+
+    if args.show_virtual_ts {
+        if executions
+            .iter()
+            .any(|execution| execution.checker.shared_helpers_preamble().is_some())
+        {
+            eprintln!(
+                "\n=== {} ===",
+                vize_canon::virtual_ts::SHARED_PREAMBLE_FILE_NAME
+            );
+            eprintln!("{}", vize_canon::virtual_ts::SHARED_PREAMBLE_DTS);
+        }
+        for file in &virtual_files {
+            eprintln!("\n=== {} ===", file.original_path.display());
+            eprintln!("{}", file.content);
+        }
+    }
+
+    if !args.save_virtual_ts_for.is_empty() {
+        save_virtual_ts_targets(
+            &args.save_virtual_ts_for,
+            cwd,
+            || {
+                virtual_files
+                    .iter()
+                    .map(|file| (file.original_path.as_path(), file.content.as_str()))
+            },
+            args.quiet,
+        );
+    }
+
+    let profile_artifact_start = Instant::now();
+    if args.profile {
+        write_profile_virtual_ts(&virtual_files);
+    }
+    let profile_artifact_time = profile_artifact_start.elapsed();
+
+    let diagnostics_render_start = Instant::now();
+    let mut reported_raw = Vec::new();
+    for execution in executions {
+        for diagnostic in &execution.result.diagnostics {
+            if is_reported(&execution.reported_files, &diagnostic.file, canonical_paths)
+                && !is_suppressed_false_positive(diagnostic)
+            {
+                reported_raw.push(diagnostic.clone());
+            }
+        }
+    }
+    let diagnostics = render_diagnostics(&reported_raw);
+    let diagnostics_render_time = diagnostics_render_start.elapsed();
+    let total_errors = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 1)
+        .count();
+    let total_warnings = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 2)
+        .count();
+    let emitted = emit_declarations(args, executions, total_errors);
+    let total_time = start.elapsed();
+    let gen_time = executions.iter().map(|execution| execution.gen_time).sum();
+    let check_time = executions
+        .iter()
+        .map(|execution| execution.check_time)
+        .sum();
+
+    if args.profile {
+        print_profile(
+            executions,
+            &virtual_files,
+            total_errors,
+            total_time,
+            collect_time,
+            gen_time,
+            check_time,
+            profile_artifact_time,
+            diagnostics_render_time,
+            emitted.as_ref(),
+        );
+    }
+
+    if args.format == "json" {
+        emit_json(
+            args,
+            cwd,
+            executions,
+            &virtual_files,
+            &diagnostics,
+            total_errors,
+            total_warnings,
+            emitted.as_ref(),
+            canonical_paths,
+        );
+        if total_errors > 0 {
+            std::process::exit(1);
+        }
+        return;
+    }
+
+    print_text(
+        args,
+        &virtual_files,
+        &diagnostics,
+        total_errors,
+        total_warnings,
+        total_time,
+        collect_time,
+        gen_time,
+        check_time,
+        emitted.as_ref(),
+    );
+}
+
+fn emit_declarations(
+    args: &CheckArgs,
+    executions: &[ProgramExecution],
+    total_errors: usize,
+) -> Option<DeclarationSummary> {
+    if !args.declaration {
+        return None;
+    }
+    if total_errors > 0 {
+        if !args.quiet {
+            eprintln!("Skipping declaration emit because type errors were reported.");
+        }
+        return None;
+    }
+
+    let start = Instant::now();
+    let mut files = BTreeSet::new();
+    let mut directories = BTreeSet::new();
+    for execution in executions {
+        let options = resolve_declaration_emit_options(
+            args.declaration_dir.as_deref(),
+            execution.tsconfig_path.as_deref(),
+            &execution.program_root,
+        );
+        directories.insert(options.out_dir.clone());
+        let result = execution
+            .checker
+            .emit_declarations(&options)
+            .unwrap_or_else(|error| {
+                eprintln!("\x1b[31mError:\x1b[0m {}", error);
+                std::process::exit(1);
+            });
+        files.extend(result.files.into_iter().map(|file| file.path));
+    }
+    Some(DeclarationSummary {
+        files,
+        directories,
+        elapsed: start.elapsed(),
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn emit_json(
+    args: &CheckArgs,
+    cwd: &Path,
+    executions: &[ProgramExecution],
+    virtual_files: &[&vize_canon::VirtualFile],
+    diagnostics: &RenderedDiagnostics,
+    total_errors: usize,
+    total_warnings: usize,
+    emitted: Option<&DeclarationSummary>,
+    canonical_paths: &mut CanonicalPathCache,
+) {
+    let mut files_json = executions
+        .iter()
+        .flat_map(|execution| {
+            execution
+                .checker
+                .virtual_files()
+                .into_iter()
+                .filter(|file| {
+                    is_reported(
+                        &execution.reported_files,
+                        &file.original_path,
+                        canonical_paths,
+                    )
+                })
+                .map(|file| {
+                    let key = file.original_path.to_string_lossy().into_owned();
+                    JsonFileResult {
+                        file: display_path(cwd, &file.original_path).into(),
+                        virtual_ts: args.show_virtual_ts.then(|| file.content.clone().into()),
+                        diagnostics: diagnostics.get(key.as_str()).cloned().unwrap_or_default(),
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    files_json.sort_by(|left, right| left.file.cmp(&right.file));
+    files_json.dedup_by(|left, right| left.file == right.file);
+    let reported_file_count = files_json.len();
+
+    let virtual_keys = virtual_files
+        .iter()
+        .map(|file| String::from(file.original_path.to_string_lossy()))
+        .collect::<FxHashSet<_>>();
+    files_json.extend(
+        diagnostics
+            .iter()
+            .filter(|(key, values)| !values.is_empty() && !virtual_keys.contains(key.as_str()))
+            .map(|(key, values)| JsonFileResult {
+                file: display_path(cwd, Path::new(key)).into(),
+                virtual_ts: None,
+                diagnostics: values.clone(),
+            }),
+    );
+
+    emit_json_output(JsonOutput {
+        files: files_json,
+        error_count: total_errors,
+        warning_count: total_warnings,
+        file_count: reported_file_count,
+        declarations: emitted.map(|summary| {
+            summary
+                .files
+                .iter()
+                .map(|path| display_path(cwd, path).into())
+                .collect()
+        }),
+    });
+}
+
+#[allow(clippy::too_many_arguments)]
+fn print_text(
+    args: &CheckArgs,
+    virtual_files: &[&vize_canon::VirtualFile],
+    diagnostics: &RenderedDiagnostics,
+    total_errors: usize,
+    total_warnings: usize,
+    total_time: Duration,
+    collect_time: Duration,
+    gen_time: Duration,
+    check_time: Duration,
+    emitted: Option<&DeclarationSummary>,
+) {
+    if !args.quiet {
+        for (key, file_diagnostics) in diagnostics {
+            if file_diagnostics.is_empty() {
+                continue;
+            }
+            println!("\n\x1b[4m{}\x1b[0m", key);
+            for diagnostic in file_diagnostics {
+                let color = if diagnostic.starts_with("error") {
+                    "\x1b[31m"
+                } else {
+                    "\x1b[33m"
+                };
+                println!("  {}{}\x1b[0m", color, diagnostic);
+            }
+        }
+    }
+
+    let status = if total_errors > 0 {
+        "\x1b[31m\u{2717}\x1b[0m"
+    } else {
+        "\x1b[32m\u{2713}\x1b[0m"
+    };
+    if let Some(summary) = emitted {
+        println!(
+            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, gen: {:.2?}, corsa: {:.2?}, dts: {:.2?})",
+            status,
+            virtual_files.len(),
+            total_time,
+            collect_time,
+            gen_time,
+            check_time,
+            summary.elapsed
+        );
+    } else {
+        println!(
+            "\n{} Type checked {} files in {:.2?} (collect: {:.2?}, gen: {:.2?}, corsa: {:.2?})",
+            status,
+            virtual_files.len(),
+            total_time,
+            collect_time,
+            gen_time,
+            check_time
+        );
+    }
+    if total_errors > 0 {
+        println!("  \x1b[31m{} error(s)\x1b[0m", total_errors);
+    } else {
+        println!("  \x1b[32mNo type errors found!\x1b[0m");
+    }
+    if total_warnings > 0 {
+        println!("  \x1b[33m{} warning(s)\x1b[0m", total_warnings);
+    }
+    if let Some(summary) = emitted {
+        let destinations = summary
+            .directories
+            .iter()
+            .map(|path| cstr!("{}", path.display()))
+            .collect::<Vec<_>>()
+            .join(", ");
+        println!(
+            "  \x1b[32mEmitted {} declaration file(s)\x1b[0m to {}",
+            summary.files.len(),
+            destinations
+        );
+    }
+
+    if total_errors > 0 {
+        std::process::exit(1);
+    }
+    if let Some(max_warnings) = args.max_warnings
+        && total_warnings > max_warnings
+    {
+        eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
+        std::process::exit(1);
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn print_profile(
+    executions: &[ProgramExecution],
+    virtual_files: &[&vize_canon::VirtualFile],
+    total_errors: usize,
+    total_time: Duration,
+    collect_time: Duration,
+    gen_time: Duration,
+    check_time: Duration,
+    profile_artifact_time: Duration,
+    diagnostics_render_time: Duration,
+    emitted: Option<&DeclarationSummary>,
+) {
+    let profiler = global_profiler();
+    let allocation_summary = profile_support::allocation_snapshot();
+    let counter_summary = profiler.counter_summary();
+    let operation_summary = profiler.summary();
+    profiler.disable();
+    let mut phases = vec![
+        ProfilePhase {
+            name: "collect inputs",
+            duration: collect_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "tsconfig or explicit patterns",
+        },
+        ProfilePhase {
+            name: "virtual project",
+            duration: gen_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "scan paths and generate Virtual TS",
+        },
+        ProfilePhase {
+            name: "profile artifacts",
+            duration: profile_artifact_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "write node_modules/.vize/check-profile",
+        },
+        ProfilePhase {
+            name: "corsa diagnostics",
+            duration: check_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "project-session diagnostics",
+        },
+        ProfilePhase {
+            name: "render diagnostics",
+            duration: diagnostics_render_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "group diagnostics by file",
+        },
+    ];
+    if let Some(summary) = emitted {
+        phases.push(ProfilePhase {
+            name: "declaration emit",
+            duration: summary.elapsed,
+            kind: ProfilePhaseKind::Wall,
+            note: "materialized Corsa project",
+        });
+    }
+    let virtual_bytes = virtual_files.iter().map(|file| file.content.len()).sum();
+    let mut recommendations: Vec<String> = Vec::new();
+    if check_time > gen_time * 2 {
+        recommendations.push(
+            "Corsa diagnostics dominate; inspect the largest generated virtual files.".into(),
+        );
+    } else if gen_time > check_time {
+        recommendations.push(
+            "Virtual TS generation dominates; inspect SFCs with large templates or cross-file imports."
+                .into(),
+        );
+    }
+    if let Some(largest) = virtual_files.iter().max_by_key(|file| file.content.len()) {
+        recommendations.push(cstr!(
+            "Largest Virtual TS: {} ({} bytes).",
+            largest.original_path.display(),
+            largest.content.len()
+        ));
+    }
+    let summary = cstr!(
+        "{} virtual file(s), {} error(s), {} tsconfig program(s)",
+        virtual_files.len(),
+        total_errors,
+        executions.len()
+    );
+    print_profile_report(&ProfileReport {
+        title: "check",
+        summary: summary.as_str(),
+        total: total_time,
+        phases: &phases,
+        files: &[],
+        slow_threshold: Duration::from_millis(0),
+        throughput_bytes: Some(virtual_bytes),
+        operations: Some(&operation_summary),
+        counters: Some(&counter_summary),
+        allocations: allocation_summary,
+        recommendations: &recommendations,
+    });
+}

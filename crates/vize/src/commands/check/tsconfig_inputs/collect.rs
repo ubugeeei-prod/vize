@@ -1,4 +1,4 @@
-//! Filesystem walking, hidden-root expansion, and tsconfig ownership resolution.
+//! Filesystem walking and hidden-root expansion.
 
 use std::path::{Path, PathBuf};
 
@@ -6,7 +6,6 @@ use ignore::WalkBuilder;
 use vize_carton::FxHashSet;
 
 use super::glob::{normalize_input_path, normalize_walked_path};
-use super::loader::TsconfigInputCache;
 use super::matching::{
     SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
     is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -174,154 +173,4 @@ fn hidden_pattern_root(base_dir: &Path, pattern: &str) -> Option<PathBuf> {
         }
     }
     None
-}
-
-pub(crate) fn resolve_tsconfig_for_files(
-    tsconfig_path: Option<&Path>,
-    files: &[PathBuf],
-    include_jsx: bool,
-    cache: &mut TsconfigInputCache,
-) -> Option<PathBuf> {
-    let tsconfig_path = tsconfig_path?;
-    let projects = cache.project_paths(tsconfig_path);
-    let root_project = projects
-        .first()
-        .cloned()
-        .unwrap_or_else(|| normalize_input_path(tsconfig_path));
-    let files = files
-        .iter()
-        .filter(|path| {
-            is_supported_check_file_with_options(
-                path,
-                SupportedFileOptions {
-                    // JavaScript candidates must reach the per-project
-                    // ownership matchers below. Each matcher applies its own
-                    // merged allowJs value, so a referenced allowJs project
-                    // cannot leak ownership to a sibling that disables it.
-                    include_js: true,
-                    include_jsx,
-                },
-            )
-        })
-        .map(|path| normalize_input_path(path))
-        .collect::<Vec<_>>();
-    if files.is_empty() {
-        return Some(root_project);
-    }
-
-    // Load each candidate project's input spec exactly once and precompile its
-    // ownership matcher, so the per-file checks below are pure in-memory glob
-    // matches instead of re-reading the tsconfig chain for every file.
-    let matchers = projects
-        .iter()
-        .map(|project| TsconfigOwnershipMatcher::load(project, cache, include_jsx))
-        .collect::<Vec<_>>();
-
-    if let Some((owner, _)) = projects
-        .iter()
-        .zip(&matchers)
-        .find(|(_, matcher)| files.iter().all(|file| matcher.owns(file)))
-    {
-        return Some(owner.clone());
-    }
-
-    let mut shared_owner = None::<&PathBuf>;
-    for file in &files {
-        let Some((owner, _)) = projects
-            .iter()
-            .zip(&matchers)
-            .find(|(_, matcher)| matcher.owns(file))
-        else {
-            return Some(root_project);
-        };
-        match shared_owner {
-            Some(shared) if shared != owner => return Some(root_project),
-            Some(_) => {}
-            None => shared_owner = Some(owner),
-        }
-    }
-
-    shared_owner.cloned().or(Some(root_project))
-}
-
-/// Precompiled ownership matcher for one tsconfig project: the canonicalized
-/// `files` entries plus the effective include/exclude globs (with tsc's
-/// defaults applied), built once per project so matching N files needs no
-/// further I/O or glob compilation.
-struct TsconfigOwnershipMatcher {
-    /// Whether the tsconfig chain loaded; an unreadable tsconfig owns nothing.
-    loaded: bool,
-    files: FxHashSet<PathBuf>,
-    includes: Vec<GlobSpec>,
-    excludes: Vec<GlobSpec>,
-    include_js: bool,
-    include_jsx: bool,
-}
-
-impl TsconfigOwnershipMatcher {
-    fn load(tsconfig_path: &Path, cache: &mut TsconfigInputCache, include_jsx: bool) -> Self {
-        let Some(spec) = cache.load(tsconfig_path) else {
-            return Self {
-                loaded: false,
-                files: FxHashSet::default(),
-                includes: Vec::new(),
-                excludes: Vec::new(),
-                include_js: false,
-                include_jsx,
-            };
-        };
-
-        let files = spec
-            .files
-            .iter()
-            .map(|entry| normalize_input_path(&entry.resolve()))
-            .collect();
-        let default_base_dir = tsconfig_path
-            .parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_default();
-        let includes = if !spec.has_includes && !spec.has_files {
-            GlobSpec::new(&default_base_dir, "**/*")
-                .into_iter()
-                .collect::<Vec<_>>()
-        } else {
-            spec.includes.clone()
-        };
-        let excludes = spec.effective_excludes();
-
-        Self {
-            loaded: true,
-            files,
-            includes,
-            excludes,
-            include_js: spec.allow_js.unwrap_or(false),
-            include_jsx,
-        }
-    }
-
-    /// Whether this project owns `file`, which must already be normalized via
-    /// `normalize_input_path`.
-    fn owns(&self, file: &Path) -> bool {
-        if !self.loaded {
-            return false;
-        }
-        if is_nuxt_import_manifest_path(file) {
-            return false;
-        }
-        if self.files.contains(file) {
-            return true;
-        }
-        if self.includes.is_empty()
-            || !is_supported_check_file_with_options(
-                file,
-                SupportedFileOptions {
-                    include_js: self.include_js,
-                    include_jsx: self.include_jsx,
-                },
-            )
-        {
-            return false;
-        }
-        matches_tsconfig_patterns(file, &self.includes, &self.excludes)
-    }
 }
