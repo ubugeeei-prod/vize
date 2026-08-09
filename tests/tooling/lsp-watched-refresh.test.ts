@@ -81,6 +81,10 @@ test("watched dependency changes refresh the open importer", async (t) => {
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
+    const diagnosticCodes = (params: unknown) =>
+      (params as { diagnostics: Array<{ code?: number | string }> }).diagnostics.map(
+        (diagnostic) => diagnostic.code,
+      );
     // `waitForNotification` resolves out of the backlog, so a stale republish
     // could satisfy the delete phase without the deletion ever being observed.
     // Draining to quiescence first forces the next publish to be the delete's.
@@ -131,7 +135,12 @@ test("watched dependency changes refresh the open importer", async (t) => {
       (params) => diagnosticsFor(appUri)(params) && counted(params) > 0,
       60000,
     );
-    assert.ok(counted(afterDelete) > 0, "a deleted dependency keeps the importer broken");
+    assert.ok(
+      diagnosticCodes(afterDelete).includes(2307),
+      `a deleted dependency reports TS2307 instead of a stale overlay diagnostic: ${JSON.stringify(
+        afterDelete,
+      )}`,
+    );
 
     // Phase 3: restored with the matching type; the importer recovers.
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");

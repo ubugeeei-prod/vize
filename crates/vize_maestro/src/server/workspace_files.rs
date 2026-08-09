@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use tower_lsp::lsp_types::Url;
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
-    MessageType, RenameFilesParams, WorkspaceEdit,
+    FileChangeType, MessageType, RenameFilesParams, WorkspaceEdit,
 };
 
 use super::{MaestroServer, ServerState};
@@ -106,11 +106,19 @@ pub(super) async fn did_change_watched_files(
                     .map(|version| (uri, version))
             })
             .collect::<Vec<_>>();
-        if dependents.is_empty() && !global_components_invalidated {
+        let deleted_paths = file_paths(
+            params
+                .changes
+                .iter()
+                .filter(|change| change.typ == FileChangeType::DELETED)
+                .map(|change| change.uri.as_str()),
+        );
+        if dependents.is_empty() && !global_components_invalidated && deleted_paths.is_empty() {
             return;
         }
         // Recomputation must read the changed files fresh from disk.
         server.state.invalidate_batch_cache();
+        forget_corsa_vue_files(&server.state, &deleted_paths).await;
         for (dependent, version) in dependents {
             server
                 .publish_diagnostics_if_version(&dependent, version)
@@ -228,7 +236,6 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
     }
 }
 
-#[cfg(feature = "native")]
 #[cfg(feature = "native")]
 fn file_paths<'a>(uris: impl Iterator<Item = &'a str>) -> Vec<PathBuf> {
     uris.filter_map(|uri| Url::parse(uri).ok()?.to_file_path().ok())
