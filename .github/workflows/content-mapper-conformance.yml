@@ -13,7 +13,10 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/batch.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/lib.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "npm/cli/package.json"
       - "pnpm-lock.yaml"
@@ -30,7 +33,10 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/batch.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/lib.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "npm/cli/package.json"
       - "pnpm-lock.yaml"
@@ -78,6 +84,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: content-mapper-conformance
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Setup Vite Plus
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

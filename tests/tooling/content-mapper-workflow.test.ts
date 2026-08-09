@@ -13,7 +13,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   for (const relevantPath of [
     '".github/workflows/content-mapper-conformance.yml"',
     '"crates/vize/src/commands/content_mapper.rs"',
+    '"crates/vize_canon/src/batch.rs"',
+    '"crates/vize_canon/src/batch/virtual_project.rs"',
     '"crates/vize_canon/src/batch/virtual_project/content_mapper*"',
+    '"crates/vize_canon/src/lib.rs"',
     '"crates/vize_canon/src/virtual_ts/**"',
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
@@ -26,6 +29,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /repository: microsoft\/typescript-go/);
   assert.match(job, /ref: \$\{\{ env\.CONTENT_MAPPER_TSGO_SHA \}\}/);
   assert.match(job, /uses: actions\/setup-go@[0-9a-f]{40}\s+# v6\.1\.0/);
+  assert.match(
+    job,
+    /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
+  );
   assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
   assert.match(job, /go build -tags=noembed -trimpath -o "\$RUNNER_TEMP\/tsgo" \.\/cmd\/tsgo/);
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
