@@ -1,6 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+  "lspAuthoredOracleGate": {
+    "minimumProjectCount": 1,
+    "trackingIssue": 3952
+  },
   "projects": [
     {
       "id": "vue-vben-admin",
@@ -377,6 +381,39 @@
         "lsp"
       ],
       "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/frontend/src/components/MkCodeInline.vue",
+          "symbol": "code",
+          "usageAnchor": "{{ code }}",
+          "declarationAnchor": "\tcode: string;",
+          "hoverContains": ["const code: string"],
+          "renameTo": "__vizeRenamedCode"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/frontend/src/components/MkReactionTooltip.vue",
+          "componentFile": "packages/frontend/src/components/MkTooltip.vue",
+          "tagName": "MkTooltip",
+          "tagAnchor": "<MkTooltip ",
+          "completionItemCount": 37,
+          "completionItems": [
+            { "label": "showing", "rank": 28 },
+            { "label": "anchor-element", "rank": 29 },
+            { "label": "x", "rank": 30 },
+            { "label": "y", "rank": 31 },
+            { "label": "text", "rank": 32 },
+            { "label": "as-mfm", "rank": 33 },
+            { "label": "max-width", "rank": 34 },
+            { "label": "direction", "rank": 35 },
+            { "label": "inner-margin", "rank": 36 }
+          ],
+          "dependencyEdit": {
+            "anchor": "\tinnerMargin?: number;\n",
+            "replacement": "\tinnerMargin?: number;\n\tvizeOracleProbe?: boolean;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        }
+      },
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",

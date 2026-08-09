@@ -207,6 +207,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /lsp-lifecycle-summary\.json/);
+  assert.match(summary?.run ?? "", /authoredFeatureProjectCount/);
+  assert.match(summary?.run ?? "", /missingAuthoredFeatureProjectIds/);
   assert.match(summary?.run ?? "", /actualFileCount/);
   assert.match(summary?.run ?? "", /No LSP lifecycle report was produced/);
   assert.match(summary?.run ?? "", /syntax-highlighter-summary\.json/);

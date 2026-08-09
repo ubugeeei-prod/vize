@@ -171,7 +171,7 @@ jobs:
           fi
           lsp_report="$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
           if [[ -s "$lsp_report" ]]; then
-            jq -r '"LSP lifecycle: \(.summary.projectCount) project(s), \(.summary.actualFileCount) actual file(s), \(.summary.vueFileCount) Vue file(s), \(.summary.failedProjectCount) failed project(s)"' \
+            jq -r '"LSP lifecycle: \(.summary.projectCount) project(s), \(.summary.actualFileCount) actual file(s), \(.summary.authoredFeatureProjectCount) authored feature oracle(s), \(.summary.vueFileCount) Vue file(s), \(.summary.failedProjectCount) failed project(s); missing authored oracles: \(.summary.missingAuthoredFeatureProjectIds | join(", "))"' \
               "$lsp_report" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No LSP lifecycle report was produced." >> "$GITHUB_STEP_SUMMARY"

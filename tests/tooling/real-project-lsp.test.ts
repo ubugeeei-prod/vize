@@ -16,6 +16,16 @@ test("production LSP opens and repairs a probe in every selected real project", 
   if (result.skipped) return;
   assert.ok(result.report.summary.projectCount > 0);
   assert.equal(result.report.summary.failedProjectCount, 0);
+  assert.equal(
+    result.report.summary.authoredFeatureProjectCount,
+    result.evidence.filter((project) => project.authoredFeatures != null).length,
+  );
+  assert.deepEqual(
+    result.report.summary.missingAuthoredFeatureProjectIds,
+    result.evidence
+      .filter((project) => project.authoredFeatures == null)
+      .map((project) => project.id),
+  );
 });
 
 test("real-project LSP lifecycle opens an authored file and restores exact diagnostics", async () => {
@@ -103,6 +113,10 @@ class FakeLspSession {
   async initialize(): Promise<unknown> {
     this.events.push("initialize");
     return {};
+  }
+
+  async request(): Promise<unknown> {
+    throw new Error("fake lifecycle session received an unexpected request");
   }
 
   notify(method: string, params: unknown): void {
