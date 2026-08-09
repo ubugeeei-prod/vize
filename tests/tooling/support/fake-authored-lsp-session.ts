@@ -5,19 +5,49 @@ import { pathToFileURL } from "node:url";
 
 import type { PublishDiagnosticsParams } from "./lsp/protocol.ts";
 
+export type FakeAuthoredLspLifecycle = {
+  copiedFile: string;
+  copiedImportSpecifier: string;
+  importerFile: string;
+  renamedFile: string;
+  renamedImportSpecifier: string;
+};
+
+const DEFAULT_LIFECYCLE: FakeAuthoredLspLifecycle = {
+  copiedFile: "__VizeOracleFeatureChild.vue",
+  copiedImportSpecifier: "./__VizeOracleFeatureChild.vue",
+  importerFile: "FeatureParent.vue",
+  renamedFile: "__VizeOracleRenamedFeatureChild.vue",
+  renamedImportSpecifier: "./__VizeOracleRenamedFeatureChild.vue",
+};
+
 export class FakeAuthoredLspSession {
   readonly events: string[] = [];
   readonly openFiles: string[] = [];
   private readonly documents = new Map<string, { text: string; version: number }>();
+  private readonly lifecycle: FakeAuthoredLspLifecycle;
   private readonly nullMethod: string | null;
   private readonly throwOnClose: boolean;
   private readonly workspace: string;
   private fileDeleted = false;
 
-  constructor(workspace: string, nullMethod: string | null = null, throwOnClose = false) {
+  constructor(
+    workspace: string,
+    nullMethod: string | null = null,
+    throwOnClose = false,
+    lifecycle: FakeAuthoredLspLifecycle = DEFAULT_LIFECYCLE,
+  ) {
     this.workspace = workspace;
     this.nullMethod = nullMethod;
     this.throwOnClose = throwOnClose;
+    this.lifecycle = lifecycle;
+  }
+
+  seedDocument(relativeFile: string, text: string, version = 1): void {
+    this.documents.set(pathToFileURL(path.join(this.workspace, relativeFile)).href, {
+      text,
+      version,
+    });
   }
 
   notify(method: string, params: unknown): void {
@@ -107,6 +137,7 @@ export class FakeAuthoredLspSession {
 
   async waitForNotification(method: string, predicate: (params: unknown) => boolean) {
     assert.equal(method, "textDocument/publishDiagnostics");
+    assert.ok(predicate, "fake diagnostics waits require an exact URI/version predicate");
     const notification = [...this.documents.entries()]
       .reverse()
       .map(([uri, document]) => {
@@ -127,7 +158,7 @@ export class FakeAuthoredLspSession {
   private workspaceSymbol(params: unknown): unknown {
     const marker = (params as { query: string }).query;
     this.events.push(`workspace/symbol:${marker}`);
-    const target = ["__VizeOracleFeatureChild.vue", "__VizeOracleRenamedFeatureChild.vue"]
+    const target = [this.lifecycle.copiedFile, this.lifecycle.renamedFile]
       .map((file) => path.join(this.workspace, file))
       .find((file) => fs.existsSync(file));
     return target == null
@@ -140,16 +171,16 @@ export class FakeAuthoredLspSession {
     this.events.push(
       `workspace/willRenameFiles:${fileName(file.oldUri)}->${fileName(file.newUri)}`,
     );
-    const importerUri = pathToFileURL(path.join(this.workspace, "FeatureParent.vue")).href;
+    const importerUri = pathToFileURL(path.join(this.workspace, this.lifecycle.importerFile)).href;
     const source = this.documents.get(importerUri)?.text ?? "";
-    const specifier = "./__VizeOracleFeatureChild.vue";
+    const specifier = this.lifecycle.copiedImportSpecifier;
     const offset = source.indexOf(specifier);
     assert.notEqual(offset, -1);
     return {
       changes: {
         [importerUri]: [
           {
-            newText: "./__VizeOracleRenamedFeatureChild.vue",
+            newText: this.lifecycle.renamedImportSpecifier,
             range: rangeAt(source, offset, specifier.length),
           },
         ],
@@ -159,7 +190,7 @@ export class FakeAuthoredLspSession {
 
   private componentDefinition(uri: string): unknown {
     const source = this.documents.get(uri)?.text ?? "";
-    const specifier = /import FeatureChild from ['"]([^'"]+)['"]/.exec(source)?.[1];
+    const specifier = /import\s+\w+\s+from\s+['"]([^'"]+\.vue)['"]/.exec(source)?.[1];
     assert.ok(specifier);
     const target = path.resolve(this.workspace, specifier);
     return fs.existsSync(target)
@@ -177,7 +208,7 @@ export class FakeAuthoredLspSession {
   }
 
   private deletedDependencyDiagnostics(source: string) {
-    const specifier = "./__VizeOracleRenamedFeatureChild.vue";
+    const specifier = this.lifecycle.renamedImportSpecifier;
     const offset = source.indexOf(specifier);
     if (!this.fileDeleted || offset === -1) return [];
     return [
@@ -189,6 +220,20 @@ export class FakeAuthoredLspSession {
         source: "vize/types",
       },
     ];
+  }
+}
+
+export function assertOrderedEvents(
+  events: readonly string[],
+  expectations: ReadonlyArray<readonly [before: string, after: string]>,
+): void {
+  for (const [before, after] of expectations) {
+    const beforeIndex = events.findIndex((event) => event.startsWith(before));
+    assert.notEqual(beforeIndex, -1, `missing event: ${before}`);
+    const afterIndex = events.findIndex(
+      (event, index) => index > beforeIndex && event.startsWith(after),
+    );
+    assert.notEqual(afterIndex, -1, `${after} must occur after ${before}`);
   }
 }
 

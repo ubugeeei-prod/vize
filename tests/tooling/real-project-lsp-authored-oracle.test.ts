@@ -5,7 +5,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-import { FakeAuthoredLspSession } from "./support/fake-authored-lsp-session.ts";
+import {
+  assertOrderedEvents,
+  FakeAuthoredLspSession,
+} from "./support/fake-authored-lsp-session.ts";
 import { exerciseAuthoredLspOracle } from "./support/real-project-lsp-authored-oracle.ts";
 import {
   readOracleDocument,
@@ -35,50 +38,18 @@ test("real-project LSP exercises authored binding and component boundary feature
     assert.equal(result.fileLifecycle.deletedDefinition.count, 0);
     assert.equal(result.fileLifecycle.deletedImporterDiagnostics.count, 1);
     assert.equal(result.fileLifecycle.restoredDefinition.count, 1);
-    assert.deepEqual(session.events, [
-      "textDocument/didOpen:1:Binding.vue",
-      "textDocument/publishDiagnostics:1:Binding.vue",
-      "textDocument/hover:Binding.vue",
-      "textDocument/definition:Binding.vue",
-      "textDocument/references:Binding.vue",
-      "textDocument/prepareRename:Binding.vue",
-      "textDocument/rename:Binding.vue",
-      "textDocument/didOpen:1:FeatureChild.vue",
-      "textDocument/publishDiagnostics:1:FeatureChild.vue",
-      "textDocument/didOpen:1:FeatureParent.vue",
-      "textDocument/publishDiagnostics:1:FeatureParent.vue",
-      "textDocument/definition:FeatureParent.vue",
-      "textDocument/completion:FeatureParent.vue",
-      "textDocument/didChange:2:FeatureChild.vue",
-      "textDocument/publishDiagnostics:2:FeatureChild.vue",
-      "textDocument/completion:FeatureParent.vue",
-      "textDocument/didChange:3:FeatureChild.vue",
-      "textDocument/publishDiagnostics:3:FeatureChild.vue",
-      "textDocument/completion:FeatureParent.vue",
-      "workspace/didCreateFiles:__VizeOracleFeatureChild.vue",
-      "workspace/symbol:__vizeFileLifecycleMarker__",
-      "textDocument/didChange:2:FeatureParent.vue",
-      "textDocument/publishDiagnostics:2:FeatureParent.vue",
-      "textDocument/definition:FeatureParent.vue",
-      "workspace/willRenameFiles:__VizeOracleFeatureChild.vue->__VizeOracleRenamedFeatureChild.vue",
-      "workspace/didRenameFiles:__VizeOracleFeatureChild.vue->__VizeOracleRenamedFeatureChild.vue",
-      "textDocument/didChange:3:FeatureParent.vue",
-      "textDocument/publishDiagnostics:3:FeatureParent.vue",
-      "textDocument/definition:FeatureParent.vue",
-      "workspace/symbol:__vizeFileLifecycleMarker__",
-      "textDocument/documentSymbol:__VizeOracleFeatureChild.vue",
-      "workspace/didDeleteFiles:__VizeOracleRenamedFeatureChild.vue",
-      "textDocument/publishDiagnostics:3:FeatureParent.vue",
-      "textDocument/definition:FeatureParent.vue",
-      "workspace/symbol:__vizeFileLifecycleMarker__",
-      "textDocument/documentSymbol:__VizeOracleRenamedFeatureChild.vue",
-      "textDocument/didChange:4:FeatureParent.vue",
-      "textDocument/publishDiagnostics:4:FeatureParent.vue",
-      "textDocument/definition:FeatureParent.vue",
-      "textDocument/didClose:FeatureParent.vue",
-      "textDocument/didClose:FeatureChild.vue",
-      "textDocument/didClose:Binding.vue",
+    assertOrderedEvents(session.events, [
+      ["textDocument/didOpen:1:Binding.vue", "textDocument/publishDiagnostics:1:Binding.vue"],
+      ["textDocument/didOpen:1:FeatureChild.vue", "textDocument/didChange:2:FeatureChild.vue"],
+      ["workspace/didCreateFiles", "workspace/symbol"],
+      ["workspace/willRenameFiles", "workspace/didRenameFiles"],
+      ["workspace/didDeleteFiles", "textDocument/publishDiagnostics:3:FeatureParent.vue"],
+      ["workspace/didDeleteFiles", "textDocument/didChange:4:FeatureParent.vue"],
+      ["textDocument/didChange:4:FeatureParent.vue", "textDocument/didClose:FeatureParent.vue"],
+      ["textDocument/didClose:FeatureParent.vue", "textDocument/didClose:FeatureChild.vue"],
+      ["textDocument/didClose:FeatureChild.vue", "textDocument/didClose:Binding.vue"],
     ]);
+    assert.deepEqual(session.openFiles, []);
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
@@ -107,6 +78,26 @@ test("authored LSP oracle preserves its primary failure when cleanup also fails"
       /hover must resolve the authored title binding/,
     );
     assert.deepEqual(session.openFiles, ["Binding.vue"]);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("fake authored diagnostics cannot match another document at the same version", async () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-diagnostic-uri-");
+  const session = new FakeAuthoredLspSession(workspace);
+  try {
+    session.seedDocument("Binding.vue", "<template />\n");
+    session.seedDocument("FeatureChild.vue", "<template />\n");
+    const bindingUri = pathToFileURL(path.join(workspace, "Binding.vue")).href;
+    const diagnostics = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (value) => {
+        const payload = value as { uri?: string; version?: number };
+        return payload.uri === bindingUri && payload.version === 1;
+      },
+    )) as { uri: string };
+    assert.equal(diagnostics.uri, bindingUri);
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
