@@ -25,7 +25,7 @@ pub(super) fn spawn_project_session(
     executable: &str,
     cwd: &Path,
     config_path: &Path,
-) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), String> {
+) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
     let config_path_wire = config_path.to_string_lossy();
     let mode = api_mode_for_executable(executable);
     let session = match block_on(spawn_project_session_with_mode(
@@ -35,24 +35,52 @@ pub(super) fn spawn_project_session(
         mode,
     )) {
         Ok(session) => session,
-        Err(error) if should_retry_json_rpc(mode, &error) => block_on(
-            spawn_project_session_with_mode(
+        Err(error) if should_retry_json_rpc(mode, &error) => {
+            match block_on(spawn_project_session_with_mode(
                 executable,
                 cwd,
                 config_path_wire.as_ref(),
                 ApiMode::AsyncJsonRpcStdio,
-            ),
-        )
-        .map_err(|fallback| {
-            cstr!("Failed to start Corsa API session: {fallback} (after msgpack error: {error})")
-        })?,
-        Err(error) => {
-            return Err(cstr!("Failed to start Corsa API session: {error}"));
+            )) {
+                Ok(session) => session,
+                Err(fallback) => {
+                    return Err(classify_project_session_error(
+                        fallback,
+                        Some(cstr!("after msgpack error: {error}")),
+                    ));
+                }
+            }
         }
+        Err(error) => return Err(classify_project_session_error(error, None)),
     };
     let capabilities = block_on(session.describe_capabilities())
         .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
     Ok((session, capabilities))
+}
+
+#[derive(Debug)]
+pub(super) enum ProjectSessionSpawnError {
+    Unavailable(String),
+    Failed(String),
+}
+
+fn classify_project_session_error(
+    error: CorsaError,
+    context: Option<String>,
+) -> ProjectSessionSpawnError {
+    let message = context.map_or_else(
+        || cstr!("Failed to start Corsa API session: {error}"),
+        |context| cstr!("Failed to start Corsa API session: {error} ({context})"),
+    );
+    if matches!(
+        &error,
+        CorsaError::Protocol(detail)
+            if detail.contains("project session did not resolve a project")
+    ) {
+        ProjectSessionSpawnError::Unavailable(message)
+    } else {
+        ProjectSessionSpawnError::Failed(message)
+    }
 }
 
 async fn spawn_project_session_with_mode(
@@ -131,42 +159,68 @@ pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
 }
 
 impl CorsaProjectClient {
+    pub(super) fn has_project_session(&self) -> bool {
+        self.session.is_some()
+    }
+
+    pub(super) fn project_session(&self) -> Result<&ProjectSession, String> {
+        self.session
+            .as_ref()
+            .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
+    }
+
+    pub(super) fn project_session_mut(&mut self) -> Result<&mut ProjectSession, String> {
+        self.session
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
+    }
+
     fn trusts_capabilities(&self) -> bool {
         self.capabilities.runtime.capability_endpoint
     }
 
     pub(super) fn supports_overlay_api(&self) -> bool {
+        if !self.has_project_session() {
+            return true;
+        }
         !self.overlay_api_disabled
             && (!self.trusts_capabilities()
                 || self.capabilities.overlay.update_snapshot_overlay_changes)
     }
 
     pub(super) fn supports_project_diagnostics_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.diagnostics.project
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.diagnostics.project)
     }
 
     pub(super) fn supports_file_diagnostics_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.diagnostics.file
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.diagnostics.file)
     }
 
     pub(super) fn supports_hover_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.hover
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.hover)
     }
 
     pub(super) fn supports_definition_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.definition
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.definition)
     }
 
     pub(super) fn supports_references_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.references
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.references)
     }
 
     pub(super) fn supports_rename_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.rename
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.rename)
     }
 
     pub(super) fn supports_completion_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.completion
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.completion)
     }
 
     pub(super) fn can_use_api_for_uri(&self, uri: &str) -> bool {
@@ -181,6 +235,10 @@ impl CorsaProjectClient {
 
         if self.materialized_project_session {
             return self.sync_materialized_overlay_document(uri, content);
+        }
+
+        if !self.has_project_session() {
+            return Ok(());
         }
 
         let document_uri = self.session_document_uri(uri);
@@ -202,7 +260,7 @@ impl CorsaProjectClient {
                 )
             });
         let version = next_overlay_version(&mut self.overlay_versions, uri);
-        match block_on(self.session.refresh_with_overlay_changes(
+        match block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: vec![OverlayUpdate {
@@ -233,7 +291,10 @@ impl CorsaProjectClient {
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
-        block_on(self.session.refresh(file_changes))
+        if !self.has_project_session() {
+            return Ok(());
+        }
+        block_on(self.project_session_mut()?.refresh(file_changes))
             .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
     }
 
@@ -250,8 +311,11 @@ impl CorsaProjectClient {
         let file_changes = remove_session_document(uri, document_uri.as_str()).or_else(|| {
             virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
         });
+        if !self.has_project_session() {
+            return Ok(());
+        }
         if document_uri != uri {
-            return block_on(self.session.refresh(file_changes))
+            return block_on(self.project_session_mut()?.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
         }
 
@@ -259,7 +323,7 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        block_on(self.session.refresh_with_overlay_changes(
+        block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: Vec::new(),
@@ -410,7 +474,8 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 #[cfg(test)]
 mod tests {
     use super::{
-        api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
+        ProjectSessionSpawnError, api_mode_for_executable, build_session_document_uri,
+        classify_project_session_error, line_character_to_utf16_offset,
         overlay_changes_error_is_unsupported, should_retry_json_rpc, uri_document_identifier,
     };
     use crate::file_uri::path_to_file_uri;
@@ -529,5 +594,27 @@ mod tests {
             uri_document_identifier("corsa://overlay/App.vue.ts"),
             DocumentIdentifier::Uri { .. }
         ));
+    }
+
+    #[test]
+    fn recognizes_only_the_standard_runtime_project_session_gap() {
+        let unavailable = classify_project_session_error(
+            CorsaError::Protocol("project session did not resolve a project".into()),
+            None,
+        );
+        assert!(matches!(
+            unavailable,
+            ProjectSessionSpawnError::Unavailable(_)
+        ));
+
+        for error in [
+            CorsaError::Protocol("EOF while parsing project response".into()),
+            CorsaError::Protocol("project session crashed".into()),
+        ] {
+            assert!(matches!(
+                classify_project_session_error(error, None),
+                ProjectSessionSpawnError::Failed(_)
+            ));
+        }
     }
 }

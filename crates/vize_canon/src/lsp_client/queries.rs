@@ -39,7 +39,7 @@ impl CorsaProjectClient {
 
         let document_uri = self.session_document_uri(uri);
         match block_on(
-            self.session
+            self.project_session()?
                 .get_hover_at_position(uri_document_identifier(document_uri.as_str()), position),
         ) {
             Ok(response) => response.map(value_to_json).transpose(),
@@ -62,7 +62,7 @@ impl CorsaProjectClient {
 
         let document_uri = self.session_document_uri(uri);
         match block_on(
-            self.session.get_definition_at_position(
+            self.project_session()?.get_definition_at_position(
                 uri_document_identifier(document_uri.as_str()),
                 position,
             ),
@@ -88,7 +88,7 @@ impl CorsaProjectClient {
 
         let document_uri = self.session_document_uri(uri);
         let response =
-            block_on(self.session.get_references_at_position(
+            block_on(self.project_session()?.get_references_at_position(
                 uri_document_identifier(document_uri.as_str()),
                 position,
             ))
@@ -118,7 +118,7 @@ impl CorsaProjectClient {
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response = block_on(self.session.get_rename_at_position(
+        let response = block_on(self.project_session()?.get_rename_at_position(
             uri_document_identifier(document_uri.as_str()),
             position,
             new_name,
@@ -154,7 +154,7 @@ impl CorsaProjectClient {
             trigger_character: None,
         };
         let document_uri = self.session_document_uri(uri);
-        match block_on(self.session.get_completion_at_position(
+        match block_on(self.project_session()?.get_completion_at_position(
             uri_document_identifier(document_uri.as_str()),
             position,
             Some(context),

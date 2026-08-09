@@ -17,7 +17,11 @@ on:
       - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
       - "crates/vize_canon/src/lib.rs"
+      - "crates/vize_canon/src/lsp_client.rs"
+      - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
+      - "crates/vize_maestro/src/ide/**"
       - "npm/cli/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -37,7 +41,11 @@ on:
       - "crates/vize_canon/src/batch/virtual_project.rs"
       - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
       - "crates/vize_canon/src/lib.rs"
+      - "crates/vize_canon/src/lsp_client.rs"
+      - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
+      - "crates/vize_maestro/src/ide/**"
       - "npm/cli/package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -102,3 +110,9 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
+      - name: Run exact editor backend conformance
+        env:
+          TSGO_PATH: ${{ runner.temp }}/tsgo
+        run: |
+          cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
+          cargo test -p vize_maestro

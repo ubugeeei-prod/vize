@@ -4,7 +4,7 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspHover, LspHoverContents, Lsp
 use vize_carton::ToCompactString;
 
 #[test]
-fn bridge_materialized_overlay_preserves_workspace_project_options() {
+fn bridge_virtual_overlay_preserves_workspace_project_options() {
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
     };
@@ -61,12 +61,6 @@ fn bridge_materialized_overlay_preserves_workspace_project_options() {
         diagnostics
     });
 
-    assert!(
-        project_root
-            .join("node_modules/.vize/corsa-overlay/tsconfig.json")
-            .is_file(),
-        "virtual overlays must activate the materialized project"
-    );
     assert_eq!(
         diagnostics.len(),
         1,
@@ -82,15 +76,23 @@ fn bridge_materialized_overlay_preserves_workspace_project_options() {
         std::fs::read_to_string(project_root.join("tsconfig.json")).unwrap(),
         tsconfig
     );
-    let overlay_src = project_root.join("node_modules/.vize/corsa-overlay/src");
-    assert_eq!(
-        std::fs::read_to_string(overlay_src.join("App.vue.ts")).unwrap(),
-        app_virtual
-    );
-    assert_eq!(
-        std::fs::read_to_string(overlay_src.join("Child.vue.ts")).unwrap(),
-        child_virtual
-    );
+    let overlay_root = project_root.join("node_modules/.vize/corsa-overlay");
+    if overlay_root.join("tsconfig.json").is_file() {
+        let overlay_src = overlay_root.join("src");
+        assert_eq!(
+            std::fs::read_to_string(overlay_src.join("App.vue.ts")).unwrap(),
+            app_virtual
+        );
+        assert_eq!(
+            std::fs::read_to_string(overlay_src.join("Child.vue.ts")).unwrap(),
+            child_virtual
+        );
+    } else {
+        assert!(
+            !overlay_root.exists(),
+            "editor-only mode must not partially materialize an overlay"
+        );
+    }
     assert!(!app_virtual_path.exists());
     assert!(!child_virtual_path.exists());
 }
