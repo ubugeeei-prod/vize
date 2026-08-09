@@ -214,9 +214,9 @@ export async function exerciseAuthoredLspOracle(
       componentFile: boundary.componentFile,
       definition: responseEvidence(definition, definition.length, workspaceDir),
       dependencyCompletion: {
-        baselineContainsProbe: false as const,
-        changedContainsProbe: true as const,
-        repairedContainsProbe: false as const,
+        baselineContainsProbe: baselineLabels.includes(probe),
+        changedContainsProbe: changedLabels.includes(probe),
+        repairedContainsProbe: repairedLabels.includes(probe),
       },
       hover: responseEvidence(hover, 1, workspaceDir),
       importerFile: boundary.importerFile,
@@ -226,8 +226,13 @@ export async function exerciseAuthoredLspOracle(
       templateBindingFile: binding.file,
     };
   } finally {
-    for (const uri of openUris.reverse())
-      session.notify("textDocument/didClose", { textDocument: { uri } });
+    for (const uri of openUris.reverse()) {
+      try {
+        session.notify("textDocument/didClose", { textDocument: { uri } });
+      } catch {
+        // Preserve the primary oracle failure instead of the cleanup error.
+      }
+    }
   }
 }
 

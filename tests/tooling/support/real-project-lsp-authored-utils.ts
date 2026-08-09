@@ -94,11 +94,11 @@ export function locations(response: unknown, message: string): Location[] {
 }
 
 export function sortLocations(values: Location[]): Location[] {
-  return [...values].sort((left, right) => locationKey(left).localeCompare(locationKey(right)));
+  return [...values].sort((left, right) => compareKeys(locationKey(left), locationKey(right)));
 }
 
 export function sortTextEdits<T extends { newText: string; range: LspRange }>(values: T[]): T[] {
-  return [...values].sort((left, right) => textEditKey(left).localeCompare(textEditKey(right)));
+  return [...values].sort((left, right) => compareKeys(textEditKey(left), textEditKey(right)));
 }
 
 export function assertRangeInDocument(range: LspRange, source: string, label: string): void {
@@ -194,9 +194,13 @@ function normalizeResponse(value: unknown, workspaceDir: string): unknown {
   if (typeof value !== "object" || value == null) return value;
   return Object.fromEntries(
     Object.entries(value)
-      .sort(([left], [right]) => left.localeCompare(right))
+      .sort(([left], [right]) => compareKeys(left, right))
       .map(([key, nested]) => [key, normalizeResponse(nested, workspaceDir)]),
   );
+}
+
+function compareKeys(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function locationKey(location: Location): string {

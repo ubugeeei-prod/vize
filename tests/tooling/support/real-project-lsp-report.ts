@@ -57,9 +57,9 @@ export type AuthoredLspEvidence = {
   componentFile: string;
   definition: LspResponseEvidence;
   dependencyCompletion: {
-    baselineContainsProbe: false;
-    changedContainsProbe: true;
-    repairedContainsProbe: false;
+    baselineContainsProbe: boolean;
+    changedContainsProbe: boolean;
+    repairedContainsProbe: boolean;
   };
   hover: LspResponseEvidence;
   importerFile: string;
