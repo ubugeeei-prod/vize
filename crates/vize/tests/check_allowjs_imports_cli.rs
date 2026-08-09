@@ -1,5 +1,7 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_allowjs_imports_cli/imported_diagnostics.rs"]
+mod imported_diagnostics;
 #[path = "check_allowjs_imports_cli/referenced_compiler_options.rs"]
 mod referenced_compiler_options;
 #[path = "check_allowjs_imports_cli/referenced_projects.rs"]

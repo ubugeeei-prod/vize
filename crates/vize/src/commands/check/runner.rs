@@ -14,10 +14,11 @@ use vize_carton::{FxHashSet, profiler::global_profiler};
 
 use super::{
     CheckArgs,
+    imports::ImportFileOptions,
     path_cache::CanonicalPathCache,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_program_inputs},
+    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_program_inputs, tsconfig_allows_js},
 };
 
 mod collect;
@@ -236,12 +237,17 @@ fn collect_roots(
     canonical_paths: &mut CanonicalPathCache,
     check_ignore_set: Option<&ignores::CheckIgnoreSet>,
 ) -> (Vec<PathBuf>, Vec<PathBuf>, FxHashSet<PathBuf>) {
+    let include_js = project_graph_allows_js(invocation_tsconfig_path, cache);
+    let import_options = ImportFileOptions {
+        include_js,
+        include_jsx: jsx_typecheck,
+    };
     if args.patterns.is_empty() {
         let (files, inputs, reported) = collect_default_run_files(
             invocation_project_root,
             cwd,
             invocation_tsconfig_path,
-            jsx_typecheck,
+            import_options,
             cache,
             canonical_paths,
             check_ignore_set,
@@ -256,7 +262,6 @@ fn collect_roots(
         return (files, inputs, reported);
     }
 
-    let include_js = project_graph_allows_js(invocation_tsconfig_path, cache);
     let files = collect_check_files_with_ignores(
         &args.patterns,
         CheckFileOptions {
@@ -279,7 +284,12 @@ fn split_program_candidates(
     canonical_paths: &mut CanonicalPathCache,
 ) -> Vec<ProgramCandidate> {
     let groups = resolve_tsconfig_program_inputs(tsconfig_path, &inputs, include_jsx, cache);
-    if groups.len() <= 1 {
+    let single_group_uses_invocation_config = groups.first().is_none_or(|group| {
+        tsconfig_path.is_none_or(|path| {
+            canonical_paths.canonicalize(path) == canonical_paths.canonicalize(&group.tsconfig_path)
+        })
+    });
+    if groups.len() <= 1 && single_group_uses_invocation_config {
         return vec![ProgramCandidate {
             files,
             inputs,
@@ -333,13 +343,20 @@ fn prepare_and_execute(
     } else {
         None
     };
+    let import_options = ImportFileOptions {
+        include_js: candidate
+            .tsconfig_path
+            .as_deref()
+            .is_some_and(|path| tsconfig_allows_js(path, cache)),
+        include_jsx: jsx_typecheck,
+    };
     let mut authored_imports = Vec::new();
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
         authored_imports = register_transitive_local_imports(
             &mut candidate.files,
             cwd,
             candidate.tsconfig_path.as_deref(),
-            jsx_typecheck,
+            import_options,
             canonical_paths,
             Some(explicit_input_root),
             validate_inputs,
@@ -356,7 +373,7 @@ fn prepare_and_execute(
             &mut candidate.files,
             cwd,
             candidate.tsconfig_path.as_deref(),
-            jsx_typecheck,
+            import_options,
             canonical_paths,
             Some(explicit_input_root),
             validate_inputs,
@@ -400,7 +417,7 @@ fn prepare_and_execute(
                 cwd,
                 program_tsconfig_path,
                 explicit_input_root,
-                jsx_typecheck,
+                import_options,
             ),
             cache,
             canonical_paths,

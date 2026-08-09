@@ -25,6 +25,13 @@ use registration::non_relative_import_needs_virtual_registration;
 /// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
 const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
 const JSX_RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".jsx", ".vue", ".mts", ".cts"];
+const JS_RESOLVE_EXTENSIONS: &[&str] = &[
+    ".ts", ".tsx", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
+];
+
+#[path = "imports_options.rs"]
+mod options;
+pub(super) use options::ImportFileOptions;
 
 /// Walk the relative-import graph reachable from `roots` and return the extra
 /// on-disk source files that should be registered alongside them. The roots
@@ -33,9 +40,10 @@ pub(super) fn collect_transitive_local_imports(
     roots: &[PathBuf],
     cwd: &Path,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: impl Into<ImportFileOptions>,
     aliases: Option<&PathAliasResolver>,
 ) -> Vec<PathBuf> {
+    let options = options.into();
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
     let mut queue: Vec<PathBuf> = Vec::new();
@@ -65,17 +73,12 @@ pub(super) fn collect_transitive_local_imports(
             let relative_specifier = is_relative_specifier(&specifier);
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
             let resolved = if relative_specifier {
-                resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
+                resolve_relative_import(dir, &specifier, canonical_paths, options)
             } else if absolute_specifier {
-                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, include_jsx)
+                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
                 aliases.and_then(|aliases| {
-                    aliases.resolve(
-                        &specifier,
-                        canonical_paths,
-                        include_jsx,
-                        resolve_import_base,
-                    )
+                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
                 })
             };
             let Some(resolved) = resolved else {
@@ -90,7 +93,7 @@ pub(super) fn collect_transitive_local_imports(
                 && !non_relative_import_needs_virtual_registration(
                     &resolved,
                     canonical_paths,
-                    include_jsx,
+                    options,
                     aliases,
                     &mut registration_cache,
                 )
@@ -204,36 +207,41 @@ fn resolve_relative_import(
     dir: &Path,
     specifier: &str,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
 ) -> Option<PathBuf> {
-    resolve_import_base(&dir.join(specifier), canonical_paths, include_jsx)
+    resolve_import_base(&dir.join(specifier), canonical_paths, options)
 }
 
 pub(super) fn resolve_import_base(
     base: &Path,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
 ) -> Option<PathBuf> {
-    // 1. The specifier already points at an existing source file.
-    if has_source_extension(base, include_jsx) && base.is_file() {
+    // 1. The specifier already points at an existing TS/Vue source file.
+    if has_typescript_source_extension(base) && base.is_file() {
         return Some(canonical_paths.canonicalize(base));
     }
 
-    // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its TS sibling.
-    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths, include_jsx) {
+    // 2. A `.js`/`.jsx`/`.mjs`/`.cjs` specifier resolving to its TS sibling.
+    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths, options.include_jsx) {
         return Some(rewritten);
     }
 
-    // 3. Append a source extension: `./types` → `./types.ts`.
-    for ext in resolve_extensions(include_jsx) {
+    // 3. Under allowJs (or the JSX feature), keep an existing JS-family file.
+    if has_enabled_javascript_extension(base, options) && base.is_file() {
+        return Some(canonical_paths.canonicalize(base));
+    }
+
+    // 4. Append a source extension: `./types` → `./types.ts`.
+    for ext in resolve_extensions(options) {
         let candidate = append_extension(base, ext);
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
         }
     }
 
-    // 4. Directory index: `./feature` → `./feature/index.ts`.
-    for ext in resolve_extensions(include_jsx) {
+    // 5. Directory index: `./feature` → `./feature/index.ts`.
+    for ext in resolve_extensions(options) {
         let candidate = base.join(cstr_index(ext));
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
@@ -253,6 +261,8 @@ fn rewrite_js_to_ts(
         (stem, &[".mts"])
     } else if let Some(stem) = name.strip_suffix(".cjs") {
         (stem, &[".cts"])
+    } else if let Some(stem) = name.strip_suffix(".jsx") {
+        (stem, &[".tsx"])
     } else if let Some(stem) = name.strip_suffix(".js") {
         (
             stem,
@@ -287,17 +297,25 @@ fn is_node_modules_path(path: &Path) -> bool {
         .any(|component| component.as_os_str() == std::ffi::OsStr::new("node_modules"))
 }
 
-fn has_source_extension(path: &Path, include_jsx: bool) -> bool {
+fn has_typescript_source_extension(path: &Path) -> bool {
     let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
     };
-    resolve_extensions(include_jsx)
+    RESOLVE_EXTENSIONS
         .iter()
         .any(|ext| name.ends_with(ext) && name.len() > ext.len())
 }
 
-fn resolve_extensions(include_jsx: bool) -> &'static [&'static str] {
-    if include_jsx {
+fn has_enabled_javascript_extension(path: &Path, options: ImportFileOptions) -> bool {
+    let extension = path.extension().and_then(|extension| extension.to_str());
+    options.include_js && matches!(extension, Some("js" | "jsx" | "mjs" | "cjs"))
+        || options.include_jsx && extension == Some("jsx")
+}
+
+fn resolve_extensions(options: ImportFileOptions) -> &'static [&'static str] {
+    if options.include_js {
+        JS_RESOLVE_EXTENSIONS
+    } else if options.include_jsx {
         JSX_RESOLVE_EXTENSIONS
     } else {
         RESOLVE_EXTENSIONS
@@ -316,6 +334,9 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
 #[cfg(test)]
 #[path = "imports_generated_tests.rs"]
 mod generated_tests;
+#[cfg(test)]
+#[path = "imports_js_tests.rs"]
+mod js_tests;
 #[cfg(test)]
 #[path = "imports_tests.rs"]
 mod tests;

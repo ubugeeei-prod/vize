@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use vize_carton::{FxHashSet, String};
 
+use super::imports::ImportFileOptions;
 use super::path_cache::CanonicalPathCache;
 use super::tsconfig_inputs::{parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig};
 
@@ -32,9 +33,10 @@ impl PathAliasResolver {
         &self,
         specifier: &str,
         canonical_paths: &mut CanonicalPathCache,
-        include_jsx: bool,
-        resolve_base: impl Fn(&Path, &mut CanonicalPathCache, bool) -> Option<PathBuf>,
+        options: impl Into<ImportFileOptions>,
+        resolve_base: impl Fn(&Path, &mut CanonicalPathCache, ImportFileOptions) -> Option<PathBuf>,
     ) -> Option<PathBuf> {
+        let options = options.into();
         for alias in &self.aliases {
             let Some(matched) = alias.match_specifier(specifier) else {
                 continue;
@@ -45,7 +47,7 @@ impl PathAliasResolver {
                 } else {
                     alias.base_dir.join(target.as_str())
                 };
-                if let Some(resolved) = resolve_base(&target, canonical_paths, include_jsx) {
+                if let Some(resolved) = resolve_base(&target, canonical_paths, options) {
                     return Some(resolved);
                 }
             }
