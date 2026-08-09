@@ -19,7 +19,7 @@ use corsa::{
 use lsp_types::Uri;
 use serde_json::Value;
 use std::{
-    path::{Path, PathBuf},
+    path::Path,
     str::FromStr,
     sync::{
         Arc,
@@ -224,21 +224,11 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let document_uri = self.session_document_uri(uri);
         let Some(text) = self.document_texts.get(uri).cloned() else {
             return Ok(None);
         };
-
-        if self.editor_lsp.is_none() {
-            let root = self.editor_lsp_root();
-            let executable = self.executable.clone();
-            let cwd = self.cwd.clone();
-            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
-        }
-        let Some(session) = self.editor_lsp.as_mut() else {
-            return Ok(None);
-        };
-        session.hover(document_uri.as_str(), text.as_str(), line, character)
+        self.editor_lsp_session()?
+            .hover(uri, text.as_str(), line, character)
     }
 
     pub(super) fn completion_via_editor_lsp(
@@ -247,21 +237,11 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let document_uri = self.session_document_uri(uri);
         let Some(text) = self.document_texts.get(uri).cloned() else {
             return Ok(None);
         };
-
-        if self.editor_lsp.is_none() {
-            let root = self.editor_lsp_root();
-            let executable = self.executable.clone();
-            let cwd = self.cwd.clone();
-            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
-        }
-        let Some(session) = self.editor_lsp.as_mut() else {
-            return Ok(None);
-        };
-        session.completion(document_uri.as_str(), text.as_str(), line, character)
+        self.editor_lsp_session()?
+            .completion(uri, text.as_str(), line, character)
     }
 
     pub(super) fn signature_help_via_editor_lsp(
@@ -270,34 +250,29 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let document_uri = self.session_document_uri(uri);
         let Some(text) = self.document_texts.get(uri).cloned() else {
             return Ok(None);
         };
-
-        if self.editor_lsp.is_none() {
-            let root = self.editor_lsp_root();
-            let executable = self.executable.clone();
-            let cwd = self.cwd.clone();
-            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
-        }
-        let Some(session) = self.editor_lsp.as_mut() else {
-            return Ok(None);
-        };
-        session.signature_help(document_uri.as_str(), text.as_str(), line, character)
+        self.editor_lsp_session()?
+            .signature_help(uri, text.as_str(), line, character)
     }
 
-    /// Drop the editor session so the next request respawns it. Used when the
-    /// overlay root moves under a materialized project session.
+    fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
+        if self.editor_lsp.is_none() {
+            self.editor_lsp = Some(EditorLspSession::spawn(
+                self.executable.as_str(),
+                &self.cwd,
+                &self.project_root,
+            )?);
+        }
+        self.editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))
+    }
+
+    /// Drop the editor session so the next request respawns it after a project
+    /// session transition.
     pub(super) fn retire_editor_lsp(&mut self) {
         self.editor_lsp = None;
-    }
-
-    fn editor_lsp_root(&self) -> PathBuf {
-        if self.materialized_project_session {
-            super::session_paths::overlay_root_for_project(&self.project_root)
-        } else {
-            self.project_root.clone()
-        }
     }
 }

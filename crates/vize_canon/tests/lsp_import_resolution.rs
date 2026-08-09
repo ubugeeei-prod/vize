@@ -163,6 +163,70 @@ fn bridge_requests_signature_help_from_corsa_tsgo() {
     );
 }
 
+#[test]
+fn bridge_virtual_sfc_editor_queries_resolve_relative_workspace_imports() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().unwrap();
+    let project_root = project.path();
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::create_dir(project_root.join("node_modules")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(src_dir.join("App.vue"), "<template><div /></template>\n").unwrap();
+    std::fs::write(
+        src_dir.join("format.ts"),
+        "export function format(value: number, precision: number): string { return value.toFixed(precision) }\n",
+    )
+    .unwrap();
+
+    let virtual_source = "import { format } from './format';\n\nformat(1, );\n";
+    let virtual_path = src_dir.join("App.vue.template.ts");
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let signature = corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let uri = virtual_path.display().to_compact_string();
+        let uri = bridge
+            .open_or_update_virtual_document(uri.as_str(), virtual_source)
+            .await
+            .unwrap();
+        let signature = bridge
+            .signature_help(uri.as_str(), 2, "format(1, ".encode_utf16().count() as u32)
+            .await
+            .unwrap();
+        bridge.shutdown().await.unwrap();
+        signature
+    })
+    .expect("virtual SFC editor query should resolve the relative workspace import");
+
+    assert_eq!(signature.active_parameter, Some(1));
+    assert_eq!(signature.signatures.len(), 1);
+    assert!(signature.signatures[0].label.contains("value: number"));
+    assert!(signature.signatures[0].label.contains("precision: number"));
+    assert!(!virtual_path.exists());
+}
+
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
     if let Some(resolved) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root) {

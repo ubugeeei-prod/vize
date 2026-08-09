@@ -8,13 +8,32 @@ pub(super) fn target_exists(external_path: &Path) -> bool {
     let Some(name) = external_path.file_name().and_then(|name| name.to_str()) else {
         return false;
     };
-    let Some(real_name) = name.strip_suffix(".ts") else {
-        return false;
-    };
-    if !real_name.ends_with(".vue") && !real_name.ends_with(".html") {
-        return false;
+
+    for extension in [".vue", ".html", ".htm", ".tsx", ".jsx"] {
+        let mut search_end = name.len();
+        while let Some(extension_start) = name[..search_end].rfind(extension) {
+            let authored_end = extension_start + extension.len();
+            let virtual_suffix = &name[authored_end..];
+            if is_virtual_typescript_suffix(virtual_suffix)
+                && external_path
+                    .with_file_name(&name[..authored_end])
+                    .is_file()
+            {
+                return true;
+            }
+            search_end = extension_start;
+        }
     }
-    external_path.with_file_name(real_name).is_file()
+
+    false
+}
+
+fn is_virtual_typescript_suffix(suffix: &str) -> bool {
+    suffix.starts_with('.')
+        && suffix.ends_with(".ts")
+        && suffix
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_'))
 }
 
 pub(super) fn upsert_file_changes(
@@ -67,6 +86,51 @@ mod tests {
 
     use super::{delete_file_changes, upsert_file_changes};
     use crate::file_uri::path_to_file_uri;
+
+    #[test]
+    fn recognizes_editor_virtual_documents_backed_by_authored_files() {
+        let temp = tempfile::tempdir().unwrap();
+        for authored in [
+            "App.vue",
+            "Page.html",
+            "Legacy.htm",
+            "Widget.tsx",
+            "Legacy.jsx",
+        ] {
+            std::fs::write(temp.path().join(authored), "").unwrap();
+        }
+
+        for virtual_name in [
+            "App.vue.ts",
+            "App.vue.template.ts",
+            "App.vue.script.ts",
+            "App.vue.setup.ts",
+            "App.vue.art_variant_12.template.ts",
+            "App.vue.html_tag.ts",
+            "App.vue.html_attr.ts",
+            "Page.html.template.ts",
+            "Legacy.htm.template.ts",
+            "Widget.tsx.jsx.ts",
+            "Legacy.jsx.jsx.ts",
+        ] {
+            assert!(
+                super::target_exists(&temp.path().join(virtual_name)),
+                "virtual document should retain authored project identity: {virtual_name}"
+            );
+        }
+
+        for virtual_name in [
+            "Missing.vue.template.ts",
+            "App.vue.template.js",
+            "App.vue.template-ts",
+            "App.vue../template.ts",
+        ] {
+            assert!(
+                !super::target_exists(&temp.path().join(virtual_name)),
+                "invalid virtual document should not claim a backing file: {virtual_name}"
+            );
+        }
+    }
 
     #[test]
     fn virtual_vue_overlay_file_changes_do_not_materialize_sibling_files() {
