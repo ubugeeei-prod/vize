@@ -2,8 +2,7 @@
 
 use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
 
-use vize_carton::{FxHashSet, String, cstr, profiler::global_profiler};
-use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::{
     CheckArgs, JsonFileResult, JsonOutput, ProgramExecution,
@@ -11,9 +10,16 @@ use super::{
         emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
         save_virtual_ts_targets, write_profile_virtual_ts,
     },
-    display_path, resolve_declaration_emit_options,
+    display_path,
 };
-use crate::{commands::check::path_cache::CanonicalPathCache, profile_support};
+use crate::commands::check::path_cache::CanonicalPathCache;
+
+#[path = "output_declarations.rs"]
+mod declarations;
+#[path = "output_profile.rs"]
+mod profile;
+use declarations::emit_declarations;
+use profile::print_profile;
 
 #[allow(clippy::disallowed_types)]
 type RenderedDiagnostics =
@@ -162,47 +168,6 @@ pub(super) fn report_executions(
         check_time,
         emitted.as_ref(),
     );
-}
-
-fn emit_declarations(
-    args: &CheckArgs,
-    executions: &[ProgramExecution],
-    total_errors: usize,
-) -> Option<DeclarationSummary> {
-    if !args.declaration {
-        return None;
-    }
-    if total_errors > 0 {
-        if !args.quiet {
-            eprintln!("Skipping declaration emit because type errors were reported.");
-        }
-        return None;
-    }
-
-    let start = Instant::now();
-    let mut files = BTreeSet::new();
-    let mut directories = BTreeSet::new();
-    for execution in executions {
-        let options = resolve_declaration_emit_options(
-            args.declaration_dir.as_deref(),
-            execution.tsconfig_path.as_deref(),
-            &execution.program_root,
-        );
-        directories.insert(options.out_dir.clone());
-        let result = execution
-            .checker
-            .emit_declarations(&options)
-            .unwrap_or_else(|error| {
-                eprintln!("\x1b[31mError:\x1b[0m {}", error);
-                std::process::exit(1);
-            });
-        files.extend(result.files.into_iter().map(|file| file.path));
-    }
-    Some(DeclarationSummary {
-        files,
-        directories,
-        elapsed: start.elapsed(),
-    })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -364,102 +329,4 @@ fn print_text(
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
     }
-}
-
-#[allow(clippy::too_many_arguments)]
-fn print_profile(
-    executions: &[ProgramExecution],
-    virtual_files: &[&vize_canon::VirtualFile],
-    total_errors: usize,
-    total_time: Duration,
-    collect_time: Duration,
-    gen_time: Duration,
-    check_time: Duration,
-    profile_artifact_time: Duration,
-    diagnostics_render_time: Duration,
-    emitted: Option<&DeclarationSummary>,
-) {
-    let profiler = global_profiler();
-    let allocation_summary = profile_support::allocation_snapshot();
-    let counter_summary = profiler.counter_summary();
-    let operation_summary = profiler.summary();
-    profiler.disable();
-    let mut phases = vec![
-        ProfilePhase {
-            name: "collect inputs",
-            duration: collect_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "tsconfig or explicit patterns",
-        },
-        ProfilePhase {
-            name: "virtual project",
-            duration: gen_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "scan paths and generate Virtual TS",
-        },
-        ProfilePhase {
-            name: "profile artifacts",
-            duration: profile_artifact_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "write node_modules/.vize/check-profile",
-        },
-        ProfilePhase {
-            name: "corsa diagnostics",
-            duration: check_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "project-session diagnostics",
-        },
-        ProfilePhase {
-            name: "render diagnostics",
-            duration: diagnostics_render_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "group diagnostics by file",
-        },
-    ];
-    if let Some(summary) = emitted {
-        phases.push(ProfilePhase {
-            name: "declaration emit",
-            duration: summary.elapsed,
-            kind: ProfilePhaseKind::Wall,
-            note: "materialized Corsa project",
-        });
-    }
-    let virtual_bytes = virtual_files.iter().map(|file| file.content.len()).sum();
-    let mut recommendations: Vec<String> = Vec::new();
-    if check_time > gen_time * 2 {
-        recommendations.push(
-            "Corsa diagnostics dominate; inspect the largest generated virtual files.".into(),
-        );
-    } else if gen_time > check_time {
-        recommendations.push(
-            "Virtual TS generation dominates; inspect SFCs with large templates or cross-file imports."
-                .into(),
-        );
-    }
-    if let Some(largest) = virtual_files.iter().max_by_key(|file| file.content.len()) {
-        recommendations.push(cstr!(
-            "Largest Virtual TS: {} ({} bytes).",
-            largest.original_path.display(),
-            largest.content.len()
-        ));
-    }
-    let summary = cstr!(
-        "{} virtual file(s), {} error(s), {} tsconfig program(s)",
-        virtual_files.len(),
-        total_errors,
-        executions.len()
-    );
-    print_profile_report(&ProfileReport {
-        title: "check",
-        summary: summary.as_str(),
-        total: total_time,
-        phases: &phases,
-        files: &[],
-        slow_threshold: Duration::from_millis(0),
-        throughput_bytes: Some(virtual_bytes),
-        operations: Some(&operation_summary),
-        counters: Some(&counter_summary),
-        allocations: allocation_summary,
-        recommendations: &recommendations,
-    });
 }
