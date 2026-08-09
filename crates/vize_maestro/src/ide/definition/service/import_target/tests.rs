@@ -1,3 +1,10 @@
+use std::fs;
+
+use tower_lsp::lsp_types::{GotoDefinitionResponse, Url};
+
+use crate::ide::IdeContext;
+use crate::server::ServerState;
+
 #[test]
 fn the_importing_statement_is_matched_by_offset_and_binding() {
     let content = "import { a } from \"./a\";\nimport { useCounter, type User } from \"../composables/useCounter\";\n";
@@ -76,5 +83,54 @@ fn reexports_cover_named_renames_and_stars() {
     assert_eq!(
         super::reexport_specifier(renaming, "LocalWidget"),
         Some(("./Widget".to_owned(), "Widget".to_owned())),
+    );
+}
+
+#[test]
+fn nuxt_reference_aliases_return_normalized_component_uris() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let nuxt = workspace.path().join(".nuxt");
+    let pages = workspace.path().join("app/pages");
+    let components = workspace.path().join("app/components");
+    fs::create_dir_all(&nuxt).expect("Nuxt directory");
+    fs::create_dir_all(&pages).expect("pages directory");
+    fs::create_dir_all(&components).expect("components directory");
+    fs::write(
+        workspace.path().join("tsconfig.json"),
+        r#"{"references":[{"path":"./.nuxt/tsconfig.app.json"}],"files":[]}"#,
+    )
+    .expect("solution config");
+    fs::write(
+        nuxt.join("tsconfig.app.json"),
+        r#"{"compilerOptions":{"paths":{"~/*":["../app/*"]}}}"#,
+    )
+    .expect("Nuxt app config");
+
+    let target_path = components.join("AccountSearchResult.vue");
+    fs::write(&target_path, "<template />\n").expect("component");
+    let importer_path = pages.join("accounts.vue");
+    let source = r#"<script setup lang="ts">
+import AccountSearchResult from '~/components/AccountSearchResult.vue'
+</script>
+<template><AccountSearchResult /></template>
+"#;
+    fs::write(&importer_path, source).expect("importer");
+
+    let importer_uri = Url::from_file_path(&importer_path).expect("importer URI");
+    let state = ServerState::new();
+    state
+        .documents
+        .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+    state.update_virtual_docs(&importer_uri, source);
+    let offset = source.rfind("AccountSearchResult").expect("component tag");
+    let ctx = IdeContext::new(&state, &importer_uri, offset).expect("IDE context");
+    let definition = super::component_tag_definition(&ctx).expect("component definition");
+    let GotoDefinitionResponse::Scalar(location) = definition else {
+        panic!("component definition must be scalar");
+    };
+
+    assert_eq!(
+        location.uri,
+        Url::from_file_path(target_path).expect("target URI")
     );
 }
