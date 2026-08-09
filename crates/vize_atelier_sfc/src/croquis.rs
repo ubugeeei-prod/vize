@@ -265,14 +265,6 @@ pub fn merge_resolved_props_into_croquis(
     }
     ctx.analyze();
 
-    for (name, binding_type) in &ctx.bindings.bindings {
-        if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
-            && !croquis.bindings.contains(name.as_str())
-        {
-            croquis.bindings.add(name.as_str(), *binding_type);
-        }
-    }
-
     let Some(type_args) = croquis
         .macros
         .define_props()
@@ -294,14 +286,18 @@ pub fn merge_resolved_props_into_croquis(
         if !known.insert(prop.name.clone()) {
             continue;
         }
-        croquis.bindings.add(prop.name.as_str(), BindingType::Props);
+        if !croquis.bindings.contains(prop.name.as_str()) {
+            croquis.bindings.add(prop.name.as_str(), BindingType::Props);
+        }
         croquis.macros.add_prop(prop);
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{SfcCroquisOptions, analyze_sfc_descriptor_with_context};
+    use super::{
+        SfcCroquisOptions, analyze_sfc_descriptor_resolved, analyze_sfc_descriptor_with_context,
+    };
     use crate::{SfcParseOptions, parse_sfc};
 
     #[test]
@@ -345,5 +341,42 @@ const count = ref(0)
             analysis.script_source_offset(&descriptor, count_span.0),
             source.find("count").unwrap() as u32,
         );
+    }
+
+    #[test]
+    fn resolved_props_do_not_leak_runtime_option_keys_into_bindings() {
+        let source = r#"<script setup lang="ts">
+const props = defineProps({
+  count: {
+    type: Number,
+    required: true,
+    default: 0,
+    validator: (value: number) => value >= 0,
+  },
+  label: String,
+})
+void props
+</script>
+"#;
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+
+        let analysis = analyze_sfc_descriptor_resolved(
+            &descriptor,
+            None,
+            SfcCroquisOptions::full(),
+            false,
+            false,
+            "App.vue",
+        );
+
+        assert!(analysis.croquis.bindings.contains("count"));
+        assert!(analysis.croquis.bindings.contains("label"));
+        for option in ["type", "required", "default", "validator"] {
+            assert!(
+                !analysis.croquis.bindings.contains(option),
+                "runtime prop option {option:?} is not a setup binding: {:#?}",
+                analysis.croquis.bindings
+            );
+        }
     }
 }

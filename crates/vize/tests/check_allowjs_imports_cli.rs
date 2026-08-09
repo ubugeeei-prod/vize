@@ -35,6 +35,10 @@ fn resolve_test_corsa_path() -> Option<PathBuf> {
     .find(|candidate| candidate.exists())
 }
 
+fn required_corsa_path() -> Option<PathBuf> {
+    corsa_requirement::required_or_skip(resolve_test_corsa_path())
+}
+
 fn write(root: &Path, rel: &str, content: &str) {
     let path = root.join(rel);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -43,7 +47,7 @@ fn write(root: &Path, rel: &str, content: &str) {
 
 #[test]
 fn check_allowjs_resolves_project_local_js_imports() {
-    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+    let Some(corsa_path) = required_corsa_path() else {
         return;
     };
     let project_root = unique_case_dir("local-js");
@@ -127,7 +131,7 @@ void message;
 
 #[test]
 fn default_check_reports_errors_from_allowjs_project_roots() {
-    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+    let Some(corsa_path) = required_corsa_path() else {
         return;
     };
     let project_root = unique_case_dir("default-root-diagnostic");
