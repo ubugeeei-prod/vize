@@ -6,7 +6,7 @@ const JS_RESOLVE_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
 ];
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(in crate::commands::check) struct ImportFileOptions {
     pub(in crate::commands::check) include_js: bool,
     pub(in crate::commands::check) include_jsx: bool,

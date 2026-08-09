@@ -4,6 +4,8 @@ mod aliased_diagnostics;
 mod base_url_diagnostics;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_default_imports_cli/workspace_package_diagnostics.rs"]
+mod workspace_package_diagnostics;
 
 use std::{path::Path, process::Command};
 
