@@ -5,6 +5,8 @@ use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
 #[cfg(feature = "native")]
 mod canonical;
 #[cfg(all(test, feature = "native"))]
+mod canonical_dependency_tests;
+#[cfg(all(test, feature = "native"))]
 mod canonical_tests;
 #[cfg(feature = "native")]
 mod html_attribute;
@@ -15,8 +17,6 @@ mod html_tag;
 #[cfg(feature = "native")]
 mod svg_attribute;
 mod virtual_document;
-#[cfg(feature = "native")]
-mod virtual_mirror;
 mod workspace_edit;
 
 #[cfg(feature = "native")]

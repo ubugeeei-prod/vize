@@ -10,6 +10,14 @@ use crate::ide::diagnostics::VirtualTsResult;
 pub(crate) struct CanonicalVirtualDocument {
     pub(crate) request_uri: String,
     pub(crate) virtual_result: VirtualTsResult,
+    pub(crate) dependencies: Vec<CanonicalDependencyDocument>,
+}
+
+pub(crate) struct CanonicalDependencyDocument {
+    pub(crate) source_uri: Url,
+    pub(crate) source: String,
+    pub(crate) request_uri: String,
+    pub(crate) virtual_result: VirtualTsResult,
 }
 
 pub(crate) fn canonical_request_path(uri: &Url) -> String {
@@ -37,6 +45,29 @@ pub(crate) async fn open_canonical_virtual_document(
         .await
         .ok()?;
 
+    let dependencies = opened
+        .dependencies
+        .into_iter()
+        .filter_map(|dependency| {
+            let source_uri = Url::from_file_path(&dependency.source_path).ok()?;
+            Some(CanonicalDependencyDocument {
+                source_uri,
+                source: dependency.source,
+                request_uri: dependency.request_uri,
+                virtual_result: VirtualTsResult {
+                    code: dependency.code.to_string(),
+                    source_mappings: dependency.mappings,
+                    import_source_map: dependency.import_source_map,
+                    user_code_start_line: 0,
+                    sfc_script_start_line: 0,
+                    template_scope_start_line: 0,
+                    line_mappings: Vec::new(),
+                    skipped_import_lines: 0,
+                },
+            })
+        })
+        .collect();
+
     Some(CanonicalVirtualDocument {
         request_uri: opened.request_uri,
         virtual_result: VirtualTsResult {
@@ -49,6 +80,7 @@ pub(crate) async fn open_canonical_virtual_document(
             line_mappings: Vec::new(),
             skipped_import_lines: 0,
         },
+        dependencies,
     })
 }
 
@@ -145,24 +177,50 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(location) = super::virtual_mirror::map_location(ctx, location) {
-        return Some(location);
+    if let Some(dependency) = doc
+        .dependencies
+        .iter()
+        .find(|dependency| location_matches_uri(&location.uri, &dependency.request_uri))
+    {
+        let range = map_virtual_result_lsp_range_to_source(
+            &dependency.source,
+            &dependency.virtual_result,
+            &location.range,
+        )?;
+        return Some(Location {
+            uri: dependency.source_uri.clone(),
+            range,
+        });
     }
 
     let uri = Url::parse(&location.uri).ok()?;
-    Some(Location {
+    if uri.to_file_path().is_ok_and(|path| path.is_file()) {
+        return Some(raw_location(uri, &location.range));
+    }
+    if is_canonical_vue_virtual_uri(&uri) {
+        return None;
+    }
+    Some(raw_location(uri, &location.range))
+}
+
+fn raw_location(uri: Url, range: &vize_canon::LspRange) -> Location {
+    Location {
         uri,
         range: Range {
             start: tower_lsp::lsp_types::Position {
-                line: location.range.start.line,
-                character: location.range.start.character,
+                line: range.start.line,
+                character: range.start.character,
             },
             end: tower_lsp::lsp_types::Position {
-                line: location.range.end.line,
-                character: location.range.end.character,
+                line: range.end.line,
+                character: range.end.character,
             },
         },
-    })
+    }
+}
+
+fn is_canonical_vue_virtual_uri(uri: &Url) -> bool {
+    uri.path().ends_with(".vue.ts") || uri.path().ends_with(".vue.tsx")
 }
 
 pub(crate) fn map_canonical_lsp_range(
@@ -178,32 +236,35 @@ pub(super) fn map_lsp_range_to_source(
     doc: &CanonicalVirtualDocument,
     range: &vize_canon::LspRange,
 ) -> Option<Range> {
+    map_virtual_result_lsp_range_to_source(source, &doc.virtual_result, range)
+}
+
+fn map_virtual_result_lsp_range_to_source(
+    source: &str,
+    virtual_result: &VirtualTsResult,
+    range: &vize_canon::LspRange,
+) -> Option<Range> {
     let generated_start_post = crate::ide::position_to_offset(
-        &doc.virtual_result.code,
+        &virtual_result.code,
         range.start.line,
         range.start.character,
     )?;
-    let generated_end_post = crate::ide::position_to_offset(
-        &doc.virtual_result.code,
-        range.end.line,
-        range.end.character,
-    )
-    .unwrap_or(generated_start_post);
+    let generated_end_post =
+        crate::ide::position_to_offset(&virtual_result.code, range.end.line, range.end.character)
+            .unwrap_or(generated_start_post);
 
-    let generated_start_pre = doc
-        .virtual_result
+    let generated_start_pre = virtual_result
         .import_source_map
         .get_original_offset(generated_start_post as u32) as usize;
-    let generated_end_pre = doc
-        .virtual_result
+    let generated_end_pre = virtual_result
         .import_source_map
         .get_original_offset(generated_end_post as u32) as usize;
 
     let start_mapping =
-        mapping_for_generated_offset(&doc.virtual_result.source_mappings, generated_start_pre)?;
+        mapping_for_generated_offset(&virtual_result.source_mappings, generated_start_pre)?;
     let source_start = map_generated_offset_to_source(start_mapping, generated_start_pre, false);
     let source_end =
-        mapping_for_generated_offset(&doc.virtual_result.source_mappings, generated_end_pre)
+        mapping_for_generated_offset(&virtual_result.source_mappings, generated_end_pre)
             .map(|mapping| map_generated_offset_to_source(mapping, generated_end_pre, true))
             .unwrap_or_else(|| {
                 source_start
