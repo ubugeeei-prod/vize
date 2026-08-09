@@ -188,7 +188,7 @@ function normalizeResponse(value: unknown, workspaceDir: string): unknown {
     const resolved = fileURLToPath(value);
     const relative = path.relative(workspaceDir, resolved);
     return relative !== ".." && !relative.startsWith(`..${path.sep}`)
-      ? relative
+      ? relative.split(path.sep).join("/")
       : `<outside-workspace>/${path.basename(resolved)}`;
   }
   if (typeof value !== "object" || value == null) return value;

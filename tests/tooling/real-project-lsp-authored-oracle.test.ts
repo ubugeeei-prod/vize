@@ -6,6 +6,11 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { exerciseAuthoredLspOracle } from "./support/real-project-lsp-authored-oracle.ts";
+import {
+  readOracleDocument,
+  responseEvidence,
+  sortLocations,
+} from "./support/real-project-lsp-authored-utils.ts";
 import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import type { LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
 
@@ -68,16 +73,59 @@ test("authored LSP oracle fails closed when an enabled feature returns no result
   }
 });
 
+test("authored LSP oracle preserves its primary failure when cleanup also fails", async () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-cleanup-");
+  const session = new FakeAuthoredLspSession(workspace, "textDocument/hover", true);
+  try {
+    await assert.rejects(
+      () => exerciseAuthoredLspOracle(session, workspace, fixtureOracle()),
+      /hover must resolve the authored title binding/,
+    );
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("authored LSP utilities fail with portable evidence and diagnostics", () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-utils-");
+  try {
+    assert.throws(
+      () => readOracleDocument(workspace, "Missing.vue"),
+      /authored oracle file is missing: Missing\.vue/,
+    );
+
+    const sorted = sortLocations([
+      { uri: "file:///workspace/ä.vue", range: range(0, 0, 1) },
+      { uri: "file:///workspace/z.vue", range: range(0, 0, 1) },
+    ]);
+    assert.deepEqual(
+      sorted.map((location) => location.uri),
+      ["file:///workspace/z.vue", "file:///workspace/ä.vue"],
+    );
+
+    const firstOutside = pathToFileURL(path.join(os.tmpdir(), "machine-a", "external.ts")).href;
+    const secondOutside = pathToFileURL(path.join(os.tmpdir(), "machine-b", "external.ts")).href;
+    assert.deepEqual(
+      responseEvidence({ uri: firstOutside, z: 1, ä: 2 }, 1, workspace),
+      responseEvidence({ ä: 2, z: 1, uri: secondOutside }, 1, workspace),
+    );
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 class FakeAuthoredLspSession {
   readonly events: string[] = [];
   readonly openFiles: string[] = [];
   private readonly documents = new Map<string, { text: string; version: number }>();
   private readonly nullMethod: string | null;
+  private readonly throwOnClose: boolean;
   private readonly workspace: string;
 
-  constructor(workspace: string, nullMethod: string | null = null) {
+  constructor(workspace: string, nullMethod: string | null = null, throwOnClose = false) {
     this.workspace = workspace;
     this.nullMethod = nullMethod;
+    this.throwOnClose = throwOnClose;
   }
 
   notify(method: string, params: unknown): void {
@@ -102,6 +150,7 @@ class FakeAuthoredLspSession {
       });
       this.events.push(`${method}:${document.version}:${file}`);
     } else if (method === "textDocument/didClose") {
+      if (this.throwOnClose) throw new Error("cleanup transport failed");
       this.documents.delete(document.uri);
       const index = this.openFiles.indexOf(file);
       assert.ok(index >= 0, `didClose for a document that is not open: ${file}`);

@@ -181,7 +181,8 @@ export async function exerciseAuthoredLspOracle(
     );
     assertRankedLabels(baselineLabels, boundary.completionItems, boundary.importerFile);
     const probe = boundary.dependencyEdit.completionLabel;
-    assert.equal(baselineLabels.includes(probe), false, "probe must start absent");
+    const baselineContainsProbe = baselineLabels.includes(probe);
+    assert.equal(baselineContainsProbe, false, "probe must start absent");
 
     change(session, childDocument.uri, changedChildSource, 2);
     await waitForDiagnostics(session, childDocument.uri, 2, timeoutMs());
@@ -191,7 +192,8 @@ export async function exerciseAuthoredLspOracle(
       completionPosition,
       timeoutMs(),
     );
-    assert.ok(changedLabels.includes(probe), "completion must observe an unsaved dependency edit");
+    const changedContainsProbe = changedLabels.includes(probe);
+    assert.ok(changedContainsProbe, "completion must observe an unsaved dependency edit");
 
     change(session, childDocument.uri, childDocument.source, 3);
     const repaired = await waitForDiagnostics(session, childDocument.uri, 3, timeoutMs());
@@ -207,6 +209,12 @@ export async function exerciseAuthoredLspOracle(
       timeoutMs(),
     );
     assert.deepEqual(repairedLabels, baselineLabels, "dependency repair must restore completions");
+    const repairedContainsProbe = repairedLabels.includes(probe);
+    assert.equal(
+      repairedContainsProbe,
+      false,
+      "dependency repair must remove the probe completion",
+    );
 
     return {
       completion: responseEvidence(baselineLabels, baselineLabels.length, workspaceDir),
@@ -214,9 +222,9 @@ export async function exerciseAuthoredLspOracle(
       componentFile: boundary.componentFile,
       definition: responseEvidence(definition, definition.length, workspaceDir),
       dependencyCompletion: {
-        baselineContainsProbe: baselineLabels.includes(probe),
-        changedContainsProbe: changedLabels.includes(probe),
-        repairedContainsProbe: repairedLabels.includes(probe),
+        baselineContainsProbe,
+        changedContainsProbe,
+        repairedContainsProbe,
       },
       hover: responseEvidence(hover, 1, workspaceDir),
       importerFile: boundary.importerFile,
