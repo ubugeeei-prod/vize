@@ -2,6 +2,8 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
+#[cfg(all(test, feature = "native"))]
+mod art_variant_fallback_tests;
 #[cfg(feature = "native")]
 mod canonical;
 #[cfg(all(test, feature = "native"))]

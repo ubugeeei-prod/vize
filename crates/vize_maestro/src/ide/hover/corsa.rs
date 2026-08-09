@@ -197,12 +197,15 @@ impl HoverService {
         }
 
         // Try to get type information from Corsa via virtual TypeScript.
+        // Typed art documents share absolute SFC offsets across script and template
+        // mappings, but a variant whose expression has no generated counterpart must
+        // still answer from the authored template rather than returning nothing.
         if let Some(bridge) = corsa_bridge
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(template) = virtual_docs.art_template(info.variant_index)
+            && let Some(vts_offset) = template.source_map.to_generated(ctx.offset as u32)
         {
-            // Typed art documents share absolute SFC offsets across script and template mappings.
-            let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
+            let vts_offset = vts_offset as usize;
 
             let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
 
