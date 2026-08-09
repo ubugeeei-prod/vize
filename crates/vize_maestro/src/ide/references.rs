@@ -112,7 +112,12 @@ impl ReferencesService {
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
-        corsa_locations.or_else(|| Self::references(ctx, include_declaration))
+        // Corsa only answers for the virtual document the request opened, so
+        // the authored hits carry the other blocks of this SFC.
+        corsa_support::merge_authored_locations(
+            corsa_locations,
+            Self::references(ctx, include_declaration),
+        )
     }
 
     #[cfg(feature = "native")]

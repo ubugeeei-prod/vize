@@ -14,6 +14,7 @@ mod html_attribute;
 mod html_attribute_tests;
 #[cfg(feature = "native")]
 mod html_tag;
+mod location_merge;
 mod rename_merge;
 #[cfg(feature = "native")]
 mod svg_attribute;
@@ -31,6 +32,7 @@ pub(crate) use html_attribute::{
 };
 #[cfg(feature = "native")]
 pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, native_dom_tag_info};
+pub(crate) use location_merge::merge_authored_locations;
 pub(crate) use rename_merge::merge_authored_rename;
 use virtual_document::{
     MatchedVirtualDocument, is_virtual_document_uri, match_virtual_document, virtual_document_path,
@@ -158,9 +160,13 @@ pub(crate) fn map_corsa_prepare_rename(
             map_virtual_range_for_content(target.content(), target.document()?, &range)
                 .map(PrepareRenameResponse::Range)
         }
-        PrepareRenameResponse::RangeWithPlaceholder { range, placeholder } => {
+        // The placeholder Corsa reports is sliced out of the *generated*
+        // document, so it describes neither the authored span nor even a valid
+        // identifier once the range is mapped back. Answer with the authored
+        // range alone and let the client seed the rename from the SFC text.
+        PrepareRenameResponse::RangeWithPlaceholder { range, .. } => {
             map_virtual_range_for_content(target.content(), target.document()?, &range)
-                .map(|range| PrepareRenameResponse::RangeWithPlaceholder { range, placeholder })
+                .map(PrepareRenameResponse::Range)
         }
         PrepareRenameResponse::DefaultBehavior { default_behavior } => {
             Some(PrepareRenameResponse::DefaultBehavior { default_behavior })
