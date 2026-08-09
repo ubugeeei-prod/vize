@@ -105,7 +105,7 @@ export class FakeAuthoredLspSession {
     throw new Error(`unexpected request ${method}`);
   }
 
-  async waitForNotification(method: string, predicate?: (params: unknown) => boolean) {
+  async waitForNotification(method: string, predicate: (params: unknown) => boolean) {
     assert.equal(method, "textDocument/publishDiagnostics");
     const notification = [...this.documents.entries()]
       .reverse()
@@ -117,7 +117,7 @@ export class FakeAuthoredLspSession {
           uri,
         };
       })
-      .find(({ payload }) => predicate?.(payload));
+      .find(({ payload }) => predicate(payload));
     assert.ok(notification, "fake session must have a matching diagnostic notification");
     const { document, payload, uri } = notification;
     this.events.push(`${method}:${document.version}:${fileName(uri)}`);

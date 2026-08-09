@@ -106,6 +106,7 @@ test("authored LSP oracle preserves its primary failure when cleanup also fails"
       () => exerciseAuthoredLspOracle(session, workspace, fixtureOracle()),
       /hover must resolve the authored title binding/,
     );
+    assert.deepEqual(session.openFiles, ["Binding.vue"]);
   } finally {
     fs.rmSync(workspace, { recursive: true, force: true });
   }
