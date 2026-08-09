@@ -144,7 +144,7 @@ fn record_created_files(state: &ServerState, params: &CreateFilesParams) {
             params.files.iter().map(|file| file.uri.as_str()),
         );
         for file in &params.files {
-            state.track_workspace_vue_file(file.uri.as_str());
+            state.track_workspace_vue_files(file.uri.as_str());
         }
         state.invalidate_batch_cache();
     }
@@ -182,7 +182,7 @@ fn record_deleted_files(state: &ServerState, params: &DeleteFilesParams) {
             params.files.iter().map(|file| file.uri.as_str()),
         );
         for file in &params.files {
-            state.forget_workspace_vue_file(file.uri.as_str());
+            state.forget_workspace_vue_files(file.uri.as_str());
         }
         state.invalidate_batch_cache();
     }
@@ -219,8 +219,10 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         for file in &params.files {
             server
                 .state
-                .forget_workspace_vue_file(file.old_uri.as_str());
-            server.state.track_workspace_vue_file(file.new_uri.as_str());
+                .forget_workspace_vue_files(file.old_uri.as_str());
+            server
+                .state
+                .track_workspace_vue_files(file.new_uri.as_str());
         }
         server.state.invalidate_batch_cache();
         let renamed_paths = affected_vue_source_paths(

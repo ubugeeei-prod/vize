@@ -339,8 +339,10 @@ fn declaration_file_operations_cover_create_delete_and_rename() {
         operations.did_rename,
     ] {
         let options = options.expect("every declaration event must be registered");
-        assert_eq!(options.filters.len(), 2);
+        assert_eq!(options.filters.len(), 3);
         assert_eq!(options.filters[0].pattern.glob, "**/*.d.{ts,mts,cts}");
         assert_eq!(options.filters[1].pattern.glob, "**/*.vue");
+        assert_eq!(options.filters[2].pattern.glob, "**/*");
+        assert!(options.filters[2].pattern.matches == Some(FileOperationPatternKind::Folder));
     }
 }
