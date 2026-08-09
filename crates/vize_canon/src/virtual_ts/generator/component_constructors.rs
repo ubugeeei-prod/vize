@@ -22,6 +22,7 @@ pub(super) struct ComponentInstanceAliases<'a> {
     pub(super) exposed_is_generic: bool,
     pub(super) has_emits_for_props: bool,
     pub(super) has_exposed_type: bool,
+    pub(super) has_authored_default: bool,
 }
 
 /// Reference to a module-scope alias inside the generic component constructor:
@@ -48,7 +49,11 @@ pub(super) fn emit_component_constructors(
     if aliases.has_exposed_type {
         ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
-    ts.push_str("type __VizeComponentInstance = {\n");
+    if aliases.has_authored_default {
+        ts.push_str("type __VizeComponentInstance = __VizeAuthoredInstance & {\n");
+    } else {
+        ts.push_str("type __VizeComponentInstance = {\n");
+    }
     setup_props_plan.emit_component_props_field(
         ts,
         aliases.has_emits_for_props,
@@ -77,7 +82,14 @@ pub(super) fn emit_component_constructors(
     };
     append!(
         *ts,
-        "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => {{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  readonly __vizeRawProps?: Props<{generic_names}>;\n  $emit: __EmitFn<{emits_ref}>;\n  $slots: {slots_ref};\n"
+        "type __VizeGenericComponentConstructor = new <{generic_decl}>(...args: any[]) => "
+    );
+    if aliases.has_authored_default {
+        ts.push_str("__VizeAuthoredInstance & ");
+    }
+    append!(
+        *ts,
+        "{{\n  $props: __VizeComponentProps<Props<{generic_names}>>{emit_props_field};\n  readonly __vizeRawProps?: Props<{generic_names}>;\n  $emit: __EmitFn<{emits_ref}>;\n  $slots: {slots_ref};\n"
     );
     ts.push_str(&generic_instance_suffix(
         legacy_vue2,

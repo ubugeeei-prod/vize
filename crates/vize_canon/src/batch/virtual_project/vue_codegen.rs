@@ -47,6 +47,7 @@ pub(super) struct VueCodegenOptions {
     pub(super) check_options: VirtualTsCheckOptions,
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
+    pub(super) preserve_authored_component: bool,
     pub(super) legacy_vue2: bool,
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -245,6 +246,7 @@ pub(super) fn generate_vue_virtual_ts(
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
                 extra_template_referenced_names: extra_template_referenced_names.as_ref(),
                 options_api: codegen_options.options_api || vue2_compat,
+                preserve_authored_component: codegen_options.preserve_authored_component,
                 legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,

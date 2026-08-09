@@ -192,6 +192,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
             check_options: VirtualTsCheckOptions::default(),
             preserve_unused_diagnostics: false,
             options_api: transform_options.options_api(),
+            preserve_authored_component: true,
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
