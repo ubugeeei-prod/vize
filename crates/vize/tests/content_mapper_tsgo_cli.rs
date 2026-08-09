@@ -152,6 +152,44 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
     );
     assert_success(&check);
 
+    let options_enabled = run_tsgo(
+        &tsgo,
+        project.path(),
+        &[
+            "--loadExternalPlugins",
+            "--noEmit",
+            "-p",
+            "tsconfig.options-api-enabled.json",
+            "--pretty",
+            "false",
+        ],
+    );
+    assert_success(&options_enabled);
+
+    let options_disabled = run_tsgo(
+        &tsgo,
+        project.path(),
+        &[
+            "--loadExternalPlugins",
+            "--noEmit",
+            "-p",
+            "tsconfig.options-api-disabled.json",
+            "--pretty",
+            "false",
+        ],
+    );
+    assert!(
+        !options_disabled.status.success(),
+        "Options API disabled fixture passed unexpectedly"
+    );
+    let options_disabled_output = output_text(&options_disabled);
+    assert!(
+        options_disabled_output.contains("src/Options.vue")
+            && options_disabled_output.contains("TS2304")
+            && options_disabled_output.contains("Cannot find name 'count'"),
+        "{options_disabled_output}"
+    );
+
     let broken = run_tsgo(
         &tsgo,
         project.path(),
@@ -194,6 +232,7 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
 
     let app_declaration = emitted_vue_declaration(project.path(), "App");
     let child_declaration = emitted_vue_declaration(project.path(), "Child");
+    let options_declaration = emitted_vue_declaration(project.path(), "Options");
     for declaration in [&app_declaration, &child_declaration] {
         let text = std::fs::read_to_string(declaration).unwrap();
         assert!(
@@ -207,6 +246,12 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
             declaration.display()
         );
     }
+    let options_text = std::fs::read_to_string(&options_declaration).unwrap();
+    assert!(options_text.contains("$props"), "{options_text}");
+    assert!(
+        options_text.contains("export default __vize_component__"),
+        "{options_text}"
+    );
 
     let main_declaration = project.path().join("dist/main.d.ts");
     let main_text = std::fs::read_to_string(&main_declaration).unwrap();
