@@ -14,6 +14,9 @@ use super::path_cache::CanonicalPathCache;
 #[path = "imports_registration.rs"]
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
+#[path = "imports_packages.rs"]
+mod packages;
+use packages::PackageImportResolver;
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
@@ -40,6 +43,7 @@ pub(super) fn collect_transitive_local_imports(
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
+    let mut packages = PackageImportResolver::default();
     let mut queue: Vec<(PathBuf, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -73,9 +77,11 @@ pub(super) fn collect_transitive_local_imports(
             } else if absolute_specifier {
                 resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
-                aliases.and_then(|aliases| {
-                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
-                })
+                aliases
+                    .and_then(|aliases| {
+                        aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
+                    })
+                    .or_else(|| packages.resolve(dir, &specifier, canonical_paths, options))
             };
             let Some(resolved) = resolved else {
                 continue;
