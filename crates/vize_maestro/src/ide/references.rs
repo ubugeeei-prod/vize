@@ -6,6 +6,10 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - Script bindings used in style v-bind()
 
+#[cfg(feature = "native")]
+mod canonical;
+#[cfg(all(test, feature = "native"))]
+mod corsa_tests;
 mod script;
 mod template;
 
@@ -80,6 +84,11 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
+        if let Some(locations) =
+            canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await
+        {
+            return Some(locations);
+        }
         let block_type = ctx.block_type?;
 
         let corsa_locations = match block_type {

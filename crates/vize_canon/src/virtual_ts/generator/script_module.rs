@@ -12,8 +12,8 @@ use vize_carton::{CompactString, FxHashSet, String as VizeString};
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
 pub(super) use plain_exports::{
-    collect_normal_script_named_value_exports, emit_setup_invocation_and_exports,
-    push_setup_return_fields,
+    collect_normal_script_named_value_exports,
+    emit_setup_invocation_and_exports_with_mappings as emit_exports, push_setup_return_fields,
 };
 
 pub(super) fn collect_line_module_spans(script: &str) -> Vec<(u32, u32)> {

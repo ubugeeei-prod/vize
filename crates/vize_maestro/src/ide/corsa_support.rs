@@ -26,7 +26,7 @@ mod workspace_edit;
 #[cfg(feature = "native")]
 pub(crate) use canonical::{
     canonical_source_offset_to_position, map_canonical_corsa_locations, map_canonical_lsp_range,
-    open_canonical_virtual_document,
+    open_canonical_virtual_document, open_canonical_virtual_project_document,
 };
 #[cfg(feature = "native")]
 pub(crate) use html_attribute::{
