@@ -23,6 +23,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize_canon/src/virtual_ts/**"',
     '"crates/vize_maestro/src/ide/**"',
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_build.rs"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
     '"npm/cli/package.json"',
   ]) {
@@ -46,6 +47,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     /VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: \$\{\{ github\.workspace \}\}\/npm\/cli\/node_modules\/\.bin\/tsc/,
   );
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
+  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_build -- --nocapture/);
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
   assert.match(job, /cargo test -p vize_maestro/);

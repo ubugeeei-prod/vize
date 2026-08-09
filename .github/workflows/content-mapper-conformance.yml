@@ -11,6 +11,7 @@ on:
       - "crates/vize/src/commands/content_mapper.rs"
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -35,6 +36,7 @@ on:
       - "crates/vize/src/commands/content_mapper.rs"
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -110,7 +112,9 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
-        run: cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
+        run: |
+          cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
       - name: Run exact editor backend conformance
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo
