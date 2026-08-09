@@ -133,7 +133,7 @@ test("project-root Rust CLI gates use the fail-closed Corsa helper", () => {
 
 test("basic SFC Rust CLI gates use the fail-closed Corsa helper", () => {
   const files = [
-    ["check_default_imports_cli.rs", 1],
+    ["check_default_imports_cli.rs", 2],
     ["check_define_props_cli.rs", 1],
     ["check_function_props_cli.rs", 1],
     ["check_multistatement_v_on_cli.rs", 1],
@@ -257,8 +257,8 @@ test("main Rust CLI gate uses the fail-closed Corsa resolver", () => {
   );
   assert.equal(
     source.match(/(?:let Some|if let Some)\(corsa_path\) = resolve_test_corsa_path\(\)/g)?.length,
-    36,
-    "check_cli.rs should route all 36 Corsa resolver calls through the guarded boundary",
+    35,
+    "check_cli.rs should route all 35 Corsa resolver calls through the guarded boundary",
   );
 });
 

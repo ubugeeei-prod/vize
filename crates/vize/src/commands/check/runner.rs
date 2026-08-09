@@ -237,7 +237,7 @@ fn collect_roots(
     check_ignore_set: Option<&ignores::CheckIgnoreSet>,
 ) -> (Vec<PathBuf>, Vec<PathBuf>, FxHashSet<PathBuf>) {
     if args.patterns.is_empty() {
-        let (files, reported) = collect_default_run_files(
+        let (files, inputs, reported) = collect_default_run_files(
             invocation_project_root,
             cwd,
             invocation_tsconfig_path,
@@ -253,7 +253,6 @@ fn collect_roots(
             invocation_tsconfig_path,
             args.quiet,
         );
-        let inputs = reported.iter().cloned().collect();
         return (files, inputs, reported);
     }
 
@@ -334,6 +333,18 @@ fn prepare_and_execute(
     } else {
         None
     };
+    let mut authored_imports = Vec::new();
+    if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
+        authored_imports = register_transitive_local_imports(
+            &mut candidate.files,
+            cwd,
+            candidate.tsconfig_path.as_deref(),
+            jsx_typecheck,
+            canonical_paths,
+            Some(explicit_input_root),
+            validate_inputs,
+        );
+    }
     if args.patterns.is_empty() && candidate.rebuild_supporting_files {
         register_ambient_declaration_files(
             &mut candidate.files,
@@ -341,9 +352,7 @@ fn prepare_and_execute(
             candidate.tsconfig_path.as_deref(),
             cache,
         );
-    }
-    if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
-        register_transitive_local_imports(
+        let _ = register_transitive_local_imports(
             &mut candidate.files,
             cwd,
             candidate.tsconfig_path.as_deref(),
@@ -374,6 +383,13 @@ fn prepare_and_execute(
     if !args.patterns.is_empty() && candidate.inputs.is_empty() {
         return None;
     }
+    let registered_files = canonical_file_set(&candidate.files, canonical_paths);
+    candidate.reported.extend(
+        authored_imports
+            .into_iter()
+            .map(|path| canonical_paths.canonicalize(&path))
+            .filter(|path| registered_files.contains(path)),
+    );
     if !args.patterns.is_empty()
         && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()
     {

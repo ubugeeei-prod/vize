@@ -147,9 +147,17 @@ export const shared: Shared = { id: 1 };
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
     assert_eq!(json["warningCount"], 0, "{stdout}\n{stderr}");
-    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
-    assert_eq!(
-        json["files"][0]["file"], "src/main.ts",
+    assert_eq!(json["fileCount"], 2, "{stdout}\n{stderr}");
+    let files = json["files"]
+        .as_array()
+        .expect("JSON output should contain files");
+    assert!(
+        files
+            .iter()
+            .any(|file| file["file"].as_str().is_some_and(|path| {
+                path.ends_with("/shared/types.ts") && Path::new(path).is_absolute()
+            }))
+            && files.iter().any(|file| file["file"] == "src/main.ts"),
         "{stdout}\n{stderr}"
     );
 
