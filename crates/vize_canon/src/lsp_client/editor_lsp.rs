@@ -45,6 +45,14 @@ impl lsp_types::request::Request for RawCompletionRequest {
     const METHOD: &'static str = "textDocument/completion";
 }
 
+struct RawDefinitionRequest;
+
+impl lsp_types::request::Request for RawDefinitionRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/definition";
+}
+
 struct RawSignatureHelpRequest;
 
 impl lsp_types::request::Request for RawSignatureHelpRequest {
@@ -180,6 +188,23 @@ impl EditorLspSession {
                 })),
         )
         .map_err(|error| cstr!("Failed to request editor LSP completion: {error}"))
+    }
+
+    fn definition(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawDefinitionRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP definition: {error}"))
     }
 
     fn signature_help(
@@ -319,6 +344,18 @@ impl CorsaProjectClient {
             return Ok(None);
         }
         self.editor_lsp_session()?.completion(uri, line, character)
+    }
+
+    pub(super) fn definition_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.editor_lsp_session()?.definition(uri, line, character)
     }
 
     pub(super) fn signature_help_via_editor_lsp(
