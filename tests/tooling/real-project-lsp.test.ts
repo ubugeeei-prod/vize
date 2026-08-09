@@ -11,10 +11,7 @@ import {
   selectProjects,
 } from "./support/real-project-lsp-audit.ts";
 import { createLspReport } from "./support/real-project-lsp-report.ts";
-import type {
-  AuthoredLspEvidence,
-  LspProjectEvidence,
-} from "./support/real-project-lsp-report.ts";
+import type { AuthoredLspEvidence, LspProjectEvidence } from "./support/real-project-lsp-report.ts";
 
 test("production LSP opens and repairs a probe in every selected real project", async () => {
   const result = await runRealProjectLspAudit();
