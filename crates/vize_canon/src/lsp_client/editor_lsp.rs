@@ -53,6 +53,30 @@ impl lsp_types::request::Request for RawDefinitionRequest {
     const METHOD: &'static str = "textDocument/definition";
 }
 
+struct RawReferencesRequest;
+
+impl lsp_types::request::Request for RawReferencesRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/references";
+}
+
+struct RawPrepareRenameRequest;
+
+impl lsp_types::request::Request for RawPrepareRenameRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/prepareRename";
+}
+
+struct RawRenameRequest;
+
+impl lsp_types::request::Request for RawRenameRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/rename";
+}
+
 struct RawSignatureHelpRequest;
 
 impl lsp_types::request::Request for RawSignatureHelpRequest {
@@ -207,6 +231,58 @@ impl EditorLspSession {
         .map_err(|error| cstr!("Failed to request editor LSP definition: {error}"))
     }
 
+    fn references(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+        include_declaration: bool,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawReferencesRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                    "context": { "includeDeclaration": include_declaration },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP references: {error}"))
+    }
+
+    fn prepare_rename(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawPrepareRenameRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP prepare rename: {error}"))
+    }
+
+    fn rename(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+        new_name: &str,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(self.client.request::<RawRenameRequest>(serde_json::json!({
+            "textDocument": { "uri": uri },
+            "position": { "line": line, "character": character },
+            "newName": new_name,
+        })))
+        .map_err(|error| cstr!("Failed to request editor LSP rename: {error}"))
+    }
+
     fn signature_help(
         &mut self,
         document_uri: &str,
@@ -356,6 +432,47 @@ impl CorsaProjectClient {
             return Ok(None);
         }
         self.editor_lsp_session()?.definition(uri, line, character)
+    }
+
+    pub(super) fn references_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+        include_declaration: bool,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.editor_lsp_session()?
+            .references(uri, line, character, include_declaration)
+    }
+
+    pub(super) fn prepare_rename_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.editor_lsp_session()?
+            .prepare_rename(uri, line, character)
+    }
+
+    pub(super) fn rename_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+        new_name: &str,
+    ) -> Result<Option<Value>, String> {
+        if !self.document_texts.contains_key(uri) {
+            return Ok(None);
+        }
+        self.editor_lsp_session()?
+            .rename(uri, line, character, new_name)
     }
 
     pub(super) fn signature_help_via_editor_lsp(

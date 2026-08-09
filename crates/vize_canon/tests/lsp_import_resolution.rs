@@ -420,6 +420,126 @@ props.message;
     assert!(!parent_path.exists());
 }
 
+#[test]
+fn bridge_editor_references_and_rename_span_in_memory_virtual_dependencies() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().unwrap();
+    let project_root = project.path();
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(src_dir.join("Parent.vue"), "<template />\n").unwrap();
+    std::fs::write(src_dir.join("Child.vue"), "<template />\n").unwrap();
+
+    let child_virtual = "export const message = 'hello';\n";
+    let parent_virtual =
+        "import { message } from './Child.vue.ts';\nexport const displayed = message;\n";
+    let child_path = src_dir.join("Child.vue.ts");
+    let parent_path = src_dir.join("Parent.vue.ts");
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let (child_uri, parent_uri, references, references_with_declaration, prepare, rename) =
+        corsa::runtime::block_on(async {
+            bridge.spawn().await.unwrap();
+            let child_uri = child_path.display().to_compact_string();
+            let child_uri = bridge
+                .open_or_update_virtual_document(child_uri.as_str(), child_virtual)
+                .await
+                .unwrap();
+            let parent_uri = parent_path.display().to_compact_string();
+            let parent_uri = bridge
+                .open_or_update_virtual_document(parent_uri.as_str(), parent_virtual)
+                .await
+                .unwrap();
+            let declaration_character = child_virtual.find("message").unwrap() as u32;
+            let references = bridge
+                .references(child_uri.as_str(), 0, declaration_character, false)
+                .await
+                .unwrap();
+            let references_with_declaration = bridge
+                .references(child_uri.as_str(), 0, declaration_character, true)
+                .await
+                .unwrap();
+            let prepare = bridge
+                .prepare_rename(child_uri.as_str(), 0, declaration_character)
+                .await
+                .unwrap();
+            let rename = bridge
+                .rename(
+                    child_uri.as_str(),
+                    0,
+                    declaration_character,
+                    "renamedMessage",
+                )
+                .await
+                .unwrap();
+            bridge.shutdown().await.unwrap();
+            (
+                child_uri,
+                parent_uri,
+                references,
+                references_with_declaration,
+                prepare,
+                rename,
+            )
+        });
+
+    assert!(
+        references.iter().all(|location| location.uri != child_uri),
+        "declaration must be excluded: {references:#?}"
+    );
+    assert!(
+        references_with_declaration.iter().any(|location| {
+            location.uri == child_uri
+                && location.range.start.line == 0
+                && location.range.start.character == child_virtual.find("message").unwrap() as u32
+        }),
+        "declaration must be included: {references_with_declaration:#?}"
+    );
+    assert!(
+        references_with_declaration
+            .iter()
+            .any(|location| location.uri == parent_uri && location.range.start.line == 0),
+        "import must be included: {references_with_declaration:#?}"
+    );
+    assert!(
+        references_with_declaration
+            .iter()
+            .any(|location| location.uri == parent_uri && location.range.start.line == 1),
+        "usage must be included: {references_with_declaration:#?}"
+    );
+    assert!(prepare.is_some(), "the declaration must be renameable");
+
+    let rename = rename.expect("rename must return a workspace edit");
+    let rename_json = serde_json::to_string(&rename).unwrap();
+    assert!(rename_json.contains(child_uri.as_str()), "{rename_json}");
+    assert!(rename_json.contains(parent_uri.as_str()), "{rename_json}");
+    assert!(rename_json.contains("renamedMessage"), "{rename_json}");
+    assert!(!child_path.exists());
+    assert!(!parent_path.exists());
+}
+
 fn hover_contains(hover: &Option<LspHover>, expected: &str) -> bool {
     hover.as_ref().is_some_and(|hover| match &hover.contents {
         LspHoverContents::Markup(markup) => markup.value.contains(expected),
