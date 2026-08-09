@@ -96,7 +96,7 @@ test("vize check --no-config bypasses validation of an invalid -c path", () => {
     assert.equal(result.stdout, "");
     assert.equal(
       result.stderr,
-      'No .vue, .ts, .tsx, .mts, .cts, .jsx, .d.ts, .d.mts, or .d.cts files found matching inputs: ["zzz.vue"]\n',
+      'No .vue, .ts, .tsx, .mts, .cts, .js, .jsx, .mjs, .cjs, .d.ts, .d.mts, or .d.cts files found matching inputs: ["zzz.vue"]\n',
     );
   });
 });

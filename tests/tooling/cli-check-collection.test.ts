@@ -122,7 +122,7 @@ test("no-match text run prints the notice to stderr, leaves stdout empty, exits 
     assert.equal(result.stdout.trim(), "");
     assert.equal(
       result.stderr,
-      'No .vue, .ts, .tsx, .mts, .cts, .jsx, .d.ts, .d.mts, or .d.cts files found matching inputs: ["zzz.vue"]\n',
+      'No .vue, .ts, .tsx, .mts, .cts, .js, .jsx, .mjs, .cjs, .d.ts, .d.mts, or .d.cts files found matching inputs: ["zzz.vue"]\n',
     );
   });
 });
