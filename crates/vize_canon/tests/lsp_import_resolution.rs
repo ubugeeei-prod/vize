@@ -95,6 +95,74 @@ fn bridge_materialized_overlay_preserves_workspace_project_options() {
     assert!(!child_virtual_path.exists());
 }
 
+#[test]
+fn bridge_requests_signature_help_from_corsa_tsgo() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().unwrap();
+    let project_root = project.path();
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::create_dir(project_root.join("node_modules")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let source = "function format(value: number, precision: number): string {\n  return value.toFixed(precision);\n}\nformat(1, );\n";
+    let source_path = src_dir.join("main.ts");
+    std::fs::write(&source_path, source).unwrap();
+
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let signature = corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let uri = source_path.display().to_compact_string();
+        let uri = bridge
+            .open_or_update_virtual_document(uri.as_str(), source)
+            .await
+            .unwrap();
+        let signature = bridge
+            .signature_help(uri.as_str(), 3, "format(1, ".encode_utf16().count() as u32)
+            .await
+            .unwrap();
+        bridge.shutdown().await.unwrap();
+        signature
+    })
+    .expect("Corsa-backed tsgo should return signature help");
+
+    assert_eq!(signature.active_signature, Some(0));
+    assert_eq!(signature.active_parameter, Some(1));
+    assert_eq!(signature.signatures.len(), 1);
+    let label = &signature.signatures[0].label;
+    assert!(label.contains("format("), "unexpected signature: {label}");
+    assert!(
+        label.contains("value: number"),
+        "unexpected signature: {label}"
+    );
+    assert!(
+        label.contains("precision: number"),
+        "unexpected signature: {label}"
+    );
+}
+
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
     if let Some(resolved) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root) {
