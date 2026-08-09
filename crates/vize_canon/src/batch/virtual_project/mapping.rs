@@ -67,6 +67,18 @@ impl VirtualProject {
         paths
     }
 
+    /// Source paths an incremental project is allowed to refresh even when
+    /// they live outside the project root. This includes the initial reachable
+    /// graph (so delete/recreate works) and newly configured package routes (so
+    /// a package-export rename can enter the next snapshot).
+    pub(crate) fn known_source_paths(&self) -> Vec<PathBuf> {
+        let mut paths = self.registered_original_paths_sorted();
+        paths.extend(self.virtual_module_aliases.values().flatten().cloned());
+        paths.sort();
+        paths.dedup();
+        paths
+    }
+
     /// Parser diagnostics collected while registering source files.
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics

@@ -320,6 +320,8 @@ impl TypeChecker for BatchTypeChecker {
 
         let mut refreshed = self.project.empty_with_same_options()?;
         refreshed.register_paths(&paths)?;
+        refreshed.register_virtual_module_alias_targets()?;
+        refreshed.register_reachable_dependencies()?;
         self.check_registered_project_incremental(&refreshed)
     }
 }
