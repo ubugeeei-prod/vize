@@ -465,6 +465,10 @@
       "diagnostics": []
     },
     {
+      "file": "app/components/Select/types.ts",
+      "diagnostics": []
+    },
+    {
       "file": "app/components/Settings/AccentColorPicker.vue",
       "diagnostics": [
         "error:6:1 [TS2304] Cannot find name 'onPrehydrate'.",
@@ -760,5 +764,5 @@
   ],
   "errorCount": 171,
   "warningCount": 0,
-  "fileCount": 134
+  "fileCount": 135
 }

@@ -1124,6 +1124,20 @@
       ]
     },
     {
+      "file": "app/composables/settings/definition.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/settings/index.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "app/composables/settings/storage.ts",
+      "diagnostics": [
+        "error:1:15 [TS2305] Module '\"@nuxtjs/i18n\"' has no exported member 'LocaleObject'."
+      ]
+    },
+    {
       "file": "app/error.vue",
       "diagnostics": []
     },
@@ -1429,7 +1443,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 281,
+  "errorCount": 282,
   "warningCount": 0,
-  "fileCount": 253
+  "fileCount": 256
 }

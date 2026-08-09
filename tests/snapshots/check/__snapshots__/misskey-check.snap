@@ -1,6 +1,114 @@
 {
   "files": [
     {
+      "file": "<cwd>-shared/js/collapsed.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/config.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/const.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/embed-page.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/emoji-base.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/emojilist.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/extract-avg-color-from-blurhash.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/i18n.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/intl-const.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/is-link.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/locale.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/media-proxy.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/scroll.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/url.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/use-document-visibility.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/use-interval.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<cwd>-shared/js/worker-multi-dispatch.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/autogen/entities.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/autogen/models.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/entities.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/streaming.types.js",
+      "diagnostics": []
+    },
+    {
+      "file": "src/accounts.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/aiscript/api.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/aiscript/common.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/aiscript/ui.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/analytics.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/cache.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/components/MkAbuseReport.vue",
       "diagnostics": []
     },
@@ -672,6 +780,10 @@
       "diagnostics": []
     },
     {
+      "file": "src/components/MkSortOrderEditor.define.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/components/MkSortOrderEditor.vue",
       "diagnostics": []
     },
@@ -713,6 +825,10 @@
     },
     {
       "file": "src/components/MkSwitch.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/MkSystemWebhookEditor.impl.ts",
       "diagnostics": []
     },
     {
@@ -1070,6 +1186,34 @@
       "diagnostics": []
     },
     {
+      "file": "src/components/grid/cell-validators.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/cell.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/column.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/grid-event.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/grid-utils.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/grid.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/components/grid/row.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/components/page/page.block.vue",
       "diagnostics": []
     },
@@ -1095,6 +1239,145 @@
     },
     {
       "file": "src/components/page/page.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-chart-tooltip.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-form.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-leave-guard.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-loading.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-lowres-time.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-mkselect.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-mutation-observer.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-note-capture.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-scroll-position-keeper.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-tooltip.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/composables/use-uploader.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/custom-emojis.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/deck.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/di.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/drag-and-drop.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/events.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/bytes.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/date.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/hms.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/kmg.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/note.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/number.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/filters/user.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/i.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/i18n.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/instance.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/lib/ImageCompositor.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/lib/nirax.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/lib/pizzax.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/local-storage.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/memory-storage.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/navbar.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/os.ts",
+      "diagnostics": [
+        "error:272:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
+        "error:630:8 [TS7006] Parameter 'x' implicitly has an 'any' type."
+      ]
+    },
+    {
+      "file": "src/page.ts",
       "diagnostics": []
     },
     {
@@ -1188,6 +1471,10 @@
     },
     {
       "file": "src/pages/admin/branding.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/pages/admin/custom-emojis-manager.impl.ts",
       "diagnostics": []
     },
     {
@@ -1663,6 +1950,10 @@
       "diagnostics": []
     },
     {
+      "file": "src/pages/page-editor/common.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/pages/page-editor/els/page-editor.el.image.vue",
       "diagnostics": []
     },
@@ -2095,6 +2386,94 @@
       "diagnostics": []
     },
     {
+      "file": "src/plugin.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/pref-migrate.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/preferences.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/preferences/def.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/preferences/manager.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/preferences/utility.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/router.definition.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/router.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/server-context.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/signout.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/store.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/stream.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/tab-id.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/theme.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/timelines.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/tips.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/menu.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/misc.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/option-value.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/overload-to-union.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/page-header.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/types/post-form.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/ui/_common_/PreferenceRestore.vue",
       "diagnostics": []
     },
@@ -2104,6 +2483,10 @@
     },
     {
       "file": "src/ui/_common_/announcements.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/ui/_common_/common.ts",
       "diagnostics": []
     },
     {
@@ -2147,6 +2530,10 @@
       "diagnostics": []
     },
     {
+      "file": "src/ui/_common_/sw-inject.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/ui/_common_/titlebar.vue",
       "diagnostics": []
     },
@@ -2174,6 +2561,10 @@
     },
     {
       "file": "src/ui/deck/column.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/ui/deck/deck-store.ts",
       "diagnostics": []
     },
     {
@@ -2205,6 +2596,10 @@
       "diagnostics": []
     },
     {
+      "file": "src/ui/deck/tl-note-notification.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/ui/deck/widgets-column.vue",
       "diagnostics": []
     },
@@ -2222,6 +2617,442 @@
     },
     {
       "file": "src/ui/zen.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/achievements.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/admin-lookup.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/array.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/autocomplete.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/cache.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/chart-legend.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/chart-vline.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/check-permissions.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/check-reaction-permissions.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/check-word-mute.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/clear-cache.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/clicker-game.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/clone.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/code-highlighter.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/color.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/confetti.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/copy-to-clipboard.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/deep-equal.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/device-kind.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/drive.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/element-contains.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/emoji-mute.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/emoji-picker.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/extract-mentions.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/extract-url-from-mfm.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/file-drop.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/focus-trap.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/focus.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/form.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/format-time-string.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/fullscreen.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-account-from-id.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-appear-note.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-bg-color.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-dom-node-or-null.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-drive-file-menu.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-embed-code.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-note-menu.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-note-summary.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-user-environment.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/get-user-menu.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/haptic.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/hotkey.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/id.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/idb-proxy.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/idle-render.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/blockNoise.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/blur.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/checker.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/chromaticAberration.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/colorAdjust.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/colorClamp.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/colorClampAdvanced.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/distort.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/fill.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/grayscale.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/invert.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/mirror.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/pixelate.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/polkadot.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/stripe.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/tearing.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/threshold.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-compositor-functions/zoomLines.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-effector/ImageEffector.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-effector/fxs.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-frame-renderer/ImageFrameRenderer.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/image-frame-renderer/frame.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/inapp-search.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/init-chart.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/intl-string.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/is-birthday.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/is-device-darkmode.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/isFfVisibleForMe.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/isWebpSupported.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/langmap.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/lookup.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/media-has-audio.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/media-proxy.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/merge.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/mfm-function-picker.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/misskey-api.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/navigator.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/paginator.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/physics.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/please-login.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/popout.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/popup-position.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/post-message.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/random-id.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/reaction-picker.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/reload-suggest.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/search-emoji.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/sensitive-file.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/show-moved-dialog.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/show-suspended-dialog.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/shuffle.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/sound.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/storage.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/time.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/timeline-date-separate.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/timezones.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/touch.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/tour.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/unison-reload.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/url-preview.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/watermark/WatermarkRenderer.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/watermark/watermark.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/utility/webgl.ts",
       "diagnostics": []
     },
     {
@@ -2349,6 +3180,10 @@
       "diagnostics": []
     },
     {
+      "file": "src/widgets/index.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/widgets/server-metric/cpu-mem.vue",
       "diagnostics": []
     },
@@ -2375,9 +3210,13 @@
     {
       "file": "src/widgets/server-metric/pie.vue",
       "diagnostics": []
+    },
+    {
+      "file": "src/widgets/widget.ts",
+      "diagnostics": []
     }
   ],
-  "errorCount": 30,
+  "errorCount": 32,
   "warningCount": 0,
-  "fileCount": 583
+  "fileCount": 792
 }

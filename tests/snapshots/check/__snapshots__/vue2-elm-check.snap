@@ -42,6 +42,13 @@
       "diagnostics": []
     },
     {
+      "file": "src/components/common/mixin.js",
+      "diagnostics": [
+        "error:2:22 [TS2305] Module '\"../../config/env\"' has no exported member 'localapi'.",
+        "error:2:32 [TS2305] Module '\"../../config/env\"' has no exported member 'proapi'."
+      ]
+    },
+    {
       "file": "src/components/common/ratingStar.vue",
       "diagnostics": []
     },
@@ -71,6 +78,33 @@
         "error:10:27 [TS2304] Cannot find name 'userInfo'.",
         "error:11:44 [TS2304] Cannot find name 'userInfo'.",
         "error:27:40 [TS2307] Cannot find module 'vuex' or its corresponding type declarations."
+      ]
+    },
+    {
+      "file": "src/config/env.js",
+      "diagnostics": [
+        "error:15:5 [TS2591] Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.",
+        "error:18:10 [TS2591] Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig."
+      ]
+    },
+    {
+      "file": "src/config/fetch.js",
+      "diagnostics": [
+        "error:40:38 [TS2345] Argument of type '{ credentials: string; method: string; headers: { Accept: string; 'Content-Type': string; }; mode: string; cache: string; }' is not assignable to parameter of type 'RequestInit'.\nTypes of property 'cache' are incompatible.\nType 'string' is not assignable to type 'RequestCache'.",
+        "error:52:22 [TS2304] Cannot find name 'ActiveXObject'."
+      ]
+    },
+    {
+      "file": "src/config/mUtils.js",
+      "diagnostics": [
+        "error:156:27 [TS2339] Property 'timer' does not exist on type 'HTMLElement'.",
+        "error:159:9 [TS2358] The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.",
+        "error:162:14 [TS2358] The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.",
+        "error:163:9 [TS2322] Type 'number & String' is not assignable to type 'string'.",
+        "error:168:9 [TS2358] The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.",
+        "error:209:13 [TS2339] Property 'timer' does not exist on type 'HTMLElement'.",
+        "error:258:21 [TS2322] Type 'number' is not assignable to type 'string'.",
+        "error:269:39 [TS2339] Property 'timer' does not exist on type 'HTMLElement'."
       ]
     },
     {
@@ -644,9 +678,75 @@
         "error:102:22 [TS2551] Property 'BUY_CART' does not exist on type '__VizeThis'. Did you mean 'buyCart'?",
         "error:103:22 [TS2339] Property '$router' does not exist on type '__VizeThis'."
       ]
+    },
+    {
+      "file": "src/plugins/swiper.min.js",
+      "diagnostics": [
+        "error:15:1 [TS2695] Left side of comma operator is unused and has no side effects.",
+        "error:15:2 [TS1345] An expression of type 'void' cannot be tested for truthiness.",
+        "error:15:107 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:15:844 [TS2551] Property 'WebkitMutationObserver' does not exist on type 'Window & typeof globalThis'. Did you mean 'MutationObserver'?",
+        "error:15:5312 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:15:9201 [TS2304] Cannot find name 'jQuery'.",
+        "error:15:9224 [TS2304] Cannot find name 'jQuery'.",
+        "error:15:9605 [TS2339] Property 'Dom7' does not exist on type 'Window & typeof globalThis'.",
+        "error:15:9618 [TS2339] Property 'Zepto' does not exist on type 'Window & typeof globalThis'.",
+        "error:15:9632 [TS2339] Property 'jQuery' does not exist on type 'Window & typeof globalThis'.",
+        "error:15:9848 [TS2345] Argument of type '(e: any, a: any) => boolean' is not assignable to parameter of type '(a: any, b: any) => number'.\nType 'boolean' is not assignable to type 'number'.",
+        "error:15:10448 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:15:29812 [TS2339] Property 'pointerEnabled' does not exist on type 'Navigator'.",
+        "error:15:29922 [TS2339] Property 'msPointerEnabled' does not exist on type 'Navigator'.",
+        "error:15:30312 [TS2339] Property 'pointerEnabled' does not exist on type 'Navigator'.",
+        "error:15:30345 [TS2339] Property 'msPointerEnabled' does not exist on type 'Navigator'.",
+        "error:16:2673 [TS2339] Property 'blur' does not exist on type 'Element'.",
+        "error:17:19903 [TS2339] Property 'pointerEnabled' does not exist on type 'Navigator'.",
+        "error:17:19936 [TS2339] Property 'msPointerEnabled' does not exist on type 'Navigator'.",
+        "error:17:19978 [TS2339] Property 'msPointerEnabled' does not exist on type 'Navigator'.",
+        "error:17:20013 [TS2551] Property 'msMaxTouchPoints' does not exist on type 'Navigator'. Did you mean 'maxTouchPoints'?",
+        "error:17:20050 [TS2339] Property 'pointerEnabled' does not exist on type 'Navigator'.",
+        "error:17:20518 [TS2339] Property 'Modernizr' does not exist on type 'Window & typeof globalThis'.",
+        "error:17:20529 [TS2304] Cannot find name 'Modernizr'.",
+        "error:17:20603 [TS2339] Property 'DocumentTouch' does not exist on type 'Window & typeof globalThis'.",
+        "error:17:20638 [TS2304] Cannot find name 'DocumentTouch'.",
+        "error:17:20676 [TS2339] Property 'Modernizr' does not exist on type 'Window & typeof globalThis'.",
+        "error:17:20687 [TS2304] Cannot find name 'Modernizr'.",
+        "error:17:22387 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:25814 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:25916 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:25953 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:26090 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:26195 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:26230 [TS2345] Argument of type 'string | { addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to parameter of type 'string'.\nType '{ addClass: (e: any) => ...; removeClass: (e: any) => ...; hasClass: (e: any) => any; toggleClass: (e: any) => ...; attr: (e: any, a: any) => any; removeAttr: (e: any) => ...; data: (e: any, a: any) => any; ... 32 more ...; add: () => ...; }' is not assignable to type 'string'.",
+        "error:17:27387 [TS2367] This comparison appears to be unintentional because the types 'string' and 'Document' have no overlap.",
+        "error:17:27421 [TS2367] This comparison appears to be unintentional because the types 'string' and 'Window & typeof globalThis' have no overlap.",
+        "error:17:28096 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:28117 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:28142 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:29331 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:29565 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:29675 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:29709 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:29963 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:30081 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:30541 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:30743 [TS2350] Only a void function can be called with the 'new' keyword.",
+        "error:17:31265 [TS2339] Property 'Dom7' does not exist on type 'Window & typeof globalThis'.",
+        "error:17:31278 [TS2339] Property 'Zepto' does not exist on type 'Window & typeof globalThis'.",
+        "error:17:31292 [TS2339] Property 'jQuery' does not exist on type 'Window & typeof globalThis'.",
+        "error:18:217 [TS2339] Property 'Swiper' does not exist on type 'Window & typeof globalThis'.",
+        "error:18:278 [TS2339] Property 'Swiper' does not exist on type 'Window & typeof globalThis'.",
+        "error:18:304 [TS2304] Cannot find name 'define'.",
+        "error:18:312 [TS2304] Cannot find name 'define'.",
+        "error:18:324 [TS2304] Cannot find name 'define'.",
+        "error:18:372 [TS2339] Property 'Swiper' does not exist on type 'Window & typeof globalThis'."
+      ]
+    },
+    {
+      "file": "src/service/getData.js",
+      "diagnostics": []
     }
   ],
-  "errorCount": 377,
+  "errorCount": 448,
   "warningCount": 0,
-  "fileCount": 55
+  "fileCount": 61
 }

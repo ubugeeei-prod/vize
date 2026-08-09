@@ -45,7 +45,18 @@ async function verifyVue2ElmSnapshot(): Promise<void> {
       assert.equal(first.stderr, "");
       assert.equal(second.stdout, first.stdout, "check JSON must be byte-stable");
       assert.equal(second.status, first.status);
-      assert.equal(first.report.fileCount, 55, "every pinned vue2-elm SFC must be checked");
+      assert.equal(
+        first.report.files.filter((file) => file.file.endsWith(".vue")).length,
+        55,
+        "every pinned vue2-elm SFC must be checked",
+      );
+      // The authored JavaScript the SFCs import is now reported alongside them,
+      // so a regression that only surfaces in a dependency cannot hide (#3996).
+      assert.equal(
+        first.report.fileCount,
+        61,
+        JSON.stringify(first.report.files.map((file) => file.file)),
+      );
       assert.equal(first.report.warningCount, 0);
       assert.ok(first.report.errorCount > 0, "the legacy surface is intentionally not clean");
       assertDiagnosticsStayInAuthoredBlocks(fixture.workspaceDir, first.report.files);
@@ -142,13 +153,16 @@ function assertDiagnosticsStayInAuthoredBlocks(
 ): void {
   for (const file of files) {
     const source = fs.readFileSync(path.join(workspaceDir, file.file), "utf8");
-    const ranges = [...source.matchAll(/<(template|script)\b[^>]*>[\s\S]*?<\/\1>/g)].map(
-      (match) => {
-        const start = source.slice(0, match.index ?? 0).split("\n").length;
-        const end = start + match[0].split("\n").length - 1;
-        return { end, start };
-      },
-    );
+    // Imported authored scripts are reported alongside the SFCs that pull them
+    // in (#3996); every one of their lines is authored, so the whole file is the
+    // authored range rather than its `<template>`/`<script>` blocks.
+    const ranges = file.file.endsWith(".vue")
+      ? [...source.matchAll(/<(template|script)\b[^>]*>[\s\S]*?<\/\1>/g)].map((match) => {
+          const start = source.slice(0, match.index ?? 0).split("\n").length;
+          const end = start + match[0].split("\n").length - 1;
+          return { end, start };
+        })
+      : [{ end: source.split("\n").length, start: 1 }];
 
     for (const diagnostic of file.diagnostics) {
       const match = /^(?:error|warning|info|hint):(\d+):(\d+) /.exec(diagnostic);
