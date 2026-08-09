@@ -1,9 +1,13 @@
 use tower_lsp::lsp_types::Url;
+use vize_canon::{LspLocation, LspPosition, LspRange};
 
 use super::canonical::{
     CanonicalVirtualDocument, canonical_request_path, canonical_source_offset_to_position,
+    map_canonical_corsa_location,
 };
 use super::request_file_uri;
+use crate::ide::IdeContext;
+use crate::server::ServerState;
 
 fn canonical_doc(uri: &Url, source: &str) -> CanonicalVirtualDocument {
     let virtual_result =
@@ -122,4 +126,43 @@ const selected = Child;
     let expected_offset = doc.virtual_result.code.rfind("Child").unwrap() + "Ch".len();
 
     assert_eq!(generated_offset, expected_offset);
+}
+
+#[test]
+fn canonical_location_rejects_deleted_files_but_keeps_open_unsaved_files() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let importer_uri = Url::from_file_path(workspace.path().join("Importer.vue")).expect("URI");
+    let target_uri = Url::from_file_path(workspace.path().join("Deleted.vue")).expect("URI");
+    let source = "<template><Deleted /></template>\n";
+    let state = ServerState::new();
+    let ctx = IdeContext::with_content(&state, &importer_uri, 11, source.to_string());
+    let doc = canonical_doc(&importer_uri, source);
+    let location = LspLocation {
+        uri: target_uri.to_string(),
+        range: LspRange {
+            start: LspPosition {
+                line: 0,
+                character: 0,
+            },
+            end: LspPosition {
+                line: 0,
+                character: 0,
+            },
+        },
+    };
+
+    assert!(map_canonical_corsa_location(&ctx, &doc, &location).is_none());
+
+    state.documents.open(
+        target_uri.clone(),
+        "<template />\n".to_string(),
+        1,
+        "vue".to_string(),
+    );
+    assert_eq!(
+        map_canonical_corsa_location(&ctx, &doc, &location)
+            .expect("open unsaved target")
+            .uri,
+        target_uri
+    );
 }

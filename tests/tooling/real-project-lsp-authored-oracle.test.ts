@@ -5,13 +5,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
+import { FakeAuthoredLspSession } from "./support/fake-authored-lsp-session.ts";
 import { exerciseAuthoredLspOracle } from "./support/real-project-lsp-authored-oracle.ts";
 import {
   readOracleDocument,
   responseEvidence,
   sortLocations,
 } from "./support/real-project-lsp-authored-utils.ts";
-import type { PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import type { LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
 
 test("real-project LSP exercises authored binding and component boundary features", async () => {
@@ -30,6 +30,11 @@ test("real-project LSP exercises authored binding and component boundary feature
       changedContainsProbe: true,
       repairedContainsProbe: false,
     });
+    assert.equal(result.fileLifecycle.createdDefinition.count, 1);
+    assert.equal(result.fileLifecycle.renamedDefinition.count, 1);
+    assert.equal(result.fileLifecycle.deletedDefinition.count, 0);
+    assert.equal(result.fileLifecycle.deletedImporterDiagnostics.count, 1);
+    assert.equal(result.fileLifecycle.restoredDefinition.count, 1);
     assert.deepEqual(session.events, [
       "textDocument/didOpen:1:Binding.vue",
       "textDocument/publishDiagnostics:1:Binding.vue",
@@ -50,6 +55,26 @@ test("real-project LSP exercises authored binding and component boundary feature
       "textDocument/didChange:3:FeatureChild.vue",
       "textDocument/publishDiagnostics:3:FeatureChild.vue",
       "textDocument/completion:FeatureParent.vue",
+      "workspace/didCreateFiles:__VizeOracleFeatureChild.vue",
+      "workspace/symbol:__vizeFileLifecycleMarker__",
+      "textDocument/didChange:2:FeatureParent.vue",
+      "textDocument/publishDiagnostics:2:FeatureParent.vue",
+      "textDocument/definition:FeatureParent.vue",
+      "workspace/willRenameFiles:__VizeOracleFeatureChild.vue->__VizeOracleRenamedFeatureChild.vue",
+      "workspace/didRenameFiles:__VizeOracleFeatureChild.vue->__VizeOracleRenamedFeatureChild.vue",
+      "textDocument/didChange:3:FeatureParent.vue",
+      "textDocument/publishDiagnostics:3:FeatureParent.vue",
+      "textDocument/definition:FeatureParent.vue",
+      "workspace/symbol:__vizeFileLifecycleMarker__",
+      "textDocument/documentSymbol:__VizeOracleFeatureChild.vue",
+      "workspace/didDeleteFiles:__VizeOracleRenamedFeatureChild.vue",
+      "textDocument/publishDiagnostics:3:FeatureParent.vue",
+      "textDocument/definition:FeatureParent.vue",
+      "workspace/symbol:__vizeFileLifecycleMarker__",
+      "textDocument/documentSymbol:__VizeOracleRenamedFeatureChild.vue",
+      "textDocument/didChange:4:FeatureParent.vue",
+      "textDocument/publishDiagnostics:4:FeatureParent.vue",
+      "textDocument/definition:FeatureParent.vue",
       "textDocument/didClose:FeatureParent.vue",
       "textDocument/didClose:FeatureChild.vue",
       "textDocument/didClose:Binding.vue",
@@ -114,115 +139,6 @@ test("authored LSP utilities fail with portable evidence and diagnostics", () =>
   }
 });
 
-class FakeAuthoredLspSession {
-  readonly events: string[] = [];
-  readonly openFiles: string[] = [];
-  private readonly documents = new Map<string, { text: string; version: number }>();
-  private readonly nullMethod: string | null;
-  private readonly throwOnClose: boolean;
-  private readonly workspace: string;
-
-  constructor(workspace: string, nullMethod: string | null = null, throwOnClose = false) {
-    this.workspace = workspace;
-    this.nullMethod = nullMethod;
-    this.throwOnClose = throwOnClose;
-  }
-
-  notify(method: string, params: unknown): void {
-    const payload = params as {
-      contentChanges?: Array<{ text: string }>;
-      textDocument?: { text?: string; uri: string; version?: number };
-    };
-    const document = payload.textDocument;
-    assert.ok(document);
-    const file = path.basename(new URL(document.uri).pathname);
-    if (method === "textDocument/didOpen") {
-      this.documents.set(document.uri, {
-        text: document.text ?? "",
-        version: document.version ?? 0,
-      });
-      this.openFiles.push(file);
-      this.events.push(`${method}:${document.version}:${file}`);
-    } else if (method === "textDocument/didChange") {
-      this.documents.set(document.uri, {
-        text: payload.contentChanges?.[0]?.text ?? "",
-        version: document.version ?? 0,
-      });
-      this.events.push(`${method}:${document.version}:${file}`);
-    } else if (method === "textDocument/didClose") {
-      if (this.throwOnClose) throw new Error("cleanup transport failed");
-      this.documents.delete(document.uri);
-      const index = this.openFiles.indexOf(file);
-      assert.ok(index >= 0, `didClose for a document that is not open: ${file}`);
-      this.openFiles.splice(index, 1);
-      this.events.push(`${method}:${file}`);
-    }
-  }
-
-  async request(method: string, params: unknown): Promise<unknown> {
-    const request = params as { newName?: string; textDocument: { uri: string } };
-    const uri = request.textDocument.uri;
-    const file = path.basename(new URL(uri).pathname);
-    this.events.push(`${method}:${file}`);
-    if (method === this.nullMethod) return null;
-
-    const bindingUri = pathToFileURL(path.join(this.workspace, "Binding.vue")).href;
-    const childUri = pathToFileURL(path.join(this.workspace, "FeatureChild.vue")).href;
-    if (method === "textDocument/hover") {
-      return {
-        contents: { kind: "markdown", value: "```typescript\nconst title: string\n```" },
-        range: range(3, 13, 18),
-      };
-    }
-    if (method === "textDocument/definition" && file === "Binding.vue") {
-      return { uri: bindingUri, range: range(1, 14, 19) };
-    }
-    if (method === "textDocument/references") {
-      return [
-        { uri: bindingUri, range: range(3, 13, 18) },
-        { uri: bindingUri, range: range(1, 14, 19) },
-      ];
-    }
-    if (method === "textDocument/prepareRename") return range(3, 13, 18);
-    if (method === "textDocument/rename") {
-      return {
-        changes: {
-          [bindingUri]: [
-            { newText: request.newName, range: range(3, 13, 18) },
-            { newText: request.newName, range: range(1, 14, 19) },
-          ],
-        },
-      };
-    }
-    if (method === "textDocument/definition") return { uri: childUri, range: range(0, 0, 0) };
-    if (method === "textDocument/completion") {
-      const child = [...this.documents.entries()].find(([candidate]) =>
-        candidate.endsWith("/FeatureChild.vue"),
-      )?.[1];
-      const labels = ["v-if", "active"];
-      if (child?.text.includes("vizeOracleProbe")) labels.push("vize-oracle-probe");
-      return labels.map((label) => ({ label }));
-    }
-    throw new Error(`unexpected request ${method}`);
-  }
-
-  async waitForNotification(method: string, predicate?: (params: unknown) => boolean) {
-    assert.equal(method, "textDocument/publishDiagnostics");
-    const notification = [...this.documents.entries()]
-      .reverse()
-      .map(([uri, document]) => ({
-        document,
-        payload: { diagnostics: [], uri, version: document.version } as PublishDiagnosticsParams,
-        uri,
-      }))
-      .find(({ payload }) => predicate?.(payload));
-    assert.ok(notification, "fake session must have a matching diagnostic notification");
-    const { document, payload, uri } = notification;
-    this.events.push(`${method}:${document.version}:${path.basename(new URL(uri).pathname)}`);
-    return payload;
-  }
-}
-
 function createFixtureWorkspace(prefix: string): string {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   fs.writeFileSync(
@@ -257,6 +173,15 @@ function fixtureOracle(): LspAuthoredOracle {
       importerFile: "FeatureParent.vue",
       tagAnchor: "<FeatureChild ",
       tagName: "FeatureChild",
+    },
+    fileLifecycle: {
+      copiedFile: "__VizeOracleFeatureChild.vue",
+      copiedImportSpecifier: "./__VizeOracleFeatureChild.vue",
+      markerInsertionAnchor: '<script setup lang="ts">\n',
+      markerSymbol: "__vizeFileLifecycleMarker__",
+      originalImportSpecifier: "./FeatureChild.vue",
+      renamedFile: "__VizeOracleRenamedFeatureChild.vue",
+      renamedImportSpecifier: "./__VizeOracleRenamedFeatureChild.vue",
     },
     templateBinding: {
       declarationAnchor: "{ title: string }",

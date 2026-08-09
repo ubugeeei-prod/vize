@@ -31,6 +31,15 @@ export type LspAuthoredOracle = {
     tagAnchor: string;
     tagName: string;
   };
+  fileLifecycle: {
+    copiedFile: string;
+    copiedImportSpecifier: string;
+    markerInsertionAnchor: string;
+    markerSymbol: string;
+    originalImportSpecifier: string;
+    renamedFile: string;
+    renamedImportSpecifier: string;
+  };
   templateBinding: {
     declarationAnchor: string;
     file: string;
@@ -51,6 +60,23 @@ export type LspResponseEvidence = {
   sha256: string;
 };
 
+export type AuthoredFileLifecycleEvidence = {
+  copiedFile: string;
+  createdDefinition: LspResponseEvidence;
+  createdWorkspaceSymbols: LspResponseEvidence;
+  deletedDefinition: LspResponseEvidence;
+  deletedDocumentSymbols: LspResponseEvidence;
+  deletedImporterDiagnostics: DiagnosticEvidence;
+  deletedWorkspaceSymbols: LspResponseEvidence;
+  repairedDiagnostics: DiagnosticEvidence;
+  renameEdit: LspResponseEvidence;
+  renamedDefinition: LspResponseEvidence;
+  renamedFile: string;
+  renamedWorkspaceSymbols: LspResponseEvidence;
+  restoredDefinition: LspResponseEvidence;
+  staleCopiedDocumentSymbols: LspResponseEvidence;
+};
+
 export type AuthoredLspEvidence = {
   completion: LspResponseEvidence;
   componentDefinition: LspResponseEvidence;
@@ -61,6 +87,7 @@ export type AuthoredLspEvidence = {
     changedContainsProbe: boolean;
     repairedContainsProbe: boolean;
   };
+  fileLifecycle: AuthoredFileLifecycleEvidence;
   hover: LspResponseEvidence;
   importerFile: string;
   references: LspResponseEvidence;

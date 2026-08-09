@@ -22,6 +22,7 @@ import {
   type OracleSession,
 } from "./real-project-lsp-authored-utils.ts";
 import type { FixtureProject, LspAuthoredOracle } from "./real-project-lsp-report.ts";
+import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
 
 const diagnosticsTimeoutMs = 120_000;
 
@@ -154,7 +155,12 @@ export async function exerciseAuthoredLspOracle(
       timeoutMs(),
     );
     open(session, importerDocument.uri, importerDocument.source, 1, openUris);
-    await waitForDiagnostics(session, importerDocument.uri, 1, timeoutMs());
+    const importerDiagnostics = await waitForDiagnostics(
+      session,
+      importerDocument.uri,
+      1,
+      timeoutMs(),
+    );
     const componentDefinition = locations(
       await session.request(
         "textDocument/definition",
@@ -215,6 +221,16 @@ export async function exerciseAuthoredLspOracle(
       false,
       "dependency repair must remove the probe completion",
     );
+    const fileLifecycle = await exerciseAuthoredFileLifecycle(
+      session,
+      workspaceDir,
+      oracle,
+      importerDocument,
+      childDocument,
+      tagRange,
+      importerDiagnostics,
+      timeoutMs,
+    );
 
     return {
       completion: responseEvidence(baselineLabels, baselineLabels.length, workspaceDir),
@@ -226,6 +242,7 @@ export async function exerciseAuthoredLspOracle(
         changedContainsProbe,
         repairedContainsProbe,
       },
+      fileLifecycle,
       hover: responseEvidence(hover, 1, workspaceDir),
       importerFile: boundary.importerFile,
       references: responseEvidence(sortLocations(references), references.length, workspaceDir),

@@ -149,7 +149,7 @@ pub(crate) fn map_canonical_corsa_location(
         return Some(location);
     }
 
-    let uri = Url::parse(&location.uri).ok()?;
+    let uri = super::accessible_external_uri(ctx, &location.uri)?;
     Some(Location {
         uri,
         range: Range {

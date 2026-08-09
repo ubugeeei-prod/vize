@@ -21,6 +21,8 @@ use std::{
 };
 use vize_carton::{String, cstr};
 
+use crate::file_uri::path_to_file_uri;
+
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
     pub fn new(corsa_path: Option<&str>, working_dir: Option<&str>) -> Result<Self, String> {
@@ -215,6 +217,22 @@ impl CorsaProjectClient {
         Ok(())
     }
 
+    /// Remove every virtual TypeScript overlay derived from deleted Vue SFCs.
+    ///
+    /// A Vue dependency may project to `.vue.ts`, `.vue.tsx`, or both (the
+    /// latter uses a `.vue.ts` compatibility shim). Keeping either overlay
+    /// alive after the source disappears makes module resolution and
+    /// diagnostics falsely treat the deleted component as present.
+    pub fn forget_vue_virtual_documents(&mut self, source_paths: &[PathBuf]) -> Result<(), String> {
+        for uri in vue_virtual_document_uris(source_paths) {
+            if self.document_texts.contains_key(uri.as_str()) {
+                self.did_close(uri.as_str())?;
+            }
+        }
+        self.clear_diagnostics_cache();
+        Ok(())
+    }
+
     pub(crate) fn diagnostics_cache_len(&self) -> usize {
         self.diagnostics.len()
     }
@@ -229,6 +247,27 @@ impl CorsaProjectClient {
     pub(super) fn clear_document_state(&mut self, uri: &str) {
         self.diagnostics.remove(uri);
     }
+}
+
+fn vue_virtual_document_uris(source_paths: &[PathBuf]) -> Vec<String> {
+    let mut uris = source_paths
+        .iter()
+        .filter(|path| path.extension().is_some_and(|extension| extension == "vue"))
+        .filter_map(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .map(|name| (path, name))
+        })
+        .flat_map(|(path, name)| {
+            ["ts", "tsx"].map(move |extension| {
+                let virtual_path = path.with_file_name(cstr!("{name}.{extension}"));
+                path_to_file_uri(&virtual_path)
+            })
+        })
+        .collect::<Vec<_>>();
+    uris.sort();
+    uris.dedup();
+    uris
 }
 
 impl Drop for CorsaProjectClient {
@@ -255,8 +294,11 @@ fn merge_materialized_file_changes(
 
 #[cfg(test)]
 mod tests {
-    use super::merge_materialized_file_changes;
+    use std::path::PathBuf;
+
+    use super::{merge_materialized_file_changes, vue_virtual_document_uris};
     use corsa::api::{DocumentIdentifier, FileChangeSummary, FileChanges};
+    use vize_carton::cstr;
 
     #[test]
     fn merges_materialized_file_change_summaries() {
@@ -281,5 +323,22 @@ mod tests {
         assert_eq!(summary.changed.len(), 2);
         assert_eq!(summary.created.len(), 1);
         assert_eq!(summary.deleted.len(), 1);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn deleted_vue_sources_expand_to_deduplicated_ts_and_tsx_overlay_uris() {
+        let source = PathBuf::from("/workspace/Panel #1.vue");
+        assert_eq!(
+            vue_virtual_document_uris(&[
+                source.clone(),
+                source,
+                PathBuf::from("/workspace/ordinary.ts"),
+            ]),
+            vec![
+                cstr!("file:///workspace/Panel%20%231.vue.ts"),
+                cstr!("file:///workspace/Panel%20%231.vue.tsx"),
+            ]
+        );
     }
 }

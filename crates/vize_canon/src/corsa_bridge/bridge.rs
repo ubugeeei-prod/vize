@@ -2,6 +2,8 @@
 
 use serde_json::Value;
 #[allow(clippy::disallowed_types)]
+use std::path::PathBuf;
+#[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -259,6 +261,20 @@ impl CorsaBridge {
         });
         self.cache_stats.set_entries(0);
         self.cache_stats.reset();
+    }
+
+    /// Remove virtual TypeScript overlays derived from deleted Vue SFCs.
+    pub async fn forget_vue_virtual_documents(
+        &self,
+        source_paths: &[PathBuf],
+    ) -> Result<(), CorsaBridgeError> {
+        let source_paths = source_paths.to_vec();
+        self.with_client(move |client| {
+            client
+                .forget_vue_virtual_documents(&source_paths)
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
     }
 
     /// Get hover information at a position.
