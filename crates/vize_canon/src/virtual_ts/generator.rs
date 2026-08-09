@@ -1,4 +1,5 @@
 mod anchors;
+mod auto_import_stubs;
 mod component_constructors;
 mod component_export;
 mod css_modules;
@@ -20,8 +21,9 @@ mod setup_type_exports;
 mod spans;
 mod template_refs;
 use self::anchors::{emit_props_shadow_anchor, emit_setup_binding_anchors};
+use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
-use self::component_export::emit_default_export_declaration;
+use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::css_modules::CssModuleAssertions;
 use self::emits::{emit_emit_props_helper, emit_emits_type, emit_exposed_type, emit_slots_type};
 pub use self::entry::{
@@ -32,7 +34,6 @@ use self::generics::{HoistedGenericAliases, generic_injection_point, references_
 use self::global_components::GlobalComponentPlan;
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
-    extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
@@ -367,32 +368,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         FxHashSet::default()
     };
 
-    // Auto-import stubs (e.g., Nuxt composables)
-    // Only emit stubs for names NOT already declared via imports or bindings.
-    // Collect imported names from all module-level import statements to handle
-    // cases where plain <script> imports are not in summary.bindings (which
-    // only holds <script setup> bindings when both blocks exist).
     if !options.auto_import_stubs.is_empty() {
-        profile!("canon.virtual_ts.emit_auto_import_stubs", {
-            let mut has_header = false;
-            for stub in &options.auto_import_stubs {
-                let name = extract_declared_name(stub);
-                if let Some(name) = name {
-                    // Skip if already imported or declared in script bindings
-                    if summary.bindings.bindings.contains_key(name)
-                        || imported_names.contains(&name)
-                    {
-                        continue;
-                    }
-                }
-                if !has_header {
-                    ts.push_str("\n// Auto-import stubs (framework-provided globals)\n");
-                    has_header = true;
-                }
-                ts.push_str(stub);
-                ts.push('\n');
-            }
-        });
+        profile!(
+            "canon.virtual_ts.emit_auto_import_stubs",
+            emit_auto_import_stubs(&mut ts, summary, options, &imported_names)
+        );
     }
     global_components.emit(&mut ts, summary, options, &imported_names);
     ts.push('\n');
@@ -880,14 +860,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_type_exports.emit_module_exports(&mut ts);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
-    if preserve_authored_component {
-        ts.push_str(
-            "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
-        );
-        ts.push_str(
-            "type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
-        );
-    }
+    emit_authored_component_aliases(&mut ts, preserve_authored_component);
 
     let emits_info = emit_emits_type(
         &mut ts,

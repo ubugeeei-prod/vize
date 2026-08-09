@@ -31,6 +31,20 @@ pub(super) const VUE_COMPONENT_OPTIONS_TYPE: &str = "type __VizeVueComponentOpti
 };
 ";
 
+/// Alias the authored default export and its instance type so the generated
+/// component keeps the declarations the SFC itself wrote.
+pub(super) fn emit_authored_component_aliases(ts: &mut String, preserve_authored_component: bool) {
+    if !preserve_authored_component {
+        return;
+    }
+    ts.push_str(
+        "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
+    );
+    ts.push_str(
+        "type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
+    );
+}
+
 pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
