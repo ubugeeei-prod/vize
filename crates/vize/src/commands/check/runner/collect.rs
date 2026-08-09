@@ -9,7 +9,7 @@ use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use vize_carton::{FxHashSet, String};
 
-use super::super::patterns::is_supported_check_file;
+use super::super::patterns::{CheckFileOptions, is_supported_check_file};
 use super::ignores::CheckIgnoreSet;
 
 const TARGET_DIR: &str = "target";
@@ -22,13 +22,20 @@ pub(super) fn collect_check_files(
     patterns: &[std::string::String],
     include_jsx: bool,
 ) -> Vec<PathBuf> {
-    collect_check_files_with_ignores(patterns, include_jsx, None)
+    collect_check_files_with_ignores(
+        patterns,
+        CheckFileOptions {
+            include_jsx,
+            ..Default::default()
+        },
+        None,
+    )
 }
 
 #[allow(clippy::disallowed_types)]
 pub(super) fn collect_check_files_with_ignores(
     patterns: &[std::string::String],
-    include_jsx: bool,
+    options: CheckFileOptions,
     ignore_set: Option<&CheckIgnoreSet>,
 ) -> Vec<PathBuf> {
     let mut files = Vec::new();
@@ -39,7 +46,7 @@ pub(super) fn collect_check_files_with_ignores(
         if candidate.exists() {
             if candidate.is_file() {
                 let candidate = normalize_input_path(&candidate);
-                if is_supported_check_file(&candidate, include_jsx)
+                if is_supported_check_file(&candidate, options)
                     && !is_ignored(&candidate, ignore_set)
                     && seen.insert(candidate.clone())
                 {
@@ -48,7 +55,7 @@ pub(super) fn collect_check_files_with_ignores(
                 continue;
             }
             if candidate.is_dir() {
-                collect_from_dir(&candidate, &mut files, &mut seen, include_jsx, ignore_set);
+                collect_from_dir(&candidate, &mut files, &mut seen, options, ignore_set);
                 continue;
             }
         }
@@ -59,7 +66,7 @@ pub(super) fn collect_check_files_with_ignores(
             base_dir.as_path(),
             &mut files,
             &mut seen,
-            include_jsx,
+            options,
             matcher.as_ref(),
             ignore_set,
         );
@@ -91,7 +98,13 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
             }
             if candidate.is_dir() {
                 collect_from_dir_filtered(
-                    &candidate, &mut files, &mut seen, true, false, None, None,
+                    &candidate,
+                    &mut files,
+                    &mut seen,
+                    true,
+                    CheckFileOptions::default(),
+                    None,
+                    None,
                 );
                 continue;
             }
@@ -104,7 +117,7 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
             &mut files,
             &mut seen,
             true,
-            false,
+            CheckFileOptions::default(),
             matcher.as_ref(),
             None,
         );
@@ -118,21 +131,21 @@ fn collect_from_dir(
     dir: &Path,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
-    include_jsx: bool,
+    options: CheckFileOptions,
     ignore_set: Option<&CheckIgnoreSet>,
 ) {
-    collect_from_dir_with_matcher(dir, files, seen, include_jsx, None, ignore_set);
+    collect_from_dir_with_matcher(dir, files, seen, options, None, ignore_set);
 }
 
 fn collect_from_dir_with_matcher(
     dir: &Path,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
-    include_jsx: bool,
+    options: CheckFileOptions,
     matcher: Option<&InputGlob>,
     ignore_set: Option<&CheckIgnoreSet>,
 ) {
-    collect_from_dir_filtered(dir, files, seen, false, include_jsx, matcher, ignore_set);
+    collect_from_dir_filtered(dir, files, seen, false, options, matcher, ignore_set);
 }
 
 fn collect_from_dir_filtered(
@@ -140,7 +153,7 @@ fn collect_from_dir_filtered(
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
     vue_only: bool,
-    include_jsx: bool,
+    options: CheckFileOptions,
     matcher: Option<&InputGlob>,
     ignore_set: Option<&CheckIgnoreSet>,
 ) {
@@ -163,7 +176,7 @@ fn collect_from_dir_filtered(
             if let Ok(entry) = entry {
                 let path = entry.path();
                 if path.is_file()
-                    && is_supported_collect_file(path, vue_only, include_jsx)
+                    && is_supported_collect_file(path, vue_only, options)
                     && matcher.is_none_or(|matcher| matcher.matches(path))
                     && (!skip_generated || !is_generated_path(path))
                     && !is_ignored(path, ignore_set)
@@ -309,11 +322,11 @@ fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
     name == TARGET_DIR || (previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR)
 }
 
-fn is_supported_collect_file(path: &Path, vue_only: bool, include_jsx: bool) -> bool {
+fn is_supported_collect_file(path: &Path, vue_only: bool, options: CheckFileOptions) -> bool {
     if vue_only {
         return path.extension().and_then(|extension| extension.to_str()) == Some("vue");
     }
-    is_supported_check_file(path, include_jsx)
+    is_supported_check_file(path, options)
 }
 
 fn glob_match_options() -> MatchOptions {
