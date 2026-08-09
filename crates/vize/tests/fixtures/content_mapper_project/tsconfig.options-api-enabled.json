@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"],
+      "options": { "optionsApi": true }
+    }
+  ],
+  "files": ["src/Options.vue"]
+}
