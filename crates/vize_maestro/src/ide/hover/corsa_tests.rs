@@ -167,7 +167,8 @@ defineProps<{ describedBy: string }>()
                 Position::new(end_line, end_character),
             )),
         );
-        assert!(hover_markdown(hover).contains("_Template binding_"));
+        let value = hover_markdown(hover);
+        assert!(value.contains("const describedBy: string"), "{value}");
     });
 }
 
