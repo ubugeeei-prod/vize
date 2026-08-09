@@ -1,4 +1,7 @@
-use super::*;
+use super::{
+    FxHashSet, Path, PathBuf, Value, normalize_input_path, parse_jsonc_value,
+    push_tsconfig_candidates, tracked_read_to_string,
+};
 
 pub(super) fn collect_tsconfig_project_paths(tsconfig_path: &Path) -> Vec<PathBuf> {
     let mut paths = Vec::new();
