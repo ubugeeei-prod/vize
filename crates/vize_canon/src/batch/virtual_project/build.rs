@@ -323,5 +323,8 @@ pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {
     {
         return Some(SourceType::ts());
     }
+    if file_name.ends_with(".js") || file_name.ends_with(".mjs") || file_name.ends_with(".cjs") {
+        return SourceType::from_path(path).ok();
+    }
     None
 }

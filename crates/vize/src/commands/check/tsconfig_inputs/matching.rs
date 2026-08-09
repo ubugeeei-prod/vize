@@ -11,6 +11,7 @@ use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct SupportedFileOptions {
     pub(super) include_jsx: bool,
+    pub(super) include_js: bool,
 }
 
 pub(super) fn path_has_component(path: &Path, component_name: &str) -> bool {
@@ -128,7 +129,7 @@ pub(super) fn is_supported_check_file_with_options(
     path: &Path,
     options: SupportedFileOptions,
 ) -> bool {
-    check_patterns::is_supported_check_file(path, options.include_jsx)
+    check_patterns::is_supported_check_file_with_js(path, options.include_jsx, options.include_js)
 }
 
 pub(super) fn glob_match_options() -> MatchOptions {

@@ -66,6 +66,20 @@ impl TsconfigInputCache {
             .or_insert_with_key(|resolved| load_tsconfig_inputs(resolved))
             .as_ref()
     }
+
+    /// Whether the selected solution or any referenced project enables
+    /// JavaScript inputs. Explicit directory/glob collection needs this before
+    /// individual files are available for project ownership resolution.
+    pub(crate) fn project_graph_allows_javascript(&mut self, tsconfig_path: Option<&Path>) -> bool {
+        tsconfig_path.is_some_and(|tsconfig_path| {
+            collect_tsconfig_project_paths(tsconfig_path)
+                .iter()
+                .any(|project| {
+                    self.load(project)
+                        .is_some_and(|spec| spec.allow_js.unwrap_or(false))
+                })
+        })
+    }
 }
 
 fn load_tsconfig_inputs(tsconfig_path: &Path) -> Option<TsconfigInputSpec> {
@@ -124,6 +138,14 @@ fn load_tsconfig_inputs_inner(
     }
     if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
         merged.declaration_dir_exclude = Some(declaration_dir);
+    }
+    if let Some(allow_js) = value
+        .get("compilerOptions")
+        .and_then(Value::as_object)
+        .and_then(|options| options.get("allowJs"))
+        .and_then(Value::as_bool)
+    {
+        merged.allow_js = Some(allow_js);
     }
 
     Ok(merged)
