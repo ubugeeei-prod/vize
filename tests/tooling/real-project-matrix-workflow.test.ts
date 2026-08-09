@@ -38,11 +38,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
-  assert.deepEqual(dispatch.inputs?.enforce_divergence_budget, {
-    description: "Fail the job when the typecheck divergence budget breaches",
-    type: "boolean",
-    default: false,
-  });
+  assert.equal(dispatch.inputs, undefined, "release dispatch must expose no record-only mode");
   assert.deepEqual(workflow.concurrency, {
     group: "real-project-matrix-${{ github.ref }}",
     "cancel-in-progress": true,
@@ -90,7 +86,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     (step) => step.name === "Check glyph formatter corpus properties",
   );
   const glyphPropertiesIndex = steps.indexOf(glyphProperties!);
-  const divergence = steps.find((step) => step.name === "Record typechecker baseline divergence");
+  const divergence = steps.find((step) => step.name === "Enforce typechecker baseline divergence");
   const divergenceIndex = steps.indexOf(divergence!);
   const summary = steps.find((step) => step.name === "Publish shard summary");
   const summaryIndex = steps.indexOf(summary!);
@@ -174,36 +170,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence?.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
-  /**
-   * #3513: this workflow is both the weekly ecosystem sweep and a required
-   * release gate (tools/github/release-preflight-bootstrap.mjs dispatches it
-   * with no inputs). The divergence budget is the weekly alarm, so it may only
-   * fail the job on the paths that asked for it:
-   *
-   *   schedule                                  -> enforce
-   *   workflow_dispatch (release, no inputs)    -> record-only
-   *   workflow_dispatch + enforce_divergence_budget -> enforce
-   *
-   * `record-only` still writes the verdict to both artifacts and raises a
-   * workflow warning; tests/tooling/typecheck-divergence-budget.test.ts pins
-   * what each mode does.
-   */
-  const budgetMode = divergence?.env?.BUDGET_MODE;
-  assert.ok(budgetMode, "Missing BUDGET_MODE on the divergence step");
-  for (const [eventName, enforceInput, expected] of [
-    ["schedule", undefined, "enforce"],
-    ["workflow_dispatch", true, "enforce"],
-    ["workflow_dispatch", false, "record-only"],
-  ] as const) {
-    assert.equal(
-      evaluateExpression(budgetMode, {
-        github: { event_name: eventName },
-        inputs: { enforce_divergence_budget: enforceInput },
-      }),
-      expected,
-      `${eventName} with enforce_divergence_budget=${enforceInput}`,
-    );
-  }
+  assert.equal(divergence?.env?.BUDGET_MODE, "enforce");
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /lsp-lifecycle-summary\.json/);
@@ -229,59 +196,3 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "retention-days": 30,
   });
 });
-
-/**
- * Just enough of the GitHub Actions expression grammar (parentheses, `==`, and
- * the value-returning `&&` / `||`) to resolve a `${{ … }}` template under a
- * given event context, so the test above can assert the mode each trigger
- * actually produces instead of how the expression happens to be spelled.
- */
-function evaluateExpression(template: string, context: Record<string, unknown>): unknown {
-  const body = template.replace(/^\$\{\{\s*/, "").replace(/\s*\}\}$/, "");
-  const tokens = body.match(/\(|\)|&&|\|\||==|'[^']*'|[\w.]+/g) ?? [];
-  let index = 0;
-  const lookup = (path: string) => {
-    let value: unknown = context;
-    for (const key of path.split(".")) {
-      value = (value as Record<string, unknown> | undefined)?.[key];
-    }
-    return value;
-  };
-  const primary = (): unknown => {
-    const token = tokens[index++];
-    if (token === "(") {
-      const value = or();
-      index++;
-      return value;
-    }
-    if (token?.startsWith("'")) return token.slice(1, -1);
-    return lookup(token ?? "");
-  };
-  const equality = (): unknown => {
-    let value = primary();
-    while (tokens[index] === "==") {
-      index++;
-      value = value === primary();
-    }
-    return value;
-  };
-  const and = (): unknown => {
-    let value = equality();
-    while (tokens[index] === "&&") {
-      index++;
-      const right = equality();
-      value = value ? right : value;
-    }
-    return value;
-  };
-  const or = (): unknown => {
-    let value = and();
-    while (tokens[index] === "||") {
-      index++;
-      const right = and();
-      value = value ? value : right;
-    }
-    return value;
-  };
-  return or();
-}
