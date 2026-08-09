@@ -158,6 +158,10 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) dialect: VueVersion,
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub(crate) options_api: bool,
+    /// Preserve the typed authored default component in the public instance.
+    /// Declaration-producing callers enable this until the batch path can do
+    /// so without changing its committed virtual-code baselines.
+    pub(crate) preserve_authored_component: bool,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
     /// Preserve Vue parser compatibility semantics when generating template

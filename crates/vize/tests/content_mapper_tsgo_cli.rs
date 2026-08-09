@@ -260,18 +260,24 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
 
     std::fs::write(
         project.path().join("dist/verify.ts"),
-        r#"import type { AppProps } from "./main";
+        r#"import Options from "./Options.vue";
+import type { AppProps } from "./main";
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+type OptionsInstance = InstanceType<typeof Options>;
 
 const propsMustBeTyped: IsAny<AppProps> = false;
 const valid: AppProps = { count: 1 };
 // @ts-expect-error count must remain a number through declaration emit
 const invalid: AppProps = { count: "wrong" };
+const optionsCountMustBeTyped: IsAny<OptionsInstance["count"]> = false;
+const optionsCount: number = (undefined as unknown as OptionsInstance).count;
 
 void propsMustBeTyped;
 void valid;
 void invalid;
+void optionsCountMustBeTyped;
+void optionsCount;
 "#,
     )
     .unwrap();
@@ -286,6 +292,7 @@ void invalid;
             "preserve",
             "--moduleResolution",
             "bundler",
+            "--allowArbitraryExtensions",
             "--pretty",
             "false",
             "dist/verify.ts",

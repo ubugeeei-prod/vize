@@ -842,6 +842,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
+    let preserve_authored_component =
+        declared_default_alias && generation_options.preserve_authored_component;
+    if preserve_authored_component
+        && !setup_return_fields
+            .iter()
+            .any(|field| field == "__default__")
+    {
+        setup_return_fields.push("__default__".into());
+    }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
@@ -871,6 +880,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     setup_type_exports.emit_module_exports(&mut ts);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
+    if preserve_authored_component {
+        ts.push_str(
+            "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\n",
+        );
+        ts.push_str(
+            "type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n",
+        );
+    }
 
     let emits_info = emit_emits_type(
         &mut ts,
@@ -901,6 +918,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             exposed_is_generic,
             has_emits_for_props: emits_info.has_emits_for_props,
             has_exposed_type,
+            has_authored_default: preserve_authored_component,
         },
         legacy_vue2,
         dialect,
@@ -912,6 +930,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generic_component_params
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str())),
+        preserve_authored_component,
     );
     ts.push_str("export default __vize_component__;\n");
 

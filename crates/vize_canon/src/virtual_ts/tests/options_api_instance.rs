@@ -60,6 +60,25 @@ fn test_options_api_template_bindings_use_default_instance_type() {
         "template data binding must not be emitted as a fixed any:\n{}",
         output.code
     );
+    assert!(
+        output.code.contains(", __default__ }"),
+        "the typed authored component must escape setup for declaration emit:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains(
+            "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"]"
+        ),
+        "expected a module-scope authored component alias:\n{}",
+        output.code
+    );
+    assert!(
+        output
+            .code
+            .contains("type __VizeComponentInstance = __VizeAuthoredInstance & {"),
+        "the public instance must retain Options API members:\n{}",
+        output.code
+    );
 }
 
 /// A `namespace` the plain script declares stays resolvable from template scope
