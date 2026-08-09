@@ -167,8 +167,9 @@ impl CorsaProjectClient {
         uri: &str,
         line: u32,
         character: u32,
+        context: Option<Value>,
     ) -> Result<Option<Value>, String> {
-        self.signature_help_via_editor_lsp(uri, line, character)
+        self.signature_help_via_editor_lsp(uri, line, character, context)
     }
 
     fn api_position(

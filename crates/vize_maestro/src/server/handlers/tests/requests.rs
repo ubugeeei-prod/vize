@@ -3,7 +3,7 @@ use tower_lsp::{
     LspService,
     lsp_types::{
         CodeLensParams, DocumentLinkParams, FileRename, FoldingRangeParams, HoverParams,
-        InlayHintParams, SemanticTokensRangeParams, WorkspaceSymbolParams,
+        InlayHintParams, SemanticTokensRangeParams, SignatureHelpParams, WorkspaceSymbolParams,
     },
 };
 
@@ -77,6 +77,14 @@ fn completion_params(uri: &Url) -> CompletionParams {
         text_document_position: text_pos(uri),
         work_done_progress_params: WorkDoneProgressParams::default(),
         partial_result_params: PartialResultParams::default(),
+        context: None,
+    }
+}
+
+fn signature_help_params(uri: &Url) -> SignatureHelpParams {
+    SignatureHelpParams {
+        text_document_position_params: text_pos(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
         context: None,
     }
 }
@@ -222,6 +230,85 @@ enabled_missing_doc_request_returns_none!(
     &[("completion", true)],
     |server, uri| server.completion(completion_params(&uri))
 );
+disabled_open_doc_request_returns_none!(
+    signature_help_disabled_returns_none,
+    &[("signatureHelp", false)],
+    |server, uri| server.signature_help(signature_help_params(&uri))
+);
+enabled_missing_doc_request_returns_none!(
+    signature_help_missing_document_returns_none,
+    &[("signatureHelp", true)],
+    |server, uri| server.signature_help(signature_help_params(&uri))
+);
+
+#[cfg(feature = "native")]
+#[test]
+fn signature_help_handler_routes_an_authored_vue_position() {
+    crate::runtime::block_on(async {
+        let Some(corsa_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(
+            root.path().join("tsconfig.json"),
+            r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true},"include":["**/*"]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.path().join("vize.config.json"),
+            serde_json::json!({"typeChecker":{"corsaPath":corsa_path}}).to_string(),
+        )
+        .unwrap();
+
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server.state.load_workspace_config(root.path());
+        server.state.set_workspace_root(root.path().to_path_buf());
+
+        let uri = Url::from_file_path(root.path().join("Handler.vue")).unwrap();
+        let source = "<script setup lang=\"ts\">\nfunction format(value: string, precision: number): string { return value.repeat(precision) }\nformat('handler', )\n</script>\n";
+        std::fs::write(uri.to_file_path().unwrap(), source).unwrap();
+        open_vue(server, &uri, source);
+
+        let marker = "format('handler', ";
+        let offset = source.find(marker).unwrap() + marker.len();
+        let (line, character) = crate::ide::offset_to_position(source, offset);
+        let mut params = signature_help_params(&uri);
+        params.text_document_position_params.position = Position::new(line, character);
+
+        let help = server
+            .signature_help(params)
+            .await
+            .unwrap()
+            .expect("handler should return signature help");
+        assert_eq!(help.active_parameter, Some(1));
+        assert!(help.signatures[0].label.contains("precision: number"));
+
+        if let Some(bridge) = server.state.get_corsa_bridge().await {
+            bridge.shutdown().await.unwrap();
+        }
+    });
+}
+
+#[cfg(feature = "native")]
+fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return None;
+    }
+    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(std::path::Path::parent)?;
+    [
+        workspace_root.parent()?.join("corsa-bind/.cache/tsgo"),
+        workspace_root
+            .parent()?
+            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
+        workspace_root.join("node_modules/.bin/tsgo"),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
+    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+}
 disabled_open_doc_request_returns_none!(
     definition_disabled_returns_none,
     &[("definition", false)],

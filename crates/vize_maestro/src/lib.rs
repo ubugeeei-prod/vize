@@ -73,8 +73,8 @@ pub mod legacy;
 
 pub use ide::{
     CodeActionService, CodeLensService, CompletionService, DefinitionService, DiagnosticService,
-    HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService, TypeService,
-    WorkspaceSymbolsService,
+    HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService,
+    SignatureHelpService, TypeService, WorkspaceSymbolsService,
 };
 pub use server::MaestroServer;
 pub use virtual_code::{VirtualCodeGenerator, VirtualDocuments};

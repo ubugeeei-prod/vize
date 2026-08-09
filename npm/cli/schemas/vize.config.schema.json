@@ -548,6 +548,10 @@
           "description": "Enable completions",
           "type": "boolean"
         },
+        "signatureHelp": {
+          "description": "Enable TypeScript signature help",
+          "type": "boolean"
+        },
         "hover": {
           "description": "Enable hover information",
           "type": "boolean"

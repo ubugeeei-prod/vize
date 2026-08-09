@@ -21,8 +21,8 @@ use tower_lsp::{
         LinkedEditingRangeParams, LinkedEditingRanges, Location, PrepareRenameResponse,
         ReferenceParams, RenameFilesParams, RenameParams, SelectionRange, SelectionRangeParams,
         SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-        SemanticTokensResult, ServerInfo, SymbolInformation, TextDocumentPositionParams, TextEdit,
-        WorkspaceEdit, WorkspaceSymbolParams,
+        SemanticTokensResult, ServerInfo, SignatureHelp, SignatureHelpParams, SymbolInformation,
+        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -33,6 +33,8 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::{MaestroServer, server_capabilities};
+#[cfg(feature = "native")]
+use crate::ide::SignatureHelpService;
 use crate::ide::{
     CompletionService, DefinitionService, DocumentHighlightService, DocumentLinkService,
     HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService,
@@ -236,6 +238,57 @@ impl LanguageServer for MaestroServer {
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
         Ok(item)
+    }
+
+    async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
+        if !self.state.lsp_features().signature_help {
+            return Ok(None);
+        }
+
+        #[cfg(feature = "native")]
+        {
+            let context = params
+                .context
+                .and_then(|context| serde_json::to_value(context).ok());
+            let uri = &params.text_document_position_params.text_document.uri;
+            let position = params.text_document_position_params.position;
+
+            let Some(content) = self.state.documents.text(uri) else {
+                return Ok(None);
+            };
+            let Some(offset) = position_to_offset(&content, position.line, position.character)
+            else {
+                return Ok(None);
+            };
+
+            let ctx = IdeContext::with_content(&self.state, uri, offset, content);
+            let corsa_bridge = self.state.get_corsa_bridge().await;
+
+            if crate::utils::is_jsx_path(uri.path()) {
+                if self.state.jsx_typecheck_enabled() {
+                    return Ok(crate::ide::JsxService::signature_help_with_context(
+                        &ctx,
+                        corsa_bridge,
+                        context,
+                    )
+                    .await);
+                }
+                return Ok(None);
+            }
+
+            return Ok(SignatureHelpService::signature_help_with_corsa_context(
+                &ctx,
+                corsa_bridge,
+                context,
+            )
+            .await);
+        }
+
+        #[cfg(not(feature = "native"))]
+        {
+            let _ = params;
+            Ok(None)
+        }
     }
 
     async fn goto_definition(

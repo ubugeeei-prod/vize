@@ -115,7 +115,8 @@ pub use corsa_bridge::{
     CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDocument,
     CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
     LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
-    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition, LspRange,
+    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspParameterInformation,
+    LspParameterLabel, LspPosition, LspRange, LspSignatureHelp, LspSignatureInformation,
     VIRTUAL_URI_SCHEME,
 };
 

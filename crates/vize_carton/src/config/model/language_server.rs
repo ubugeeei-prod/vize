@@ -22,6 +22,8 @@ pub struct LanguageServerConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub completion: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub signature_help: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub hover: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub definition: Option<bool>,

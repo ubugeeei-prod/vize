@@ -138,6 +138,7 @@ class LspConfig {
   ecosystem: Boolean? = null
   legacyVue2: Boolean? = null
   completion: Boolean? = null
+  signatureHelp: Boolean? = null
   hover: Boolean? = null
   definition: Boolean? = null
   references: Boolean? = null

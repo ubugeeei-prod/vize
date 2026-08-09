@@ -178,12 +178,24 @@ impl CorsaBridge {
         line: u32,
         character: u32,
     ) -> Result<Option<LspSignatureHelp>, CorsaBridgeError> {
+        self.signature_help_with_context(uri, line, character, None)
+            .await
+    }
+
+    /// Get signature help while preserving the client's LSP request context.
+    pub async fn signature_help_with_context(
+        &self,
+        uri: &str,
+        line: u32,
+        character: u32,
+        context: Option<Value>,
+    ) -> Result<Option<LspSignatureHelp>, CorsaBridgeError> {
         let _timer = self.profiler.timer("corsa_signature_help");
         let uri = uri.to_owned();
         let result = self
             .with_client(move |client| {
                 client
-                    .signature_help_raw(uri.as_str(), line, character)
+                    .signature_help_raw(uri.as_str(), line, character, context)
                     .map_err(CorsaBridgeError::CommunicationError)
             })
             .await?;

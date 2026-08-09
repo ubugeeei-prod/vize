@@ -9,6 +9,7 @@ fn all_features() -> LspFeatureConfig {
         options_api: true,
         legacy_vue2: true,
         completion: true,
+        signature_help: true,
         hover: true,
         definition: true,
         references: true,
@@ -73,6 +74,11 @@ fn individual_feature_flags_gate_matching_providers() {
             "completion",
             |features| features.completion = false,
             |capabilities| capabilities.completion_provider.is_some(),
+        ),
+        (
+            "signature_help",
+            |features| features.signature_help = false,
+            |capabilities| capabilities.signature_help_provider.is_some(),
         ),
         (
             "hover",
@@ -242,7 +248,7 @@ fn selection_ranges_share_the_document_structure_flag_with_folding_ranges() {
 fn default_features_advertise_non_opinionated_providers() {
     let capabilities = server_capabilities(LspFeatureConfig::default());
 
-    assert!(capabilities.signature_help_provider.is_none());
+    assert!(capabilities.signature_help_provider.is_some());
     assert!(matches!(
         capabilities.selection_range_provider,
         Some(SelectionRangeProviderCapability::Simple(true))
@@ -275,7 +281,17 @@ fn on_type_formatting_advertises_the_vue_language_server_trigger_set() {
 fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     let capabilities = server_capabilities(all_features());
 
-    assert!(capabilities.signature_help_provider.is_none());
+    let signature_help = capabilities
+        .signature_help_provider
+        .expect("signature help should be advertised");
+    assert_eq!(
+        signature_help.trigger_characters,
+        Some(vec!["(".to_string(), ",".to_string(), "<".to_string()])
+    );
+    assert_eq!(
+        signature_help.retrigger_characters,
+        Some(vec![")".to_string()])
+    );
     assert!(matches!(
         capabilities.selection_range_provider,
         Some(SelectionRangeProviderCapability::Simple(true))
