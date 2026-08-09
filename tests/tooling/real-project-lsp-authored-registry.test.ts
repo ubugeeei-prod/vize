@@ -47,5 +47,19 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
       [...oracle.componentBoundary.completionItems.keys()].map((index) => index + rankBase),
     );
     assert.ok(oracle.componentBoundary.dependencyEdit.completionLabel.length > 0);
+
+    const lifecycle = oracle.fileLifecycle;
+    assert.ok(lifecycle, `${project.id} must declare an authored file lifecycle oracle`);
+    assert.notEqual(lifecycle.copiedFile, lifecycle.renamedFile);
+    assert.notEqual(lifecycle.originalImportSpecifier, lifecycle.copiedImportSpecifier);
+    assert.notEqual(lifecycle.copiedImportSpecifier, lifecycle.renamedImportSpecifier);
+    assert.match(lifecycle.markerSymbol, /^__vize[A-Za-z0-9_]+__$/);
+    assert.ok(lifecycle.markerInsertionAnchor.length > 0);
+
+    const fixtureDir = path.resolve(root, project.fixturePath);
+    if (fs.existsSync(fixtureDir)) {
+      assert.equal(fs.existsSync(path.resolve(fixtureDir, lifecycle.copiedFile)), false);
+      assert.equal(fs.existsSync(path.resolve(fixtureDir, lifecycle.renamedFile)), false);
+    }
   }
 });

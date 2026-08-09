@@ -110,7 +110,7 @@ pub(crate) fn map_corsa_location(ctx: &IdeContext<'_>, location: &LspLocation) -
         });
     }
 
-    let uri = Url::parse(&location.uri).ok()?;
+    let uri = accessible_external_uri(ctx, &location.uri)?;
     Some(Location {
         uri,
         range: Range {
@@ -124,6 +124,20 @@ pub(crate) fn map_corsa_location(ctx: &IdeContext<'_>, location: &LspLocation) -
             },
         },
     })
+}
+
+/// Reject stale file locations returned from an older checker snapshot.
+///
+/// Open editor buffers are valid even before their first save. Closed file
+/// targets, however, must still exist on disk before they are exposed to the
+/// client; otherwise delete/rename races leave a convincing but dead jump.
+fn accessible_external_uri(ctx: &IdeContext<'_>, raw_uri: &str) -> Option<Url> {
+    let uri = Url::parse(raw_uri).ok()?;
+    if uri.scheme() != "file" || ctx.state.documents.contains(&uri) {
+        return Some(uri);
+    }
+
+    uri.to_file_path().ok()?.is_file().then_some(uri)
 }
 
 /// Translate a Corsa prepare-rename payload into SFC coordinates.

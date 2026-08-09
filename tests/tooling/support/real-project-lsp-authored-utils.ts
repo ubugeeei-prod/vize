@@ -118,6 +118,30 @@ export function assertRangeInDocument(range: LspRange, source: string, label: st
   }
 }
 
+export function assertMissingModuleDiagnostic(
+  published: PublishDiagnosticsParams,
+  source: string,
+  specifier: string,
+): void {
+  const matching = published.diagnostics.filter(
+    (diagnostic) =>
+      String(diagnostic.code).replace(/^TS/, "") === "2307" &&
+      diagnostic.message?.includes(specifier),
+  );
+  assert.equal(matching.length, 1, `deleted dependency must produce one TS2307: ${specifier}`);
+  const offset = uniqueAnchorOffset(source, specifier, "deleted dependency import");
+  assert.deepEqual(matching[0], {
+    code: 2307,
+    message: `Cannot find module '${specifier}' or its corresponding type declarations.`,
+    range: {
+      start: offsetToPosition(source, offset - 1),
+      end: offsetToPosition(source, offset + specifier.length + 1),
+    },
+    severity: 1,
+    source: "vize/types",
+  });
+}
+
 export function assertRankedLabels(
   actual: string[],
   expected: Array<{ label: string; rank: number }>,

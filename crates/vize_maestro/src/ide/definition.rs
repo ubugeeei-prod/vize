@@ -291,6 +291,40 @@ import MyButton from './MyButton.vue'
     }
 
     #[test]
+    fn component_definition_rejects_deleted_target_but_keeps_open_unsaved_target() {
+        let dir = tempfile::tempdir().unwrap();
+        let component_path = dir.path().join("Deleted.vue");
+        let source_path = dir.path().join("Parent.vue");
+        let source = r#"<script setup lang="ts">
+import Deleted from './Deleted.vue'
+</script>
+<template><Deleted /></template>
+"#;
+        let uri = Url::from_file_path(source_path).unwrap();
+        let component_uri = Url::from_file_path(component_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+        let offset = source.find("Deleted />").unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+        assert!(DefinitionService::definition(&ctx).is_none());
+
+        state.documents.open(
+            component_uri.clone(),
+            "<template />\n".to_string(),
+            1,
+            "vue".to_string(),
+        );
+        assert_eq!(
+            scalar_location(DefinitionService::definition(&ctx).unwrap()).uri,
+            component_uri
+        );
+    }
+
+    #[test]
     fn test_definition_resolves_define_art_source() {
         let dir = tempfile::tempdir().unwrap();
         let component_path = dir.path().join("Button.vue");

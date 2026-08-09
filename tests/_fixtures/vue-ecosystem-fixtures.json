@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
     "minimumProjectCount": 1,
@@ -412,6 +412,15 @@
             "replacement": "\tinnerMargin?: number;\n\tvizeOracleProbe?: boolean;\n",
             "completionLabel": "vize-oracle-probe"
           }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/frontend/src/components/__VizeOracleMkTooltip.vue",
+          "renamedFile": "packages/frontend/src/components/__VizeOracleRenamedTooltip.vue",
+          "originalImportSpecifier": "./MkTooltip.vue",
+          "copiedImportSpecifier": "./__VizeOracleMkTooltip.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedTooltip.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeFileLifecycleMarker__"
         }
       },
       "typecheckPerformance": {

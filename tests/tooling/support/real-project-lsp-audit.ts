@@ -163,11 +163,14 @@ export async function exerciseLspLifecycle(
     await session.initialize(workspaceDir, {
       completion: true,
       definition: true,
+      documentSymbols: true,
       editor: true,
+      fileRename: true,
       hover: true,
       references: true,
       rename: true,
       typecheck: true,
+      workspaceSymbols: true,
     });
 
     let actualFileDiagnostics: DiagnosticEvidence | null = null;

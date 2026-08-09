@@ -529,65 +529,50 @@ pub(crate) fn find_component_definition(
     for name in &names_to_try {
         if let Some(import_path) = helpers::find_import_path(ctx, name)
             && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
-            && let Ok(file_uri) = tower_lsp::lsp_types::Url::from_file_path(&resolved)
+            && let Some(location) = component_file_location(ctx, &resolved)
         {
-            return Some(GotoDefinitionResponse::Scalar(Location {
-                uri: file_uri,
-                range: Range {
-                    start: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                },
-            }));
+            return Some(GotoDefinitionResponse::Scalar(location));
         }
 
         if let Some(binding_type) = summary.get_binding_type(name)
             && binding_type == BindingType::ExternalModule
             && let Some(import_path) = helpers::find_import_path(ctx, name)
             && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
-            && let Ok(file_uri) = tower_lsp::lsp_types::Url::from_file_path(&resolved)
+            && let Some(location) = component_file_location(ctx, &resolved)
         {
-            return Some(GotoDefinitionResponse::Scalar(Location {
-                uri: file_uri,
-                range: Range {
-                    start: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                },
-            }));
+            return Some(GotoDefinitionResponse::Scalar(location));
         }
     }
 
     if let Some(import_path) = art_component_path(ctx, tag_name)
         && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
-        && let Ok(file_uri) = tower_lsp::lsp_types::Url::from_file_path(&resolved)
+        && let Some(location) = component_file_location(ctx, &resolved)
     {
-        return Some(GotoDefinitionResponse::Scalar(Location {
-            uri: file_uri,
-            range: Range {
-                start: Position {
-                    line: 0,
-                    character: 0,
-                },
-                end: Position {
-                    line: 0,
-                    character: 0,
-                },
-            },
-        }));
+        return Some(GotoDefinitionResponse::Scalar(location));
     }
 
     None
+}
+
+fn component_file_location(ctx: &IdeContext<'_>, path: &std::path::Path) -> Option<Location> {
+    let uri = tower_lsp::lsp_types::Url::from_file_path(path).ok()?;
+    if !path.is_file() && !ctx.state.documents.contains(&uri) {
+        return None;
+    }
+
+    Some(Location {
+        uri,
+        range: Range {
+            start: Position {
+                line: 0,
+                character: 0,
+            },
+            end: Position {
+                line: 0,
+                character: 0,
+            },
+        },
+    })
 }
 
 fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {

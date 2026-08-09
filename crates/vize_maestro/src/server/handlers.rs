@@ -559,7 +559,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_delete_files(&self, params: DeleteFilesParams) {
-        super::workspace_files::did_delete_files(&self.state, &params);
+        super::workspace_files::did_delete_files(self, &params).await;
     }
 
     async fn did_rename_files(&self, params: RenameFilesParams) {

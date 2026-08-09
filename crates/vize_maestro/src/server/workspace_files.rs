@@ -1,5 +1,10 @@
 //! Workspace file-event handling used by LSP diagnostics and rename support.
 
+#[cfg(feature = "native")]
+use std::path::PathBuf;
+
+#[cfg(feature = "native")]
+use tower_lsp::lsp_types::Url;
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
     MessageType, RenameFilesParams, WorkspaceEdit,
@@ -125,12 +130,47 @@ pub(super) fn did_create_files(state: &ServerState, params: &CreateFilesParams) 
         for file in &params.files {
             state.track_workspace_vue_file(file.uri.as_str());
         }
+        state.invalidate_batch_cache();
     }
     #[cfg(not(feature = "native"))]
     let _ = (state, params);
 }
 
-pub(super) fn did_delete_files(state: &ServerState, params: &DeleteFilesParams) {
+pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFilesParams) {
+    #[cfg(feature = "native")]
+    {
+        let mut dependents = params
+            .files
+            .iter()
+            .filter_map(|file| Url::parse(&file.uri).ok())
+            .flat_map(|uri| super::importers::open_vue_dependents(&server.state, &uri))
+            .collect::<Vec<_>>();
+        dependents.sort();
+        dependents.dedup();
+        let dependents = dependents
+            .into_iter()
+            .filter_map(|uri| {
+                server
+                    .state
+                    .documents
+                    .version(&uri)
+                    .map(|version| (uri, version))
+            })
+            .collect::<Vec<_>>();
+        record_deleted_files(&server.state, params);
+        let deleted_paths = file_paths(params.files.iter().map(|file| file.uri.as_str()));
+        forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        for (dependent, version) in dependents {
+            server
+                .publish_diagnostics_if_version(&dependent, version)
+                .await;
+        }
+    }
+    #[cfg(not(feature = "native"))]
+    let _ = (server, params);
+}
+
+fn record_deleted_files(state: &ServerState, params: &DeleteFilesParams) {
     #[cfg(feature = "native")]
     {
         state.invalidate_global_component_references(
@@ -139,6 +179,7 @@ pub(super) fn did_delete_files(state: &ServerState, params: &DeleteFilesParams) 
         for file in &params.files {
             state.forget_workspace_vue_file(file.uri.as_str());
         }
+        state.invalidate_batch_cache();
     }
     #[cfg(not(feature = "native"))]
     let _ = (state, params);
@@ -169,6 +210,9 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
                 .forget_workspace_vue_file(file.old_uri.as_str());
             server.state.track_workspace_vue_file(file.new_uri.as_str());
         }
+        server.state.invalidate_batch_cache();
+        let renamed_paths = file_paths(params.files.iter().map(|file| file.old_uri.as_str()));
+        forget_corsa_vue_files(&server.state, &renamed_paths).await;
     }
     if !server.state.lsp_features().file_rename {
         return;
@@ -184,12 +228,33 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
     }
 }
 
+#[cfg(feature = "native")]
+#[cfg(feature = "native")]
+fn file_paths<'a>(uris: impl Iterator<Item = &'a str>) -> Vec<PathBuf> {
+    uris.filter_map(|uri| Url::parse(uri).ok()?.to_file_path().ok())
+        .collect()
+}
+
+#[cfg(feature = "native")]
+async fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {
+    if !state.has_corsa_bridge() {
+        return;
+    }
+    let Some(bridge) = state.get_corsa_bridge().await else {
+        return;
+    };
+    if let Err(error) = bridge.forget_vue_virtual_documents(deleted).await {
+        tracing::warn!("failed to forget deleted Corsa Vue documents: {error}");
+        state.retire_corsa_bridge(&bridge);
+    }
+}
+
 #[cfg(all(test, feature = "native"))]
 mod tests {
     use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
 
     use super::{
-        ServerState, did_create_files, did_delete_files, global_component_watcher_registration,
+        ServerState, did_create_files, global_component_watcher_registration, record_deleted_files,
         record_watcher_support,
     };
 
@@ -249,7 +314,7 @@ mod tests {
             "files": [{ "uri": vue_uri.as_str() }]
         }))
         .unwrap();
-        did_delete_files(&state, &deleted);
+        record_deleted_files(&state, &deleted);
 
         assert!(state.workspace_vue_file_uris().is_empty());
     }
