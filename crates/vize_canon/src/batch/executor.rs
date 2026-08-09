@@ -191,6 +191,7 @@ impl CorsaExecutor {
             "canon.dts.rewrite_outputs",
             rewrite_declaration_outputs(options.out_dir.as_path())
         )?;
+        project.finalize_declaration_outputs(options.out_dir.as_path(), &config_path)?;
         declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
 
         Ok(DeclarationEmitResult {

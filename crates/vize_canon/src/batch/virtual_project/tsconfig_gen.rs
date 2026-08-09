@@ -204,12 +204,29 @@ impl VirtualProject {
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
             // Honor a configured `rootDir` (see [`path_rebase`]) and fall back
             // to inference when nothing is configured.
-            let root_dir = path_rebase::root_dir_into_mirror(
+            let desired_root_dir = path_rebase::root_dir_into_mirror(
                 &self.project_root,
                 &self.virtual_root,
                 original_root_dir.as_deref(),
             )
             .unwrap_or_else(|| self.common_virtual_source_dir());
+            // A workspace-package source is part of the declaration program so
+            // its public type can flow into the caller's output, but it is not
+            // one of the caller-selected declaration roots. TypeScript still
+            // applies TS6059 to imported files, so temporarily widen rootDir
+            // when such an inferred source sits outside the configured root.
+            // The output finalizer restores the configured layout and removes
+            // declarations for those inferred dependencies after emit.
+            let has_inferred_source_outside_root = self.virtual_files.values().any(|file| {
+                let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+                !self.is_declaration_root(&original)
+                    && !file.virtual_path.starts_with(&desired_root_dir)
+            });
+            let root_dir = if has_inferred_source_outside_root {
+                self.common_virtual_source_dir()
+            } else {
+                desired_root_dir
+            };
             compiler_options.insert(
                 "rootDir".into(),
                 Value::String(root_dir.to_string_lossy().into_owned()),
@@ -240,6 +257,16 @@ impl VirtualProject {
         config.insert("exclude".into(), Value::Array(Vec::new()));
 
         Ok(Value::Object(config))
+    }
+
+    pub(super) fn configured_declaration_root_dir(&self) -> CorsaResult<Option<PathBuf>> {
+        let original_tsconfig = self.resolved_tsconfig_path();
+        let flattened = self.load_compiler_options_flattened(original_tsconfig.as_deref())?;
+        Ok(path_rebase::root_dir_into_mirror(
+            &self.project_root,
+            &self.virtual_root,
+            flattened.options.get("rootDir").and_then(Value::as_str),
+        ))
     }
 
     pub(super) fn needs_vue_jsx_compiler_options(&self) -> bool {

@@ -122,6 +122,11 @@ pub struct VirtualProject {
     /// Authored program files diagnosed in place instead of materialized.
     diagnostic_paths: FxHashSet<PathBuf>,
 
+    /// Caller-selected source roots eligible for declaration output. Inferred
+    /// package dependencies participate in checking but must not be published
+    /// under the virtual external-mirror layout.
+    declaration_roots: Option<FxHashSet<PathBuf>>,
+
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
 

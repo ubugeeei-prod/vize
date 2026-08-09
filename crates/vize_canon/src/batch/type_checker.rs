@@ -229,6 +229,7 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        self.project.set_declaration_roots(paths);
         self.project.register_paths(paths)?;
         self.project.register_virtual_module_alias_targets()?;
         // Out-of-root workspace files reachable through imports register too,
@@ -243,6 +244,7 @@ impl BatchTypeChecker {
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let paths = collect_project_paths(self.project.project_root())?;
+        self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
         self.project.register_virtual_module_alias_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
