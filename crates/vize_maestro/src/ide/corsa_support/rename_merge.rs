@@ -33,7 +33,13 @@ pub(crate) fn merge_authored_rename(
     merged.map(order_edits_by_position)
 }
 
-fn order_edits_by_position(mut edit: WorkspaceEdit) -> WorkspaceEdit {
+/// Put every per-file edit list back in document order.
+///
+/// Rename answers are assembled block by block (or, on the canonical path,
+/// query by query), so the edit lists arrive in whatever order the pieces were
+/// stitched together. Clients and oracles read a workspace edit as a document,
+/// so the list has to be sorted before it leaves the rename provider.
+pub(crate) fn order_edits_by_position(mut edit: WorkspaceEdit) -> WorkspaceEdit {
     if let Some(changes) = edit.changes.as_mut() {
         for edits in changes.values_mut() {
             edits.sort_by(|a, b| compare_ranges(&a.range, &b.range));

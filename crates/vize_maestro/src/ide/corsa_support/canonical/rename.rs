@@ -7,6 +7,7 @@ use tower_lsp::lsp_types::{
 };
 use vize_canon::{LspLocation, LspPosition, LspRange};
 
+use super::super::rename_merge::order_edits_by_position;
 use super::{CanonicalVirtualDocument, is_canonical_vue_virtual_uri};
 use crate::ide::IdeContext;
 
@@ -86,7 +87,11 @@ pub(crate) fn merge_canonical_workspace_edits(
         document_changes,
         change_annotations: (!change_annotations.is_empty()).then_some(change_annotations),
     };
-    (!workspace_edit_is_empty(&edit)).then_some(edit)
+    // Each incoming edit answers one canonical query - the symbol under the
+    // cursor, then every position linked to it, then the style sweep - so
+    // concatenating them leaves a template-side rename reporting its own
+    // occurrence before the declaration that sits above it.
+    (!workspace_edit_is_empty(&edit)).then(|| order_edits_by_position(edit))
 }
 
 fn merge_document_change_sets(current: &mut Option<DocumentChanges>, incoming: DocumentChanges) {

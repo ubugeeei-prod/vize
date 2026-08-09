@@ -165,6 +165,49 @@ fn merges_plain_and_annotated_canonical_rename_edits_without_forking_containers(
     assert_eq!(edits.len(), 1);
     assert_eq!(
         edits[0].edits,
-        [OneOf::Right(annotated), OneOf::Left(plain)],
+        [OneOf::Left(plain), OneOf::Right(annotated)],
+        "the merged container must read in document order",
+    );
+}
+
+/// Regression for the create-vue editor range oracle: a template-side rename
+/// answers the occurrence under the cursor first and picks up the declaration
+/// above it from a linked position, so the concatenated edits used to reach the
+/// client as `[8:9-16, 4:6-13]`.
+#[test]
+fn orders_canonical_rename_edits_by_position() {
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let template_use = TextEdit {
+        range: Range::new(Position::new(8, 9), Position::new(8, 16)),
+        new_text: "twice".to_string(),
+    };
+    let declaration = TextEdit {
+        range: Range::new(Position::new(4, 6), Position::new(4, 13)),
+        new_text: "twice".to_string(),
+    };
+
+    let merged = merge_canonical_workspace_edits([
+        WorkspaceEdit {
+            changes: Some(std::collections::HashMap::from([(
+                uri.clone(),
+                vec![template_use.clone()],
+            )])),
+            document_changes: None,
+            change_annotations: None,
+        },
+        WorkspaceEdit {
+            changes: Some(std::collections::HashMap::from([(
+                uri.clone(),
+                vec![declaration.clone()],
+            )])),
+            document_changes: None,
+            change_annotations: None,
+        },
+    ])
+    .expect("merged edit");
+
+    assert_eq!(
+        merged.changes.expect("changes")[&uri],
+        [declaration, template_use],
     );
 }
