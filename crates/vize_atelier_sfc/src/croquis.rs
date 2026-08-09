@@ -8,10 +8,9 @@ mod drawer;
 mod source_offsets;
 
 use self::drawer::{analyze_scripts, apply_options_api_mode};
-use self::source_offsets::ScriptOffsetMapper;
 use crate::types::SfcDescriptor;
 use vize_atelier_core::RootNode;
-use vize_carton::{String, ToCompactString, cstr, profile};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile};
 use vize_croquis::{Croquis, Drawer, DrawerOptions};
 
 /// Options for descriptor-level Croquis analysis.
@@ -88,7 +87,6 @@ pub struct SfcCroquisAnalysis {
     pub croquis: Croquis,
     pub script_content: Option<String>,
     pub script_offset: u32,
-    script_offset_mapper: ScriptOffsetMapper,
 }
 
 /// Analyze an SFC descriptor into a Croquis summary.
@@ -197,13 +195,10 @@ fn analyze_sfc_descriptor_resolved_impl(
     }
 
     let (script_content, script_offset) = script_content_for_descriptor(descriptor, options);
-    let script_offset_mapper =
-        ScriptOffsetMapper::from_descriptor(descriptor, script_offset, options.merge_scripts);
     SfcCroquisAnalysis {
         croquis: drawer.finish(),
         script_content,
         script_offset,
-        script_offset_mapper,
     }
 }
 
@@ -277,6 +272,31 @@ pub fn merge_resolved_props_into_croquis(
             croquis.bindings.add(name.as_str(), *binding_type);
         }
     }
+
+    let Some(type_args) = croquis
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_deref())
+    else {
+        return;
+    };
+    let type_args = type_args
+        .strip_prefix('<')
+        .and_then(|value| value.strip_suffix('>'))
+        .unwrap_or(type_args);
+    let mut known: FxHashSet<_> = croquis
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.clone())
+        .collect();
+    for prop in ctx.resolve_type_props(type_args) {
+        if !known.insert(prop.name.clone()) {
+            continue;
+        }
+        croquis.bindings.add(prop.name.as_str(), BindingType::Props);
+        croquis.macros.add_prop(prop);
+    }
 }
 
 #[cfg(test)]
@@ -322,7 +342,7 @@ const count = ref(0)
             "count"
         );
         assert_eq!(
-            analysis.script_source_offset(count_span.0),
+            analysis.script_source_offset(&descriptor, count_span.0),
             source.find("count").unwrap() as u32,
         );
     }

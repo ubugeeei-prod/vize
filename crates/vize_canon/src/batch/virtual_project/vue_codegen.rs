@@ -201,7 +201,7 @@ pub(super) fn generate_vue_virtual_ts(
             analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
         }
     );
-    let split_script_setup_offsets = analysis.split_script_setup_offsets();
+    let split_script_setup_offsets = analysis.split_script_setup_offsets(descriptor);
     let mut croquis = analysis.croquis;
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
