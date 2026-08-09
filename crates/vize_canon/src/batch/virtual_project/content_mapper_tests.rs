@@ -1,6 +1,9 @@
 use std::path::Path;
 
-use crate::batch::generate_vue_content_mapper_transform;
+use crate::batch::{
+    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
+};
 
 #[test]
 fn emits_protocol_v1_spans_without_forbidden_overlaps() {
@@ -180,4 +183,49 @@ fn jsx_scripts_report_tsx_script_kind() {
             .text
             .starts_with("/// <reference types=\"vue/jsx\" />")
     );
+}
+
+#[test]
+fn options_api_transform_setting_controls_instance_bindings() {
+    let source = r#"<script lang="ts">
+export default {
+  data() { return { count: 1 } }
+}
+</script>
+<template>{{ count }}</template>
+"#;
+
+    let enabled = generate_vue_content_mapper_transform_with_options(
+        Path::new("Options.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_options_api(true),
+    )
+    .expect("enabled transform");
+    let disabled = generate_vue_content_mapper_transform_with_options(
+        Path::new("Options.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_options_api(false),
+    )
+    .expect("disabled transform");
+
+    assert!(
+        enabled
+            .text
+            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">")
+    );
+    assert!(!disabled.text.contains("__VizeOptionsBinding"));
+}
+
+#[test]
+fn default_transform_matches_vize_options_api_default() {
+    let source = r#"<script lang="ts">
+export default { data() { return { count: 1 } } }
+</script>
+<template>{{ count }}</template>
+"#;
+
+    let result = generate_vue_content_mapper_transform(Path::new("DefaultOptions.vue"), source)
+        .expect("transform");
+
+    assert!(result.text.contains("__VizeOptionsBinding"));
 }

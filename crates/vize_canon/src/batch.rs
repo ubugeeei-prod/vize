@@ -38,9 +38,10 @@ pub use type_checker::{
     DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
-    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform, OriginalPosition,
-    VirtualFile, VirtualProject, VueDocumentVirtualTs, VueDocumentVirtualTsOptions,
-    generate_vue_content_mapper_transform, generate_vue_document_virtual_ts,
+    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
+    ContentMapperTransformOptions, OriginalPosition, VirtualFile, VirtualProject,
+    VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};

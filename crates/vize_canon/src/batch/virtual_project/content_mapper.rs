@@ -34,6 +34,36 @@ pub struct ContentMapperTransform {
     pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
 
+/// Vize-specific settings supplied through a TypeScript content-mapper entry's
+/// `options` object.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct ContentMapperTransformOptions {
+    /// Resolve Vue Options API instance bindings in templates.
+    options_api: bool,
+}
+
+impl Default for ContentMapperTransformOptions {
+    fn default() -> Self {
+        Self { options_api: true }
+    }
+}
+
+impl ContentMapperTransformOptions {
+    /// Enable or disable Vue Options API instance bindings.
+    #[must_use]
+    pub const fn with_options_api(mut self, enabled: bool) -> Self {
+        self.options_api = enabled;
+        self
+    }
+
+    /// Whether Vue Options API instance bindings are enabled.
+    #[must_use]
+    pub const fn options_api(self) -> bool {
+        self.options_api
+    }
+}
+
 /// A protocol v1 span tuple:
 /// `[generatedStart, generatedLength, originalStart, originalLength, kind, purpose]`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -56,6 +86,19 @@ pub struct ContentMapperDiagnostic {
 pub fn generate_vue_content_mapper_transform(
     path: &Path,
     content: &str,
+) -> CorsaResult<ContentMapperTransform> {
+    generate_vue_content_mapper_transform_with_options(
+        path,
+        content,
+        ContentMapperTransformOptions::default(),
+    )
+}
+
+/// Generate a content-mapper transform with Vize-specific mapper settings.
+pub fn generate_vue_content_mapper_transform_with_options(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
 ) -> CorsaResult<ContentMapperTransform> {
     let descriptor = match parse_sfc(
         content,
@@ -89,7 +132,7 @@ pub fn generate_vue_content_mapper_transform(
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
             preserve_unused_diagnostics: false,
-            options_api: false,
+            options_api: transform_options.options_api(),
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),

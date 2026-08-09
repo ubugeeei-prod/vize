@@ -123,11 +123,12 @@ pub use corsa_bridge::{
 #[cfg(feature = "native")]
 pub use batch::{
     BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic, ContentMapperSpan,
-    ContentMapperTransform, CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions,
-    DeclarationEmitResult, DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter,
-    ImportSourceMap, IncrementalCheckMetrics, PackageManager, SfcBlockType,
-    TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
-    VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
+    ContentMapperTransform, ContentMapperTransformOptions, CorsaError, CorsaExecutor,
+    CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
+    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
+    PackageManager, SfcBlockType, TypeCheckResult as BatchTypeCheckResult,
+    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
     sfc_block_fallback_offset,
 };
 
