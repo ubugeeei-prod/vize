@@ -1,4 +1,4 @@
-use vize_canon::LspRange;
+use vize_canon::{LspPosition, LspRange};
 use vize_carton::{String, cstr};
 
 use super::{CanonicalVirtualDocument, location_matches_uri};
@@ -80,6 +80,19 @@ fn virtual_code<'a>(
                 dependency.virtual_result.code.as_str(),
             )
         })
+}
+
+pub(crate) fn tower_range(range: tower_lsp::lsp_types::Range) -> LspRange {
+    LspRange {
+        start: LspPosition {
+            line: range.start.line,
+            character: range.start.character,
+        },
+        end: LspPosition {
+            line: range.end.line,
+            character: range.end.character,
+        },
+    }
 }
 
 #[cfg(test)]

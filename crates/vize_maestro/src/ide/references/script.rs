@@ -93,7 +93,7 @@ impl ReferencesService {
     }
 
     /// Find references to a symbol in style blocks (v-bind).
-    pub(super) fn find_references_in_style(ctx: &IdeContext, word: &str) -> Vec<Location> {
+    pub(in crate::ide) fn find_references_in_style(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions::default();

@@ -9,6 +9,8 @@ mod canonical;
 #[cfg(all(test, feature = "native"))]
 mod canonical_dependency_tests;
 #[cfg(all(test, feature = "native"))]
+mod canonical_rename_tests;
+#[cfg(all(test, feature = "native"))]
 mod canonical_tests;
 #[cfg(feature = "native")]
 mod html_attribute;
@@ -26,8 +28,9 @@ mod workspace_edit;
 #[cfg(feature = "native")]
 pub(crate) use canonical::{
     CanonicalSemanticPosition, CanonicalVirtualDocument, canonical_source_offset_to_position,
-    linked_semantic_position, map_canonical_corsa_locations, map_canonical_lsp_range,
-    open_canonical_virtual_document, open_canonical_virtual_project_document,
+    linked_semantic_position, map_canonical_corsa_locations, map_canonical_corsa_workspace_edit,
+    map_canonical_lsp_range, map_canonical_prepare_rename, merge_canonical_workspace_edits,
+    open_canonical_virtual_document, open_canonical_virtual_project_document, tower_range,
 };
 #[cfg(feature = "native")]
 pub(crate) use html_attribute::{

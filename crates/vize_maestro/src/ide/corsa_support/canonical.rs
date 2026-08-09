@@ -7,11 +7,16 @@ use crate::ide::diagnostics::VirtualTsResult;
 
 mod open;
 mod project;
+pub(super) mod rename;
 mod semantic_links;
 
 pub(crate) use open::open_canonical_virtual_document;
 pub(crate) use project::open_canonical_virtual_project_document;
-pub(crate) use semantic_links::{CanonicalSemanticPosition, linked_semantic_position};
+pub(crate) use rename::{
+    map_canonical_corsa_workspace_edit, map_canonical_prepare_rename,
+    merge_canonical_workspace_edits,
+};
+pub(crate) use semantic_links::{CanonicalSemanticPosition, linked_semantic_position, tower_range};
 
 pub(crate) struct CanonicalVirtualDocument {
     pub(crate) request_uri: String,
