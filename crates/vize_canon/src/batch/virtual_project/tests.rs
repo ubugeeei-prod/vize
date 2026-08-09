@@ -1,4 +1,3 @@
-use super::build::source_type_for_path;
 use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::{batch::Diagnostic, batch::SfcBlockType, virtual_ts::VirtualTsOptions};
@@ -12,6 +11,7 @@ mod macro_scope;
 mod module_augmentations;
 mod ref_arity;
 mod setup_props;
+mod source_types;
 mod tsconfig_extends;
 mod tsconfig_native_options;
 mod windows_paths;
@@ -1022,35 +1022,6 @@ fn test_parse_jsonc_value_handles_comments_and_trailing_commas() {
 fn test_strip_json_comments_preserves_strings() {
     let stripped = strip_json_comments(r#"{ "url": "https://example.com" }"#);
     insta::assert_snapshot!(stripped.as_str());
-}
-
-#[test]
-fn test_source_type_for_path() {
-    assert_eq!(
-        source_type_for_path(Path::new("foo.ts")),
-        Some(oxc_span::SourceType::ts())
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.tsx")),
-        Some(oxc_span::SourceType::tsx())
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.js")),
-        Some(oxc_span::SourceType::unambiguous())
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.jsx")),
-        Some(oxc_span::SourceType::unambiguous().with_jsx(true))
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.mjs")),
-        Some(oxc_span::SourceType::mjs())
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.cjs")),
-        Some(oxc_span::SourceType::cjs())
-    );
-    assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
 
 #[test]
