@@ -45,7 +45,7 @@ fn is_source_path(path: &Path) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension,
-                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx"
+                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
             )
         })
 }

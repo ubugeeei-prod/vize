@@ -136,6 +136,81 @@ fn referenced_projects_emit_declarations_to_each_child_output() {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn empty_allowjs_sibling_does_not_enable_javascript_in_a_deny_program() {
+    let Some(corsa_path) = required_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("referenced-empty-allowjs-sibling");
+    let _ = std::fs::remove_dir_all(&project_root);
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "files": [],
+  "references": [
+    { "path": "./packages/deny" },
+    { "path": "./packages/allow" }
+  ]
+}"#,
+    );
+    for (package, allow_js) in [("deny", false), ("allow", true)] {
+        write(
+            &project_root,
+            &format!("packages/{package}/tsconfig.json"),
+            &format!(
+                r#"{{
+  "compilerOptions": {{
+    "allowJs": {allow_js},
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  }},
+  "include": ["src/**/*"]
+}}"#
+            ),
+        );
+    }
+    write(
+        &project_root,
+        "packages/deny/src/entry.ts",
+        "import './invalid.js'\nexport const clean = true\n",
+    );
+    write(
+        &project_root,
+        "packages/deny/src/invalid.js",
+        "/** @type {string} */\nconst invalid = 42\nvoid invalid\n",
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--no-config",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+    assert!(
+        json["files"].as_array().is_some_and(|files| files
+            .iter()
+            .all(|file| file["file"] != "packages/deny/src/invalid.js")),
+        "{stdout}\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(project_root);
+}
+
 fn write_child_config(project_root: &Path, package: &str, extra_option: &str) {
     write(
         project_root,

@@ -7,7 +7,7 @@ use super::{
     ignores::{CheckIgnoreSet, retain_unignored},
 };
 use crate::commands::check::{
-    imports::collect_transitive_local_imports,
+    imports::{ImportFileOptions, collect_transitive_local_imports},
     imports_aliases::PathAliasResolver,
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
@@ -21,7 +21,7 @@ pub(super) struct ExplicitAmbientImportContext<'a> {
     cwd: &'a Path,
     tsconfig_path: &'a Path,
     explicit_input_root: &'a Path,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
 }
 
 impl<'a> ExplicitAmbientImportContext<'a> {
@@ -30,14 +30,14 @@ impl<'a> ExplicitAmbientImportContext<'a> {
         cwd: &'a Path,
         tsconfig_path: &'a Path,
         explicit_input_root: &'a Path,
-        include_jsx: bool,
+        import_options: ImportFileOptions,
     ) -> Self {
         Self {
             project_root,
             cwd,
             tsconfig_path,
             explicit_input_root,
-            include_jsx,
+            import_options,
         }
     }
 }
@@ -46,7 +46,7 @@ pub(super) fn collect_default_run_files(
     project_root: &Path,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     check_ignore_set: Option<&CheckIgnoreSet>,
@@ -54,7 +54,7 @@ pub(super) fn collect_default_run_files(
     let mut files = collect_default_check_files(
         project_root,
         tsconfig_path,
-        include_jsx,
+        import_options.include_jsx,
         tsconfig_input_cache,
     );
     retain_unignored(&mut files, check_ignore_set);
@@ -64,7 +64,7 @@ pub(super) fn collect_default_run_files(
         &mut files,
         cwd,
         tsconfig_path,
-        include_jsx,
+        import_options,
         canonical_paths,
         None,
         false,
@@ -82,7 +82,7 @@ pub(super) fn collect_default_run_files(
         &mut files,
         cwd,
         tsconfig_path,
-        include_jsx,
+        import_options,
         canonical_paths,
         None,
         false,
@@ -126,7 +126,7 @@ pub(super) fn register_explicit_ambient_imports(
         &ambient_declarations,
         context.cwd,
         Some(context.tsconfig_path),
-        context.include_jsx,
+        context.import_options,
         canonical_paths,
         Some(context.explicit_input_root),
         true,
@@ -150,12 +150,13 @@ pub(super) fn register_transitive_local_imports(
     files: &mut Vec<PathBuf>,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
 ) -> Vec<PathBuf> {
-    let discovered = collect_local_imports(files, cwd, tsconfig_path, include_jsx, canonical_paths);
+    let discovered =
+        collect_local_imports(files, cwd, tsconfig_path, import_options, canonical_paths);
     append_local_imports(files, discovered, explicit_input_root, validate_inputs)
 }
 
@@ -163,12 +164,12 @@ pub(super) fn collect_transitive_local_imports_from(
     roots: &[PathBuf],
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
 ) -> Vec<PathBuf> {
-    collect_local_imports(roots, cwd, tsconfig_path, include_jsx, canonical_paths)
+    collect_local_imports(roots, cwd, tsconfig_path, import_options, canonical_paths)
         .into_iter()
         .filter(|path| local_import_is_allowed(path, explicit_input_root, validate_inputs))
         .collect()
@@ -178,11 +179,11 @@ fn collect_local_imports(
     roots: &[PathBuf],
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
 ) -> Vec<PathBuf> {
     let aliases = PathAliasResolver::from_tsconfig(tsconfig_path);
-    collect_transitive_local_imports(roots, cwd, canonical_paths, include_jsx, Some(&aliases))
+    collect_transitive_local_imports(roots, cwd, canonical_paths, import_options, Some(&aliases))
 }
 
 fn append_local_imports(

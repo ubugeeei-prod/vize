@@ -5,14 +5,14 @@ use vize_carton::{FxHashMap, FxHashSet};
 use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
 use super::{
-    extract_import_specifiers, is_declaration_file, is_node_modules_path, is_relative_specifier,
-    resolve_import_base, resolve_relative_import,
+    ImportFileOptions, extract_import_specifiers, is_declaration_file, is_node_modules_path,
+    is_relative_specifier, resolve_import_base, resolve_relative_import,
 };
 
 pub(super) fn non_relative_import_needs_virtual_registration(
     path: &Path,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
     cache: &mut FxHashMap<PathBuf, bool>,
 ) -> bool {
@@ -26,7 +26,7 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         &mut visited,
         &mut queue,
         canonical_paths,
-        include_jsx,
+        options,
         aliases,
     );
     cache.insert(path.to_path_buf(), needs_registration);
@@ -37,7 +37,7 @@ fn source_needs_virtual_registration(
     visited: &mut FxHashSet<PathBuf>,
     queue: &mut Vec<PathBuf>,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
 ) -> bool {
     while let Some(file) = queue.pop() {
@@ -58,17 +58,12 @@ fn source_needs_virtual_registration(
         for specifier in extract_import_specifiers(&source) {
             let candidate = Path::new(specifier.as_str());
             let resolved = if is_relative_specifier(&specifier) {
-                resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
+                resolve_relative_import(dir, &specifier, canonical_paths, options)
             } else if candidate.is_absolute() {
-                resolve_import_base(candidate, canonical_paths, include_jsx)
+                resolve_import_base(candidate, canonical_paths, options)
             } else {
                 aliases.and_then(|aliases| {
-                    aliases.resolve(
-                        &specifier,
-                        canonical_paths,
-                        include_jsx,
-                        resolve_import_base,
-                    )
+                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
                 })
             };
             let Some(resolved) = resolved else {
