@@ -82,6 +82,7 @@ fn collect_default_check_files_inner(
             &[],
             FileCollectionOptions {
                 include_hidden: false,
+                include_js: false,
                 include_jsx,
             },
         );
@@ -116,11 +117,18 @@ fn collect_default_check_files_for_tsconfig(
 ) {
     let default_spec = TsconfigInputSpec::default();
     let spec = cache.load(tsconfig_path).unwrap_or(&default_spec);
+    let include_js = spec.allow_js.unwrap_or(false);
 
     for file in &spec.files {
         let resolved = normalize_input_path(&file.resolve());
         if resolved.is_file()
-            && is_supported_check_file_with_options(&resolved, SupportedFileOptions { include_jsx })
+            && is_supported_check_file_with_options(
+                &resolved,
+                SupportedFileOptions {
+                    include_js,
+                    include_jsx,
+                },
+            )
             && !is_nuxt_import_manifest_path(&resolved)
             && !is_generated_codegen_declaration_path(&resolved)
             && seen.insert(resolved.clone())
@@ -154,6 +162,7 @@ fn collect_default_check_files_for_tsconfig(
             excludes,
             FileCollectionOptions {
                 include_hidden: false,
+                include_js,
                 include_jsx,
             },
         );
@@ -178,6 +187,7 @@ fn collect_default_check_files_for_tsconfig(
                 excludes,
                 FileCollectionOptions {
                     include_hidden: true,
+                    include_js,
                     include_jsx,
                 },
             ) {

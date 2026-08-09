@@ -312,8 +312,20 @@ fn virtual_vue_path(
 
 pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {
     let file_name = path.file_name()?.to_str()?;
+    if file_name.ends_with(".jsx") {
+        return Some(SourceType::unambiguous().with_jsx(true));
+    }
     if file_name.ends_with(".tsx") {
         return Some(SourceType::tsx());
+    }
+    if file_name.ends_with(".cjs") {
+        return Some(SourceType::cjs());
+    }
+    if file_name.ends_with(".mjs") {
+        return Some(SourceType::mjs());
+    }
+    if file_name.ends_with(".js") {
+        return Some(SourceType::unambiguous());
     }
     if file_name.ends_with(".ts")
         || file_name.ends_with(".d.ts")

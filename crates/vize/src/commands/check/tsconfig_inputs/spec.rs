@@ -16,6 +16,8 @@ pub(super) struct TsconfigInputSpec {
     pub(super) has_files: bool,
     pub(super) has_includes: bool,
     pub(super) has_excludes: bool,
+    /// The merged `compilerOptions.allowJs` value for this project.
+    pub(super) allow_js: Option<bool>,
     /// `compilerOptions.outDir`, as a glob over the directory it resolves to.
     pub(super) out_dir_exclude: Option<GlobSpec>,
     /// `compilerOptions.declarationDir`, likewise.
@@ -35,6 +37,9 @@ impl TsconfigInputSpec {
         if extended.has_excludes {
             self.excludes = extended.excludes;
             self.has_excludes = true;
+        }
+        if extended.allow_js.is_some() {
+            self.allow_js = extended.allow_js;
         }
         // Both are ordinary compiler options, so an extending config that does
         // not restate them keeps the base's value.
@@ -155,5 +160,6 @@ impl GlobSpec {
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct FileCollectionOptions {
     pub(super) include_hidden: bool,
+    pub(super) include_js: bool,
     pub(super) include_jsx: bool,
 }
