@@ -52,6 +52,7 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    jsxTypecheck: true,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -131,7 +132,7 @@ test("a Vite+ project is configured through the vite.config lint block", async (
           "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
           "vize:fmt": "vize fmt --check src",
           "vize:fmt:fix": "vize fmt --write src",
-          "vize:check": "vize check src",
+          "vize:check": "vize check",
         },
         devDependencies: {
           "vite-plus": "^0.1.0",

@@ -143,7 +143,7 @@ test("an input that ends mid-prompt cancels instead of silently doing nothing", 
   assert.equal(result.output.split("\n").at(-2), "[vize init] cancelled; nothing was written.");
 });
 
-test("an unavailable feature is listed without a number and cannot be toggled", async () => {
+test("an unavailable bundler is listed without a number while typecheck scaffolds", async () => {
   const root = temporaryProject("prompt-unavailable");
   writeManifest(root, { name: "fixture", private: true, type: "module" });
   const prompt = scriptedPrompt(["", "y"]);
@@ -156,8 +156,8 @@ test("an unavailable feature is listed without a number and cannot be toggled", 
   1. [x] oxlint plugin (the oxlint binary reads oxlint.config.ts)
      -  vite plugin or nuxt module (no vite.config or nuxt.config found; the other features work without one)
   2. [x] fmt (vize fmt)
-     -  typecheck (vize check) (needs a tsconfig.json)
-  3. [x] editor extension (.vscode/extensions.json recommendation)
+  3. [x] typecheck (vize check) (creates tsconfig.json)
+  4. [x] editor extension (.vscode/extensions.json recommendation)
 
 `,
   );
@@ -167,7 +167,7 @@ test("an unavailable feature is listed without a number and cannot be toggled", 
       ["lint", "configured"],
       ["bundler", "skipped"],
       ["fmt", "configured"],
-      ["typecheck", "skipped"],
+      ["typecheck", "configured"],
       ["editor", "configured"],
     ],
   );

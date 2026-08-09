@@ -5,7 +5,7 @@ import { DEFAULT_SCRIPTS, detectJsonIndent, parsePackageJson } from "../setup/co
 import type { ProjectDetection } from "./detect.js";
 import { skipped, type PlanDraft } from "./plan-types.js";
 import type { FeatureId, FeatureSelection } from "./select.js";
-import { renderVizeConfig } from "./templates.js";
+import { renderTypecheckTsconfig, renderVizeConfig } from "./templates.js";
 
 /** Scripts each feature contributes, reusing the command strings `setup` ships. */
 const FEATURE_SCRIPTS: Readonly<Record<FeatureId, readonly string[]>> = {
@@ -29,29 +29,28 @@ export function planVizeConfig(
   selection: FeatureSelection,
   draft: PlanDraft,
 ): void {
+  if (selection.typecheck && detection.tsconfig === null) {
+    draft.files.push({
+      filename: path.join(detection.root, "tsconfig.json"),
+      source: renderTypecheckTsconfig(detection.typescript),
+    });
+    draft.createdFiles.push("tsconfig.json");
+  }
+
   for (const id of ["fmt", "typecheck"] as const) {
     if (!selection[id]) {
-      draft.features.push(
-        id === "typecheck" && detection.tsconfig === null
-          ? skipped(id, "no tsconfig.json, so vize check has nothing to check")
-          : skipped(id),
-      );
+      draft.features.push(skipped(id));
       continue;
     }
-    if (id === "typecheck" && detection.tsconfig === null) {
-      draft.features.push({
-        id,
-        outcome: "blocked",
-        detail: "vize check needs a tsconfig.json; none was found",
-        snippet: null,
-      });
-      continue;
-    }
+    const scaffoldsTsconfig = id === "typecheck" && detection.tsconfig === null;
     draft.features.push({
       id,
-      outcome: detection.vizeConfig === null ? "configured" : "unchanged",
-      detail:
-        detection.vizeConfig === null
+      outcome: scaffoldsTsconfig || detection.vizeConfig === null ? "configured" : "unchanged",
+      detail: scaffoldsTsconfig
+        ? detection.vizeConfig === null
+          ? "writes tsconfig.json and vize.config.ts"
+          : `writes tsconfig.json; ${detection.vizeConfig} already exists and was left unchanged`
+        : detection.vizeConfig === null
           ? "writes vize.config.ts"
           : `${detection.vizeConfig} already exists and was left unchanged`,
       snippet: null,
@@ -67,7 +66,7 @@ export function planVizeConfig(
     source: renderVizeConfig({
       lint: selection.lint,
       fmt: selection.fmt,
-      typecheck: selection.typecheck && detection.tsconfig !== null,
+      typecheck: selection.typecheck,
       vite: detection.framework === "vite",
     }),
   });
@@ -88,7 +87,7 @@ export function planScripts(
 ): readonly string[] {
   const wanted: string[] = [];
   for (const id of ["lint", "fmt", "typecheck"] as const) {
-    if (!selection[id] || (id === "typecheck" && detection.tsconfig === null)) {
+    if (!selection[id]) {
       continue;
     }
     wanted.push(...FEATURE_SCRIPTS[id]);
