@@ -10,7 +10,7 @@
 
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Range};
+use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Position, Range};
 use vize_canon::{CorsaBridge, LspHover, LspHoverContents, LspMarkedString};
 
 use super::HoverService;
@@ -163,9 +163,7 @@ impl HoverService {
                 crate::ide::corsa_support::map_canonical_lsp_range(ctx, &doc, range)
             });
             let mut converted = Self::convert_lsp_hover(hover);
-            if mapped_range.is_some() {
-                converted.range = mapped_range;
-            }
+            converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
             super::declaration_keyword::align_hover(ctx, &word, &mut converted);
             return Some(converted);
         }
@@ -174,7 +172,12 @@ impl HoverService {
             return None;
         }
 
-        Self::hover_template(ctx)
+        Self::hover_template(ctx).map(|mut hover| {
+            if hover.range.is_none() {
+                hover.range = authored_hover_token_range(ctx);
+            }
+            hover
+        })
     }
 
     /// Get hover for an art variant template with Corsa.
@@ -326,4 +329,15 @@ impl HoverService {
     fn decorate_corsa_hover_markdown(value: &str) -> String {
         value.trim().to_string()
     }
+}
+
+fn authored_hover_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
+    let (start, end) =
+        crate::ide::token_span_at_offset(&ctx.content, ctx.offset, HoverService::is_word_char)?;
+    let (start_line, start_character) = crate::ide::offset_to_position(&ctx.content, start);
+    let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, end);
+    Some(Range::new(
+        Position::new(start_line, start_character),
+        Position::new(end_line, end_character),
+    ))
 }
