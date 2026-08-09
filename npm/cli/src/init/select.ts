@@ -126,18 +126,21 @@ function fmtOffer(detection: ProjectDetection): FeatureOffer {
 }
 
 function typecheckOffer(detection: ProjectDetection): FeatureOffer {
-  const configured = detection.vizeConfig !== null && "vize:check" in detection.scripts;
+  const configured =
+    detection.tsconfig !== null &&
+    detection.vizeConfig !== null &&
+    "vize:check" in detection.scripts;
   return {
     id: "typecheck",
     label: "typecheck (vize check)",
-    available: detection.tsconfig !== null,
+    available: true,
     configured,
     note: configured
       ? "already configured"
       : detection.tsconfig === null
-        ? "needs a tsconfig.json"
+        ? "creates tsconfig.json"
         : "",
-    defaultSelected: detection.tsconfig !== null,
+    defaultSelected: true,
   };
 }
 

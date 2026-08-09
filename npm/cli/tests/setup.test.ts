@@ -111,7 +111,7 @@ export default defineConfig({
     assert.equal(scripts["vize:fmt"], "vize fmt --check src");
     assert.equal(scripts["vize:fmt:fix"], "vize fmt --write src");
     assert.equal(scripts["vize:lint"], "vize lint --preset happy-path --max-warnings 0 src");
-    assert.equal(scripts["vize:check"], "vize check src");
+    assert.equal(scripts["vize:check"], "vize check");
     assert.equal(scripts["vize:build"], "vize build src");
     assert.equal(scripts["vize:musea"], "vize musea");
     assert.equal(scripts["vize:ready"], "vize ready src");

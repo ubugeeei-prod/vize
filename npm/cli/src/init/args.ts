@@ -121,7 +121,7 @@ Options:
       --nuxt                 nuxt module (forces the Nuxt target)
       --bundler/--no-bundler vite plugin or nuxt module, auto-detected
       --fmt / --no-fmt       vize fmt
-      --typecheck            vize check (needs a tsconfig.json)
+      --typecheck            vize check (creates tsconfig.json when missing)
       --no-typecheck
       --editor / --no-editor .vscode/extensions.json recommendation
       --dry-run              Print the plan without writing anything

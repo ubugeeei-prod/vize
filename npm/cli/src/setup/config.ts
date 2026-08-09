@@ -44,7 +44,7 @@ export const DEFAULT_SCRIPTS = {
   "vize:fmt": "vize fmt --check src",
   "vize:fmt:fix": "vize fmt --write src",
   "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-  "vize:check": "vize check src",
+  "vize:check": "vize check",
   "vize:musea": "vize musea",
   "vize:ready": "vize ready src",
 } as const;
@@ -61,6 +61,7 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    jsxTypecheck: true,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
