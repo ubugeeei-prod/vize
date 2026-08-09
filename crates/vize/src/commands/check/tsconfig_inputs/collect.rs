@@ -6,7 +6,7 @@ use ignore::WalkBuilder;
 use vize_carton::FxHashSet;
 
 use super::glob::{normalize_input_path, normalize_walked_path};
-use super::loader::{TsconfigInputCache, collect_tsconfig_project_paths};
+use super::loader::TsconfigInputCache;
 use super::matching::{
     SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
     is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -183,7 +183,7 @@ pub(crate) fn resolve_tsconfig_for_files(
     cache: &mut TsconfigInputCache,
 ) -> Option<PathBuf> {
     let tsconfig_path = tsconfig_path?;
-    let projects = collect_tsconfig_project_paths(tsconfig_path);
+    let projects = cache.project_paths(tsconfig_path);
     let root_project = projects
         .first()
         .cloned()
@@ -194,7 +194,11 @@ pub(crate) fn resolve_tsconfig_for_files(
             is_supported_check_file_with_options(
                 path,
                 SupportedFileOptions {
-                    include_js: false,
+                    // JavaScript candidates must reach the per-project
+                    // ownership matchers below. Each matcher applies its own
+                    // merged allowJs value, so a referenced allowJs project
+                    // cannot leak ownership to a sibling that disables it.
+                    include_js: true,
                     include_jsx,
                 },
             )
@@ -250,6 +254,7 @@ struct TsconfigOwnershipMatcher {
     files: FxHashSet<PathBuf>,
     includes: Vec<GlobSpec>,
     excludes: Vec<GlobSpec>,
+    include_js: bool,
     include_jsx: bool,
 }
 
@@ -261,6 +266,7 @@ impl TsconfigOwnershipMatcher {
                 files: FxHashSet::default(),
                 includes: Vec::new(),
                 excludes: Vec::new(),
+                include_js: false,
                 include_jsx,
             };
         };
@@ -288,6 +294,7 @@ impl TsconfigOwnershipMatcher {
             files,
             includes,
             excludes,
+            include_js: spec.allow_js.unwrap_or(false),
             include_jsx,
         }
     }
@@ -308,7 +315,7 @@ impl TsconfigOwnershipMatcher {
             || !is_supported_check_file_with_options(
                 file,
                 SupportedFileOptions {
-                    include_js: false,
+                    include_js: self.include_js,
                     include_jsx: self.include_jsx,
                 },
             )
