@@ -59,11 +59,13 @@ impl IncrementalPaths {
             .paths
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let known_source_paths = project.known_source_paths();
         refresh_paths(
             project.project_root(),
             &mut paths,
             changed,
             self.allow_new_paths,
+            &known_source_paths,
         )?;
         Ok(paths.clone())
     }
@@ -103,6 +105,7 @@ pub(super) fn refresh_paths(
     paths: &mut Vec<PathBuf>,
     changed: &[PathBuf],
     allow_new_paths: bool,
+    known_source_paths: &[PathBuf],
 ) -> CorsaResult<()> {
     let mut refreshed_paths = paths.clone();
     for changed_path in changed {
@@ -116,11 +119,13 @@ pub(super) fn refresh_paths(
         }
 
         let candidate = vize_carton::path::canonicalize_non_verbatim(&candidate);
-        if !candidate.starts_with(project_root) {
+        let already_registered = refreshed_paths.iter().any(|path| path == &candidate);
+        let known_source = known_source_paths.iter().any(|path| path == &candidate);
+        if !candidate.starts_with(project_root) && !already_registered && !known_source {
             return Err(CorsaError::PathError { path: candidate });
         }
         if allow_new_paths
-            && !refreshed_paths.iter().any(|path| path == &candidate)
+            && !already_registered
             && candidate.is_file()
             && is_supported_input(&candidate)
         {
@@ -160,10 +165,38 @@ mod tests {
         let project_root = vize_carton::path::canonicalize_non_verbatim(project.path());
         let existing = vize_carton::path::canonicalize_non_verbatim(&existing);
         let mut paths = vec![existing.clone()];
-        let error = refresh_paths(&project_root, &mut paths, &[added, outside_file], true)
+        let error = refresh_paths(&project_root, &mut paths, &[added, outside_file], true, &[])
             .expect_err("outside path should reject the whole refresh");
 
         assert!(matches!(error, crate::batch::CorsaError::PathError { .. }));
         assert_eq!(paths, vec![existing]);
+    }
+
+    #[test]
+    fn a_registered_out_of_root_dependency_can_refresh() {
+        let project = tempfile::tempdir().expect("project tempdir should exist");
+        let outside = tempfile::tempdir().expect("outside tempdir should exist");
+        let inside_file = project.path().join("inside.ts");
+        let outside_file = outside.path().join("Workspace.vue");
+        std::fs::write(&inside_file, "export {}\n").expect("inside file should write");
+        std::fs::write(&outside_file, "<template />\n").expect("outside file should write");
+
+        let project_root = vize_carton::path::canonicalize_non_verbatim(project.path());
+        let inside_file = vize_carton::path::canonicalize_non_verbatim(&inside_file);
+        let outside_file = vize_carton::path::canonicalize_non_verbatim(&outside_file);
+        let mut paths = vec![inside_file.clone(), outside_file.clone()];
+
+        refresh_paths(
+            &project_root,
+            &mut paths,
+            std::slice::from_ref(&outside_file),
+            true,
+            std::slice::from_ref(&outside_file),
+        )
+        .expect("an already-registered external dependency should refresh");
+        paths.sort();
+        let mut expected = vec![inside_file, outside_file];
+        expected.sort();
+        assert_eq!(paths, expected);
     }
 }
