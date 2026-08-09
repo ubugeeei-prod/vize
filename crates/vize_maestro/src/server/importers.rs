@@ -41,6 +41,7 @@ fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
     let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
+    let importer_uri = Url::from_file_path(importer).ok();
     let mut dependencies = FxHashSet::default();
 
     for script in descriptor
@@ -52,6 +53,7 @@ fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
             script.content.as_ref(),
             source_type(script.lang.as_deref()),
             importer_dir,
+            importer_uri.as_ref(),
             &mut dependencies,
         );
     }
@@ -62,6 +64,7 @@ fn collect_script_dependencies(
     source: &str,
     source_type: SourceType,
     importer_dir: &Path,
+    importer_uri: Option<&Url>,
     dependencies: &mut FxHashSet<PathBuf>,
 ) {
     let allocator = Allocator::default();
@@ -71,7 +74,13 @@ fn collect_script_dependencies(
         let Statement::ImportDeclaration(import) = statement else {
             continue;
         };
-        if let Some(dependency) = resolve_import(importer_dir, import.source.value.as_str()) {
+        let specifier = import.source.value.as_str();
+        if let Some(dependency) = resolve_import(importer_dir, specifier).or_else(|| {
+            crate::ide::definition::import_resolver::resolve_import_specifier(
+                importer_uri?,
+                specifier,
+            )
+        }) {
             dependencies.insert(dependency);
         }
     }
@@ -245,6 +254,50 @@ mod tests {
         let source = "<script setup lang=\"ts\">import Child from './FutureChild.vue'</script>";
 
         state.update_virtual_docs(&parent_uri, source);
+
+        assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+    }
+
+    #[test]
+    fn index_keeps_nuxt_alias_importers_addressable_after_dependency_delete() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        let nuxt = root.join(".nuxt");
+        let pages = root.join("app/pages/[[server]]/list/[list]/index");
+        let components = root.join("app/components/list");
+        std::fs::create_dir_all(&nuxt).unwrap();
+        std::fs::create_dir_all(&pages).unwrap();
+        std::fs::create_dir_all(&components).unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{"references":[{"path":"./.nuxt/tsconfig.app.json"}],"files":[]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            nuxt.join("tsconfig.app.json"),
+            r#"{"compilerOptions":{"paths":{"~/*":["../app/*"]}}}"#,
+        )
+        .unwrap();
+
+        let child = components.join("SearchResult.vue");
+        let parent = pages.join("accounts.vue");
+        std::fs::write(&child, "<template />\n").unwrap();
+        std::fs::write(&parent, "<template />\n").unwrap();
+        let child_uri = Url::from_file_path(&child).unwrap();
+        let canonical_parent_uri = Url::from_file_path(&parent).unwrap();
+        let parent_uri = Url::parse(
+            &canonical_parent_uri
+                .as_str()
+                .replace('[', "%5B")
+                .replace(']', "%5D"),
+        )
+        .unwrap();
+        assert_ne!(parent_uri, canonical_parent_uri);
+        let state = ServerState::new();
+        let source = r#"<script setup lang="ts">import SearchResult from '~/components/list/SearchResult.vue'</script>"#;
+
+        state.update_virtual_docs(&parent_uri, source);
+        std::fs::remove_file(child).unwrap();
 
         assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
     }
