@@ -174,6 +174,10 @@ test("release install smoke skips libc-incompatible tarballs", () => {
 
 test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeScript, "utf8");
+  const initTypecheckScript = fs.readFileSync(
+    path.join(root, "tools/npm/smoke-release-init-typecheck.mjs"),
+    "utf8",
+  );
 
   assert.match(script, /--runtime-checks/);
   // vize declares @typescript/native-preview itself, so the fresh-install smoke
@@ -189,6 +193,20 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(script, /vizeBin, "--version"/);
   assert.match(script, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
+  assert.match(script, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
+  assert.match(initTypecheckScript, /`init-smoke-\$\{language\}`/);
+  assert.match(initTypecheckScript, /\["typescript", "javascript"\]/);
+  assert.match(initTypecheckScript, /"init"[\s\S]*"--typecheck"[\s\S]*"--no-install"/);
+  assert.match(initTypecheckScript, /"run", "--silent", "vize:check"/);
+  for (const diagnostic of [
+    "standalone source",
+    "SFC script",
+    "SFC template",
+    "component prop",
+    "JSX consumer",
+  ]) {
+    assert.match(initTypecheckScript, new RegExp(diagnostic));
+  }
   // vite is installed as upstream vite 8, one supported
   // `@vizejs/vite-plugin` peer range. Real vite exposes a `vite` bin entry, so
   // the smoke can use the same resolver as vize.
