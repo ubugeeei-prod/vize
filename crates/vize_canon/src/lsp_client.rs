@@ -54,6 +54,8 @@ pub struct CorsaProjectClient {
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
     /// project-session API rejects as unsupported (corsa-bind#409).
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// Whether the reusable editor LSP needs the latest virtual project mirror.
+    editor_lsp_documents_dirty: bool,
     closed: bool,
 }
 

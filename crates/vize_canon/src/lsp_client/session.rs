@@ -175,6 +175,9 @@ impl CorsaProjectClient {
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
+        if previous.as_deref() != Some(content) {
+            self.editor_lsp_documents_dirty = true;
+        }
 
         if self.materialized_project_session {
             return self.sync_materialized_overlay_document(uri, content);
@@ -235,7 +238,9 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
-        self.document_texts.remove(uri);
+        if self.document_texts.remove(uri).is_some() {
+            self.editor_lsp_documents_dirty = true;
+        }
         self.overlay_versions.remove(uri);
         let document_uri = self
             .session_document_uris

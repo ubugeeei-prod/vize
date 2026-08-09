@@ -56,6 +56,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir,
             editor_lsp: None,
+            editor_lsp_documents_dirty: true,
             closed: false,
         })
     }

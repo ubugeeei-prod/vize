@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use vize_canon::{CorsaBridge, CorsaBridgeConfig};
+use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspHover, LspHoverContents, LspMarkedString};
 use vize_carton::ToCompactString;
 
 #[test]
@@ -225,6 +225,108 @@ fn bridge_virtual_sfc_editor_queries_resolve_relative_workspace_imports() {
     assert!(signature.signatures[0].label.contains("value: number"));
     assert!(signature.signatures[0].label.contains("precision: number"));
     assert!(!virtual_path.exists());
+}
+
+#[test]
+fn bridge_editor_queries_resolve_in_memory_virtual_dependencies() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().unwrap();
+    let project_root = project.path();
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(src_dir.join("Parent.vue"), "<template />\n").unwrap();
+    std::fs::write(src_dir.join("Child.vue"), "<template />\n").unwrap();
+
+    let child_virtual = r#"declare const Child: new () => {
+  $props: { message: string };
+};
+export default Child;
+"#;
+    let changed_child_virtual = child_virtual.replace("message: string", "message: number");
+    let parent_virtual = r#"import Child from './Child.vue.ts';
+type Props = InstanceType<typeof Child>['$props'];
+const props = {} as Props;
+props.message;
+"#;
+    let child_path = src_dir.join("Child.vue.ts");
+    let parent_path = src_dir.join("Parent.vue.ts");
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let (initial_hover, changed_hover, closed_hover) = corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let child_uri = child_path.display().to_compact_string();
+        let child_uri = bridge
+            .open_or_update_virtual_document(child_uri.as_str(), child_virtual)
+            .await
+            .unwrap();
+        let parent_uri = parent_path.display().to_compact_string();
+        let parent_uri = bridge
+            .open_or_update_virtual_document(parent_uri.as_str(), parent_virtual)
+            .await
+            .unwrap();
+        let initial_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        bridge
+            .update_virtual_document(child_uri.as_str(), changed_child_virtual.as_str(), 2)
+            .await
+            .unwrap();
+        let changed_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        bridge
+            .close_virtual_document(child_uri.as_str())
+            .await
+            .unwrap();
+        let closed_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        bridge.shutdown().await.unwrap();
+        (initial_hover, changed_hover, closed_hover)
+    });
+
+    assert!(
+        hover_contains(&initial_hover, "message") && hover_contains(&initial_hover, "string"),
+        "editor LSP should see every in-memory virtual dependency: {initial_hover:?}"
+    );
+    assert!(
+        hover_contains(&changed_hover, "message") && hover_contains(&changed_hover, "number"),
+        "editor LSP should refresh changed virtual dependencies: {changed_hover:?}"
+    );
+    assert!(
+        !hover_contains(&closed_hover, "string") && !hover_contains(&closed_hover, "number"),
+        "editor LSP should close removed virtual dependencies: {closed_hover:?}"
+    );
+    assert!(!child_path.exists());
+    assert!(!parent_path.exists());
+}
+
+fn hover_contains(hover: &Option<LspHover>, expected: &str) -> bool {
+    hover.as_ref().is_some_and(|hover| match &hover.contents {
+        LspHoverContents::Markup(markup) => markup.value.contains(expected),
+        LspHoverContents::String(value) => value.contains(expected),
+        LspHoverContents::Array(items) => items.iter().any(|item| match item {
+            LspMarkedString::String(value) | LspMarkedString::LanguageString { value, .. } => {
+                value.contains(expected)
+            }
+        }),
+    })
 }
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {

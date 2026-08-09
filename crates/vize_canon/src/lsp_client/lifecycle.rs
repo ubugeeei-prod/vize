@@ -131,6 +131,7 @@ impl CorsaProjectClient {
             if previous.as_deref() == Some(*content) {
                 continue;
             }
+            self.editor_lsp_documents_dirty = true;
             changed = true;
             merge_materialized_file_changes(
                 &mut summary,
