@@ -54,6 +54,13 @@ struct SpecifierOccurrence {
     specifier: std::string::String,
 }
 
+struct OpenDocumentSnapshot {
+    uri: Url,
+    source: std::string::String,
+}
+
+type OpenDocumentSnapshots = HashMap<PathBuf, OpenDocumentSnapshot>;
+
 struct ScriptEditContext<'a> {
     state: &'a ServerState,
     current_path: &'a Path,
@@ -161,6 +168,7 @@ pub(super) fn collect_import_rename_edits(
     }
 
     let workspace_root = workspace_root(state);
+    let open_documents = snapshot_open_documents(state);
     let changes = Mutex::new(HashMap::new());
     let seen_paths = Mutex::new(HashSet::new());
 
@@ -171,6 +179,7 @@ pub(super) fn collect_import_rename_edits(
         .run(|| {
             let changes = &changes;
             let seen_paths = &seen_paths;
+            let open_documents = &open_documents;
             let rename_targets = &rename_targets;
 
             Box::new(move |entry| {
@@ -184,10 +193,11 @@ pub(super) fn collect_import_rename_edits(
                 };
 
                 if let Ok(mut seen) = seen_paths.lock() {
-                    seen.insert(path.to_path_buf());
+                    seen.insert(normalize_path_buf(path));
                 }
 
-                if let Some((uri, edits)) = process_importer_path(state, path, kind, rename_targets)
+                if let Some((uri, edits)) =
+                    process_importer_path(state, path, kind, rename_targets, open_documents)
                     && let Ok(mut changes) = changes.lock()
                 {
                     changes.insert(uri, edits);
@@ -198,11 +208,7 @@ pub(super) fn collect_import_rename_edits(
         });
 
     let seen_paths = seen_paths.into_inner().unwrap_or_default();
-    for document in state.documents.iter() {
-        let uri = document.key().clone();
-        let Ok(path) = uri.to_file_path() else {
-            continue;
-        };
+    for (path, document) in open_documents {
         let Some(kind) = importer_kind(&path, only_vue_importers) else {
             continue;
         };
@@ -212,9 +218,9 @@ pub(super) fn collect_import_rename_edits(
 
         if let Some((uri, edits)) = process_source(
             state,
-            uri.clone(),
+            document.uri,
             &path,
-            &document.value().text(),
+            &document.source,
             kind,
             &rename_targets,
         ) && let Ok(mut changes) = changes.lock()
@@ -277,10 +283,23 @@ fn process_importer_path(
     path: &Path,
     kind: ImporterKind,
     rename_targets: &[RenameTarget],
+    open_documents: &OpenDocumentSnapshots,
 ) -> Option<(Url, Vec<TextEdit>)> {
-    let uri = Url::from_file_path(path).ok()?;
-    let source = read_workspace_source(state, path)?;
-    process_source(state, uri, path, &source, kind, rename_targets)
+    let normalized_path = normalize_path_buf(path);
+    if let Some(document) = open_documents.get(&normalized_path) {
+        return process_source(
+            state,
+            document.uri.clone(),
+            &normalized_path,
+            &document.source,
+            kind,
+            rename_targets,
+        );
+    }
+
+    let uri = Url::from_file_path(&normalized_path).ok()?;
+    let source = fs::read_to_string(&normalized_path).ok()?;
+    process_source(state, uri, &normalized_path, &source, kind, rename_targets)
 }
 
 fn process_source(
@@ -658,14 +677,21 @@ fn importer_kind(path: &Path, only_vue_importers: bool) -> Option<ImporterKind> 
     }
 }
 
-fn read_workspace_source(state: &ServerState, path: &Path) -> Option<std::string::String> {
-    if let Ok(uri) = Url::from_file_path(path)
-        && let Some(document) = state.documents.get(&uri)
-    {
-        return Some(document.text());
+fn snapshot_open_documents(state: &ServerState) -> OpenDocumentSnapshots {
+    let mut snapshots = HashMap::with_capacity(state.documents.len());
+    for document in state.documents.iter() {
+        let Ok(path) = document.key().to_file_path() else {
+            continue;
+        };
+        snapshots.insert(
+            normalize_path_buf(&path),
+            OpenDocumentSnapshot {
+                uri: document.key().clone(),
+                source: document.value().text(),
+            },
+        );
     }
-
-    fs::read_to_string(path).ok()
+    snapshots
 }
 
 pub(super) fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
