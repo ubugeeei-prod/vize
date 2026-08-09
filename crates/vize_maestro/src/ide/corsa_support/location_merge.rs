@@ -37,6 +37,24 @@ pub(crate) fn merge_authored_locations(
     Some(locations)
 }
 
+/// Combine the canonical project answer with the block-local Corsa hits and
+/// the authored ones for this SFC.
+///
+/// The canonical virtual document crosses SFC boundaries, but it only answers
+/// for the regions it could map back, so the template and style occurrences
+/// still ride in on the block-local and authored sweeps. An empty canonical
+/// answer stays authoritative when nothing else matches, so an isolated
+/// declaration keeps reporting no references instead of falling back.
+pub(crate) fn merge_canonical_locations(
+    canonical: Option<Vec<Location>>,
+    corsa: Option<Vec<Location>>,
+    authored: Option<Vec<Location>>,
+) -> Option<Vec<Location>> {
+    let canonical_answered_empty = matches!(canonical.as_deref(), Some([]));
+    merge_authored_locations(merge_authored_locations(canonical, corsa), authored)
+        .or_else(|| canonical_answered_empty.then(Vec::new))
+}
+
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::{Position, Range, Url};
@@ -104,5 +122,36 @@ mod tests {
             Some(vec![location(sfc, 3, 6, 16)])
         );
         assert_eq!(merge_authored_locations(None, None), None);
+    }
+
+    #[test]
+    fn canonical_hits_keep_the_blocks_the_project_document_missed() {
+        let sfc = "file:///app/App.vue";
+        let other = "file:///app/other.vue";
+        let merged = merge_canonical_locations(
+            Some(vec![location(sfc, 3, 6, 16), location(other, 1, 0, 6)]),
+            Some(vec![location(sfc, 3, 6, 16), location(sfc, 4, 31, 41)]),
+            Some(vec![location(sfc, 3, 6, 16), location(sfc, 9, 18, 28)]),
+        )
+        .unwrap();
+
+        assert_eq!(
+            merged,
+            vec![
+                location(other, 1, 0, 6),
+                location(sfc, 3, 6, 16),
+                location(sfc, 4, 31, 41),
+                location(sfc, 9, 18, 28),
+            ]
+        );
+    }
+
+    #[test]
+    fn an_empty_canonical_answer_stays_authoritative() {
+        assert_eq!(
+            merge_canonical_locations(Some(vec![]), None, None),
+            Some(vec![])
+        );
+        assert_eq!(merge_canonical_locations(None, None, None), None);
     }
 }

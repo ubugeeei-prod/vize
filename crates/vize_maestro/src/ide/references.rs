@@ -84,12 +84,11 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
-        if let Some(locations) =
-            canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await
-        {
-            return Some(locations);
-        }
-        let block_type = ctx.block_type?;
+        let canonical_locations =
+            canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await;
+        let Some(block_type) = ctx.block_type else {
+            return canonical_locations;
+        };
 
         let corsa_locations = match block_type {
             BlockType::Template => {
@@ -123,7 +122,8 @@ impl ReferencesService {
 
         // Corsa only answers for the virtual document the request opened, so
         // the authored hits carry the other blocks of this SFC.
-        corsa_support::merge_authored_locations(
+        corsa_support::merge_canonical_locations(
+            canonical_locations,
             corsa_locations,
             Self::references(ctx, include_declaration),
         )
