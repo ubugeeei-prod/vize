@@ -48,7 +48,6 @@ use collect::{
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
 use glob::normalize_input_path;
-use loader::collect_tsconfig_project_paths;
 use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
     is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -75,6 +74,20 @@ pub(crate) fn tsconfig_allows_js(tsconfig_path: &Path, cache: &mut TsconfigInput
         .unwrap_or(false)
 }
 
+/// Whether the root project or any transitively referenced project accepts
+/// JavaScript inputs. Explicit path collection uses this only as a broad
+/// extension gate; ownership resolution later selects the exact project and
+/// applies that project's own `allowJs` value.
+pub(crate) fn tsconfig_project_graph_allows_js(
+    tsconfig_path: &Path,
+    cache: &mut TsconfigInputCache,
+) -> bool {
+    cache
+        .project_paths(tsconfig_path)
+        .iter()
+        .any(|project| tsconfig_allows_js(project, cache))
+}
+
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
@@ -97,7 +110,7 @@ fn collect_default_check_files_inner(
 
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
-    for tsconfig_path in collect_tsconfig_project_paths(tsconfig_path) {
+    for tsconfig_path in cache.project_paths(tsconfig_path) {
         collect_default_check_files_for_tsconfig(
             project_root,
             &tsconfig_path,

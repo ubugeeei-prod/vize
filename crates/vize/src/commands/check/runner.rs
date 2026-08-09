@@ -22,7 +22,7 @@ use super::{
     path_cache::CanonicalPathCache,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_for_files, tsconfig_allows_js},
+    tsconfig_inputs::TsconfigInputCache,
 };
 mod collect;
 mod default_imports;
@@ -32,6 +32,7 @@ mod ignores;
 mod input_scope;
 mod invocation;
 mod nuxt_tsconfig;
+mod program_inputs;
 mod resolve;
 #[cfg(unix)]
 mod socket;
@@ -52,10 +53,11 @@ use global_components::{
 };
 use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
-use invocation::resolve_invocation_program;
+use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
 #[cfg(test)]
 use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
+use program_inputs::{ProgramInputContext, filter_for_program, project_graph_allows_js};
 use resolve::{
     display_path, exit_if_inputs_outside_root, explicit_input_root,
     resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
@@ -153,7 +155,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut canonical_paths = CanonicalPathCache::default();
     let check_ignore_set = load_check_ignore_set(args, config_dir);
     let collect_start = Instant::now();
-    let (mut files, explicit_files, reported_files): (
+    let (mut files, mut program_input_files, mut reported_files): (
         Vec<PathBuf>,
         Vec<PathBuf>,
         FxHashSet<PathBuf>,
@@ -174,11 +176,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             invocation_tsconfig_path.as_deref(),
             args.quiet,
         );
-        (files, Vec::new(), reported_files)
+        let program_input_files = reported_files.iter().cloned().collect();
+        (files, program_input_files, reported_files)
     } else {
-        let include_js = invocation_tsconfig_path
-            .as_deref()
-            .is_some_and(|path| tsconfig_allows_js(path, &mut tsconfig_input_cache));
+        let include_js = project_graph_allows_js(
+            invocation_tsconfig_path.as_deref(),
+            &mut tsconfig_input_cache,
+        );
         let files = collect_check_files_with_ignores(
             &args.patterns,
             CheckFileOptions {
@@ -187,9 +191,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             },
             check_ignore_set.as_ref(),
         );
-        let explicit_files = files.clone();
+        let program_input_files = files.clone();
         let reported_files = canonical_file_set(&files, &mut canonical_paths);
-        (files, explicit_files, reported_files)
+        (files, program_input_files, reported_files)
     };
     let collect_time = collect_start.elapsed();
 
@@ -214,16 +218,20 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let discovered_tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
-    let program_tsconfig_path = if args.patterns.is_empty() {
-        invocation_tsconfig_path.clone()
-    } else {
-        resolve_tsconfig_for_files(
-            discovered_tsconfig_path.as_deref(),
-            &explicit_files,
-            jsx_typecheck,
-            &mut tsconfig_input_cache,
-        )
-    };
+    let program_tsconfig_path = filter_for_program(ProgramInputContext {
+        tsconfig_path: discovered_tsconfig_path.as_deref(),
+        explicit: !args.patterns.is_empty(),
+        include_jsx: jsx_typecheck,
+        files: &mut files,
+        inputs: &mut program_input_files,
+        reported: &mut reported_files,
+        cache: &mut tsconfig_input_cache,
+        canonical_paths: &mut canonical_paths,
+    });
+    if !args.patterns.is_empty() && program_input_files.is_empty() {
+        report_no_inputs(args);
+        return;
+    }
     // Explicit subsets need package-local ambient roots and their imported types.
     if !args.patterns.is_empty()
         && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()
@@ -685,35 +693,4 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
     }
-}
-
-fn resolve_nuxt_project_root(
-    explicit_tsconfig: Option<&Path>,
-    cwd: &Path,
-    fallback: &Path,
-) -> PathBuf {
-    let Some(tsconfig) = explicit_tsconfig else {
-        return fallback.to_path_buf();
-    };
-    let tsconfig_path = if tsconfig.is_absolute() {
-        tsconfig.to_path_buf()
-    } else {
-        cwd.join(tsconfig)
-    };
-    let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
-        .parent()
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|| fallback.to_path_buf());
-    if super::nuxt::is_nuxt_project_root(&tsconfig_dir) {
-        return tsconfig_dir;
-    }
-    if tsconfig_dir.join("package.json").exists() {
-        return tsconfig_dir;
-    }
-    if let Some(parent) = tsconfig_dir.parent()
-        && super::nuxt::is_nuxt_project_root(parent)
-    {
-        return parent.to_path_buf();
-    }
-    tsconfig_dir
 }

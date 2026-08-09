@@ -1,5 +1,7 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_allowjs_imports_cli/referenced_projects.rs"]
+mod referenced_projects;
 
 use std::{
     path::{Path, PathBuf},
