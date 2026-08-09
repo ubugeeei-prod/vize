@@ -36,12 +36,13 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
     assert.notEqual(oracle.componentBoundary.importerFile, oracle.componentBoundary.componentFile);
     assert.ok(oracle.templateBinding.hoverContains.length > 0);
     assert.ok(oracle.componentBoundary.completionItems.length > 0);
-    assert.ok(
-      oracle.componentBoundary.completionItemCount >=
-        oracle.componentBoundary.completionItems.length,
+    assert.equal(
+      oracle.componentBoundary.completionItems.length,
+      oracle.componentBoundary.completionItemCount,
+      `${project.id} must pin every completion label and rank`,
     );
     const rankBase = oracle.componentBoundary.completionItems[0]?.rank ?? -1;
-    assert.ok(rankBase >= 0, `${project.id} completion ranks must start at a valid index`);
+    assert.equal(rankBase, 0, `${project.id} completion ranks must start at zero`);
     assert.deepEqual(
       oracle.componentBoundary.completionItems.map((item) => item.rank),
       [...oracle.componentBoundary.completionItems.keys()].map((index) => index + rankBase),
