@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use super::CONTENT_MAPPER_SPAN_FEATURES_ALL;
 use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options,
@@ -44,7 +45,7 @@ const message = "hello"
         result
             .mappings
             .iter()
-            .all(|mapping| mapping.0[5] == 2_097_151),
+            .all(|mapping| mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_ALL),
         "protocol v1 spans must participate in every language-service feature"
     );
 }
