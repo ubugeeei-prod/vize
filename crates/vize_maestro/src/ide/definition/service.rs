@@ -28,13 +28,15 @@ impl super::DefinitionService {
     /// Get definition for the symbol at the current position.
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
         match ctx.block_type? {
-            BlockType::Template => Self::definition_in_template_sync(ctx),
+            BlockType::Template => import_target::component_tag_definition(ctx)
+                .or_else(|| Self::definition_in_template_sync(ctx)),
             BlockType::Script | BlockType::ScriptSetup => {
                 module_specifier::definition(ctx).or_else(|| script::definition_in_script(ctx))
             }
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
-                Self::definition_in_template_sync(ctx)
+                import_target::component_tag_definition(ctx)
+                    .or_else(|| Self::definition_in_template_sync(ctx))
             }
             BlockType::Art(_) => None,
         }
@@ -66,16 +68,17 @@ impl super::DefinitionService {
         info: &crate::virtual_code::ArtVariantInfo,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        // Follow imported component aliases and re-export barrels before the
+        // direct-file finder can stop at the barrel itself.
+        if let Some(def) = import_target::component_tag_definition(ctx) {
+            return Some(def);
+        }
+
         // Check if this is a component tag
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset)
             && is_component_tag(&tag_name)
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
         {
-            return Some(def);
-        }
-
-        // Tags imported through a `paths` alias or package barrel (#3932).
-        if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
         }
 
@@ -129,6 +132,12 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        // A successful manual import walk is deterministic and follows barrel
+        // re-exports to their source instead of returning the barrel module.
+        if let Some(def) = import_target::component_tag_definition(ctx) {
+            return Some(def);
+        }
+
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset)
             && tag_name == "Self"
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
@@ -158,11 +167,6 @@ impl super::DefinitionService {
             && is_component_tag(&tag_name)
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
         {
-            return Some(def);
-        }
-
-        // Tags imported through a `paths` alias or package barrel (#3932).
-        if let Some(def) = import_target::component_tag_definition(ctx) {
             return Some(def);
         }
 

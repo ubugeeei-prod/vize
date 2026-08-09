@@ -3,6 +3,7 @@ use std::fs;
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Url};
 
 use crate::ide::IdeContext;
+use crate::ide::definition::DefinitionService;
 use crate::server::ServerState;
 
 #[test]
@@ -132,5 +133,57 @@ import AccountSearchResult from '~/components/AccountSearchResult.vue'
     assert_eq!(
         location.uri,
         Url::from_file_path(target_path).expect("target URI")
+    );
+}
+
+#[test]
+fn definition_service_follows_an_alias_barrel_to_the_component_source() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let source_dir = workspace.path().join("src");
+    let components = source_dir.join("components");
+    fs::create_dir_all(&components).expect("components directory");
+    fs::write(
+        workspace.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"paths":{"@/*":["./src/*"]}}}"#,
+    )
+    .expect("TypeScript config");
+    fs::write(
+        components.join("index.ts"),
+        "export { Widget } from \"./Widget.vue\";\n",
+    )
+    .expect("component barrel");
+    let target_path = components.join("Widget.vue");
+    fs::write(&target_path, "<template><button /></template>\n").expect("component");
+
+    let importer_path = source_dir.join("App.vue");
+    let source = r#"<script setup lang="ts">
+import { Widget } from "@/components";
+</script>
+<template><Widget /></template>
+"#;
+    fs::write(&importer_path, source).expect("importer");
+
+    let importer_uri = Url::from_file_path(&importer_path).expect("importer URI");
+    let state = ServerState::new();
+    state.set_workspace_root(workspace.path().to_path_buf());
+    state
+        .documents
+        .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+    state.update_virtual_docs(&importer_uri, source);
+    let offset = source.rfind("Widget").expect("component tag");
+    let ctx = IdeContext::new(&state, &importer_uri, offset).expect("IDE context");
+    let definition = DefinitionService::definition(&ctx).expect("component definition");
+    let GotoDefinitionResponse::Scalar(location) = definition else {
+        panic!("component definition must be scalar");
+    };
+
+    assert_eq!(
+        location
+            .uri
+            .to_file_path()
+            .expect("definition path")
+            .canonicalize()
+            .expect("canonical definition path"),
+        target_path.canonicalize().expect("canonical target path")
     );
 }
