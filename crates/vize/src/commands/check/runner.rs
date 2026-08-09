@@ -400,12 +400,10 @@ fn prepare_and_execute(
     if !args.patterns.is_empty() && candidate.inputs.is_empty() {
         return None;
     }
-    let registered_files = canonical_file_set(&candidate.files, canonical_paths);
     candidate.reported.extend(
         authored_imports
             .into_iter()
-            .map(|path| canonical_paths.canonicalize(&path))
-            .filter(|path| registered_files.contains(path)),
+            .map(|path| canonical_paths.canonicalize(&path)),
     );
     if !args.patterns.is_empty()
         && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()

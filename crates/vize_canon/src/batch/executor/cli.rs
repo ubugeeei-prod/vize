@@ -97,12 +97,11 @@ pub(super) fn check_with_cli_sharded(
         let result = result?;
         merged.exit_code = merged.exit_code.max(result.exit_code);
         merged.success = merged.success && result.success;
-        merged.diagnostics.extend(
-            result
-                .diagnostics
-                .into_iter()
-                .filter(|diagnostic| owners.get(&diagnostic.file).copied().unwrap_or(0) == index),
-        );
+        merged
+            .diagnostics
+            .extend(result.diagnostics.into_iter().filter(
+            |diagnostic| !matches!(owners.get(&diagnostic.file), Some(owner) if *owner != index),
+        ));
     }
     Ok(merged)
 }
@@ -124,8 +123,8 @@ struct ShardPlan<'a> {
     /// Virtual paths to include per shard (owned Vue files plus every shared
     /// file).
     shards: Vec<Vec<&'a Path>>,
-    /// Original path -> owning shard for partitioned Vue files; files absent
-    /// from the map (shared sources, project-level anchors) belong to shard 0.
+    /// Registered-file ownership. Absent shared or real-tree diagnostics are
+    /// accepted from every shard, then deduplicated in the merged result.
     owners: FxHashMap<PathBuf, usize>,
 }
 

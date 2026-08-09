@@ -45,8 +45,8 @@ fn allow_js_collects_the_imported_javascript_family() {
         None,
     );
 
-    assert!(disabled.is_empty());
-    assert_eq!(enabled, expected);
+    assert!(disabled.registrations.is_empty());
+    assert_eq!(enabled.registrations, expected);
     let _ = std::fs::remove_dir_all(root);
 }
 
@@ -70,6 +70,9 @@ fn allow_js_keeps_typescript_substitution_ahead_of_javascript() {
         None,
     );
 
-    assert_eq!(discovered, vec![canonicalize_non_verbatim(&typescript)]);
+    assert_eq!(
+        discovered.registrations,
+        vec![canonicalize_non_verbatim(&typescript)]
+    );
     let _ = std::fs::remove_dir_all(root);
 }

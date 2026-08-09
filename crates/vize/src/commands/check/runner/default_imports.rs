@@ -7,7 +7,7 @@ use super::{
     ignores::{CheckIgnoreSet, retain_unignored},
 };
 use crate::commands::check::{
-    imports::{ImportFileOptions, collect_transitive_local_imports},
+    imports::{ImportFileOptions, TransitiveLocalImports, collect_transitive_local_imports},
     imports_aliases::PathAliasResolver,
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
@@ -157,7 +157,17 @@ pub(super) fn register_transitive_local_imports(
 ) -> Vec<PathBuf> {
     let discovered =
         collect_local_imports(files, cwd, tsconfig_path, import_options, canonical_paths);
-    append_local_imports(files, discovered, explicit_input_root, validate_inputs)
+    // The explicit-root boundary constrains user-selected roots and files that
+    // enter Vize's mirror. It must not hide authored modules that TypeScript
+    // legitimately resolves in place outside that boundary.
+    let authored = discovered.authored;
+    append_local_imports(
+        files,
+        discovered.registrations,
+        explicit_input_root,
+        validate_inputs,
+    );
+    authored
 }
 
 pub(super) fn collect_transitive_local_imports_from(
@@ -170,6 +180,7 @@ pub(super) fn collect_transitive_local_imports_from(
     validate_inputs: bool,
 ) -> Vec<PathBuf> {
     collect_local_imports(roots, cwd, tsconfig_path, import_options, canonical_paths)
+        .registrations
         .into_iter()
         .filter(|path| local_import_is_allowed(path, explicit_input_root, validate_inputs))
         .collect()
@@ -181,7 +192,7 @@ fn collect_local_imports(
     tsconfig_path: Option<&Path>,
     import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
-) -> Vec<PathBuf> {
+) -> TransitiveLocalImports {
     let aliases = PathAliasResolver::from_tsconfig(tsconfig_path);
     collect_transitive_local_imports(roots, cwd, canonical_paths, import_options, Some(&aliases))
 }

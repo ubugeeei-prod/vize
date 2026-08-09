@@ -123,6 +123,7 @@ pub(super) fn execute_program(
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(1);
     });
+    checker.set_diagnostic_paths(input.reported_files.iter().map(PathBuf::as_path));
     let gen_time = gen_start.elapsed();
 
     if !settings.quiet {

@@ -2,23 +2,25 @@
 
 use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
 
-use vize_carton::{FxHashSet, String, cstr};
+use vize_carton::cstr;
 
 use super::{
-    CheckArgs, JsonFileResult, JsonOutput, ProgramExecution,
+    CheckArgs, JsonOutput, ProgramExecution,
     diagnostics::{
         emit_json_output, is_reported, is_suppressed_false_positive, render_diagnostics,
         save_virtual_ts_targets, write_profile_virtual_ts,
     },
-    display_path,
 };
 use crate::commands::check::path_cache::CanonicalPathCache;
 
 #[path = "output_declarations.rs"]
 mod declarations;
+#[path = "output_json.rs"]
+mod json;
 #[path = "output_profile.rs"]
 mod profile;
 use declarations::emit_declarations;
+use json::emit_json;
 use profile::print_profile;
 
 #[allow(clippy::disallowed_types)]
@@ -143,7 +145,6 @@ pub(super) fn report_executions(
             args,
             cwd,
             executions,
-            &virtual_files,
             &diagnostics,
             total_errors,
             total_warnings,
@@ -168,77 +169,6 @@ pub(super) fn report_executions(
         check_time,
         emitted.as_ref(),
     );
-}
-
-#[allow(clippy::too_many_arguments)]
-fn emit_json(
-    args: &CheckArgs,
-    cwd: &Path,
-    executions: &[ProgramExecution],
-    virtual_files: &[&vize_canon::VirtualFile],
-    diagnostics: &RenderedDiagnostics,
-    total_errors: usize,
-    total_warnings: usize,
-    emitted: Option<&DeclarationSummary>,
-    canonical_paths: &mut CanonicalPathCache,
-) {
-    let mut files_json = executions
-        .iter()
-        .flat_map(|execution| {
-            execution
-                .checker
-                .virtual_files()
-                .into_iter()
-                .filter(|file| {
-                    is_reported(
-                        &execution.reported_files,
-                        &file.original_path,
-                        canonical_paths,
-                    )
-                })
-                .map(|file| {
-                    let key = file.original_path.to_string_lossy().into_owned();
-                    JsonFileResult {
-                        file: display_path(cwd, &file.original_path).into(),
-                        virtual_ts: args.show_virtual_ts.then(|| file.content.clone().into()),
-                        diagnostics: diagnostics.get(key.as_str()).cloned().unwrap_or_default(),
-                    }
-                })
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
-    files_json.sort_by(|left, right| left.file.cmp(&right.file));
-    files_json.dedup_by(|left, right| left.file == right.file);
-    let reported_file_count = files_json.len();
-
-    let virtual_keys = virtual_files
-        .iter()
-        .map(|file| String::from(file.original_path.to_string_lossy()))
-        .collect::<FxHashSet<_>>();
-    files_json.extend(
-        diagnostics
-            .iter()
-            .filter(|(key, values)| !values.is_empty() && !virtual_keys.contains(key.as_str()))
-            .map(|(key, values)| JsonFileResult {
-                file: display_path(cwd, Path::new(key)).into(),
-                virtual_ts: None,
-                diagnostics: values.clone(),
-            }),
-    );
-
-    emit_json_output(JsonOutput {
-        files: files_json,
-        error_count: total_errors,
-        warning_count: total_warnings,
-        file_count: reported_file_count,
-        declarations: emitted.map(|summary| {
-            summary
-                .files
-                .iter()
-                .map(|path| display_path(cwd, path).into())
-                .collect()
-        }),
-    });
 }
 
 #[allow(clippy::too_many_arguments)]
