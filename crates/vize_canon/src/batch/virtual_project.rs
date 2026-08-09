@@ -125,6 +125,11 @@ pub struct VirtualProject {
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
 
+    /// Exact bare specifiers that TypeScript must route to registered virtual
+    /// modules. Values are source paths; tsconfig generation translates them
+    /// to their materialized counterparts after registration.
+    virtual_module_aliases: FxHashMap<CompactString, Vec<PathBuf>>,
+
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
 

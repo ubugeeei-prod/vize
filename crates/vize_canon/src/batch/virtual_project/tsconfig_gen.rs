@@ -175,11 +175,14 @@ impl VirtualProject {
         // target gets a mirror candidate first (so the generated `.vue.ts`
         // modules win) and the real-tree path as a fallback (so aliases to files
         // outside the checked set keep resolving).
-        if !original_paths.is_empty() {
-            compiler_options.insert(
-                "paths".into(),
-                Value::Object(self.remap_paths(&original_paths)),
-            );
+        let mut remapped_paths = if original_paths.is_empty() {
+            Map::new()
+        } else {
+            self.remap_paths(&original_paths)
+        };
+        self.insert_virtual_module_alias_paths(&mut remapped_paths);
+        if !remapped_paths.is_empty() {
+            compiler_options.insert("paths".into(), Value::Object(remapped_paths));
         }
 
         // Re-anchor custom `typeRoots` the same way: list the mirror copy and
@@ -302,6 +305,35 @@ impl VirtualProject {
         }
         protect_control_file_aliases(paths, &mut remapped, &up);
         remapped
+    }
+
+    /// Add exact bare-specifier routes for workspace package sources whose
+    /// manifests point at `.vue` (or at a barrel that reaches one). The target
+    /// is already inside the virtual tree, so it must be added after ordinary
+    /// project-relative `paths` rebasing. Authored source keeps the bare
+    /// package spelling, which is also the spelling declaration emit retains.
+    #[allow(clippy::disallowed_types)]
+    fn insert_virtual_module_alias_paths(&self, paths: &mut Map<std::string::String, Value>) {
+        let mut aliases: Vec<_> = self.virtual_module_aliases.iter().collect();
+        aliases.sort_by_key(|(specifier, _)| specifier.as_str());
+        for (specifier, source_paths) in aliases {
+            let mut targets = source_paths
+                .iter()
+                .filter_map(|source_path| self.find_by_original(source_path))
+                .filter_map(|file| file.virtual_path.strip_prefix(&self.virtual_root).ok())
+                .map(|relative| Value::String(cstr!("./{}", relative.display()).into()))
+                .collect::<Vec<_>>();
+            if let Some(existing) = paths.get(specifier.as_str()).and_then(Value::as_array) {
+                for target in existing {
+                    if !targets.contains(target) {
+                        targets.push(target.clone());
+                    }
+                }
+            }
+            if !targets.is_empty() {
+                paths.insert(specifier.as_str().into(), Value::Array(targets));
+            }
+        }
     }
 
     /// Re-anchor a list of project-root-relative directories (e.g. `typeRoots`)

@@ -76,8 +76,16 @@ struct ProgramCandidate {
     files: Vec<PathBuf>,
     inputs: Vec<PathBuf>,
     reported: FxHashSet<PathBuf>,
+    virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
     tsconfig_path: Option<PathBuf>,
     rebuild_supporting_files: bool,
+}
+
+struct CollectedRoots {
+    files: Vec<PathBuf>,
+    inputs: Vec<PathBuf>,
+    reported: FxHashSet<PathBuf>,
+    virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
 }
 
 /// Run type checking directly with materialized Corsa projects.
@@ -152,7 +160,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut canonical_paths = CanonicalPathCache::default();
     let check_ignore_set = load_check_ignore_set(args, config_dir);
     let collect_start = Instant::now();
-    let (files, inputs, reported) = collect_roots(
+    let collected = collect_roots(
         args,
         &invocation_project_root,
         &cwd,
@@ -163,15 +171,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         check_ignore_set.as_ref(),
     );
     let collect_time = collect_start.elapsed();
-    if files.is_empty() {
+    if collected.files.is_empty() {
         report_no_inputs(args);
         return;
     }
 
     let candidates = split_program_candidates(
-        files,
-        inputs,
-        reported,
+        collected,
         invocation_tsconfig_path.as_deref(),
         jsx_typecheck,
         &mut tsconfig_input_cache,
@@ -236,14 +242,14 @@ fn collect_roots(
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     check_ignore_set: Option<&ignores::CheckIgnoreSet>,
-) -> (Vec<PathBuf>, Vec<PathBuf>, FxHashSet<PathBuf>) {
+) -> CollectedRoots {
     let include_js = project_graph_allows_js(invocation_tsconfig_path, cache);
     let import_options = ImportFileOptions {
         include_js,
         include_jsx: jsx_typecheck,
     };
     if args.patterns.is_empty() {
-        let (files, inputs, reported) = collect_default_run_files(
+        let collected = collect_default_run_files(
             invocation_project_root,
             cwd,
             invocation_tsconfig_path,
@@ -253,13 +259,13 @@ fn collect_roots(
             check_ignore_set,
         );
         exit_if_default_run_leaves_cwd(
-            &files,
+            &collected.files,
             cwd,
             invocation_project_root,
             invocation_tsconfig_path,
             args.quiet,
         );
-        return (files, inputs, reported);
+        return collected;
     }
 
     let files = collect_check_files_with_ignores(
@@ -271,18 +277,27 @@ fn collect_roots(
         check_ignore_set,
     );
     let reported = canonical_file_set(&files, canonical_paths);
-    (files.clone(), files, reported)
+    CollectedRoots {
+        files: files.clone(),
+        inputs: files,
+        reported,
+        virtual_module_aliases: Vec::new(),
+    }
 }
 
 fn split_program_candidates(
-    files: Vec<PathBuf>,
-    inputs: Vec<PathBuf>,
-    reported: FxHashSet<PathBuf>,
+    collected: CollectedRoots,
     tsconfig_path: Option<&Path>,
     include_jsx: bool,
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
 ) -> Vec<ProgramCandidate> {
+    let CollectedRoots {
+        files,
+        inputs,
+        reported,
+        virtual_module_aliases,
+    } = collected;
     let groups = resolve_tsconfig_program_inputs(tsconfig_path, &inputs, include_jsx, cache);
     let single_group_uses_invocation_config = groups.first().is_none_or(|group| {
         tsconfig_path.is_none_or(|path| {
@@ -294,6 +309,7 @@ fn split_program_candidates(
             files,
             inputs,
             reported,
+            virtual_module_aliases,
             tsconfig_path: groups
                 .first()
                 .map(|group| group.tsconfig_path.clone())
@@ -302,6 +318,9 @@ fn split_program_candidates(
         }];
     }
 
+    // Each referenced program rebuilds its own reachable graph below; routes
+    // collected from the solution shell must not leak across program scopes.
+    drop(virtual_module_aliases);
     groups
         .into_iter()
         .map(|group| {
@@ -310,6 +329,7 @@ fn split_program_candidates(
                 inputs: group.files.clone(),
                 files: group.files,
                 reported,
+                virtual_module_aliases: Vec::new(),
                 tsconfig_path: Some(group.tsconfig_path),
                 rebuild_supporting_files: true,
             }
@@ -351,8 +371,9 @@ fn prepare_and_execute(
         include_jsx: jsx_typecheck,
     };
     let mut authored_imports = Vec::new();
+    let mut virtual_module_aliases = std::mem::take(&mut candidate.virtual_module_aliases);
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
-        authored_imports = register_transitive_local_imports(
+        let discovered = register_transitive_local_imports(
             &mut candidate.files,
             cwd,
             candidate.tsconfig_path.as_deref(),
@@ -361,6 +382,8 @@ fn prepare_and_execute(
             Some(explicit_input_root),
             validate_inputs,
         );
+        authored_imports = discovered.authored;
+        virtual_module_aliases.extend(discovered.virtual_module_aliases);
     }
     if args.patterns.is_empty() && candidate.rebuild_supporting_files {
         register_ambient_declaration_files(
@@ -369,7 +392,7 @@ fn prepare_and_execute(
             candidate.tsconfig_path.as_deref(),
             cache,
         );
-        let _ = register_transitive_local_imports(
+        let discovered = register_transitive_local_imports(
             &mut candidate.files,
             cwd,
             candidate.tsconfig_path.as_deref(),
@@ -378,6 +401,7 @@ fn prepare_and_execute(
             Some(explicit_input_root),
             validate_inputs,
         );
+        virtual_module_aliases.extend(discovered.virtual_module_aliases);
     }
     exit_if_inputs_outside_root(explicit_input_root, &candidate.files, validate_inputs);
 
@@ -429,10 +453,13 @@ fn prepare_and_execute(
         return None;
     }
 
+    virtual_module_aliases.sort();
+    virtual_module_aliases.dedup();
     Some(execute_program(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,
+            virtual_module_aliases: &virtual_module_aliases,
             project_root: &project_root,
             program_root: logical_program_root,
             tsconfig_path: program_tsconfig_path,

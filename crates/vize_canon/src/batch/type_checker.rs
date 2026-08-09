@@ -192,6 +192,16 @@ impl BatchTypeChecker {
             });
     }
 
+    /// Route exact bare workspace-package specifiers to registered source
+    /// modules in the virtual mirror. Authored imports keep their package
+    /// spelling, so declaration emit does not expose internal mirror paths.
+    pub fn set_virtual_module_aliases(
+        &mut self,
+        aliases: impl IntoIterator<Item = (String, PathBuf)>,
+    ) {
+        self.project.set_virtual_module_aliases(aliases);
+    }
+
     /// Configure template syntax compatibility for Vue template parsing.
     pub fn set_template_syntax(&mut self, template_syntax: vize_atelier_core::TemplateSyntaxMode) {
         self.project.set_template_syntax(template_syntax);
@@ -220,6 +230,7 @@ impl BatchTypeChecker {
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.project.register_paths(paths)?;
+        self.project.register_virtual_module_alias_targets()?;
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
         // (#3887).
@@ -233,6 +244,7 @@ impl BatchTypeChecker {
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let paths = collect_project_paths(self.project.project_root())?;
         self.project.register_paths(&paths)?;
+        self.project.register_virtual_module_alias_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
         self.project.register_reachable_dependencies()?;
