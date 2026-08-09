@@ -162,6 +162,15 @@ impl CorsaProjectClient {
         }
     }
 
+    pub(crate) fn signature_help_raw(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        self.signature_help_via_editor_lsp(uri, line, character)
+    }
+
     fn api_position(
         &self,
         uri: &str,

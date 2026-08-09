@@ -45,6 +45,14 @@ impl lsp_types::request::Request for RawCompletionRequest {
     const METHOD: &'static str = "textDocument/completion";
 }
 
+struct RawSignatureHelpRequest;
+
+impl lsp_types::request::Request for RawSignatureHelpRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/signatureHelp";
+}
+
 /// A reusable `--lsp --stdio` session used only for editor requests.
 pub(super) struct EditorLspSession {
     client: LspClient,
@@ -142,6 +150,28 @@ impl EditorLspSession {
         )
         .map_err(|error| cstr!("Failed to request editor LSP completion: {error}"))
     }
+
+    fn signature_help(
+        &mut self,
+        document_uri: &str,
+        text: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.mirror(document_uri, text)?;
+        block_on(
+            self.client
+                .request::<RawSignatureHelpRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                    "context": {
+                        "triggerKind": 1,
+                        "isRetrigger": false
+                    },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP signature help: {error}"))
+    }
 }
 
 impl Drop for EditorLspSession {
@@ -232,6 +262,29 @@ impl CorsaProjectClient {
             return Ok(None);
         };
         session.completion(document_uri.as_str(), text.as_str(), line, character)
+    }
+
+    pub(super) fn signature_help_via_editor_lsp(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let document_uri = self.session_document_uri(uri);
+        let Some(text) = self.document_texts.get(uri).cloned() else {
+            return Ok(None);
+        };
+
+        if self.editor_lsp.is_none() {
+            let root = self.editor_lsp_root();
+            let executable = self.executable.clone();
+            let cwd = self.cwd.clone();
+            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
+        }
+        let Some(session) = self.editor_lsp.as_mut() else {
+            return Ok(None);
+        };
+        session.signature_help(document_uri.as_str(), text.as_str(), line, character)
     }
 
     /// Drop the editor session so the next request respawns it. Used when the

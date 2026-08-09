@@ -11,7 +11,7 @@ use vize_carton::{String, cstr};
 use super::session::build_client;
 use super::types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionResponse,
-    LspDefinitionResponse, LspDiagnostic, LspHover, LspLocation, TypeCheckResult,
+    LspDefinitionResponse, LspDiagnostic, LspHover, LspLocation, LspSignatureHelp, TypeCheckResult,
     VIRTUAL_URI_SCHEME,
 };
 use super::worker::{BoundedWorker, WorkerError};
@@ -419,6 +419,30 @@ impl CorsaBridge {
         }
 
         Ok(Vec::new())
+    }
+
+    /// Get signature help at a position.
+    pub async fn signature_help(
+        &self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<LspSignatureHelp>, CorsaBridgeError> {
+        let _timer = self.profiler.timer("corsa_signature_help");
+        let uri = uri.to_owned();
+        let result = self
+            .with_client(move |client| {
+                client
+                    .signature_help_raw(uri.as_str(), line, character)
+                    .map_err(CorsaBridgeError::CommunicationError)
+            })
+            .await?;
+
+        if let Some(timer) = _timer {
+            timer.record(&self.profiler);
+        }
+
+        result.map(parse_json_value::<LspSignatureHelp>).transpose()
     }
 
     pub(super) async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
