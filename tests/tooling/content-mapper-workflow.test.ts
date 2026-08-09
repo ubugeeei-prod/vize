@@ -43,9 +43,6 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
-  assert.match(
-    job,
-    /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/,
-  );
+  assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
   assert.match(job, /cargo test -p vize_maestro/);
 });
