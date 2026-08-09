@@ -1,11 +1,15 @@
-use std::sync::Arc;
-
 use tower_lsp::lsp_types::{Location, Range, Url};
-use vize_canon::{CorsaBridge, CorsaVueVirtualDocumentOptions, LspLocation};
+use vize_canon::LspLocation;
 use vize_carton::{String, cstr};
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
+
+mod open;
+mod project;
+
+pub(crate) use open::open_canonical_virtual_document;
+pub(crate) use project::open_canonical_virtual_project_document;
 
 pub(crate) struct CanonicalVirtualDocument {
     pub(crate) request_uri: String,
@@ -22,66 +26,6 @@ pub(crate) struct CanonicalDependencyDocument {
 
 pub(crate) fn canonical_request_path(uri: &Url) -> String {
     cstr!("{}.ts", uri.path())
-}
-
-pub(crate) async fn open_canonical_virtual_document(
-    ctx: &IdeContext<'_>,
-    bridge: &Arc<CorsaBridge>,
-) -> Option<CanonicalVirtualDocument> {
-    if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
-        return None;
-    }
-
-    let source_path = ctx.uri.to_file_path().ok()?;
-    let opened = bridge
-        .open_vue_virtual_document(
-            &source_path,
-            &ctx.content,
-            CorsaVueVirtualDocumentOptions {
-                options_api: ctx.state.options_api_enabled(),
-                legacy_vue2: ctx.state.legacy_vue2_enabled(),
-            },
-        )
-        .await
-        .ok()?;
-
-    let dependencies = opened
-        .dependencies
-        .into_iter()
-        .filter_map(|dependency| {
-            let source_uri = Url::from_file_path(&dependency.source_path).ok()?;
-            Some(CanonicalDependencyDocument {
-                source_uri,
-                source: dependency.source,
-                request_uri: dependency.request_uri,
-                virtual_result: VirtualTsResult {
-                    code: dependency.code.to_string(),
-                    source_mappings: dependency.mappings,
-                    import_source_map: dependency.import_source_map,
-                    user_code_start_line: 0,
-                    sfc_script_start_line: 0,
-                    template_scope_start_line: 0,
-                    line_mappings: Vec::new(),
-                    skipped_import_lines: 0,
-                },
-            })
-        })
-        .collect();
-
-    Some(CanonicalVirtualDocument {
-        request_uri: opened.request_uri,
-        virtual_result: VirtualTsResult {
-            code: opened.code.to_string(),
-            source_mappings: opened.mappings,
-            import_source_map: opened.import_source_map,
-            user_code_start_line: 0,
-            sfc_script_start_line: 0,
-            template_scope_start_line: 0,
-            line_mappings: Vec::new(),
-            skipped_import_lines: 0,
-        },
-        dependencies,
-    })
 }
 
 pub(crate) fn canonical_source_offset_to_position(

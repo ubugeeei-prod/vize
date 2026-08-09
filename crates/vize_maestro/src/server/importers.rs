@@ -93,6 +93,12 @@ pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<U
         .unwrap_or_default()
 }
 
+impl ServerState {
+    pub(crate) fn open_vue_importers(&self, dependency: &Url) -> Vec<Url> {
+        open_vue_importers(self, dependency)
+    }
+}
+
 fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: importer.to_string_lossy().into_owned().into(),

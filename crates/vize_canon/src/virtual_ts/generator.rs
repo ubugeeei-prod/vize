@@ -856,7 +856,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    self::script_module::emit_setup_invocation_and_exports(&mut ts, &named_value_exports);
+    script_module::emit_exports(&mut ts, &mut mappings, &named_value_exports, script_offset);
     setup_type_exports.emit_module_exports(&mut ts);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
