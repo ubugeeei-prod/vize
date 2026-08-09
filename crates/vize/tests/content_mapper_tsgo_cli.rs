@@ -271,13 +271,28 @@ const valid: AppProps = { count: 1 };
 // @ts-expect-error count must remain a number through declaration emit
 const invalid: AppProps = { count: "wrong" };
 const optionsCountMustBeTyped: IsAny<OptionsInstance["count"]> = false;
-const optionsCount: number = (undefined as unknown as OptionsInstance).count;
+const optionsLabelMustBeTyped: IsAny<OptionsInstance["label"]> = false;
+const optionsComputedMustBeTyped: IsAny<OptionsInstance["doubled"]> = false;
+const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
+const options = undefined as unknown as OptionsInstance;
+const optionsCount: number = options.count;
+const optionsLabel: string = options.label;
+const optionsComputed: number = options.doubled;
+const optionsMethodResult: number = options.increment(1);
+// @ts-expect-error the authored method parameter must remain a number
+options.increment("1");
 
 void propsMustBeTyped;
 void valid;
 void invalid;
 void optionsCountMustBeTyped;
+void optionsLabelMustBeTyped;
+void optionsComputedMustBeTyped;
+void optionsMethodMustBeTyped;
 void optionsCount;
+void optionsLabel;
+void optionsComputed;
+void optionsMethodResult;
 "#,
     )
     .unwrap();
