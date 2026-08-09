@@ -44,7 +44,9 @@ export const DEFAULT_SCRIPTS = {
   "vize:fmt": "vize fmt --check src",
   "vize:fmt:fix": "vize fmt --write src",
   "vize:lint": "vize lint --preset happy-path --max-warnings 0 src",
-  "vize:check": "vize check src",
+  // No positional input: the default command must check the complete tsconfig
+  // project graph, including root files and referenced projects outside src.
+  "vize:check": "vize check",
   "vize:musea": "vize musea",
   "vize:ready": "vize ready src",
 } as const;

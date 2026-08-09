@@ -71,7 +71,7 @@ Add scripts to your project and run Vize through your package manager:
     "vize:build": "vize build src",
     "vize:fmt": "vize fmt --write src",
     "vize:lint": "vize lint --preset happy-path src",
-    "vize:check": "vize check src",
+    "vize:check": "vize check",
     "vize:ready": "vize ready src",
     "vize:upgrade": "vize upgrade"
   }
