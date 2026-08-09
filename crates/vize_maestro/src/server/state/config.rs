@@ -108,6 +108,17 @@ impl ServerState {
         lsp_features.apply_effective_compatibility();
     }
 
+    /// Build the config-file LSP section, folding in the `languageServer`
+    /// switches that are not stable carton model fields. They ride on
+    /// [`LspConfigSection`] rather than being applied afterwards so the
+    /// `editor` bundle switch still loses to an explicit per-feature toggle.
+    fn lsp_config_section_from_file(
+        config: vize_carton::config::LanguageServerConfig,
+        unstable: vize_carton::config::LanguageServerUnstableFlags,
+    ) -> LspConfigSection {
+        LspConfigSection::from(config).with_signature_help(unstable.signature_help)
+    }
+
     fn apply_linter_config(&self, config: LinterConfig, source: &str) {
         *self.linter_config.write() = config;
         tracing::info!("Loaded linter config from {}", source);
@@ -140,7 +151,13 @@ impl ServerState {
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
-            self.apply_lsp_config(config.language_server.into(), &source);
+            self.apply_lsp_config(
+                Self::lsp_config_section_from_file(
+                    config.language_server,
+                    vize_carton::config::load_language_server_unstable_flags(Some(dir)),
+                ),
+                &source,
+            );
             self.set_dialect_config(config.dialect);
         }
     }
@@ -158,7 +175,13 @@ impl ServerState {
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
-            self.apply_lsp_config(config.language_server.into(), &source);
+            self.apply_lsp_config(
+                Self::lsp_config_section_from_file(
+                    config.language_server,
+                    vize_carton::config::load_language_server_unstable_flags(Some(dir)),
+                ),
+                &source,
+            );
             self.set_dialect_config(config.dialect);
         }
     }

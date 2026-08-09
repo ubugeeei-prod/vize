@@ -38,6 +38,14 @@ pub(super) struct LspConfigSection {
 }
 
 impl LspConfigSection {
+    /// Override the `signatureHelp` switch, which config files carry on
+    /// [`vize_carton::config::LanguageServerUnstableFlags`] instead of the
+    /// semver-stable [`LanguageServerConfig`].
+    pub(super) fn with_signature_help(mut self, signature_help: Option<bool>) -> Self {
+        self.signature_help = signature_help;
+        self
+    }
+
     pub(super) fn apply_to(self, features: &mut LspFeatureConfig) {
         if self.enabled == Some(false) {
             *features = LspFeatureConfig::disabled();
@@ -147,7 +155,9 @@ impl From<LanguageServerConfig> for LspConfigSection {
             options_api: None,
             legacy_vue2: None,
             completion: config.completion,
-            signature_help: config.signature_help,
+            // Config-file only; carried by `LanguageServerUnstableFlags` so the
+            // public `LanguageServerConfig` surface stays semver-additive.
+            signature_help: None,
             hover: config.hover,
             definition: config.definition,
             references: config.references,
