@@ -6,6 +6,7 @@ use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_exten
 use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::{cstr, path::canonicalize_non_verbatim};
+mod allow_js;
 mod codegen;
 mod tsx_owner;
 // Each call uses a fresh run-scoped cache, mirroring how an actual `vize
@@ -737,7 +738,7 @@ fn declaration_files_are_always_supported() {
 }
 
 #[test]
-fn supported_extensions_cover_ts_family_and_reject_js_family() {
+fn supported_extensions_follow_allow_js() {
     let case_dir = unique_case_dir("tsconfig-ext-family");
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(case_dir.join("src")).unwrap();
@@ -762,6 +763,29 @@ fn supported_extensions_cover_ts_family_and_reject_js_family() {
             case_dir.join("src/b.tsx"),
             case_dir.join("src/c.mts"),
             case_dir.join("src/d.cts"),
+        ]
+    );
+
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": { "allowJs": true },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+    assert_eq!(
+        files,
+        vec![
+            case_dir.join("src/App.vue"),
+            case_dir.join("src/a.ts"),
+            case_dir.join("src/b.tsx"),
+            case_dir.join("src/c.mts"),
+            case_dir.join("src/d.cts"),
+            case_dir.join("src/e.js"),
+            case_dir.join("src/g.cjs"),
+            case_dir.join("src/h.mjs"),
         ]
     );
 
@@ -911,23 +935,20 @@ fn files_present_suppresses_the_implicit_wildcard_scan() {
 }
 
 #[test]
-fn files_entry_with_unsupported_extension_is_dropped() {
+fn files_entry_accepts_javascript_when_allow_js_is_enabled() {
     let case_dir = unique_case_dir("tsconfig-files-bad-ext");
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(case_dir.join("src")).unwrap();
     fs::write(case_dir.join("src/x.js"), "module.exports = {}").unwrap();
     fs::write(
         case_dir.join("tsconfig.json"),
-        r#"{ "files": ["src/x.js"] }"#,
+        r#"{ "compilerOptions": { "allowJs": true }, "files": ["src/x.js"] }"#,
     )
     .unwrap();
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(
-        files.is_empty(),
-        "unsupported files entry should drop: {files:?}"
-    );
+    assert_eq!(files, vec![case_dir.join("src/x.js")]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }

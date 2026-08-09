@@ -20,6 +20,8 @@ pub(super) struct TsconfigInputSpec {
     pub(super) out_dir_exclude: Option<GlobSpec>,
     /// `compilerOptions.declarationDir`, likewise.
     pub(super) declaration_dir_exclude: Option<GlobSpec>,
+    /// Effective `compilerOptions.allowJs` value across the extends chain.
+    pub(super) allow_js: Option<bool>,
 }
 
 impl TsconfigInputSpec {
@@ -43,6 +45,9 @@ impl TsconfigInputSpec {
         }
         if extended.declaration_dir_exclude.is_some() {
             self.declaration_dir_exclude = extended.declaration_dir_exclude;
+        }
+        if extended.allow_js.is_some() {
+            self.allow_js = extended.allow_js;
         }
     }
 
@@ -156,4 +161,5 @@ impl GlobSpec {
 pub(super) struct FileCollectionOptions {
     pub(super) include_hidden: bool,
     pub(super) include_jsx: bool,
+    pub(super) include_js: bool,
 }

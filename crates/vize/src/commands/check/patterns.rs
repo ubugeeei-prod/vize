@@ -1,17 +1,28 @@
 use std::path::Path;
 
 pub(super) const CHECK_INPUTS_DISPLAY: &str =
-    ".vue, .ts, .tsx, .mts, .cts, .jsx, .d.ts, .d.mts, or .d.cts";
+    ".vue, .ts, .tsx, .mts, .cts, .js, .mjs, .cjs, .jsx, .d.ts, .d.mts, or .d.cts";
 
 const CHECK_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "mts", "cts"];
 
+#[cfg(test)]
 pub(super) fn is_supported_check_file(path: &Path, include_jsx: bool) -> bool {
+    is_supported_check_file_with_js(path, include_jsx, false)
+}
+
+pub(super) fn is_supported_check_file_with_js(
+    path: &Path,
+    include_jsx: bool,
+    include_js: bool,
+) -> bool {
     is_declaration_path(path)
         || path
             .extension()
             .and_then(|extension| extension.to_str())
             .is_some_and(|extension| {
-                CHECK_EXTENSIONS.contains(&extension) || (include_jsx && extension == "jsx")
+                CHECK_EXTENSIONS.contains(&extension)
+                    || (include_jsx && extension == "jsx")
+                    || (include_js && matches!(extension, "js" | "mjs" | "cjs"))
             })
 }
 
@@ -25,7 +36,7 @@ pub(super) fn is_declaration_path(path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{CHECK_INPUTS_DISPLAY, is_supported_check_file};
+    use super::{CHECK_INPUTS_DISPLAY, is_supported_check_file, is_supported_check_file_with_js};
     use std::path::Path;
 
     #[test]
@@ -46,6 +57,17 @@ mod tests {
         assert!(!is_supported_check_file(Path::new("view.jsx"), false));
         assert!(is_supported_check_file(Path::new("view.jsx"), true));
         assert!(!is_supported_check_file(Path::new("main.js"), true));
+        for file in ["main.js", "module.mjs", "module.cjs"] {
+            assert!(
+                is_supported_check_file_with_js(Path::new(file), false, true),
+                "{file}"
+            );
+        }
+        assert!(!is_supported_check_file_with_js(
+            Path::new("view.jsx"),
+            false,
+            true
+        ));
     }
 
     #[test]
@@ -55,7 +77,7 @@ mod tests {
             .filter(|token| !token.is_empty())
             .collect::<Vec<_>>();
 
-        for extension in ["vue", "ts", "tsx", "mts", "cts", "jsx"] {
+        for extension in ["vue", "ts", "tsx", "mts", "cts", "js", "mjs", "cjs", "jsx"] {
             assert!(
                 display_tokens.contains(&extension),
                 "missing .{extension} from display text"

@@ -42,6 +42,7 @@ pub(super) fn collect_supported_files_with_options(
                         path,
                         SupportedFileOptions {
                             include_jsx: options.include_jsx,
+                            include_js: options.include_js,
                         },
                     )
                     && (!skip_generated || !is_generated_path(path))
@@ -190,7 +191,13 @@ pub(crate) fn resolve_tsconfig_for_files(
     let files = files
         .iter()
         .filter(|path| {
-            is_supported_check_file_with_options(path, SupportedFileOptions { include_jsx })
+            is_supported_check_file_with_options(
+                path,
+                SupportedFileOptions {
+                    include_jsx,
+                    include_js: true,
+                },
+            )
         })
         .map(|path| normalize_input_path(path))
         .collect::<Vec<_>>();
@@ -244,6 +251,7 @@ struct TsconfigOwnershipMatcher {
     includes: Vec<GlobSpec>,
     excludes: Vec<GlobSpec>,
     include_jsx: bool,
+    include_js: bool,
 }
 
 impl TsconfigOwnershipMatcher {
@@ -255,6 +263,7 @@ impl TsconfigOwnershipMatcher {
                 includes: Vec::new(),
                 excludes: Vec::new(),
                 include_jsx,
+                include_js: false,
             };
         };
 
@@ -282,6 +291,7 @@ impl TsconfigOwnershipMatcher {
             includes,
             excludes,
             include_jsx,
+            include_js: spec.allow_js.unwrap_or(false),
         }
     }
 
@@ -302,6 +312,7 @@ impl TsconfigOwnershipMatcher {
                 file,
                 SupportedFileOptions {
                     include_jsx: self.include_jsx,
+                    include_js: self.include_js,
                 },
             )
         {

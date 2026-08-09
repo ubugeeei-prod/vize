@@ -86,6 +86,32 @@ fn collect_check_files_includes_jsx_only_when_enabled() {
 }
 
 #[test]
+fn collect_check_files_includes_javascript_only_when_enabled() {
+    let case_dir = unique_case_dir("collect-check-javascript");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    for file in ["main.js", "module.mjs", "module.cjs", "view.jsx"] {
+        fs::write(case_dir.join("src").join(file), "").unwrap();
+    }
+
+    let patterns = vec![case_dir.display().to_string()];
+    let excluded = collect_check_files_with_ignores(&patterns, false, false, None);
+    let included = collect_check_files_with_ignores(&patterns, false, true, None);
+
+    assert!(excluded.is_empty());
+    assert_eq!(
+        included,
+        vec![
+            case_dir.join("src/main.js"),
+            case_dir.join("src/module.cjs"),
+            case_dir.join("src/module.mjs"),
+        ]
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn collect_check_files_filters_quoted_globs() {
     let case_dir = unique_case_dir("collect-check-glob");
     let _ = fs::remove_dir_all(&case_dir);
@@ -139,10 +165,12 @@ fn collect_check_files_applies_entry_ignores() {
     let files = collect_check_files_with_ignores(
         &vec![case_dir.display().to_string()],
         false,
+        false,
         ignore_set.as_ref(),
     );
     let explicit = collect_check_files_with_ignores(
         &vec![case_dir.join("src/Ignored.vue").display().to_string()],
+        false,
         false,
         ignore_set.as_ref(),
     );
@@ -214,6 +242,7 @@ fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
                 .display()
                 .to_string(),
         ],
+        false,
         false,
         ignore_set.as_ref(),
     );

@@ -149,6 +149,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     );
     let explicit_input_root = explicit_input_root(&invocation_project_root, &cwd);
     let mut tsconfig_input_cache = TsconfigInputCache::default();
+    let include_js =
+        tsconfig_input_cache.project_graph_allows_javascript(invocation_tsconfig_path.as_deref());
     let mut canonical_paths = CanonicalPathCache::default();
     let check_ignore_set = load_check_ignore_set(args, config_dir);
     let collect_start = Instant::now();
@@ -178,6 +180,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         let files = collect_check_files_with_ignores(
             &args.patterns,
             jsx_typecheck,
+            include_js,
             check_ignore_set.as_ref(),
         );
         let explicit_files = files.clone();

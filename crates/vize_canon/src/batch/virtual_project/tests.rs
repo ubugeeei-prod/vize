@@ -1034,6 +1034,13 @@ fn test_source_type_for_path() {
         source_type_for_path(Path::new("foo.tsx")),
         Some(oxc_span::SourceType::tsx())
     );
+    for path in ["foo.js", "foo.mjs", "foo.cjs"] {
+        assert!(
+            source_type_for_path(Path::new(path))
+                .is_some_and(|source_type| !source_type.is_typescript()),
+            "{path} should retain a JavaScript source kind"
+        );
+    }
     assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
 
