@@ -103,7 +103,9 @@ class FakeAuthoredLspSession {
       this.events.push(`${method}:${document.version}:${file}`);
     } else if (method === "textDocument/didClose") {
       this.documents.delete(document.uri);
-      this.openFiles.splice(this.openFiles.indexOf(file), 1);
+      const index = this.openFiles.indexOf(file);
+      assert.ok(index >= 0, `didClose for a document that is not open: ${file}`);
+      this.openFiles.splice(index, 1);
       this.events.push(`${method}:${file}`);
     }
   }

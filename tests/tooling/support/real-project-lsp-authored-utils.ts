@@ -32,7 +32,10 @@ export function readOracleDocument(workspaceDir: string, relativeFile: string) {
     relative.length > 0 && relative !== ".." && !relative.startsWith(`..${path.sep}`),
     `authored oracle file escapes the fixture: ${relativeFile}`,
   );
-  assert.ok(fs.statSync(absolute).isFile(), `authored oracle file is missing: ${relativeFile}`);
+  assert.ok(
+    fs.statSync(absolute, { throwIfNoEntry: false })?.isFile() === true,
+    `authored oracle file is missing: ${relativeFile}`,
+  );
   return { source: fs.readFileSync(absolute, "utf8"), uri: pathToFileURL(absolute).href };
 }
 
@@ -182,8 +185,11 @@ export function diagnosticPayload(
 function normalizeResponse(value: unknown, workspaceDir: string): unknown {
   if (Array.isArray(value)) return value.map((item) => normalizeResponse(item, workspaceDir));
   if (typeof value === "string" && value.startsWith("file:")) {
-    const relative = path.relative(workspaceDir, fileURLToPath(value));
-    if (relative !== ".." && !relative.startsWith(`..${path.sep}`)) return relative;
+    const resolved = fileURLToPath(value);
+    const relative = path.relative(workspaceDir, resolved);
+    return relative !== ".." && !relative.startsWith(`..${path.sep}`)
+      ? relative
+      : `<outside-workspace>/${path.basename(resolved)}`;
   }
   if (typeof value !== "object" || value == null) return value;
   return Object.fromEntries(

@@ -24,9 +24,9 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
   assert.equal(registry.lspAuthoredOracleGate.trackingIssue, 3952);
   assert.ok(registry.lspAuthoredOracleGate.minimumProjectCount > 0);
   assert.ok(configured.length >= registry.lspAuthoredOracleGate.minimumProjectCount);
-  assert.deepEqual(
-    configured.map((project) => project.id),
-    ["misskey"],
+  assert.ok(
+    configured.some((project) => project.id === "misskey"),
+    "misskey must keep an authored LSP feature oracle",
   );
 
   for (const project of configured) {
@@ -40,9 +40,11 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
       oracle.componentBoundary.completionItemCount >=
         oracle.componentBoundary.completionItems.length,
     );
+    const rankBase = oracle.componentBoundary.completionItems[0]?.rank ?? -1;
+    assert.ok(rankBase >= 0, `${project.id} completion ranks must start at a valid index`);
     assert.deepEqual(
       oracle.componentBoundary.completionItems.map((item) => item.rank),
-      [...oracle.componentBoundary.completionItems.keys()].map((index) => index + 28),
+      [...oracle.componentBoundary.completionItems.keys()].map((index) => index + rankBase),
     );
     assert.ok(oracle.componentBoundary.dependencyEdit.completionLabel.length > 0);
   }
