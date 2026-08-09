@@ -19,17 +19,17 @@ use vize_carton::cstr;
 enum CollectFailure {
     /// The backend session answered but the request failed; not retried.
     Request(CorsaBridgeError),
-    /// The backend process/transport is gone (crashed, OOM-killed, or
-    /// otherwise unreachable). The carried bridge must be retired so a
-    /// fresh session can be spawned (#3240).
+    /// The backend process/transport is gone or unusable (crashed,
+    /// OOM-killed, disconnected, or timed out). The carried bridge must be
+    /// retired so a fresh session can be spawned (#3240, #3975).
     DeadBridge(Arc<vize_canon::CorsaBridge>, CorsaBridgeError),
 }
 
 fn classify(bridge: &Arc<vize_canon::CorsaBridge>, error: CorsaBridgeError) -> CollectFailure {
     match error {
-        CorsaBridgeError::CommunicationError(_) | CorsaBridgeError::ProcessTerminated => {
-            CollectFailure::DeadBridge(bridge.clone(), error)
-        }
+        CorsaBridgeError::CommunicationError(_)
+        | CorsaBridgeError::ProcessTerminated
+        | CorsaBridgeError::Timeout => CollectFailure::DeadBridge(bridge.clone(), error),
         error => CollectFailure::Request(error),
     }
 }
@@ -37,12 +37,12 @@ fn classify(bridge: &Arc<vize_canon::CorsaBridge>, error: CorsaBridgeError) -> C
 impl DiagnosticService {
     /// Collect diagnostics from the Corsa project-session backend.
     ///
-    /// The backend is an external process that can die mid-session. A failed
-    /// bridge call therefore retires the dead bridge and retries exactly once
-    /// against a freshly spawned session, so a single `didChange` after a
-    /// backend crash already republishes correct typecheck diagnostics.
-    /// Repeated crashes stay bounded: each collection performs at most one
-    /// respawn, and spawn failures latch `corsa_init_failed`.
+    /// The backend is an external process that can die or stop answering
+    /// mid-session. A failed bridge call therefore retires the unusable bridge
+    /// and retries exactly once against a freshly spawned session, so the
+    /// current publish can recover without another editor event. Repeated
+    /// failures stay bounded: each collection performs at most one respawn,
+    /// and spawn failures latch `corsa_init_failed`.
     pub(in crate::ide::diagnostics) async fn collect_corsa_diagnostics(
         state: &ServerState,
         uri: &Url,
@@ -58,7 +58,10 @@ impl DiagnosticService {
                 }
                 Err(CollectFailure::DeadBridge(_, error)) => {
                     tracing::warn!("corsa retry failed for {uri}: {error}");
-                    return vec![];
+                    return match error {
+                        CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
+                        _ => vec![],
+                    };
                 }
                 Err(CollectFailure::Request(error)) => {
                     tracing::warn!("corsa request failed for {uri}: {error}");
@@ -275,4 +278,39 @@ fn vue_virtual_uri(source_path: &Path) -> Option<String> {
     let virtual_path =
         source_path.with_file_name(cstr!("{}.ts", source_path.file_name()?.to_string_lossy()));
     Url::from_file_path(virtual_path).ok().map(Into::into)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use vize_canon::{CorsaBridge, CorsaBridgeError};
+
+    use super::{CollectFailure, classify};
+
+    #[test]
+    fn a_timed_out_backend_is_retired_for_the_bounded_retry() {
+        let bridge = Arc::new(CorsaBridge::new());
+
+        match classify(&bridge, CorsaBridgeError::Timeout) {
+            CollectFailure::DeadBridge(failed, CorsaBridgeError::Timeout) => {
+                assert!(Arc::ptr_eq(&failed, &bridge));
+            }
+            _ => panic!("a timeout must replace the unusable backend"),
+        }
+    }
+
+    #[test]
+    fn an_answered_backend_error_does_not_replace_the_session() {
+        let bridge = Arc::new(CorsaBridge::new());
+        let error = CorsaBridgeError::ResponseError {
+            code: -1,
+            message: "bad request".into(),
+        };
+
+        assert!(matches!(
+            classify(&bridge, error),
+            CollectFailure::Request(CorsaBridgeError::ResponseError { .. })
+        ));
+    }
 }
