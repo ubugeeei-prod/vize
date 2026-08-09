@@ -555,7 +555,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_create_files(&self, params: CreateFilesParams) {
-        super::workspace_files::did_create_files(&self.state, &params);
+        super::workspace_files::did_create_files(self, &params).await;
     }
 
     async fn did_delete_files(&self, params: DeleteFilesParams) {

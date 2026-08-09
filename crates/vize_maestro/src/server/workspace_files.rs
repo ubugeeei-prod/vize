@@ -89,23 +89,10 @@ pub(super) async fn did_change_watched_files(
             params.changes.iter().map(|change| change.uri.as_str()),
         );
 
-        let mut dependents = params
-            .changes
-            .iter()
-            .flat_map(|change| super::importers::open_vue_dependents(&server.state, &change.uri))
-            .collect::<Vec<_>>();
-        dependents.sort();
-        dependents.dedup();
-        let dependents = dependents
-            .into_iter()
-            .filter_map(|uri| {
-                server
-                    .state
-                    .documents
-                    .version(&uri)
-                    .map(|version| (uri, version))
-            })
-            .collect::<Vec<_>>();
+        let dependents = versioned_open_vue_dependents(
+            &server.state,
+            params.changes.iter().map(|change| change.uri.as_str()),
+        );
         let deleted_paths = file_paths(
             params
                 .changes
@@ -129,7 +116,25 @@ pub(super) async fn did_change_watched_files(
     let _ = (server, params);
 }
 
-pub(super) fn did_create_files(state: &ServerState, params: &CreateFilesParams) {
+pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {
+    #[cfg(feature = "native")]
+    {
+        let dependents = versioned_open_vue_dependents(
+            &server.state,
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        record_created_files(&server.state, params);
+        for (dependent, version) in dependents {
+            server
+                .publish_diagnostics_if_version(&dependent, version)
+                .await;
+        }
+    }
+    #[cfg(not(feature = "native"))]
+    let _ = (server, params);
+}
+
+fn record_created_files(state: &ServerState, params: &CreateFilesParams) {
     #[cfg(feature = "native")]
     {
         state.invalidate_global_component_references(
@@ -147,24 +152,10 @@ pub(super) fn did_create_files(state: &ServerState, params: &CreateFilesParams) 
 pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFilesParams) {
     #[cfg(feature = "native")]
     {
-        let mut dependents = params
-            .files
-            .iter()
-            .filter_map(|file| Url::parse(&file.uri).ok())
-            .flat_map(|uri| super::importers::open_vue_dependents(&server.state, &uri))
-            .collect::<Vec<_>>();
-        dependents.sort();
-        dependents.dedup();
-        let dependents = dependents
-            .into_iter()
-            .filter_map(|uri| {
-                server
-                    .state
-                    .documents
-                    .version(&uri)
-                    .map(|version| (uri, version))
-            })
-            .collect::<Vec<_>>();
+        let dependents = versioned_open_vue_dependents(
+            &server.state,
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
         record_deleted_files(&server.state, params);
         let deleted_paths = file_paths(params.files.iter().map(|file| file.uri.as_str()));
         forget_corsa_vue_files(&server.state, &deleted_paths).await;
@@ -243,6 +234,23 @@ fn file_paths<'a>(uris: impl Iterator<Item = &'a str>) -> Vec<PathBuf> {
 }
 
 #[cfg(feature = "native")]
+fn versioned_open_vue_dependents<'a>(
+    state: &ServerState,
+    uris: impl Iterator<Item = &'a str>,
+) -> Vec<(Url, i32)> {
+    let mut dependents = uris
+        .filter_map(|uri| Url::parse(uri).ok())
+        .flat_map(|uri| super::importers::open_vue_dependents(state, &uri))
+        .collect::<Vec<_>>();
+    dependents.sort();
+    dependents.dedup();
+    dependents
+        .into_iter()
+        .filter_map(|uri| state.documents.version(&uri).map(|version| (uri, version)))
+        .collect()
+}
+
+#[cfg(feature = "native")]
 async fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {
     if !state.has_corsa_bridge() {
         return;
@@ -261,8 +269,8 @@ mod tests {
     use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
 
     use super::{
-        ServerState, did_create_files, global_component_watcher_registration, record_deleted_files,
-        record_watcher_support,
+        ServerState, global_component_watcher_registration, record_created_files,
+        record_deleted_files, record_watcher_support,
     };
 
     #[test]
@@ -312,7 +320,7 @@ mod tests {
             ]
         }))
         .unwrap();
-        did_create_files(&state, &created);
+        record_created_files(&state, &created);
 
         assert_eq!(state.workspace_vue_file_uris(), vec![vue_uri.clone()]);
 
