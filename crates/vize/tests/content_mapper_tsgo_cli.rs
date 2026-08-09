@@ -5,6 +5,7 @@ use serde_json::json;
 use vize_carton::{String as CompactString, cstr};
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
+const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
 fn workspace_root() -> &'static Path {
@@ -125,6 +126,14 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         "{TSGO_ENV} is not a file: {}",
         tsgo.display()
     );
+    let javascript_tsc = std::env::var_os(JAVASCRIPT_TSC_ENV)
+        .map(PathBuf::from)
+        .unwrap_or_else(|| panic!("{JAVASCRIPT_TSC_ENV} must accompany {TSGO_ENV}"));
+    assert!(
+        javascript_tsc.is_file(),
+        "{JAVASCRIPT_TSC_ENV} is not a file: {}",
+        javascript_tsc.display()
+    );
 
     let fixture =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/content_mapper_project");
@@ -233,6 +242,7 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
     let app_declaration = emitted_vue_declaration(project.path(), "App");
     let child_declaration = emitted_vue_declaration(project.path(), "Child");
     let options_declaration = emitted_vue_declaration(project.path(), "Options");
+    let public_declaration = emitted_vue_declaration(project.path(), "Public");
     for declaration in [&app_declaration, &child_declaration] {
         let text = std::fs::read_to_string(declaration).unwrap();
         assert!(
@@ -252,52 +262,46 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         options_text.contains("export default __vize_component__"),
         "{options_text}"
     );
+    let public_text = std::fs::read_to_string(&public_declaration).unwrap();
+    for public_surface in ["$props", "$emit", "$slots", "focus", "modelValue"] {
+        assert!(
+            public_text.contains(public_surface),
+            "missing {public_surface} in {}:\n{public_text}",
+            public_declaration.display()
+        );
+    }
 
     let main_declaration = project.path().join("dist/main.d.ts");
     let main_text = std::fs::read_to_string(&main_declaration).unwrap();
     assert!(main_text.contains("./App.vue"), "{main_text}");
     assert!(main_text.contains("export type AppProps"), "{main_text}");
 
-    std::fs::write(
+    std::fs::copy(
+        project.path().join("consumer/verify.ts"),
         project.path().join("dist/verify.ts"),
-        r#"import Options from "./Options.vue";
-import type { AppProps } from "./main";
-
-type IsAny<T> = 0 extends 1 & T ? true : false;
-type OptionsInstance = InstanceType<typeof Options>;
-
-const propsMustBeTyped: IsAny<AppProps> = false;
-const valid: AppProps = { count: 1 };
-// @ts-expect-error count must remain a number through declaration emit
-const invalid: AppProps = { count: "wrong" };
-const optionsCountMustBeTyped: IsAny<OptionsInstance["count"]> = false;
-const optionsLabelMustBeTyped: IsAny<OptionsInstance["label"]> = false;
-const optionsComputedMustBeTyped: IsAny<OptionsInstance["doubled"]> = false;
-const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
-const options = undefined as unknown as OptionsInstance;
-const optionsCount: number = options.count;
-const optionsLabel: string = options.label;
-const optionsComputed: number = options.doubled;
-const optionsMethodResult: number = options.increment(1);
-// @ts-expect-error the authored method parameter must remain a number
-options.increment("1");
-
-void propsMustBeTyped;
-void valid;
-void invalid;
-void optionsCountMustBeTyped;
-void optionsLabelMustBeTyped;
-void optionsComputedMustBeTyped;
-void optionsMethodMustBeTyped;
-void optionsCount;
-void optionsLabel;
-void optionsComputed;
-void optionsMethodResult;
-"#,
     )
     .unwrap();
     let consume = run_tsgo(
         &tsgo,
+        project.path(),
+        &[
+            "--ignoreConfig",
+            "--noEmit",
+            "--strict",
+            "--module",
+            "preserve",
+            "--moduleResolution",
+            "bundler",
+            "--allowArbitraryExtensions",
+            "--pretty",
+            "false",
+            "dist/verify.ts",
+        ],
+    );
+    assert_success(&consume);
+
+    let consume = run_tsgo(
+        &javascript_tsc,
         project.path(),
         &[
             "--ignoreConfig",

@@ -109,6 +109,7 @@ jobs:
       - name: Run standard project and declaration conformance
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+          VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
         run: cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
       - name: Run exact editor backend conformance
         env:
