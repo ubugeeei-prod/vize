@@ -1034,6 +1034,22 @@ fn test_source_type_for_path() {
         source_type_for_path(Path::new("foo.tsx")),
         Some(oxc_span::SourceType::tsx())
     );
+    assert_eq!(
+        source_type_for_path(Path::new("foo.js")),
+        Some(oxc_span::SourceType::unambiguous())
+    );
+    assert_eq!(
+        source_type_for_path(Path::new("foo.jsx")),
+        Some(oxc_span::SourceType::unambiguous().with_jsx(true))
+    );
+    assert_eq!(
+        source_type_for_path(Path::new("foo.mjs")),
+        Some(oxc_span::SourceType::mjs())
+    );
+    assert_eq!(
+        source_type_for_path(Path::new("foo.cjs")),
+        Some(oxc_span::SourceType::cjs())
+    );
     assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
 

@@ -10,6 +10,7 @@ use super::{NODE_MODULES_DIR, TARGET_DIR, VIZE_CACHE_DIR};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct SupportedFileOptions {
+    pub(super) include_js: bool,
     pub(super) include_jsx: bool,
 }
 
@@ -129,6 +130,11 @@ pub(super) fn is_supported_check_file_with_options(
     options: SupportedFileOptions,
 ) -> bool {
     check_patterns::is_supported_check_file(path, options.include_jsx)
+        || (options.include_js
+            && path
+                .extension()
+                .and_then(|extension| extension.to_str())
+                .is_some_and(|extension| matches!(extension, "js" | "jsx" | "mjs" | "cjs")))
 }
 
 pub(super) fn glob_match_options() -> MatchOptions {

@@ -41,6 +41,7 @@ pub(super) fn collect_supported_files_with_options(
                     && is_supported_check_file_with_options(
                         path,
                         SupportedFileOptions {
+                            include_js: options.include_js,
                             include_jsx: options.include_jsx,
                         },
                     )
@@ -190,7 +191,13 @@ pub(crate) fn resolve_tsconfig_for_files(
     let files = files
         .iter()
         .filter(|path| {
-            is_supported_check_file_with_options(path, SupportedFileOptions { include_jsx })
+            is_supported_check_file_with_options(
+                path,
+                SupportedFileOptions {
+                    include_js: false,
+                    include_jsx,
+                },
+            )
         })
         .map(|path| normalize_input_path(path))
         .collect::<Vec<_>>();
@@ -301,6 +308,7 @@ impl TsconfigOwnershipMatcher {
             || !is_supported_check_file_with_options(
                 file,
                 SupportedFileOptions {
+                    include_js: false,
                     include_jsx: self.include_jsx,
                 },
             )
