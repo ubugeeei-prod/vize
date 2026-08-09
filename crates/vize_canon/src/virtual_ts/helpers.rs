@@ -90,7 +90,7 @@ macro_rules! emit_overload_helpers_text {
 }
 
 /// Shared type helpers used by generated virtual modules and setup-scope macros.
-pub(crate) const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
+pub const VUE_TYPE_HELPERS: &str = vue_type_helpers_text!();
 
 /// Emit-overload helpers embedded per-file when the shared preamble is not
 /// hoisted. In hoisted mode the same text lives in the ambient helpers file.
@@ -102,7 +102,7 @@ pub(crate) const EMIT_PROPS_HELPER: &str = "type __EmitProps<T> = { [K in keyof 
 /// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
 /// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
-pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
+pub const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): __DefineProps<_T>;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;

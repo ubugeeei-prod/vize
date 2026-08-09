@@ -92,12 +92,7 @@ impl super::DefinitionService {
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(tmpl) = virtual_docs.art_template(info.variant_index)
         {
-            let relative_offset = info.relative_offset as u32;
-            let vts_offset = tmpl
-                .source_map
-                .to_generated(relative_offset)
-                .map(|o| o as usize)
-                .unwrap_or(relative_offset as usize);
+            let vts_offset = tmpl.source_map.to_generated(ctx.offset as u32)? as usize;
 
             let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 

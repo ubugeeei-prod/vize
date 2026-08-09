@@ -201,13 +201,8 @@ impl HoverService {
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(template) = virtual_docs.art_template(info.variant_index)
         {
-            // Convert the art variant relative offset through the template source map
-            let relative_offset = info.relative_offset as u32;
-            let vts_offset = template
-                .source_map
-                .to_generated(relative_offset)
-                .map(|o| o as usize)
-                .unwrap_or(relative_offset as usize);
+            // Typed art documents share absolute SFC offsets across script and template mappings.
+            let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
 
             let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
 
@@ -226,7 +221,25 @@ impl HoverService {
 
                 // Request hover from Corsa.
                 if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                    return Some(Self::convert_lsp_hover(hover));
+                    let mapped_range = hover.range.as_ref().and_then(|range| {
+                        crate::ide::corsa_support::map_virtual_range(
+                            ctx,
+                            template,
+                            &Range {
+                                start: tower_lsp::lsp_types::Position {
+                                    line: range.start.line,
+                                    character: range.start.character,
+                                },
+                                end: tower_lsp::lsp_types::Position {
+                                    line: range.end.line,
+                                    character: range.end.character,
+                                },
+                            },
+                        )
+                    });
+                    let mut converted = Self::convert_lsp_hover(hover);
+                    converted.range = mapped_range;
+                    return Some(converted);
                 }
             }
         }

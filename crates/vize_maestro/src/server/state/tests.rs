@@ -365,15 +365,15 @@ const secondaryLabel = ref('secondary')
     );
 
     let offset = source.rfind("secondaryLabel").unwrap() + 1;
-    let info = match find_art_block_at_offset(source, offset) {
-        Some(BlockType::Art(ArtCursorPosition::VariantTemplate(info))) => info,
-        other => panic!("expected secondary variant template, got {other:?}"),
-    };
-
-    let generated_offset = secondary_template
-        .source_map
-        .to_generated(info.relative_offset as u32);
-    assert!(generated_offset.is_some());
+    assert!(
+        matches!(
+            find_art_block_at_offset(source, offset),
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
+        ) && secondary_template
+            .source_map
+            .to_generated(offset as u32)
+            .is_some()
+    );
 }
 
 #[test]

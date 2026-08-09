@@ -46,6 +46,11 @@ impl ServerState {
         let base_uri = uri.path();
         let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
+        super::art_template_context::attach(
+            &mut virtual_docs,
+            descriptor.script_setup.as_ref(),
+            false,
+        );
         self.virtual_docs_cache
             .insert(uri.clone(), Arc::new(virtual_docs));
     }
@@ -160,6 +165,14 @@ impl ServerState {
                 script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
+            super::art_template_context::attach(
+                &mut docs,
+                descriptor.script_setup.as_ref(),
+                descriptor
+                    .script_setup
+                    .as_ref()
+                    .is_some_and(art_script_setup_isolated),
+            );
         }
 
         self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
