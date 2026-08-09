@@ -165,6 +165,7 @@ mod tests {
                 import_source_map: ImportSourceMap::empty(),
                 source_type: SourceType::ts(),
                 virtual_suffix: ".ts",
+                dependencies: Vec::new(),
             },
             documents: Vec::new(),
         }

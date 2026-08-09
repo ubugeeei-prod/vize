@@ -9,7 +9,9 @@ use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_paths::{normalize_path, resolve_relative_script_import};
 use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
-use super::vue_document::{CorsaVueVirtualDocumentOptions, GeneratedVueDocument};
+use super::vue_document::{
+    CorsaVueVirtualDependency, CorsaVueVirtualDocumentOptions, GeneratedVueDocument,
+};
 use crate::batch::ImportRewriter;
 use crate::file_uri::path_to_file_uri;
 
@@ -18,6 +20,7 @@ const VUE_DEPENDENCY_FALLBACK: &str =
 
 pub(super) fn collect_dependency_documents(
     documents: &mut Vec<(String, String)>,
+    dependencies: &mut Vec<CorsaVueVirtualDependency>,
     host: &GeneratedVueDocument,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
@@ -43,6 +46,7 @@ pub(super) fn collect_dependency_documents(
             } => queue_imports(
                 ImportQueue {
                     documents,
+                    dependencies,
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
@@ -62,6 +66,7 @@ pub(super) fn collect_dependency_documents(
             } => queue_imports(
                 ImportQueue {
                     documents,
+                    dependencies,
                     queue: &mut queue,
                     visited_vue: &mut visited_vue,
                     visited_ts: &mut visited_ts,
@@ -80,6 +85,7 @@ pub(super) fn collect_dependency_documents(
 
 pub(super) struct ImportQueue<'a> {
     pub(super) documents: &'a mut Vec<(String, String)>,
+    pub(super) dependencies: &'a mut Vec<CorsaVueVirtualDependency>,
     pub(super) queue: &'a mut VecDeque<DependencyScan>,
     pub(super) visited_vue: &'a mut FxHashSet<PathBuf>,
     pub(super) visited_ts: &'a mut FxHashSet<PathBuf>,
@@ -184,17 +190,29 @@ pub(super) fn queue_vue_dependency(
             return;
         }
     };
-    imports.documents.push((
-        generated.virtual_uri.clone(),
-        generated.generated.code.clone(),
-    ));
+    let generated_code = generated.generated.code;
+    imports
+        .documents
+        .push((generated.virtual_uri.clone(), generated_code.clone()));
     if generated.generated.virtual_suffix == ".tsx" {
-        imports.documents.push(tsx_vue_import_shim(path));
+        imports
+            .documents
+            .push(tsx_vue_import_shim(&generated.source_path));
     }
     imports.queue.push_back(DependencyScan::Vue {
         dir: parent_dir(&generated.source_path),
         source_type: generated.generated.source_type,
         pre_rewrite_code: generated.generated.pre_rewrite_code,
+    });
+    imports.dependencies.push(CorsaVueVirtualDependency {
+        source_path: generated.source_path,
+        source: content,
+        request_uri: generated.virtual_uri,
+        code: generated_code,
+        mappings: generated.generated.mappings,
+        import_source_map: generated.generated.import_source_map,
+        source_type: generated.generated.source_type,
+        virtual_suffix: generated.generated.virtual_suffix,
     });
 }
 

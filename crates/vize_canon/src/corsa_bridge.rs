@@ -16,6 +16,8 @@ mod vue_document;
 mod vue_document_alias_tests;
 #[cfg(test)]
 mod vue_document_tests;
+#[cfg(test)]
+mod vue_project_mapping_tests;
 mod worker;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
@@ -26,7 +28,9 @@ pub use types::{
     LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
     LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
-pub use vue_document::{CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions};
+pub use vue_document::{
+    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+};
 pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project};
 
 #[cfg(test)]
