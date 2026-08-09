@@ -68,6 +68,13 @@ pub(crate) fn collect_default_check_files(
     collect_default_check_files_inner(project_root, tsconfig_path, false, include_jsx, cache)
 }
 
+pub(crate) fn tsconfig_allows_js(tsconfig_path: &Path, cache: &mut TsconfigInputCache) -> bool {
+    cache
+        .load(tsconfig_path)
+        .and_then(|spec| spec.allow_js)
+        .unwrap_or(false)
+}
+
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,

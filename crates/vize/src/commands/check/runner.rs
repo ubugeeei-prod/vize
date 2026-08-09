@@ -20,8 +20,9 @@ use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print
 use super::{
     CheckArgs,
     path_cache::CanonicalPathCache,
+    patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_for_files},
+    tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_for_files, tsconfig_allows_js},
 };
 mod collect;
 mod default_imports;
@@ -175,9 +176,15 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         );
         (files, Vec::new(), reported_files)
     } else {
+        let include_js = invocation_tsconfig_path
+            .as_deref()
+            .is_some_and(|path| tsconfig_allows_js(path, &mut tsconfig_input_cache));
         let files = collect_check_files_with_ignores(
             &args.patterns,
-            jsx_typecheck,
+            CheckFileOptions {
+                include_js,
+                include_jsx: jsx_typecheck,
+            },
             check_ignore_set.as_ref(),
         );
         let explicit_files = files.clone();
