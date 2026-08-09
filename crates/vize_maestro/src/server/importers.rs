@@ -251,6 +251,19 @@ mod tests {
     }
 
     #[test]
+    fn index_keeps_explicit_missing_vue_imports_for_future_create_events() {
+        let dir = tempfile::tempdir().unwrap();
+        let child_uri = Url::from_file_path(dir.path().join("FutureChild.vue")).unwrap();
+        let parent_uri = Url::from_file_path(dir.path().join("Parent.vue")).unwrap();
+        let state = ServerState::new();
+        let source = "<script setup lang=\"ts\">import Child from './FutureChild.vue'</script>";
+
+        state.update_virtual_docs(&parent_uri, source);
+
+        assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+    }
+
+    #[test]
     fn index_resolves_package_export_declaration_variants() {
         let dir = tempfile::tempdir().unwrap();
         let package = dir.path().join("node_modules/vue-router");

@@ -34,10 +34,10 @@ import Child from "./Child.vue";
 
 // A dependency changed outside the editor — a git checkout, a codegen run, a
 // delete — must refresh the open importer's diagnostics without any editor
-// edit (#3918). The lifecycle mirrors the Volar oracle: clean on open, one
-// mismatch after the prop type changes on disk, still broken while the file is
-// gone, clean again once it is restored.
-test("watched dependency changes refresh the open importer", async (t) => {
+// edit (#3918). The lifecycle starts with a missing import, heals on a file
+// operation create, reports a watched prop change, reports TS2307 on watched
+// delete, and heals again on watched recreation.
+test("created and watched dependency changes refresh the open importer", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveCorsaBinary(),
@@ -68,7 +68,6 @@ test("watched dependency changes refresh the open importer", async (t) => {
       "utf8",
     );
     const childPath = path.join(workspaceDir, "Child.vue");
-    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
 
     await session.initialize(workspaceDir, {
       editor: true,
@@ -110,9 +109,22 @@ test("watched dependency changes refresh the open importer", async (t) => {
       diagnosticsFor(appUri),
       60000,
     );
-    assert.equal(counted(opened), 0, "the importer opens clean");
+    assert.ok(diagnosticCodes(opened).includes(2307), "the missing dependency starts as TS2307");
 
-    // Phase 1: the dependency's prop narrows on disk, no editor edit.
+    // Phase 1: a file-operation create must heal the already-open importer at
+    // the same document version; requiring an importer edit hides stale state.
+    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
+    session.notify("workspace/didCreateFiles", {
+      files: [{ uri: childUri }],
+    });
+    const afterCreate = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterCreate as { version?: number }).version, 1);
+
+    // Phase 2: the dependency's prop narrows on disk, no editor edit.
     fs.writeFileSync(childPath, CHILD_STRING, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 2 }],
@@ -124,7 +136,7 @@ test("watched dependency changes refresh the open importer", async (t) => {
     );
     assert.equal(counted(afterEdit), 1, "the stale binding is reported");
 
-    // Phase 2: the dependency disappears; the importer must stay broken.
+    // Phase 3: the dependency disappears; the importer must stay broken.
     await drainAppDiagnostics();
     fs.rmSync(childPath);
     session.notify("workspace/didChangeWatchedFiles", {
@@ -142,17 +154,17 @@ test("watched dependency changes refresh the open importer", async (t) => {
       )}`,
     );
 
-    // Phase 3: restored with the matching type; the importer recovers.
+    // Phase 4: restored with the matching type; the importer recovers.
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 1 }],
     });
-    const afterCreate = await session.waitForNotification(
+    const afterWatchedRestore = await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
       60000,
     );
-    assert.equal(counted(afterCreate), 0, "a restored dependency clears the importer");
+    assert.equal(counted(afterWatchedRestore), 0, "a restored dependency clears the importer");
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
