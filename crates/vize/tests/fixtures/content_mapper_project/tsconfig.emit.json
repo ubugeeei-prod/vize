@@ -10,8 +10,6 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "contentMappers": [
-    { "package": "vize", "extensions": [".vue"] }
-  ],
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
   "include": ["src/**/*"]
 }

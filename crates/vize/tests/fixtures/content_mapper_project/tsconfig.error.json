@@ -6,8 +6,6 @@
     "moduleResolution": "bundler",
     "noEmit": true
   },
-  "contentMappers": [
-    { "package": "vize", "extensions": [".vue"] }
-  ],
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
   "include": ["src/**/*", "errors/**/*"]
 }
