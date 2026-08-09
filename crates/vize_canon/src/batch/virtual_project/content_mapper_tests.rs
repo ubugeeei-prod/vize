@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::batch::generate_vue_content_mapper_transform;
 
 #[test]
-fn emits_protocol_v1_spans_without_forbidden_overlaps() {
+fn emits_protocol_v1_spans_with_all_features_and_without_forbidden_overlaps() {
     let source = r#"<script setup lang="ts">
 const message = "hello"
 </script>
@@ -37,7 +37,18 @@ const message = "hello"
             );
         }
     }
-    assert!(result.mappings.iter().all(|mapping| mapping.0[5] == 3));
+    // microsoft/typescript-go protocol v1 currently defines SpanMapFeature.All
+    // as every bit from Hover through CodeLens. Pin the negotiated contract
+    // independently from the implementation so a local regression cannot
+    // silently turn editor features off again.
+    const UPSTREAM_PROTOCOL_V1_ALL_FEATURES: usize = (1 << 21) - 1;
+    for mapping in &result.mappings {
+        assert_eq!(
+            mapping.0[5], UPSTREAM_PROTOCOL_V1_ALL_FEATURES,
+            "mapping must opt into every protocol v1 feature: {:?}",
+            mapping.0
+        );
+    }
 }
 
 #[test]

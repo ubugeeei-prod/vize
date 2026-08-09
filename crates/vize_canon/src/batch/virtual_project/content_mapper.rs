@@ -22,7 +22,13 @@ const SCRIPT_KIND_TS: u8 = 3;
 const SCRIPT_KIND_TSX: u8 = 4;
 const MAPPING_KIND_VERBATIM: usize = 0;
 const MAPPING_KIND_ATOM: usize = 1;
-const MAPPING_PURPOSE_ALL: usize = 3;
+
+// microsoft/typescript-go content-mapper protocol v1 assigns one feature bit
+// to every operation from Hover (bit 0) through CodeLens (bit 20). A mapper
+// that supports every operation must send SpanMapFeature.All, not the number of
+// supported mapping kinds.
+const PROTOCOL_V1_SPAN_MAP_FEATURE_CODE_LENS: usize = 1 << 20;
+const PROTOCOL_V1_SPAN_MAP_FEATURE_ALL: usize = (PROTOCOL_V1_SPAN_MAP_FEATURE_CODE_LENS << 1) - 1;
 
 /// A TypeScript content-mapper transform result.
 #[derive(Debug, Serialize)]
@@ -35,7 +41,7 @@ pub struct ContentMapperTransform {
 }
 
 /// A protocol v1 span tuple:
-/// `[generatedStart, generatedLength, originalStart, originalLength, kind, purpose]`.
+/// `[generatedStart, generatedLength, originalStart, originalLength, kind, featureMask]`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct ContentMapperSpan(pub [usize; 6]);
 
@@ -227,7 +233,7 @@ fn protocol_spans(
                 candidate.original.start,
                 candidate.original.len(),
                 candidate.kind,
-                MAPPING_PURPOSE_ALL,
+                PROTOCOL_V1_SPAN_MAP_FEATURE_ALL,
             ])
         })
         .collect()
