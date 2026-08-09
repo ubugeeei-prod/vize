@@ -237,11 +237,6 @@ impl ReferencesService {
     fn is_identifier_char(c: u8) -> bool {
         c.is_ascii_alphanumeric() || c == b'_' || c == b'$'
     }
-
-    /// Convert offset to (line, character).
-    pub(crate) fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
-        crate::ide::offset_to_position(content, offset)
-    }
 }
 
 #[cfg(test)]
