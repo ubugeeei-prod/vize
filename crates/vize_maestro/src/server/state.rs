@@ -1,6 +1,7 @@
 //! Server state management.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+mod art_template_context;
 mod config;
 mod features;
 mod virtual_docs;

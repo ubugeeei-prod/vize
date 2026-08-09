@@ -156,12 +156,7 @@ impl ReferencesService {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.art_template(info.variant_index)?;
-        let relative_offset = info.relative_offset as u32;
-        let vts_offset = template
-            .source_map
-            .to_generated(relative_offset)
-            .map(|offset| offset as usize)
-            .unwrap_or(relative_offset as usize);
+        let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
         let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge

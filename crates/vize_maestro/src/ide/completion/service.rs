@@ -200,7 +200,7 @@ impl super::CompletionService {
 
     /// Get completions for an art variant template with Corsa.
     #[cfg(feature = "native")]
-    pub(super) async fn complete_art_variant_with_corsa(
+    pub(in crate::ide) async fn complete_art_variant_with_corsa(
         ctx: &IdeContext<'_>,
         info: &crate::virtual_code::ArtVariantInfo,
         bridge: &CorsaBridge,
@@ -208,13 +208,12 @@ impl super::CompletionService {
         if let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(tmpl) = virtual_docs.art_template(info.variant_index)
         {
-            // Convert the art variant relative offset through the template source map
-            let relative_offset = info.relative_offset as u32;
-            let vts_offset = tmpl
-                .source_map
-                .to_generated(relative_offset)
-                .map(|o| o as usize)
-                .unwrap_or(relative_offset as usize);
+            // Typed art documents share absolute SFC offsets across script and template mappings.
+            let Some(vts_offset) =
+                corsa_support::completion_source_offset_to_generated(tmpl, ctx.offset as u32)
+            else {
+                return vec![];
+            };
 
             let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 

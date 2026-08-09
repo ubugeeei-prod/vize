@@ -67,6 +67,30 @@ pub(crate) fn script_request_path(uri: &Url, is_setup: bool) -> String {
     }
 }
 
+/// Map a completion cursor, including the valid position immediately after a
+/// source expression such as `props.`. Other language features keep half-open
+/// source ranges so a cursor between tokens cannot attach to the previous one.
+pub(crate) fn completion_source_offset_to_generated(
+    document: &VirtualDocument,
+    source_offset: u32,
+) -> Option<usize> {
+    document
+        .source_map
+        .to_generated_for(source_offset, |features| features.completion)
+        .or_else(|| {
+            document
+                .source_map
+                .mappings()
+                .iter()
+                .filter(|mapping| {
+                    mapping.features.completion && mapping.source.end == source_offset
+                })
+                .min_by_key(|mapping| mapping.source.end.saturating_sub(mapping.source.start))
+                .map(|mapping| mapping.generated.end)
+        })
+        .map(|offset| offset as usize)
+}
+
 pub(crate) fn request_file_uri(path: &str) -> String {
     if path.starts_with("file://") {
         String::from(path)
@@ -148,7 +172,7 @@ pub(crate) fn map_corsa_prepare_rename(
     }
 }
 
-fn map_virtual_range(
+pub(crate) fn map_virtual_range(
     ctx: &IdeContext<'_>,
     document: &VirtualDocument,
     range: &Range,
