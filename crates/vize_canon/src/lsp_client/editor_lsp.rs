@@ -117,14 +117,46 @@ impl EditorLspSession {
         Ok(uri)
     }
 
+    /// Bring the reusable editor transport to the same virtual-project view as
+    /// the project-session transport, including dependency removals.
+    fn synchronize(&mut self, documents: &FxHashMap<String, String>) -> Result<(), String> {
+        let removed = self
+            .documents
+            .keys()
+            .filter(|uri| !documents.contains_key(uri.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        for document_uri in removed {
+            let uri = Uri::from_str(document_uri.as_str())
+                .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))?;
+            self.overlay.close(&uri).map_err(|error| {
+                cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
+            })?;
+            self.documents.remove(document_uri.as_str());
+        }
+        for (document_uri, text) in documents {
+            self.mirror(document_uri, text)?;
+        }
+        Ok(())
+    }
+
+    fn document_uri(&self, document_uri: &str) -> Result<Uri, String> {
+        if !self.documents.contains_key(document_uri) {
+            return Err(cstr!(
+                "Editor LSP virtual project does not contain {document_uri}"
+            ));
+        }
+        Uri::from_str(document_uri)
+            .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))
+    }
+
     fn hover(
         &mut self,
         document_uri: &str,
-        text: &str,
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let uri = self.mirror(document_uri, text)?;
+        let uri = self.document_uri(document_uri)?;
         block_on(self.client.request::<RawHoverRequest>(serde_json::json!({
             "textDocument": { "uri": uri },
             "position": { "line": line, "character": character },
@@ -135,11 +167,10 @@ impl EditorLspSession {
     fn completion(
         &mut self,
         document_uri: &str,
-        text: &str,
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let uri = self.mirror(document_uri, text)?;
+        let uri = self.document_uri(document_uri)?;
         block_on(
             self.client
                 .request::<RawCompletionRequest>(serde_json::json!({
@@ -154,11 +185,10 @@ impl EditorLspSession {
     fn signature_help(
         &mut self,
         document_uri: &str,
-        text: &str,
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let uri = self.mirror(document_uri, text)?;
+        let uri = self.document_uri(document_uri)?;
         block_on(
             self.client
                 .request::<RawSignatureHelpRequest>(serde_json::json!({
@@ -224,11 +254,10 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let Some(text) = self.document_texts.get(uri).cloned() else {
+        if !self.document_texts.contains_key(uri) {
             return Ok(None);
-        };
-        self.editor_lsp_session()?
-            .hover(uri, text.as_str(), line, character)
+        }
+        self.editor_lsp_session()?.hover(uri, line, character)
     }
 
     pub(super) fn completion_via_editor_lsp(
@@ -237,11 +266,10 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let Some(text) = self.document_texts.get(uri).cloned() else {
+        if !self.document_texts.contains_key(uri) {
             return Ok(None);
-        };
-        self.editor_lsp_session()?
-            .completion(uri, text.as_str(), line, character)
+        }
+        self.editor_lsp_session()?.completion(uri, line, character)
     }
 
     pub(super) fn signature_help_via_editor_lsp(
@@ -250,11 +278,11 @@ impl CorsaProjectClient {
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let Some(text) = self.document_texts.get(uri).cloned() else {
+        if !self.document_texts.contains_key(uri) {
             return Ok(None);
-        };
+        }
         self.editor_lsp_session()?
-            .signature_help(uri, text.as_str(), line, character)
+            .signature_help(uri, line, character)
     }
 
     fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
@@ -264,6 +292,15 @@ impl CorsaProjectClient {
                 &self.cwd,
                 &self.project_root,
             )?);
+            self.editor_lsp_documents_dirty = true;
+        }
+        if self.editor_lsp_documents_dirty {
+            let session = self
+                .editor_lsp
+                .as_mut()
+                .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
+            session.synchronize(&self.document_texts)?;
+            self.editor_lsp_documents_dirty = false;
         }
         self.editor_lsp
             .as_mut()
@@ -274,5 +311,6 @@ impl CorsaProjectClient {
     /// session transition.
     pub(super) fn retire_editor_lsp(&mut self) {
         self.editor_lsp = None;
+        self.editor_lsp_documents_dirty = true;
     }
 }
