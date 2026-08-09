@@ -103,19 +103,29 @@ impl super::DefinitionService {
                     .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                     .await
                 else {
-                    return Self::definition_in_template_sync(ctx);
+                    let definition = Self::definition_in_template_sync(ctx)?;
+                    return Some(
+                        import_target::unwrap_bound_name_definition(ctx, &definition)
+                            .unwrap_or(definition),
+                    );
                 };
 
                 if let Ok(locations) = bridge.definition(&uri, line, character).await
                     && !locations.is_empty()
+                    && let Some(definition) = Self::convert_lsp_locations(locations, ctx)
                 {
-                    return Self::convert_lsp_locations(locations, ctx);
+                    return Some(
+                        import_target::unwrap_bound_name_definition(ctx, &definition)
+                            .unwrap_or(definition),
+                    );
                 }
             }
         }
 
-        // Fall back to synchronous definition
-        Self::definition_in_template_sync(ctx)
+        // Fall back to synchronous definition, unwrapping only an actual
+        // import-alias answer so template-local shadowing remains intact.
+        let definition = Self::definition_in_template_sync(ctx)?;
+        Some(import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition))
     }
 
     /// Find definition in template with Corsa and component jump support.
@@ -129,12 +139,6 @@ impl super::DefinitionService {
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
         {
             return Some(def);
-        }
-
-        if let Some(definition) =
-            Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
-        {
-            return Some(definition);
         }
 
         if let Some(definition) =
@@ -165,6 +169,14 @@ impl super::DefinitionService {
             return Some(def);
         }
 
+        if let Some(definition) =
+            Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(
+                import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition),
+            );
+        }
+
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
@@ -193,8 +205,10 @@ impl super::DefinitionService {
             }
         }
 
-        // Fall back to synchronous definition
-        Self::definition_in_template_sync(ctx)
+        // Fall back to synchronous definition, unwrapping only an actual
+        // import-alias answer so template-local shadowing remains intact.
+        let definition = Self::definition_in_template_sync(ctx)?;
+        Some(import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition))
     }
 
     /// Find definition in script with Corsa support.

@@ -57,17 +57,20 @@ impl CorsaProjectClient {
         let Some(position) =
             self.api_position(uri, line, character, self.supports_definition_api())?
         else {
-            return Ok(None);
+            return self.definition_via_editor_lsp(uri, line, character);
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response =
-            block_on(self.session.get_definition_at_position(
+        match block_on(
+            self.session.get_definition_at_position(
                 uri_document_identifier(document_uri.as_str()),
                 position,
-            ))
-            .map_err(|error| cstr!("Failed to request definition: {error}"))?;
-        self.serialize_with_remapped_uris(response)
+            ),
+        ) {
+            Ok(response) => self.serialize_with_remapped_uris(response),
+            Err(CorsaError::Unsupported(_)) => self.definition_via_editor_lsp(uri, line, character),
+            Err(error) => Err(cstr!("Failed to request definition: {error}")),
+        }
     }
 
     pub(crate) fn references_raw(

@@ -228,6 +228,74 @@ fn bridge_virtual_sfc_editor_queries_resolve_relative_workspace_imports() {
 }
 
 #[test]
+fn bridge_virtual_sfc_definition_resolves_relative_workspace_import() {
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project = tempfile::TempDir::new().unwrap();
+    let project_root = project.path();
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(src_dir.join("App.vue"), "<template><div /></template>\n").unwrap();
+    let dependency = "export function format(value: number): string { return value.toFixed(2) }\n";
+    std::fs::write(src_dir.join("format.ts"), dependency).unwrap();
+
+    let virtual_source = "import { format } from './format';\n\nformat(1);\n";
+    let virtual_path = src_dir.join("App.vue.template.ts");
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let definitions = corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let uri = virtual_path.display().to_compact_string();
+        let uri = bridge
+            .open_or_update_virtual_document(uri.as_str(), virtual_source)
+            .await
+            .unwrap();
+        let definitions = bridge.definition(uri.as_str(), 2, 1).await.unwrap();
+        bridge.shutdown().await.unwrap();
+        definitions
+    });
+
+    assert_eq!(
+        definitions.len(),
+        1,
+        "unexpected definitions: {definitions:#?}"
+    );
+    let definition = &definitions[0];
+    assert!(
+        definition.uri.ends_with("/src/format.ts"),
+        "unexpected definition URI: {}",
+        definition.uri
+    );
+    assert_eq!(definition.range.start.line, 0);
+    assert_eq!(
+        definition.range.start.character,
+        dependency.find("format").unwrap() as u32
+    );
+    assert!(!virtual_path.exists());
+}
+
+#[test]
 fn bridge_editor_queries_resolve_in_memory_virtual_dependencies() {
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
@@ -274,7 +342,14 @@ props.message;
         ..Default::default()
     });
 
-    let (initial_hover, changed_hover, closed_hover) = corsa::runtime::block_on(async {
+    let (
+        initial_hover,
+        initial_definition,
+        changed_hover,
+        changed_definition,
+        closed_hover,
+        closed_definition,
+    ) = corsa::runtime::block_on(async {
         bridge.spawn().await.unwrap();
         let child_uri = child_path.display().to_compact_string();
         let child_uri = bridge
@@ -287,18 +362,28 @@ props.message;
             .await
             .unwrap();
         let initial_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        let initial_definition = bridge.definition(parent_uri.as_str(), 3, 7).await.unwrap();
         bridge
             .update_virtual_document(child_uri.as_str(), changed_child_virtual.as_str(), 2)
             .await
             .unwrap();
         let changed_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        let changed_definition = bridge.definition(parent_uri.as_str(), 3, 7).await.unwrap();
         bridge
             .close_virtual_document(child_uri.as_str())
             .await
             .unwrap();
         let closed_hover = bridge.hover(parent_uri.as_str(), 3, 7).await.unwrap();
+        let closed_definition = bridge.definition(parent_uri.as_str(), 3, 7).await.unwrap();
         bridge.shutdown().await.unwrap();
-        (initial_hover, changed_hover, closed_hover)
+        (
+            initial_hover,
+            initial_definition,
+            changed_hover,
+            changed_definition,
+            closed_hover,
+            closed_definition,
+        )
     });
 
     assert!(
@@ -309,9 +394,25 @@ props.message;
         hover_contains(&changed_hover, "message") && hover_contains(&changed_hover, "number"),
         "editor LSP should refresh changed virtual dependencies: {changed_hover:?}"
     );
+    for definitions in [&initial_definition, &changed_definition] {
+        assert_eq!(
+            definitions.len(),
+            1,
+            "unexpected definitions: {definitions:#?}"
+        );
+        assert!(
+            definitions[0].uri.ends_with("/src/Child.vue.ts"),
+            "definition should target the in-memory Vue dependency: {definitions:#?}"
+        );
+        assert_eq!(definitions[0].range.start.line, 1);
+    }
     assert!(
         !hover_contains(&closed_hover, "string") && !hover_contains(&closed_hover, "number"),
         "editor LSP should close removed virtual dependencies: {closed_hover:?}"
+    );
+    assert!(
+        closed_definition.is_empty(),
+        "definition should disappear with the closed virtual dependency: {closed_definition:#?}"
     );
     assert!(!child_path.exists());
     assert!(!parent_path.exists());
@@ -331,17 +432,13 @@ fn hover_contains(hover: &Option<LspHover>, expected: &str) -> bool {
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
-    if let Some(resolved) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root) {
-        return Some(resolved);
-    }
-    [
-        root.parent()?.join("corsa-bind/.cache/tsgo"),
-        root.parent()?
-            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
-        root.join("node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|candidate| candidate.exists())
+    vize_carton::corsa_resolver::resolve_corsa_executable(
+        vize_carton::corsa_resolver::CorsaResolveRequest {
+            project_root: Some(&root),
+            ..Default::default()
+        },
+    )
+    .ok()
 }
 
 fn workspace_root() -> PathBuf {

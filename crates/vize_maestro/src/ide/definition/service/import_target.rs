@@ -18,6 +18,10 @@ use vize_carton::cstr;
 use crate::ide::IdeContext;
 use crate::ide::definition::{helpers, module_specifier, script};
 
+mod alias;
+
+pub(super) use alias::unwrap_bound_name_definition;
+
 /// Barrels can chain; three hops covers a package barrel re-exporting a
 /// directory barrel re-exporting the module, without risking a cycle walk.
 const MAX_REEXPORT_HOPS: usize = 3;
@@ -68,8 +72,8 @@ fn importing_specifier(content: &str, offset: usize, word: &str) -> Option<(Stri
 }
 
 /// The specifier and exported name for local binding `word`, scanning every
-/// import statement — the component-tag path has no cursor offset on the
-/// import statement to anchor on.
+/// import statement — template and component-tag paths have no cursor offset
+/// on the import statement to anchor on.
 fn bound_import(content: &str, word: &str) -> Option<(String, String)> {
     import_statements(content)
         .into_iter()
