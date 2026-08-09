@@ -44,6 +44,20 @@ pub(super) struct GeneratedVueDocument {
 }
 
 impl CorsaBridge {
+    /// Remove virtual TypeScript overlays derived from deleted Vue SFCs.
+    pub async fn forget_vue_virtual_documents(
+        &self,
+        source_paths: &[PathBuf],
+    ) -> Result<(), CorsaBridgeError> {
+        let source_paths = source_paths.to_vec();
+        self.with_client(move |client| {
+            client
+                .forget_vue_virtual_documents(&source_paths)
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
+
     /// Generate, sync, and return the canonical `.vue.{ts,tsx}` document used
     /// for editor diagnostics, hover, definition, references, and rename.
     pub async fn open_vue_virtual_document(
