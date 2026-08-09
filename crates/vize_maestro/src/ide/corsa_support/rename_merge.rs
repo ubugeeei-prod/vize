@@ -19,11 +19,48 @@ pub(crate) fn merge_authored_rename(
     corsa: Option<WorkspaceEdit>,
     authored: Option<WorkspaceEdit>,
 ) -> Option<WorkspaceEdit> {
-    match (corsa, authored) {
+    let merged = match (corsa, authored) {
         (Some(corsa), Some(authored)) => Some(merge_into_corsa_edit(ctx, corsa, authored)),
         (Some(corsa), None) => Some(corsa),
         (None, authored) => authored,
+    };
+
+    // Neither side answers in document order on its own: Corsa maps each block
+    // back from its own virtual document, and the authored sweep only leads for
+    // the block under the cursor. Ordering every per-file list here keeps a
+    // template-side rename from reporting the template hit before the
+    // declaration that sits above it.
+    merged.map(order_edits_by_position)
+}
+
+fn order_edits_by_position(mut edit: WorkspaceEdit) -> WorkspaceEdit {
+    if let Some(changes) = edit.changes.as_mut() {
+        for edits in changes.values_mut() {
+            edits.sort_by(|a, b| compare_ranges(&a.range, &b.range));
+        }
     }
+
+    match edit.document_changes.as_mut() {
+        Some(DocumentChanges::Edits(edits)) => {
+            for edit in edits.iter_mut() {
+                sort_annotatable_edits(&mut edit.edits);
+            }
+        }
+        Some(DocumentChanges::Operations(operations)) => {
+            for operation in operations.iter_mut() {
+                if let DocumentChangeOperation::Edit(edit) = operation {
+                    sort_annotatable_edits(&mut edit.edits);
+                }
+            }
+        }
+        None => {}
+    }
+
+    edit
+}
+
+fn sort_annotatable_edits(edits: &mut [OneOf<TextEdit, AnnotatedTextEdit>]) {
+    edits.sort_by(|a, b| compare_ranges(&annotatable_edit_range(a), &annotatable_edit_range(b)));
 }
 
 fn merge_into_corsa_edit(
@@ -106,9 +143,7 @@ fn authored_document_edit(ctx: &IdeContext<'_>, authored_edits: Vec<TextEdit>) -
 
 /// Authored edits lead, and a Corsa edit is kept only when it rewrites a span
 /// the authored rename missed, so a shared occurrence is never edited twice.
-/// The survivors are then ordered by position, because a template-side rename
-/// pulls the declaration in from Corsa and would otherwise report it after the
-/// authored template hit instead of in document order.
+/// `order_edits_by_position` puts the survivors back in document order.
 fn merge_text_edits(authored: Vec<TextEdit>, corsa: Vec<TextEdit>) -> Vec<TextEdit> {
     let mut merged = authored;
     for edit in corsa {
@@ -116,7 +151,6 @@ fn merge_text_edits(authored: Vec<TextEdit>, corsa: Vec<TextEdit>) -> Vec<TextEd
             merged.push(edit);
         }
     }
-    merged.sort_by(|a, b| compare_ranges(&a.range, &b.range));
     merged
 }
 
@@ -137,7 +171,6 @@ fn merge_annotatable_edits(
             merged.push(entry);
         }
     }
-    merged.sort_by(|a, b| compare_ranges(&annotatable_edit_range(a), &annotatable_edit_range(b)));
     merged
 }
 
@@ -212,6 +245,18 @@ mod tests {
 
         let merged = merge_authored_rename(&ctx, Some(corsa), Some(authored)).expect("merged edit");
         let merged = merged.changes.expect("merged changes");
+
+        assert_eq!(
+            merged[&uri],
+            vec![script_edit.clone(), template_edit.clone()]
+        );
+
+        // Corsa maps each block back from its own virtual document, so it can
+        // answer for the whole SFC in block order rather than document order.
+        let corsa_only = changes(&uri, vec![template_edit.clone(), script_edit.clone()]);
+        let merged =
+            merge_authored_rename(&ctx, Some(corsa_only), None).expect("corsa-only edit ordered");
+        let merged = merged.changes.expect("corsa-only changes");
 
         assert_eq!(merged[&uri], vec![script_edit, template_edit]);
     }
