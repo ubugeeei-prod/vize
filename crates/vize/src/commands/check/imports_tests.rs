@@ -42,7 +42,10 @@ fn collects_relative_ts_and_vue_imports_transitively() {
     );
 
     let canon = canonicalize_non_verbatim;
-    assert_eq!(discovered, vec![canon(&types), canon(&child), canon(&util)]);
+    assert_eq!(
+        discovered.registrations,
+        vec![canon(&types), canon(&child), canon(&util)]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -66,7 +69,7 @@ fn ignores_bare_and_missing_specifiers() {
         false,
         None,
     );
-    assert!(discovered.is_empty());
+    assert!(discovered.registrations.is_empty());
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -102,7 +105,10 @@ void percent
         None,
     );
 
-    assert_eq!(discovered, vec![canonicalize_non_verbatim(&index)]);
+    assert_eq!(
+        discovered.registrations,
+        vec![canonicalize_non_verbatim(&index)]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -131,8 +137,11 @@ fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
         None,
     );
 
-    assert_eq!(disabled, Vec::<PathBuf>::new());
-    assert_eq!(enabled, vec![canonicalize_non_verbatim(&panel)]);
+    assert_eq!(disabled.registrations, Vec::<PathBuf>::new());
+    assert_eq!(
+        enabled.registrations,
+        vec![canonicalize_non_verbatim(&panel)]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -162,7 +171,7 @@ fn module_js_specifiers_prefer_module_source_extensions() {
     );
 
     assert_eq!(
-        discovered,
+        discovered.registrations,
         vec![
             canonicalize_non_verbatim(&esm_mts),
             canonicalize_non_verbatim(&common_cts),
@@ -204,8 +213,11 @@ fn js_specifiers_can_follow_tsx_when_jsx_typecheck_is_enabled() {
         None,
     );
 
-    assert_eq!(disabled, Vec::<PathBuf>::new());
-    assert_eq!(enabled, vec![canonicalize_non_verbatim(&panel)]);
+    assert_eq!(disabled.registrations, Vec::<PathBuf>::new());
+    assert_eq!(
+        enabled.registrations,
+        vec![canonicalize_non_verbatim(&panel)]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }
@@ -310,7 +322,10 @@ export const cycleB = cycleA;
         Some(&aliases),
     );
 
-    assert_eq!(discovered, vec![canonicalize_non_verbatim(&panel)]);
+    assert_eq!(
+        discovered.registrations,
+        vec![canonicalize_non_verbatim(&panel)]
+    );
 
     let _ = std::fs::remove_dir_all(&root);
 }

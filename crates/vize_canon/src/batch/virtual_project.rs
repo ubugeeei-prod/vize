@@ -119,6 +119,9 @@ pub struct VirtualProject {
     /// Global virtual TS options applied to every Vue file.
     virtual_ts_options: VirtualTsOptions,
 
+    /// Authored program files diagnosed in place instead of materialized.
+    diagnostic_paths: FxHashSet<PathBuf>,
+
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
 

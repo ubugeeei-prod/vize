@@ -259,6 +259,9 @@ void EnglishKeyboard;
             Some(&resolver),
         );
 
-        assert_eq!(discovered, vec![keyboard.canonicalize().unwrap()]);
+        assert_eq!(
+            discovered.registrations,
+            vec![keyboard.canonicalize().unwrap()]
+        );
     }
 }

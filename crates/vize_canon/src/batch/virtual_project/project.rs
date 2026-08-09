@@ -22,7 +22,6 @@ use super::build::{
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
-
 fn is_musea_art_vue_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
@@ -45,6 +44,7 @@ impl VirtualProject {
             preserve_unused_diagnostics: false,
             check_js: false,
             virtual_ts_options: VirtualTsOptions::default(),
+            diagnostic_paths: FxHashSet::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             options_api: false,
             session_scripts: false,
@@ -74,6 +74,7 @@ impl VirtualProject {
         let mut project = Self::new(&self.project_root)?;
         project.set_tsconfig_path(self.tsconfig_path.clone());
         project.virtual_ts_options = self.virtual_ts_options.clone();
+        project.diagnostic_paths = self.diagnostic_paths.clone();
         project.virtual_ts_check_options = self.virtual_ts_check_options;
         project.options_api = self.options_api;
         project.legacy_vue2 = self.legacy_vue2;

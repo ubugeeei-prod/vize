@@ -1,3 +1,5 @@
+#[path = "check_default_imports_cli/aliased_diagnostics.rs"]
+mod aliased_diagnostics;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 

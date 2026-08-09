@@ -159,12 +159,9 @@ impl<'a> DiagnosticMapper<'a> {
         None
     }
 
-    /// Map a virtual position back to the authored source, or `None` when the
-    /// diagnostic has no reportable origin. Both diagnostic paths (LSP and the
-    /// Corsa CLI text output) funnel through here, so this is also where the
-    /// `checkJs` gate lives: a diagnostic landing in a JavaScript SFC has no
-    /// reportable origin unless the project asked for JavaScript to be checked,
-    /// exactly as `tsc`/`vue-tsc` leave a `lang="js"` block alone (#3322).
+    /// Map a Corsa position to a virtual source-map origin or to an explicitly
+    /// authored, in-place diagnostic path. The `checkJs` gate for JavaScript
+    /// SFCs also lives here (#3322).
     pub(super) fn map_to_original(
         &mut self,
         virtual_path: &Path,
@@ -174,7 +171,9 @@ impl<'a> DiagnosticMapper<'a> {
         if self.project.skips_typescript_diagnostics(virtual_path) {
             return None;
         }
-        let file = self.project.find_by_virtual(virtual_path)?;
+        let Some(file) = self.project.find_by_virtual(virtual_path) else {
+            return self.project.diagnostic_position(virtual_path, line, column);
+        };
         let virtual_offset = self.virtual_offset(file, line, column)?;
         let (original_offset, _, block_type) =
             file.source_map.get_original_position(virtual_offset)?;

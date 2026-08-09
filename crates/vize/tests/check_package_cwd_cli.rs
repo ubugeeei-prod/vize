@@ -90,7 +90,7 @@ fn check_from_package_cwd_uses_package_local_tsconfig_inputs() {
     write_file(
         &workspace,
         "src/generated/tecack/custom.ts",
-        "export const rootOnly: string = 'root';\n",
+        "export const rootOnly: string = 42;\n",
     );
 
     let package_root = workspace.join("devtools");
@@ -140,25 +140,32 @@ void rootOnly;
 
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
-    assert!(
-        output.status.success(),
-        "package-local check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
-    );
+    assert_eq!(output.status.code(), Some(1), "{stdout}\n{stderr}");
 
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    assert_eq!(
-        json["errorCount"], 0,
-        "unexpected diagnostics:\nstdout:\n{stdout}\nstderr:\n{stderr}"
-    );
+    assert_eq!(json["errorCount"], 1, "{stdout}\n{stderr}");
     assert_eq!(json["warningCount"], 0, "{stdout}\n{stderr}");
-    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], 2, "{stdout}\n{stderr}");
     let files = json["files"].as_array().unwrap();
-    assert_eq!(files.len(), 1, "{stdout}\n{stderr}");
-    assert_eq!(files[0]["file"], "src/App.vue", "{stdout}\n{stderr}");
-    assert_eq!(
-        files[0]["diagnostics"],
-        serde_json::json!([]),
-        "{stdout}\n{stderr}"
+    assert_eq!(files.len(), 2, "{stdout}\n{stderr}");
+    let app = files
+        .iter()
+        .find(|file| file["file"] == "src/App.vue")
+        .expect("App.vue result");
+    assert!(app["diagnostics"].as_array().is_some_and(Vec::is_empty));
+    let workspace_source = workspace.join("src/generated/tecack/custom.ts");
+    let workspace_source = workspace_source.to_string_lossy();
+    let imported = files
+        .iter()
+        .find(|file| file["file"] == workspace_source.as_ref())
+        .expect("workspace alias result");
+    assert!(
+        imported["diagnostics"]
+            .as_array()
+            .is_some_and(|diagnostics| diagnostics.iter().any(|diagnostic| diagnostic
+                .as_str()
+                .is_some_and(|diagnostic| diagnostic.contains("TS2322")))),
+        "missing TS2322:\n{stdout}\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(&workspace);

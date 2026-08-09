@@ -278,7 +278,7 @@ void rootOnly;
     );
 
     assert!(
-        discovered.is_empty(),
+        discovered.registrations.is_empty(),
         "root app import leaked into package inputs: {discovered:#?}"
     );
 

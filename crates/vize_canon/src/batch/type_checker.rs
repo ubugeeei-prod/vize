@@ -9,6 +9,7 @@ use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
+mod diagnostic_paths;
 mod metrics;
 mod paths;
 mod result;

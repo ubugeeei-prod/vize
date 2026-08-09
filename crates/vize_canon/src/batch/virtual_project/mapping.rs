@@ -9,6 +9,39 @@ use crate::batch::SfcBlockType;
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
 impl VirtualProject {
+    pub(crate) fn set_diagnostic_paths<'a>(&mut self, paths: impl IntoIterator<Item = &'a Path>) {
+        self.diagnostic_paths = paths
+            .into_iter()
+            .filter(|path| path.is_file())
+            .map(vize_carton::path::canonicalize_non_verbatim)
+            .collect();
+    }
+
+    pub(crate) fn diagnostic_path(&self, path: &Path) -> Option<&Path> {
+        let normalized = vize_carton::path::canonicalize_non_verbatim(path);
+        self.diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+    }
+
+    pub(crate) fn diagnostic_position(
+        &self,
+        path: &Path,
+        line: u32,
+        column: u32,
+    ) -> Option<OriginalPosition> {
+        Some(OriginalPosition {
+            path: self.diagnostic_path(path)?.to_path_buf(),
+            line,
+            column,
+            block_type: None,
+        })
+    }
+
+    pub(crate) fn diagnostic_paths_sorted(&self) -> Vec<PathBuf> {
+        let mut paths: Vec<_> = self.diagnostic_paths.iter().cloned().collect();
+        paths.sort();
+        paths
+    }
+
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
         let virtual_path = self.original_index.get(original_path)?;
