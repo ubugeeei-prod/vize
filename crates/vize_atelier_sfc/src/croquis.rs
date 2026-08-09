@@ -5,8 +5,10 @@
 //! merging, generic extraction, and virtual-script offsets.
 
 mod drawer;
+mod source_offsets;
 
 use self::drawer::{analyze_scripts, apply_options_api_mode};
+use self::source_offsets::ScriptOffsetMapper;
 use crate::types::SfcDescriptor;
 use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr, profile};
@@ -86,13 +88,7 @@ pub struct SfcCroquisAnalysis {
     pub croquis: Croquis,
     pub script_content: Option<String>,
     pub script_offset: u32,
-}
-
-impl SfcCroquisAnalysis {
-    #[inline]
-    pub fn script_content_ref(&self) -> Option<&str> {
-        self.script_content.as_deref()
-    }
+    script_offset_mapper: ScriptOffsetMapper,
 }
 
 /// Analyze an SFC descriptor into a Croquis summary.
@@ -201,10 +197,13 @@ fn analyze_sfc_descriptor_resolved_impl(
     }
 
     let (script_content, script_offset) = script_content_for_descriptor(descriptor, options);
+    let script_offset_mapper =
+        ScriptOffsetMapper::from_descriptor(descriptor, script_offset, options.merge_scripts);
     SfcCroquisAnalysis {
         croquis: drawer.finish(),
         script_content,
         script_offset,
+        script_offset_mapper,
     }
 }
 
@@ -321,6 +320,10 @@ const count = ref(0)
         assert_eq!(
             &script[count_span.0 as usize..count_span.1 as usize],
             "count"
+        );
+        assert_eq!(
+            analysis.script_source_offset(count_span.0),
+            source.find("count").unwrap() as u32,
         );
     }
 }

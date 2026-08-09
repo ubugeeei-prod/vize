@@ -477,7 +477,7 @@ pub(crate) fn find_component_prop_definition(
         if let Some(&(start, end)) = analysis.croquis.binding_spans.get(prop_name.as_str())
             && end > start
         {
-            let sfc_offset = analysis.script_offset + start;
+            let sfc_offset = analysis.script_source_offset(start);
             let (line, character) =
                 helpers::offset_to_position(&component_content, sfc_offset as usize);
 
@@ -488,7 +488,7 @@ pub(crate) fn find_component_prop_definition(
                     start: Position { line, character },
                     end: Position {
                         line,
-                        character: character + (end - start),
+                        character: character + analysis.script_source_len(start, end),
                     },
                 },
             }));
