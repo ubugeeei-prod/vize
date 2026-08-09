@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use tower_lsp::lsp_types::{
     AnnotatedTextEdit, DocumentChangeOperation, DocumentChanges, OneOf,
     OptionalVersionedTextDocumentIdentifier, Range, TextDocumentEdit, TextEdit, WorkspaceEdit,
@@ -104,6 +106,9 @@ fn authored_document_edit(ctx: &IdeContext<'_>, authored_edits: Vec<TextEdit>) -
 
 /// Authored edits lead, and a Corsa edit is kept only when it rewrites a span
 /// the authored rename missed, so a shared occurrence is never edited twice.
+/// The survivors are then ordered by position, because a template-side rename
+/// pulls the declaration in from Corsa and would otherwise report it after the
+/// authored template hit instead of in document order.
 fn merge_text_edits(authored: Vec<TextEdit>, corsa: Vec<TextEdit>) -> Vec<TextEdit> {
     let mut merged = authored;
     for edit in corsa {
@@ -111,6 +116,7 @@ fn merge_text_edits(authored: Vec<TextEdit>, corsa: Vec<TextEdit>) -> Vec<TextEd
             merged.push(edit);
         }
     }
+    merged.sort_by(|a, b| compare_ranges(&a.range, &b.range));
     merged
 }
 
@@ -131,7 +137,17 @@ fn merge_annotatable_edits(
             merged.push(entry);
         }
     }
+    merged.sort_by(|a, b| compare_ranges(&annotatable_edit_range(a), &annotatable_edit_range(b)));
     merged
+}
+
+fn compare_ranges(a: &Range, b: &Range) -> Ordering {
+    a.start
+        .line
+        .cmp(&b.start.line)
+        .then(a.start.character.cmp(&b.start.character))
+        .then(a.end.line.cmp(&b.end.line))
+        .then(a.end.character.cmp(&b.end.character))
 }
 
 fn annotatable_edit_range(edit: &OneOf<TextEdit, AnnotatedTextEdit>) -> Range {
@@ -174,6 +190,29 @@ mod tests {
         let merged = merged.changes.expect("merged changes");
 
         assert_eq!(merged.len(), 1);
+        assert_eq!(merged[&uri], vec![script_edit, template_edit]);
+    }
+
+    #[test]
+    fn orders_merged_edits_by_position() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///workspace/Scenario.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), SOURCE.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, SOURCE);
+        let ctx = IdeContext::new(&state, &uri, SOURCE.find("total").unwrap()).unwrap();
+
+        // A template-side rename answers with the template hit, and only Corsa
+        // knows about the declaration that sits above it.
+        let script_edit = edit(1, 6, 1, 11);
+        let template_edit = edit(3, 13, 3, 18);
+        let corsa = changes(&uri, vec![script_edit.clone()]);
+        let authored = changes(&uri, vec![template_edit.clone()]);
+
+        let merged = merge_authored_rename(&ctx, Some(corsa), Some(authored)).expect("merged edit");
+        let merged = merged.changes.expect("merged changes");
+
         assert_eq!(merged[&uri], vec![script_edit, template_edit]);
     }
 
