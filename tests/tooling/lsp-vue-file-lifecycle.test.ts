@@ -38,7 +38,7 @@ async function definitionAt(
   })) as Location | Location[] | null;
 }
 
-test("vize lsp follows created and deleted on-disk Vue files without opening them", async (t) => {
+test("vize lsp follows directory lifecycle for closed on-disk Vue files", async (t) => {
   const testRootDir = path.join(testOutputRoot, "lsp-vue-file-lifecycle");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -49,7 +49,7 @@ test("vize lsp follows created and deleted on-disk Vue files without opening the
     fs.mkdirSync(sourceDir, { recursive: true });
 
     const appSource = `<script setup lang="ts">
-import DiskChild from "./DiskChild.vue"
+import DiskChild from "./components/DiskChild.vue"
 </script>
 
 <template>
@@ -81,17 +81,24 @@ const diskLifecycleMarker = 1
   <span>{{ message }} {{ diskLifecycleMarker }}</span>
 </template>
 `;
-    const childPath = path.join(sourceDir, "DiskChild.vue");
+    const componentsDir = path.join(sourceDir, "components");
+    const movedComponentsDir = path.join(sourceDir, "moved-components");
+    const childPath = path.join(componentsDir, "DiskChild.vue");
+    const movedChildPath = path.join(movedComponentsDir, "DiskChild.vue");
     const childUri = pathToFileURL(childPath).href;
+    const movedChildUri = pathToFileURL(movedChildPath).href;
+    const componentsUri = pathToFileURL(componentsDir).href;
+    const movedComponentsUri = pathToFileURL(movedComponentsDir).href;
 
     await t.test(
-      "a create event indexes the closed file and resolves its imported props",
+      "a directory create indexes nested closed files and resolves imported props",
       async () => {
         assert.equal(await workspaceSymbols(session, "diskLifecycleMarker"), null);
         assert.equal(await definitionAt(session, appUri, appSource, "message"), null);
 
+        fs.mkdirSync(componentsDir);
         fs.writeFileSync(childPath, childSource, "utf8");
-        session.notify("workspace/didCreateFiles", { files: [{ uri: childUri }] });
+        session.notify("workspace/didCreateFiles", { files: [{ uri: componentsUri }] });
 
         const symbols = await workspaceSymbols(session, "diskLifecycleMarker");
         assert.equal(symbols?.length, 1, JSON.stringify(symbols));
@@ -104,9 +111,37 @@ const diskLifecycleMarker = 1
       },
     );
 
-    await t.test("a delete event removes the closed file from both surfaces", async () => {
-      fs.rmSync(childPath);
-      session.notify("workspace/didDeleteFiles", { files: [{ uri: childUri }] });
+    await t.test("directory renames relocate every nested closed-file symbol", async () => {
+      fs.renameSync(componentsDir, movedComponentsDir);
+      session.notify("workspace/didRenameFiles", {
+        files: [{ oldUri: componentsUri, newUri: movedComponentsUri }],
+      });
+
+      const movedSymbols = await workspaceSymbols(session, "diskLifecycleMarker");
+      assert.deepEqual(
+        movedSymbols?.map((symbol) => symbol.location.uri),
+        [movedChildUri],
+      );
+      assert.equal(await definitionAt(session, appUri, appSource, "message"), null);
+
+      fs.renameSync(movedComponentsDir, componentsDir);
+      session.notify("workspace/didRenameFiles", {
+        files: [{ oldUri: movedComponentsUri, newUri: componentsUri }],
+      });
+
+      const restoredSymbols = await workspaceSymbols(session, "diskLifecycleMarker");
+      assert.deepEqual(
+        restoredSymbols?.map((symbol) => symbol.location.uri),
+        [childUri],
+      );
+      const definition = await definitionAt(session, appUri, appSource, "message");
+      assert.ok(definition != null && !Array.isArray(definition), JSON.stringify(definition));
+      assert.equal(definition.uri, childUri);
+    });
+
+    await t.test("a directory delete removes nested closed files from both surfaces", async () => {
+      fs.rmSync(componentsDir, { recursive: true });
+      session.notify("workspace/didDeleteFiles", { files: [{ uri: componentsUri }] });
 
       assert.equal(await workspaceSymbols(session, "diskLifecycleMarker"), null);
       assert.equal(await definitionAt(session, appUri, appSource, "message"), null);

@@ -225,7 +225,7 @@ fn is_discoverable_declaration_uri(root: &Path, uri: &str) -> bool {
         })
 }
 
-fn is_excluded_directory(name: &OsStr) -> bool {
+pub(super) fn is_excluded_directory(name: &OsStr) -> bool {
     matches!(
         name.to_str(),
         Some(".git" | "node_modules" | "target" | "coverage" | "dist")

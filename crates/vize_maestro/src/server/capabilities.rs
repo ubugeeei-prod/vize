@@ -279,6 +279,14 @@ fn file_event_registration_options(
             },
         });
     }
+    filters.push(FileOperationFilter {
+        scheme: Some("file".to_string()),
+        pattern: FileOperationPattern {
+            glob: "**/*".to_string(),
+            matches: Some(FileOperationPatternKind::Folder),
+            options: None,
+        },
+    });
     FileOperationRegistrationOptions { filters }
 }
 
