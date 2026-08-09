@@ -20,9 +20,18 @@ use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtu
 
 const SCRIPT_KIND_TS: u8 = 3;
 const SCRIPT_KIND_TSX: u8 = 4;
-const MAPPING_KIND_VERBATIM: usize = 0;
-const MAPPING_KIND_ATOM: usize = 1;
-const MAPPING_PURPOSE_ALL: usize = 3;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(usize)]
+enum ContentMapperSpanKind {
+    Verbatim = 0,
+    Atom = 1,
+}
+
+/// Every protocol-v1 language-service feature from hover (bit 0) through
+/// CodeLens (bit 20). Diagnostics do not have a feature bit and exact text
+/// edits still require verbatim geometry in TypeScript.
+const CONTENT_MAPPER_SPAN_FEATURES_ALL: usize = (1 << 21) - 1;
 
 /// A TypeScript content-mapper transform result.
 #[derive(Debug, Serialize)]
@@ -200,7 +209,7 @@ fn checked_source_span(source: &str, start: usize, end: usize) -> (usize, usize)
 struct SpanCandidate {
     generated: Range<usize>,
     original: Range<usize>,
-    kind: usize,
+    kind: ContentMapperSpanKind,
 }
 
 fn protocol_spans(
@@ -269,8 +278,8 @@ fn protocol_spans(
                 candidate.generated.len(),
                 candidate.original.start,
                 candidate.original.len(),
-                candidate.kind,
-                MAPPING_PURPOSE_ALL,
+                candidate.kind as usize,
+                CONTENT_MAPPER_SPAN_FEATURES_ALL,
             ])
         })
         .collect()
@@ -301,14 +310,14 @@ fn candidate(
         return Some(SpanCandidate {
             generated: start..start + original_text.len(),
             original: original_range,
-            kind: MAPPING_KIND_VERBATIM,
+            kind: ContentMapperSpanKind::Verbatim,
         });
     }
 
     Some(SpanCandidate {
         generated: generated_range,
         original: original_range,
-        kind: MAPPING_KIND_ATOM,
+        kind: ContentMapperSpanKind::Atom,
     })
 }
 

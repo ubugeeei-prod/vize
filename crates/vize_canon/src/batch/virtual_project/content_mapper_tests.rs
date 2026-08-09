@@ -40,7 +40,13 @@ const message = "hello"
             );
         }
     }
-    assert!(result.mappings.iter().all(|mapping| mapping.0[5] == 3));
+    assert!(
+        result
+            .mappings
+            .iter()
+            .all(|mapping| mapping.0[5] == 2_097_151),
+        "protocol v1 spans must participate in every language-service feature"
+    );
 }
 
 #[test]
