@@ -44,7 +44,7 @@ pub(super) fn collect_transitive_local_imports(
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
     let mut packages = PackageImportResolver::default();
-    let mut queue: Vec<(PathBuf, bool)> = Vec::new();
+    let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
     for root in roots {
@@ -52,14 +52,15 @@ pub(super) fn collect_transitive_local_imports(
             && visited.insert(absolute.clone())
         {
             registered.insert(absolute.clone());
-            queue.push((absolute, true));
+            queue.push((absolute, true, false));
         }
     }
 
     let mut registrations: Vec<PathBuf> = Vec::new();
     let mut authored: Vec<PathBuf> = Vec::new();
+    let mut virtual_module_aliases: FxHashSet<(String, PathBuf)> = FxHashSet::default();
 
-    while let Some((file, materialized_parent)) = queue.pop() {
+    while let Some((file, materialized_parent, package_graph)) = queue.pop() {
         let Some(dir) = file.parent() else {
             continue;
         };
@@ -72,16 +73,23 @@ pub(super) fn collect_transitive_local_imports(
         for specifier in extract_import_specifiers(&source) {
             let relative_specifier = is_relative_specifier(&specifier);
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
+            let mut package_resolution = false;
             let resolved = if relative_specifier {
                 resolve_relative_import(dir, &specifier, canonical_paths, options)
             } else if absolute_specifier {
                 resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
-                aliases
-                    .and_then(|aliases| {
-                        aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
-                    })
-                    .or_else(|| packages.resolve(dir, &specifier, canonical_paths, options))
+                let aliased = aliases.and_then(|aliases| {
+                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
+                });
+                match aliased {
+                    Some(resolved) => Some(resolved),
+                    None => {
+                        let resolved = packages.resolve(dir, &specifier, canonical_paths, options);
+                        package_resolution = resolved.is_some();
+                        resolved
+                    }
+                }
             };
             let Some(resolved) = resolved else {
                 continue;
@@ -102,23 +110,34 @@ pub(super) fn collect_transitive_local_imports(
                     &mut registration_cache,
                 )
             };
+            let in_package_graph = package_graph || package_resolution;
+            if package_resolution && needs_registration {
+                virtual_module_aliases.insert((specifier.clone(), resolved.clone()));
+            }
             let first_visit = visited.insert(resolved.clone());
             let first_registration = needs_registration && registered.insert(resolved.clone());
             if first_visit {
                 authored.push(resolved.clone());
             }
-            if first_registration {
+            // A bare package route is registered by Canon after the project
+            // root is fixed. Adding it (or its relative descendants) to the
+            // user's roots here would widen the project to the workspace and
+            // defeat the external mirror.
+            if first_registration && !in_package_graph {
                 registrations.push(resolved.clone());
             }
             if first_visit || first_registration {
-                queue.push((resolved, needs_registration));
+                queue.push((resolved, needs_registration, in_package_graph));
             }
         }
     }
 
+    let mut virtual_module_aliases = virtual_module_aliases.into_iter().collect::<Vec<_>>();
+    virtual_module_aliases.sort();
     TransitiveLocalImports {
         registrations,
         authored,
+        virtual_module_aliases,
     }
 }
 

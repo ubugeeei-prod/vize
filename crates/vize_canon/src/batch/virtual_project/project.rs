@@ -46,6 +46,7 @@ impl VirtualProject {
             virtual_ts_options: VirtualTsOptions::default(),
             diagnostic_paths: FxHashSet::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
+            virtual_module_aliases: FxHashMap::default(),
             options_api: false,
             session_scripts: false,
             legacy_vue2: false,
@@ -76,6 +77,7 @@ impl VirtualProject {
         project.virtual_ts_options = self.virtual_ts_options.clone();
         project.diagnostic_paths = self.diagnostic_paths.clone();
         project.virtual_ts_check_options = self.virtual_ts_check_options;
+        project.virtual_module_aliases = self.virtual_module_aliases.clone();
         project.options_api = self.options_api;
         project.legacy_vue2 = self.legacy_vue2;
         project.jsx_typecheck = self.jsx_typecheck;
@@ -106,6 +108,35 @@ impl VirtualProject {
 
     pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
         self.virtual_ts_check_options = options;
+    }
+
+    pub(crate) fn set_virtual_module_aliases(
+        &mut self,
+        aliases: impl IntoIterator<Item = (vize_carton::String, PathBuf)>,
+    ) {
+        self.virtual_module_aliases.clear();
+        for (specifier, source_path) in aliases {
+            let source_path = vize_carton::path::canonicalize_non_verbatim(&source_path);
+            let targets = self.virtual_module_aliases.entry(specifier).or_default();
+            if !targets.contains(&source_path) {
+                targets.push(source_path);
+            }
+        }
+        for targets in self.virtual_module_aliases.values_mut() {
+            targets.sort();
+        }
+    }
+
+    pub(crate) fn register_virtual_module_alias_targets(&mut self) -> CorsaResult<()> {
+        let mut targets: Vec<PathBuf> = self
+            .virtual_module_aliases
+            .values()
+            .flatten()
+            .cloned()
+            .collect();
+        targets.sort();
+        targets.dedup();
+        self.register_paths(&targets)
     }
 
     pub(crate) fn set_options_api(&mut self, enabled: bool) {

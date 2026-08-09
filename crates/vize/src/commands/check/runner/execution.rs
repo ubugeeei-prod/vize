@@ -41,6 +41,7 @@ pub(super) struct ProgramExecution {
 pub(super) struct ProgramExecutionInput<'a> {
     pub(super) files: &'a [PathBuf],
     pub(super) reported_files: FxHashSet<PathBuf>,
+    pub(super) virtual_module_aliases: &'a [(vize_carton::String, PathBuf)],
     pub(super) project_root: &'a std::path::Path,
     pub(super) program_root: PathBuf,
     pub(super) tsconfig_path: Option<PathBuf>,
@@ -119,6 +120,7 @@ pub(super) fn execute_program(
         settings.check_template_bindings,
         settings.check_emits,
     );
+    checker.set_virtual_module_aliases(input.virtual_module_aliases.iter().cloned());
     checker.scan_paths(input.files).unwrap_or_else(|error| {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(1);

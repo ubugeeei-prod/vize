@@ -15,6 +15,7 @@ mod source_types;
 mod tsconfig_extends;
 mod tsconfig_native_options;
 mod windows_paths;
+mod workspace_package_routes;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

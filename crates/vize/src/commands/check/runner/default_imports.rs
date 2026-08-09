@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashSet;
 
 use super::{
+    CollectedRoots,
     collect::path_is_inside_root,
     ignores::{CheckIgnoreSet, retain_unignored},
 };
@@ -22,6 +23,11 @@ pub(super) struct ExplicitAmbientImportContext<'a> {
     tsconfig_path: &'a Path,
     explicit_input_root: &'a Path,
     import_options: ImportFileOptions,
+}
+
+pub(super) struct RegisteredLocalImports {
+    pub(super) authored: Vec<PathBuf>,
+    pub(super) virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
 }
 
 impl<'a> ExplicitAmbientImportContext<'a> {
@@ -50,7 +56,7 @@ pub(super) fn collect_default_run_files(
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     check_ignore_set: Option<&CheckIgnoreSet>,
-) -> (Vec<PathBuf>, Vec<PathBuf>, FxHashSet<PathBuf>) {
+) -> CollectedRoots {
     let mut files = collect_default_check_files(
         project_root,
         tsconfig_path,
@@ -60,7 +66,7 @@ pub(super) fn collect_default_run_files(
     retain_unignored(&mut files, check_ignore_set);
     let inputs = files.clone();
     let mut reported_files = canonical_file_set(&files, canonical_paths);
-    let authored_imports = register_transitive_local_imports(
+    let discovered = register_transitive_local_imports(
         &mut files,
         cwd,
         tsconfig_path,
@@ -69,7 +75,8 @@ pub(super) fn collect_default_run_files(
         None,
         false,
     );
-    reported_files.extend(canonical_file_set(&authored_imports, canonical_paths));
+    reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
+    let mut virtual_module_aliases = discovered.virtual_module_aliases;
     register_ambient_declaration_files(
         &mut files,
         project_root,
@@ -78,7 +85,7 @@ pub(super) fn collect_default_run_files(
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
-    let _ = register_transitive_local_imports(
+    let hidden_discovered = register_transitive_local_imports(
         &mut files,
         cwd,
         tsconfig_path,
@@ -87,8 +94,16 @@ pub(super) fn collect_default_run_files(
         None,
         false,
     );
+    virtual_module_aliases.extend(hidden_discovered.virtual_module_aliases);
+    virtual_module_aliases.sort();
+    virtual_module_aliases.dedup();
 
-    (files, inputs, reported_files)
+    CollectedRoots {
+        files,
+        inputs,
+        reported: reported_files,
+        virtual_module_aliases,
+    }
 }
 
 pub(super) fn register_ambient_declaration_files(
@@ -154,20 +169,22 @@ pub(super) fn register_transitive_local_imports(
     canonical_paths: &mut CanonicalPathCache,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
-) -> Vec<PathBuf> {
+) -> RegisteredLocalImports {
     let discovered =
         collect_local_imports(files, cwd, tsconfig_path, import_options, canonical_paths);
     // The explicit-root boundary constrains user-selected roots and files that
     // enter Vize's mirror. It must not hide authored modules that TypeScript
     // legitimately resolves in place outside that boundary.
-    let authored = discovered.authored;
-    append_local_imports(
-        files,
-        discovered.registrations,
-        explicit_input_root,
-        validate_inputs,
-    );
-    authored
+    let TransitiveLocalImports {
+        registrations,
+        authored,
+        virtual_module_aliases,
+    } = discovered;
+    append_local_imports(files, registrations, explicit_input_root, validate_inputs);
+    RegisteredLocalImports {
+        authored,
+        virtual_module_aliases,
+    }
 }
 
 pub(super) fn collect_transitive_local_imports_from(

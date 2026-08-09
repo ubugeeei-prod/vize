@@ -6,6 +6,8 @@ mod base_url_diagnostics;
 mod corsa_requirement;
 #[path = "check_default_imports_cli/workspace_package_diagnostics.rs"]
 mod workspace_package_diagnostics;
+#[path = "check_default_imports_cli/workspace_package_vue_exports.rs"]
+mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};
 

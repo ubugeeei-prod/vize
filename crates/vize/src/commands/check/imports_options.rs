@@ -43,6 +43,11 @@ impl ImportFileOptions {
 pub(in crate::commands::check) struct TransitiveLocalImports {
     pub(in crate::commands::check) registrations: Vec<PathBuf>,
     pub(in crate::commands::check) authored: Vec<PathBuf>,
+    /// Bare workspace-package specifiers whose source target must resolve to
+    /// Vize's virtual mirror instead of the package manifest's real `.vue`.
+    /// Keeping the original specifier in authored code lets declaration emit
+    /// preserve package identity.
+    pub(in crate::commands::check) virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
 }
 
 impl From<bool> for ImportFileOptions {
