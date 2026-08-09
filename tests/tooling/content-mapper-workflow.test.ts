@@ -1,0 +1,53 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+
+const UPSTREAM_SHA = "bddd2162710e50281fa838456a875fd59ee7c91f";
+
+test("Content Mapper conformance pins and runs the exact upstream project path", () => {
+  const workflow = readRepoFile(
+    ".github",
+    "workflows",
+    "content-mapper-conformance.yml",
+  );
+  const job = workflowJobBody(workflow, "exact-tsgo-project");
+
+  assert.match(workflow, /pull_request:\n\s+branches: \[main\]\n\s+paths:/);
+  for (const relevantPath of [
+    '".github/workflows/content-mapper-conformance.yml"',
+    '"crates/vize/src/commands/content_mapper.rs"',
+    '"crates/vize_canon/src/batch/virtual_project/content_mapper*"',
+    '"crates/vize_canon/src/virtual_ts/**"',
+    '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
+    '"crates/vize/tests/fixtures/content_mapper_project/**"',
+    '"npm/cli/package.json"',
+  ]) {
+    assert.match(
+      workflow,
+      new RegExp(relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    );
+  }
+
+  assert.match(
+    workflow,
+    new RegExp(`CONTENT_MAPPER_TSGO_SHA: "${UPSTREAM_SHA}"`),
+  );
+  assert.match(job, /repository: microsoft\/typescript-go/);
+  assert.match(job, /ref: \$\{\{ env\.CONTENT_MAPPER_TSGO_SHA \}\}/);
+  assert.match(job, /uses: actions\/setup-go@[0-9a-f]{40}\s+# v6\.1\.0/);
+  assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
+  assert.match(
+    job,
+    /go build -tags=noembed -trimpath -o "\$RUNNER_TEMP\/tsgo" \.\/cmd\/tsgo/,
+  );
+  assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
+  assert.match(
+    job,
+    /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/,
+  );
+  assert.match(
+    job,
+    /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/,
+  );
+});
