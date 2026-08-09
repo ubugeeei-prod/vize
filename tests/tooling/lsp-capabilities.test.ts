@@ -100,6 +100,12 @@ const EDITOR_BUNDLE_CAPABILITIES = {
       "}",
     ],
   },
+  // TypeScript/tsgo signature help: opens on a call or generic argument list
+  // and re-opens once the caller closes it.
+  signatureHelpProvider: {
+    triggerCharacters: ["(", ",", "<"],
+    retriggerCharacters: [")"],
+  },
   definitionProvider: true,
   referencesProvider: true,
   documentHighlightProvider: true,
@@ -173,8 +179,8 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     },
   },
   // Absent on purpose, and therefore absent from this object: the three
-  // formatting providers (opt-in, see below), `signatureHelpProvider`,
-  // `typeDefinitionProvider`, `implementationProvider`, `declarationProvider`,
+  // formatting providers (opt-in, see below), `typeDefinitionProvider`,
+  // `implementationProvider`, `declarationProvider`,
   // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
   // `experimental` is absent unless the private client explicitly opts in.
 };
