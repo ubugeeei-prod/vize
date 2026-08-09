@@ -1,89 +1,22 @@
 //! Reverse dependency index for open Vue documents.
 mod dependents;
+mod index;
 use std::path::{Component, Path, PathBuf};
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_carton::FxHashSet;
 
 use self::package::resolve_package_import;
 use super::ServerState;
 pub(super) use dependents::open_vue_dependents;
+pub(in crate::server) use index::OpenVueImportIndex;
 mod package;
 
 const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
-
-#[derive(Default)]
-pub(super) struct OpenVueImportIndex {
-    inner: RwLock<ImportIndexData>,
-}
-
-#[derive(Default)]
-struct ImportIndexData {
-    by_dependency: FxHashMap<PathBuf, FxHashSet<Url>>,
-    by_importer: FxHashMap<Url, Vec<PathBuf>>,
-}
-
-impl OpenVueImportIndex {
-    pub(super) fn update(&self, importer: &Url, source: &str) {
-        let dependencies = importer
-            .to_file_path()
-            .ok()
-            .filter(|path| path.extension().is_some_and(|extension| extension == "vue"))
-            .map(|path| collect_dependencies(&path, source))
-            .unwrap_or_default();
-        let mut index = self.inner.write();
-        remove_importer(&mut index, importer);
-
-        for dependency in &dependencies {
-            index
-                .by_dependency
-                .entry(dependency.clone())
-                .or_default()
-                .insert(importer.clone());
-        }
-        if !dependencies.is_empty() {
-            index.by_importer.insert(importer.clone(), dependencies);
-        }
-    }
-
-    pub(super) fn remove(&self, importer: &Url) {
-        remove_importer(&mut self.inner.write(), importer);
-    }
-
-    pub(super) fn clear(&self) {
-        let mut index = self.inner.write();
-        index.by_dependency.clear();
-        index.by_importer.clear();
-    }
-
-    fn importers(&self, dependency: &Path) -> Vec<Url> {
-        self.inner
-            .read()
-            .by_dependency
-            .get(&comparable_path(dependency))
-            .map(|importers| importers.iter().cloned().collect())
-            .unwrap_or_default()
-    }
-}
-
-fn remove_importer(index: &mut ImportIndexData, importer: &Url) {
-    let Some(dependencies) = index.by_importer.remove(importer) else {
-        return;
-    };
-    for dependency in dependencies {
-        if let Some(importers) = index.by_dependency.get_mut(&dependency) {
-            importers.remove(importer);
-            if importers.is_empty() {
-                index.by_dependency.remove(&dependency);
-            }
-        }
-    }
-}
 
 pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<Url> {
     dependency
@@ -91,6 +24,10 @@ pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<U
         .ok()
         .map(|path| state.open_vue_imports.importers(&path))
         .unwrap_or_default()
+}
+
+pub(super) fn indexed_dependency_paths(state: &ServerState, dependency: &Path) -> Vec<PathBuf> {
+    state.open_vue_imports.dependency_paths(dependency)
 }
 
 fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
@@ -208,30 +145,79 @@ fn source_type(lang: Option<&str>) -> SourceType {
 mod tests {
     #![allow(clippy::disallowed_methods)]
 
-    use super::{open_vue_importers, resolve_import};
+    use super::{indexed_dependency_paths, open_vue_importers, resolve_import};
     use crate::server::ServerState;
     use tower_lsp::lsp_types::Url;
 
     #[test]
     fn index_tracks_and_removes_open_vue_imports() {
         let dir = tempfile::tempdir().unwrap();
-        let child = dir.path().join("Child.vue");
+        let components = dir.path().join("components");
+        let other_components = dir.path().join("components-old");
+        let child = components.join("Child.vue");
+        let sibling = components.join("Sibling.vue");
+        let outside = other_components.join("Outside.vue");
         let parent = dir.path().join("Parent.vue");
+        std::fs::create_dir(&components).unwrap();
+        std::fs::create_dir(&other_components).unwrap();
         std::fs::write(&child, "<template />").unwrap();
+        std::fs::write(&sibling, "<template />").unwrap();
+        std::fs::write(&outside, "<template />").unwrap();
         std::fs::write(&parent, "<template />").unwrap();
         let child_uri = Url::from_file_path(&child).unwrap();
+        let components_uri = Url::from_file_path(&components).unwrap();
         let parent_uri = Url::from_file_path(&parent).unwrap();
         let state = ServerState::new();
-        let source = "<script setup lang=\"ts\">import Child from './Child'</script>";
+        let source = "<script setup lang=\"ts\">import Child from './components/Child'; import Sibling from './components/Sibling.vue'; import Outside from './components-old/Outside.vue'</script>";
 
         state.update_virtual_docs(&parent_uri, source);
         assert_eq!(
             open_vue_importers(&state, &child_uri),
             vec![parent_uri.clone()]
         );
+        assert_eq!(
+            open_vue_importers(&state, &components_uri),
+            vec![parent_uri.clone()],
+            "directory events return an importer once even with several nested imports"
+        );
+        assert_eq!(
+            indexed_dependency_paths(&state, &components),
+            vec![
+                std::fs::canonicalize(&child).unwrap(),
+                std::fs::canonicalize(&sibling).unwrap(),
+            ],
+            "a sibling whose name only shares the string prefix is excluded"
+        );
 
         state.update_virtual_docs(&parent_uri, "<script setup>const local = 1</script>");
         assert!(open_vue_importers(&state, &child_uri).is_empty());
+    }
+
+    #[test]
+    fn directory_lookup_keeps_exact_and_nested_dependency_keys() {
+        let dir = tempfile::tempdir().unwrap();
+        let bundle = dir.path().join("bundle.vue");
+        let nested = bundle.join("Nested.vue");
+        std::fs::create_dir(&bundle).unwrap();
+        std::fs::write(&nested, "<template />").unwrap();
+        let direct_uri = Url::from_file_path(dir.path().join("Direct.vue")).unwrap();
+        let nested_uri = Url::from_file_path(dir.path().join("NestedImporter.vue")).unwrap();
+        let bundle_uri = Url::from_file_path(&bundle).unwrap();
+        let state = ServerState::new();
+
+        state.update_virtual_docs(
+            &direct_uri,
+            "<script setup>import Bundle from './bundle.vue'</script>",
+        );
+        state.update_virtual_docs(
+            &nested_uri,
+            "<script setup>import Nested from './bundle.vue/Nested.vue'</script>",
+        );
+
+        assert_eq!(
+            open_vue_importers(&state, &bundle_uri),
+            vec![direct_uri, nested_uri]
+        );
     }
 
     #[test]

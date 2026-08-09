@@ -25,7 +25,7 @@ defineProps<{ count: number }>();
 const CHILD_STRING = CHILD_NUMBER.replace("count: number", "count: string");
 
 const APP = `<script setup lang="ts">
-import Child from "./Child.vue";
+import Child from "./components/Child.vue";
 </script>
 <template>
   <Child :count="1" />
@@ -67,8 +67,10 @@ test("created and watched dependency changes refresh the open importer", async (
       JSON.stringify({ typeChecker: { corsaPath } }),
       "utf8",
     );
-    const childPath = path.join(workspaceDir, "Child.vue");
-    const renamedChildPath = path.join(workspaceDir, "RenamedChild.vue");
+    const componentsDir = path.join(workspaceDir, "components");
+    const movedComponentsDir = path.join(workspaceDir, "moved-components");
+    const childPath = path.join(componentsDir, "Child.vue");
+    const renamedChildPath = path.join(componentsDir, "RenamedChild.vue");
 
     await session.initialize(workspaceDir, {
       editor: true,
@@ -79,6 +81,8 @@ test("created and watched dependency changes refresh the open importer", async (
     const appUri = pathToFileURL(path.join(workspaceDir, "App.vue")).href;
     const childUri = pathToFileURL(childPath).href;
     const renamedChildUri = pathToFileURL(renamedChildPath).href;
+    const componentsUri = pathToFileURL(componentsDir).href;
+    const movedComponentsUri = pathToFileURL(movedComponentsDir).href;
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
@@ -115,6 +119,7 @@ test("created and watched dependency changes refresh the open importer", async (
 
     // Phase 1: a file-operation create must heal the already-open importer at
     // the same document version; requiring an importer edit hides stale state.
+    fs.mkdirSync(componentsDir);
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
     session.notify("workspace/didCreateFiles", {
       files: [{ uri: childUri }],
@@ -153,7 +158,33 @@ test("created and watched dependency changes refresh the open importer", async (
     );
     assert.equal((afterReverseRename as { version?: number }).version, 1);
 
-    // Phase 4: the dependency's prop narrows on disk, no editor edit.
+    // Phase 4: a directory rename must invalidate nested dependencies, not
+    // only files whose URI exactly matches an indexed import.
+    await drainAppDiagnostics();
+    fs.renameSync(componentsDir, movedComponentsDir);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: componentsUri, newUri: movedComponentsUri }],
+    });
+    const afterDirectoryRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterDirectoryRename as { version?: number }).version, 1);
+
+    // Phase 5: restoring the directory must heal the same importer version.
+    fs.renameSync(movedComponentsDir, componentsDir);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: movedComponentsUri, newUri: componentsUri }],
+    });
+    const afterReverseDirectoryRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterReverseDirectoryRename as { version?: number }).version, 1);
+
+    // Phase 6: the dependency's prop narrows on disk, no editor edit.
     fs.writeFileSync(childPath, CHILD_STRING, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 2 }],
@@ -165,7 +196,7 @@ test("created and watched dependency changes refresh the open importer", async (
     );
     assert.equal(counted(afterEdit), 1, "the stale binding is reported");
 
-    // Phase 5: the dependency disappears; the importer must stay broken.
+    // Phase 7: the dependency disappears; the importer must stay broken.
     await drainAppDiagnostics();
     fs.rmSync(childPath);
     session.notify("workspace/didChangeWatchedFiles", {
@@ -183,7 +214,7 @@ test("created and watched dependency changes refresh the open importer", async (
       )}`,
     );
 
-    // Phase 6: restored with the matching type; the importer recovers.
+    // Phase 8: restored with the matching type; the importer recovers.
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 1 }],
@@ -194,6 +225,34 @@ test("created and watched dependency changes refresh the open importer", async (
       60000,
     );
     assert.equal(counted(afterWatchedRestore), 0, "a restored dependency clears the importer");
+
+    // Phase 9: a directory file-operation delete must evict every nested Vue
+    // overlay and republish the open importer at the same document version.
+    await drainAppDiagnostics();
+    fs.rmSync(componentsDir, { recursive: true });
+    session.notify("workspace/didDeleteFiles", {
+      files: [{ uri: componentsUri }],
+    });
+    const afterDirectoryDelete = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterDirectoryDelete as { version?: number }).version, 1);
+
+    // Phase 10: recreating the directory and nested dependency heals without
+    // requiring a file-level event or an importer edit.
+    fs.mkdirSync(componentsDir);
+    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
+    session.notify("workspace/didCreateFiles", {
+      files: [{ uri: componentsUri }],
+    });
+    const afterDirectoryCreate = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterDirectoryCreate as { version?: number }).version, 1);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
