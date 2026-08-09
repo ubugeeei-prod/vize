@@ -7,9 +7,11 @@ use crate::ide::diagnostics::VirtualTsResult;
 
 mod open;
 mod project;
+mod semantic_links;
 
 pub(crate) use open::open_canonical_virtual_document;
 pub(crate) use project::open_canonical_virtual_project_document;
+pub(crate) use semantic_links::{CanonicalSemanticPosition, linked_semantic_position};
 
 pub(crate) struct CanonicalVirtualDocument {
     pub(crate) request_uri: String,

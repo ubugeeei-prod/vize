@@ -62,8 +62,10 @@ export default {}
         let parent_source = r#"<script setup lang="ts">
 import { shared } from './Child View.vue'
 const local = shared
+function unrelated() { const shared = 0; return shared }
 </script>
-<template>💥 {{ shared }} {{ local }}</template>
+<template>💥 {{ shared }} {{ local }} <i v-for="shared in [1]">{{ shared }}</i></template>
+<style>.root { color: v-bind(shared) }</style>
 "#;
         let parent_path = src.join("Parent View.vue");
         fs::write(&parent_path, parent_source).expect("parent");
@@ -121,6 +123,16 @@ const local = shared
         )
         .await
         .expect("an empty canonical result is authoritative");
+        let template_offset = parent_source.find("{{ shared }}").expect("template use") + 3;
+        let template_ctx =
+            IdeContext::new(&state, &parent_uri, template_offset).expect("template context");
+        let from_template = ReferencesService::references_with_corsa(
+            &template_ctx,
+            false,
+            Some(Arc::clone(&bridge)),
+        )
+        .await
+        .expect("template references");
         bridge.shutdown().await.expect("shutdown");
 
         assert!(
@@ -139,6 +151,18 @@ const local = shared
                 .any(|location| location.uri == parent_uri),
             "references must use the unsaved child overlay across an encoded importer URI: {without_declaration:#?}",
         );
+        let parent_without_declaration = without_declaration
+            .iter()
+            .filter(|location| location.uri == parent_uri)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            parent_without_declaration.len(),
+            3,
+            "the script, template, and style uses must survive while the import declaration stays excluded: {without_declaration:#?}",
+        );
+        for location in parent_without_declaration {
+            assert_eq!(authored_text(parent_source, location), "shared");
+        }
         let child_declaration = with_declaration
             .iter()
             .find(|location| location.uri == child_uri)
@@ -150,6 +174,14 @@ const local = shared
                 .any(|location| location.uri == parent_uri),
             "references must cross into the open importer: {with_declaration:#?}",
         );
+        assert_eq!(
+            with_declaration
+                .iter()
+                .filter(|location| location.uri == parent_uri)
+                .count(),
+            4,
+            "including declarations must retain the import plus script, template, and style uses: {with_declaration:#?}",
+        );
         assert!(
             with_declaration
                 .iter()
@@ -159,6 +191,18 @@ const local = shared
         assert!(
             isolated_without_declaration.is_empty(),
             "an isolated declaration has no references when declarations are excluded: {isolated_without_declaration:#?}",
+        );
+        assert_eq!(
+            from_template.len(),
+            3,
+            "a template-local query must return only its script, template, and style uses: {from_template:#?}",
+        );
+        assert!(
+            from_template
+                .iter()
+                .all(|location| location.uri == parent_uri
+                    && authored_text(parent_source, location) == "shared"),
+            "the linked query must not jump to the exported symbol or a shadowed spelling: {from_template:#?}",
         );
     });
 }
