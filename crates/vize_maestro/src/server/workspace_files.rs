@@ -197,6 +197,13 @@ pub(super) async fn will_rename_files(
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
     #[cfg(feature = "native")]
     {
+        let dependents = versioned_open_vue_dependents(
+            &server.state,
+            params
+                .files
+                .iter()
+                .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
+        );
         server.state.invalidate_global_component_references(
             params
                 .files
@@ -212,6 +219,11 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         server.state.invalidate_batch_cache();
         let renamed_paths = file_paths(params.files.iter().map(|file| file.old_uri.as_str()));
         forget_corsa_vue_files(&server.state, &renamed_paths).await;
+        for (dependent, version) in dependents {
+            server
+                .publish_diagnostics_if_version(&dependent, version)
+                .await;
+        }
     }
     if !server.state.lsp_features().file_rename {
         return;

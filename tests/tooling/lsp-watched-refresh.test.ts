@@ -68,6 +68,7 @@ test("created and watched dependency changes refresh the open importer", async (
       "utf8",
     );
     const childPath = path.join(workspaceDir, "Child.vue");
+    const renamedChildPath = path.join(workspaceDir, "RenamedChild.vue");
 
     await session.initialize(workspaceDir, {
       editor: true,
@@ -77,6 +78,7 @@ test("created and watched dependency changes refresh the open importer", async (
     });
     const appUri = pathToFileURL(path.join(workspaceDir, "App.vue")).href;
     const childUri = pathToFileURL(childPath).href;
+    const renamedChildUri = pathToFileURL(renamedChildPath).href;
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
@@ -124,7 +126,34 @@ test("created and watched dependency changes refresh the open importer", async (
     );
     assert.equal((afterCreate as { version?: number }).version, 1);
 
-    // Phase 2: the dependency's prop narrows on disk, no editor edit.
+    // Phase 2: a rename that removes the imported path must republish TS2307
+    // without relying on the client to apply a willRename workspace edit.
+    await drainAppDiagnostics();
+    fs.renameSync(childPath, renamedChildPath);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: childUri, newUri: renamedChildUri }],
+    });
+    const afterRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterRename as { version?: number }).version, 1);
+
+    // Phase 3: reversing the rename recreates the imported path and must heal
+    // the same importer version without an editor edit.
+    fs.renameSync(renamedChildPath, childPath);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: renamedChildUri, newUri: childUri }],
+    });
+    const afterReverseRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterReverseRename as { version?: number }).version, 1);
+
+    // Phase 4: the dependency's prop narrows on disk, no editor edit.
     fs.writeFileSync(childPath, CHILD_STRING, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 2 }],
@@ -136,7 +165,7 @@ test("created and watched dependency changes refresh the open importer", async (
     );
     assert.equal(counted(afterEdit), 1, "the stale binding is reported");
 
-    // Phase 3: the dependency disappears; the importer must stay broken.
+    // Phase 5: the dependency disappears; the importer must stay broken.
     await drainAppDiagnostics();
     fs.rmSync(childPath);
     session.notify("workspace/didChangeWatchedFiles", {
@@ -154,7 +183,7 @@ test("created and watched dependency changes refresh the open importer", async (
       )}`,
     );
 
-    // Phase 4: restored with the matching type; the importer recovers.
+    // Phase 6: restored with the matching type; the importer recovers.
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 1 }],
