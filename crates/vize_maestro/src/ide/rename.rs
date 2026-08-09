@@ -142,7 +142,9 @@ impl RenameService {
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
-        corsa_result.or_else(|| Self::rename(ctx, new_name))
+        // Corsa only renames the virtual document the request opened, so the
+        // authored edits carry the other blocks of this SFC.
+        corsa_support::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
     }
 
     #[cfg(feature = "native")]

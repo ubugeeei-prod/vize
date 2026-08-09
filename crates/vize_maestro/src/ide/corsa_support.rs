@@ -14,6 +14,7 @@ mod html_attribute;
 mod html_attribute_tests;
 #[cfg(feature = "native")]
 mod html_tag;
+mod rename_merge;
 #[cfg(feature = "native")]
 mod svg_attribute;
 mod virtual_document;
@@ -30,6 +31,7 @@ pub(crate) use html_attribute::{
 };
 #[cfg(feature = "native")]
 pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, native_dom_tag_info};
+pub(crate) use rename_merge::merge_authored_rename;
 use virtual_document::{
     MatchedVirtualDocument, is_virtual_document_uri, match_virtual_document, virtual_document_path,
 };
