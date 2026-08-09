@@ -78,7 +78,7 @@ pub(super) fn collect_default_run_files(
     (files, reported_files)
 }
 
-fn register_ambient_declaration_files(
+pub(super) fn register_ambient_declaration_files(
     files: &mut Vec<PathBuf>,
     project_root: &Path,
     tsconfig_path: Option<&Path>,
