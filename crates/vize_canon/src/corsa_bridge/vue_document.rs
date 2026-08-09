@@ -30,6 +30,24 @@ pub struct CorsaVueVirtualDocument {
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
+    /// Reachable Vue dependencies with the exact authored snapshots and
+    /// mappings used to generate the documents synchronized with Corsa.
+    pub dependencies: Vec<CorsaVueVirtualDependency>,
+}
+
+/// One reachable Vue dependency synchronized as part of a canonical project.
+///
+/// Fallback stubs and script/shim documents are deliberately excluded because
+/// they do not have a trustworthy mapping back to authored Vue source.
+pub struct CorsaVueVirtualDependency {
+    pub source_path: PathBuf,
+    pub source: String,
+    pub request_uri: String,
+    pub code: String,
+    pub mappings: Vec<VizeMapping>,
+    pub import_source_map: ImportSourceMap,
+    pub source_type: SourceType,
+    pub virtual_suffix: &'static str,
 }
 
 pub(crate) struct CorsaVueVirtualProject {
@@ -201,11 +219,13 @@ fn build_vue_virtual_project_with_overlays_and_options(
         Some(&alias_context),
     )?;
     let mut documents = vec![(host.virtual_uri.clone(), host.generated.code.clone())];
+    let mut dependencies = Vec::new();
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path));
     }
     collect_dependency_documents(
         &mut documents,
+        &mut dependencies,
         &host,
         options,
         &rewriter,
@@ -223,6 +243,7 @@ fn build_vue_virtual_project_with_overlays_and_options(
             import_source_map: generated.import_source_map,
             source_type: generated.source_type,
             virtual_suffix: generated.virtual_suffix,
+            dependencies,
         },
         documents,
     })
