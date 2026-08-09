@@ -34,7 +34,9 @@ mod tests;
 pub struct CorsaProjectClient {
     executable: String,
     cwd: PathBuf,
-    session: ProjectSession,
+    /// Optional custom project-session transport. Standard tsgo builds expose
+    /// the editor LSP without this API, so the client can run editor-only.
+    session: Option<ProjectSession>,
     capabilities: Arc<CapabilitiesResponse>,
     overlay_api_disabled: bool,
     materialized_project_session: bool,

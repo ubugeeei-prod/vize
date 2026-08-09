@@ -17,7 +17,11 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize_canon/src/batch/virtual_project.rs"',
     '"crates/vize_canon/src/batch/virtual_project/content_mapper*"',
     '"crates/vize_canon/src/lib.rs"',
+    '"crates/vize_canon/src/lsp_client.rs"',
+    '"crates/vize_canon/src/lsp_client/**"',
+    '"crates/vize_canon/tests/lsp_import_resolution.rs"',
     '"crates/vize_canon/src/virtual_ts/**"',
+    '"crates/vize_maestro/src/ide/**"',
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
     '"npm/cli/package.json"',
@@ -38,4 +42,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
+  assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
+  assert.match(
+    job,
+    /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/,
+  );
+  assert.match(job, /cargo test -p vize_maestro/);
 });

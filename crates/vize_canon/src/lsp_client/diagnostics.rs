@@ -111,7 +111,7 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Option<DiagnosticBatch>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
@@ -141,7 +141,7 @@ impl CorsaProjectClient {
         }
 
         let response = block_on(
-            self.session
+            self.project_session()?
                 .get_diagnostics_for_file(uri_document_identifier(document_uri.as_str())),
         );
         let response = match response {
@@ -159,7 +159,7 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<Option<Result<DiagnosticFetch, String>>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
@@ -249,7 +249,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<Vec<Diagnostic>>, String> {
         if self.supports_file_diagnostics_api() {
             let response = block_on(
-                self.session
+                self.project_session()?
                     .get_diagnostics_for_file(uri_document_identifier(document_uri)),
             );
             let response = match response {
@@ -260,17 +260,18 @@ impl CorsaProjectClient {
                     let _ = error;
                     // Proceed to the project-diagnostics branch below.
                     return if self.supports_project_diagnostics_api() {
-                        let report = match block_on(self.session.get_diagnostics_for_project()) {
-                            Ok(report) => report,
-                            Err(error) if diagnostics_api_error_is_unsupported(&error) => {
-                                return Ok(None);
-                            }
-                            Err(error) => {
-                                return Err(cstr!(
-                                    "Failed to request Corsa project diagnostics: {error}"
-                                ));
-                            }
-                        };
+                        let report =
+                            match block_on(self.project_session()?.get_diagnostics_for_project()) {
+                                Ok(report) => report,
+                                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
+                                    return Ok(None);
+                                }
+                                Err(error) => {
+                                    return Err(cstr!(
+                                        "Failed to request Corsa project diagnostics: {error}"
+                                    ));
+                                }
+                            };
                         let diagnostics = report
                             .files
                             .iter()
@@ -292,7 +293,7 @@ impl CorsaProjectClient {
         }
 
         if self.supports_project_diagnostics_api() {
-            let report = match block_on(self.session.get_diagnostics_for_project()) {
+            let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
                 Ok(report) => report,
                 Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     return Ok(None);
@@ -319,7 +320,7 @@ impl CorsaProjectClient {
         &mut self,
         pairs: &[(String, String)],
     ) -> Result<Option<DiagnosticBatch>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
