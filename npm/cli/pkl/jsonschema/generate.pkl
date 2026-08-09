@@ -344,6 +344,10 @@ local languageServerConfigDef: JsonSchema = new JsonSchema {
       type = "boolean"
       description = "Enable completions"
     }
+    ["signatureHelp"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable TypeScript signature help"
+    }
     ["hover"] = new JsonSchema {
       type = "boolean"
       description = "Enable hover information"

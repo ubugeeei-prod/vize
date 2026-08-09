@@ -121,6 +121,7 @@ fn lsp_features_enable_non_opinionated_defaults() {
     assert!(features.typecheck);
     assert!(features.ecosystem);
     assert!(features.completion);
+    assert!(features.signature_help);
     assert!(features.code_actions);
     assert!(!features.formatting);
     assert!(state.is_lsp_lint_enabled());
@@ -137,6 +138,7 @@ fn load_lsp_config_from_json() {
                     "lint": true,
                     "typecheck": true,
                     "editor": true,
+                    "signatureHelp": false,
                     "formatting": false
                 }
             }"#,
@@ -150,6 +152,7 @@ fn load_lsp_config_from_json() {
     assert!(features.typecheck);
     assert!(features.ecosystem);
     assert!(features.completion);
+    assert!(!features.signature_help);
     assert!(features.definition);
     assert!(!features.formatting);
 }

@@ -12,6 +12,8 @@ pub struct MappingFeatures {
     pub hover: bool,
     /// Enable completion
     pub completion: bool,
+    /// Enable TypeScript signature help
+    pub signature_help: bool,
     /// Enable go-to-definition
     pub definition: bool,
     /// Enable find references
@@ -30,6 +32,7 @@ impl MappingFeatures {
         Self {
             hover: true,
             completion: true,
+            signature_help: true,
             definition: true,
             references: true,
             rename: true,
@@ -51,6 +54,7 @@ impl MappingFeatures {
     pub fn navigation() -> Self {
         Self {
             completion: true,
+            signature_help: true,
             definition: true,
             references: true,
             ..Default::default()

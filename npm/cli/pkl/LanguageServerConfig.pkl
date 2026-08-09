@@ -23,6 +23,9 @@ class LanguageServerConfig {
   /// Enable completions.
   completion: Boolean? = null
 
+  /// Enable TypeScript signature help.
+  signatureHelp: Boolean? = null
+
   /// Enable hover information.
   hover: Boolean? = null
 

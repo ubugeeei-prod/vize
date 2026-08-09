@@ -16,6 +16,7 @@ pub(super) struct LspConfigSection {
     options_api: Option<bool>,
     legacy_vue2: Option<bool>,
     completion: Option<bool>,
+    signature_help: Option<bool>,
     hover: Option<bool>,
     definition: Option<bool>,
     references: Option<bool>,
@@ -80,6 +81,9 @@ impl LspConfigSection {
         if let Some(enabled) = self.completion {
             features.completion = enabled;
         }
+        if let Some(enabled) = self.signature_help {
+            features.signature_help = enabled;
+        }
         if let Some(enabled) = self.hover {
             features.hover = enabled;
         }
@@ -143,6 +147,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             options_api: None,
             legacy_vue2: None,
             completion: config.completion,
+            signature_help: config.signature_help,
             hover: config.hover,
             definition: config.definition,
             references: config.references,
@@ -177,6 +182,7 @@ pub struct LspFeatureConfig {
     pub(crate) options_api: bool,
     pub(crate) legacy_vue2: bool,
     pub(crate) completion: bool,
+    pub(crate) signature_help: bool,
     pub(crate) hover: bool,
     pub(crate) definition: bool,
     pub(crate) references: bool,
@@ -204,6 +210,7 @@ impl LspFeatureConfig {
             options_api: false,
             legacy_vue2: false,
             completion: false,
+            signature_help: false,
             hover: false,
             definition: false,
             references: false,
@@ -236,6 +243,7 @@ impl LspFeatureConfig {
     fn apply_editor_bundle(&mut self, enabled: bool) {
         self.ecosystem = enabled;
         self.completion = enabled;
+        self.signature_help = enabled;
         self.hover = enabled;
         self.definition = enabled;
         self.references = enabled;
@@ -263,6 +271,7 @@ impl Default for LspFeatureConfig {
             options_api: false,
             legacy_vue2: false,
             completion: true,
+            signature_help: true,
             hover: true,
             definition: true,
             references: true,
