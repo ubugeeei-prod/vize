@@ -71,6 +71,7 @@ pub fn generate_virtual_ts_with_offsets_options_api(
         options,
         VirtualTsGenerationOptions {
             options_api: true,
+            preserve_authored_component: true,
             ..Default::default()
         },
     )

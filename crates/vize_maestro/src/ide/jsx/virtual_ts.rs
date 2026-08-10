@@ -20,6 +20,7 @@
 //! machinery is batch-specific.
 
 use vize_atelier_jsx::{JsxLang, StyleExprSpan, lower_source};
+use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
 use vize_relief::{
     ExpressionNode, RootNode, TemplateChildNode,
@@ -27,6 +28,7 @@ use vize_relief::{
     expressions::{CompoundExpressionChild, CompoundExpressionNode},
 };
 
+mod component;
 #[cfg(any(test, feature = "native"))]
 mod generate;
 #[cfg(any(test, feature = "native"))]
@@ -49,6 +51,10 @@ pub(in crate::ide) struct JsxExpr {
 enum JsxEmit {
     Expr(JsxExpr),
     ModelTarget(JsxExpr),
+    /// Only the `native`/test generator renders this variant; the structural
+    /// walk keeps it so both builds share one collector.
+    #[cfg_attr(not(any(test, feature = "native")), allow(dead_code))]
+    Component(component::JsxComponent),
     ForScope {
         source: JsxExpr,
         value_alias: Option<JsxExpr>,
@@ -70,12 +76,28 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
     let mut exprs = Vec::new();
     for root in &lowered.roots {
         let mut emits = Vec::new();
-        collect_root_expressions(&root.root, &mut emits);
+        collect_root_expressions(&root.root, &mut emits, false);
         collect_style_expressions(&root.scoped_style_exprs, &mut emits);
         flatten_emits(&emits, &mut exprs);
     }
     exprs.sort_by_key(|expr| expr.start);
     exprs
+}
+
+/// Append `expr`'s source text to `out` and record the mapping back to the
+/// byte range it occupied in the original `.jsx`/`.tsx` source.
+///
+/// Shared by the generator and the semantic component renderer so both emit
+/// identical mappings.
+fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &JsxExpr) {
+    let gen_start = out.len();
+    out.push_str(&expr.content);
+    let gen_end = out.len();
+    mappings.push(VizeMapping {
+        gen_range: gen_start..gen_end,
+        src_range: expr.start as usize..expr.end as usize,
+        sub_spans: Vec::new(),
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -84,9 +106,13 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
 // batch jsx_codegen walker.
 // ---------------------------------------------------------------------------
 
-fn collect_root_expressions(root: &RootNode<'_>, out: &mut Vec<JsxEmit>) {
+fn collect_root_expressions(
+    root: &RootNode<'_>,
+    out: &mut Vec<JsxEmit>,
+    preserve_components: bool,
+) {
     for child in &root.children {
-        collect_child(child, out);
+        collect_child(child, out, preserve_components);
     }
 }
 
@@ -98,14 +124,23 @@ fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut Vec<JsxEmi
     }
 }
 
-fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
+fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>, preserve_components: bool) {
     match child {
         TemplateChildNode::Element(element) => {
+            let semantic_component = preserve_components
+                .then(|| component::collect(element))
+                .flatten();
+            let has_semantic_component = semantic_component.is_some();
+            if let Some(component) = semantic_component {
+                out.push(JsxEmit::Component(component));
+            }
             for prop in &element.props {
-                collect_prop(prop, out);
+                if !has_semantic_component || !component::captures_prop(element, prop) {
+                    collect_prop(prop, out);
+                }
             }
             for child in &element.children {
-                collect_child(child, out);
+                collect_child(child, out, preserve_components);
             }
         }
         TemplateChildNode::Interpolation(interpolation) => {
@@ -120,7 +155,7 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
                     collect_expression(condition, out);
                 }
                 for child in &branch.children {
-                    collect_child(child, out);
+                    collect_child(child, out, preserve_components);
                 }
             }
         }
@@ -129,19 +164,19 @@ fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
                 collect_expression(condition, out);
             }
             for child in &branch.children {
-                collect_child(child, out);
+                collect_child(child, out, preserve_components);
             }
         }
         TemplateChildNode::For(node) => {
             let Some(source) = expr_of(&node.source) else {
                 for child in &node.children {
-                    collect_child(child, out);
+                    collect_child(child, out, preserve_components);
                 }
                 return;
             };
             let mut body = Vec::new();
             for child in &node.children {
-                collect_child(child, &mut body);
+                collect_child(child, &mut body, preserve_components);
             }
             out.push(JsxEmit::ForScope {
                 source,
@@ -297,171 +332,11 @@ fn flatten_emits(emits: &[JsxEmit], out: &mut Vec<JsxExpr>) {
                 }
                 flatten_emits(body, out);
             }
+            JsxEmit::Component(_) => {}
         }
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::ops::Range;
-
-    use crate::ide::jsx::position::source_offset_to_virtual_position;
-
-    fn generate(source: &str) -> JsxVirtualTs {
-        generate_jsx_virtual_ts(source, JsxLang::Tsx).unwrap()
-    }
-
-    fn assert_virtual_ts_snapshot(name: &str, source: &str) {
-        let generated = generate(source);
-        insta::assert_snapshot!(format!("{name}_code"), generated.code.as_str());
-        insta::assert_debug_snapshot!(
-            format!("{name}_mappings"),
-            mapping_summary(source, &generated)
-        );
-    }
-
-    fn mapping_summary<'a>(
-        source: &'a str,
-        generated: &'a JsxVirtualTs,
-    ) -> Vec<MappingSummary<'a>> {
-        generated
-            .mappings
-            .iter()
-            .map(|mapping| MappingSummary {
-                generated: &generated.code[mapping.gen_range.clone()],
-                source: &source[mapping.src_range.clone()],
-                gen_range: mapping.gen_range.clone(),
-                src_range: mapping.src_range.clone(),
-            })
-            .collect()
-    }
-
-    #[allow(dead_code)]
-    #[derive(Debug)]
-    struct MappingSummary<'a> {
-        generated: &'a str,
-        source: &'a str,
-        gen_range: Range<usize>,
-        src_range: Range<usize>,
-    }
-
-    fn virtual_positions_for_markers(
-        source: &str,
-        generated: &JsxVirtualTs,
-        markers: &[&str],
-    ) -> Vec<VirtualPosition> {
-        markers
-            .iter()
-            .map(|marker| {
-                let source_offset = source
-                    .match_indices(marker)
-                    .map(|(offset, _)| offset)
-                    .next()
-                    .expect("marker present");
-                let position = source_offset_to_virtual_position(
-                    &generated.code,
-                    &generated.mappings,
-                    source_offset,
-                )
-                .expect("marker maps into virtual TS");
-
-                VirtualPosition {
-                    marker: (*marker).to_string(),
-                    source_offset,
-                    source: source[source_offset..source_offset + marker.len()].to_string(),
-                    position,
-                }
-            })
-            .collect()
-    }
-
-    #[allow(dead_code)]
-    #[derive(Debug)]
-    struct VirtualPosition {
-        marker: String,
-        source_offset: usize,
-        source: String,
-        position: (u32, u32),
-    }
-
-    #[test]
-    fn typed_component_with_jsx_control_flow_directives_and_styles_is_exact() {
-        let source = "import { computed, ref } from 'vue';\n\nconst Comp = (\n  { items, ok, tone, gap }: { items: Array<{ id: string; label: string }>; ok: boolean; tone: string; gap: number },\n  { emit, slots }: Ctx<{ select: [id: string] }, { footer: () => unknown }>,\n) => {\n  const selected = ref(items[0]?.id);\n  const activeItem = computed(() => items.find((item) => item.id === selected.value));\n  return (\n    <>\n      <ul class={tone} v-show={ok}>\n        {items.map((item, index) => (\n          <li key={item.id} onClick={() => emit('select', item.id)} data-index={index}>\n            {item.label}{selected.value === item.id ? <strong>Selected</strong> : <em>{index}</em>}\n          </li>\n        ))}\n      </ul>\n      <input v-model={selected.value} v-focus:lazy={tone} />\n      <footer>{activeItem.value?.label}{slots.footer()}</footer>\n      <style scoped>{`.row { gap: ${gap}px; }`}</style>\n    </>\n  );\n};\n";
-
-        assert_virtual_ts_snapshot(
-            "typed_component_with_jsx_control_flow_directives_and_styles",
-            source,
-        );
-        let generated = generate(source);
-        insta::assert_debug_snapshot!(
-            "typed_component_with_jsx_control_flow_directives_and_styles_positions",
-            virtual_positions_for_markers(
-                source,
-                &generated,
-                &[
-                    "items.map",
-                    "tone} v-show",
-                    "ok}>",
-                    "item.id",
-                    "emit('select', item.id)",
-                    "item.label",
-                    "selected.value === item.id",
-                    "index",
-                    "selected.value} v-focus",
-                    "activeItem.value?.label",
-                    "slots.footer()",
-                    "gap}px",
-                ],
-            )
-        );
-    }
-
-    #[test]
-    fn multiple_roots_and_static_style_are_exact() {
-        let source = "const First = (props: { msg: string }) => <section>{props.msg}</section>;\nconst Second = () => (\n  <>\n    <div class=\"box\" />\n    <style scoped>{`.box { color: red; }`}</style>\n  </>\n);\n";
-
-        assert_virtual_ts_snapshot("multiple_roots_and_static_style", source);
-    }
-
-    #[test]
-    fn jsx_file_mode_is_exact() {
-        let source =
-            "export const Plain = ({ msg }) => <button onClick={() => save(msg)}>{msg}</button>;\n";
-        let generated = generate_jsx_virtual_ts(source, JsxLang::Jsx).unwrap();
-
-        insta::assert_snapshot!("jsx_file_mode_code", generated.code.as_str());
-        insta::assert_debug_snapshot!(
-            "jsx_file_mode_mappings",
-            mapping_summary(source, &generated)
-        );
-    }
-
-    #[test]
-    fn collect_jsx_expressions_includes_for_body_model_and_style_exprs() {
-        let source = "const Comp = (props: { items: string[]; color: string }) => (\n  <>\n    {props.items.map((item) => <span>{item}</span>)}\n    <input v-model={props.color} />\n    <style scoped>{`.box { color: ${props.color}; }`}</style>\n  </>\n);\n";
-        let exprs = collect_jsx_expressions(source, JsxLang::Tsx)
-            .into_iter()
-            .map(|expr| ExprSummary {
-                content: expr.content,
-                source: source[expr.start as usize..expr.end as usize].to_string(),
-                start: expr.start,
-                end: expr.end,
-            })
-            .collect::<Vec<_>>();
-
-        insta::assert_debug_snapshot!(
-            "collect_jsx_expressions_includes_for_body_model_and_style_exprs",
-            exprs
-        );
-    }
-
-    #[allow(dead_code)]
-    #[derive(Debug)]
-    struct ExprSummary {
-        content: String,
-        source: String,
-        start: u32,
-        end: u32,
-    }
-}
+#[path = "virtual_ts_tests.rs"]
+mod tests;

@@ -1,5 +1,5 @@
 use oxc_ast::ast::{
-    Argument, Expression, FormalParameters, ObjectPropertyKind, PropertyKey, TSType,
+    Argument, Expression, FormalParameters, ObjectPropertyKind, PropertyKey, TSSignature, TSType,
 };
 use oxc_span::{GetSpan, Span};
 
@@ -15,20 +15,42 @@ pub fn extract_emits_from_type(
 ) {
     for tp in type_params.iter() {
         if let TSType::TSTypeLiteral(lit) = tp {
-            // Handle call signatures like { (e: 'update', value: string): void }
             for member in lit.members.iter() {
-                if let oxc_ast::ast::TSSignature::TSCallSignatureDeclaration(call_sig) = member {
-                    // First parameter is usually the event name: (e: 'eventName', ...)
-                    if let Some(first_param) = call_sig.params.items.first()
-                        && let Some(type_ann) = &first_param.type_annotation
-                        && let TSType::TSLiteralType(lit_type) = &type_ann.type_annotation
-                        && let oxc_ast::ast::TSLiteral::StringLiteral(s) = &lit_type.literal
+                match member {
+                    // Call signatures: { (event: 'update', value: string): void }
+                    TSSignature::TSCallSignatureDeclaration(call_sig)
+                        if let Some(first_param) = call_sig.params.items.first()
+                            && let Some(type_ann) = &first_param.type_annotation
+                            && let TSType::TSLiteralType(lit_type) = &type_ann.type_annotation
+                            && let oxc_ast::ast::TSLiteral::StringLiteral(s) =
+                                &lit_type.literal =>
                     {
-                        result.macros.add_emit(EmitDefinition {
-                            name: CompactString::new(s.value.as_str()),
-                            payload_type: None,
-                        });
+                        result.macros.add_emit_with_declaration(
+                            EmitDefinition {
+                                name: CompactString::new(s.value.as_str()),
+                                payload_type: None,
+                            },
+                            s.span.start,
+                            s.span.end,
+                        );
                     }
+                    // Named tuples: { save: [value: string] }
+                    TSSignature::TSPropertySignature(property) => {
+                        let (name, span) = match &property.key {
+                            PropertyKey::StaticIdentifier(id) => (id.name.as_str(), id.span),
+                            PropertyKey::StringLiteral(s) => (s.value.as_str(), s.span),
+                            _ => continue,
+                        };
+                        result.macros.add_emit_with_declaration(
+                            EmitDefinition {
+                                name: CompactString::new(name),
+                                payload_type: None,
+                            },
+                            span.start,
+                            span.end,
+                        );
+                    }
+                    _ => {}
                 }
             }
         }
@@ -90,10 +112,14 @@ fn extract_emits_from_array(
 ) {
     for elem in arr.elements.iter() {
         if let oxc_ast::ast::ArrayExpressionElement::StringLiteral(s) = elem {
-            result.macros.add_emit(EmitDefinition {
-                name: CompactString::new(s.value.as_str()),
-                payload_type: None,
-            });
+            result.macros.add_emit_with_declaration(
+                EmitDefinition {
+                    name: CompactString::new(s.value.as_str()),
+                    payload_type: None,
+                },
+                s.span.start,
+                s.span.end,
+            );
         }
     }
 }
@@ -106,16 +132,20 @@ fn extract_emits_from_object(
     for prop in obj.properties.iter() {
         match prop {
             ObjectPropertyKind::ObjectProperty(prop) => {
-                let name = match &prop.key {
-                    PropertyKey::StaticIdentifier(id) => id.name.as_str(),
-                    PropertyKey::StringLiteral(s) => s.value.as_str(),
+                let (name, span) = match &prop.key {
+                    PropertyKey::StaticIdentifier(id) => (id.name.as_str(), id.span),
+                    PropertyKey::StringLiteral(s) => (s.value.as_str(), s.span),
                     _ => continue,
                 };
 
-                result.macros.add_emit(EmitDefinition {
-                    name: CompactString::new(name),
-                    payload_type: extract_runtime_emit_payload_type(&prop.value, source),
-                });
+                result.macros.add_emit_with_declaration(
+                    EmitDefinition {
+                        name: CompactString::new(name),
+                        payload_type: extract_runtime_emit_payload_type(&prop.value, source),
+                    },
+                    span.start,
+                    span.end,
+                );
             }
             ObjectPropertyKind::SpreadProperty(spread) => {
                 let Expression::Identifier(identifier) = &spread.argument else {

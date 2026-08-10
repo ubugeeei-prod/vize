@@ -31,15 +31,7 @@ pub(super) fn source_offset_to_virtual_position(
     source_offset: usize,
 ) -> Option<(u32, u32)> {
     let mapping = mapping_for_source_offset(mappings, source_offset)?;
-    let relative = source_offset.saturating_sub(mapping.src_range.start);
-    let gen_len = mapping
-        .gen_range
-        .end
-        .saturating_sub(mapping.gen_range.start);
-    let gen_offset = mapping
-        .gen_range
-        .start
-        .saturating_add(relative.min(gen_len));
+    let gen_offset = source_offset_to_generated(mapping, source_offset);
     Some(byte_offset_to_position(virtual_ts, gen_offset))
 }
 
@@ -61,9 +53,9 @@ pub(super) fn virtual_range_to_source(
         .unwrap_or_else(|| start_gen.saturating_add(1));
 
     let start_mapping = mapping_for_generated_offset(mappings, start_gen)?;
-    let src_start = generated_offset_to_source(start_mapping, start_gen);
+    let src_start = generated_offset_to_source(start_mapping, start_gen, false);
     let src_end = mapping_for_generated_offset(mappings, end_gen)
-        .map(|mapping| generated_offset_to_source(mapping, end_gen))
+        .map(|mapping| generated_offset_to_source(mapping, end_gen, true))
         .unwrap_or_else(|| {
             let generated_len = end_gen.saturating_sub(start_gen);
             src_start
@@ -95,10 +87,56 @@ fn mapping_for_source_offset(mappings: &[VizeMapping], offset: usize) -> Option<
 fn mapping_for_generated_offset(mappings: &[VizeMapping], offset: usize) -> Option<&VizeMapping> {
     mappings
         .iter()
-        .find(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+        .filter(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+        .min_by_key(|mapping| {
+            mapping
+                .gen_range
+                .end
+                .saturating_sub(mapping.gen_range.start)
+        })
 }
 
-fn generated_offset_to_source(mapping: &VizeMapping, generated_offset: usize) -> usize {
+fn source_offset_to_generated(mapping: &VizeMapping, source_offset: usize) -> usize {
+    if let Some(span) = mapping
+        .sub_spans
+        .iter()
+        .find(|span| source_offset >= span.src_range.start && source_offset <= span.src_range.end)
+    {
+        let relative = source_offset.saturating_sub(span.src_range.start);
+        return span
+            .gen_range
+            .start
+            .saturating_add(relative.min(span.gen_range.end.saturating_sub(span.gen_range.start)));
+    }
+    let relative = source_offset.saturating_sub(mapping.src_range.start);
+    mapping.gen_range.start.saturating_add(
+        relative.min(
+            mapping
+                .gen_range
+                .end
+                .saturating_sub(mapping.gen_range.start),
+        ),
+    )
+}
+
+fn generated_offset_to_source(
+    mapping: &VizeMapping,
+    generated_offset: usize,
+    prefer_end: bool,
+) -> usize {
+    if let Some(span) = mapping.sub_spans.iter().find(|span| {
+        generated_offset >= span.gen_range.start && generated_offset <= span.gen_range.end
+    }) {
+        let relative = generated_offset.saturating_sub(span.gen_range.start);
+        let source_len = span.src_range.end.saturating_sub(span.src_range.start);
+        return span
+            .src_range
+            .start
+            .saturating_add(relative.min(source_len));
+    }
+    if prefer_end && generated_offset >= mapping.gen_range.end {
+        return mapping.src_range.end;
+    }
     let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
     let source_len = mapping
         .src_range
@@ -107,7 +145,7 @@ fn generated_offset_to_source(mapping: &VizeMapping, generated_offset: usize) ->
     mapping
         .src_range
         .start
-        .saturating_add(generated_relative.min(source_len.saturating_sub(1)))
+        .saturating_add(generated_relative.min(source_len))
 }
 
 /// Convert a byte offset into an LSP `(line, character)` in `text`, counting
@@ -179,6 +217,7 @@ pub(super) fn source_offset_to_position(source: &str, offset: usize) -> (u32, u3
 mod tests {
     use super::*;
     use vize_atelier_jsx::JsxLang;
+    use vize_canon::virtual_ts::VizeSubSpan;
 
     fn round_trip(source: &str, marker: &str) {
         let generated = super::super::virtual_ts::generate_jsx_virtual_ts(source, JsxLang::Tsx)
@@ -211,6 +250,25 @@ mod tests {
         round_trip(
             "const C = (props: { msg: string }) => <div>{props.msg}</div>;\n",
             "props.msg",
+        );
+    }
+
+    #[test]
+    fn maps_component_prop_diagnostic_to_authored_name_subspan() {
+        let virtual_ts = "\"count\"";
+        let source = "count";
+        let mappings = [VizeMapping {
+            gen_range: 0..7,
+            src_range: 0..5,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 0..7,
+                src_range: 0..5,
+            }],
+        }];
+
+        assert_eq!(
+            virtual_range_to_source(virtual_ts, source, &mappings, 0, 0, 0, 7),
+            Some((0, 0, 0, 5))
         );
     }
 

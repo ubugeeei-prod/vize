@@ -1,12 +1,15 @@
 use super::{
     CorsaProjectClient,
     lifecycle_setup::{workspace_config_path, write_materialized_project_tsconfig},
-    session::{materialize_session_document, spawn_project_session},
+    session::{ProjectSessionSpawnError, materialize_session_document, spawn_project_session},
     session_paths::build_materialized_session_document_uri,
 };
 use crate::file_uri::file_uri_to_path;
 use corsa::runtime::block_on;
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use vize_carton::{
     String,
     corsa_resolver::{CorsaResolveError, CorsaResolveRequest},
@@ -40,7 +43,17 @@ impl CorsaProjectClient {
     ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
         let config_path = workspace_config_path(project_root);
-        let (session, capabilities) = spawn_project_session(executable, &cwd, &config_path)?;
+        let (session, capabilities) = match spawn_project_session(executable, &cwd, &config_path) {
+            Ok((session, capabilities)) => (Some(session), capabilities),
+            Err(ProjectSessionSpawnError::Unavailable(reason)) => {
+                tracing::debug!(
+                    reason = reason.as_str(),
+                    "using standard tsgo editor-only session"
+                );
+                (None, Arc::new(Default::default()))
+            }
+            Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
+        };
         Ok(Self {
             executable: executable.into(),
             cwd: cwd.clone(),
@@ -56,6 +69,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir,
             editor_lsp: None,
+            editor_lsp_documents_dirty: true,
             closed: false,
         })
     }
@@ -94,11 +108,19 @@ impl CorsaProjectClient {
             }
             mappings.push((uri.clone(), document_uri));
         }
-        let (session, capabilities) =
-            spawn_project_session(self.executable.as_str(), &self.cwd, &config_path)?;
-        let previous = std::mem::replace(&mut self.session, session);
-        let _ = block_on(previous.close());
-        self.capabilities = capabilities;
+        if self.has_project_session() {
+            let (session, capabilities) =
+                match spawn_project_session(self.executable.as_str(), &self.cwd, &config_path) {
+                    Ok(result) => result,
+                    Err(ProjectSessionSpawnError::Unavailable(error))
+                    | Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
+                };
+            let previous = self.session.replace(session);
+            if let Some(previous) = previous {
+                let _ = block_on(previous.close());
+            }
+            self.capabilities = capabilities;
+        }
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         for (uri, document_uri) in mappings {

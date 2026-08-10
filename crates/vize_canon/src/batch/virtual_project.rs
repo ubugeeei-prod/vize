@@ -31,7 +31,8 @@ mod build;
 mod content_mapper;
 pub use content_mapper::{
     ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
-    generate_vue_content_mapper_transform,
+    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
 };
 mod css_var_usage;
 mod declaration_emit;

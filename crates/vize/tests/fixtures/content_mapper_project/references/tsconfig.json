@@ -1,0 +1,4 @@
+{
+  "files": [],
+  "references": [{ "path": "./ui" }, { "path": "./app" }]
+}

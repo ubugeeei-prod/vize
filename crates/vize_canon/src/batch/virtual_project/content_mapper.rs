@@ -10,7 +10,7 @@ use vize_carton::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, to_safe_identifier};
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -18,17 +18,22 @@ use super::build::{
 use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
+#[path = "content_mapper_span_features.rs"]
+mod span_features;
+#[path = "content_mapper_span_normalize.rs"]
+mod span_normalize;
+
+use span_features::content_mapper_span_features;
+
 const SCRIPT_KIND_TS: u8 = 3;
 const SCRIPT_KIND_TSX: u8 = 4;
-const MAPPING_KIND_VERBATIM: usize = 0;
-const MAPPING_KIND_ATOM: usize = 1;
 
-// microsoft/typescript-go content-mapper protocol v1 assigns one feature bit
-// to every operation from Hover (bit 0) through CodeLens (bit 20). A mapper
-// that supports every operation must send SpanMapFeature.All, not the number of
-// supported mapping kinds.
-const PROTOCOL_V1_SPAN_MAP_FEATURE_CODE_LENS: usize = 1 << 20;
-const PROTOCOL_V1_SPAN_MAP_FEATURE_ALL: usize = (PROTOCOL_V1_SPAN_MAP_FEATURE_CODE_LENS << 1) - 1;
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(usize)]
+enum ContentMapperSpanKind {
+    Verbatim = 0,
+    Atom = 1,
+}
 
 /// A TypeScript content-mapper transform result.
 #[derive(Debug, Serialize)]
@@ -38,6 +43,48 @@ pub struct ContentMapperTransform {
     pub script_kind: u8,
     pub mappings: Vec<ContentMapperSpan>,
     pub diagnostics: Vec<ContentMapperDiagnostic>,
+}
+
+/// Settings resolved from a TypeScript content-mapper entry and its declared
+/// compiler-option dependencies.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct ContentMapperTransformOptions {
+    /// Resolve Vue Options API instance bindings in templates.
+    options_api: bool,
+    /// Preserve diagnostics for user-authored unused locals.
+    preserve_unused_diagnostics: bool,
+}
+
+impl Default for ContentMapperTransformOptions {
+    fn default() -> Self {
+        Self {
+            options_api: true,
+            preserve_unused_diagnostics: false,
+        }
+    }
+}
+
+impl ContentMapperTransformOptions {
+    /// Enable or disable Vue Options API instance bindings.
+    #[must_use]
+    pub const fn with_options_api(mut self, enabled: bool) -> Self {
+        self.options_api = enabled;
+        self
+    }
+
+    /// Whether Vue Options API instance bindings are enabled.
+    #[must_use]
+    pub const fn options_api(self) -> bool {
+        self.options_api
+    }
+
+    /// Preserve diagnostics for user-authored unused locals.
+    #[must_use]
+    pub const fn with_preserve_unused_diagnostics(mut self, enabled: bool) -> Self {
+        self.preserve_unused_diagnostics = enabled;
+        self
+    }
 }
 
 /// A protocol v1 span tuple:
@@ -63,6 +110,19 @@ pub fn generate_vue_content_mapper_transform(
     path: &Path,
     content: &str,
 ) -> CorsaResult<ContentMapperTransform> {
+    generate_vue_content_mapper_transform_with_options(
+        path,
+        content,
+        ContentMapperTransformOptions::default(),
+    )
+}
+
+/// Generate a content-mapper transform with Vize-specific mapper settings.
+pub fn generate_vue_content_mapper_transform_with_options(
+    path: &Path,
+    content: &str,
+    transform_options: ContentMapperTransformOptions,
+) -> CorsaResult<ContentMapperTransform> {
     let descriptor = match parse_sfc(
         content,
         SfcParseOptions {
@@ -83,6 +143,7 @@ pub fn generate_vue_content_mapper_transform(
 
     let options = virtual_ts_options_for_descriptor(&VirtualTsOptions::default(), &descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
+    let component_name = content_mapper_component_name(path);
     let GeneratedVueFile {
         mut code,
         mut mappings,
@@ -94,8 +155,11 @@ pub fn generate_vue_content_mapper_transform(
         &options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
-            preserve_unused_diagnostics: false,
-            options_api: false,
+            preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
+            options_api: transform_options.options_api(),
+            preserve_authored_component: true,
+            component_name: Some(component_name.as_str()),
+            preserve_event_navigation: true,
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
@@ -122,6 +186,20 @@ pub fn generate_vue_content_mapper_transform(
             SCRIPT_KIND_TS
         },
     })
+}
+
+fn content_mapper_component_name(path: &Path) -> CompactString {
+    let stem = path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("VueComponent");
+    let pascal = vize_croquis::naming::to_pascal_case(stem);
+    let name = to_safe_identifier(pascal.as_str());
+    if name.as_str().bytes().all(|byte| byte == b'_') {
+        CompactString::from("VueComponent")
+    } else {
+        name
+    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {
@@ -163,7 +241,7 @@ fn checked_source_span(source: &str, start: usize, end: usize) -> (usize, usize)
 struct SpanCandidate {
     generated: Range<usize>,
     original: Range<usize>,
-    kind: usize,
+    kind: ContentMapperSpanKind,
 }
 
 fn protocol_spans(
@@ -171,7 +249,7 @@ fn protocol_spans(
     generated: &str,
     mappings: &[VizeMapping],
 ) -> Vec<ContentMapperSpan> {
-    let mut candidates = mappings
+    let candidates = mappings
         .iter()
         .filter_map(|mapping| {
             if mapping.sub_spans.is_empty() {
@@ -201,39 +279,20 @@ fn protocol_spans(
         .flatten()
         .collect::<Vec<_>>();
 
-    // Narrow authored spans win over enclosing synthetic projections.
-    candidates.sort_by_key(|candidate| {
-        (
-            candidate.generated.len(),
-            candidate.original.len(),
-            candidate.generated.start,
-        )
-    });
-
-    let mut accepted = Vec::<SpanCandidate>::new();
-    for candidate in candidates {
-        let generated_overlap = accepted
-            .iter()
-            .any(|span| ranges_overlap(&candidate.generated, &span.generated));
-        let invalid_original_overlap = accepted.iter().any(|span| {
-            candidate.original != span.original
-                && ranges_overlap(&candidate.original, &span.original)
-        });
-        if !generated_overlap && !invalid_original_overlap {
-            accepted.push(candidate);
-        }
-    }
+    let mut accepted = span_normalize::normalize(candidates);
     accepted.sort_by_key(|candidate| candidate.generated.start);
     accepted
         .into_iter()
         .map(|candidate| {
+            let features =
+                content_mapper_span_features(generated, candidate.generated.start, candidate.kind);
             ContentMapperSpan([
                 candidate.generated.start,
                 candidate.generated.len(),
                 candidate.original.start,
                 candidate.original.len(),
-                candidate.kind,
-                PROTOCOL_V1_SPAN_MAP_FEATURE_ALL,
+                candidate.kind as usize,
+                features,
             ])
         })
         .collect()
@@ -264,14 +323,14 @@ fn candidate(
         return Some(SpanCandidate {
             generated: start..start + original_text.len(),
             original: original_range,
-            kind: MAPPING_KIND_VERBATIM,
+            kind: ContentMapperSpanKind::Verbatim,
         });
     }
 
     Some(SpanCandidate {
         generated: generated_range,
         original: original_range,
-        kind: MAPPING_KIND_ATOM,
+        kind: ContentMapperSpanKind::Atom,
     })
 }
 

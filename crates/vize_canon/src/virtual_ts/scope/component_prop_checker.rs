@@ -166,6 +166,22 @@ pub(super) fn append_prop_check_helpers(ts: &mut String, usages: &[(usize, &Comp
     ts.push_str(
         "  type __VizeEmitListeners<C> = C extends { __vizeEmitProps?: infer __E } ? NonNullable<__E> : {};\n",
     );
+    if usages.iter().any(|(_, usage)| {
+        usage
+            .events
+            .iter()
+            .any(|event| !event.name_is_dynamic && !event.name.is_empty())
+    }) {
+        ts.push_str(
+            "  type __VizeEventName<K extends string> = K extends `on${infer E}` ? Uncapitalize<E> | __VizeKebabCase<Uncapitalize<E>> : never;\n",
+        );
+        ts.push_str(
+            "  type __VizeKebabEventAliases<E> = { [K in keyof E & string as __VizeKebabCase<K> extends K ? never : __VizeKebabCase<K>]: E[K] };\n",
+        );
+        ts.push_str(
+            "  type __VizeComponentEvents<C> = C extends { __vizeRawEmits?: infer __R; __vizeEventMap?: infer __E } ? [keyof NonNullable<__R>] extends [never] ? NonNullable<__E> : NonNullable<__R> & __VizeKebabEventAliases<NonNullable<__R>> : { [K in keyof (C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {}) & string as __VizeEventName<K>]: (C extends { new (): { $props: infer __P } } ? __P : C extends (props: infer __P) => any ? __P : {})[K] };\n",
+        );
+    }
     ts.push_str(
         "  type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;\n",
     );

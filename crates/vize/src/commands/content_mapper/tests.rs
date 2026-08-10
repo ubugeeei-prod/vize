@@ -93,6 +93,127 @@ fn rejects_transform_before_initialize() {
     assert_eq!(responses[0]["error"]["code"], -32002);
 }
 
+#[test]
+fn transform_honors_static_options_api_setting() {
+    let source = r#"<script lang="ts">
+export default { data() { return { count: 1 } } }
+</script>
+<template>{{ count }}</template>
+"#;
+    let input = frames(&[
+        initialize_request(),
+        transform_request(2, source, json!({ "optionsApi": true })),
+        transform_request(3, source, json!({ "optionsApi": false })),
+    ]);
+    let responses = exchange(&input);
+
+    assert!(
+        responses[1]["result"]["text"]
+            .as_str()
+            .unwrap()
+            .contains("__VizeOptionsBinding")
+    );
+    assert!(
+        !responses[2]["result"]["text"]
+            .as_str()
+            .unwrap()
+            .contains("__VizeOptionsBinding")
+    );
+}
+
+#[test]
+fn transform_honors_no_unused_locals_compiler_option() {
+    let source = r#"<script setup lang="ts">
+const used = 1
+const unused = 2
+</script>
+<template>{{ used }}</template>
+"#;
+    let input = frames(&[
+        initialize_request(),
+        transform_request_with_compiler_options(2, source, json!({ "noUnusedLocals": true })),
+        transform_request_with_compiler_options(3, source, json!({ "noUnusedLocals": false })),
+    ]);
+    let responses = exchange(&input);
+    let preserving = responses[1]["result"]["text"].as_str().unwrap();
+    let suppressing = responses[2]["result"]["text"].as_str().unwrap();
+
+    assert!(preserving.contains("void used;"), "{preserving}");
+    assert!(!preserving.contains("void unused;"), "{preserving}");
+    assert!(suppressing.contains("void used;"), "{suppressing}");
+    assert!(suppressing.contains("void unused;"), "{suppressing}");
+}
+
+#[test]
+fn transform_defaults_options_api_on_for_absent_null_and_empty_options() {
+    let source = r#"<script lang="ts">
+export default { data() { return { count: 1 } } }
+</script>
+<template>{{ count }}</template>
+"#;
+    let without_options = json!({
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "transform",
+        "params": {
+            "fileName": "Options.vue",
+            "content": source,
+            "compilerOptions": {}
+        }
+    });
+    let input = frames(&[
+        initialize_request(),
+        without_options,
+        transform_request(3, source, Value::Null),
+        transform_request(4, source, json!({})),
+    ]);
+    let responses = exchange(&input);
+
+    for response in &responses[1..] {
+        assert!(
+            response["result"]["text"]
+                .as_str()
+                .unwrap()
+                .contains("__VizeOptionsBinding"),
+            "expected default-on Options API output: {response}"
+        );
+    }
+}
+
+#[test]
+fn rejects_unknown_transform_options() {
+    let input = frames(&[
+        initialize_request(),
+        transform_request(2, "<template />", json!({ "optionApi": true })),
+    ]);
+    let responses = exchange(&input);
+
+    assert_eq!(responses[1]["error"]["code"], -32602);
+    assert!(
+        responses[1]["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("unknown field `optionApi`")
+    );
+}
+
+#[test]
+fn rejects_non_object_transform_options() {
+    let input = frames(&[
+        initialize_request(),
+        transform_request(2, "<template />", json!(true)),
+    ]);
+    let responses = exchange(&input);
+
+    assert_eq!(responses[1]["error"]["code"], -32602);
+    assert!(
+        responses[1]["error"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("expected struct TransformOptions")
+    );
+}
+
 fn initialize_request() -> Value {
     json!({
         "jsonrpc": "2.0",
@@ -101,6 +222,37 @@ fn initialize_request() -> Value {
         "params": {
             "protocolVersion": 1,
             "positionEncodings": ["utf-8"]
+        }
+    })
+}
+
+fn transform_request(id: u8, content: &str, options: Value) -> Value {
+    json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "method": "transform",
+        "params": {
+            "fileName": "Options.vue",
+            "content": content,
+            "options": options,
+            "compilerOptions": {}
+        }
+    })
+}
+
+fn transform_request_with_compiler_options(
+    id: u8,
+    content: &str,
+    compiler_options: Value,
+) -> Value {
+    json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "method": "transform",
+        "params": {
+            "fileName": "Unused.vue",
+            "content": content,
+            "compilerOptions": compiler_options
         }
     })
 }

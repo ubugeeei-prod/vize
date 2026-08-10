@@ -18,8 +18,10 @@
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Declaration, Statement};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
+
+use crate::virtual_ts::VizeMapping;
 
 /// Which declaration spaces a plain-`<script>` export has to reach.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,6 +54,8 @@ impl PlainScriptExportKind {
 pub(crate) struct PlainScriptExport {
     pub(crate) name: CompactString,
     pub(crate) kind: PlainScriptExportKind,
+    /// Script-relative byte range of the exported identifier.
+    pub(crate) source_range: std::ops::Range<usize>,
     /// Whether the bridge declares the value side. Cleared for a name a hoisted
     /// namespace body captures: that name is declared earlier at module scope as
     /// an ambient alias instead (see `super::namespace_hoist`), and declaring it
@@ -77,6 +81,7 @@ pub(crate) fn push_setup_return_fields(
     fields.extend(exports.iter().map(|export| export.name.clone()));
 }
 
+#[cfg(test)]
 pub(crate) fn emit_setup_invocation_and_exports(
     ts: &mut VizeString,
     exports: &[PlainScriptExport],
@@ -99,6 +104,40 @@ pub(crate) fn emit_setup_invocation_and_exports(
         // A value+type declaration loses its type meaning when the bridge only
         // re-exports the value. The alias restores it in the type space, which
         // is disjoint from the `const` above, so both names can coexist.
+        if let Some(body) = export.kind.type_alias_body(name) {
+            append!(*ts, "export type {name} = {body};\n");
+        }
+    }
+    ts.push('\n');
+}
+
+pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
+    ts: &mut VizeString,
+    mappings: &mut Vec<VizeMapping>,
+    exports: &[PlainScriptExport],
+    script_offset: u32,
+) {
+    if exports.iter().any(|export| export.bridged_value) {
+        ts.push_str("const __vize_plain_script_exports = __setup();\n");
+    } else {
+        ts.push_str("__setup();\n");
+    }
+    for export in exports {
+        let name = &export.name;
+        if export.bridged_value {
+            ts.push_str("export const ");
+            let generated_start = ts.len();
+            ts.push_str(name);
+            let generated_end = ts.len();
+            append!(*ts, " = __vize_plain_script_exports.{name};\n");
+            let source_base = script_offset as usize;
+            mappings.push(VizeMapping {
+                gen_range: generated_start..generated_end,
+                src_range: source_base.saturating_add(export.source_range.start)
+                    ..source_base.saturating_add(export.source_range.end),
+                sub_spans: Vec::new(),
+            });
+        }
         if let Some(body) = export.kind.type_alias_body(name) {
             append!(*ts, "export type {name} = {body};\n");
         }
@@ -159,6 +198,7 @@ pub(super) fn collect_declaration_exports(
                 push_export(
                     id.name.as_str(),
                     PlainScriptExportKind::Value,
+                    id.span(),
                     seen,
                     exports,
                 );
@@ -169,6 +209,7 @@ pub(super) fn collect_declaration_exports(
                 push_export(
                     id.name.as_str(),
                     PlainScriptExportKind::Class,
+                    id.span(),
                     seen,
                     exports,
                 );
@@ -180,6 +221,7 @@ pub(super) fn collect_declaration_exports(
             push_export(
                 enumeration.id.name.as_str(),
                 PlainScriptExportKind::Enum,
+                enumeration.id.span(),
                 seen,
                 exports,
             );
@@ -198,6 +240,7 @@ fn collect_binding_names(
             push_export(
                 id.name.as_str(),
                 PlainScriptExportKind::Value,
+                id.span(),
                 seen,
                 exports,
             );
@@ -227,6 +270,7 @@ fn collect_binding_names(
 fn push_export(
     name: &str,
     kind: PlainScriptExportKind,
+    span: oxc_span::Span,
     seen: &mut FxHashSet<CompactString>,
     exports: &mut Vec<PlainScriptExport>,
 ) {
@@ -238,109 +282,11 @@ fn push_export(
         exports.push(PlainScriptExport {
             name,
             kind,
+            source_range: span.start as usize..span.end as usize,
             bridged_value: true,
         });
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        CompactString, PlainScriptExport, PlainScriptExportKind, collect_named_value_exports,
-        emit_setup_invocation_and_exports,
-    };
-
-    fn export(name: &str, kind: PlainScriptExportKind) -> PlainScriptExport {
-        PlainScriptExport {
-            name: CompactString::new(name),
-            kind,
-            bridged_value: true,
-        }
-    }
-
-    #[test]
-    fn collect_named_value_exports_includes_ts_enums() {
-        let exports = collect_named_value_exports(
-            "export enum DiffDisplayMode { Hidden = 'hidden' }\nexport type Props = {}\n",
-        );
-
-        assert_eq!(
-            exports,
-            vec![export("DiffDisplayMode", PlainScriptExportKind::Enum)]
-        );
-    }
-
-    #[test]
-    fn declaration_kinds_are_classified_by_declaration_space() {
-        let exports = collect_named_value_exports(
-            "export const plain = 1;\nexport function helper() {}\nexport class Widget {}\nexport enum Mode { A = 'a' }\nexport const enum ConstMode { B = 'b' }\n",
-        );
-
-        assert_eq!(
-            exports,
-            vec![
-                export("plain", PlainScriptExportKind::Value),
-                export("helper", PlainScriptExportKind::Value),
-                export("Widget", PlainScriptExportKind::Class),
-                export("Mode", PlainScriptExportKind::Enum),
-                export("ConstMode", PlainScriptExportKind::Enum),
-            ]
-        );
-    }
-
-    #[test]
-    fn value_and_type_declarations_are_bridged_in_both_declaration_spaces() {
-        let mut ts = vize_carton::String::default();
-        emit_setup_invocation_and_exports(
-            &mut ts,
-            &[
-                export("Mode", PlainScriptExportKind::Enum),
-                export("Widget", PlainScriptExportKind::Class),
-            ],
-        );
-
-        assert!(ts.contains("export const Mode = __vize_plain_script_exports.Mode;\n"));
-        assert!(ts.contains("export type Mode = (typeof Mode)[keyof typeof Mode];\n"));
-        assert!(ts.contains("export const Widget = __vize_plain_script_exports.Widget;\n"));
-        assert!(ts.contains("export type Widget = InstanceType<typeof Widget>;\n"));
-    }
-
-    #[test]
-    fn value_only_declarations_never_gain_a_type_export() {
-        let mut ts = vize_carton::String::default();
-        emit_setup_invocation_and_exports(
-            &mut ts,
-            &[
-                export("plain", PlainScriptExportKind::Value),
-                export("helper", PlainScriptExportKind::Value),
-            ],
-        );
-
-        assert!(ts.contains("export const plain = __vize_plain_script_exports.plain;\n"));
-        assert!(ts.contains("export const helper = __vize_plain_script_exports.helper;\n"));
-        assert!(
-            !ts.contains("export type "),
-            "value-only exports must not invent a type meaning:\n{ts}"
-        );
-    }
-
-    #[test]
-    fn merged_enum_declarations_are_bridged_once() {
-        let exports = collect_named_value_exports(
-            "export enum Mode { A = 'a' }\nexport enum Mode { B = 'b' }\n",
-        );
-        assert_eq!(exports, vec![export("Mode", PlainScriptExportKind::Enum)]);
-
-        let mut ts = vize_carton::String::default();
-        emit_setup_invocation_and_exports(&mut ts, &exports);
-        assert_eq!(ts.matches("export const Mode =").count(), 1);
-        assert_eq!(ts.matches("export type Mode =").count(), 1);
-    }
-
-    #[test]
-    fn no_exports_keeps_the_bare_setup_invocation() {
-        let mut ts = vize_carton::String::default();
-        emit_setup_invocation_and_exports(&mut ts, &[]);
-        assert_eq!(ts.as_str(), "__setup();\n\n");
-    }
-}
+mod tests;

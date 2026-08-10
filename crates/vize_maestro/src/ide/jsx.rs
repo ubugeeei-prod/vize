@@ -39,6 +39,8 @@ mod references;
 mod rename;
 #[cfg(feature = "native")]
 mod service;
+#[cfg(feature = "native")]
+mod service_project;
 
 #[cfg(feature = "native")]
 pub use references::JsxReferencesService;

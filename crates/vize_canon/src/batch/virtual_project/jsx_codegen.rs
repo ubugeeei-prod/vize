@@ -45,6 +45,10 @@
 //!   re-emitted as real TypeScript at — and source-mapped back to — its original
 //!   byte range, so a wrong type inside a JSX expression is reported at the right
 //!   location;
+//! - **component tags and props** are preserved as type-only calls. Imported
+//!   SFC constructors reuse their generated `$props`/raw-props contract, while
+//!   local functional components reuse their first parameter. This checks
+//!   required, excess, static, bound, kebab-case, listener, and spread props;
 //! - **directive expressions** are checked too (#1497): a `v-model` binding
 //!   target is re-emitted as an assignment to itself, so binding to a `const`,
 //!   a `readonly`/computed value, or a non-lvalue is reported at the binding; a
@@ -80,6 +84,8 @@ use crate::batch::{Diagnostic, SfcBlockType};
 use crate::virtual_ts::VizeMapping;
 
 use super::diagnostics::diagnostic_for_offset;
+
+mod component;
 
 /// The generated plain-`.ts` virtual file for one `.jsx`/`.tsx` source.
 pub(super) struct GeneratedJsxFile {
@@ -143,6 +149,10 @@ enum JsxEmit {
     Expr(JsxExpr),
     /// A `v-model` binding target, re-emitted as `(<lvalue> = <lvalue>)`.
     ModelTarget(JsxExpr),
+    /// A component tag plus its authored JSX attributes. Unlike intrinsic
+    /// elements, these participate in the imported/local component's props
+    /// contract and therefore cannot be reduced to value expressions alone.
+    Component(component::JsxComponent),
     /// A `v-for` scope: the iterated `source` plus the alias patterns and the
     /// body units evaluated with those aliases in scope.
     ForScope {
@@ -228,6 +238,12 @@ fn render_plain_ts(
     // Ambient `Ctx<Emits, Slots>` so the typed second parameter resolves and the
     // `emit`/`slots` usages in the setup body and JSX expressions type-check.
     out.push_str(CTX_HELPER);
+    if roots
+        .iter()
+        .any(|(_, _, emits)| emits.iter().any(emit_contains_component))
+    {
+        out.push_str(component::HELPER);
+    }
 
     let mut cursor = 0usize;
     for (start, end, emits) in roots {
@@ -283,6 +299,7 @@ fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &
             out.push_str(&expr.content);
             out.push(')');
         }
+        JsxEmit::Component(component) => component::render(out, mappings, component),
         JsxEmit::ForScope {
             source,
             value_alias,
@@ -309,6 +326,14 @@ fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &
             render_sink_call(out, mappings, body);
             out.push(')');
         }
+    }
+}
+
+fn emit_contains_component(emit: &JsxEmit) -> bool {
+    match emit {
+        JsxEmit::Component(_) => true,
+        JsxEmit::ForScope { body, .. } => body.iter().any(emit_contains_component),
+        JsxEmit::Expr(_) | JsxEmit::ModelTarget(_) => false,
     }
 }
 
@@ -383,8 +408,15 @@ fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut Vec<JsxEmi
 fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>) {
     match child {
         TemplateChildNode::Element(element) => {
+            let semantic_component = component::collect(element);
+            let has_semantic_component = semantic_component.is_some();
+            if let Some(component) = semantic_component {
+                out.push(JsxEmit::Component(component));
+            }
             for prop in &element.props {
-                collect_prop(prop, out);
+                if !has_semantic_component || !component::captures_prop(element, prop) {
+                    collect_prop(prop, out);
+                }
             }
             for child in &element.children {
                 collect_child(child, out);
@@ -560,78 +592,5 @@ fn jsx_expr(content: &str, start: u32, end: u32) -> Option<JsxExpr> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::ops::Range;
-
-    fn generate(source: &str) -> GeneratedJsxFile {
-        generate_jsx_virtual_ts(Path::new("Comp.tsx"), source, JsxLang::Tsx).unwrap()
-    }
-
-    fn assert_generated_snapshot(name: &str, source: &str) {
-        let generated = generate(source);
-        insta::assert_snapshot!(format!("{name}_code"), generated.code.as_str());
-        insta::assert_debug_snapshot!(
-            format!("{name}_mappings"),
-            mapping_summary(source, &generated)
-        );
-        insta::assert_debug_snapshot!(format!("{name}_diagnostics"), generated.diagnostics);
-    }
-
-    fn mapping_summary<'a>(
-        source: &'a str,
-        generated: &'a GeneratedJsxFile,
-    ) -> Vec<MappingSummary<'a>> {
-        generated
-            .mappings
-            .iter()
-            .map(|mapping| MappingSummary {
-                generated: &generated.code[mapping.gen_range.clone()],
-                source: &source[mapping.src_range.clone()],
-                gen_range: mapping.gen_range.clone(),
-                src_range: mapping.src_range.clone(),
-            })
-            .collect()
-    }
-
-    #[allow(dead_code)]
-    #[derive(Debug)]
-    struct MappingSummary<'a> {
-        generated: &'a str,
-        source: &'a str,
-        gen_range: Range<usize>,
-        src_range: Range<usize>,
-    }
-
-    #[test]
-    fn typed_component_with_jsx_control_flow_directives_and_styles_is_exact() {
-        let source = "import { computed, ref } from 'vue';\n\nconst Comp = (\n  { items, ok, tone, gap }: { items: Array<{ id: string; label: string }>; ok: boolean; tone: string; gap: number },\n  { emit, slots }: Ctx<{ select: [id: string] }, { footer: () => unknown }>,\n) => {\n  const selected = ref(items[0]?.id);\n  const activeItem = computed(() => items.find((item) => item.id === selected.value));\n  return (\n    <>\n      <ul class={tone} v-show={ok}>\n        {items.map((item, index) => (\n          <li key={item.id} onClick={() => emit('select', item.id)} data-index={index}>\n            {item.label}{selected.value === item.id ? <strong>Selected</strong> : <em>{index}</em>}\n          </li>\n        ))}\n      </ul>\n      <input v-model={selected.value} v-focus:lazy={tone} />\n      <footer>{activeItem.value?.label}{slots.footer()}</footer>\n      <style scoped>{`.row { gap: ${gap}px; }`}</style>\n    </>\n  );\n};\n";
-
-        assert_generated_snapshot(
-            "typed_component_with_jsx_control_flow_directives_and_styles",
-            source,
-        );
-    }
-
-    #[test]
-    fn multiple_roots_and_static_style_are_exact() {
-        let source = "const First = (props: { msg: string }) => <section>{props.msg}</section>;\nconst Second = () => (\n  <>\n    <div class=\"box\" />\n    <style scoped>{`.box { color: red; }`}</style>\n  </>\n);\n";
-
-        assert_generated_snapshot("multiple_roots_and_static_style", source);
-    }
-
-    #[test]
-    fn jsx_file_mode_is_exact() {
-        let source =
-            "export const Plain = ({ msg }) => <button onClick={() => save(msg)}>{msg}</button>;\n";
-        let generated =
-            generate_jsx_virtual_ts(Path::new("Plain.jsx"), source, JsxLang::Jsx).unwrap();
-
-        insta::assert_snapshot!("jsx_file_mode_code", generated.code.as_str());
-        insta::assert_debug_snapshot!(
-            "jsx_file_mode_mappings",
-            mapping_summary(source, &generated)
-        );
-        insta::assert_debug_snapshot!("jsx_file_mode_diagnostics", generated.diagnostics);
-    }
-}
+#[path = "jsx_codegen_tests.rs"]
+mod tests;

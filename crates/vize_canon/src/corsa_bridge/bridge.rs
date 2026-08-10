@@ -10,12 +10,12 @@ use vize_carton::{String, cstr};
 
 use super::session::build_client;
 use super::types::{
-    CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionResponse,
-    LspDefinitionResponse, LspDiagnostic, LspHover, LspLocation, TypeCheckResult,
-    VIRTUAL_URI_SCHEME,
+    CorsaBridgeConfig, CorsaBridgeError, LspDiagnostic, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 use super::worker::{BoundedWorker, WorkerError};
 use crate::corsa_client::CorsaProjectClient;
+
+mod language_features;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
 #[allow(clippy::disallowed_types)]
@@ -261,166 +261,6 @@ impl CorsaBridge {
         self.cache_stats.reset();
     }
 
-    /// Get hover information at a position.
-    pub async fn hover(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Option<LspHover>, CorsaBridgeError> {
-        let _timer = self.profiler.timer("corsa_hover");
-        let uri = uri.to_owned();
-        let result = self
-            .with_client(move |client| {
-                client
-                    .hover_raw(uri.as_str(), line, character)
-                    .map_err(CorsaBridgeError::CommunicationError)
-            })
-            .await?;
-
-        if let Some(timer) = _timer {
-            timer.record(&self.profiler);
-        }
-
-        result.map(parse_json_value::<LspHover>).transpose()
-    }
-
-    /// Get definition location for a symbol at a position.
-    pub async fn definition(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Vec<LspLocation>, CorsaBridgeError> {
-        let _timer = self.profiler.timer("corsa_definition");
-        let uri = uri.to_owned();
-        let result = self
-            .with_client(move |client| {
-                client
-                    .definition_raw(uri.as_str(), line, character)
-                    .map_err(CorsaBridgeError::CommunicationError)
-            })
-            .await?;
-
-        if let Some(timer) = _timer {
-            timer.record(&self.profiler);
-        }
-
-        if let Some(value) = result {
-            return Ok(parse_json_value::<LspDefinitionResponse>(value)?.into_locations());
-        }
-
-        Ok(Vec::new())
-    }
-
-    /// Get references for a symbol at a position.
-    pub async fn references(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-        include_declaration: bool,
-    ) -> Result<Vec<LspLocation>, CorsaBridgeError> {
-        let uri = uri.to_owned();
-        let result = self
-            .with_client(move |client| {
-                client
-                    .references_raw(uri.as_str(), line, character, include_declaration)
-                    .map_err(CorsaBridgeError::CommunicationError)
-            })
-            .await?;
-
-        if let Some(value) = result {
-            return parse_json_value(value);
-        }
-
-        Ok(Vec::new())
-    }
-
-    /// Check whether rename is valid at a position.
-    pub async fn prepare_rename(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Option<Value>, CorsaBridgeError> {
-        let uri = uri.to_owned();
-        self.with_client(move |client| {
-            client
-                .prepare_rename_raw(uri.as_str(), line, character)
-                .map_err(CorsaBridgeError::CommunicationError)
-        })
-        .await
-    }
-
-    /// Rename a symbol at a position.
-    pub async fn rename(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-        new_name: &str,
-    ) -> Result<Option<Value>, CorsaBridgeError> {
-        let uri = uri.to_owned();
-        let new_name = new_name.to_owned();
-        self.with_client(move |client| {
-            client
-                .rename_raw(uri.as_str(), line, character, new_name.as_str())
-                .map_err(CorsaBridgeError::CommunicationError)
-        })
-        .await
-    }
-
-    /// Request import path updates before files are renamed.
-    pub async fn will_rename_files(
-        &self,
-        renames: &[(&str, &str)],
-    ) -> Result<Option<Value>, CorsaBridgeError> {
-        let renames: Vec<(String, String)> = renames
-            .iter()
-            .map(|(old_uri, new_uri)| ((*old_uri).into(), (*new_uri).into()))
-            .collect();
-
-        self.with_client(move |client| {
-            let renames_ref: Vec<(&str, &str)> = renames
-                .iter()
-                .map(|(old_uri, new_uri)| (old_uri.as_str(), new_uri.as_str()))
-                .collect();
-            client
-                .will_rename_files_raw(&renames_ref)
-                .map_err(CorsaBridgeError::CommunicationError)
-        })
-        .await
-    }
-
-    /// Get completion items at a position.
-    pub async fn completion(
-        &self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Vec<LspCompletionItem>, CorsaBridgeError> {
-        let _timer = self.profiler.timer("corsa_completion");
-        let uri = uri.to_owned();
-        let result = self
-            .with_client(move |client| {
-                client
-                    .completion_raw(uri.as_str(), line, character)
-                    .map_err(CorsaBridgeError::CommunicationError)
-            })
-            .await?;
-
-        if let Some(timer) = _timer {
-            timer.record(&self.profiler);
-        }
-
-        if let Some(value) = result {
-            return Ok(parse_json_value::<LspCompletionResponse>(value)?.items());
-        }
-
-        Ok(Vec::new())
-    }
-
     pub(super) async fn with_client<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut CorsaProjectClient) -> Result<R, CorsaBridgeError> + Send + 'static,
@@ -564,7 +404,7 @@ fn convert_bridge_diagnostics(
         .collect()
 }
 
-fn parse_json_value<T>(value: Value) -> Result<T, CorsaBridgeError>
+pub(super) fn parse_json_value<T>(value: Value) -> Result<T, CorsaBridgeError>
 where
     T: serde::de::DeserializeOwned,
 {

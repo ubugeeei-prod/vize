@@ -140,6 +140,9 @@ pub(super) fn build_vue_registered_file(
                 check_options: context.virtual_ts_check_options,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
+                preserve_authored_component: false,
+                component_name: None,
+                preserve_event_navigation: false,
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
@@ -333,6 +336,9 @@ pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {
         || file_name.ends_with(".cts")
     {
         return Some(SourceType::ts());
+    }
+    if file_name.ends_with(".js") || file_name.ends_with(".mjs") || file_name.ends_with(".cjs") {
+        return SourceType::from_path(path).ok();
     }
     None
 }

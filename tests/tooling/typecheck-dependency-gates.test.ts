@@ -192,19 +192,19 @@ test("template and TSX Rust CLI gates use the fail-closed Corsa helper", () => {
 
 test("module import Rust CLI gates use the fail-closed Corsa helper", () => {
   const files = [
-    "check_allowjs_imports_cli.rs",
-    "check_ambient_export_assignment_cli.rs",
-    "check_ambient_imports_cli.rs",
-    "check_directory_self_imports_cli.rs",
-    "check_hoisted_workspace_cli.rs",
-  ];
+    ["check_allowjs_imports_cli.rs", 1],
+    ["check_ambient_export_assignment_cli.rs", 1],
+    ["check_ambient_imports_cli.rs", 1],
+    ["check_directory_self_imports_cli.rs", 1],
+    ["check_hoisted_workspace_cli.rs", 1],
+  ] as const;
 
-  for (const file of files) {
+  for (const [file, expectedCalls] of files) {
     const source = readRepoFile("crates", "vize", "tests", file);
     assert.equal(
       source.match(/corsa_requirement::required_or_skip\(resolve_test_corsa_path\(\)\)/g)?.length,
-      1,
-      `${file} should guard its Corsa resolver call`,
+      expectedCalls,
+      `${file} should guard all ${expectedCalls} Corsa resolver calls`,
     );
     assert.doesNotMatch(source, /let Some\(corsa_path\) = resolve_test_corsa_path\(\)/);
   }

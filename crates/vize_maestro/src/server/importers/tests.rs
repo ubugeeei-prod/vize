@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_methods)]
 
-use super::{indexed_dependency_paths, open_vue_importers, resolve_import};
+use super::{indexed_dependency_paths, open_importers, resolve_import};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;
 
@@ -26,12 +26,9 @@ fn index_tracks_and_removes_open_vue_imports() {
     let source = "<script setup lang=\"ts\">import Child from './components/Child'; import Sibling from './components/Sibling.vue'; import Outside from './components-old/Outside.vue'</script>";
 
     state.update_virtual_docs(&parent_uri, source);
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri.clone()]);
     assert_eq!(
-        open_vue_importers(&state, &child_uri),
-        vec![parent_uri.clone()]
-    );
-    assert_eq!(
-        open_vue_importers(&state, &components_uri),
+        open_importers(&state, &components_uri),
         vec![parent_uri.clone()],
         "directory events return an importer once even with several nested imports"
     );
@@ -45,7 +42,7 @@ fn index_tracks_and_removes_open_vue_imports() {
     );
 
     state.update_virtual_docs(&parent_uri, "<script setup>const local = 1</script>");
-    assert!(open_vue_importers(&state, &child_uri).is_empty());
+    assert!(open_importers(&state, &child_uri).is_empty());
 }
 
 #[test]
@@ -70,7 +67,7 @@ fn directory_lookup_keeps_exact_and_nested_dependency_keys() {
     );
 
     assert_eq!(
-        open_vue_importers(&state, &bundle_uri),
+        open_importers(&state, &bundle_uri),
         vec![direct_uri, nested_uri]
     );
 }
@@ -88,7 +85,7 @@ fn index_resolves_explicit_script_dependencies_and_query_suffixes() {
     let source = "<script>import './types.ts?raw'</script>";
 
     state.update_virtual_docs(&parent_uri, source);
-    assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri]);
 }
 
 #[test]
@@ -101,7 +98,7 @@ fn index_keeps_explicit_missing_vue_imports_for_future_create_events() {
 
     state.update_virtual_docs(&parent_uri, source);
 
-    assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri]);
 }
 
 #[test]
@@ -145,7 +142,7 @@ fn index_keeps_nuxt_alias_importers_addressable_after_dependency_delete() {
     state.update_virtual_docs(&parent_uri, source);
     std::fs::remove_file(child).unwrap();
 
-    assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri]);
 }
 
 #[test]
@@ -187,10 +184,10 @@ void plugin
     state.update_virtual_docs(&parent_uri, source);
 
     assert_eq!(
-        open_vue_importers(&state, &module_uri),
+        open_importers(&state, &module_uri),
         vec![parent_uri.clone()]
     );
-    assert_eq!(open_vue_importers(&state, &common_uri), vec![parent_uri]);
+    assert_eq!(open_importers(&state, &common_uri), vec![parent_uri]);
 }
 
 #[test]

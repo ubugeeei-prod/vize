@@ -22,7 +22,7 @@ use corsa::{
 use lsp_types::Uri;
 use serde_json::Value;
 use std::{
-    path::{Path, PathBuf},
+    path::Path,
     str::FromStr,
     sync::{
         Arc,
@@ -32,21 +32,15 @@ use std::{
 };
 use vize_carton::{FxHashMap, String, cstr};
 
-struct RawHoverRequest;
+mod client;
+mod requests;
+#[cfg(test)]
+mod tests;
 
-impl lsp_types::request::Request for RawHoverRequest {
-    type Params = Value;
-    type Result = Option<Value>;
-    const METHOD: &'static str = "textDocument/hover";
-}
-
-struct RawCompletionRequest;
-
-impl lsp_types::request::Request for RawCompletionRequest {
-    type Params = Value;
-    type Result = Option<Value>;
-    const METHOD: &'static str = "textDocument/completion";
-}
+use requests::{
+    RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
+    RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest,
+};
 
 /// A reusable `--lsp --stdio` session used only for editor requests.
 pub(super) struct EditorLspSession {
@@ -110,14 +104,46 @@ impl EditorLspSession {
         Ok(uri)
     }
 
+    /// Bring the reusable editor transport to the same virtual-project view as
+    /// the project-session transport, including dependency removals.
+    fn synchronize(&mut self, documents: &FxHashMap<String, String>) -> Result<(), String> {
+        let removed = self
+            .documents
+            .keys()
+            .filter(|uri| !documents.contains_key(uri.as_str()))
+            .cloned()
+            .collect::<Vec<_>>();
+        for document_uri in removed {
+            let uri = Uri::from_str(document_uri.as_str())
+                .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))?;
+            self.overlay.close(&uri).map_err(|error| {
+                cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
+            })?;
+            self.documents.remove(document_uri.as_str());
+        }
+        for (document_uri, text) in documents {
+            self.mirror(document_uri, text)?;
+        }
+        Ok(())
+    }
+
+    fn document_uri(&self, document_uri: &str) -> Result<Uri, String> {
+        if !self.documents.contains_key(document_uri) {
+            return Err(cstr!(
+                "Editor LSP virtual project does not contain {document_uri}"
+            ));
+        }
+        Uri::from_str(document_uri)
+            .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))
+    }
+
     fn hover(
         &mut self,
         document_uri: &str,
-        text: &str,
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let uri = self.mirror(document_uri, text)?;
+        let uri = self.document_uri(document_uri)?;
         block_on(self.client.request::<RawHoverRequest>(serde_json::json!({
             "textDocument": { "uri": uri },
             "position": { "line": line, "character": character },
@@ -128,11 +154,10 @@ impl EditorLspSession {
     fn completion(
         &mut self,
         document_uri: &str,
-        text: &str,
         line: u32,
         character: u32,
     ) -> Result<Option<Value>, String> {
-        let uri = self.mirror(document_uri, text)?;
+        let uri = self.document_uri(document_uri)?;
         block_on(
             self.client
                 .request::<RawCompletionRequest>(serde_json::json!({
@@ -142,6 +167,92 @@ impl EditorLspSession {
                 })),
         )
         .map_err(|error| cstr!("Failed to request editor LSP completion: {error}"))
+    }
+
+    fn definition(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawDefinitionRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP definition: {error}"))
+    }
+
+    fn references(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+        include_declaration: bool,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawReferencesRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                    "context": { "includeDeclaration": include_declaration },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP references: {error}"))
+    }
+
+    fn prepare_rename(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawPrepareRenameRequest>(serde_json::json!({
+                    "textDocument": { "uri": uri },
+                    "position": { "line": line, "character": character },
+                })),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP prepare rename: {error}"))
+    }
+
+    fn rename(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+        new_name: &str,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(self.client.request::<RawRenameRequest>(serde_json::json!({
+            "textDocument": { "uri": uri },
+            "position": { "line": line, "character": character },
+            "newName": new_name,
+        })))
+        .map_err(|error| cstr!("Failed to request editor LSP rename: {error}"))
+    }
+
+    fn signature_help(
+        &mut self,
+        document_uri: &str,
+        line: u32,
+        character: u32,
+        context: Option<Value>,
+    ) -> Result<Option<Value>, String> {
+        let uri = self.document_uri(document_uri)?;
+        block_on(
+            self.client
+                .request::<RawSignatureHelpRequest>(signature_help_request_params(
+                    &uri, line, character, context,
+                )),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP signature help: {error}"))
     }
 }
 
@@ -186,66 +297,21 @@ fn configuration_response(params: &Value) -> Value {
     Value::Array(vec![Value::Null; requested])
 }
 
-impl CorsaProjectClient {
-    /// Answer a hover through the editor LSP transport, spawning the session on
-    /// first use.
-    pub(super) fn hover_via_editor_lsp(
-        &mut self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Option<Value>, String> {
-        let document_uri = self.session_document_uri(uri);
-        let Some(text) = self.document_texts.get(uri).cloned() else {
-            return Ok(None);
-        };
-
-        if self.editor_lsp.is_none() {
-            let root = self.editor_lsp_root();
-            let executable = self.executable.clone();
-            let cwd = self.cwd.clone();
-            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
-        }
-        let Some(session) = self.editor_lsp.as_mut() else {
-            return Ok(None);
-        };
-        session.hover(document_uri.as_str(), text.as_str(), line, character)
-    }
-
-    pub(super) fn completion_via_editor_lsp(
-        &mut self,
-        uri: &str,
-        line: u32,
-        character: u32,
-    ) -> Result<Option<Value>, String> {
-        let document_uri = self.session_document_uri(uri);
-        let Some(text) = self.document_texts.get(uri).cloned() else {
-            return Ok(None);
-        };
-
-        if self.editor_lsp.is_none() {
-            let root = self.editor_lsp_root();
-            let executable = self.executable.clone();
-            let cwd = self.cwd.clone();
-            self.editor_lsp = Some(EditorLspSession::spawn(executable.as_str(), &cwd, &root)?);
-        }
-        let Some(session) = self.editor_lsp.as_mut() else {
-            return Ok(None);
-        };
-        session.completion(document_uri.as_str(), text.as_str(), line, character)
-    }
-
-    /// Drop the editor session so the next request respawns it. Used when the
-    /// overlay root moves under a materialized project session.
-    pub(super) fn retire_editor_lsp(&mut self) {
-        self.editor_lsp = None;
-    }
-
-    fn editor_lsp_root(&self) -> PathBuf {
-        if self.materialized_project_session {
-            super::session_paths::overlay_root_for_project(&self.project_root)
-        } else {
-            self.project_root.clone()
-        }
-    }
+fn signature_help_request_params(
+    uri: &Uri,
+    line: u32,
+    character: u32,
+    context: Option<Value>,
+) -> Value {
+    let context = context.unwrap_or_else(|| {
+        serde_json::json!({
+            "triggerKind": 1,
+            "isRetrigger": false
+        })
+    });
+    serde_json::json!({
+        "textDocument": { "uri": uri },
+        "position": { "line": line, "character": character },
+        "context": context,
+    })
 }

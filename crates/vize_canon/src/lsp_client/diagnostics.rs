@@ -112,7 +112,7 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Option<DiagnosticBatch>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
@@ -142,7 +142,7 @@ impl CorsaProjectClient {
         }
 
         let response = block_on(
-            self.session
+            self.project_session()?
                 .get_diagnostics_for_file(uri_document_identifier(document_uri.as_str())),
         );
         let response = match response {
@@ -160,7 +160,7 @@ impl CorsaProjectClient {
         &mut self,
         uri: &str,
     ) -> Result<Option<Result<DiagnosticFetch, String>>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
@@ -250,7 +250,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<Vec<Diagnostic>>, String> {
         if self.supports_file_diagnostics_api() {
             let response = block_on(
-                self.session
+                self.project_session()?
                     .get_diagnostics_for_file(uri_document_identifier(document_uri)),
             );
             let response = match response {
@@ -261,17 +261,18 @@ impl CorsaProjectClient {
                     let _ = error;
                     // Proceed to the project-diagnostics branch below.
                     return if self.supports_project_diagnostics_api() {
-                        let report = match block_on(self.session.get_diagnostics_for_project()) {
-                            Ok(report) => report,
-                            Err(error) if diagnostics_api_error_is_unsupported(&error) => {
-                                return Ok(None);
-                            }
-                            Err(error) => {
-                                return Err(cstr!(
-                                    "Failed to request Corsa project diagnostics: {error}"
-                                ));
-                            }
-                        };
+                        let report =
+                            match block_on(self.project_session()?.get_diagnostics_for_project()) {
+                                Ok(report) => report,
+                                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
+                                    return Ok(None);
+                                }
+                                Err(error) => {
+                                    return Err(cstr!(
+                                        "Failed to request Corsa project diagnostics: {error}"
+                                    ));
+                                }
+                            };
                         let diagnostics = report
                             .files
                             .iter()
@@ -293,7 +294,7 @@ impl CorsaProjectClient {
         }
 
         if self.supports_project_diagnostics_api() {
-            let report = match block_on(self.session.get_diagnostics_for_project()) {
+            let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
                 Ok(report) => report,
                 Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     return Ok(None);
@@ -320,7 +321,7 @@ impl CorsaProjectClient {
         &mut self,
         pairs: &[(String, String)],
     ) -> Result<Option<DiagnosticBatch>, String> {
-        let report = match block_on(self.session.get_diagnostics_for_project()) {
+        let report = match block_on(self.project_session()?.get_diagnostics_for_project()) {
             Ok(report) => report,
             Err(error) if corsa_diagnostics_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
@@ -627,53 +628,4 @@ fn read_file_uri(uri: &str) -> Option<String> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported,
-        lsp_diagnostics_error_is_transient,
-    };
-
-    // Regression: a missing diagnostics scope on the corsa `ProjectSession`
-    // must be detected through the typed `CorsaError::Unsupported` variant
-    // (corsa-bind raises it directly and normalizes "unknown method" RPC
-    // errors into it), so the project/file-diagnostics fallback gates on the
-    // variant rather than sniffing the rendered message. A genuine failure on
-    // a different variant must propagate instead of being silently swallowed.
-    #[test]
-    fn corsa_diagnostics_unsupported_uses_typed_capability_error() {
-        assert!(corsa_diagnostics_error_is_unsupported(
-            &CorsaError::Unsupported("file diagnostics are not supported")
-        ));
-        assert!(!corsa_diagnostics_error_is_unsupported(
-            &CorsaError::Protocol("diagnostics request failed: process exited".into())
-        ));
-    }
-
-    #[test]
-    fn recognizes_unsupported_diagnostics_api_errors() {
-        assert!(diagnostics_api_is_unsupported("unknown API method"));
-        assert!(diagnostics_api_is_unsupported(
-            "unsupported: project diagnostics are not supported by this runtime"
-        ));
-        assert!(diagnostics_api_is_unsupported(
-            "project diagnostics are not supported by this runtime"
-        ));
-        assert!(!diagnostics_api_is_unsupported(
-            "Failed to request Corsa project diagnostics: process exited"
-        ));
-    }
-
-    #[test]
-    fn recognizes_transient_lsp_transport_errors() {
-        assert!(lsp_diagnostics_error_is_transient(
-            "protocol error: EOF while parsing a string at line 1 column 150"
-        ));
-        assert!(lsp_diagnostics_error_is_transient(
-            "Failed to request LSP diagnostics for file:///src/App.vue.ts: process is closed: jsonrpc reader"
-        ));
-        assert!(lsp_diagnostics_error_is_transient("Broken pipe"));
-        assert!(!lsp_diagnostics_error_is_transient(
-            "TypeScript semantic diagnostics are unavailable"
-        ));
-    }
-}
+mod tests;

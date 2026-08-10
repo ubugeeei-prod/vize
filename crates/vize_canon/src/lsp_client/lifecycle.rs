@@ -85,7 +85,9 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        let _ = corsa::runtime::block_on(self.session.close());
+        if let Some(session) = self.session.take() {
+            let _ = corsa::runtime::block_on(session.close());
+        }
         self.retire_editor_lsp();
         self.document_texts.clear();
         self.diagnostics.clear();
@@ -108,6 +110,21 @@ impl CorsaProjectClient {
     /// Open many virtual document overlays with a single snapshot refresh when possible.
     pub fn did_open_batch_fast(&mut self, documents: &[(&str, &str)]) -> Result<(), String> {
         if documents.is_empty() {
+            return Ok(());
+        }
+
+        if !self.has_project_session() {
+            for (uri, content) in documents {
+                self.clear_document_state(uri);
+                if self.materialized_project_session {
+                    self.sync_overlay_document(uri, content)?;
+                } else {
+                    let previous = self.document_texts.insert((*uri).into(), (*content).into());
+                    if previous.as_deref() != Some(*content) {
+                        self.editor_lsp_documents_dirty = true;
+                    }
+                }
+            }
             return Ok(());
         }
 
@@ -134,6 +151,7 @@ impl CorsaProjectClient {
             if previous.as_deref() == Some(*content) {
                 continue;
             }
+            self.editor_lsp_documents_dirty = true;
             changed = true;
             merge_materialized_file_changes(
                 &mut summary,
@@ -177,11 +195,11 @@ impl CorsaProjectClient {
         };
 
         if overlay_upserts.is_empty() {
-            return block_on(self.session.refresh(file_changes))
+            return block_on(self.project_session_mut()?.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
         }
 
-        match block_on(self.session.refresh_with_overlay_changes(
+        match block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: overlay_upserts,
@@ -294,52 +312,4 @@ fn merge_materialized_file_changes(
 }
 
 #[cfg(test)]
-mod tests {
-    use std::path::PathBuf;
-
-    use super::{merge_materialized_file_changes, vue_virtual_document_uris};
-    use corsa::api::{DocumentIdentifier, FileChangeSummary, FileChanges};
-    use vize_carton::cstr;
-
-    #[test]
-    fn merges_materialized_file_change_summaries() {
-        let mut summary = FileChangeSummary::default();
-        merge_materialized_file_changes(
-            &mut summary,
-            Some(FileChanges::Summary(FileChangeSummary {
-                changed: vec![DocumentIdentifier::from("/workspace/a.ts")],
-                created: vec![DocumentIdentifier::from("/workspace/b.ts")],
-                deleted: Vec::new(),
-            })),
-        );
-        merge_materialized_file_changes(
-            &mut summary,
-            Some(FileChanges::Summary(FileChangeSummary {
-                changed: vec![DocumentIdentifier::from("/workspace/c.ts")],
-                created: Vec::new(),
-                deleted: vec![DocumentIdentifier::from("/workspace/d.ts")],
-            })),
-        );
-
-        assert_eq!(summary.changed.len(), 2);
-        assert_eq!(summary.created.len(), 1);
-        assert_eq!(summary.deleted.len(), 1);
-    }
-
-    #[cfg(unix)]
-    #[test]
-    fn deleted_vue_sources_expand_to_deduplicated_ts_and_tsx_overlay_uris() {
-        let source = PathBuf::from("/workspace/Panel #1.vue");
-        assert_eq!(
-            vue_virtual_document_uris(&[
-                source.clone(),
-                source,
-                PathBuf::from("/workspace/ordinary.ts"),
-            ]),
-            vec![
-                cstr!("file:///workspace/Panel%20%231.vue.ts"),
-                cstr!("file:///workspace/Panel%20%231.vue.tsx"),
-            ]
-        );
-    }
-}
+mod tests;

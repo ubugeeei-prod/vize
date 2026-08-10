@@ -8,6 +8,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { preparePublishManifest } from "./prepare-publish-manifest.mjs";
+import {
+  RUNTIME_PEER_DEPENDENCIES,
+  runInstalledContentMapperChecks,
+  runRuntimeChecks,
+} from "./smoke-release-runtime.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dependencySections = [
@@ -19,6 +24,7 @@ const dependencySections = [
 
 function parseArgs(argv) {
   const options = {
+    contentMapperChecks: false,
     keepTemp: false,
     packageDirs: /** @type {string[]} */ ([]),
     prepareManifests: false,
@@ -26,6 +32,10 @@ function parseArgs(argv) {
   };
 
   for (const arg of argv) {
+    if (arg === "--content-mapper-checks") {
+      options.contentMapperChecks = true;
+      continue;
+    }
     if (arg === "--keep-temp") {
       options.keepTemp = true;
       continue;
@@ -46,7 +56,7 @@ function parseArgs(argv) {
 
   if (options.packageDirs.length === 0) {
     throw new Error(
-      "Usage: node tools/npm/smoke-release-install.mjs [--prepare-manifests] [--runtime-checks] [--keep-temp] <package-dir>...",
+      "Usage: node tools/npm/smoke-release-install.mjs [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
     );
   }
 
@@ -254,19 +264,6 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   }
 }
 
-// The fresh-install smoke must mirror what an actual `@vizejs/vite-plugin`
-// consumer would install. Vite 8 is one supported peer range, so we install
-// upstream vite directly. (An earlier iteration aliased vite to
-// `@voidzero-dev/vite-plus-core` to mimic the workspace's own vp tooling, but
-// vite-plus-core ships only the JS API — it has no `vite` bin and its rolldown
-// bindings expect a separate `vite-plus` metapackage at runtime, which together
-// broke `vite build` in CI.)
-const RUNTIME_PEER_DEPENDENCIES = {
-  typescript: "6.0.3",
-  vite: "^8.0.0",
-  vue: "3.5.34",
-};
-
 function installPackedPackages(tempDir, packages, options = {}) {
   const installDir = path.join(tempDir, "install");
   fs.mkdirSync(installDir, { recursive: true });
@@ -334,145 +331,6 @@ function resolveInstalledBin(installDir, packageName, binName) {
   return path.join(packageDir, relative);
 }
 
-function writeRuntimeSmokeProject(installDir) {
-  const sourceDir = path.join(installDir, "src");
-  fs.mkdirSync(sourceDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(installDir, "index.html"),
-    '<div id="app"></div><script type="module" src="/src/main.ts"></script>\n',
-  );
-  fs.writeFileSync(
-    path.join(installDir, "tsconfig.json"),
-    JSON.stringify(
-      {
-        compilerOptions: {
-          lib: ["ES2022", "DOM", "DOM.Iterable"],
-          module: "ESNext",
-          moduleResolution: "Bundler",
-          strict: true,
-          target: "ES2022",
-          types: [],
-        },
-        include: ["src/**/*.ts", "src/**/*.vue"],
-      },
-      null,
-      2,
-    ),
-  );
-  fs.writeFileSync(
-    path.join(installDir, "vite.config.mjs"),
-    [
-      'import { defineConfig } from "vite";',
-      'import vize from "@vizejs/vite-plugin";',
-      "",
-      "export default defineConfig({",
-      "  plugins: [vize()],",
-      '  build: { outDir: "dist", emptyOutDir: true },',
-      "});",
-      "",
-    ].join("\n"),
-  );
-  fs.writeFileSync(
-    path.join(sourceDir, "App.vue"),
-    [
-      "<template>",
-      '  <button class="smoke" @click="count++">{{ label }} {{ count }}</button>',
-      "</template>",
-      "",
-      '<script setup lang="ts">',
-      'import { ref } from "vue";',
-      "",
-      'const label: string = "vize smoke";',
-      "const count = ref(0);",
-      "</script>",
-      "",
-      "<style scoped>",
-      ".smoke {",
-      "  color: #0f766e;",
-      "}",
-      "</style>",
-      "",
-    ].join("\n"),
-  );
-  fs.writeFileSync(
-    path.join(sourceDir, "main.ts"),
-    [
-      'import { createApp } from "vue";',
-      'import App from "./App.vue";',
-      "",
-      'createApp(App).mount("#app");',
-      "",
-    ].join("\n"),
-  );
-}
-
-function hasPackage(packages, name) {
-  return packages.some((pkg) => pkg.name === name);
-}
-
-function runRuntimeChecks(installDir, packages) {
-  writeRuntimeSmokeProject(installDir);
-
-  if (hasPackage(packages, "@vizejs/native")) {
-    run(
-      process.execPath,
-      [
-        "-e",
-        [
-          'const required = require("@vizejs/native");',
-          "(async () => {",
-          'const imported = await import("@vizejs/native");',
-          "const importedNative = imported.default ?? imported;",
-          "for (const [label, native] of [['require', required], ['import', importedNative]]) {",
-          "if (typeof native.compileSfc !== 'function') {",
-          "  throw new Error(`compileSfc missing from ${label} smoke`);",
-          "}",
-          "const result = native.compileSfc(",
-          '  \'<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>\',',
-          "  { filename: 'Smoke.vue', isTs: true },",
-          ");",
-          "if (!result || result.errors.length > 0 || typeof result.code !== 'string' || result.code.length === 0) {",
-          "  throw new Error(`compileSfc ${label} runtime smoke failed`);",
-          "}",
-          "}",
-          "})().catch((error) => { console.error(error); process.exit(1); });",
-        ].join("\n"),
-      ],
-      { cwd: installDir },
-    );
-    console.log("runtime: @vizejs/native require/import compileSfc");
-  }
-
-  // Bins are invoked through `node <resolved-bin>` instead of `npm exec` so
-  // that npm/cli#4828 cannot re-resolve transitive optional native deps and
-  // drop them mid-run. The single combined install above already settled the
-  // dependency tree; re-entering npm here is what previously broke vite/rolldown
-  // native bindings on the fresh-install smoke matrix.
-  if (hasPackage(packages, "vize")) {
-    const vizeBin = resolveInstalledBin(installDir, "vize", "vize");
-    run(process.execPath, [vizeBin, "--version"], { cwd: installDir });
-    console.log("runtime: vize --version");
-    run(
-      process.execPath,
-      [vizeBin, "check", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
-      { cwd: installDir },
-    );
-    console.log("runtime: vize check");
-    run(
-      process.execPath,
-      [vizeBin, "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
-      { cwd: installDir },
-    );
-    console.log("runtime: vize lint");
-  }
-
-  if (hasPackage(packages, "@vizejs/vite-plugin")) {
-    const viteBin = resolveInstalledBin(installDir, "vite", "vite");
-    run(process.execPath, [viteBin, "build"], { cwd: installDir });
-    console.log("runtime: @vizejs/vite-plugin vite build");
-  }
-}
-
 function main() {
   const options = parseArgs(process.argv.slice(2));
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-"));
@@ -521,11 +379,18 @@ function main() {
     const installable = packages.filter((pkg) => pkg.compatible);
     assert.ok(installable.length > 0, "no package tarballs are compatible with this runner");
     const installDir = installPackedPackages(tempDir, installable, {
-      includeRuntimePeers: options.runtimeChecks,
+      includeRuntimePeers: options.runtimeChecks || options.contentMapperChecks,
     });
 
     if (options.runtimeChecks) {
-      runRuntimeChecks(installDir, installable);
+      runRuntimeChecks(installDir, installable, {
+        repoRoot: root,
+        resolveInstalledBin,
+        run,
+      });
+    }
+    if (options.contentMapperChecks) {
+      runInstalledContentMapperChecks(installDir, root, run);
     }
 
     console.log(`smoked ${installable.length}/${packages.length} package tarballs`);

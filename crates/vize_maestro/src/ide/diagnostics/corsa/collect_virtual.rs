@@ -215,7 +215,7 @@ fn is_inferred_implicit_any_suggestion(
         })
 }
 
-fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
+pub(in crate::ide) fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {
     match code {
         serde_json::Value::Number(number) => number.as_i64().map_or_else(
             || NumberOrString::String(number.to_string()),

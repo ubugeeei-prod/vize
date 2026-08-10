@@ -71,3 +71,17 @@ impl LanguageServerConfig {
 }
 
 pub type LspConfig = LanguageServerConfig;
+
+/// Language server switches parsed from config keys that are not exposed as
+/// stable [`LanguageServerConfig`] fields.
+///
+/// New feature toggles land here rather than on the public model, so the
+/// public surface stays additively stable for `cargo-semver-checks` (mirroring
+/// `linter.ruleOptions` on `RawLinterConfig`). The struct is `#[non_exhaustive]`
+/// so later toggles stay additive too.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct LanguageServerUnstableFlags {
+    /// `languageServer.signatureHelp`; `None` when the key is absent.
+    pub signature_help: Option<bool>,
+}

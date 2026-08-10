@@ -4,7 +4,7 @@
 //! including mustache interpolations and directive bindings.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-use tower_lsp::lsp_types::{Location, Position, Range};
+use tower_lsp::lsp_types::Location;
 
 use super::{IdeContext, ReferencesService};
 
@@ -23,8 +23,6 @@ impl ReferencesService {
         };
 
         let template_content = template.content.as_ref();
-        let template_start_line = template.loc.start_line as u32;
-
         // Find all occurrences of the word in template
         // This includes:
         // - Interpolations: {{ word }}
@@ -42,31 +40,21 @@ impl ReferencesService {
             let word_positions = Self::find_word_occurrences(&expr_text, word);
 
             for word_offset_in_expr in word_positions {
-                let absolute_offset = expr_offset + word_offset_in_expr;
-                let (line, character) = Self::offset_to_position(template_content, absolute_offset);
-
-                locations.push(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: template_start_line + line - 1,
-                            character,
-                        },
-                        end: Position {
-                            line: template_start_line + line - 1,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
+                locations.push(Self::location_from_sfc_offset(
+                    ctx,
+                    template.loc.start + expr_offset + word_offset_in_expr,
+                    word,
+                ));
             }
         }
 
         // Also do a simple text search for the word in template
         // This catches cases the AST might miss
         let simple_refs = Self::find_simple_references_in_content(
+            ctx,
             template_content,
             word,
-            template_start_line - 1,
+            template.loc.start,
         );
 
         for loc in simple_refs {
@@ -195,35 +183,29 @@ impl ReferencesService {
 
     /// Find simple text references in content.
     fn find_simple_references_in_content(
+        ctx: &IdeContext<'_>,
         content: &str,
         word: &str,
-        base_line: u32,
+        base_offset: usize,
     ) -> Vec<Location> {
         let mut locations = Vec::new();
+        let mut line_offset = 0;
 
-        for (line_idx, line) in content.lines().enumerate() {
+        for line in content.split_inclusive('\n') {
             let line_positions = Self::find_word_occurrences(line, word);
 
             for pos in line_positions {
                 // Check if this is in a binding context
                 // (inside {{ }}, after v-*, after :, after @, etc.)
                 if Self::is_in_binding_context(line, pos) {
-                    let character = crate::ide::offset_to_position(line, pos).1;
-                    locations.push(Location {
-                        uri: tower_lsp::lsp_types::Url::parse("file:///dummy").unwrap(),
-                        range: Range {
-                            start: Position {
-                                line: base_line + line_idx as u32,
-                                character,
-                            },
-                            end: Position {
-                                line: base_line + line_idx as u32,
-                                character: character + word.encode_utf16().count() as u32,
-                            },
-                        },
-                    });
+                    locations.push(Self::location_from_sfc_offset(
+                        ctx,
+                        base_offset + line_offset + pos,
+                        word,
+                    ));
                 }
             }
+            line_offset += line.len();
         }
 
         locations
@@ -252,5 +234,48 @@ impl ReferencesService {
         }
 
         false
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tower_lsp::lsp_types::Url;
+
+    use crate::ide::{IdeContext, ReferencesService};
+    use crate::server::ServerState;
+
+    #[test]
+    fn inline_template_references_include_the_tag_column_and_utf16_prefix() {
+        let source =
+            "<script setup>\nconst shared = 1\n</script>\n<template>💥 {{ shared }}</template>\n";
+        let uri = Url::parse("file:///Inline.vue").unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+        let ctx = IdeContext::new(&state, &uri, source.find("shared =").unwrap()).unwrap();
+
+        let references = ReferencesService::references(&ctx, true).unwrap();
+        assert_eq!(
+            references.len(),
+            2,
+            "duplicate or missing hits: {references:#?}"
+        );
+        for location in references {
+            let start = crate::ide::position_to_offset(
+                source,
+                location.range.start.line,
+                location.range.start.character,
+            )
+            .unwrap();
+            let end = crate::ide::position_to_offset(
+                source,
+                location.range.end.line,
+                location.range.end.character,
+            )
+            .unwrap();
+            assert_eq!(&source[start..end], "shared");
+        }
     }
 }

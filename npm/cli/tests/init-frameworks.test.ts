@@ -6,7 +6,6 @@ import {
   ALL_FEATURES,
   exists,
   read,
-  readAll,
   runInit,
   temporaryProject,
   write,
@@ -102,75 +101,6 @@ export default defineConfig({
   ]);
   assert.deepEqual(overridden.plan?.updatedFiles, ["vite.config.ts"]);
   assert.equal(overridden.output.split("\n")[1], "  framework:       Vite (vite.config.ts)");
-});
-
-test("a JavaScript-only project skips typecheck and still configures the rest", async () => {
-  const root = temporaryProject("javascript");
-  writeManifest(root, {
-    name: "fixture",
-    private: true,
-    type: "module",
-    scripts: { dev: "vite" },
-    devDependencies: { vite: "^7.0.0" },
-  });
-  write(
-    root,
-    "vite.config.js",
-    `import { defineConfig } from "vite";
-
-export default defineConfig({});
-`,
-  );
-  write(root, "bun.lock", "{}\n");
-
-  const result = await runInit(root, ALL_FEATURES);
-
-  assert.deepEqual(result.commands, [
-    {
-      command: "bun",
-      args: ["add", "-D", "@vizejs/vite-plugin", "oxlint", "oxlint-plugin-vize", "vize"],
-      cwd: root,
-    },
-  ]);
-  assert.deepEqual(
-    result.plan?.features.map((feature) => [feature.id, feature.outcome]),
-    [
-      ["lint", "configured"],
-      ["bundler", "configured"],
-      ["fmt", "configured"],
-      ["typecheck", "blocked"],
-      ["editor", "configured"],
-    ],
-  );
-  assert.deepEqual(result.plan?.addedScripts, ["vize:lint", "vize:fmt", "vize:fmt:fix"]);
-  assert.deepEqual(readAll(root, ["vite.config.js", "vize.config.ts"]), {
-    "vite.config.js": `import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
-`,
-    "vize.config.ts": `import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    templateSyntax: "standard",
-  },
-  linter: {
-    enabled: true,
-    preset: "general-recommended",
-  },
-  formatter: {
-    singleAttributePerLine: false,
-    sortBlocks: true,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-`,
-  });
 });
 
 test("a hand-written lint block is never overwritten and never silently bypassed", async () => {

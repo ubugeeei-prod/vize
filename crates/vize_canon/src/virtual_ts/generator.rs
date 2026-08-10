@@ -1,4 +1,5 @@
 mod anchors;
+mod auto_import_stubs;
 mod component_constructors;
 mod component_export;
 mod css_modules;
@@ -16,12 +17,14 @@ mod options_api_support;
 mod script_module;
 mod setup_helpers;
 mod setup_props;
+mod setup_scope;
 mod setup_type_exports;
 mod spans;
 mod template_refs;
 use self::anchors::{emit_props_shadow_anchor, emit_setup_binding_anchors};
+use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
-use self::component_export::emit_default_export_declaration;
+use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
 use self::css_modules::CssModuleAssertions;
 use self::emits::{emit_emit_props_helper, emit_emits_type, emit_exposed_type, emit_slots_type};
 pub use self::entry::{
@@ -32,7 +35,6 @@ use self::generics::{HoistedGenericAliases, generic_injection_point, references_
 use self::global_components::GlobalComponentPlan;
 use self::imports::{
     collect_imported_names, emit_reference_path_directives, emit_reference_type_directives,
-    extract_declared_name,
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
@@ -41,7 +43,7 @@ use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::setup_helpers::emit_setup_helpers;
-use self::setup_props::generate_setup_props;
+use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
@@ -50,6 +52,7 @@ use self::spans::{
 use super::{
     helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
     import_meta::emit_import_meta_augmentation,
+    macro_type_mappings::MacroTypeMappings,
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
         extract_generic_names, strip_const_modifiers,
@@ -76,9 +79,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let check_props = check_options.check_props;
     let script_source_offset =
         |offset| generation_options.script_source_offset(script_offset, offset);
-    // Configured Vue dialect, used to emit dialect-aware template instance typing
-    // (e.g. a Vue 2 `this`/template shape with `$listeners`,
-    // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
+    // Configured Vue dialect drives the Vue 2/3 template instance shape.
     let dialect = generation_options.dialect;
     let legacy_vue2 =
         generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
@@ -367,54 +368,30 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         FxHashSet::default()
     };
 
-    // Auto-import stubs (e.g., Nuxt composables)
-    // Only emit stubs for names NOT already declared via imports or bindings.
-    // Collect imported names from all module-level import statements to handle
-    // cases where plain <script> imports are not in summary.bindings (which
-    // only holds <script setup> bindings when both blocks exist).
     if !options.auto_import_stubs.is_empty() {
-        profile!("canon.virtual_ts.emit_auto_import_stubs", {
-            let mut has_header = false;
-            for stub in &options.auto_import_stubs {
-                let name = extract_declared_name(stub);
-                if let Some(name) = name {
-                    // Skip if already imported or declared in script bindings
-                    if summary.bindings.bindings.contains_key(name)
-                        || imported_names.contains(&name)
-                    {
-                        continue;
-                    }
-                }
-                if !has_header {
-                    ts.push_str("\n// Auto-import stubs (framework-provided globals)\n");
-                    has_header = true;
-                }
-                ts.push_str(stub);
-                ts.push('\n');
-            }
-        });
+        profile!(
+            "canon.virtual_ts.emit_auto_import_stubs",
+            emit_auto_import_stubs(&mut ts, summary, options, &imported_names)
+        );
     }
     global_components.emit(&mut ts, summary, options, &imported_names);
     ts.push('\n');
 
-    // For an Options API component with no `defineProps` macro, derive a real
-    // `export type Props` from its runtime `props:` option so cross-file prop
-    // checking is no longer a `{}` no-op. Macro-driven props (script setup) take
-    // precedence and are emitted by `generate_props_type` itself.
+    // Derive a real cross-file `Props` type from macro or Options API input.
     let options_api_props: Option<OptionsApiPropsSource> =
         if options_api && summary.macros.props().is_empty() {
             script_content.and_then(find_options_api_props)
         } else {
             None
         };
+    let source_offset = &script_source_offset;
     let setup_props_plan = generate_setup_props(
         &mut ts,
-        summary,
+        prop_source(&mut mappings, summary, script_content, source_offset),
         generic_param,
         options_api_props.as_ref(),
         setup_type_exports.exports_public_type("Props"),
     );
-
     // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
@@ -674,8 +651,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
         });
     }
-
-    setup_props_plan.emit_artifact(&mut ts, summary);
+    setup_props_plan.emit_artifact(
+        &mut ts,
+        prop_source(&mut mappings, summary, script_content, source_offset),
+    );
     // Template scope (nested inside setup)
     if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
@@ -690,7 +669,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             template_ref_unwraps.emit_type_captures(&mut ts);
 
             emit_props_shadow_anchor(&mut ts, summary, &template_usage_names);
-
             // Semicolon prevents ASI issues when user script doesn't end with `;`
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
             ts.push_str("  ;(function __template() {\n");
@@ -710,11 +688,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
             ts.push_str(&template_context);
             ts.push('\n');
-
+            let maps = &mut mappings;
+            let src = prop_source(maps, summary, script_content, &script_source_offset);
             profile!("canon.virtual_ts.generate_props_variables", {
                 setup_props_plan.generate_props_variables(
                     &mut ts,
-                    summary,
+                    src,
                     generic_param,
                     check_props && !legacy_vue2,
                 )
@@ -747,6 +726,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
                             options_api,
+                            preserve_event_navigation: generation_options.preserve_event_navigation,
                             has_default_alias: declared_default_alias,
                             script_content,
                         },
@@ -842,6 +822,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
+    let preserve_authored_component =
+        declared_default_alias && generation_options.preserve_authored_component;
+    if preserve_authored_component
+        && !setup_return_fields
+            .iter()
+            .any(|field| field == "__default__")
+    {
+        setup_return_fields.push("__default__".into());
+    }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
@@ -862,27 +851,27 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         append!(ts, "\n  return {{ {} }};\n", setup_return_fields.join(", "));
     }
 
-    // Close setup function
     ts.push_str("}\n\n");
 
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    self::script_module::emit_setup_invocation_and_exports(&mut ts, &named_value_exports);
+    script_module::emit_exports(&mut ts, &mut mappings, &named_value_exports, script_offset);
     setup_type_exports.emit_module_exports(&mut ts);
 
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
+    emit_authored_component_aliases(&mut ts, preserve_authored_component);
 
     let emits_info = emit_emits_type(
         &mut ts,
         summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
+        generation_options.preserve_event_navigation,
         generic_param,
         define_emits_runtime_args.is_some(),
     );
 
-    // Slots type
     let slots_is_generic = emit_slots_type(&mut ts, summary, generic_injection.as_ref());
 
-    // Exposed type (for InstanceType and useTemplateRef)
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
@@ -901,6 +890,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             exposed_is_generic,
             has_emits_for_props: emits_info.has_emits_for_props,
             has_exposed_type,
+            has_authored_default: preserve_authored_component,
         },
         legacy_vue2,
         dialect,
@@ -912,8 +902,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generic_component_params
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str())),
+        preserve_authored_component,
     );
-    ts.push_str("export default __vize_component__;\n");
+    component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 
     VirtualTsOutput { code: ts, mappings }
 }

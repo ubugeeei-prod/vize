@@ -39,7 +39,7 @@ impl CorsaProjectClient {
 
         let document_uri = self.session_document_uri(uri);
         match block_on(
-            self.session
+            self.project_session()?
                 .get_hover_at_position(uri_document_identifier(document_uri.as_str()), position),
         ) {
             Ok(response) => response.map(value_to_json).transpose(),
@@ -57,17 +57,20 @@ impl CorsaProjectClient {
         let Some(position) =
             self.api_position(uri, line, character, self.supports_definition_api())?
         else {
-            return Ok(None);
+            return self.definition_via_editor_lsp(uri, line, character);
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response =
-            block_on(self.session.get_definition_at_position(
+        match block_on(
+            self.project_session()?.get_definition_at_position(
                 uri_document_identifier(document_uri.as_str()),
                 position,
-            ))
-            .map_err(|error| cstr!("Failed to request definition: {error}"))?;
-        self.serialize_with_remapped_uris(response)
+            ),
+        ) {
+            Ok(response) => self.serialize_with_remapped_uris(response),
+            Err(CorsaError::Unsupported(_)) => self.definition_via_editor_lsp(uri, line, character),
+            Err(error) => Err(cstr!("Failed to request definition: {error}")),
+        }
     }
 
     pub(crate) fn references_raw(
@@ -75,31 +78,36 @@ impl CorsaProjectClient {
         uri: &str,
         line: u32,
         character: u32,
-        _include_declaration: bool,
+        include_declaration: bool,
     ) -> Result<Option<Value>, String> {
         let Some(position) =
             self.api_position(uri, line, character, self.supports_references_api())?
         else {
-            return Ok(None);
+            return self.references_via_editor_lsp(uri, line, character, include_declaration);
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response =
-            block_on(self.session.get_references_at_position(
+        match block_on(
+            self.project_session()?.get_references_at_position(
                 uri_document_identifier(document_uri.as_str()),
                 position,
-            ))
-            .map_err(|error| cstr!("Failed to request references: {error}"))?;
-        self.serialize_with_remapped_uris(Some(response))
+            ),
+        ) {
+            Ok(response) => self.serialize_with_remapped_uris(Some(response)),
+            Err(CorsaError::Unsupported(_)) => {
+                self.references_via_editor_lsp(uri, line, character, include_declaration)
+            }
+            Err(error) => Err(cstr!("Failed to request references: {error}")),
+        }
     }
 
     pub(crate) fn prepare_rename_raw(
         &mut self,
-        _uri: &str,
-        _line: u32,
-        _character: u32,
+        uri: &str,
+        line: u32,
+        character: u32,
     ) -> Result<Option<Value>, String> {
-        Ok(None)
+        self.prepare_rename_via_editor_lsp(uri, line, character)
     }
 
     pub(crate) fn rename_raw(
@@ -111,17 +119,21 @@ impl CorsaProjectClient {
     ) -> Result<Option<Value>, String> {
         let Some(position) = self.api_position(uri, line, character, self.supports_rename_api())?
         else {
-            return Ok(None);
+            return self.rename_via_editor_lsp(uri, line, character, new_name);
         };
 
         let document_uri = self.session_document_uri(uri);
-        let response = block_on(self.session.get_rename_at_position(
+        match block_on(self.project_session()?.get_rename_at_position(
             uri_document_identifier(document_uri.as_str()),
             position,
             new_name,
-        ))
-        .map_err(|error| cstr!("Failed to request rename: {error}"))?;
-        self.serialize_with_remapped_uris(response)
+        )) {
+            Ok(response) => self.serialize_with_remapped_uris(response),
+            Err(CorsaError::Unsupported(_)) => {
+                self.rename_via_editor_lsp(uri, line, character, new_name)
+            }
+            Err(error) => Err(cstr!("Failed to request rename: {error}")),
+        }
     }
 
     pub(crate) fn will_rename_files_raw(
@@ -151,7 +163,7 @@ impl CorsaProjectClient {
             trigger_character: None,
         };
         let document_uri = self.session_document_uri(uri);
-        match block_on(self.session.get_completion_at_position(
+        match block_on(self.project_session()?.get_completion_at_position(
             uri_document_identifier(document_uri.as_str()),
             position,
             Some(context),
@@ -160,6 +172,16 @@ impl CorsaProjectClient {
             Err(CorsaError::Unsupported(_)) => self.completion_via_editor_lsp(uri, line, character),
             Err(error) => Err(cstr!("Failed to request completion: {error}")),
         }
+    }
+
+    pub(crate) fn signature_help_raw(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+        context: Option<Value>,
+    ) -> Result<Option<Value>, String> {
+        self.signature_help_via_editor_lsp(uri, line, character, context)
     }
 
     fn api_position(

@@ -193,6 +193,11 @@
           "default": true,
           "description": "Enable Vize completions. This may overlap with vuejs/language-tools."
         },
+        "vize.signatureHelp.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Vize TypeScript signature help in Vue and art templates and scripts. This may overlap with vuejs/language-tools."
+        },
         "vize.hover.enable": {
           "type": "boolean",
           "default": true,

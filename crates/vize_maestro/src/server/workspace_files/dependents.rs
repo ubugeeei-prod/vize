@@ -6,13 +6,13 @@ use tower_lsp::lsp_types::Url;
 
 use super::super::{ServerState, importers};
 
-pub(super) fn versioned_open_vue_dependents<'a>(
+pub(super) fn versioned_open_typecheck_dependents<'a>(
     state: &ServerState,
     uris: impl Iterator<Item = &'a str>,
 ) -> Vec<(Url, i32)> {
     let mut dependents = uris
         .filter_map(|uri| Url::parse(uri).ok())
-        .flat_map(|uri| importers::open_vue_dependents(state, &uri))
+        .flat_map(|uri| importers::open_typecheck_dependents(state, &uri))
         .collect::<Vec<_>>();
     dependents.sort();
     dependents.dedup();

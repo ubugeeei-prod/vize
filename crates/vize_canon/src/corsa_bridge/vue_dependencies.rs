@@ -9,15 +9,21 @@ use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_paths::{normalize_path, resolve_relative_script_import};
 use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
-use super::vue_document::{CorsaVueVirtualDocumentOptions, GeneratedVueDocument};
+use super::vue_document::{
+    CorsaVueVirtualDependency, CorsaVueVirtualDocumentOptions, GeneratedVueDocument,
+};
 use crate::batch::ImportRewriter;
 use crate::file_uri::path_to_file_uri;
+
+#[path = "vue_dependencies_walk.rs"]
+mod walk;
 
 const VUE_DEPENDENCY_FALLBACK: &str =
     "const component: any = undefined;\nexport default component;\n";
 
 pub(super) fn collect_dependency_documents(
     documents: &mut Vec<(String, String)>,
+    dependencies: &mut Vec<CorsaVueVirtualDependency>,
     host: &GeneratedVueDocument,
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
@@ -34,52 +40,55 @@ pub(super) fn collect_dependency_documents(
         pre_rewrite_code: host.generated.pre_rewrite_code.clone(),
     });
 
-    while let Some(scan) = queue.pop_front() {
-        match scan {
-            DependencyScan::Vue {
-                dir,
-                source_type,
-                pre_rewrite_code,
-            } => queue_imports(
-                ImportQueue {
-                    documents,
-                    queue: &mut queue,
-                    visited_vue: &mut visited_vue,
-                    visited_ts: &mut visited_ts,
-                    overlays,
-                },
-                options,
-                rewriter,
-                alias_context,
-                &dir,
-                &pre_rewrite_code,
-                source_type,
-            ),
-            DependencyScan::Script {
-                path,
-                source_type,
-                content,
-            } => queue_imports(
-                ImportQueue {
-                    documents,
-                    queue: &mut queue,
-                    visited_vue: &mut visited_vue,
-                    visited_ts: &mut visited_ts,
-                    overlays,
-                },
-                options,
-                rewriter,
-                alias_context,
-                &parent_dir(&path),
-                &content,
-                source_type,
-            ),
-        }
-    }
+    walk::collect_queued_documents(
+        documents,
+        Some(dependencies),
+        options,
+        rewriter,
+        alias_context,
+        overlays,
+        &mut visited_vue,
+        &mut visited_ts,
+        queue,
+    );
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(super) fn collect_script_dependency_documents(
+    documents: &mut Vec<(String, String)>,
+    source_path: &Path,
+    code: &str,
+    source_type: SourceType,
+    options: CorsaVueVirtualDocumentOptions,
+    rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
+    overlays: &FxHashMap<PathBuf, &str>,
+) {
+    let mut visited_vue = FxHashSet::<PathBuf>::default();
+    let mut visited_ts = FxHashSet::<PathBuf>::default();
+    visited_ts.insert(source_path.to_path_buf());
+    let mut queue = VecDeque::new();
+    queue.push_back(DependencyScan::Script {
+        path: source_path.to_path_buf(),
+        source_type,
+        content: code.into(),
+    });
+    walk::collect_queued_documents(
+        documents,
+        None,
+        options,
+        rewriter,
+        alias_context,
+        overlays,
+        &mut visited_vue,
+        &mut visited_ts,
+        queue,
+    );
 }
 
 pub(super) struct ImportQueue<'a> {
     pub(super) documents: &'a mut Vec<(String, String)>,
+    pub(super) dependencies: Option<&'a mut Vec<CorsaVueVirtualDependency>>,
     pub(super) queue: &'a mut VecDeque<DependencyScan>,
     pub(super) visited_vue: &'a mut FxHashSet<PathBuf>,
     pub(super) visited_ts: &'a mut FxHashSet<PathBuf>,
@@ -184,18 +193,32 @@ pub(super) fn queue_vue_dependency(
             return;
         }
     };
-    imports.documents.push((
-        generated.virtual_uri.clone(),
-        generated.generated.code.clone(),
-    ));
+    let generated_code = generated.generated.code;
+    imports
+        .documents
+        .push((generated.virtual_uri.clone(), generated_code.clone()));
     if generated.generated.virtual_suffix == ".tsx" {
-        imports.documents.push(tsx_vue_import_shim(path));
+        imports
+            .documents
+            .push(tsx_vue_import_shim(&generated.source_path));
     }
     imports.queue.push_back(DependencyScan::Vue {
         dir: parent_dir(&generated.source_path),
         source_type: generated.generated.source_type,
         pre_rewrite_code: generated.generated.pre_rewrite_code,
     });
+    if let Some(dependencies) = imports.dependencies.as_mut() {
+        dependencies.push(CorsaVueVirtualDependency {
+            source_path: generated.source_path,
+            source: content,
+            request_uri: generated.virtual_uri,
+            code: generated_code,
+            mappings: generated.generated.mappings,
+            import_source_map: generated.generated.import_source_map,
+            source_type: generated.generated.source_type,
+            virtual_suffix: generated.generated.virtual_suffix,
+        });
+    }
 }
 
 pub(super) fn fallback_vue_virtual_uri(path: &Path) -> String {

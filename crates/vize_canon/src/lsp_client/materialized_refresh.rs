@@ -22,7 +22,11 @@ impl CorsaProjectClient {
         };
 
         self.clear_diagnostics_cache();
-        block_on(self.session.refresh(Some(file_changes)))
+        if !self.has_project_session() {
+            self.retire_editor_lsp();
+            return Ok(());
+        }
+        block_on(self.project_session_mut()?.refresh(Some(file_changes)))
             .map_err(|error| cstr!("Failed to refresh materialized Corsa files: {error}"))
     }
 }

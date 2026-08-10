@@ -3504,12 +3504,14 @@ name = "vize"
 version = "0.346.0"
 dependencies = [
  "clap",
+ "corsa",
  "dirs",
  "futures",
  "glob",
  "globset",
  "ignore",
  "insta",
+ "lsp-types 0.97.0",
  "mimalloc",
  "oxc_allocator",
  "oxc_ast",

@@ -174,28 +174,57 @@ test("release install smoke skips libc-incompatible tarballs", () => {
 
 test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeScript, "utf8");
+  const runtimeScript = fs.readFileSync(
+    path.join(root, "tools/npm/smoke-release-runtime.mjs"),
+    "utf8",
+  );
+  const smokeSources = `${script}\n${runtimeScript}`;
+  const initTypecheckScript = fs.readFileSync(
+    path.join(root, "tools/npm/smoke-release-init-typecheck.mjs"),
+    "utf8",
+  );
 
   assert.match(script, /--runtime-checks/);
+  assert.match(script, /--content-mapper-checks/);
   // vize declares @typescript/native-preview itself, so the fresh-install smoke
   // must not manually add it as a project runtime peer.
-  assert.doesNotMatch(script, /"@typescript\/native-preview":/);
-  assert.match(script, /require\("@vizejs\/native"\)/);
-  assert.match(script, /import\("@vizejs\/native"\)/);
-  assert.match(script, /native\.compileSfc/);
+  assert.doesNotMatch(smokeSources, /"@typescript\/native-preview":/);
+  assert.match(smokeSources, /require\("@vizejs\/native"\)/);
+  assert.match(smokeSources, /import\("@vizejs\/native"\)/);
+  assert.match(smokeSources, /native\.compileSfc/);
   // Bins are resolved out of the installed tree and invoked through
   // `process.execPath` so that `npm exec` cannot re-resolve native optional
   // deps and drop them mid-run (npm/cli#4828).
-  assert.match(script, /resolveInstalledBin\(installDir, "vize", "vize"\)/);
-  assert.match(script, /vizeBin, "--version"/);
-  assert.match(script, /"check"[\s\S]*"src\/App\.vue"/);
-  assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
+  assert.match(smokeSources, /resolveInstalledBin\(installDir, "vize", "vize"\)/);
+  assert.match(smokeSources, /vizeBin, "--version"/);
+  assert.match(smokeSources, /"check"[\s\S]*"src\/App\.vue"/);
+  assert.match(smokeSources, /"lint"[\s\S]*"src\/App\.vue"/);
+  assert.match(smokeSources, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
+  assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
+  assert.match(runtimeScript, /runInstalledContentMapperChecks/);
+  assert.match(runtimeScript, /content mapper project with spaces/);
+  assert.match(runtimeScript, /--loadExternalPlugins/);
+  assert.match(runtimeScript, /tsconfig\.emit\.json/);
+  assert.match(initTypecheckScript, /`init-smoke-\$\{language\}`/);
+  assert.match(initTypecheckScript, /\["typescript", "javascript"\]/);
+  assert.match(initTypecheckScript, /"init"[\s\S]*"--typecheck"[\s\S]*"--no-install"/);
+  assert.match(initTypecheckScript, /"run", "--silent", "vize:check"/);
+  for (const diagnostic of [
+    "standalone source",
+    "SFC script",
+    "SFC template",
+    "component prop",
+    "JSX consumer",
+  ]) {
+    assert.match(initTypecheckScript, new RegExp(diagnostic));
+  }
   // vite is installed as upstream vite 8, one supported
   // `@vizejs/vite-plugin` peer range. Real vite exposes a `vite` bin entry, so
   // the smoke can use the same resolver as vize.
-  assert.match(script, /resolveInstalledBin\(installDir, "vite", "vite"\)/);
-  assert.match(script, /viteBin, "build"/);
-  assert.match(script, /vite:\s*"\^8\.0\.0"/);
-  assert.match(script, /runtime: @vizejs\/vite-plugin vite build/);
+  assert.match(smokeSources, /resolveInstalledBin\(installDir, "vite", "vite"\)/);
+  assert.match(smokeSources, /viteBin, "build"/);
+  assert.match(smokeSources, /vite:\s*"\^8\.0\.0"/);
+  assert.match(smokeSources, /runtime: @vizejs\/vite-plugin vite build/);
   // The combined install must request optional deps explicitly so that an
   // inherited `omit=optional` config does not silently drop platform-specific
   // native bindings (e.g. rolldown).

@@ -44,7 +44,11 @@ impl ReferencesService {
         None
     }
 
-    fn location_from_sfc_offset(ctx: &IdeContext, offset: usize, word: &str) -> Location {
+    pub(super) fn location_from_sfc_offset(
+        ctx: &IdeContext,
+        offset: usize,
+        word: &str,
+    ) -> Location {
         let (line, character) = crate::ide::offset_to_position(&ctx.content, offset);
 
         Location {
@@ -89,7 +93,7 @@ impl ReferencesService {
     }
 
     /// Find references to a symbol in style blocks (v-bind).
-    pub(super) fn find_references_in_style(ctx: &IdeContext, word: &str) -> Vec<Location> {
+    pub(in crate::ide) fn find_references_in_style(ctx: &IdeContext, word: &str) -> Vec<Location> {
         let mut locations = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions::default();
@@ -145,6 +149,9 @@ impl ReferencesService {
 
     /// Find a binding definition in script content.
     pub(super) fn find_binding_in_script(content: &str, name: &str) -> Option<usize> {
+        if let Some(offset) = Self::find_import_binding(content, name) {
+            return Some(offset);
+        }
         let content_start = Self::skip_virtual_header(content);
         let search_content = &content[content_start..];
 
@@ -183,6 +190,49 @@ impl ReferencesService {
         }
 
         None
+    }
+
+    fn find_import_binding(content: &str, name: &str) -> Option<usize> {
+        use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
+
+        let allocator = oxc_allocator::Allocator::default();
+        let parsed = oxc_parser::Parser::new(
+            &allocator,
+            content,
+            oxc_span::SourceType::ts().with_module(true),
+        )
+        .parse();
+        let parsed = if parsed.panicked {
+            oxc_parser::Parser::new(
+                &allocator,
+                content,
+                oxc_span::SourceType::tsx().with_module(true),
+            )
+            .parse()
+        } else {
+            parsed
+        };
+        if parsed.panicked {
+            return None;
+        }
+
+        parsed.program.body.iter().find_map(|statement| {
+            let Statement::ImportDeclaration(import) = statement else {
+                return None;
+            };
+            import.specifiers.as_ref()?.iter().find_map(|specifier| {
+                let local = match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier) => &specifier.local,
+                    ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                        &specifier.local
+                    }
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                        &specifier.local
+                    }
+                };
+                (local.name == name).then_some(local.span.start as usize)
+            })
+        })
     }
 
     /// Skip virtual code header.
@@ -266,6 +316,16 @@ const doubled = computed(() => visitCount.value * 2)
         assert_eq!(
             spans(SOURCE, "visitCount = ref", false),
             [(4, 31, 41), (8, 18, 28)],
+        );
+    }
+
+    #[test]
+    fn excluding_declarations_recognizes_imported_local_bindings() {
+        let source = "<script setup>\nimport { shared } from './Child.vue'\nconst local = shared\n</script>\n<template>{{ shared }}</template>\n";
+
+        assert_eq!(
+            spans(source, "shared } from", false),
+            [(2, 14, 20), (4, 13, 19)],
         );
     }
 

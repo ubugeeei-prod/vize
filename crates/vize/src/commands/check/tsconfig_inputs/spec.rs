@@ -38,9 +38,6 @@ impl TsconfigInputSpec {
             self.excludes = extended.excludes;
             self.has_excludes = true;
         }
-        if extended.allow_js.is_some() {
-            self.allow_js = extended.allow_js;
-        }
         // Both are ordinary compiler options, so an extending config that does
         // not restate them keeps the base's value.
         if extended.out_dir_exclude.is_some() {
@@ -48,6 +45,9 @@ impl TsconfigInputSpec {
         }
         if extended.declaration_dir_exclude.is_some() {
             self.declaration_dir_exclude = extended.declaration_dir_exclude;
+        }
+        if extended.allow_js.is_some() {
+            self.allow_js = extended.allow_js;
         }
     }
 

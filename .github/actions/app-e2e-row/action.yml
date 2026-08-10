@@ -1,0 +1,171 @@
+name: App E2E row
+description: Run one validated App E2E planner row on an isolated runner
+
+inputs:
+  profile:
+    description: Planner profile
+    required: true
+  suite:
+    description: Planner suite
+    required: true
+  shard:
+    description: Planner shard
+    required: true
+  task:
+    description: Validated package task
+    required: true
+  timeout:
+    description: Validated task timeout
+    required: true
+  needs-playwright:
+    description: Whether this row needs Chromium
+    required: true
+  cache-key:
+    description: Unique mutable cache namespace
+    required: true
+  worktree-id:
+    description: Unique test worktree namespace
+    required: true
+  artifact-stem:
+    description: Unique artifact namespace
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate and hydrate planned fixtures
+      shell: bash
+      env:
+        PLAN_PROFILE: ${{ inputs.profile }}
+        PLAN_SUITE: ${{ inputs.suite }}
+        PLAN_SHARD: ${{ inputs.shard }}
+        PLANNED_TASK: ${{ inputs.task }}
+        PLANNED_TIMEOUT: ${{ inputs.timeout }}
+        PLANNED_BROWSER: ${{ inputs.needs-playwright }}
+        PLANNED_CACHE_KEY: ${{ inputs.cache-key }}
+        PLANNED_WORKTREE_ID: ${{ inputs.worktree-id }}
+        PLANNED_ARTIFACT_STEM: ${{ inputs.artifact-stem }}
+      run: |
+        set -euo pipefail
+        planner=(node tools/github/app-e2e-plan.mjs --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+        test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
+        test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
+        test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"
+        test "$("${planner[@]}" --field cache-key)" = "$PLANNED_CACHE_KEY"
+        test "$("${planner[@]}" --field worktree-id)" = "$PLANNED_WORKTREE_ID"
+        test "$("${planner[@]}" --field artifact-stem)" = "$PLANNED_ARTIFACT_STEM"
+        mapfile -t fixture_paths < <("${planner[@]}" --field fixtures)
+        if (( ${#fixture_paths[@]} == 0 )); then
+          echo "::error title=Empty App E2E shard::planner selected no fixtures"
+          exit 1
+        fi
+        git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
+
+    - name: Setup Rust
+      id: rust-toolchain
+      uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+    - name: Setup Wild linker
+      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with:
+        wild-version: "0.9.0"
+
+    - uses: ./.github/actions/setup-rust-sticky-cache
+      with:
+        key: ${{ inputs.cache-key }}
+        cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.cachekey }}
+
+    - name: Setup Vite+ and Node.js
+      uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: ".node-version"
+        cache: true
+        run-install: false
+
+    - uses: ./.github/actions/setup-moonbit
+
+    - name: Install JavaScript dependencies
+      shell: bash
+      run: |
+        vp install --frozen-lockfile --prefer-offline \
+          --filter './tests...' \
+          --filter './npm/native...' \
+          --filter './npm/cli...' \
+          --filter './npm/builder/vite...' \
+          --filter './npm/framework/nuxt-lint-config...' \
+          --filter './npm/framework/nuxt...' \
+          --filter './npm/builder/vite-musea...' \
+          --filter './npm/framework/musea-nuxt...'
+
+    - name: Build native package
+      shell: bash
+      run: vp run --filter './npm/native' build:ci
+
+    - name: Build Vize CLI
+      shell: bash
+      run: cargo build --profile ci -p vize
+
+    - name: Cache Playwright browsers
+      id: cache-playwright
+      if: inputs.needs-playwright == 'true'
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Install Playwright OS dependencies
+      if: inputs.needs-playwright == 'true'
+      shell: bash
+      run: vp exec --filter './tests' -- playwright install-deps chromium
+
+    - name: Install Playwright browser
+      if: inputs.needs-playwright == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'
+      shell: bash
+      run: vp exec --filter './tests' -- playwright install chromium
+
+    - name: Run planned App E2E row
+      id: run
+      continue-on-error: true
+      shell: bash
+      env:
+        PLAN_PROFILE: ${{ inputs.profile }}
+        PLAN_SUITE: ${{ inputs.suite }}
+        PLAN_SHARD: ${{ inputs.shard }}
+        PLANNED_TASK: ${{ inputs.task }}
+        PLANNED_TIMEOUT: ${{ inputs.timeout }}
+        PLANNED_BROWSER: ${{ inputs.needs-playwright }}
+        VIZE_TEST_WORKTREE_ID: ${{ inputs.worktree-id }}
+      run: |
+        set -euo pipefail
+        mkdir -p target/app-e2e-logs
+        timeout --signal=TERM --kill-after=15s "$PLANNED_TIMEOUT" \
+          vp run --filter './tests' "$PLANNED_TASK" 2>&1 \
+          | tee "target/app-e2e-logs/$PLAN_PROFILE-$PLAN_SUITE-$PLAN_SHARD.log"
+
+    - name: Upload App E2E row artifacts
+      if: ${{ cancelled() || failure() || steps.run.outcome == 'failure' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: app-e2e-${{ inputs.artifact-stem }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/app-e2e-logs/
+          tests/app/results/
+          tests/app/screenshots/
+          tests/app/playwright-report/
+          tests/playwright-report/
+          .vize/artifacts/
+        if-no-files-found: ignore
+        retention-days: 7
+
+    - name: Report App E2E row
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        ROW_OUTCOME: ${{ steps.run.outcome }}
+        ROW_ID: ${{ inputs.profile }}:${{ inputs.suite }}:${{ inputs.shard }}
+      run: |
+        echo "App E2E row $ROW_ID: $ROW_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+        if [[ "$ROW_OUTCOME" != "success" ]]; then
+          echo "::error title=App E2E row failed::$ROW_ID failed; inspect its unique artifact"
+          exit 1
+        fi

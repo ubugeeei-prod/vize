@@ -27,7 +27,7 @@ pub use formatter::{
     ArrowParens, AttributeSortOrder, EndOfLine, FormatterConfig, QuoteProps, TrailingComma,
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
-pub use language_server::{LanguageServerConfig, LspConfig};
+pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
 #[allow(unused_imports)]
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
@@ -214,6 +214,7 @@ struct RawLanguageServerConfig {
     #[serde(flatten)]
     config: LanguageServerConfig,
     legacy_vue2: Option<bool>,
+    signature_help: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -224,6 +225,22 @@ struct LegacyCheckConfig {
 }
 
 impl RawVizeConfig {
+    /// Read the language server switches that are not stable model fields.
+    ///
+    /// Resolves the same `languageServer` / legacy `lsp` precedence as
+    /// [`Self::into_config_and_features`] without consuming the raw config.
+    pub(crate) fn language_server_unstable_flags(&self) -> LanguageServerUnstableFlags {
+        let raw = match self.legacy_lsp.as_ref() {
+            Some(legacy) if self.language_server.config == LanguageServerConfig::default() => {
+                legacy
+            }
+            _ => &self.language_server,
+        };
+        LanguageServerUnstableFlags {
+            signature_help: raw.signature_help,
+        }
+    }
+
     /// Normalize raw config and derive auxiliary feature flags once.
     ///
     /// Legacy aliases (`check`, `fmt`, `lsp`) are folded here while the raw

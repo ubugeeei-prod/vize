@@ -17,33 +17,15 @@
 //! is enabled (checked by the caller in the request handlers); React `.tsx`
 //! files are otherwise left entirely untouched.
 //!
-//! ## Signature help (#1502): N/A by parity with the SFC path
-//!
-//! Issue #1502's acceptance asks for hover / completion / **signature help** to
-//! reflect props, emits, and slots, "where the SFC services provide the
-//! equivalent". Hover and completion are implemented above. Signature help is
-//! **not** a capability the maestro server provides for **any** document:
-//! `textDocument/signatureHelp` has no handler on the [`LanguageServer`] impl,
-//! [`server_capabilities`] advertises `signature_help_provider: None`, and the
-//! [`CorsaBridge`] exposes no signature-help request to bridge over. Because the
-//! SFC path provides no signature help, the "where SFC provides the equivalent"
-//! scope makes signature help **N/A** for JSX/TSX as well — there is no SFC
-//! behavior to mirror. If the SFC services ever gain signature help, the JSX
-//! parallel would slot in here exactly like [`Self::hover`]: build the virtual
-//! TS via [`Self::prepare_request`], forward the cursor, call a new
-//! `bridge.signature_help(...)`, and map the result's ranges back with
-//! [`Self::map_virtual_range`]. The props/emits/slots that such signature help
-//! would surface are already present and type-checked in the generated virtual
-//! TS (see [`super::virtual_ts`] and its tests).
-//!
-//! [`LanguageServer`]: tower_lsp::LanguageServer
-//! [`server_capabilities`]: crate::server::server_capabilities
+//! Signature help follows the same mapping path. Its response has no source
+//! ranges, so only the authored cursor needs forward mapping; labels,
+//! documentation, overloads, and active-parameter state pass through intact.
 
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::{
     CompletionResponse, Diagnostic, DiagnosticSeverity, GotoDefinitionResponse, Hover, Location,
-    Position, Range, Url,
+    Position, Range, SignatureHelp, Url,
 };
 use vize_atelier_jsx::JsxLang;
 use vize_canon::{CorsaBridge, LspLocation};
@@ -95,11 +77,7 @@ impl JsxService {
         let virtual_ts = Self::virtual_ts(ctx)?;
         let (line, character) =
             source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
-        let request_path = Self::request_path(ctx.uri);
-        let uri = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
-            .ok()?;
+        let uri = super::service_project::open_virtual_project(ctx, bridge, &virtual_ts).await?;
         Some((virtual_ts, uri, line, character))
     }
 
@@ -141,6 +119,29 @@ impl JsxService {
         Some(CompletionResponse::Array(items))
     }
 
+    /// Signature help on a `.jsx`/`.tsx` call, resolved through virtual TS.
+    pub async fn signature_help(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+    ) -> Option<SignatureHelp> {
+        Self::signature_help_with_context(ctx, corsa_bridge, None).await
+    }
+
+    /// Signature help while preserving the triggering LSP context.
+    pub async fn signature_help_with_context(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+        context: Option<serde_json::Value>,
+    ) -> Option<SignatureHelp> {
+        let bridge = corsa_bridge?;
+        let (_virtual_ts, uri, line, character) = Self::prepare_request(ctx, &bridge).await?;
+        let help = bridge
+            .signature_help_with_context(&uri, line, character, context)
+            .await
+            .ok()??;
+        Some(crate::ide::SignatureHelpService::convert_lsp_signature_help(help))
+    }
+
     /// Go-to-definition on a `.jsx`/`.tsx` component, resolved through virtual
     /// TS.
     pub async fn definition(
@@ -171,12 +172,8 @@ impl JsxService {
         }
     }
 
-    /// Type diagnostics for a `.jsx`/`.tsx` document, surfaced from its virtual
-    /// TS through Corsa. Returned alongside the JSX compiler diagnostics.
-    ///
-    /// Each Corsa diagnostic is mapped from virtual-TS coordinates back to the
-    /// source via the byte-range mappings; diagnostics that don't map to any
-    /// user range (e.g. ones on the synthesized ambient preamble) are dropped.
+    /// Type diagnostics surfaced from JSX virtual TS through Corsa. Diagnostics
+    /// outside authored mappings (such as the ambient preamble) are dropped.
     pub async fn diagnostics(
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
@@ -191,10 +188,8 @@ impl JsxService {
             return vec![];
         };
 
-        let request_path = Self::request_path(ctx.uri);
-        let Ok(uri) = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
+        let Some(uri) =
+            super::service_project::open_virtual_project(ctx, &bridge, &virtual_ts).await
         else {
             return vec![];
         };
@@ -241,6 +236,9 @@ impl JsxService {
                         3 => DiagnosticSeverity::INFORMATION,
                         _ => DiagnosticSeverity::HINT,
                     }),
+                    code: diag
+                        .code
+                        .map(crate::ide::diagnostics::corsa::corsa_diagnostic_code),
                     source: Some(sources::TYPE_CHECKER.to_string()),
                     message: diag.message,
                     ..Default::default()

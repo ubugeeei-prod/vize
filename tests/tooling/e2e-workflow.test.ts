@@ -1,314 +1,245 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
-const yamlStepBody = (document: string, selector: { id: string } | { name: string }): string => {
-  const lines = document.split(/\r?\n/);
-  const marker = "id" in selector ? `id: ${selector.id}` : `- name: ${selector.name}`;
-  const markerIndex = lines.findIndex((line) => line.trim() === marker);
-  assert.notEqual(markerIndex, -1, `YAML step ${marker}`);
-
-  let start = markerIndex;
-  while (start >= 0 && !lines[start].trimStart().startsWith("- ")) start -= 1;
-  assert.ok(start >= 0, `YAML list item for ${marker}`);
-  const indentation = lines[start].search(/\S/);
-  let end = start + 1;
-  while (end < lines.length) {
-    const line = lines[end];
-    if (
-      line.trim() !== "" &&
-      line.search(/\S/) === indentation &&
-      line.trimStart().startsWith("- ")
-    ) {
-      break;
-    }
-    end += 1;
-  }
-  return lines.slice(start, end).join("\n");
+type Step = {
+  continueOnError?: boolean;
+  env?: Record<string, string>;
+  id?: string;
+  if?: string;
+  name?: string;
+  run?: string;
+  uses?: string;
+  with?: Record<string, string | boolean>;
+  "continue-on-error"?: boolean;
+};
+type Job = {
+  if?: string;
+  name?: string;
+  needs?: string | string[];
+  outputs?: Record<string, string>;
+  permissions?: Record<string, string>;
+  "runs-on"?: string;
+  steps?: Step[];
+  strategy?: { "fail-fast"?: boolean; matrix?: string };
+  "timeout-minutes"?: number;
+};
+type Workflow = {
+  concurrency?: Record<string, unknown>;
+  env?: Record<string, string>;
+  jobs?: Record<string, Job>;
+  on?: Record<string, unknown>;
+  permissions?: Record<string, string>;
+  "run-name"?: string;
 };
 
-const shellWords = (command: string, label: string): string[] => {
-  const logicalCommand = command.trim().replace(/\\\r?\n[ \t]*/g, " ");
-  assert.doesNotMatch(logicalCommand, /\r?\n/, `${label} must be one logical shell command`);
-  return [...logicalCommand.matchAll(/'([^']*)'|"([^"]*)"|(\S+)/g)].map(
-    (match) => match[1] ?? match[2] ?? match[3],
-  );
+const loadWorkflow = (): Workflow =>
+  parse(readRepoFile(".github", "workflows", "e2e.yml")) as Workflow;
+const namedStep = (job: Job | undefined, name: string): Step => {
+  const found = job?.steps?.find((step) => step.name === name);
+  assert.ok(found, `missing step ${name}`);
+  return found;
 };
 
-test("full app e2e workflow remains nightly/on-demand and uploads failure artifacts", () => {
-  const workflow = readRepoFile(".github", "workflows", "e2e.yml");
-  const appJob = workflowJobBody(workflow, "app-e2e");
-
-  // Expensive real-world matrices remain nightly/on-demand. Pull requests use
-  // the focused readiness job asserted below.
-  assert.match(workflow, /schedule:[\s\S]*?- cron:\s*"/);
-  assert.match(appJob, /name: app-e2e \(\$\{\{ matrix\.suite \}\}\)/);
-  assert.match(
-    appJob,
-    /if:\s*\$\{\{\s*github\.event_name != 'pull_request' && \(github\.event_name != 'workflow_dispatch' \|\| inputs\.testbox_id == ''\)\s*\}\}/,
-  );
-  assert.match(appJob, /fail-fast:\s*false/);
-  // Scheduled runs exercise every suite, including vrt.
-  assert.match(appJob, /fromJSON\('\["dev","vrt","preview","build","check","lint"\]'\)/);
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /type:\s*choice/);
-  assert.match(workflow, /- all/);
-  assert.match(
-    appJob,
-    /github\.event_name == 'workflow_dispatch' && inputs\.suite != 'all' && fromJSON\(format\('\["\{0\}"\]', inputs\.suite\)\) \|\| fromJSON\('\["dev","vrt","preview","build","check","lint"\]'\)/,
-  );
-  for (const suite of ["dev", "vrt", "preview", "check", "lint", "build"]) {
-    assert.match(workflow, new RegExp(`- ${suite}`));
-    assert.match(appJob, new RegExp(`${suite}\\)\\n\\s+`));
-  }
-
-  assert.match(appJob, /--filter '\.\/tests\.\.\.'/);
-  assert.match(appJob, /--filter '\.\/npm\/native\.\.\.'/);
-  assert.match(appJob, /--filter '\.\/npm\/builder\/vite\.\.\.'/);
-  assert.match(appJob, /Build native package/);
-  assert.match(appJob, /Build vize CLI/);
-  assert.match(appJob, /cargo build --profile ci -p vize/);
-  assert.match(appJob, /uses: \.\/\.github\/actions\/setup-moonbit/);
-  assert.match(appJob, /Cache Playwright browsers/);
-  assert.match(appJob, /contains\(fromJSON\('\["dev","vrt"\]'\), matrix\.suite\)/);
-  assert.match(appJob, /vp exec --filter '\.\/tests' -- playwright install --with-deps chromium/);
-  assert.match(appJob, /RUN_BUILD_TESTS=1 vp run --filter '\.\/tests' test:preview/);
-  assert.match(appJob, /vp run --filter '\.\/tests' test:dev:ci/);
-  assert.match(appJob, /vp run --filter '\.\/tests' test:check/);
-  assert.match(appJob, /vp run --filter '\.\/tests' test:lint/);
-  assert.doesNotMatch(appJob, /pnpm --dir tests/);
-  assert.match(appJob, /- name: Upload app e2e artifacts\s+if: failure\(\)/);
-  assert.match(appJob, /name: app-e2e-artifacts-\$\{\{ matrix\.suite \}\}/);
-  assert.match(appJob, /tests\/app\/results\//);
-  assert.match(appJob, /tests\/app\/screenshots\//);
-  assert.match(appJob, /tests\/app\/playwright-report\//);
-  assert.match(appJob, /tests\/playwright-report\//);
-  for (const fixture of ["elk", "frontend-phpcon", "misskey", "npmx", "vuefes"]) {
-    assert.match(appJob, new RegExp(`\\.vize/artifacts/${fixture}-vrt/artifacts/`));
-  }
-  assert.match(appJob, /if-no-files-found:\s*ignore/);
+test("App E2E keeps PR, nightly, dispatch, and immutable run identity", () => {
+  const workflow = loadWorkflow();
+  const triggers = workflow.on ?? {};
+  assert.ok(triggers.pull_request);
+  assert.ok(triggers.schedule);
+  assert.ok(triggers.workflow_dispatch);
+  assert.deepEqual(workflow.permissions, { contents: "read" });
+  assert.match(workflow["run-name"] ?? "", /readiness-pr-/);
+  assert.match(workflow["run-name"] ?? "", /inputs\.target_sha \|\| github\.sha/);
+  assert.equal(workflow.env?.E2E_TARGET_SHA, "${{ inputs.target_sha || github.sha }}");
+  assert.equal(workflow.concurrency?.["cancel-in-progress"], true);
+  assert.match(String(workflow.concurrency?.group), /inputs\.target_sha \|\| github\.sha/);
 });
 
-test("pull requests run one path-filtered fast app readiness job", () => {
-  const workflow = readRepoFile(".github", "workflows", "e2e.yml");
-  const job = workflowJobBody(workflow, "app-readiness");
-  const pullRequestBlock = workflow.slice(
-    workflow.indexOf("\n  pull_request:\n"),
-    workflow.indexOf("\n  schedule:\n"),
-  );
-
-  assert.match(pullRequestBlock, /branches:\s*\[main\]/);
-  assert.doesNotMatch(pullRequestBlock, /paths:/);
-  assert.match(
-    workflow,
-    /run-name:[^\n]*format\('readiness-pr-\{0\}', github\.event\.pull_request\.number\)/,
-  );
-
-  for (const path of [
-    "'.github/actions/app-readiness/**'",
-    "'.github/workflows/e2e.yml'",
-    "'.gitmodules'",
-    "'Cargo.lock'",
-    "'crates/**'",
-    "'npm/native/**'",
-    "'npm/cli/**'",
-    "'npm/builder/vite/**'",
-    "'npm/framework/nuxt/**'",
-    "'npm/framework/nuxt-lint-config/**'",
-    "'pnpm-lock.yaml'",
-    "'tests/package.json'",
-    "'tests/tsconfig.json'",
-    "'tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}'",
-    "'tests/_fixtures/_projects/compiler-macros/**'",
-    "'tests/_helpers/**'",
-    "'tests/app/dev/misskey.spec.ts'",
-    "'tests/app/dev/nuxt-ui.spec.ts'",
-    "'tests/snapshots/check/compiler-macros.ts'",
-    "'tests/snapshots/check/{elk,misskey,npmx,nuxt-ui,reka-ui}.ts'",
-    "'tests/snapshots/check/__snapshots__/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}-check.snap'",
-    "'tests/snapshots/lint/{elk,misskey,npmx,nuxt-ui,reka-ui}.ts'",
-    "'tests/snapshots/lint/__snapshots__/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}-lint.snap'",
-    "'tests/snapshots/build/elk.ts'",
-    "'tests/tooling/cli-lint-contract.test.ts'",
-    "'tools/moon/**'",
-    "'tools/vite-plus/**'",
-    "'tsconfig.json'",
-    "'vite.config.ts'",
-  ]) {
-    assert.match(job, new RegExp(`- ${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-  }
-  assert.doesNotMatch(job, /- ['"]docs\/\*\*/);
-  for (const broadPath of ["npm", "tests", "tools"]) {
-    assert.doesNotMatch(job, new RegExp(`- ['"]${broadPath}/\\*\\*['"]`));
-  }
-
-  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'pull_request'\s*\}\}/);
-  assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
-  assert.match(job, /timeout-minutes:\s*30\b/);
-  assert.match(job, /contents:\s*read\s*# required by actions\/checkout/);
-  assert.match(job, /pull-requests:\s*read\s*# required by dorny\/paths-filter/);
-  assert.match(
-    job,
-    /uses:\s*dorny\/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706\s*# v4\.0\.2/,
-  );
-  assert.match(job, /id:\s*changes/);
-  assert.match(job, /filters:\s*\|\n\s+readiness:/);
-  const checkout = yamlStepBody(job, { name: "Checkout readiness source" });
-  assert.match(checkout, /uses:\s*actions\/checkout@[0-9a-f]{40}\s*# v6/);
-  assert.match(checkout, /if:\s*steps\.changes\.outputs\.readiness == 'true'/);
-  assert.match(checkout, /persist-credentials:\s*false/);
-  const readiness = yamlStepBody(job, { name: "Run app readiness" });
-  assert.match(readiness, /if:\s*steps\.changes\.outputs\.readiness == 'true'/);
-  assert.match(readiness, /uses:\s*\.\/\.github\/actions\/app-readiness/);
-  assert.doesNotMatch(job, /cargo build|vp run|app-readiness-artifacts/);
-});
-
-test("local app readiness action keeps setup, diagnostics, and aggregation bounded", () => {
-  const action = readRepoFile(".github", "actions", "app-readiness", "action.yml");
-
-  assert.match(action, /runs:\n\s+using:\s*composite/);
-  const hydration = yamlStepBody(action, { name: "Hydrate pinned app fixtures" });
-  const runMarker = "run: |";
-  const runStart = hydration.indexOf(runMarker);
-  assert.notEqual(runStart, -1, "hydration step run script");
-  assert.deepEqual(
-    shellWords(hydration.slice(runStart + runMarker.length), "hydration run script"),
-    [
-      "git",
-      "submodule",
-      "update",
-      "--init",
-      "--recursive",
-      "--depth",
-      "1",
-      "tests/_fixtures/_git/elk",
-      "tests/_fixtures/_git/misskey",
-      "tests/_fixtures/_git/npmx.dev",
-      "tests/_fixtures/_git/nuxt-ui",
-      "tests/_fixtures/_git/reka-ui",
-    ],
-    "readiness must hydrate exactly the pinned readiness fixtures",
-  );
-  const setupRust = yamlStepBody(action, { name: "Setup Rust" });
-  assert.match(setupRust, /id:\s*rust-toolchain/);
-  assert.match(setupRust, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}\s*# stable/);
-  assert.match(action, /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/);
-  assert.match(action, /uses:\s*\.\/\.github\/actions\/setup-rust-sticky-cache/);
-  assert.match(action, /cache-key-suffix:[^\n]*steps\.rust-toolchain\.outputs\.cachekey/);
-  assert.doesNotMatch(action, /cache-key-suffix:[^\n]*hashFiles/);
-  assert.match(action, /uses:\s*\.\/\.github\/actions\/setup-moonbit/);
-  assert.match(action, /cargo build --profile ci -p vize/);
-
-  const browserCache = yamlStepBody(action, { name: "Cache Playwright browsers" });
-  assert.match(browserCache, /id:\s*cache-playwright/);
-  const installDependencies = yamlStepBody(action, {
-    name: "Install Playwright OS dependencies",
+test("PR readiness plans five isolated rows behind one stable aggregator", () => {
+  const jobs = loadWorkflow().jobs ?? {};
+  const plan = jobs["app-readiness-plan"];
+  const producer = jobs["app-readiness-producer"];
+  const aggregate = jobs["app-readiness"];
+  assert.ok(plan && producer && aggregate);
+  assert.equal(plan.name, "Plan app readiness");
+  assert.equal(plan["runs-on"], "ubuntu-latest");
+  assert.deepEqual(plan.permissions, { contents: "read", "pull-requests": "read" });
+  assert.deepEqual(plan.outputs, {
+    run: "${{ steps.changes.outputs.readiness }}",
+    matrix: "${{ steps.plan.outputs.matrix }}",
+    count: "${{ steps.plan.outputs.count }}",
   });
-  assert.match(installDependencies, /shell:\s*bash/);
-  assert.match(
-    installDependencies,
-    /run:\s*vp exec --filter '\.\/tests' -- playwright install-deps chromium/,
-  );
-  const installBrowser = yamlStepBody(action, { name: "Install Playwright browser" });
-  assert.match(installBrowser, /if:\s*steps\.cache-playwright\.outputs\.cache-hit != 'true'/);
-  assert.match(installBrowser, /playwright install chromium/);
-  assert.doesNotMatch(action, /playwright install --with-deps chromium/);
-
-  for (const [id, script, log, timeout] of [
-    ["check", "test:readiness:check", "check.log", "5m"],
-    ["lint", "test:readiness:lint", "lint.log", "2m"],
-    ["build", "test:readiness:build", "build.log", "3m"],
-    ["dev", "test:readiness:dev", "dev.log", "8m"],
-  ] as const) {
-    const step = yamlStepBody(action, { id });
-    assert.match(step, /continue-on-error:\s*true/);
-    assert.match(step, /shell:\s*bash/);
-    assert.ok(step.includes("set -o pipefail"));
-    assert.ok(step.includes(`timeout --signal=TERM --kill-after=15s ${timeout}`));
-    assert.ok(step.includes(script));
-    assert.ok(step.includes(`tee target/app-readiness-logs/${log}`));
-  }
-
-  const upload = yamlStepBody(action, { name: "Upload app readiness artifacts" });
-  assert.match(upload, /if:\s*\$\{\{\s*cancelled\(\)\s*\|\|\s*failure\(\)/);
-  for (const id of ["check", "lint", "build", "dev"]) {
-    assert.match(upload, new RegExp(`steps\\.${id}\\.outcome\\s*==\\s*['"]failure['"]`));
-  }
-  assert.match(upload, /name:\s*app-readiness-artifacts/);
-  assert.match(upload, /target\/app-readiness-logs\//);
-  assert.match(upload, /if-no-files-found:\s*ignore/);
-  assert.match(action, /## Fast app readiness/);
-  for (const [outcome, step] of [
-    ["CHECK_OUTCOME", "check"],
-    ["LINT_OUTCOME", "lint"],
-    ["BUILD_OUTCOME", "build"],
-    ["DEV_OUTCOME", "dev"],
+  const changes = namedStep(plan, "Detect app readiness changes");
+  assert.match(changes.uses ?? "", /^dorny\/paths-filter@[0-9a-f]{40}$/);
+  const filters = String(changes.with?.filters);
+  for (const path of [
+    ".github/actions/app-e2e-row/**",
+    ".github/workflows/e2e.yml",
+    "tests/package.json",
+    "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}",
+    "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
+    "tools/github/app-e2e-*.mjs",
   ]) {
-    assert.ok(action.includes(`${outcome}: \${{ steps.${step}.outcome }}`));
+    assert.match(filters, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
-  assert.match(action, /failed Actions step/);
-  assert.match(action, /captured suite logs in app-readiness-artifacts/);
-});
+  for (const broad of ["npm/**", "tests/**", "tools/**"]) {
+    assert.ok(!filters.includes(`- '${broad}'`), `unexpected broad readiness path ${broad}`);
+  }
+  const checkout = namedStep(plan, "Checkout readiness source");
+  assert.equal(checkout.with?.ref, "${{ github.sha }}");
+  assert.equal(checkout.with?.["persist-credentials"], false);
+  assert.match(namedStep(plan, "Verify readiness merge SHA").run ?? "", /git rev-parse HEAD/);
+  const planStep = namedStep(plan, "Plan readiness rows");
+  assert.match(planStep.run ?? "", /--profile readiness/);
+  const readinessEvidence = namedStep(plan, "Upload readiness plan evidence");
+  assert.match(String(readinessEvidence.with?.name), /github\.run_id.*github\.run_attempt/);
 
-test("app e2e dispatch pins validated exact-SHA checkouts and run evidence", () => {
-  const workflow = readRepoFile(".github", "workflows", "e2e.yml");
+  assert.equal(producer.name, "app-readiness (${{ matrix.shard }})");
+  assert.equal(producer.needs, "app-readiness-plan");
+  assert.equal(producer.if, "needs.app-readiness-plan.outputs.run == 'true'");
+  assert.equal(producer["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(producer.strategy?.["fail-fast"], false);
+  assert.equal(
+    producer.strategy?.matrix,
+    "${{ fromJSON(needs.app-readiness-plan.outputs.matrix) }}",
+  );
+  const rowAction = producer.steps?.find((step) => step.uses === "./.github/actions/app-e2e-row");
+  assert.ok(rowAction);
+  for (const input of [
+    "profile",
+    "suite",
+    "shard",
+    "task",
+    "timeout",
+    "needs-playwright",
+    "cache-key",
+    "worktree-id",
+    "artifact-stem",
+  ]) {
+    assert.ok(rowAction.with?.[input], `missing row input ${input}`);
+  }
 
+  assert.equal(aggregate.name, "app-readiness");
+  assert.deepEqual(aggregate.needs, ["app-readiness-plan", "app-readiness-producer"]);
+  assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
-    workflow,
-    /target_sha:\n\s+description:\s*Full lowercase 40-character target SHA; --ref must be a branch or tag at this commit\n\s+required:\s*false\n\s+type:\s*string/,
-  );
-  assert.match(
-    workflow,
-    /run-name:[^\n]*inputs\.testbox_id \|\| inputs\.suite[^\n]*'nightly'[^\n]*inputs\.target_sha \|\| github\.sha/,
-  );
-  assert.match(
-    workflow,
-    /group:[^\n]*inputs\.testbox_id \|\| inputs\.suite[^\n]*github\.ref[^\n]*inputs\.target_sha \|\| github\.sha[^\n]*github\.event_name/,
-  );
-  assert.match(workflow, /head_sha comes from --ref/);
-  assert.match(workflow, /branch or tag whose tip is target_sha/);
-  assert.match(workflow, /E2E_TARGET_SHA:\s*\$\{\{\s*inputs\.target_sha \|\| github\.sha\s*\}\}/);
-
-  const checkouts = workflow.match(/ref:\s*\$\{\{\s*env\.E2E_TARGET_SHA\s*\}\}/g);
-  assert.equal(checkouts?.length, 2, "both Testbox and app-e2e must pin checkout");
-  assert.doesNotMatch(workflow, /submodules:\s*recursive/);
-  assert.equal(
-    workflow.match(/uses:\s*\.\/\.github\/actions\/hydrate-app-fixtures/g)?.length,
-    2,
-    "both full E2E jobs must hydrate only their exercised fixtures",
-  );
-  assert.match(workflow, /name:\s*Validate optional target SHA/);
-  assert.match(
-    workflow,
-    /name:\s*Validate optional target SHA\n\s+if:\s*\$\{\{\s*inputs\.target_sha != ''\s*\}\}/,
-  );
-  assert.match(workflow, /name:\s*Validate target SHA/);
-  assert.match(workflow, /REQUESTED_SUITE:\s*\$\{\{\s*inputs\.suite\s*\}\}/);
-  assert.match(workflow, /"\$REQUESTED_SUITE" == "all"/);
-  assert.match(workflow, /target_sha is required when suite=all/);
-  assert.match(
-    workflow,
-    /if \[\[ -z "\$REQUESTED_TARGET_SHA" \]\]; then[\s\S]*if \[\[ "\$REQUESTED_SUITE" == "all" \]\]; then[\s\S]*exit 1[\s\S]*fi\n\s+exit 0/,
+    namedStep(aggregate, "Aggregate app readiness").run ?? "",
+    /app-e2e-aggregate\.mjs readiness all/,
   );
   assert.equal(
-    workflow.match(/\^\[0-9a-f\]\{40\}\$/g)?.length,
-    2,
-    "both dispatch paths validate a full SHA",
-  );
-  assert.equal(
-    workflow.match(/"\$RUN_HEAD_SHA" != "\$REQUESTED_TARGET_SHA"/g)?.length,
-    2,
-    "both dispatch paths bind requested checkout to workflow run head_sha",
-  );
-  assert.equal(
-    workflow.match(/run head_sha comes from --ref/g)?.length,
-    2,
-    "both dispatch paths explain the ref constraint",
+    Object.values(jobs).filter((job) => job.name === "app-readiness").length,
+    1,
+    "only the aggregator may expose the required context",
   );
 });
 
-test("full app e2e hydrates only fixtures referenced by its scripts", () => {
+test("full App E2E uses a planner, isolated matrix producers, and stable release evidence", () => {
+  const jobs = loadWorkflow().jobs ?? {};
+  const plan = jobs["app-e2e-plan"];
+  const producer = jobs["app-e2e-producer"];
+  const aggregate = jobs["app-e2e"];
+  assert.ok(plan && producer && aggregate);
+  assert.match(plan.if ?? "", /github\.event_name != 'pull_request'/);
+  assert.deepEqual(plan.outputs, {
+    suite: "${{ steps.plan.outputs.suite }}",
+    matrix: "${{ steps.plan.outputs.matrix }}",
+    count: "${{ steps.plan.outputs.count }}",
+  });
+  const validation = namedStep(plan, "Validate target SHA");
+  assert.match(validation.run ?? "", /target_sha is required when suite=all/);
+  assert.match(validation.run ?? "", /\^\[0-9a-f\]\{40\}\$/);
+  assert.match(validation.run ?? "", /RUN_HEAD_SHA/);
+  const planning = namedStep(plan, "Plan full rows");
+  assert.match(planning.run ?? "", /--profile full --suite/);
+  assert.match(planning.run ?? "", /--field count/);
+  const fullEvidence = namedStep(plan, "Upload full plan evidence");
+  assert.match(String(fullEvidence.with?.name), /github\.run_id.*github\.run_attempt/);
+
+  assert.equal(producer.name, "app-e2e (${{ matrix.suite }}:${{ matrix.shard }})");
+  assert.equal(producer.needs, "app-e2e-plan");
+  assert.equal(producer.strategy?.["fail-fast"], false);
+  assert.equal(producer.strategy?.matrix, "${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}");
+  assert.ok(producer.steps?.some((step) => step.uses === "./.github/actions/app-e2e-row"));
+  assert.match(namedStep(producer, "Verify producer SHA").run ?? "", /git rev-parse HEAD/);
+
+  assert.equal(aggregate.name, "app-e2e");
+  assert.deepEqual(aggregate.needs, ["app-e2e-plan", "app-e2e-producer"]);
+  assert.match(aggregate.if ?? "", /always\(\)/);
+  assert.match(
+    namedStep(aggregate, "Aggregate full App E2E").run ?? "",
+    /app-e2e-aggregate\.mjs full/,
+  );
+  assert.equal(Object.values(jobs).filter((job) => job.name === "app-e2e").length, 1);
+});
+
+test("every producer and aggregator checks out the exact event target", () => {
+  const jobs = loadWorkflow().jobs ?? {};
+  for (const jobId of ["app-readiness-plan", "app-readiness-producer", "app-readiness"]) {
+    const checkout = jobs[jobId]?.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
+    assert.equal(checkout?.with?.ref, "${{ github.sha }}", jobId);
+    assert.equal(checkout?.with?.["persist-credentials"], false, jobId);
+  }
+  for (const jobId of ["testbox", "app-e2e-plan", "app-e2e-producer", "app-e2e"]) {
+    const checkout = jobs[jobId]?.steps?.find((step) => step.uses?.startsWith("actions/checkout@"));
+    assert.equal(checkout?.with?.ref, "${{ env.E2E_TARGET_SHA }}", jobId);
+    assert.equal(checkout?.with?.["persist-credentials"], false, jobId);
+  }
+  assert.match(
+    namedStep(jobs.testbox, "Validate optional target SHA").run ?? "",
+    /\^\[0-9a-f\]\{40\}\$/,
+  );
+});
+
+test("shared row action validates the plan and never parallelizes fixture processes", () => {
+  const source = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const action = parse(source) as {
+    inputs?: Record<string, unknown>;
+    runs?: { steps?: Step[]; using?: string };
+  };
+  assert.equal(action.runs?.using, "composite");
+  for (const input of [
+    "profile",
+    "suite",
+    "shard",
+    "task",
+    "timeout",
+    "needs-playwright",
+    "cache-key",
+    "worktree-id",
+    "artifact-stem",
+  ]) {
+    assert.ok(action.inputs?.[input], input);
+  }
+  const hydration = namedStep(
+    { steps: action.runs?.steps },
+    "Validate and hydrate planned fixtures",
+  );
+  assert.match(hydration.run ?? "", /app-e2e-plan\.mjs/);
+  assert.match(hydration.run ?? "", /mapfile -t fixture_paths/);
+  assert.match(
+    hydration.run ?? "",
+    /git submodule update --init --recursive --depth 1 -- "\$\{fixture_paths\[@\]\}"/,
+  );
+  const run = namedStep({ steps: action.runs?.steps }, "Run planned App E2E row");
+  assert.equal(run["continue-on-error"], true);
+  assert.match(run.run ?? "", /timeout --signal=TERM --kill-after=15s "\$PLANNED_TIMEOUT"/);
+  assert.match(run.run ?? "", /vp run --filter '\.\/tests' "\$PLANNED_TASK"/);
+  assert.doesNotMatch(run.run ?? "", /(?:^|\s)&(?:\s|$)/m);
+  const upload = namedStep({ steps: action.runs?.steps }, "Upload App E2E row artifacts");
+  assert.match(String(upload.if), /steps\.run\.outcome == 'failure'/);
+  assert.match(String(upload.with?.name), /artifact-stem.*github\.run_id.*github\.run_attempt/);
+  const browser = namedStep({ steps: action.runs?.steps }, "Cache Playwright browsers");
+  assert.equal(browser.if, "inputs.needs-playwright == 'true'");
+  assert.equal(
+    action.runs?.steps?.find((step) => step.uses === "./.github/actions/setup-rust-sticky-cache")
+      ?.with?.key,
+    "${{ inputs.cache-key }}",
+  );
+});
+
+test("Testbox still hydrates the exact 16-fixture App inventory", () => {
   const action = readRepoFile(".github", "actions", "hydrate-app-fixtures", "action.yml");
   const fixtures = [
     "ant-design-vue",
@@ -328,10 +259,13 @@ test("full app e2e hydrates only fixtures referenced by its scripts", () => {
     "vuefes-2025",
     "vuetify",
   ];
-
-  assert.match(action, /git submodule update --init --recursive --depth 1/);
-  for (const fixture of fixtures) {
+  for (const fixture of fixtures)
     assert.match(action, new RegExp(`tests/_fixtures/_git/${fixture.replace(".", "\\.")}`));
-  }
   assert.equal(action.match(/tests\/_fixtures\/_git\//g)?.length, fixtures.length);
+  assert.equal(
+    loadWorkflow().jobs?.testbox?.steps?.filter(
+      (step) => step.uses === "./.github/actions/hydrate-app-fixtures",
+    ).length,
+    1,
+  );
 });

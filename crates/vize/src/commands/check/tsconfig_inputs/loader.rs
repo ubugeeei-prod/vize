@@ -119,6 +119,14 @@ fn load_tsconfig_inputs_inner(
     if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
         merged.declaration_dir_exclude = Some(declaration_dir);
     }
+    if let Some(allow_js) = value
+        .get("compilerOptions")
+        .and_then(Value::as_object)
+        .and_then(|options| options.get("allowJs"))
+        .and_then(Value::as_bool)
+    {
+        merged.allow_js = Some(allow_js);
+    }
 
     Ok(merged)
 }

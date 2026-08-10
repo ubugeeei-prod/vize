@@ -16,6 +16,7 @@ fn canonical_doc(uri: &Url, source: &str) -> CanonicalVirtualDocument {
     CanonicalVirtualDocument {
         request_uri: request_file_uri(canonical_request_path(uri).as_str()),
         virtual_result,
+        dependencies: Vec::new(),
     }
 }
 

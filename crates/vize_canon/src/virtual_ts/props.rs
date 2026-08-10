@@ -1,4 +1,5 @@
 mod keyed_template_names;
+mod mappings;
 mod options_api;
 mod setup_scoped;
 mod template_bindings;
@@ -6,6 +7,7 @@ mod template_names;
 mod with_defaults;
 use super::helpers::to_safe_identifier;
 use keyed_template_names::collect_keyed_template_prop_names;
+pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
 pub(crate) use options_api::OptionsApiPropsSource;
 pub(crate) use options_api::append_default_props;
 use options_api::emit_options_api_props_type;
@@ -18,23 +20,6 @@ use vize_croquis::Croquis;
 use vize_croquis::macros::{MacroKind, ModelDefinition};
 use with_defaults::{collect_with_defaults_default_names_from_source, template_props_type_ref};
 
-fn emit_template_prop_binding(
-    ts: &mut String,
-    props_type_ref: &str,
-    prop_name: &str,
-    has_default: bool,
-) {
-    let binding_name = to_safe_identifier(prop_name);
-    if has_default {
-        append!(
-            *ts,
-            "  const {binding_name} = props[\"{prop_name}\"] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
-        );
-    } else {
-        append!(*ts, "  const {binding_name} = props[\"{prop_name}\"];\n");
-    }
-    append!(*ts, "  void {binding_name};\n");
-}
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
     props_type_ref: &str,
@@ -211,7 +196,11 @@ pub(crate) fn generate_props_type(
 
     if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
     } else if props_already_defined {
-        // User defined Props, no need to re-export
+        if has_models {
+            ts.push_str("type __VizeResolvedProps = Props & ");
+            append_model_props_type_literal(ts, models);
+            ts.push_str(";\n");
+        }
     } else if let Some(type_args) = define_props_type_args {
         let inner_type = type_args
             .strip_prefix('<')
@@ -253,6 +242,7 @@ pub(crate) fn generate_props_type(
 
 pub(crate) fn generate_props_variables(
     ts: &mut String,
+    binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     generic_param: Option<&str>,
     props_type_ref_override: Option<&str>,
@@ -303,7 +293,7 @@ pub(crate) fn generate_props_variables(
                 if should_skip_template_prop_binding(summary, prop.name.as_str()) {
                     continue;
                 }
-                emit_template_prop_binding(
+                binding_mappings.emit(
                     ts,
                     template_props_type_ref.as_str(),
                     prop.name.as_str(),
@@ -314,6 +304,7 @@ pub(crate) fn generate_props_variables(
             if has_props {
                 emit_macro_template_prop_bindings(
                     ts,
+                    binding_mappings,
                     summary,
                     template_props_type_ref.as_str(),
                     props,
@@ -341,6 +332,7 @@ pub(crate) fn generate_props_variables(
             // Runtime-declared props: generate individual variables
             emit_macro_template_prop_bindings(
                 ts,
+                binding_mappings,
                 summary,
                 template_props_type_ref.as_str(),
                 props,
@@ -354,7 +346,7 @@ pub(crate) fn generate_props_variables(
             {
                 continue;
             }
-            emit_template_prop_binding(
+            binding_mappings.emit(
                 ts,
                 template_props_type_ref.as_str(),
                 model.name.as_str(),

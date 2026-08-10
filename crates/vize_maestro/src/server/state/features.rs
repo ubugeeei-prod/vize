@@ -16,6 +16,7 @@ pub(super) struct LspConfigSection {
     options_api: Option<bool>,
     legacy_vue2: Option<bool>,
     completion: Option<bool>,
+    signature_help: Option<bool>,
     hover: Option<bool>,
     definition: Option<bool>,
     references: Option<bool>,
@@ -37,6 +38,14 @@ pub(super) struct LspConfigSection {
 }
 
 impl LspConfigSection {
+    /// Override the `signatureHelp` switch, which config files carry on
+    /// [`vize_carton::config::LanguageServerUnstableFlags`] instead of the
+    /// semver-stable [`LanguageServerConfig`].
+    pub(super) fn with_signature_help(mut self, signature_help: Option<bool>) -> Self {
+        self.signature_help = signature_help;
+        self
+    }
+
     pub(super) fn apply_to(self, features: &mut LspFeatureConfig) {
         if self.enabled == Some(false) {
             *features = LspFeatureConfig::disabled();
@@ -79,6 +88,9 @@ impl LspConfigSection {
 
         if let Some(enabled) = self.completion {
             features.completion = enabled;
+        }
+        if let Some(enabled) = self.signature_help {
+            features.signature_help = enabled;
         }
         if let Some(enabled) = self.hover {
             features.hover = enabled;
@@ -143,6 +155,9 @@ impl From<LanguageServerConfig> for LspConfigSection {
             options_api: None,
             legacy_vue2: None,
             completion: config.completion,
+            // Config-file only; carried by `LanguageServerUnstableFlags` so the
+            // public `LanguageServerConfig` surface stays semver-additive.
+            signature_help: None,
             hover: config.hover,
             definition: config.definition,
             references: config.references,
@@ -177,6 +192,7 @@ pub struct LspFeatureConfig {
     pub(crate) options_api: bool,
     pub(crate) legacy_vue2: bool,
     pub(crate) completion: bool,
+    pub(crate) signature_help: bool,
     pub(crate) hover: bool,
     pub(crate) definition: bool,
     pub(crate) references: bool,
@@ -204,6 +220,7 @@ impl LspFeatureConfig {
             options_api: false,
             legacy_vue2: false,
             completion: false,
+            signature_help: false,
             hover: false,
             definition: false,
             references: false,
@@ -236,6 +253,7 @@ impl LspFeatureConfig {
     fn apply_editor_bundle(&mut self, enabled: bool) {
         self.ecosystem = enabled;
         self.completion = enabled;
+        self.signature_help = enabled;
         self.hover = enabled;
         self.definition = enabled;
         self.references = enabled;
@@ -263,6 +281,7 @@ impl Default for LspFeatureConfig {
             options_api: false,
             legacy_vue2: false,
             completion: true,
+            signature_help: true,
             hover: true,
             definition: true,
             references: true,

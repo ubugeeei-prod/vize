@@ -58,7 +58,7 @@
     "check:fix": "vp check --fix src tests vite.config.ts",
     "fmt": "vp fmt --write src tests vite.config.ts",
     "generate:rule-types": "vp run --workspace-root generate:rule-types",
-    "test": "vp pack && vp test run tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-prompt.test.ts"
+    "test": "vp pack && vp test run tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
@@ -97,6 +97,9 @@
       "node",
       "./bin/vize",
       "content-mapper"
+    ],
+    "compilerOptions": [
+      "noUnusedLocals"
     ]
   }
 }

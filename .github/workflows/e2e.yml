@@ -1,18 +1,10 @@
 name: App E2E
 
 on:
-  # Keep PR feedback scoped to surfaces that can affect compiler/package/app
-  # behavior. The fast lane below uses focused pinned fixtures; the full
-  # App E2E and VRT matrices remain nightly/on-demand release evidence.
   pull_request:
     branches: [main]
   schedule:
-    # 02:23 UTC daily (~11:23 JST). Covers every suite including vrt.
     - cron: "23 2 * * *"
-  # A dispatch run's GitHub head_sha comes from --ref. Release evidence must
-  # therefore use a branch or tag whose tip is target_sha; suite=all validates
-  # that invariant before checkout. Existing one-suite and Testbox dispatches
-  # may omit target_sha and continue to run at the selected --ref tip.
   workflow_dispatch:
     inputs:
       suite:
@@ -20,16 +12,9 @@ on:
         required: true
         default: dev
         type: choice
-        options:
-          - dev
-          - vrt
-          - preview
-          - check
-          - lint
-          - build
-          - all
+        options: [dev, vrt, preview, check, lint, build, all]
       target_sha:
-        description: Full lowercase 40-character target SHA; --ref must be a branch or tag at this commit
+        description: Full lowercase 40-character target SHA; --ref must point at it
         required: false
         type: string
       testbox_id:
@@ -43,37 +28,40 @@ concurrency:
   group: app-e2e-${{ github.event_name == 'workflow_dispatch' && (inputs.testbox_id || inputs.suite) || github.ref }}-${{ github.event_name == 'workflow_dispatch' && (inputs.target_sha || github.sha) || github.event_name }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
   E2E_TARGET_SHA: ${{ inputs.target_sha || github.sha }}
 
 jobs:
-  app-readiness:
-    name: app-readiness
+  app-readiness-plan:
+    name: Plan app readiness
     if: ${{ github.event_name == 'pull_request' }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
-      contents: read # required by actions/checkout
-      pull-requests: read # required by dorny/paths-filter
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      VIZE_TEST_WORKTREE_ID: ci-readiness
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.changes.outputs.readiness }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
     steps:
-      # Keep this job present on every PR so it can be a required context.
-      # Irrelevant/docs-only changes stop after this read-only API query.
       - name: Detect app readiness changes
         id: changes
         uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
         with:
           filters: |
             readiness:
-              - '.github/actions/app-readiness/**'
-              - '.cargo/**'
+              - '.github/actions/app-e2e-row/**'
               - '.github/actions/setup-moonbit/**'
               - '.github/actions/setup-rust-sticky-cache/**'
               - '.github/workflows/e2e.yml'
+              - '.cargo/**'
               - '.gitmodules'
               - '.node-version'
               - 'Cargo.lock'
@@ -96,8 +84,7 @@ jobs:
               - 'tests/_fixtures/_projects/generic-build/**'
               - 'tests/_fixtures/_projects/compiler-macros/**'
               - 'tests/_helpers/**'
-              - 'tests/app/dev/misskey.spec.ts'
-              - 'tests/app/dev/nuxt-ui.spec.ts'
+              - 'tests/app/dev/{misskey,nuxt-ui}.spec.ts'
               - 'tests/app/playwright.config.ts'
               - 'tests/snapshots/check/compiler-macros.ts'
               - 'tests/snapshots/check/__snapshots__/compiler-macros-check.snap'
@@ -109,31 +96,101 @@ jobs:
               - 'tests/snapshots/build/generic.ts'
               - 'tests/snapshots/build/__snapshots__/generic-*.snap'
               - 'tests/tooling/cli-lint-contract.test.ts'
+              - 'tools/github/app-e2e-*.mjs'
               - 'tools/moon/**'
               - 'tools/vite-plus/**'
               - 'tsconfig.json'
               - 'tsconfig.node.json'
               - 'vite.config.ts'
-
       - name: Checkout readiness source
+        if: steps.changes.outputs.readiness == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: steps.changes.outputs.readiness == 'true'
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
-
-      - name: Run app readiness
+      - name: Verify readiness merge SHA
         if: steps.changes.outputs.readiness == 'true'
-        uses: ./.github/actions/app-readiness
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          echo "Tested merge SHA $EXPECTED_SHA for source head $SOURCE_HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Plan readiness rows
+        if: steps.changes.outputs.readiness == 'true'
+        id: plan
+        run: |
+          echo "matrix=$(node tools/github/app-e2e-plan.mjs --profile readiness)" >> "$GITHUB_OUTPUT"
+          echo "count=$(node tools/github/app-e2e-plan.mjs --profile readiness --field count)" >> "$GITHUB_OUTPUT"
+      - name: Write readiness plan evidence
+        if: steps.changes.outputs.readiness == 'true'
+        env:
+          E2E_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p target/app-e2e-plan
+          node tools/github/app-e2e-plan.mjs --profile readiness --field evidence > target/app-e2e-plan/readiness.json
+      - name: Upload readiness plan evidence
+        if: steps.changes.outputs.readiness == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: app-e2e-plan-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/app-e2e-plan/readiness.json
+          if-no-files-found: error
+
+  app-readiness-producer:
+    name: app-readiness (${{ matrix.shard }})
+    needs: app-readiness-plan
+    if: needs.app-readiness-plan.outputs.run == 'true'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.app-readiness-plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify producer SHA
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: ./.github/actions/app-e2e-row
+        with:
+          profile: ${{ matrix.profile }}
+          suite: ${{ matrix.suite }}
+          shard: ${{ matrix.shard }}
+          task: ${{ matrix.task }}
+          timeout: ${{ matrix.timeout }}
+          needs-playwright: ${{ matrix.needsPlaywright }}
+          cache-key: ${{ matrix.cacheKey }}
+          worktree-id: ${{ matrix.worktreeId }}
+          artifact-stem: ${{ matrix.artifactStem }}
+
+  app-readiness:
+    name: app-readiness
+    needs: [app-readiness-plan, app-readiness-producer]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Aggregate app readiness
+        env:
+          RUN_REQUIRED: ${{ needs.app-readiness-plan.outputs.run }}
+          PLAN_RESULT: ${{ needs.app-readiness-plan.result }}
+          PRODUCER_RESULT: ${{ needs.app-readiness-producer.result }}
+          PLANNED_COUNT: ${{ needs.app-readiness-plan.outputs.count }}
+        run: node tools/github/app-e2e-aggregate.mjs readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
 
   testbox:
     name: Testbox
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.testbox_id != '' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
-    permissions:
-      contents: read
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - name: Validate optional target SHA
         if: ${{ inputs.target_sha != '' }}
@@ -146,70 +203,48 @@ jobs:
             exit 1
           fi
           if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
+            echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
             exit 1
           fi
-
       - name: Begin Testbox
         id: begin-testbox
         uses: useblacksmith/begin-testbox@233448af4bfdc6fca509a7f0974411ac6d8a8043 # v2
         with:
           testbox_id: ${{ inputs.testbox_id }}
-
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
-
+          persist-credentials: false
       - uses: ./.github/actions/hydrate-app-fixtures
-
-      - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
           run-install: false
-
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: testbox
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-
-      - name: Install Pkl CLI
-        run: npm install --global @pkl-community/pkl@0.27.2
-
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+      - run: vp install --frozen-lockfile --prefer-offline
+      - run: npm install --global @pkl-community/pkl@0.27.2
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.121
-
-      - name: Run Testbox
-        uses: useblacksmith/run-testbox@5ca05834db1d3813554d1dd109e5f2087a8d7cbc # v2
+      - uses: useblacksmith/run-testbox@5ca05834db1d3813554d1dd109e5f2087a8d7cbc # v2
         if: ${{ always() && steps.begin-testbox.outcome == 'success' }}
 
-  app-e2e:
-    name: app-e2e (${{ matrix.suite }})
+  app-e2e-plan:
+    name: Plan full App E2E
     if: ${{ github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.testbox_id == '') }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 90
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        # workflow_dispatch: pick one suite, or `all` for release evidence.
-        # schedule: run every suite, including vrt, because nothing else
-        # exercises the visual regression baselines today.
-        suite: ${{ github.event_name == 'workflow_dispatch' && inputs.suite != 'all' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint"]') }}
+    runs-on: ubuntu-latest
+    outputs:
+      suite: ${{ steps.plan.outputs.suite }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
     steps:
       - name: Validate target SHA
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -230,104 +265,82 @@ jobs:
             exit 1
           fi
           if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-            echo "::error title=Dispatch ref mismatch::run head_sha comes from --ref; dispatch with a branch or tag at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
+            echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
             exit 1
           fi
-
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
-
-      - uses: ./.github/actions/hydrate-app-fixtures
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-
-      - name: Setup Wild linker
-        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: app-e2e-${{ matrix.suite }}
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
-      - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
-
-      - uses: ./.github/actions/setup-moonbit
-
-      - name: Install JS dependencies
+          persist-credentials: false
+      - name: Verify full App E2E SHA
+        env:
+          EXPECTED_SHA: ${{ env.E2E_TARGET_SHA }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Plan full rows
+        id: plan
+        env:
+          REQUESTED_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}
         run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './tests...' \
-            --filter './npm/native...' \
-            --filter './npm/cli...' \
-            --filter './npm/builder/vite...' \
-            --filter './npm/framework/nuxt...' \
-            --filter './npm/builder/vite-musea...' \
-            --filter './npm/framework/musea-nuxt...'
-
-      - name: Build native package
-        run: vp run --filter './npm/native' build:ci
-
-      - name: Build vize CLI
-        run: cargo build --profile ci -p vize
-
-      - name: Cache Playwright browsers
-        id: cache-playwright
-        if: ${{ contains(fromJSON('["dev","vrt"]'), matrix.suite) }}
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Install Playwright browsers
-        if: ${{ contains(fromJSON('["dev","vrt"]'), matrix.suite) && steps.cache-playwright.outputs.cache-hit != 'true' }}
-        run: vp exec --filter './tests' -- playwright install --with-deps chromium
-
-      - name: Run selected app e2e suite
+          echo "suite=$REQUESTED_SUITE" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(node tools/github/app-e2e-plan.mjs --profile full --suite "$REQUESTED_SUITE")" >> "$GITHUB_OUTPUT"
+          echo "count=$(node tools/github/app-e2e-plan.mjs --profile full --suite "$REQUESTED_SUITE" --field count)" >> "$GITHUB_OUTPUT"
+      - name: Write full plan evidence
+        env:
+          REQUESTED_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}
         run: |
-          case "${{ matrix.suite }}" in
-            dev)
-              vp run --filter './tests' test:dev:ci
-              ;;
-            vrt)
-              vp run --filter './tests' test:vrt
-              ;;
-            preview)
-              RUN_BUILD_TESTS=1 vp run --filter './tests' test:preview
-              ;;
-            check)
-              vp run --filter './tests' test:check
-              ;;
-            lint)
-              vp run --filter './tests' test:lint
-              ;;
-            build)
-              vp run --filter './tests' test:build
-              ;;
-          esac
-
-      - name: Upload app e2e artifacts
-        if: failure()
+          mkdir -p target/app-e2e-plan
+          node tools/github/app-e2e-plan.mjs --profile full --suite "$REQUESTED_SUITE" --field evidence > target/app-e2e-plan/full.json
+      - name: Upload full plan evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: app-e2e-artifacts-${{ matrix.suite }}
-          path: |
-            tests/app/results/
-            tests/app/screenshots/
-            tests/app/playwright-report/
-            tests/playwright-report/
-            .vize/artifacts/elk-vrt/artifacts/
-            .vize/artifacts/frontend-phpcon-vrt/artifacts/
-            .vize/artifacts/misskey-vrt/artifacts/
-            .vize/artifacts/npmx-vrt/artifacts/
-            .vize/artifacts/vuefes-vrt/artifacts/
-          if-no-files-found: ignore
-          retention-days: 7
+          name: app-e2e-plan-full-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/app-e2e-plan/full.json
+          if-no-files-found: error
+
+  app-e2e-producer:
+    name: app-e2e (${{ matrix.suite }}:${{ matrix.shard }})
+    needs: app-e2e-plan
+    if: needs.app-e2e-plan.result == 'success'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.E2E_TARGET_SHA }}
+          persist-credentials: false
+      - name: Verify producer SHA
+        env:
+          EXPECTED_SHA: ${{ env.E2E_TARGET_SHA }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: ./.github/actions/app-e2e-row
+        with:
+          profile: ${{ matrix.profile }}
+          suite: ${{ matrix.suite }}
+          shard: ${{ matrix.shard }}
+          task: ${{ matrix.task }}
+          timeout: ${{ matrix.timeout }}
+          needs-playwright: ${{ matrix.needsPlaywright }}
+          cache-key: ${{ matrix.cacheKey }}
+          worktree-id: ${{ matrix.worktreeId }}
+          artifact-stem: ${{ matrix.artifactStem }}
+
+  app-e2e:
+    name: app-e2e
+    needs: [app-e2e-plan, app-e2e-producer]
+    if: ${{ always() && github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.testbox_id == '') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ env.E2E_TARGET_SHA }}
+          persist-credentials: false
+      - name: Aggregate full App E2E
+        env:
+          PLAN_RESULT: ${{ needs.app-e2e-plan.result }}
+          PRODUCER_RESULT: ${{ needs.app-e2e-producer.result }}
+          PLANNED_COUNT: ${{ needs.app-e2e-plan.outputs.count }}
+          PLANNED_SUITE: ${{ needs.app-e2e-plan.outputs.suite }}
+        run: node tools/github/app-e2e-aggregate.mjs full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"

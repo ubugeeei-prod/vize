@@ -63,6 +63,7 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    jsxTypecheck: true,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
