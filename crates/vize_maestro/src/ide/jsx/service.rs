@@ -77,11 +77,7 @@ impl JsxService {
         let virtual_ts = Self::virtual_ts(ctx)?;
         let (line, character) =
             source_offset_to_virtual_position(&virtual_ts.code, &virtual_ts.mappings, ctx.offset)?;
-        let request_path = Self::request_path(ctx.uri);
-        let uri = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
-            .ok()?;
+        let uri = super::service_project::open_virtual_project(ctx, bridge, &virtual_ts).await?;
         Some((virtual_ts, uri, line, character))
     }
 
@@ -192,10 +188,8 @@ impl JsxService {
             return vec![];
         };
 
-        let request_path = Self::request_path(ctx.uri);
-        let Ok(uri) = bridge
-            .open_or_update_virtual_document(&request_path, &virtual_ts.code)
-            .await
+        let Some(uri) =
+            super::service_project::open_virtual_project(ctx, &bridge, &virtual_ts).await
         else {
             return vec![];
         };
