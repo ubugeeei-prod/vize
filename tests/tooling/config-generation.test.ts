@@ -21,6 +21,22 @@ function runWorkspaceBinary(name: string, args: string[]): SpawnSyncReturns<stri
   });
 }
 
+/**
+ * `pkl` is declared by `npm/cli`, so pnpm links its bin only into that package.
+ * `pnpm exec pkl` from the repository root cannot resolve it, hence the direct path.
+ */
+function runPkl(args: string[]): SpawnSyncReturns<string> {
+  const pkl = path.join(
+    root,
+    "npm",
+    "cli",
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "pkl.cmd" : "pkl",
+  );
+  return spawnSync(pkl, args, { cwd: root, encoding: "utf8" });
+}
+
 function assertCommandSucceeded(
   result: SpawnSyncReturns<string>,
   description: string,
@@ -44,7 +60,7 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
     fs.mkdirSync(path.dirname(schemaPath), { recursive: true });
     fs.mkdirSync(path.dirname(typesPath), { recursive: true });
 
-    const pklResult = runWorkspaceBinary("pkl", [
+    const pklResult = runPkl([
       "eval",
       "--project-dir",
       "npm/cli/pkl",
