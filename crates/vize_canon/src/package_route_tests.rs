@@ -11,6 +11,8 @@ use super::{
 
 #[path = "package_route_tests/lifecycle.rs"]
 mod lifecycle;
+#[path = "package_route_tests/source.rs"]
+mod source;
 
 #[test]
 fn parses_scoped_and_unscoped_package_subpaths() {

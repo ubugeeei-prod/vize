@@ -26,6 +26,12 @@ pub(super) fn resolve_source(base: &Path, options: PackageSourceOptions) -> Opti
     if base.is_file() && accepted_source(base, options) {
         return Some(canonical_path(base));
     }
+    // A manifest may name the built runtime target (`./dist/index.js`) that a
+    // source checkout never emits; its authored twin carries a TypeScript
+    // extension in the same place, so swap the extension before appending one.
+    if let Some(twin) = typescript_twin(base) {
+        return Some(canonical_path(&twin));
+    }
     for extension in source_extensions(options) {
         let candidate = append_extension(base, extension);
         if candidate.is_file() {
@@ -70,6 +76,21 @@ fn declaration_sidecar(path: &Path) -> Option<PathBuf> {
         Some("mjs") => &["d.mts", "d.ts"],
         Some("cjs") => &["d.cts", "d.ts"],
         Some("js" | "jsx") => &["d.ts"],
+        _ => &[],
+    };
+    extensions
+        .iter()
+        .map(|extension| path.with_extension(extension))
+        .find(|candidate| candidate.is_file())
+}
+
+/// The authored TypeScript-family file a runtime target was emitted from.
+fn typescript_twin(path: &Path) -> Option<PathBuf> {
+    let extensions: &[&str] = match path.extension().and_then(|ext| ext.to_str()) {
+        Some("js") => &["ts", "tsx", "vue"],
+        Some("jsx") => &["tsx", "ts"],
+        Some("mjs") => &["mts"],
+        Some("cjs") => &["cts"],
         _ => &[],
     };
     extensions
