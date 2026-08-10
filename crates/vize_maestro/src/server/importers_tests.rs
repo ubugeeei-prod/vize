@@ -3,6 +3,7 @@
 use super::{open_importers, resolve_import};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;
+use vize_canon::PackageRouteResolver;
 
 #[test]
 fn index_tracks_and_removes_open_sfc_imports() {
@@ -151,13 +152,14 @@ fn exact_directory_specifiers_resolve_index_files() {
     std::fs::write(&source_index, "export const source = true").unwrap();
     std::fs::write(&parent_index, "export const parent = true").unwrap();
     std::fs::write(dir.path().join("src.vue"), "<template />").unwrap();
+    let mut routes = PackageRouteResolver::default();
 
     assert_eq!(
-        resolve_import(&source_dir, ".?raw"),
-        Some(std::fs::canonicalize(&source_index).unwrap())
+        resolve_import(&source_dir, ".?raw", &mut routes).dependencies,
+        [std::fs::canonicalize(&source_index).unwrap()]
     );
     assert_eq!(
-        resolve_import(&source_dir, "..#parent"),
-        Some(std::fs::canonicalize(&parent_index).unwrap())
+        resolve_import(&source_dir, "..#parent", &mut routes).dependencies,
+        [std::fs::canonicalize(&parent_index).unwrap()]
     );
 }

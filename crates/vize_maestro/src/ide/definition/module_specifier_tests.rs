@@ -88,6 +88,55 @@ fn definition_service_navigates_module_specifier_to_types_export() {
 }
 
 #[test]
+fn definition_session_detects_a_same_mtime_package_manifest_retarget() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("src/App.vue");
+    let content = "<script setup lang=\"ts\">\nimport type { Route } from 'router'\n</script>\n";
+    write(&source, content);
+    let package = workspace.path().join("node_modules/router");
+    let manifest = package.join("package.json");
+    let first_manifest = r#"{"exports":{".":{"types":"./dist/Alpha.d.ts"}}}"#;
+    let second_manifest = r#"{"exports":{".":{"types":"./dist/Bravo.d.ts"}}}"#;
+    assert_eq!(first_manifest.len(), second_manifest.len());
+    write(&manifest, first_manifest);
+    let alpha = package.join("dist/Alpha.d.ts");
+    let bravo = package.join("dist/Bravo.d.ts");
+    write(&alpha, "export interface Route {}\n");
+    write(&bravo, "export interface Route {}\n");
+
+    let uri = file_url(&source);
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), content.to_string(), 1, "vue".to_string());
+    state.update_virtual_docs(&uri, content);
+    let offset = content.find("router").unwrap() + 1;
+    let first = IdeContext::new(&state, &uri, offset).unwrap();
+    let GotoDefinitionResponse::Scalar(first) =
+        DefinitionService::definition(&first).expect("first definition")
+    else {
+        panic!("module specifier definition must be scalar");
+    };
+    assert_eq!(first.uri, file_url(&alpha.canonicalize().unwrap()));
+
+    let modified = fs::metadata(&manifest).unwrap().modified().unwrap();
+    fs::write(&manifest, second_manifest).unwrap();
+    fs::File::options()
+        .write(true)
+        .open(&manifest)
+        .unwrap()
+        .set_modified(modified)
+        .unwrap();
+    let second = IdeContext::new(&state, &uri, offset).unwrap();
+    let GotoDefinitionResponse::Scalar(second) =
+        DefinitionService::definition(&second).expect("retargeted definition")
+    else {
+        panic!("module specifier definition must be scalar");
+    };
+    assert_eq!(second.uri, file_url(&bravo.canonicalize().unwrap()));
+}
+
+#[test]
 fn resolves_scoped_wildcard_declaration_subpath() {
     let workspace = tempdir().unwrap();
     let source = workspace.path().join("src/App.vue");
@@ -111,6 +160,26 @@ fn resolves_scoped_wildcard_declaration_subpath() {
             .canonicalize()
             .unwrap()
     );
+}
+
+#[test]
+#[cfg(unix)]
+fn resolves_symlinked_workspace_package_vue_export_to_authored_source() {
+    let workspace = tempdir().unwrap();
+    let app = workspace.path().join("app");
+    let source = app.join("src/App.vue");
+    write(&source, "<script setup lang=\"ts\"></script>");
+    let package = workspace.path().join("packages/ui");
+    write(
+        &package.join("package.json"),
+        r#"{"name":"@scope/ui","exports":{"./widget":"./src/Widget.vue"}}"#,
+    );
+    let component = package.join("src/Widget.vue");
+    write(&component, "<template />\n");
+    link_package(&package, &app.join("node_modules/@scope/ui"));
+
+    let resolved = resolve_specifier(&file_url(&source), "@scope/ui/widget").unwrap();
+    assert_eq!(resolved, component.canonicalize().unwrap());
 }
 
 #[test]
@@ -179,6 +248,14 @@ fn resolves_relative_declarations_and_rejects_package_escape() {
         ),
     );
     assert_eq!(resolve_specifier(&file_url(&source), "unsafe"), None);
+    assert_eq!(
+        resolve_specifier(&file_url(&source), "C:/components/Foo.vue"),
+        None
+    );
+    assert_eq!(
+        resolve_specifier(&file_url(&source), r"C:\components\Foo.vue"),
+        None
+    );
 }
 
 fn write(path: &Path, content: &str) {
@@ -188,4 +265,9 @@ fn write(path: &Path, content: &str) {
 
 fn file_url(path: &Path) -> Url {
     Url::from_file_path(path).unwrap()
+}
+
+#[cfg(unix)]
+fn link_package(source: &Path, target: &Path) {
+    crate::ide::tests::symlink_dir(source, target);
 }

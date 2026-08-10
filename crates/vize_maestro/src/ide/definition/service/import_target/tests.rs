@@ -187,3 +187,49 @@ import { Widget } from "@/components";
         target_path.canonicalize().expect("canonical target path")
     );
 }
+
+#[test]
+#[cfg(unix)]
+fn definition_service_follows_a_workspace_package_vue_export() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let app = workspace.path().join("app");
+    let package = workspace.path().join("packages/ui");
+    let target_path = package.join("src/Widget.vue");
+    fs::create_dir_all(target_path.parent().unwrap()).unwrap();
+    fs::write(
+        package.join("package.json"),
+        r#"{"name":"@scope/ui","exports":{"./widget":"./src/Widget.vue"}}"#,
+    )
+    .unwrap();
+    fs::write(&target_path, "<template><button /></template>\n").unwrap();
+    let package_link = app.join("node_modules/@scope/ui");
+    crate::ide::tests::symlink_dir(&package, &package_link);
+
+    let importer_path = app.join("src/App.vue");
+    let source = r#"<script setup lang="ts">
+import Widget from "@scope/ui/widget";
+</script>
+<template><Widget /></template>
+"#;
+    fs::create_dir_all(importer_path.parent().unwrap()).unwrap();
+    fs::write(&importer_path, source).unwrap();
+    let importer_uri = Url::from_file_path(&importer_path).unwrap();
+    let state = ServerState::new();
+    state.set_workspace_root(app.clone());
+    state
+        .documents
+        .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+    state.update_virtual_docs(&importer_uri, source);
+    let offset = source.rfind("Widget").unwrap();
+    let ctx = IdeContext::new(&state, &importer_uri, offset).unwrap();
+    let GotoDefinitionResponse::Scalar(location) =
+        DefinitionService::definition(&ctx).expect("component definition")
+    else {
+        panic!("component definition must be scalar");
+    };
+
+    assert_eq!(
+        location.uri.to_file_path().unwrap().canonicalize().unwrap(),
+        target_path.canonicalize().unwrap()
+    );
+}

@@ -16,6 +16,15 @@ pub(super) fn versioned_open_typecheck_dependents<'a>(
         .collect::<Vec<_>>();
     dependents.sort();
     dependents.dedup();
+    // A package.json event can retarget a bare package import. Rebuild the
+    // reverse index from the unchanged open buffer after resolving the event
+    // through the old manifest entry, so subsequent events address the new
+    // source path without waiting for the user to type in the importer.
+    for dependent in &dependents {
+        if let Some(content) = state.documents.text(dependent) {
+            state.open_imports.update(dependent, &content);
+        }
+    }
     dependents
         .into_iter()
         .filter_map(|uri| state.documents.version(&uri).map(|version| (uri, version)))
@@ -61,4 +70,66 @@ fn file_path(uri: &str) -> Option<PathBuf> {
 
 fn is_vue_file(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::disallowed_methods)]
+
+    use tower_lsp::lsp_types::Url;
+
+    use super::{ServerState, versioned_open_typecheck_dependents};
+
+    #[test]
+    fn package_manifest_event_reindexes_the_retargeted_vue_source() {
+        let root = tempfile::tempdir().unwrap();
+        let app = root.path().join("app");
+        let package = root.path().join("packages/ui");
+        let parent = app.join("src/Parent.vue");
+        let original = package.join("src/Widget.vue");
+        let renamed = package.join("src/Renamed.vue");
+        std::fs::create_dir_all(parent.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(original.parent().unwrap()).unwrap();
+        std::fs::write(&parent, "<template />\n").unwrap();
+        std::fs::write(&original, "<template />\n").unwrap();
+        write_manifest(&package, "Widget.vue");
+        link_package(&package, &app.join("node_modules/@scope/ui"));
+        let parent_uri = Url::from_file_path(&parent).unwrap();
+        let source = "<script setup>import Widget from '@scope/ui/widget'; void Widget</script>";
+        let state = ServerState::new();
+        state
+            .documents
+            .open(parent_uri.clone(), source.to_owned(), 1, "vue".to_owned());
+        state.update_virtual_docs(&parent_uri, source);
+
+        std::fs::rename(&original, &renamed).unwrap();
+        write_manifest(&package, "Renamed.vue");
+        let manifest_uri = Url::from_file_path(package.join("package.json")).unwrap();
+        assert_eq!(
+            versioned_open_typecheck_dependents(&state, [manifest_uri.as_str()].into_iter()),
+            [(parent_uri.clone(), 1)]
+        );
+        let renamed_uri = Url::from_file_path(renamed.canonicalize().unwrap()).unwrap();
+        assert_eq!(
+            versioned_open_typecheck_dependents(&state, [renamed_uri.as_str()].into_iter()),
+            [(parent_uri, 1)],
+            "the manifest refresh must index the new physical target",
+        );
+    }
+
+    fn write_manifest(package: &std::path::Path, target: &str) {
+        std::fs::write(
+            package.join("package.json"),
+            format!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}"),
+        )
+        .unwrap();
+    }
+
+    fn link_package(source: &std::path::Path, target: &std::path::Path) {
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(source, target).unwrap();
+        #[cfg(windows)]
+        std::os::windows::fs::symlink_dir(source, target).unwrap();
+    }
 }

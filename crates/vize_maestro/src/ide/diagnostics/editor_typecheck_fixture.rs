@@ -230,7 +230,7 @@ fn write_typecheck_tsconfig(root: &Path) {
     .expect("tsconfig");
 }
 
-fn write_vue_test_package(root: &Path) {
+pub(super) fn write_vue_test_package(root: &Path) {
     let vue_dir = root.join("node_modules/vue");
     std::fs::create_dir_all(&vue_dir).expect("vue package dir");
     std::fs::write(

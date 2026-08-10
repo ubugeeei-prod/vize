@@ -12,6 +12,7 @@ mod canonical_dependency_tests;
 mod canonical_rename_tests;
 #[cfg(test)]
 mod canonical_tests;
+mod external_mirror;
 mod html_attribute;
 #[cfg(test)]
 mod html_attribute_tests;
@@ -129,6 +130,10 @@ pub(crate) fn map_corsa_location(ctx: &IdeContext<'_>, location: &LspLocation) -
     }
     if is_virtual_document_uri(&location.uri) {
         return None;
+    }
+
+    if let Some(location) = external_mirror::map_location(ctx, location) {
+        return Some(location);
     }
 
     let uri = accessible_external_uri(ctx, &location.uri)?;

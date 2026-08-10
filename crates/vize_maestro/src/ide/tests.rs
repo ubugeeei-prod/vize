@@ -4,6 +4,13 @@ use super::{
 };
 use crate::virtual_code::BlockType;
 
+#[cfg(unix)]
+pub(crate) fn symlink_dir(source: &std::path::Path, target: &std::path::Path) {
+    std::fs::create_dir_all(target.parent().expect("symlink parent"))
+        .expect("symlink parent directory");
+    std::os::unix::fs::symlink(source, target).expect("directory symlink");
+}
+
 #[test]
 fn test_offset_to_position() {
     let content = "line1\nline2\nline3";

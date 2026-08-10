@@ -21,14 +21,28 @@
 //! reproduces with; bare workspace-package specifiers resolve only through
 //! their `paths` alias today.
 
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashMap, FxHashSet, String as CompactString, cstr};
+#[cfg(test)]
+use vize_carton::cstr;
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
+
+#[path = "dependency_scan/resolution.rs"]
+mod resolution;
+#[cfg(test)]
+use resolution::probe_candidates;
+pub(crate) use resolution::resolve_dependency;
+use resolution::{
+    alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
+    may_resolve_a_dependency,
+};
+
+type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str) -> Option<PathBuf>;
 
 #[allow(clippy::disallowed_types)]
 impl VirtualProject {
@@ -48,6 +62,28 @@ impl VirtualProject {
     pub(crate) fn register_reachable_dependencies_with_overlays(
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
+    ) -> CorsaResult<()> {
+        self.register_reachable_dependencies_inner(overlays, &[], None)
+    }
+
+    pub(crate) fn register_reachable_dependencies_with_package_resolver(
+        &mut self,
+        overlays: &FxHashMap<PathBuf, &str>,
+        workspace_package_specifiers: &[CompactString],
+        package_resolver: PackageResolver<'_>,
+    ) -> CorsaResult<()> {
+        self.register_reachable_dependencies_inner(
+            overlays,
+            workspace_package_specifiers,
+            Some(package_resolver),
+        )
+    }
+
+    fn register_reachable_dependencies_inner(
+        &mut self,
+        overlays: &FxHashMap<PathBuf, &str>,
+        workspace_package_specifiers: &[CompactString],
+        mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
         let alias_prefixes: Vec<CompactString> = aliases
@@ -71,7 +107,11 @@ impl VirtualProject {
             let Some(virtual_file) = self.find_by_original(&importer) else {
                 continue;
             };
-            if !may_resolve_a_dependency(&virtual_file.content, &alias_prefixes) {
+            if !may_resolve_a_dependency(
+                &virtual_file.content,
+                &alias_prefixes,
+                workspace_package_specifiers,
+            ) {
                 continue;
             }
             let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
@@ -91,9 +131,14 @@ impl VirtualProject {
                 .collect_all_specifiers(&virtual_file.content, source_type);
 
             for specifier in specifiers {
-                let Some(target) =
+                let target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases)
-                else {
+                        .or_else(|| {
+                            package_resolver
+                                .as_deref_mut()
+                                .and_then(|resolve| resolve(&importer_dir, &specifier))
+                        });
+                let Some(target) = target else {
                     continue;
                 };
                 let Some(key) = canonical_key(&target) else {
@@ -187,161 +232,6 @@ impl VirtualProject {
         }
         aliases
     }
-}
-
-/// First-party classification key: the canonical path, so a pnpm workspace
-/// symlink is judged by where it actually lives.
-fn canonical_key(path: &Path) -> Option<PathBuf> {
-    let canonical = vize_carton::path::canonicalize_non_verbatim(path);
-    canonical.is_file().then_some(canonical)
-}
-
-fn inside_node_modules(path: &Path) -> bool {
-    path.components()
-        .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
-}
-
-/// Whether `path` is a TypeScript declaration file.
-///
-/// Reachability never registers one. A declaration file cannot *be* a `.vue`
-/// component, so it adds nothing this pass exists to check, while its ambient
-/// declarations are program-wide: a `declare module "vue"` in a script `.d.ts`
-/// is an ambient module declaration rather than an augmentation, so pulling one
-/// in replaces Vue's real typings and every `import { ref } from "vue"` in the
-/// project becomes `TS2305` (#3898). Which declaration files a program includes
-/// is the tsconfig's decision, not this inference pass's.
-///
-/// [`probe_candidates`] still resolves them: [`alias_may_reach_first_party`]
-/// classifies an alias by what the walk would resolve, and the `vue` alias of a
-/// Vue tsconfig resolves to `node_modules/vue/index.d.ts`.
-fn is_declaration_file(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| {
-            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
-        })
-}
-
-/// Whether any specifier in `content` could resolve, cheaply and without a
-/// parse. [`resolve_dependency`] only ever succeeds for a relative specifier or
-/// one matching a `paths` alias, so a module whose text contains neither shape
-/// cannot register anything. This pass runs on every check, and registration
-/// itself skips parsing a module with no rewritable specifier, so parsing every
-/// generated file here would be a plain regression on projects that import
-/// nothing first-party (#3898). Deliberately a conservative superset: alias
-/// prefixes are matched anywhere in the text.
-/// Whether an alias can ever contribute a first-party file, judged once per
-/// alias rather than once per module. A wildcard pattern always can: its target
-/// is a directory prefix whose entries may each be a pnpm workspace symlink out
-/// of `node_modules`. A wildcard-free pattern names exactly one target, so it is
-/// resolved here the same way the walk resolves it and kept only when the walk
-/// would accept the result. Its prefix must not make
-/// [`may_resolve_a_dependency`] parse every module in the project: the `vue`
-/// alias a Vue tsconfig carries is that shape, and matching it as a bare
-/// substring defeated the prefilter for every generated file (#3898).
-///
-/// A probe that finds nothing means the walk resolves nothing either, so the
-/// prefix is dropped. Treating that as "keep, to be safe" is what kept the
-/// benchmark regression alive: `vue` publishes its types as `dist/vue.d.ts` with
-/// no root `index.d.ts`, so probing the package directory legitimately fails.
-#[allow(clippy::disallowed_types)]
-fn alias_may_reach_first_party(pattern: &str, target: &str, project_root: &Path) -> bool {
-    if pattern.contains('*') {
-        return true;
-    }
-    let absolute = if Path::new(target).is_absolute() {
-        PathBuf::from(target)
-    } else {
-        project_root.join(target)
-    };
-    // Resolve exactly as the walk would, so dropping the prefix can only ever
-    // drop a target the walk itself refuses.
-    let Some(resolved) = probe_candidates(&absolute) else {
-        return false;
-    };
-    let Some(key) = canonical_key(&resolved) else {
-        return false;
-    };
-    !inside_node_modules(&key) && !is_declaration_file(&key)
-}
-
-fn may_resolve_a_dependency(content: &str, alias_prefixes: &[CompactString]) -> bool {
-    crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
-        || alias_prefixes
-            .iter()
-            .any(|prefix| prefix.is_empty() || content.contains(prefix.as_str()))
-}
-
-/// Resolve one specifier to a registrable first-party file, or `None`.
-#[allow(clippy::disallowed_types)]
-pub(crate) fn resolve_dependency(
-    specifier: &str,
-    importer_dir: &Path,
-    project_root: &Path,
-    aliases: &[(String, String)],
-) -> Option<PathBuf> {
-    // Fold the rewriter's `.vue.ts` spelling back to the real file.
-    let specifier = specifier
-        .strip_suffix(".vue.ts")
-        .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
-
-    if specifier.starts_with("./") || specifier.starts_with("../") {
-        return probe_candidates(&importer_dir.join(&specifier));
-    }
-
-    // Longest matching alias pattern wins, mirroring TypeScript's `paths`.
-    let mut best: Option<(usize, PathBuf)> = None;
-    for (pattern, target) in aliases {
-        let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
-            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
-                (Some(rest), Some(target_prefix)) => {
-                    let mut joined = target_prefix.to_owned();
-                    joined.push_str(rest);
-                    Some(joined)
-                }
-                _ => None,
-            }
-        } else if specifier == *pattern {
-            Some(target.clone())
-        } else {
-            None
-        };
-        let Some(substituted) = substituted else {
-            continue;
-        };
-        let absolute = if Path::new(&substituted).is_absolute() {
-            PathBuf::from(&substituted)
-        } else {
-            project_root.join(&substituted)
-        };
-        if let Some(resolved) = probe_candidates(&absolute)
-            && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
-        {
-            best = Some((pattern.len(), resolved));
-        }
-    }
-    best.map(|(_, path)| path)
-}
-
-/// Extension and index probing for a resolved base path, in TypeScript's
-/// order. Only extensions the registration pipeline accepts are produced.
-fn probe_candidates(base: &Path) -> Option<PathBuf> {
-    if base.extension().is_some() && base.is_file() {
-        return Some(base.to_path_buf());
-    }
-    for extension in ["ts", "tsx", "d.ts", "vue"] {
-        let candidate = PathBuf::from(cstr!("{}.{extension}", base.display()).as_str());
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    for index in ["index.ts", "index.tsx", "index.d.ts"] {
-        let candidate = base.join(index);
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    None
 }
 
 #[cfg(test)]

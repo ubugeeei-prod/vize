@@ -158,6 +158,10 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
+    if let Some(location) = super::external_mirror::map_location(ctx, location) {
+        return Some(location);
+    }
+
     let uri = super::accessible_external_uri(ctx, &location.uri)?;
     Some(Location {
         uri,

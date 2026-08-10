@@ -17,6 +17,10 @@ mod vue_dependency_specifiers;
 mod vue_document;
 #[cfg(test)]
 mod vue_document_alias_tests;
+// Every case links a workspace package through a directory symlink, which
+// Windows refuses without Developer Mode or elevation.
+#[cfg(all(test, unix))]
+mod vue_document_package_tests;
 #[cfg(test)]
 mod vue_document_tests;
 #[cfg(test)]

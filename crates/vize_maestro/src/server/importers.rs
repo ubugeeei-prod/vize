@@ -1,7 +1,6 @@
 //! Reverse dependency index for open SFC and script documents.
 
 mod dependents;
-mod package;
 mod specifiers;
 
 use std::{
@@ -12,9 +11,9 @@ use std::{
 use oxc_span::SourceType;
 use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
+use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 use vize_carton::{FxHashMap, FxHashSet};
 
-use self::package::resolve_package_import;
 use super::ServerState;
 pub(super) use dependents::open_typecheck_dependents;
 
@@ -129,6 +128,7 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
     let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
+    let mut package_routes = PackageRouteResolver::default();
     if importer
         .extension()
         .is_none_or(|extension| extension != "vue")
@@ -142,6 +142,7 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
             source_type,
             importer_dir,
             Some(importer_uri),
+            &mut package_routes,
             &mut dependencies,
         );
         return dependencies.into_iter().collect();
@@ -154,7 +155,6 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
         return Vec::new();
     };
     let mut dependencies = FxHashSet::default();
-
     for script in descriptor
         .script
         .iter()
@@ -165,6 +165,7 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
             source_type(script.lang.as_deref()),
             importer_dir,
             Some(importer_uri),
+            &mut package_routes,
             &mut dependencies,
         );
     }
@@ -176,37 +177,71 @@ fn collect_script_dependencies(
     source_type: SourceType,
     importer_dir: &Path,
     importer_uri: Option<&Url>,
+    package_routes: &mut PackageRouteResolver,
     dependencies: &mut FxHashSet<PathBuf>,
 ) {
     for specifier in specifiers::collect(source, source_type) {
         let specifier = specifier.as_str();
-        if let Some(dependency) = resolve_import(importer_dir, specifier)
-            .or_else(|| {
-                crate::ide::definition::import_resolver::resolve_import_specifier(
-                    importer_uri?,
-                    specifier,
-                )
+        let mut resolved = resolve_import(importer_dir, specifier, package_routes);
+        if !resolved.target_found
+            && let Some(dependency) = importer_uri.and_then(|uri| {
+                crate::ide::definition::import_resolver::resolve_import_specifier(uri, specifier)
             })
-            .map(|dependency| comparable_path(&dependency))
         {
-            dependencies.insert(dependency);
+            resolved.dependencies.push(dependency);
+        }
+        for dependency in resolved.dependencies {
+            // Package lookups intentionally retain logical paths so a future
+            // symlink can be observed. Normalize them at the index boundary,
+            // where lookups use the same comparable spelling; this also
+            // collapses platform aliases such as macOS `/var` -> `/private/var`
+            // without erasing the resolver's logical package identity.
+            dependencies.insert(comparable_path(&dependency));
         }
     }
 }
 
-fn resolve_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {
-    let specifier = specifier
-        .split_once(['?', '#'])
-        .map_or(specifier, |(path, _)| path);
+struct ImportResolution {
+    dependencies: Vec<PathBuf>,
+    target_found: bool,
+}
+
+fn resolve_import(
+    importer_dir: &Path,
+    specifier: &str,
+    package_routes: &mut PackageRouteResolver,
+) -> ImportResolution {
+    let specifier = if specifier.starts_with('#') {
+        specifier
+    } else {
+        specifier
+            .split_once(['?', '#'])
+            .map_or(specifier, |(path, _)| path)
+    };
     if specifier == "."
         || specifier == ".."
         || specifier.starts_with("./")
         || specifier.starts_with("../")
     {
-        return resolve_relative_import(importer_dir, specifier);
+        let dependencies: Vec<_> = resolve_relative_import(importer_dir, specifier)
+            .into_iter()
+            .collect();
+        return ImportResolution {
+            target_found: !dependencies.is_empty(),
+            dependencies,
+        };
     }
 
-    resolve_package_import(importer_dir, specifier)
+    let lookup = package_routes.lookup(
+        importer_dir,
+        specifier,
+        PackageSourceOptions::new(true, true),
+    );
+    let (route, dependencies) = lookup.into_parts();
+    ImportResolution {
+        dependencies,
+        target_found: route.is_some(),
+    }
 }
 
 fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {

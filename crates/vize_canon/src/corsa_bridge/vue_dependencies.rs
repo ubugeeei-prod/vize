@@ -171,7 +171,7 @@ pub(super) fn queue_vue_dependency(
     path: &Path,
 ) {
     let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
-    if !imports.visited_vue.insert(key) {
+    if !imports.visited_vue.insert(key.clone()) {
         return;
     }
     let Some(content) = dependency_content(path, imports.overlays) else {
@@ -263,28 +263,39 @@ fn queue_ts_imports(
         let Some(path) = resolve_relative_script_import(dir, specifier.as_str()) else {
             continue;
         };
-        let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
-        if !imports.visited_ts.insert(key) {
-            continue;
-        }
-        let Some(content) = dependency_content(&path, imports.overlays) else {
-            continue;
-        };
-        let dependency_source_type = source_type_for_path(&path);
-        let script_dir = parent_dir(&path);
-        let rewritten = rewriter
-            .rewrite_with_alias_resolver(&content, dependency_source_type, path.parent(), &|spec| {
-                alias_context.resolve_specifier_to_mirror_path(spec, &script_dir)
-            })
-            .code;
-        let uri = normalize_document_uri(path_to_file_uri(&path).as_str());
-        imports.documents.push((uri, rewritten));
-        imports.queue.push_back(DependencyScan::Script {
-            path: path.clone(),
-            source_type: dependency_source_type,
-            content,
-        });
+        queue_script_dependency(imports, rewriter, alias_context, &path);
     }
+}
+
+pub(super) fn queue_script_dependency(
+    imports: &mut ImportQueue<'_>,
+    rewriter: &ImportRewriter,
+    alias_context: &super::vue_dependencies_alias::AliasContext,
+    path: &Path,
+) {
+    let key = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    if !imports.visited_ts.insert(key.clone()) {
+        return;
+    }
+    let Some(content) = dependency_content(path, imports.overlays) else {
+        return;
+    };
+    let source_type = source_type_for_path(path);
+    let script_dir = parent_dir(path);
+    let rewritten = rewriter
+        .rewrite_with_alias_resolver(&content, source_type, Some(&script_dir), &|specifier| {
+            alias_context
+                .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
+                .or_else(|| alias_context.resolve_specifier_to_mirror_path(specifier, &script_dir))
+        })
+        .code;
+    let uri = normalize_document_uri(path_to_file_uri(path).as_str());
+    imports.documents.push((uri, rewritten));
+    imports.queue.push_back(DependencyScan::Script {
+        path: path.to_path_buf(),
+        source_type,
+        content,
+    });
 }
 
 pub(super) fn dependency_content(

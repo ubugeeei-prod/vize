@@ -42,9 +42,53 @@ fn a_published_package_alias_does_not_force_a_parse() {
     ));
     assert!(!may_resolve_a_dependency(
         "import { ref } from 'vue'\n",
-        &[]
+        &[],
+        &[],
+    ));
+    assert!(!may_resolve_a_dependency(
+        "import { ref } from 'vue'\n",
+        &[],
+        &[CompactString::from("@scope/ui/widget")],
+    ));
+    assert!(may_resolve_a_dependency(
+        "import Widget from '@scope/ui/widget'\n",
+        &[],
+        &[CompactString::from("@scope/ui/widget")],
     ));
     let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn a_package_resolver_prefilters_only_approved_workspace_specifiers() {
+    // #4000: the editor walk first resolves the host's package imports, then
+    // admits only those exact workspace specifiers. Published packages and
+    // unrelated bare imports must not reinstate the per-file parse #3898
+    // removed.
+    assert!(!may_resolve_a_dependency(
+        "export const count = 1\nexport type Ref = { value: number }\n",
+        &[],
+        &[CompactString::from("@scope/ui/widget")],
+    ));
+    assert!(may_resolve_a_dependency(
+        "import Widget from '@scope/ui/widget'\n",
+        &[],
+        &[CompactString::from("@scope/ui/widget")],
+    ));
+    assert!(!may_resolve_a_dependency(
+        "import Widget from '@scope/ui/widget'\n",
+        &[],
+        &[],
+    ));
+    assert!(may_resolve_a_dependency(
+        "const mod = await import(\"@scope/ui/widget\")\n",
+        &[],
+        &[CompactString::from("@scope/ui/widget")],
+    ));
+    assert!(may_resolve_a_dependency(
+        "export { Widget } from '#internal/widget'\n",
+        &[],
+        &[CompactString::from("#internal/widget")],
+    ));
 }
 
 #[test]
@@ -73,6 +117,19 @@ fn an_unresolvable_first_party_alias_does_not_force_a_parse() {
     fs::create_dir_all(&root).unwrap();
     assert!(!alias_may_reach_first_party("@ui", "./packages/ui", &root));
     let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn dependency_probe_supports_javascript_and_does_not_append_to_explicit_extensions() {
+    let root = case_dir("javascript-probe");
+    std::fs::create_dir_all(&root).unwrap();
+    let javascript = root.join("entry.mjs");
+    std::fs::write(&javascript, "export {};\n").unwrap();
+    std::fs::write(root.join("missing.vue.ts"), "export {};\n").unwrap();
+
+    assert_eq!(probe_candidates(&javascript), Some(javascript));
+    assert_eq!(probe_candidates(&root.join("missing.vue")), None);
+    let _ = std::fs::remove_dir_all(&root);
 }
 
 #[test]

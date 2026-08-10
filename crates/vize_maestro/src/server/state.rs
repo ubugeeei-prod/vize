@@ -32,7 +32,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use dashmap::DashMap;
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
 use vize_carton::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 use vize_carton::dialect::VueDialect;
@@ -69,6 +69,10 @@ pub struct ServerState {
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
     pub(super) open_imports: super::importers::OpenImportIndex,
+    /// Importer-scoped package routes reused by synchronous IDE requests.
+    /// The resolver validates manifest, link, and source inputs before each
+    /// cache hit, so session reuse cannot return a stale export target.
+    pub(crate) package_route_resolver: Mutex<vize_canon::PackageRouteResolver>,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the
@@ -175,6 +179,7 @@ impl ServerState {
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
             open_imports: super::importers::OpenImportIndex::default(),
+            package_route_resolver: Mutex::new(vize_canon::PackageRouteResolver::default()),
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),
@@ -224,6 +229,7 @@ impl ServerState {
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
         *self.workspace_root.write() = Some(path);
+        self.package_route_resolver.lock().clear();
         self.global_component_references.invalidate();
         // Invalidate batch cache when workspace changes
         self.batch_cache.invalidate();

@@ -37,14 +37,14 @@ pub(super) fn record_watcher_support(state: &ServerState, capabilities: &ClientC
 }
 
 pub(super) async fn initialized(server: &MaestroServer) {
-    register_global_component_watcher(server).await;
+    register_typecheck_dependency_watcher(server).await;
     server
         .client
         .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
         .await;
 }
 
-async fn register_global_component_watcher(server: &MaestroServer) {
+async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
     #[cfg(feature = "native")]
     {
         if !server.state.is_lsp_typecheck_enabled()
@@ -54,10 +54,10 @@ async fn register_global_component_watcher(server: &MaestroServer) {
         }
         if let Err(error) = server
             .client
-            .register_capability(vec![global_component_watcher_registration()])
+            .register_capability(vec![typecheck_dependency_watcher_registration()])
             .await
         {
-            tracing::warn!("failed to register global component declaration watcher: {error}");
+            tracing::warn!("failed to register typecheck dependency watcher: {error}");
         }
     }
     #[cfg(not(feature = "native"))]
@@ -65,15 +65,18 @@ async fn register_global_component_watcher(server: &MaestroServer) {
 }
 
 #[cfg(feature = "native")]
-fn global_component_watcher_registration() -> Registration {
+fn typecheck_dependency_watcher_registration() -> Registration {
     let options = DidChangeWatchedFilesRegistrationOptions {
-        watchers: vec![FileSystemWatcher {
-            glob_pattern: GlobPattern::String("**/*.d.{ts,mts,cts}".into()),
-            kind: None,
-        }],
+        watchers: ["**/*.d.{ts,mts,cts}", "**/*.vue", "**/package.json"]
+            .into_iter()
+            .map(|pattern| FileSystemWatcher {
+                glob_pattern: GlobPattern::String(pattern.into()),
+                kind: None,
+            })
+            .collect(),
     };
     Registration {
-        id: "vize-global-component-declarations".into(),
+        id: "vize-typecheck-dependencies".into(),
         method: "workspace/didChangeWatchedFiles".into(),
         register_options: serde_json::to_value(options).ok(),
     }

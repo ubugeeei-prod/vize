@@ -297,4 +297,4 @@ fn is_inside_html_comment_at(content: &str, offset: usize) -> bool {
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

@@ -1,13 +1,9 @@
 //! Go-to-definition for import and export module specifiers.
 
-use std::{
-    fs,
-    path::{Component, Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
-use serde_json::Value;
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
-use vize_carton::cstr;
+use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 
 use super::IdeContext;
 
@@ -17,7 +13,11 @@ mod tests;
 
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let specifier = specifier_at_offset(&ctx.content, ctx.offset)?;
-    let target = resolve_specifier(ctx.uri, specifier)?;
+    let target = resolve_specifier_with(
+        ctx.uri,
+        specifier,
+        &mut ctx.state.package_route_resolver.lock(),
+    )?;
     let uri = Url::from_file_path(target).ok()?;
     let origin = Position::new(0, 0);
 
@@ -82,141 +82,43 @@ fn is_module_context(prefix: &str) -> bool {
 }
 
 pub(super) fn resolve_specifier(current_uri: &Url, specifier: &str) -> Option<PathBuf> {
+    resolve_specifier_with(current_uri, specifier, &mut PackageRouteResolver::default())
+}
+
+fn resolve_specifier_with(
+    current_uri: &Url,
+    specifier: &str,
+    package_routes: &mut PackageRouteResolver,
+) -> Option<PathBuf> {
     let current_file = current_uri.to_file_path().ok()?;
     let current_dir = current_file.parent()?;
 
     if specifier.starts_with("./") || specifier.starts_with("../") {
         return resolve_file_candidate(&current_dir.join(specifier));
     }
-    if specifier.starts_with('/') || specifier.starts_with('#') {
+    if is_absolute_specifier(specifier) {
         return None;
     }
 
-    let (package_name, subpath) = split_package_specifier(specifier)?;
-    let mut ancestor = Some(current_dir);
-    while let Some(dir) = ancestor {
-        let package_root = dir.join("node_modules").join(package_name);
-        if package_root.join("package.json").is_file() {
-            return resolve_package_entry(&package_root, subpath);
-        }
-        ancestor = dir.parent();
-    }
-    None
+    package_routes
+        .resolve(
+            current_dir,
+            specifier,
+            PackageSourceOptions::new(true, true),
+        )
+        .map(|route| route.source_path)
+        .filter(|path| path.is_file())
 }
 
-fn split_package_specifier(specifier: &str) -> Option<(&str, &str)> {
-    if specifier.is_empty() {
-        return None;
+fn is_absolute_specifier(specifier: &str) -> bool {
+    if Path::new(specifier).is_absolute() || specifier.starts_with("\\\\") {
+        return true;
     }
-    if specifier.starts_with('@') {
-        let scope_end = specifier.find('/')?;
-        let package_end = specifier[scope_end + 1..]
-            .find('/')
-            .map_or(specifier.len(), |index| scope_end + 1 + index);
-        if package_end == scope_end + 1 {
-            return None;
-        }
-        return Some((
-            &specifier[..package_end],
-            specifier[package_end..].trim_start_matches('/'),
-        ));
-    }
-
-    let package_end = specifier.find('/').unwrap_or(specifier.len());
-    Some((
-        &specifier[..package_end],
-        specifier[package_end..].trim_start_matches('/'),
-    ))
-}
-
-fn resolve_package_entry(package_root: &Path, subpath: &str) -> Option<PathBuf> {
-    let manifest = fs::read_to_string(package_root.join("package.json")).ok()?;
-    let manifest: Value = serde_json::from_str(&manifest).ok()?;
-
-    if let Some(exports) = manifest.get("exports") {
-        let export_key = if subpath.is_empty() {
-            cstr!(".")
-        } else {
-            cstr!("./{subpath}")
-        };
-        let target = select_export(exports, &export_key)?;
-        return resolve_package_target(package_root, &target);
-    }
-
-    if !subpath.is_empty() {
-        return resolve_package_target(package_root, subpath);
-    }
-
-    for field in ["types", "typings", "module", "main"] {
-        if let Some(target) = manifest.get(field).and_then(Value::as_str)
-            && let Some(path) = resolve_package_target(package_root, target)
-        {
-            return Some(path);
-        }
-    }
-    resolve_file_candidate(&package_root.join("index"))
-}
-
-fn select_export(exports: &Value, key: &str) -> Option<String> {
-    if let Some(object) = exports.as_object() {
-        if let Some(value) = object.get(key) {
-            return select_conditional_target(value, None);
-        }
-        for (pattern, value) in object {
-            let Some((prefix, suffix)) = pattern.split_once('*') else {
-                continue;
-            };
-            if let Some(replacement) = key
-                .strip_prefix(prefix)
-                .and_then(|key| key.strip_suffix(suffix))
-            {
-                return select_conditional_target(value, Some(replacement));
-            }
-        }
-        if key == "." && !object.keys().any(|key| key.starts_with('.')) {
-            return select_conditional_target(exports, None);
-        }
-        return None;
-    }
-    (key == ".").then(|| select_conditional_target(exports, None))?
-}
-
-fn select_conditional_target(value: &Value, replacement: Option<&str>) -> Option<String> {
-    if let Some(target) = value.as_str() {
-        return Some(match replacement {
-            Some(replacement) => target.replace('*', replacement),
-            None => target.to_string(),
-        });
-    }
-    if let Some(array) = value.as_array() {
-        return array
-            .iter()
-            .find_map(|value| select_conditional_target(value, replacement));
-    }
-    let object = value.as_object()?;
-    for condition in ["types", "typings", "import", "default", "node", "require"] {
-        if let Some(value) = object.get(condition)
-            && let Some(target) = select_conditional_target(value, replacement)
-        {
-            return Some(target);
-        }
-    }
-    object
-        .values()
-        .find_map(|value| select_conditional_target(value, replacement))
-}
-
-fn resolve_package_target(package_root: &Path, target: &str) -> Option<PathBuf> {
-    let relative = target.strip_prefix("./").unwrap_or(target);
-    let relative_path = Path::new(relative);
-    if relative_path.is_absolute()
-        || relative_path
-            .components()
-            .any(|component| matches!(component, Component::ParentDir | Component::RootDir))
-    {
-        return None;
-    }
-    resolve_file_candidate(&package_root.join(relative_path))
+    let bytes = specifier.as_bytes();
+    bytes.len() >= 3
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && matches!(bytes[2], b'/' | b'\\')
 }
 
 fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {

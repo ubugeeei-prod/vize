@@ -51,6 +51,7 @@ mod diagnostic;
 mod file_uri;
 pub mod intelligence;
 mod options_api_setup_spread;
+pub mod package_route;
 mod script_parse;
 mod sfc_diagnostics;
 pub mod sfc_typecheck;
@@ -99,6 +100,9 @@ pub use sfc_diagnostics::{SfcBlockType, sfc_block_fallback_offset};
 pub use intelligence::{
     Completion, CompletionKind as IntelCompletionKind, CursorContext, Diagnostic,
     DiagnosticSeverity, HoverInfo, Location, TypeIntelligence,
+};
+pub use package_route::{
+    PackageRoute, PackageRouteLookup, PackageRouteResolver, PackageSourceOptions,
 };
 pub use sfc_typecheck::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,

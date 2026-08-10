@@ -69,22 +69,6 @@
       "diagnostics": []
     },
     {
-      "file": "<project>/packages/misskey-js/built/autogen/entities.js",
-      "diagnostics": []
-    },
-    {
-      "file": "<project>/packages/misskey-js/built/autogen/models.js",
-      "diagnostics": []
-    },
-    {
-      "file": "<project>/packages/misskey-js/built/entities.js",
-      "diagnostics": []
-    },
-    {
-      "file": "<project>/packages/misskey-js/built/streaming.types.js",
-      "diagnostics": []
-    },
-    {
       "file": "src/accounts.ts",
       "diagnostics": []
     },
@@ -3218,5 +3202,5 @@
   ],
   "errorCount": 32,
   "warningCount": 0,
-  "fileCount": 792
+  "fileCount": 788
 }
