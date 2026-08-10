@@ -51,10 +51,12 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.
 pub const JSX_COMPONENT_HELPER: &str = "type __VizeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${__VizeJsxKebabCase<T>}` : `-${Lowercase<H>}${__VizeJsxKebabCase<T>}` : S;\n\
-type __VizeJsxCamelCase<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;\n\
+type __VizeJsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;\n\
 type __VizeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | __VizeJsxKebabCase<K> : K }[keyof R] : never;\n\
 type __VizeJsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? __VizeJsxCamelCase<K> : K]: R[K] } : never;\n\
-type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> : __VizeJsxCanonicalRawProps<P> : any : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxCanonicalRawProps<P> : any;\n\
+type __VizeJsxDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };\n\
+type __VizeJsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeJsxDomListenerProps, keyof Owned>;\n\
+type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> & __VizeJsxFallthroughAttrs<P> : __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P> : any : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P> : any;\n\
 declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
 declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;\n";
 #[cfg(any(test, feature = "native"))]

@@ -108,7 +108,12 @@ defineModel<string>("title", { required: true });
     assert!(
         result
             .text
-            .contains("$props: __VizeComponentProps<__VizeResolvedProps> &")
+            .contains("$props: __VizeResolvedProps & __EmitProps<Emits>;")
+    );
+    assert!(
+        result
+            .text
+            .contains("__VizeComponentInputProps<__VizeResolvedProps, __EmitProps<Emits>>")
     );
 }
 

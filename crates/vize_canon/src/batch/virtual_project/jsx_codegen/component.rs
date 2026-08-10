@@ -296,6 +296,9 @@ fn is_reserved_prop(name: &str) -> bool {
 /// the helper intersect `$props` with that raw contract without making both
 /// spellings optional (which would silently lose required props).
 fn canonical_prop_name(name: &str) -> CompactString {
+    if name.starts_with("data-") || name.starts_with("aria-") {
+        return name.to_compact_string();
+    }
     let mut out = CompactString::default();
     let mut uppercase_next = false;
     for ch in name.chars() {
