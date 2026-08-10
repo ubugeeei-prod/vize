@@ -1,7 +1,6 @@
 //! Completion service entry point and Corsa integration.
 //!
-//! Provides the main `complete` and `complete_with_corsa` methods
-//! that dispatch to block-specific handlers.
+//! Dispatches `complete` and `complete_with_corsa` to block-specific handlers.
 #![allow(clippy::disallowed_types)]
 
 #[cfg(feature = "native")]
@@ -16,8 +15,6 @@ use tower_lsp::lsp_types::{
 #[cfg(feature = "native")]
 use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 
-#[cfg(feature = "native")]
-use super::is_inside_html_comment;
 #[cfg(feature = "native")]
 use super::service_corsa_template;
 use super::{script, service_inline_art, style, template};
@@ -152,9 +149,9 @@ impl super::CompletionService {
 
         let block_type = ctx.block_type?;
 
-        // If in template and cursor is inside an HTML comment, return directive completions only
+        // Inside HTML comments, only Vize directives are meaningful.
         if matches!(block_type, BlockType::Template)
-            && is_inside_html_comment(&ctx.content, ctx.offset)
+            && super::is_inside_html_comment(&ctx.content, ctx.offset)
         {
             let items = template::vize_directive_completions();
             return if items.is_empty() {

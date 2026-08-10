@@ -9,6 +9,7 @@
 //! text and only ever replaces a leading `var {word}` whose word has exactly
 //! one known top-level declaration kind — anything else keeps the checker's
 //! answer.
+#![cfg(feature = "native")]
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,

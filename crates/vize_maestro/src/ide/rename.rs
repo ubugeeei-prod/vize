@@ -304,7 +304,6 @@ impl RenameService {
         corsa_support::map_corsa_workspace_edit(ctx, edit)
     }
 
-    /// Check if the identifier is renameable.
     fn is_renameable(word: &str, ctx: &IdeContext) -> bool {
         // Don't rename Vue directives
         if word.starts_with("v-") {

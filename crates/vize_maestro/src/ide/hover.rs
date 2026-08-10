@@ -21,7 +21,6 @@ mod component_tag;
 mod corsa;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
-#[cfg(feature = "native")]
 mod declaration_keyword;
 #[cfg(feature = "native")]
 mod html;

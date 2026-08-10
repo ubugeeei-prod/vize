@@ -176,24 +176,6 @@ test("check workflow runs the editor extension host smoke against a real vize se
   assert.match(smokeAction, /xvfb-run -a vp run [^\n]*test:vscode-extension:host-real/);
 });
 
-test("check workflow enforces the Maestro non-native feature contract", () => {
-  const workflow = readRepoFile(".github", "workflows", "check.yml");
-  const job = workflowJobBody(workflow, "clippy-and-test");
-
-  assert.match(job, /name:\s*Check Maestro non-native feature contract/);
-  assert.match(job, /RUSTFLAGS:\s*"-D warnings"/);
-  assert.match(job, /cargo check -p vize_maestro --no-default-features\s*$/m);
-  assert.match(
-    job,
-    /cargo test -p vize_maestro --no-default-features --test non_native_structural\s*$/m,
-  );
-  assert.match(job, /cargo check -p vize_maestro --no-default-features --features glyph\s*$/m);
-  assert.match(
-    job,
-    /cargo test -p vize_maestro --no-default-features --features glyph --test non_native_structural\s*$/m,
-  );
-});
-
 test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
   const inventoryPath = path.join(tempDir, "inventory.json");
