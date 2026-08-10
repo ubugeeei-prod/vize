@@ -274,7 +274,7 @@ defineArt("./MyButton.vue", {
 }
 
 #[test]
-fn check_no_template_bindings_keeps_component_props_helper_in_project() {
+fn check_no_template_bindings_keeps_component_input_helpers_in_project() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
@@ -331,8 +331,8 @@ defineProps<{ itemTitle?: string }>()
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
-        !stdout.contains("TS2304") && !stdout.contains("__VizeComponentProps"),
-        "project check should keep __VizeComponentProps visible:\n{stdout}"
+        !stdout.contains("TS2304") && !stdout.contains("__VizeComponentInputProps"),
+        "project check should keep __VizeComponentInputProps visible:\n{stdout}"
     );
 
     let helpers = std::fs::read_to_string(
@@ -340,8 +340,13 @@ defineProps<{ itemTitle?: string }>()
     )
     .unwrap();
     assert!(
-        helpers.contains("type __VizeComponentProps<T>"),
-        "shared helpers should define __VizeComponentProps:\n{helpers}"
+        helpers.contains("type __VizeComponentInputProps<T, Declared = {}>"),
+        "shared helpers should define __VizeComponentInputProps:\n{helpers}"
+    );
+    assert!(
+        !helpers.contains("type __VizeComponentProps<T>")
+            && !helpers.contains("type __VizeKebabOptionalKeys<T>"),
+        "modern shared helpers must not retain dead legacy input aliases:\n{helpers}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
