@@ -27,6 +27,7 @@
     "test:build": "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts snapshots/build/misskey.ts snapshots/build/npmx.ts snapshots/build/vuefes.ts",
     "test:readiness": "pnpm test:readiness:check && pnpm test:readiness:lint && pnpm test:readiness:build && pnpm test:readiness:dev",
     "test:readiness:check": "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 snapshots/check/compiler-macros.ts snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/nuxt-ui.ts snapshots/check/reka-ui.ts",
+    "test:readiness:check:vuefes": "node --test --test-concurrency=1 snapshots/check/vuefes.ts",
     "test:readiness:lint": "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} node --test --test-concurrency=1 tooling/cli-lint-contract.test.ts snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/nuxt-ui.ts snapshots/lint/reka-ui.ts",
     "test:readiness:build": "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts",
     "test:readiness:dev": "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/misskey.spec.ts && VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
