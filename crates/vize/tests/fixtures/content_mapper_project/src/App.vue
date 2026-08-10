@@ -7,6 +7,8 @@ import GenericChild from "./GenericChild.vue";
 import ModelChild from "./ModelChild.vue";
 import NestedGenericChild from "./NestedGenericChild.vue";
 import RuntimeChild from "./RuntimeChild.vue";
+import SlotGenericChild from "./SlotGenericChild.vue";
+import SlotProvider from "./SlotProvider.vue";
 import { increment } from "./model";
 
 defineProps<{ count: number }>();
@@ -17,6 +19,7 @@ const handleModelValue = (value: number) => value;
 const handlePick = (value: string) => value;
 const handleSelect = (value: "nested") => value;
 const handleSaveItem = (id: string) => id;
+const handleSlotActivate = (value: "slot") => value;
 const handleSubmit = (accepted: boolean) => accepted;
 const handleTitle = (title: string) => title;
 const nestedValues = ["nested"] as const;
@@ -37,4 +40,7 @@ const topLevelValue = "top-level" as const;
     @select="handleSelect"
   />
   <RuntimeChild @cancel="handleCancel" />
+  <SlotProvider v-slot="{ value }">
+    <SlotGenericChild :value="value" @activate="handleSlotActivate" />
+  </SlotProvider>
 </template>

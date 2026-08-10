@@ -165,6 +165,17 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "cancel".len(),
             true,
         ),
+        (
+            "SlotGenericChild.vue",
+            "@activate",
+            "activate: [value",
+            "activate",
+            "\\\"slot\\\"",
+            "renamedActivate",
+            0,
+            "activate".len(),
+            true,
+        ),
     ]
     .map(
         |(
@@ -350,6 +361,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             );
 
             let partial = app_source
+                .replace("@activate", "@act")
                 .replace("@choose", "@cho")
                 .replace("@submit", "@sub")
                 .replace("@cancel", "@can")
@@ -360,6 +372,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 .replace(&app_document_uri, partial.as_str())
                 .unwrap();
             for (usage, label, payload) in [
+                ("@act", "activate", "\\\"slot\\\""),
                 ("@cho", "choose", "\\\"top-level\\\""),
                 ("@sub", "submit", "boolean"),
                 ("@can", "cancel", "string"),
