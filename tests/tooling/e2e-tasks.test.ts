@@ -129,6 +129,20 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "app", "dev", "misskey.spec.ts");
   assertExists("tests", "app", "dev", "nuxt-ui.spec.ts");
 
+  const misskeyDevSpec = readRepoFile("tests", "app", "dev", "misskey.spec.ts");
+  assert.match(
+    misskeyDevSpec,
+    /test\("authored SFCs hot-update through pure Vite without reloading"/,
+    "the pinned pure-Vite readiness spec must exercise authored-source HMR",
+  );
+  assert.match(misskeyDevSpec, /verifyMisskeyAuthoredSourceHmr/);
+  assertExists("tests", "app", "dev", "misskey-hmr.ts");
+  const misskeyHmr = readRepoFile("tests", "app", "dev", "misskey-hmr.ts");
+  assert.match(misskeyHmr, /prepareMisskeyHmrFixture/);
+  assert.match(misskeyHmr, /<template src="\.\/MkVisitorDashboard\.hmr\.html">/);
+  assert.match(misskeyHmr, /sourceRelativePath: "src\/components\/MkVisitorDashboard\.hmr\.html"/);
+  assert.match(misskeyHmr, /moduleSuffix: "\/src\/components\/MkVisitorDashboard\.vue\.ts"/);
+
   const nuxtUiDevSpec = readRepoFile("tests", "app", "dev", "nuxt-ui.spec.ts");
   assert.match(
     nuxtUiDevSpec,
@@ -137,6 +151,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   );
   assert.match(nuxtUiDevSpec, /verifyNuxtUiAuthoredSourceHmr/);
   assertExists("tests", "app", "dev", "nuxt-ui-hmr.ts");
+  assertExists("tests", "app", "dev", "source-restore.ts");
 
   for (const fixture of ["elk", "misskey", "npmx.dev", "nuxt-ui", "reka-ui"]) {
     const snapshotName = fixture === "npmx.dev" ? "npmx" : fixture;
