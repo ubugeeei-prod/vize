@@ -1,7 +1,4 @@
-// Corpus-wide glyph formatter idempotence: for every Vue SFC in the hydrated
-// ecosystem fixtures, `fmt(fmt(x)) == fmt(x)` byte-for-byte. In the Real
-// Project Matrix, the preceding `--check` prediction must also equal the first
-// `--write` mutation set. Fixtures are hydrated per-lane, so absent projects
+// Corpus-wide `fmt(fmt(x)) == fmt(x)` and `--check`/`--write` agreement; absent projects
 // are reported as skipped, never failed; the weekly matrix shards hydrate the
 // full registry. Set VIZE_GLYPH_CORPUS_MAX_FILES_PER_PROJECT to cap files for
 // local iteration.
@@ -16,8 +13,8 @@ import {
   assertFormatterCheckWriteAgreement,
   collectFormatterWriteEvidence,
   collectProjectVueFiles,
+  createKnownViolationConsumption,
   diffExcerpt,
-  isKnownViolation,
   loadGlyphCorpusProjects,
   loadFormatterCheckEvidence,
   loadKnownViolations,
@@ -25,6 +22,7 @@ import {
   resolveGlyphLaunch,
   snapshotWorkspaceFiles,
   withFormattedWorkspace,
+  writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 
 type CorpusProject = {
@@ -39,6 +37,7 @@ type Violation = { project: string; file: string; detail: string };
 const property = "idempotence";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
+const waiverConsumption = createKnownViolationConsumption(knownViolations);
 
 function sweepProject(
   project: CorpusProject,
@@ -46,6 +45,7 @@ function sweepProject(
   violations: Violation[],
   counters: { files: number; skipped: number },
   checkEvidence: FormatterEvidence | null = null,
+  waivedViolations: Array<Violation & { waiver: object }> = [],
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
@@ -77,14 +77,17 @@ function sweepProject(
           counters.files += 1;
           continue;
         }
-        if (isKnownViolation(knownViolations, project.id, file)) {
+        const detail = diffExcerpt(before.toString("utf8"), after.toString("utf8"), "fmt1", "fmt2");
+        const waiver = waiverConsumption.consume(project.id, file, null, "semantic-diff");
+        if (waiver) {
+          waivedViolations.push({ project: project.id, file, detail, waiver });
           counters.skipped += 1;
           continue;
         }
         violations.push({
           project: project.id,
           file,
-          detail: diffExcerpt(before.toString("utf8"), after.toString("utf8"), "fmt1", "fmt2"),
+          detail,
         });
       }
     },
@@ -100,10 +103,32 @@ test("glyph corpus idempotence holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const waivedViolations: Array<Violation & { waiver: object }> = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters, loadFormatterCheckEvidence(project));
+    sweepProject(
+      project,
+      launch,
+      violations,
+      counters,
+      loadFormatterCheckEvidence(project),
+      waivedViolations,
+    );
   }
+  let waiverValidationError: string | null = null;
+  try {
+    waiverConsumption.assertAllConsumed(new Set(hydrated.map((project) => project.id)));
+  } catch (error) {
+    waiverValidationError = error instanceof Error ? error.message : String(error);
+  }
+  writeGlyphCorpusPropertyEvidence(property, {
+    projectIds: hydrated.map((project) => project.id),
+    counters,
+    violations,
+    waivedViolations,
+    waiverValidationError,
+  });
+  assert.equal(waiverValidationError, null, waiverValidationError ?? undefined);
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +
