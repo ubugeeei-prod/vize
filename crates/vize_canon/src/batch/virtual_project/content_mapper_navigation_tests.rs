@@ -284,3 +284,38 @@ const handleSelect = (value: "nested") => value;
             && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_ALL
     }));
 }
+
+#[test]
+fn emits_dynamic_generic_event_navigation_inside_the_v_slot_scope() {
+    let source = r#"<script setup lang="ts">
+import SlotGenericChild from "./SlotGenericChild.vue";
+import SlotProvider from "./SlotProvider.vue";
+const handleActivate = (value: "slot") => value;
+</script>
+<template>
+  <SlotProvider v-slot="{ value }">
+    <SlotGenericChild :value="value" @activate="handleActivate" />
+  </SlotProvider>
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let resolver = result
+        .text
+        .find("const __vize_events_resolved_")
+        .expect("event resolver");
+    let closure = result.text[..resolver]
+        .rfind("// Component props in v-slot scope")
+        .expect("component prop v-slot closure");
+
+    assert!(closure < resolver, "{}", result.text);
+    assert!(
+        result.text[resolver..].contains("\"value\": value"),
+        "{}",
+        result.text
+    );
+    assert_eq!(
+        result.text.matches("const __vize_events_resolved_").count(),
+        1
+    );
+}
