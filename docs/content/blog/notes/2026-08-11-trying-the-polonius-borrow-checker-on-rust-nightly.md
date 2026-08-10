@@ -49,7 +49,7 @@ fn get_or_insert(map: &mut HashMap<u32, String>) -> &String {
 
 The borrow of `map` in the `if let` only escapes through the early `return`, so the `map.insert` below is fine — but NLL extends the borrow to the whole function body and rejects it:
 
-```
+```text
 error[E0502]: cannot borrow `*map` as mutable because it is also borrowed as immutable
  --> demo.rs:8:5
   |
