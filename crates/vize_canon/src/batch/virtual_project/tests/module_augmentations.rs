@@ -37,7 +37,7 @@ const message = 'Hello'
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let virtual_root = case_dir.join("node_modules/.vize/canon");
+    let virtual_root = project.virtual_root();
     let auto_imports = fs::read_to_string(virtual_root.join(AUTO_IMPORT_STUBS_FILE)).unwrap();
     let augmentations =
         fs::read_to_string(virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE)).unwrap();

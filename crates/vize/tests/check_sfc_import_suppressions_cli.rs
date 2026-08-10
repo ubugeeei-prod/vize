@@ -207,7 +207,7 @@ void Emoji;
         );
     }
     let virtual_chart = std::fs::read_to_string(
-        project_root.join("node_modules/.vize/canon/src/SchoolExamScoreChart.vue.ts"),
+        vize_canon::project_virtual_root(&project_root).join("src/SchoolExamScoreChart.vue.ts"),
     )
     .unwrap();
     assert!(

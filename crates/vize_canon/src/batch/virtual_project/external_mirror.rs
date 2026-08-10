@@ -48,24 +48,23 @@ mod tests {
 
     #[test]
     fn an_absolute_path_replays_as_subdirectories() {
+        let virtual_root = crate::batch::project_virtual_root(Path::new("/proj"));
         let mirrored = super::external_mirror_path(
-            Path::new("/proj/node_modules/.vize/canon"),
+            &virtual_root,
             Path::new("/ws/packages/ui/src/UiButton.vue"),
         )
         .unwrap();
         assert_eq!(
             mirrored,
-            Path::new(
-                "/proj/node_modules/.vize/canon/__vize_external__/ws/packages/ui/src/UiButton.vue"
-            )
+            virtual_root.join("__vize_external__/ws/packages/ui/src/UiButton.vue")
         );
     }
 
     #[test]
     fn sibling_files_stay_siblings() {
-        let root = Path::new("/proj/node_modules/.vize/canon");
-        let barrel = super::external_mirror_path(root, Path::new("/ws/pkg/index.ts")).unwrap();
-        let vue = super::external_mirror_path(root, Path::new("/ws/pkg/UiButton.vue")).unwrap();
+        let root = crate::batch::project_virtual_root(Path::new("/proj"));
+        let barrel = super::external_mirror_path(&root, Path::new("/ws/pkg/index.ts")).unwrap();
+        let vue = super::external_mirror_path(&root, Path::new("/ws/pkg/UiButton.vue")).unwrap();
         assert_eq!(barrel.parent(), vue.parent());
     }
 
@@ -73,7 +72,7 @@ mod tests {
     fn a_parent_component_is_refused() {
         assert!(
             super::external_mirror_path(
-                Path::new("/proj/node_modules/.vize/canon"),
+                &crate::batch::project_virtual_root(Path::new("/proj")),
                 Path::new("/ws/../outside/App.vue"),
             )
             .is_err()

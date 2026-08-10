@@ -31,7 +31,7 @@ fn materialized_tsconfig_normalizes_native_removed_options() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let compiler_options = value["compilerOptions"].as_object().unwrap();

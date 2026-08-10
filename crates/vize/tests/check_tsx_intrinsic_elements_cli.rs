@@ -148,17 +148,19 @@ fn check_tsx_intrinsic_elements_with_experimental_jsx_vapor() {
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
-        project_root
-            .join("node_modules/.vize/canon/src/Standalone.tsx.ts")
+        vize_canon::project_virtual_root(&project_root)
+            .join("src/Standalone.tsx.ts")
             .exists()
     );
-    let helpers =
-        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
-            .unwrap();
+    let helpers = std::fs::read_to_string(
+        vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts"),
+    )
+    .unwrap();
     assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
-    let generated_tsconfig =
-        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/tsconfig.json"))
-            .unwrap();
+    let generated_tsconfig = std::fs::read_to_string(
+        vize_canon::project_virtual_root(&project_root).join("tsconfig.json"),
+    )
+    .unwrap();
     assert!(generated_tsconfig.contains(r#""jsxImportSource": "vue""#));
 
     let _ = std::fs::remove_dir_all(&project_root);

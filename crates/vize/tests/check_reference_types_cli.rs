@@ -335,9 +335,10 @@ defineProps<{ itemTitle?: string }>()
         "project check should keep __VizeComponentProps visible:\n{stdout}"
     );
 
-    let helpers =
-        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
-            .unwrap();
+    let helpers = std::fs::read_to_string(
+        vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts"),
+    )
+    .unwrap();
     assert!(
         helpers.contains("type __VizeComponentProps<T>"),
         "shared helpers should define __VizeComponentProps:\n{helpers}"

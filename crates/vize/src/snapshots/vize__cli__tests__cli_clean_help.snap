@@ -25,7 +25,7 @@ Options:
           [default: all]
 
       --force
-          Remove the selected artifact roots, including unrecognized entries
+          Remove unrecognized entries, while preserving other Canon project keys
 
       --dry-run
           Print artifact paths without deleting them

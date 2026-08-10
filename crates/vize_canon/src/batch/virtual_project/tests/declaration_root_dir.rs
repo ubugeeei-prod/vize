@@ -15,6 +15,7 @@ use std::fs;
 use std::path::Path;
 
 use super::{VirtualProject, unique_case_dir};
+use crate::batch::project_virtual_root;
 
 /// Writes a project whose sources span `lib/` and the project root, so the
 /// common source directory is the root while `rootDir` names `lib`.
@@ -71,7 +72,7 @@ fn declaration_root_dir_from_tsconfig(
         .write_declaration_tsconfig(&case_dir.join("dist"), false)
         .unwrap();
 
-    let config_path = case_dir.join("node_modules/.vize/canon/tsconfig.declaration.json");
+    let config_path = project_virtual_root(case_dir).join("tsconfig.declaration.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(config_path).unwrap()).unwrap();
     value["compilerOptions"]["rootDir"]
@@ -85,7 +86,7 @@ fn declaration_tsconfig_honors_a_configured_root_dir() {
     let case_dir = unique_case_dir("declaration-root-dir-configured");
     let root_dir = declaration_root_dir(&case_dir, "    \"rootDir\": \"./lib\"");
 
-    let virtual_root = fs::canonicalize(case_dir.join("node_modules/.vize/canon")).unwrap();
+    let virtual_root = fs::canonicalize(project_virtual_root(&case_dir)).unwrap();
     assert_eq!(
         Path::new(&root_dir),
         virtual_root.join("lib"),
@@ -113,7 +114,7 @@ fn declaration_tsconfig_resolves_an_inherited_root_dir_from_its_declaring_config
         )],
     );
 
-    let virtual_root = fs::canonicalize(case_dir.join("node_modules/.vize/canon")).unwrap();
+    let virtual_root = fs::canonicalize(project_virtual_root(&case_dir)).unwrap();
     assert_eq!(
         Path::new(&root_dir),
         virtual_root.join("lib"),
@@ -128,7 +129,7 @@ fn declaration_tsconfig_infers_the_root_dir_when_none_is_configured() {
     let case_dir = unique_case_dir("declaration-root-dir-inferred");
     let root_dir = declaration_root_dir(&case_dir, "    \"strict\": true");
 
-    let virtual_root = fs::canonicalize(case_dir.join("node_modules/.vize/canon")).unwrap();
+    let virtual_root = fs::canonicalize(project_virtual_root(&case_dir)).unwrap();
     assert_eq!(
         Path::new(&root_dir),
         virtual_root,
@@ -148,7 +149,7 @@ fn declaration_tsconfig_ignores_a_root_dir_outside_the_project() {
     let case_dir = unique_case_dir("declaration-root-dir-outside");
     let root_dir = declaration_root_dir(&case_dir, "    \"rootDir\": \"../outside\"");
 
-    let virtual_root = fs::canonicalize(case_dir.join("node_modules/.vize/canon")).unwrap();
+    let virtual_root = fs::canonicalize(project_virtual_root(&case_dir)).unwrap();
     assert_eq!(Path::new(&root_dir), virtual_root);
 
     let _ = fs::remove_dir_all(&case_dir);

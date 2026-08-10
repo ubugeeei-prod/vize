@@ -43,7 +43,7 @@ fn rewrite_relative_generated_dts_import_type_to_real_path_for_virtual_project()
     let schema = vize_carton::path::canonicalize_non_verbatim(&schema);
     let rewriter = ImportRewriter::new();
     let source = "export type Schema = import('./codegen/schema').Schema";
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());
@@ -76,7 +76,7 @@ fn ignores_relative_dts_text_outside_module_specifiers_for_virtual_project() {
     let root = vize_carton::path::canonicalize_non_verbatim(&raw_root);
     let rewriter = ImportRewriter::new();
     let source = "const note = './codegen/schema'\n// export * from './codegen/schema'\n";
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());

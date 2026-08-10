@@ -45,7 +45,7 @@ fn rewrites_absolute_module_declaration_import_that_needs_vue_virtual_path() {
         "import type {{ Feature }} from '{}';",
         feature.with_file_name("feature").display()
     );
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);
@@ -82,7 +82,7 @@ fn rewrites_absolute_index_module_declaration_import_that_needs_vue_virtual_path
         "import type {{ Feature }} from '{}';",
         root.join("src/feature").display()
     );
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);

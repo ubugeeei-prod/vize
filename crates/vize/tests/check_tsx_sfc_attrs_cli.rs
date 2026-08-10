@@ -164,9 +164,8 @@ export const Example = () => (
     );
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
-    let helpers =
-        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
-            .unwrap();
+    let helpers_path = vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts");
+    let helpers = std::fs::read_to_string(helpers_path).unwrap();
     assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
     assert!(helpers.contains("interface IntrinsicAttributes"));
     assert!(helpers.contains("class?: unknown; style?: unknown"));
@@ -351,9 +350,8 @@ const button = (
     );
     let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
-    let helpers =
-        std::fs::read_to_string(project_root.join("node_modules/.vize/canon/__vize_helpers.d.ts"))
-            .unwrap();
+    let helpers_path = vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts");
+    let helpers = std::fs::read_to_string(helpers_path).unwrap();
     assert!(helpers.contains("/// <reference types=\"vue/jsx\" />"));
 
     let _ = std::fs::remove_dir_all(&project_root);

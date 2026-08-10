@@ -123,7 +123,7 @@ mod tests {
     #[test]
     fn lock_waits_until_existing_holder_drops() {
         let temp = tempfile::tempdir().unwrap();
-        let root = temp.path().join("node_modules/.vize/canon");
+        let root = crate::batch::project_virtual_root(temp.path());
         let first = MaterializeLock::acquire(&root).unwrap();
         let (acquired_tx, acquired_rx) = mpsc::channel();
         let root_for_thread = root.clone();
@@ -199,23 +199,61 @@ mod tests {
 
     #[test]
     fn windows_lock_path_avoids_the_legacy_directory_name() {
-        let root = Path::new("node_modules/.vize/canon");
-        let legacy = lock_path_with_suffix(root, LEGACY_LOCK_SUFFIX);
-        let current = lock_path_with_suffix(root, WINDOWS_LOCK_SUFFIX);
+        let root = crate::batch::project_virtual_root(Path::new("/project"));
+        let legacy = lock_path_with_suffix(&root, LEGACY_LOCK_SUFFIX);
+        let current = lock_path_with_suffix(&root, WINDOWS_LOCK_SUFFIX);
 
-        assert_eq!(legacy, Path::new("node_modules/.vize/canon.lock"));
-        assert_eq!(
-            current,
-            Path::new("node_modules/.vize/canon.materialize.lock")
-        );
+        assert_eq!(legacy, root.with_extension("lock"));
+        assert_eq!(current, root.with_extension("materialize.lock"));
         assert_ne!(current, legacy);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn project_key_owns_the_materialization_lock_identity() {
+        let temp = tempfile::tempdir().unwrap();
+        let shared_node_modules = temp.path().join("shared-node-modules");
+        let first_project = temp.path().join("first");
+        let second_project = temp.path().join("second");
+        fs::create_dir_all(&shared_node_modules).unwrap();
+        fs::create_dir_all(&first_project).unwrap();
+        fs::create_dir_all(&second_project).unwrap();
+        let first_project_alias = temp.path().join("first-alias");
+        std::os::unix::fs::symlink(&first_project, &first_project_alias).unwrap();
+        std::os::unix::fs::symlink(&shared_node_modules, first_project.join("node_modules"))
+            .unwrap();
+        std::os::unix::fs::symlink(&shared_node_modules, second_project.join("node_modules"))
+            .unwrap();
+
+        let first_root = crate::batch::project_virtual_root(&first_project);
+        let repeated_first_root = crate::batch::project_virtual_root(&first_project);
+        let aliased_first_root = crate::batch::project_virtual_root(&first_project_alias);
+        let second_root = crate::batch::project_virtual_root(&second_project);
+        assert_eq!(
+            lock_path_for(&first_root),
+            lock_path_for(&repeated_first_root),
+            "the same canonical project must always share one lock"
+        );
+        assert_eq!(
+            lock_path_for(&first_root),
+            lock_path_for(&aliased_first_root),
+            "symlink spellings of the same source root must share one key and lock"
+        );
+
+        drop(MaterializeLock::acquire(&first_root).unwrap());
+        drop(MaterializeLock::acquire(&second_root).unwrap());
+        assert_ne!(
+            fs::canonicalize(lock_path_for(&first_root)).unwrap(),
+            fs::canonicalize(lock_path_for(&second_root)).unwrap(),
+            "different projects must not serialize on one physical lock even when node_modules is shared"
+        );
     }
 
     #[cfg(windows)]
     #[test]
     fn stale_legacy_directory_does_not_block_windows_locking() {
         let temp = tempfile::tempdir().unwrap();
-        let root = temp.path().join("node_modules/.vize/canon");
+        let root = crate::batch::project_virtual_root(temp.path());
         fs::create_dir_all(lock_path_with_suffix(&root, LEGACY_LOCK_SUFFIX)).unwrap();
 
         let lock = MaterializeLock::acquire_with_timeout(&root, Duration::from_secs(1)).unwrap();
@@ -235,7 +273,7 @@ mod tests {
         }
 
         let temp = tempfile::tempdir().unwrap();
-        let root = temp.path().join("node_modules/.vize/canon");
+        let root = crate::batch::project_virtual_root(temp.path());
         let ready = temp.path().join("owner-ready");
         let mut child = std::process::Command::new(std::env::current_exe().unwrap())
             .arg("os_lock_is_released_after_abrupt_owner_termination")

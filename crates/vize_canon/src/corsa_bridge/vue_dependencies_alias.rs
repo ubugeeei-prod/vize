@@ -31,9 +31,9 @@ use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 /// The checker resolves modules from the disk only — open in-memory documents
 /// are never resolution targets — so alias imports must land on real files.
 /// The batch pipeline already materializes exactly those (#3898): reachable
-/// `.vue` companions and out-of-root barrels inside `node_modules/.vize/canon`.
-/// Editor sessions reuse that machinery and rewrite their imports to relative
-/// paths into the mirror.
+/// `.vue` companions and out-of-root barrels inside the current
+/// `.vize/canon/projects/<key>` namespace. Editor sessions reuse that machinery
+/// and rewrite their imports to relative paths into the mirror.
 #[allow(clippy::disallowed_types)]
 pub(super) struct AliasContext {
     project_root: PathBuf,

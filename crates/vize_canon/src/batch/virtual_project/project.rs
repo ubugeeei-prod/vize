@@ -16,11 +16,11 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 mod config;
 
-use super::VirtualProject;
 use super::build::{
     RegisteredFile, VirtualBuildContext, build_registered_file, build_script_registered_file,
     build_vue_registered_file, source_type_for_path,
 };
+use super::{VirtualProject, project_virtual_root};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -34,10 +34,7 @@ impl VirtualProject {
     /// Create a new virtual project.
     pub fn new(project_root: &Path) -> CorsaResult<Self> {
         let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
-        let virtual_root = project_root
-            .join("node_modules")
-            .join(".vize")
-            .join("canon");
+        let virtual_root = project_virtual_root(&project_root);
 
         let mut project = Self {
             project_root,

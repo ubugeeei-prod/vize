@@ -1,7 +1,10 @@
 //! Clean command - Remove Vize-generated cache artifacts.
 
 use std::path::{Path, PathBuf};
-use std::{fs, io::ErrorKind};
+use std::{
+    fs,
+    io::{self, ErrorKind},
+};
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct CleanArgs {
@@ -13,7 +16,7 @@ pub struct CleanArgs {
     #[arg(long, value_enum, default_value_t = CleanScope::All)]
     pub scope: CleanScope,
 
-    /// Remove the selected artifact roots, including unrecognized entries
+    /// Remove unrecognized entries, while preserving other Canon project keys
     #[arg(long)]
     pub force: bool,
 
@@ -39,7 +42,17 @@ pub enum CleanScope {
 pub fn run(args: CleanArgs) {
     let root = args.root.canonicalize().unwrap_or(args.root);
     let artifact_paths = if args.force {
-        vize_artifact_roots(&root, args.scope)
+        match force_vize_artifact_paths(&root, args.scope) {
+            Ok(artifact_paths) => artifact_paths,
+            Err(error) => {
+                eprintln!(
+                    "Failed to enumerate {}: {}",
+                    node_modules_vize_dir(&root).display(),
+                    error
+                );
+                std::process::exit(1);
+            }
+        }
     } else {
         managed_vize_artifact_paths(&root, args.scope)
     };
@@ -70,9 +83,7 @@ pub fn run(args: CleanArgs) {
         }
     }
 
-    if !args.force {
-        remove_empty_artifact_roots(&root, args.scope);
-    }
+    remove_empty_artifact_roots(&root, args.scope);
 
     if !removed_any && !args.quiet {
         match artifact_paths.as_slice() {
@@ -96,12 +107,34 @@ fn managed_vize_artifact_paths(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
     paths
 }
 
-fn vize_artifact_roots(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
-    match scope {
-        CleanScope::All => vec![project_vize_dir(root), node_modules_vize_dir(root)],
-        CleanScope::Project => vec![project_vize_dir(root)],
-        CleanScope::NodeModules => vec![node_modules_vize_dir(root)],
+fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> io::Result<Vec<PathBuf>> {
+    let mut paths = Vec::new();
+    if matches!(scope, CleanScope::All | CleanScope::Project) {
+        paths.push(project_vize_dir(root));
     }
+    if matches!(scope, CleanScope::All | CleanScope::NodeModules) {
+        let node_modules_vize = node_modules_vize_dir(root);
+        match fs::read_dir(&node_modules_vize) {
+            Ok(entries) => {
+                for entry in entries {
+                    let entry = entry?;
+                    // Canon is shared dependency storage with project-keyed mutable
+                    // state. Even `--force` may remove only the current project key;
+                    // deleting the parent would erase live state owned by another
+                    // project that happens to share this node_modules tree.
+                    if entry.file_name() != "canon" {
+                        paths.push(entry.path());
+                    }
+                }
+            }
+            // An absent artifact root is an empty one; anything else means the
+            // enumeration is incomplete and must not drive deletions.
+            Err(error) if error.kind() == ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
+        }
+        paths.extend(current_canon_artifact_paths(root));
+    }
+    Ok(paths)
 }
 
 fn project_vize_dir(root: &Path) -> PathBuf {
@@ -122,21 +155,29 @@ fn project_vize_artifact_paths(root: &Path) -> Vec<PathBuf> {
 
 fn node_modules_vize_artifact_paths(root: &Path) -> Vec<PathBuf> {
     let node_modules_vize_dir = node_modules_vize_dir(root);
-    [
-        "canon",
-        "check-profile",
-        "corsa",
-        "corsa-overlay",
-        "lsp.log",
-        "oxc-dumps",
-        "oxlint-plugin-vize",
-        "patina",
-        "vize.config.schema.json",
-        "vize.sock",
-    ]
-    .into_iter()
-    .map(|name| node_modules_vize_dir.join(name))
-    .collect()
+    let mut paths = current_canon_artifact_paths(root);
+    paths.extend(
+        [
+            "check-profile",
+            "corsa",
+            "corsa-overlay",
+            "lsp.log",
+            "oxc-dumps",
+            "oxlint-plugin-vize",
+            "patina",
+            "vize.config.schema.json",
+            "vize.sock",
+        ]
+        .into_iter()
+        .map(|name| node_modules_vize_dir.join(name)),
+    );
+    paths
+}
+
+fn current_canon_artifact_paths(root: &Path) -> Vec<PathBuf> {
+    let mut paths = vec![vize_canon::project_virtual_root(root)];
+    paths.extend(vize_canon::project_virtual_lock_paths(root));
+    paths
 }
 
 fn remove_path(path: &Path) -> Result<bool, std::io::Error> {
@@ -156,158 +197,20 @@ fn remove_path(path: &Path) -> Result<bool, std::io::Error> {
 }
 
 fn remove_empty_artifact_roots(root: &Path, scope: CleanScope) {
-    for artifact_root in vize_artifact_roots(root, scope) {
-        let _ = fs::remove_dir(artifact_root);
+    if matches!(scope, CleanScope::All | CleanScope::Project) {
+        let _ = fs::remove_dir(project_vize_dir(root));
+    }
+    if matches!(scope, CleanScope::All | CleanScope::NodeModules) {
+        let virtual_root = vize_canon::project_virtual_root(root);
+        if let Some(projects_dir) = virtual_root.parent() {
+            let _ = fs::remove_dir(projects_dir);
+            if let Some(canon_dir) = projects_dir.parent() {
+                let _ = fs::remove_dir(canon_dir);
+            }
+        }
+        let _ = fs::remove_dir(node_modules_vize_dir(root));
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        CleanArgs, CleanScope, managed_vize_artifact_paths, node_modules_vize_artifact_paths,
-        node_modules_vize_dir, project_vize_artifact_paths, project_vize_dir, run,
-        vize_artifact_roots,
-    };
-    use std::path::Path;
-
-    #[test]
-    fn vize_artifact_roots_default_to_project_and_node_modules() {
-        assert_eq!(
-            vize_artifact_roots(Path::new("/project"), CleanScope::All),
-            vec![
-                Path::new("/project").join(".vize"),
-                Path::new("/project").join("node_modules").join(".vize"),
-            ]
-        );
-    }
-
-    #[test]
-    fn scoped_vize_artifact_roots_can_target_each_root() {
-        assert_eq!(
-            project_vize_dir(Path::new("/project")),
-            Path::new("/project").join(".vize")
-        );
-        assert_eq!(
-            node_modules_vize_dir(Path::new("/project")),
-            Path::new("/project").join("node_modules").join(".vize")
-        );
-        assert_eq!(
-            vize_artifact_roots(Path::new("/project"), CleanScope::Project),
-            vec![Path::new("/project").join(".vize")]
-        );
-        assert_eq!(
-            vize_artifact_roots(Path::new("/project"), CleanScope::NodeModules),
-            vec![Path::new("/project").join("node_modules").join(".vize")]
-        );
-    }
-
-    #[test]
-    fn managed_artifact_paths_are_lifecycle_owned_entries() {
-        let root = Path::new("/project");
-
-        assert_eq!(
-            project_vize_artifact_paths(root),
-            vec![
-                root.join(".vize").join("patina"),
-                root.join(".vize").join("reports"),
-                root.join(".vize").join("snapshots"),
-                root.join(".vize").join("tokens"),
-            ]
-        );
-        assert_eq!(
-            node_modules_vize_artifact_paths(root),
-            vec![
-                root.join("node_modules/.vize/canon"),
-                root.join("node_modules/.vize/check-profile"),
-                root.join("node_modules/.vize/corsa"),
-                root.join("node_modules/.vize/corsa-overlay"),
-                root.join("node_modules/.vize/lsp.log"),
-                root.join("node_modules/.vize/oxc-dumps"),
-                root.join("node_modules/.vize/oxlint-plugin-vize"),
-                root.join("node_modules/.vize/patina"),
-                root.join("node_modules/.vize/vize.config.schema.json"),
-                root.join("node_modules/.vize/vize.sock"),
-            ]
-        );
-        assert_eq!(
-            managed_vize_artifact_paths(root, CleanScope::All).len(),
-            project_vize_artifact_paths(root).len() + node_modules_vize_artifact_paths(root).len()
-        );
-    }
-
-    #[test]
-    fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
-        let dir = tempfile::tempdir().unwrap();
-        let root = dir.path();
-        let project_artifact = root.join(".vize").join("patina").join("session-1-0");
-        let node_modules_artifact = root.join("node_modules").join(".vize").join("canon");
-        std::fs::create_dir_all(&project_artifact).unwrap();
-        std::fs::create_dir_all(&node_modules_artifact).unwrap();
-        std::fs::write(root.join("node_modules").join(".vize").join("lsp.log"), "").unwrap();
-        std::fs::write(root.join("node_modules").join("keep.txt"), "keep").unwrap();
-
-        run(CleanArgs {
-            root: root.to_path_buf(),
-            scope: CleanScope::All,
-            force: false,
-            dry_run: false,
-            quiet: true,
-        });
-
-        assert!(!root.join(".vize").exists());
-        assert!(!root.join("node_modules").join(".vize").exists());
-        assert!(root.join("node_modules").join("keep.txt").exists());
-    }
-
-    #[test]
-    fn clean_preserves_unrecognized_entries_without_force() {
-        let dir = tempfile::tempdir().unwrap();
-        let root = dir.path();
-        let managed_project_artifact = root.join(".vize").join("reports");
-        let unknown_project_artifact = root.join(".vize").join("custom").join("keep.txt");
-        let managed_node_modules_artifact = root.join("node_modules/.vize/canon");
-        let unknown_node_modules_artifact = root.join("node_modules/.vize/custom/keep.txt");
-        std::fs::create_dir_all(&managed_project_artifact).unwrap();
-        std::fs::create_dir_all(unknown_project_artifact.parent().unwrap()).unwrap();
-        std::fs::write(&unknown_project_artifact, "keep").unwrap();
-        std::fs::create_dir_all(&managed_node_modules_artifact).unwrap();
-        std::fs::create_dir_all(unknown_node_modules_artifact.parent().unwrap()).unwrap();
-        std::fs::write(&unknown_node_modules_artifact, "keep").unwrap();
-
-        run(CleanArgs {
-            root: root.to_path_buf(),
-            scope: CleanScope::All,
-            force: false,
-            dry_run: false,
-            quiet: true,
-        });
-
-        assert!(!managed_project_artifact.exists());
-        assert!(!managed_node_modules_artifact.exists());
-        assert!(unknown_project_artifact.exists());
-        assert!(unknown_node_modules_artifact.exists());
-    }
-
-    #[test]
-    fn force_clean_removes_selected_artifact_roots() {
-        let dir = tempfile::tempdir().unwrap();
-        let root = dir.path();
-        let unknown_project_artifact = root.join(".vize").join("custom").join("keep.txt");
-        let unknown_node_modules_artifact = root.join("node_modules/.vize/custom/keep.txt");
-        std::fs::create_dir_all(unknown_project_artifact.parent().unwrap()).unwrap();
-        std::fs::write(&unknown_project_artifact, "keep").unwrap();
-        std::fs::create_dir_all(unknown_node_modules_artifact.parent().unwrap()).unwrap();
-        std::fs::write(&unknown_node_modules_artifact, "keep").unwrap();
-
-        run(CleanArgs {
-            root: root.to_path_buf(),
-            scope: CleanScope::Project,
-            force: true,
-            dry_run: false,
-            quiet: true,
-        });
-
-        assert!(!root.join(".vize").exists());
-        assert!(unknown_node_modules_artifact.exists());
-    }
-}
+mod tests;
