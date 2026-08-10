@@ -150,6 +150,15 @@ impl SetupPropsPlan {
         }
     }
 
+    pub(super) fn component_value_props_type_ref(
+        &self,
+        generic_component_params: Option<&(String, String)>,
+    ) -> String {
+        generic_component_params
+            .map(|(decl, _)| self.generic_fallback_component_props_type_ref(decl.as_str()))
+            .unwrap_or_else(|| self.component_props_type_ref().into())
+    }
+
     pub(super) fn emit_component_props_field(
         &self,
         mut ts: &mut String,

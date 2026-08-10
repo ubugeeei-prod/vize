@@ -644,7 +644,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __AutoCard_Props_0 = typeof AutoCard")
+            .contains("type __AutoCard_Props_0 = typeof AutoCard extends { __vizeCheck: any } ? Record<string, unknown> : (typeof AutoCard extends { readonly __vizeRawProps?: infer __P } ? __P")
     );
 }
 

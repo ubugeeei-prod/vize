@@ -291,9 +291,12 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     assert!(
         public_dts.contains(
             "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[])"
-        ) && !public_dts.contains("__VizeComponentInputConstructor")
+        ) && public_dts.contains(
+            "declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & {\n    __vizeEmitProps?: __VizeStaticEmitProps;\n    readonly __vizeRawProps?: Props;\n};"
+        )
+            && !public_dts.contains("__VizeComponentInputConstructor")
             && !public_dts.contains("__VizeComponentPublicConstructor"),
-        "one constructor must own both authored and public-instance contracts:\n{public_dts}"
+        "one constructor must own authored, public-instance, and incremental raw-props contracts:\n{public_dts}"
     );
     assert!(
         public_dts.contains("$props: Props & __EmitProps<Emits>;")
