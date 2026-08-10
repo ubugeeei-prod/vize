@@ -12,6 +12,7 @@
 //! The whole surface is gated on the opt-in `typeChecker.jsxTypecheck` flag
 //! (default off) so React `.tsx` files are never type-checked as Vue JSX.
 
+#[cfg(any(test, feature = "native"))]
 mod position;
 pub mod virtual_ts;
 

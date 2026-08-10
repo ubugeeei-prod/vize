@@ -78,6 +78,7 @@ impl OpenImportIndex {
         importers
     }
 
+    #[cfg(any(test, feature = "native"))]
     fn dependency_paths(&self, dependency: &Path) -> Vec<PathBuf> {
         let dependency = comparable_path(dependency);
         let index = self.inner.read();
@@ -112,11 +113,13 @@ pub(super) fn open_importers(state: &ServerState, dependency: &Url) -> Vec<Url> 
         .unwrap_or_default()
 }
 
+#[cfg(any(test, feature = "native"))]
 pub(super) fn indexed_dependency_paths(state: &ServerState, dependency: &Path) -> Vec<PathBuf> {
     state.open_imports.dependency_paths(dependency)
 }
 
 impl ServerState {
+    #[cfg(any(test, feature = "native"))]
     pub(crate) fn open_importers(&self, dependency: &Url) -> Vec<Url> {
         open_importers(self, dependency)
     }

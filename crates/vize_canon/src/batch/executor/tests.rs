@@ -1,5 +1,6 @@
 use super::fallback::{FallbackCause, classify_fallback_cause};
 use super::{CorsaError, CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris};
+use crate::batch::source_policy::SourceFilePolicy;
 use crate::file_uri::path_to_file_uri;
 use std::{
     fs,
@@ -48,7 +49,7 @@ fn collects_virtual_type_script_files_only() {
     fs::write(root.join("tsconfig.json"), "{}").unwrap();
     fs::write(root.join("ignored.js"), "").unwrap();
 
-    let uris = collect_virtual_file_uris(root).unwrap();
+    let uris = collect_virtual_file_uris(root, SourceFilePolicy::default()).unwrap();
 
     assert_eq!(
         uris,
@@ -61,6 +62,15 @@ fn collects_virtual_type_script_files_only() {
             path_to_file_uri(root.join("module.mts").as_path()),
         ]
     );
+
+    let allow_js = SourceFilePolicy::from_compiler_options(
+        serde_json::json!({ "allowJs": true }).as_object().unwrap(),
+    );
+    let uris = collect_virtual_file_uris(root, allow_js).unwrap();
+    assert!(
+        uris.contains(&path_to_file_uri(root.join("ignored.js").as_path())),
+        "allowJs should make the JavaScript family diagnostic inputs"
+    );
 }
 
 #[test]
@@ -71,7 +81,7 @@ fn encodes_reserved_characters_in_virtual_file_uris() {
     fs::create_dir_all(&route_dir).unwrap();
     fs::write(route_dir.join("[versionRange].vue.ts"), "").unwrap();
 
-    let uris = collect_virtual_file_uris(root.as_path()).unwrap();
+    let uris = collect_virtual_file_uris(root.as_path(), SourceFilePolicy::default()).unwrap();
     let _ = fs::remove_dir_all(&root);
 
     assert_eq!(

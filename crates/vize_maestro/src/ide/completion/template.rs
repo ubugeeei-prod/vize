@@ -241,6 +241,7 @@ fn is_bind_completion_label(label: &str) -> bool {
         || (!label.starts_with('@') && !label.starts_with('#') && !label.starts_with("v-"))
 }
 
+#[cfg(any(test, feature = "native"))]
 pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     let mut items = contextual_directive_completions(ctx);
     items.extend(component_meta::component_surface_completions(ctx));
@@ -262,6 +263,7 @@ pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem
 /// Corsa already surfaces them; the synchronous fallback covers them via
 /// [`analyzed_template_binding_completions`]. Options API is standard Vue 3 and
 /// is treated like the default path here, not like legacy.
+#[cfg(any(test, feature = "native"))]
 pub(crate) fn legacy_vue2_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     if !ctx.state.lsp_features().legacy_vue2 {
         return Vec::new();

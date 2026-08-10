@@ -6,7 +6,7 @@ use crate::ide::ecosystem;
 use crate::server::ServerState;
 use crate::utils::{is_jsx_path, is_standalone_html_path};
 
-use super::{LineIndex, Severity, sources};
+use super::{LineIndex, Severity};
 
 /// Source position mapping from @vize-map comments.
 #[cfg(feature = "native")]
@@ -349,7 +349,7 @@ impl DiagnosticService {
             if !state.has_corsa_bridge()
                 && !diagnostics
                     .iter()
-                    .any(|d| d.source.as_deref() == Some(sources::TYPE_CHECKER))
+                    .any(|d| d.source.as_deref() == Some(super::sources::TYPE_CHECKER))
             {
                 diagnostics.push(typecheck_unavailable_hint());
             }
@@ -403,7 +403,7 @@ fn typecheck_unavailable_hint() -> Diagnostic {
         },
         severity: Some(DiagnosticSeverity::HINT),
         code: Some(NumberOrString::String("typecheck-unavailable".to_string())),
-        source: Some(sources::TYPE_CHECKER.to_string()),
+        source: Some(super::sources::TYPE_CHECKER.to_string()),
         message: "Type checking is unavailable in this workspace. \
             Make sure `tsconfig.json` exists and the Corsa runtime is reachable; \
             see https://vizejs.dev/guide/static-analysis."
@@ -421,10 +421,10 @@ fn has_blocking_parser_error(diagnostics: &[Diagnostic]) -> bool {
             // both leave the script body in a state where Corsa would just
             // cascade — the user already has the actionable diagnostic.
             Some(
-                sources::SFC_PARSER
-                    | sources::SCRIPT_PARSER
-                    | sources::TEMPLATE_PARSER
-                    | sources::SFC_COMPILER
+                super::sources::SFC_PARSER
+                    | super::sources::SCRIPT_PARSER
+                    | super::sources::TEMPLATE_PARSER
+                    | super::sources::SFC_COMPILER
             )
         ) && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
     })

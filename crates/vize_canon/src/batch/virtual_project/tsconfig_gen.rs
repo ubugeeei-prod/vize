@@ -14,6 +14,7 @@ use vize_carton::{String as CompactString, ToCompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::write_if_changed;
+use crate::batch::source_policy::SourceFilePolicy;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject};
 use native_options::normalize_native_removed_options;
@@ -242,7 +243,8 @@ impl VirtualProject {
             compiler_options.insert("noEmit".into(), Value::Bool(true));
         }
 
-        let include_js = compiler_option_enabled(&compiler_options, "allowJs");
+        let include_js =
+            SourceFilePolicy::from_compiler_options(&compiler_options).allows_javascript();
         config.insert("compilerOptions".into(), Value::Object(compiler_options));
         config.insert(
             "include".into(),

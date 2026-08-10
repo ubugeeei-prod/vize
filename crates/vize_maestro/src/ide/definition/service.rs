@@ -18,9 +18,12 @@ use vize_canon::CorsaBridge;
 
 mod import_target;
 
-use super::{IdeContext, helpers, module_specifier, script, template};
+use super::{IdeContext, module_specifier, script};
+#[cfg(feature = "native")]
+use super::{helpers, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
+#[cfg(feature = "native")]
 use crate::ide::is_component_tag;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 

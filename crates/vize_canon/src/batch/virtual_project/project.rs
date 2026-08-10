@@ -44,7 +44,7 @@ impl VirtualProject {
             virtual_root,
             tsconfig_path: None,
             preserve_unused_diagnostics: false,
-            check_js: false,
+            source_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),
             diagnostic_paths: FxHashSet::default(),
             declaration_roots: None,
@@ -67,7 +67,7 @@ impl VirtualProject {
         };
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
-        project.check_js = project.resolve_tsconfig_checks_javascript();
+        project.source_policy = project.resolve_source_file_policy();
         Ok(project)
     }
 

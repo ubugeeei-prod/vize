@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/ui",
-  "version": "0.345.0",
+  "version": "0.346.0",
   "description": "Accessible, headless, Native CSS-first UI primitives",
   "keywords": [
     "accessibility",

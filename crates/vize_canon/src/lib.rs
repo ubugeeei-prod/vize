@@ -52,6 +52,7 @@ mod file_uri;
 pub mod intelligence;
 mod options_api_setup_spread;
 mod script_parse;
+mod sfc_diagnostics;
 pub mod sfc_typecheck;
 pub mod source_map;
 mod types;
@@ -92,6 +93,7 @@ mod type_only_import_anchors;
 pub use checker::TypeChecker;
 pub use context::{Binding, BindingKind, Import, Prop, TypeContext};
 pub use diagnostic::{TypeDiagnostic, TypeErrorCode, TypeSeverity};
+pub use sfc_diagnostics::{SfcBlockType, sfc_block_fallback_offset};
 
 // Re-export Locale for i18n support
 pub use intelligence::{
@@ -127,10 +129,9 @@ pub use batch::{
     ContentMapperTransform, ContentMapperTransformOptions, CorsaError, CorsaExecutor,
     CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
     Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
-    PackageManager, SfcBlockType, TypeCheckResult as BatchTypeCheckResult,
-    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,
-    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
-    sfc_block_fallback_offset,
+    PackageManager, TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
+    VirtualFile, VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
 };
 
 #[cfg(feature = "native")]

@@ -1,4 +1,9 @@
 //! Semantic JSX component calls for the editor's plain-TypeScript document.
+//!
+//! Only the collection half runs in the non-native build (the structural
+//! semantic-token walk still needs it); the rendering half belongs to the
+//! generator, which is `native`/test-only.
+#![cfg_attr(not(any(test, feature = "native")), allow(dead_code))]
 
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 

@@ -29,35 +29,10 @@ use vize_relief::{
 };
 
 mod component;
-
-/// Name of the synthesized helper that swallows every re-emitted JSX
-/// expression. Declaring it ambient and `any`-returning lets each argument be
-/// type-checked independently while the whole call stays a valid render return.
-const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
-
-/// Ambient `Ctx<Emits, Slots>` type injected at module scope so the typed
-/// second parameter of a Vize JSX/TSX component (`{ emit, slots }: Ctx<…>`)
-/// resolves and type-checks (#1502).
-///
-/// Copied verbatim from `vize_canon`'s batch `jsx_codegen` `CTX_HELPER` so the
-/// LSP virtual TS resolves `Ctx`, `emit`, and `slots` identically to the
-/// type-checker — without it a `.tsx` using the `Ctx` second parameter would
-/// raise a spurious `Cannot find name 'Ctx'` diagnostic in the editor. `emit`
-/// reuses the emits-as-tuple convention (`emit('change', 1)` checks the payload
-/// against the declared tuple); `slots` is the second type argument. The type
-/// is purely ambient and fully erased — no runtime is emitted.
-const CTX_HELPER: &str = "type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;\n\
-type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n\
-type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n\
-type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };\n";
-
-/// The generated plain-`.ts` virtual document for one `.jsx`/`.tsx` source.
-pub(in crate::ide) struct JsxVirtualTs {
-    /// Generated plain TypeScript.
-    pub(in crate::ide) code: String,
-    /// Byte-range mappings from generated TS back to the original source.
-    pub(in crate::ide) mappings: Vec<VizeMapping>,
-}
+#[cfg(any(test, feature = "native"))]
+mod generate;
+#[cfg(any(test, feature = "native"))]
+pub(in crate::ide) use generate::{JsxVirtualTs, generate_jsx_virtual_ts};
 
 /// A dynamic JSX expression recovered from the lowered tree: its original
 /// source text plus the byte range it occupied in the `.jsx`/`.tsx` source.
@@ -76,6 +51,9 @@ pub(in crate::ide) struct JsxExpr {
 enum JsxEmit {
     Expr(JsxExpr),
     ModelTarget(JsxExpr),
+    /// Only the `native`/test generator renders this variant; the structural
+    /// walk keeps it so both builds share one collector.
+    #[cfg_attr(not(any(test, feature = "native")), allow(dead_code))]
     Component(component::JsxComponent),
     ForScope {
         source: JsxExpr,
@@ -106,138 +84,11 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
     exprs
 }
 
-/// Lower a `.jsx`/`.tsx` Vize component to plain virtual TypeScript.
+/// Append `expr`'s source text to `out` and record the mapping back to the
+/// byte range it occupied in the original `.jsx`/`.tsx` source.
 ///
-/// Returns `None` only when lowering cannot proceed at all (it never does
-/// today — `lower_source` always yields a tree even for empty input — but the
-/// signature leaves room for that without forcing callers to handle a panic).
-pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Option<JsxVirtualTs> {
-    let bump = Bump::new();
-    let lowered = lower_source(&bump, source, lang);
-
-    // Collect every outermost JSX root's byte range together with the dynamic
-    // expressions inside it, in source order.
-    let mut roots: Vec<(u32, u32, Vec<JsxEmit>)> = Vec::with_capacity(lowered.roots.len());
-    for root in &lowered.roots {
-        let mut emits = Vec::new();
-        collect_root_expressions(&root.root, &mut emits, true);
-        collect_style_expressions(&root.scoped_style_exprs, &mut emits);
-        roots.push((root.root.loc.start.offset, root.root.loc.end.offset, emits));
-    }
-    // Outermost roots never overlap and are produced in source order, but guard
-    // the rewrite against any accidental disorder.
-    roots.sort_by_key(|(start, _, _)| *start);
-
-    let (code, mappings) = render_plain_ts(source, &roots);
-    Some(JsxVirtualTs { code, mappings })
-}
-
-/// Build the plain-`.ts` text and its source mappings.
-///
-/// Every byte outside a JSX render root is copied verbatim; each render root is
-/// replaced by `__vize_jsx_expr__(<expr>, <expr>, …)`, with each re-emitted
-/// expression mapped back to its original byte range.
-fn render_plain_ts(source: &str, roots: &[(u32, u32, Vec<JsxEmit>)]) -> (String, Vec<VizeMapping>) {
-    let mut out = String::new();
-    let mut mappings: Vec<VizeMapping> = Vec::new();
-
-    // Ambient helpers: declared once at module scope so the re-emitted JSX
-    // expressions and the synthesized render returns both type-check.
-    out.push_str("declare function ");
-    out.push_str(JSX_EXPR_SINK);
-    out.push_str("(...args: unknown[]): any;\n");
-    // Ambient `Ctx<Emits, Slots>` so the typed second parameter resolves and the
-    // `emit`/`slots` usages in the setup body and JSX expressions type-check.
-    // Mirrors the canon batch path so the LSP virtual TS matches the checker.
-    out.push_str(CTX_HELPER);
-    if roots
-        .iter()
-        .any(|(_, _, emits)| emits.iter().any(emit_contains_component))
-    {
-        out.push_str(component::HELPER);
-    }
-
-    let mut cursor = 0usize;
-    for (start, end, emits) in roots {
-        let start = (*start as usize).min(source.len());
-        let end = (*end as usize).min(source.len());
-        if start < cursor {
-            // Overlapping/disordered root: skip defensively.
-            continue;
-        }
-        // Verbatim prefix (component function header, typed params, setup body).
-        // Emit an identity mapping so a wrong `props.X` use in the setup body
-        // maps back to its true source range despite the prepended
-        // ambient-helper preamble.
-        push_verbatim(&mut out, &mut mappings, source, cursor, start);
-
-        render_sink_call(&mut out, &mut mappings, emits);
-        cursor = end.max(start);
-    }
-    // Trailing verbatim suffix (e.g. `export default Comp;`).
-    push_verbatim(&mut out, &mut mappings, source, cursor, source.len());
-
-    (out, mappings)
-}
-
-/// Emit `__vize_jsx_expr__(<unit>, <unit>, …)` for one render scope, recursing
-/// into `v-for` bodies so their loop aliases stay in scope.
-fn render_sink_call(out: &mut String, mappings: &mut Vec<VizeMapping>, emits: &[JsxEmit]) {
-    out.push_str(JSX_EXPR_SINK);
-    out.push('(');
-    for (index, emit) in emits.iter().enumerate() {
-        if index > 0 {
-            out.push_str(", ");
-        }
-        render_emit(out, mappings, emit);
-    }
-    out.push(')');
-}
-
-fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit) {
-    match emit {
-        JsxEmit::Expr(expr) => push_mapped_expr(out, mappings, expr),
-        JsxEmit::ModelTarget(expr) => {
-            out.push('(');
-            push_mapped_expr(out, mappings, expr);
-            out.push_str(" = ");
-            out.push_str(&expr.content);
-            out.push(')');
-        }
-        JsxEmit::Component(component) => component::render(out, mappings, component),
-        JsxEmit::ForScope {
-            source,
-            value_alias,
-            key_alias,
-            body,
-        } => {
-            out.push('(');
-            push_mapped_expr(out, mappings, source);
-            out.push_str(").map((");
-            if let Some(value) = value_alias {
-                push_mapped_expr(out, mappings, value);
-            } else {
-                out.push_str("__vize_v");
-            }
-            if let Some(key) = key_alias {
-                out.push_str(", ");
-                push_mapped_expr(out, mappings, key);
-            }
-            out.push_str(") => ");
-            render_sink_call(out, mappings, body);
-            out.push(')');
-        }
-    }
-}
-
-fn emit_contains_component(emit: &JsxEmit) -> bool {
-    match emit {
-        JsxEmit::Component(_) => true,
-        JsxEmit::ForScope { body, .. } => body.iter().any(emit_contains_component),
-        JsxEmit::Expr(_) | JsxEmit::ModelTarget(_) => false,
-    }
-}
-
+/// Shared by the generator and the semantic component renderer so both emit
+/// identical mappings.
 fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &JsxExpr) {
     let gen_start = out.len();
     out.push_str(&expr.content);
@@ -245,28 +96,6 @@ fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &Js
     mappings.push(VizeMapping {
         gen_range: gen_start..gen_end,
         src_range: expr.start as usize..expr.end as usize,
-        sub_spans: Vec::new(),
-    });
-}
-
-/// Copy `source[src_start..src_end)` verbatim into `out`, recording an identity
-/// mapping (generated range -> original range) for diagnostics in the region.
-fn push_verbatim(
-    out: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    source: &str,
-    src_start: usize,
-    src_end: usize,
-) {
-    if src_start >= src_end {
-        return;
-    }
-    let gen_start = out.len();
-    out.push_str(&source[src_start..src_end]);
-    let gen_end = out.len();
-    mappings.push(VizeMapping {
-        gen_range: gen_start..gen_end,
-        src_range: src_start..src_end,
         sub_spans: Vec::new(),
     });
 }

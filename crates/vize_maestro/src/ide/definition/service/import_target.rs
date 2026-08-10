@@ -17,14 +17,17 @@ use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Ur
 use crate::ide::IdeContext;
 use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier, script};
 
+#[cfg(any(test, feature = "native"))]
 mod alias;
 
+#[cfg(any(test, feature = "native"))]
 pub(super) use alias::unwrap_bound_name_definition;
 
 /// Barrels can chain; three hops covers a package barrel re-exporting a
 /// directory barrel re-exporting the module, without risking a cycle walk.
 const MAX_REEXPORT_HOPS: usize = 3;
 
+#[cfg(any(test, feature = "native"))]
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
     let (specifier, exported) = importing_specifier(&ctx.content, ctx.offset, &word)?;
@@ -61,6 +64,7 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
 /// The module specifier and exported name of the import statement that both
 /// contains `offset` and binds `word`. `None` when the cursor is not on an
 /// imported name.
+#[cfg(any(test, feature = "native"))]
 fn importing_specifier(content: &str, offset: usize, word: &str) -> Option<(String, String)> {
     let (_, _, clause, specifier) = import_statements(content)
         .into_iter()

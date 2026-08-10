@@ -3,8 +3,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use super::super::declaration_path::is_declaration_file;
 use super::super::error::{CorsaError, CorsaResult};
+use super::super::source_policy::SourceFilePolicy;
 use super::super::virtual_project::VirtualProject;
 
 /// Source membership carried across incremental checks.
@@ -53,6 +53,7 @@ impl IncrementalPaths {
     pub(super) fn refresh(
         &self,
         project: &VirtualProject,
+        source_policy: SourceFilePolicy,
         changed: &[PathBuf],
     ) -> CorsaResult<Vec<PathBuf>> {
         let mut paths = self
@@ -65,6 +66,7 @@ impl IncrementalPaths {
             &mut paths,
             changed,
             self.allow_new_paths,
+            source_policy,
             &known_source_paths,
         )?;
         Ok(paths.clone())
@@ -79,7 +81,10 @@ impl IncrementalPaths {
     }
 }
 
-pub(super) fn collect_project_paths(project_root: &Path) -> CorsaResult<Vec<PathBuf>> {
+pub(super) fn collect_project_paths(
+    project_root: &Path,
+    source_policy: SourceFilePolicy,
+) -> CorsaResult<Vec<PathBuf>> {
     let mut paths = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
@@ -93,7 +98,7 @@ pub(super) fn collect_project_paths(project_root: &Path) -> CorsaResult<Vec<Path
     {
         let entry = entry?;
         let path = entry.path();
-        if path.is_file() && is_supported_input(path) {
+        if path.is_file() && source_policy.accepts_project_source(path) {
             paths.push(path.to_path_buf());
         }
     }
@@ -105,6 +110,7 @@ pub(super) fn refresh_paths(
     paths: &mut Vec<PathBuf>,
     changed: &[PathBuf],
     allow_new_paths: bool,
+    source_policy: SourceFilePolicy,
     known_source_paths: &[PathBuf],
 ) -> CorsaResult<()> {
     let mut refreshed_paths = paths.clone();
@@ -127,7 +133,7 @@ pub(super) fn refresh_paths(
         if allow_new_paths
             && !already_registered
             && candidate.is_file()
-            && is_supported_input(&candidate)
+            && source_policy.accepts_project_source(&candidate)
         {
             refreshed_paths.push(candidate);
         }
@@ -140,16 +146,10 @@ pub(super) fn refresh_paths(
     Ok(())
 }
 
-fn is_supported_input(path: &Path) -> bool {
-    path.extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
-        || is_declaration_file(path)
-}
-
 #[cfg(test)]
 mod tests {
     use super::refresh_paths;
+    use crate::batch::source_policy::SourceFilePolicy;
 
     #[test]
     fn validation_error_does_not_partially_grow_membership() {
@@ -165,8 +165,15 @@ mod tests {
         let project_root = vize_carton::path::canonicalize_non_verbatim(project.path());
         let existing = vize_carton::path::canonicalize_non_verbatim(&existing);
         let mut paths = vec![existing.clone()];
-        let error = refresh_paths(&project_root, &mut paths, &[added, outside_file], true, &[])
-            .expect_err("outside path should reject the whole refresh");
+        let error = refresh_paths(
+            &project_root,
+            &mut paths,
+            &[added, outside_file],
+            true,
+            SourceFilePolicy::default(),
+            &[],
+        )
+        .expect_err("outside path should reject the whole refresh");
 
         assert!(matches!(error, crate::batch::CorsaError::PathError { .. }));
         assert_eq!(paths, vec![existing]);
@@ -191,6 +198,7 @@ mod tests {
             &mut paths,
             std::slice::from_ref(&outside_file),
             true,
+            SourceFilePolicy::default(),
             std::slice::from_ref(&outside_file),
         )
         .expect("an already-registered external dependency should refresh");

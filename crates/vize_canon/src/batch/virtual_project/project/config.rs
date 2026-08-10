@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
 
 use crate::batch::error::CorsaResult;
+use crate::batch::source_policy::SourceFilePolicy;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
 use super::super::VirtualProject;
@@ -15,14 +16,30 @@ impl VirtualProject {
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
         self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
-        self.check_js = self.resolve_tsconfig_checks_javascript();
+        self.source_policy = self.resolve_source_file_policy();
+    }
+
+    pub(crate) fn source_file_policy(&self) -> SourceFilePolicy {
+        self.source_policy
+    }
+
+    pub(super) fn resolve_source_file_policy(&self) -> SourceFilePolicy {
+        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
+            return SourceFilePolicy::default();
+        };
+        self.load_compiler_options(Some(tsconfig_path.as_path()))
+            .ok()
+            .as_ref()
+            .map(SourceFilePolicy::from_compiler_options)
+            .unwrap_or_default()
     }
 
     /// Whether TypeScript diagnostics landing in `virtual_path` must be dropped
     /// because the file is a JavaScript SFC and the project does not enable
     /// `checkJs` (#3322).
     pub(crate) fn skips_typescript_diagnostics(&self, virtual_path: &Path) -> bool {
-        !self.check_js && self.unchecked_javascript_files.contains(virtual_path)
+        !self.source_policy.checks_javascript()
+            && self.unchecked_javascript_files.contains(virtual_path)
     }
 
     /// Set the shared virtual TS options.

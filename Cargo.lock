@@ -3501,7 +3501,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vize"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "clap",
  "corsa",
@@ -3546,7 +3546,7 @@ dependencies = [
 
 [[package]]
 name = "vize_armature"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "compact_str 0.9.0",
  "htmlize",
@@ -3559,7 +3559,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_core"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "bumpalo",
  "compact_str 0.9.0",
@@ -3586,7 +3586,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_dom"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "insta",
  "phf 0.13.1",
@@ -3599,7 +3599,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_jsx"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3624,7 +3624,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_sfc"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3657,7 +3657,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_ssr"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "insta",
  "serde",
@@ -3670,7 +3670,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_vapor"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "insta",
  "oxc_allocator",
@@ -3689,7 +3689,7 @@ dependencies = [
 
 [[package]]
 name = "vize_canon"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "corsa",
  "dashmap 6.1.0",
@@ -3724,7 +3724,7 @@ dependencies = [
 
 [[package]]
 name = "vize_carton"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "bitflags 2.13.1",
  "bumpalo",
@@ -3745,7 +3745,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "dashmap 6.1.0",
  "insta",
@@ -3769,7 +3769,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis_cf"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3787,7 +3787,7 @@ dependencies = [
 
 [[package]]
 name = "vize_curator"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "insta",
  "oxc_allocator",
@@ -3806,7 +3806,7 @@ dependencies = [
 
 [[package]]
 name = "vize_doctor"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3817,7 +3817,7 @@ dependencies = [
 
 [[package]]
 name = "vize_fresco"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "compact_str 0.9.0",
  "criterion",
@@ -3839,7 +3839,7 @@ dependencies = [
 
 [[package]]
 name = "vize_glyph"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3859,7 +3859,7 @@ dependencies = [
 
 [[package]]
 name = "vize_maestro"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "async-trait",
  "dashmap 6.1.0",
@@ -3897,7 +3897,7 @@ dependencies = [
 
 [[package]]
 name = "vize_marquette"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "insta",
  "serde",
@@ -3908,7 +3908,7 @@ dependencies = [
 
 [[package]]
 name = "vize_musea"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3924,7 +3924,7 @@ dependencies = [
 
 [[package]]
 name = "vize_patina"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "corsa",
  "criterion",
@@ -3952,7 +3952,7 @@ dependencies = [
 
 [[package]]
 name = "vize_relief"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3962,7 +3962,7 @@ dependencies = [
 
 [[package]]
 name = "vize_test_runner"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "pklrust",
  "serde",
@@ -3975,7 +3975,7 @@ dependencies = [
 
 [[package]]
 name = "vize_vitrine"
-version = "0.345.0"
+version = "0.346.0"
 dependencies = [
  "getrandom 0.3.4",
  "glob",

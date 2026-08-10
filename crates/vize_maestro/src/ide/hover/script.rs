@@ -8,7 +8,7 @@
     clippy::disallowed_macros
 )]
 
-use tower_lsp::lsp_types::{Hover, HoverContents};
+use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
@@ -20,6 +20,12 @@ use vize_canon::CorsaBridge;
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
+
+#[cfg(feature = "native")]
+mod reactive_type;
+#[cfg(feature = "native")]
+use reactive_type::hover_has_unknown_reactive_type;
+
 impl HoverService {
     /// Get hover for script context.
     pub(super) fn hover_script(ctx: &IdeContext, is_setup: bool) -> Option<Hover> {
@@ -369,23 +375,4 @@ impl HoverService {
             BindingType::ExternalModule => "Imported from external module.",
         }
     }
-}
-
-fn hover_has_unknown_reactive_type(hover: &Hover) -> bool {
-    let value = match &hover.contents {
-        HoverContents::Markup(markup) => markup.value.as_str(),
-        HoverContents::Scalar(value) => return marked_string_has_unknown_reactive_type(value),
-        HoverContents::Array(values) => {
-            return values.iter().any(marked_string_has_unknown_reactive_type);
-        }
-    };
-    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
-}
-
-fn marked_string_has_unknown_reactive_type(value: &tower_lsp::lsp_types::MarkedString) -> bool {
-    let value = match value {
-        tower_lsp::lsp_types::MarkedString::String(value) => value.as_str(),
-        tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value.as_str(),
-    };
-    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
 }
