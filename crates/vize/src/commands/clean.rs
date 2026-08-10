@@ -39,7 +39,17 @@ pub enum CleanScope {
 pub fn run(args: CleanArgs) {
     let root = args.root.canonicalize().unwrap_or(args.root);
     let artifact_paths = if args.force {
-        force_vize_artifact_paths(&root, args.scope)
+        match force_vize_artifact_paths(&root, args.scope) {
+            Ok(artifact_paths) => artifact_paths,
+            Err(error) => {
+                eprintln!(
+                    "Failed to enumerate {}: {}",
+                    node_modules_vize_dir(&root).display(),
+                    error
+                );
+                std::process::exit(1);
+            }
+        }
     } else {
         managed_vize_artifact_paths(&root, args.scope)
     };
@@ -94,25 +104,37 @@ fn managed_vize_artifact_paths(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
     paths
 }
 
-fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
+fn force_vize_artifact_paths(
+    root: &Path,
+    scope: CleanScope,
+) -> Result<Vec<PathBuf>, std::io::Error> {
     let mut paths = Vec::new();
     if matches!(scope, CleanScope::All | CleanScope::Project) {
         paths.push(project_vize_dir(root));
     }
     if matches!(scope, CleanScope::All | CleanScope::NodeModules) {
         let node_modules_vize = node_modules_vize_dir(root);
-        if let Ok(entries) = fs::read_dir(&node_modules_vize) {
-            paths.extend(entries.filter_map(Result::ok).filter_map(|entry| {
-                // Canon is shared dependency storage with project-keyed mutable
-                // state. Even `--force` may remove only the current project key;
-                // deleting the parent would erase live state owned by another
-                // project that happens to share this node_modules tree.
-                (entry.file_name() != "canon").then(|| entry.path())
-            }));
+        match fs::read_dir(&node_modules_vize) {
+            Ok(entries) => {
+                for entry in entries {
+                    let entry = entry?;
+                    // Canon is shared dependency storage with project-keyed mutable
+                    // state. Even `--force` may remove only the current project key;
+                    // deleting the parent would erase live state owned by another
+                    // project that happens to share this node_modules tree.
+                    if entry.file_name() != "canon" {
+                        paths.push(entry.path());
+                    }
+                }
+            }
+            // An absent artifact root is an empty one; anything else means the
+            // enumeration is incomplete and must not drive deletions.
+            Err(error) if error.kind() == ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
         }
         paths.extend(current_canon_artifact_paths(root));
     }
-    paths
+    Ok(paths)
 }
 
 fn project_vize_dir(root: &Path) -> PathBuf {
