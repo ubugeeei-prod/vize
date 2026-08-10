@@ -68,7 +68,7 @@ pub struct ServerState {
     /// shard guard there deadlocks the whole server against the next
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
-    pub(super) open_vue_imports: super::importers::OpenVueImportIndex,
+    pub(super) open_imports: super::importers::OpenImportIndex,
     /// Parsed metadata for imported components, keyed by resolved path.
     /// Lets template completion skip re-reading + re-parsing + re-analyzing an
     /// imported component on every keystroke; entries are invalidated by the
@@ -174,7 +174,7 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
-            open_vue_imports: super::importers::OpenVueImportIndex::default(),
+            open_imports: super::importers::OpenImportIndex::default(),
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),

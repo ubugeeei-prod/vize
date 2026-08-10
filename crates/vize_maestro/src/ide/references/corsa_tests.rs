@@ -88,10 +88,7 @@ function unrelated() { const shared = 0; return shared }
             "vue".to_string(),
         );
         state.update_virtual_docs(&child_uri, child_source);
-        assert_eq!(
-            state.open_vue_importers(&child_uri),
-            vec![parent_uri.clone()]
-        );
+        assert_eq!(state.open_importers(&child_uri), vec![parent_uri.clone()]);
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
             working_dir: Some(project.path().to_path_buf()),

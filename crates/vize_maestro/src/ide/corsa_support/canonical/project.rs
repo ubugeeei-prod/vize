@@ -52,13 +52,13 @@ pub(crate) async fn open_canonical_virtual_project_document(
         open_canonical_virtual_document_with_overlays(ctx, bridge, &overlays).await?;
     let mut visited = FxHashSet::default();
     visited.insert(ctx.uri.clone());
-    let mut queue = VecDeque::from(ctx.state.open_vue_importers(ctx.uri));
+    let mut queue = VecDeque::from(ctx.state.open_importers(ctx.uri));
 
     while let Some(uri) = queue.pop_front() {
         if !visited.insert(uri.clone()) {
             continue;
         }
-        queue.extend(ctx.state.open_vue_importers(&uri));
+        queue.extend(ctx.state.open_importers(&uri));
         let Some(importer_ctx) = IdeContext::new(ctx.state, &uri, 0) else {
             continue;
         };
