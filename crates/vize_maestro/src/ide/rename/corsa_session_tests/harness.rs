@@ -2,7 +2,6 @@ use std::{
     fs,
     path::{Path, PathBuf},
     sync::Arc,
-    time::Duration,
 };
 
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, Url, WorkspaceEdit};
@@ -97,7 +96,12 @@ impl RealCorsaRenameSession {
             timeout_ms: 30_000,
             ..Default::default()
         }));
-        spawn_session_bridge(&bridge)?;
+        if let Err(error) = crate::runtime::block_on(bridge.spawn()) {
+            // Without this the partially started child would outlive the
+            // failed setup: `Self` is never constructed, so `Drop` never runs.
+            let _ = crate::runtime::block_on(bridge.shutdown());
+            return Err(error.to_string());
+        }
 
         Ok(Self {
             root,
@@ -250,35 +254,6 @@ impl Drop for RealCorsaRenameSession {
             self.shutdown_complete = true;
         }
     }
-}
-
-/// Exec'ing the freshly written per-session wrapper races with `fork` in
-/// sibling test threads: a child forked while the wrapper's writable
-/// descriptor is still open inherits it, so our exec observes `ETXTBSY` until
-/// that child reaches its own `exec`. The window is microseconds wide, so
-/// retry briefly rather than failing an otherwise healthy session.
-fn spawn_session_bridge(bridge: &CorsaBridge) -> Result<(), String> {
-    const ATTEMPTS: u32 = 5;
-
-    let mut attempt = 1;
-    loop {
-        let Err(error) = crate::runtime::block_on(bridge.spawn()) else {
-            return Ok(());
-        };
-        let message = error.to_string();
-        // `Self` is never constructed on this path, so `Drop` never runs:
-        // close any partially started child before retrying or giving up.
-        let _ = crate::runtime::block_on(bridge.shutdown());
-        if attempt == ATTEMPTS || !is_text_file_busy(&message) {
-            return Err(message);
-        }
-        std::thread::sleep(Duration::from_millis(50 * u64::from(attempt)));
-        attempt += 1;
-    }
-}
-
-fn is_text_file_busy(message: &str) -> bool {
-    message.contains("Text file busy") || message.contains("os error 26")
 }
 
 fn strict_rename(

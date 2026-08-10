@@ -2,11 +2,12 @@ use std::{
     fs,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     sync::mpsc,
     time::Duration,
 };
+
+mod publication;
 
 const SHUTDOWN_OBSERVATION_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -132,12 +133,7 @@ exit "$status"
     } else {
         (TRACE_CLIENT_TEE.to_owned(), None)
     };
-    fs::write(&wrapper, wrapper_source).map_err(|error| error.to_string())?;
-    let mut permissions = fs::metadata(&wrapper)
-        .map_err(|error| error.to_string())?
-        .permissions();
-    permissions.set_mode(0o755);
-    fs::set_permissions(&wrapper, permissions).map_err(|error| error.to_string())?;
+    publication::write_executable(&wrapper, &wrapper_source)?;
     Ok((wrapper, trace_dir, shutdown_gate))
 }
 
