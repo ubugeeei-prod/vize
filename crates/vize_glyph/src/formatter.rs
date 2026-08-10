@@ -189,7 +189,7 @@ impl<'a> GlyphFormatter<'a> {
         let trimmed = block.content.trim();
         let source_type =
             script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
-        let formatted_content = script::format_script_content_stable(
+        let formatted_content = script::format_sfc_script_content_stable(
             trimmed,
             self.options,
             self.allocator,

@@ -3,12 +3,16 @@
 //! This module provides Prettier-compatible formatting for JavaScript/TypeScript
 //! code using OXC's formatter (oxfmt).
 
+mod block_identity;
+
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_formatter::{format_program, parse_for_format};
 use oxc_span::SourceType;
 use vize_carton::{Allocator, String, ToCompactString};
+
+pub(crate) use block_identity::format_sfc_script_content_stable;
 
 const MAX_SCRIPT_STABILIZATION_PASSES: usize = 6;
 

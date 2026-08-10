@@ -267,6 +267,14 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
     ).join("\n"),
     /styles changed/,
   );
+  assert.match(
+    compareFile(
+      "<script setup>;</script>\n<template><p/></template>\n",
+      "<script setup></script>\n<template><p/></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /scriptSetup block disappeared/,
+  );
 });
 
 test("glyph corpus normalizes only compiler-defined presence attributes", () => {

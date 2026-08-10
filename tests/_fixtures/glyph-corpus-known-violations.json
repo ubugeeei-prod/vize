@@ -253,15 +253,6 @@
   },
   {
     "property": "parse-preservation",
-    "category": "semantic-diff",
-    "project": "sigma-file-manager",
-    "path": "src/components/ui/dialog/dialog-header.vue",
-    "reason": "Formatting removes an empty script setup block, changing the official SFC descriptor.",
-    "trackingIssue": 4107,
-    "expiryCondition": "Remove after formatting preserves the empty script setup block and the semantic comparator is clean."
-  },
-  {
-    "property": "parse-preservation",
     "category": "oracle-unavailable",
     "project": "splitpanes",
     "path": "src/app.vue",
