@@ -1,5 +1,7 @@
 //! TypeScript Content Mapper protocol-v1 feature bits.
 
+use super::ContentMapperSpanKind;
+
 /// TypeScript Content Mapper protocol-v1 feature bits.
 ///
 /// This is deliberately separate from `crate::source_map::MappingFlags`:
@@ -56,9 +58,37 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ALL: usize = ContentMapperSpanFeat
     | ContentMapperSpanFeature::DocumentSymbols as usize
     | ContentMapperSpanFeature::CodeLens as usize;
 
-/// Read-only features that can safely project through a synthesized atom.
-/// Symbol navigation and every edit-producing feature require verbatim text;
-/// advertising them on generated identifiers creates self-definitions and
-/// edits that cannot be applied source-faithfully.
+/// Read-only features that can safely project through an ordinary synthesized
+/// atom. Symbol navigation and every edit-producing feature require either
+/// verbatim text or an explicitly recognized whole-symbol projection below.
 pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ATOM: usize =
     ContentMapperSpanFeature::Hover as usize | ContentMapperSpanFeature::SignatureHelp as usize;
+
+/// Whole-symbol features that remain exact across a camel/kebab casing rewrite.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL: usize = ContentMapperSpanFeature::Hover
+    as usize
+    | ContentMapperSpanFeature::Definition as usize
+    | ContentMapperSpanFeature::TypeDefinition as usize
+    | ContentMapperSpanFeature::Implementation as usize
+    | ContentMapperSpanFeature::SourceDefinition as usize
+    | ContentMapperSpanFeature::References as usize
+    | ContentMapperSpanFeature::DocumentHighlights as usize;
+
+pub(super) fn content_mapper_span_features(
+    generated: &str,
+    start: usize,
+    kind: ContentMapperSpanKind,
+) -> usize {
+    match kind {
+        ContentMapperSpanKind::Verbatim => CONTENT_MAPPER_SPAN_FEATURES_ALL,
+        ContentMapperSpanKind::Atom if is_cased_symbol_projection(generated, start) => {
+            CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL
+        }
+        ContentMapperSpanKind::Atom => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
+    }
+}
+
+fn is_cased_symbol_projection(generated: &str, start: usize) -> bool {
+    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
+    generated[line_start..start].starts_with("  void __vize_kebab_events_nav_")
+}

@@ -23,7 +23,7 @@ mod span_features;
 #[path = "content_mapper_span_normalize.rs"]
 mod span_normalize;
 
-use span_features::{CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM};
+use span_features::content_mapper_span_features;
 
 const SCRIPT_KIND_TS: u8 = 3;
 const SCRIPT_KIND_TSX: u8 = 4;
@@ -283,10 +283,8 @@ fn protocol_spans(
     accepted
         .into_iter()
         .map(|candidate| {
-            let features = match candidate.kind {
-                ContentMapperSpanKind::Verbatim => CONTENT_MAPPER_SPAN_FEATURES_ALL,
-                ContentMapperSpanKind::Atom => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
-            };
+            let features =
+                content_mapper_span_features(generated, candidate.generated.start, candidate.kind);
             ContentMapperSpan([
                 candidate.generated.start,
                 candidate.generated.len(),

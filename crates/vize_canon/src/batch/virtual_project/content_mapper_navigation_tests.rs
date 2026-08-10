@@ -1,7 +1,8 @@
 use std::path::Path;
 
 use super::{
-    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM, ContentMapperSpanKind,
+    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
+    CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL, ContentMapperSpanKind,
     generate_vue_content_mapper_transform,
 };
 
@@ -41,6 +42,33 @@ const handler = (value: number) => value;
 }
 
 #[test]
+fn resolves_complete_kebab_events_through_the_authored_camel_key() {
+    let source = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child @save-item="() => undefined" /></template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let projection = "__vize_kebab_events_nav_0.saveItem";
+    let generated = result.text.find(projection).unwrap() + "__vize_kebab_events_nav_0.".len();
+    let original = source.find("@save-item").unwrap() + 1;
+
+    assert!(
+        result.mappings.iter().any(|mapping| {
+            mapping.0[0] == generated
+                && mapping.0[1] == "saveItem".len()
+                && mapping.0[2] == original
+                && mapping.0[3] == "save-item".len()
+                && mapping.0[4] == ContentMapperSpanKind::Atom as usize
+                && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL
+        }),
+        "{:#?}",
+        result.mappings
+    );
+}
+
+#[test]
 fn maps_authored_event_members_without_overlapping_the_macro_type() {
     let source = r#"<script setup lang="ts">
 defineEmits<{ save: [value: number] }>();
@@ -60,4 +88,29 @@ defineEmits<{ save: [value: number] }>();
             && mapping.0[3] == "save".len()
             && mapping.0[4] == ContentMapperSpanKind::Verbatim as usize
     }));
+}
+
+#[test]
+fn retains_model_events_when_removing_duplicate_authored_event_members() {
+    let source = r#"<script setup lang="ts">
+defineModel<string>("title");
+defineEmits<{ save: [value: number] }>();
+</script>
+<template><button /></template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Child.vue"), source).expect("transform");
+
+    assert!(
+        result
+            .text
+            .contains("type __VizeAuthoredEventMap = Emits & {")
+    );
+    assert!(
+        result
+            .text
+            .contains("\"update:title\": [value: (string) | undefined]"),
+        "{}",
+        result.text
+    );
 }

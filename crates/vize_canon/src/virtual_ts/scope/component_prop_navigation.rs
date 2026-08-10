@@ -57,22 +57,43 @@ fn emit_usage_event_references(
     usage: &ComponentUsage,
     component_ref: &str,
 ) {
-    let events_ref = cstr!("__vize_events_nav_{idx}");
-    let mut emitted_events_ref = false;
+    let direct_events_ref = cstr!("__vize_events_nav_{idx}");
+    let kebab_events_ref = cstr!("__vize_kebab_events_nav_{idx}");
+    let mut emitted_direct_ref = false;
+    let mut emitted_kebab_ref = false;
     for event in &usage.events {
+        let camel_event_name = to_camel_case(event.name.as_str());
+        let is_complete_kebab = camel_event_name != event.name && !event.name.ends_with('-');
         let Some(source_range) = event_navigation_source_range(ctx, event) else {
             continue;
         };
-        if !emitted_events_ref {
+        let (events_ref, emitted_ref) = if is_complete_kebab {
+            (&kebab_events_ref, &mut emitted_kebab_ref)
+        } else {
+            (&direct_events_ref, &mut emitted_direct_ref)
+        };
+        if !*emitted_ref {
             append!(
                 *ts,
                 "  const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
             );
-            emitted_events_ref = true;
+            *emitted_ref = true;
         }
 
         append!(*ts, "  void {events_ref}");
-        let event_gen_range = if is_ts_identifier(event.name.as_str()) {
+        let event_gen_range = if is_complete_kebab {
+            if is_ts_identifier(camel_event_name.as_str()) {
+                ts.push('.');
+                let start = ts.len();
+                ts.push_str(camel_event_name.as_str());
+                start..ts.len()
+            } else {
+                ts.push('[');
+                let range = push_ts_single_quoted_literal(ts, camel_event_name.as_str());
+                ts.push(']');
+                range
+            }
+        } else if is_ts_identifier(event.name.as_str()) {
             ts.push('.');
             let start = ts.len();
             ts.push_str(event.name.as_str());
