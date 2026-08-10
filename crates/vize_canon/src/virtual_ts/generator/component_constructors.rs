@@ -93,10 +93,20 @@ pub(super) fn emit_component_constructors(
         } else {
             "{}"
         };
+        // `__VizeComponentInput` is a conditional on the authored type
+        // parameter, so the checker defers it instead of resolving the input
+        // shape while it checks the alias declaration. That matters because
+        // `__VizeComponentInputProps` reaches `__VizeFallthroughAttrs`, whose
+        // `Omit<__VizeDomListenerProps, ...>` distributes over the whole DOM
+        // event map: eagerly resolving it once per component made `vize check`
+        // ~6% slower on a 1000-file corpus, and every file that never
+        // instantiates the component paid it for nothing. Call sites still
+        // resolve the exact same intersection once `__VizeAuthoredProps` is
+        // inferred, so the authored contract is unchanged.
         append!(
             *ts,
-            "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<{props_ref}, {emit_props_ref}> & __VizeComponentInputGuard<{props_ref}, {emit_props_ref}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {{\n\
-  $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<{props_ref}, {emit_props_ref}> & __VizeComponentInputGuard<{props_ref}, {emit_props_ref}, __VizeAuthoredProps>;\n\
+            "type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<{props_ref}, {emit_props_ref}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {{\n\
+  $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInput<{props_ref}, {emit_props_ref}, __VizeAuthoredProps>;\n\
 }};\n"
         );
     }
@@ -154,6 +164,11 @@ pub(super) fn emit_component_constructors(
         aliases.has_exposed_type,
         aliases.exposed_is_generic.then_some(generic_names.as_str()),
     ));
+    // Deliberately not routed through `__VizeComponentInput`: a generic SFC
+    // infers its own type parameters from the same argument, and hiding the
+    // input shape behind a deferred conditional leaves listener parameters
+    // without a contextual type (`TS7006` on `<Generic onPick={(value) => …} />`).
+    // Generic components are rare, so they keep the eager spelling.
     append!(
         *ts,
         "type __VizeGenericComponentConstructor = new <{generic_decl}, __VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props<{generic_names}>, {emit_props_ref}> & __VizeComponentInputGuard<Props<{generic_names}>, {emit_props_ref}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeGenericComponentInstance<{generic_names}> : Omit<__VizeGenericComponentInstance<{generic_names}>, '$props'> & {{\n  $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<{generic_names}>, {emit_props_ref}> & __VizeComponentInputGuard<Props<{generic_names}>, {emit_props_ref}, __VizeAuthoredProps>;\n}};\n"
