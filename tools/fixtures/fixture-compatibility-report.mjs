@@ -9,6 +9,7 @@ import {
   readCompatibilityLedger,
   validateCompatibilityLedger,
 } from "./fixture-compatibility-ledger.mjs";
+import { compareCodepoints, countMembership } from "./fixture-compatibility-validation.mjs";
 
 export function createCompatibilityReport(ledger, context = createCompatibilityContext()) {
   const { fixtureMap } = validateCompatibilityLedger(ledger, context);
@@ -72,15 +73,6 @@ function levelSummary(claims, level) {
     ),
   ].sort(compareCodepoints);
   return { count: fixturePaths.length, fixturePaths };
-}
-
-function countMembership(fixtureMap, membership) {
-  return [...fixtureMap.values()].filter((fixture) => fixture.memberships.includes(membership))
-    .length;
-}
-
-function compareCodepoints(left, right) {
-  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 export function formatCompatibilityReport(report) {

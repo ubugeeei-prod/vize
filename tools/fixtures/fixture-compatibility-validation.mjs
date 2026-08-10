@@ -50,3 +50,18 @@ export function deepEqual(actual, expected, message) {
 export function invalid(message) {
   throw new Error(`Invalid fixture compatibility ledger: ${message}`);
 }
+
+export function evidenceIdentity(fixturePath, evidence) {
+  return `${fixturePath}\0${evidence.file}\0${evidence.selector}`;
+}
+
+export function validateCapabilityRuntimeClaims(capabilities, runtimeEvidence) {
+  for (const capability of capabilities) {
+    if (!capability.levels.includes("runtime")) continue;
+    if (!runtimeEvidence.has(evidenceIdentity(capability.fixturePath, capability.evidence))) {
+      invalid(
+        `runtime capability lacks matching runtime oracle evidence: ${capability.fixturePath} ${capability.dimension} ${capability.value}`,
+      );
+    }
+  }
+}

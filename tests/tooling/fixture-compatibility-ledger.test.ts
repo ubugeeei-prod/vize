@@ -10,6 +10,7 @@ import {
   createCompatibilityReport,
   formatCompatibilityReport,
 } from "../../tools/fixtures/fixture-compatibility-report.mjs";
+import { capabilityCounts as counts } from "./support/fixture-compatibility-counts.ts";
 
 const context = createCompatibilityContext();
 const ledger = readCompatibilityLedger();
@@ -108,9 +109,15 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
     "source presence must not be promoted to an exercised or runtime oracle",
   );
 
-  const first = formatCompatibilityReport(report);
-  const second = formatCompatibilityReport(createCompatibilityReport(ledger, context));
-  assert.equal(second, first, "the report must be byte-deterministic");
+  const reordered = structuredClone(ledger);
+  reordered.capabilities.reverse();
+  reordered.oracles.reverse();
+  reordered.unresolved.reverse();
+  assert.equal(
+    formatCompatibilityReport(createCompatibilityReport(reordered, context)),
+    formatCompatibilityReport(report),
+    "the report must be byte-identical under reordered ledger input",
+  );
 });
 
 test("invalid ledger mutations fail closed", () => {
@@ -137,6 +144,12 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       "duplicate fixture",
       (value) => value.fixtures.push(structuredClone(value.fixtures.at(-1))),
       /duplicates/,
+    ],
+    ["unsorted fixture paths", (value) => value.fixtures.reverse(), /codepoint sorted/],
+    [
+      "duplicate capability claim",
+      (value) => value.capabilities.push(structuredClone(value.capabilities[0])),
+      /capability claims contain duplicates/,
     ],
     [
       "membership drift",
@@ -165,11 +178,6 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /unknown capability level/,
     ],
     [
-      "duplicate capability",
-      (value) => value.capabilities.push(structuredClone(value.capabilities[0])),
-      /capability claims contain duplicates/,
-    ],
-    [
       "unknown capability evidence field",
       (value) => (value.capabilities[0].evidence.extra = true),
       /shape is not closed/,
@@ -177,13 +185,13 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
     [
       "runtime capability without runtime oracle",
       (value) => {
-        value.capabilities
-          .find(
-            (capability) =>
-              capability.fixturePath === "tests/_fixtures/_git/create-vue" &&
-              capability.value === "composition-api",
-          )
-          .levels.push("runtime");
+        const capability = value.capabilities.find(
+          (candidate) =>
+            candidate.fixturePath === "tests/_fixtures/_git/create-vue" &&
+            candidate.value === "composition-api",
+        );
+        capability.fixturePath = "tests/_fixtures/_git/vuefes-2025";
+        capability.levels.push("runtime");
       },
       /runtime capability lacks matching runtime oracle evidence/,
     ],
@@ -221,6 +229,14 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       "ambiguous evidence selector",
       (value) => (value.capabilities[0].evidence.selector = "test("),
       /evidence selector is stale/,
+    ],
+    [
+      "runtime capability claim outside App membership",
+      (value) => {
+        value.capabilities.find((capability) => capability.levels.includes("runtime")).fixturePath =
+          "tests/_fixtures/_git/airi";
+      },
+      /runtime capability claim is not an App fixture/,
     ],
     [
       "unknown oracle kind",
@@ -328,20 +344,4 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /missing explicit unresolved dimension/,
     ],
   ];
-}
-
-function counts(
-  present: number,
-  exercised: number,
-  runtimeVerified: number,
-  fixturePaths: string[],
-) {
-  return {
-    present: { count: present, fixturePaths: present === 0 ? [] : fixturePaths },
-    exercised: { count: exercised, fixturePaths: exercised === 0 ? [] : fixturePaths },
-    runtimeVerified: {
-      count: runtimeVerified,
-      fixturePaths: runtimeVerified === 0 ? [] : fixturePaths,
-    },
-  };
 }

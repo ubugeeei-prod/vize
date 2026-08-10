@@ -9,6 +9,7 @@ import {
   compareCodepoints,
   countMembership,
   deepEqual,
+  evidenceIdentity,
   enumValue,
   equal,
   exactKeys,
@@ -16,6 +17,7 @@ import {
   record,
   string,
   unique,
+  validateCapabilityRuntimeClaims,
 } from "./fixture-compatibility-validation.mjs";
 
 const moduleRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -71,7 +73,7 @@ export function createCompatibilityContext(rootDir = moduleRoot) {
   );
   const gitmodulePaths = execFileSync(
     "git",
-    ["config", "-f", ".gitmodules", "--get-regexp", "path"],
+    ["config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$"],
     { cwd: rootDir, encoding: "utf8" },
   )
     .trim()
@@ -181,6 +183,12 @@ function validateCapabilities(capabilities, fixtureMap, rootDir) {
     ) {
       invalid("runtime capability must also be present and exercised");
     }
+    if (
+      capability.levels.includes("runtime") &&
+      !fixtureMap.get(capability.fixturePath).memberships.includes("app")
+    ) {
+      invalid(`runtime capability claim is not an App fixture: ${capability.fixturePath}`);
+    }
     validateEvidence(capability.evidence, rootDir);
     identities.push(`${capability.fixturePath}\0${capability.dimension}\0${capability.value}`);
   }
@@ -217,21 +225,6 @@ function validateOracles(oracles, fixtureMap, rootDir) {
   }
   unique(identities, "oracle fixture claims");
   return { byKind, runtimeEvidence };
-}
-
-function validateCapabilityRuntimeClaims(capabilities, runtimeEvidence) {
-  for (const capability of capabilities) {
-    if (!capability.levels.includes("runtime")) continue;
-    if (!runtimeEvidence.has(evidenceIdentity(capability.fixturePath, capability.evidence))) {
-      invalid(
-        `runtime capability lacks matching runtime oracle evidence: ${capability.fixturePath} ${capability.dimension} ${capability.value}`,
-      );
-    }
-  }
-}
-
-function evidenceIdentity(fixturePath, evidence) {
-  return `${fixturePath}\0${evidence.file}\0${evidence.selector}`;
 }
 
 export function expandSelection(selection, fixtureMap) {
