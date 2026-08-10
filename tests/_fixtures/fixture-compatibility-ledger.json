@@ -1,0 +1,997 @@
+{
+  "schema": "vize.fixtureCompatibilityLedger",
+  "version": 1,
+  "trackingIssues": {
+    "authoredLspExpansion": 3952,
+    "vueTscParityExpansion": 3954,
+    "dropInCompatibility": 3227
+  },
+  "fixtures": [
+    {
+      "fixturePath": "tests/_fixtures/_git/airi",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/alexandrie",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/ant-design-vue",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/antares",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/arco-design-pro-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/automa",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/better-scroll",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/bootstrap-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/buefy",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/bym-vue-echarts",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/crater",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/create-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/cssgridgenerator",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/cube-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/dashy",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/datav",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/dbx",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/directus",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/docsify",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/douyin",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/element",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/element-plus",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/element-plus-x",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/elk",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/epic-spinners",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/filebrowser",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/frappe-builder",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/frappe-crm",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/frontend-phpcon-do-website",
+      "memberships": ["app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/frpc-desktop",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/gogocode",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/gridea",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/gui-for-singbox",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/habitica",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/heyui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/hoppscotch",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/inertia",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/inspira-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/jellyfin-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/koel",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/laravel-breeze",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/layoutit-grid",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/lew-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/lx-music-desktop",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mall-admin-web",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mavon-editor",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mealie",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mint-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/misskey",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/motion-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/multiple-select",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/muse-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/music-website",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/naive-ui",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/nativescript-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "memberships": ["app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/nutui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/nuxt-ui",
+      "memberships": ["app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/piclist",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/pinia",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/pinry",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/portal-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/prevue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/primevue",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/reka-ui",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/scalar",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/shadcn-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/sigma-file-manager",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/solidtime",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/soybean-admin",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/splayer",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/splitpanes",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/tailwind-config-viewer",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/tdesign",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/tiny-rdm",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/uni-app",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/v-charts",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/v-viewer",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vant",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vant-demo",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/varlet",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vaul-vue",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vee-validate",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vitepress",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/voicevox",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vonic",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-apexcharts",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-bits",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-cal-v4",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-calendar",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-chartjs",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-charts",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-cropper",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-data-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-datepicker",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-devtools-v6",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-next",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-plus",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-draggable-resizable",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-dropzone",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-echarts",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-element-admin",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-fabric-editor",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-flow",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-fullpage-js",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-grid-layout",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-js-modal",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-lottie",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-manage-system",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-material",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-multiselect",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-native-core",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-netcore",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-pure-admin",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-router",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-select",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-sonner",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-storefront",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-termui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-tui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-uploader",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-vben-admin",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-vine",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-virtual-scroller",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue2-elm",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuefes-2025",
+      "memberships": ["app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuefes-japan-speakers",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuelidate",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuepress",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuesax",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuestic-admin",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuestic-ui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuetify",
+      "memberships": ["ecosystem", "app"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vuetorrent",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vux",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/youtube-dl-gui",
+      "memberships": ["ecosystem"]
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/zy-player",
+      "memberships": ["ecosystem"]
+    }
+  ],
+  "capabilities": [
+    {
+      "fixturePath": "tests/_fixtures/_git/vue2-elm",
+      "dimension": "vue-generation",
+      "value": "2.x",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue2-elm.ts",
+        "selector": "vue2-elm detects and repairs an exact authored JavaScript type error"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
+      "dimension": "vue-generation",
+      "value": "2.x",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
+        "selector": "pinned Vue 2 class-component app detects and repairs an exact authored error"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-element-admin",
+      "dimension": "vue-generation",
+      "value": "2.x",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue-element-admin-legacy-oracle.ts",
+        "selector": "vue-element-admin compiler lowers legacy slot scopes and filters deterministically"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-element-admin",
+      "dimension": "vue-generation",
+      "value": "2.7",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts",
+        "selector": "Vue 2.7 dialect alone"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "dimension": "vue-generation",
+      "value": "3.x",
+      "tier": "runtime",
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "authored head macros stay exact across SSR, hydration, and navigation"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/vue-element-admin",
+      "dimension": "api-style",
+      "value": "options-api",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue-element-admin-legacy-oracle.ts",
+        "selector": "vue-element-admin legacy slot scopes recover exact CLI diagnostics"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
+      "dimension": "api-style",
+      "value": "class-api",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
+        "selector": "export default class Card extends Vue"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/create-vue",
+      "dimension": "api-style",
+      "value": "composition-api",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/create-vue-generated-template-oracle.ts",
+        "selector": "create-vue generated template repairs one exact broken prop usage in batch check"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/create-vue",
+      "dimension": "api-style",
+      "value": "script-setup",
+      "tier": "exercised",
+      "evidence": {
+        "file": "tests/snapshots/check/create-vue-editor-range-oracle.ts",
+        "selector": "create-vue editor features answer in authored Vue ranges"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "dimension": "nuxt-macro",
+      "value": "define-page-meta",
+      "tier": "runtime",
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "SSR: accessibility route keeps definePageMeta route name"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "dimension": "nuxt-macro",
+      "value": "use-head",
+      "tier": "runtime",
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "authored head macros stay exact across SSR, hydration, and navigation"
+      }
+    },
+    {
+      "fixturePath": "tests/_fixtures/_git/npmx.dev",
+      "dimension": "nuxt-macro",
+      "value": "use-seo-meta",
+      "tier": "runtime",
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "authored head macros stay exact across SSR, hydration, and navigation"
+      }
+    }
+  ],
+  "oracles": [
+    {
+      "kind": "compiler",
+      "selection": {
+        "type": "membership",
+        "membership": "ecosystem"
+      },
+      "evidence": {
+        "file": "tools/fixtures/tool-matrix-run.mjs",
+        "selector": "tool === \"compiler\""
+      }
+    },
+    {
+      "kind": "formatter-idempotency",
+      "selection": {
+        "type": "membership",
+        "membership": "ecosystem"
+      },
+      "evidence": {
+        "file": "tools/fixtures/tool-matrix-run.mjs",
+        "selector": "tool === \"formatter\""
+      }
+    },
+    {
+      "kind": "linter",
+      "selection": {
+        "type": "membership",
+        "membership": "ecosystem"
+      },
+      "evidence": {
+        "file": "tools/fixtures/tool-matrix-run.mjs",
+        "selector": "tool === \"linter\""
+      }
+    },
+    {
+      "kind": "typechecker",
+      "selection": {
+        "type": "membership",
+        "membership": "ecosystem"
+      },
+      "evidence": {
+        "file": "tools/fixtures/tool-matrix-run.mjs",
+        "selector": "tool === \"typechecker\""
+      }
+    },
+    {
+      "kind": "authored-lsp",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": [
+          "tests/_fixtures/_git/reka-ui",
+          "tests/_fixtures/_git/elk",
+          "tests/_fixtures/_git/misskey"
+        ]
+      },
+      "evidence": {
+        "file": "tests/tooling/real-project-lsp-authored-registry.test.ts",
+        "selector": "authored LSP feature oracles are explicit and ratcheted"
+      }
+    },
+    {
+      "kind": "vue-tsc-parity",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": [
+          "tests/_fixtures/_git/vue-vben-admin",
+          "tests/_fixtures/_git/hoppscotch",
+          "tests/_fixtures/_git/element-plus",
+          "tests/_fixtures/_git/reka-ui",
+          "tests/_fixtures/_git/primevue",
+          "tests/_fixtures/_git/vuetify",
+          "tests/_fixtures/_git/voicevox",
+          "tests/_fixtures/_git/elk",
+          "tests/_fixtures/_git/misskey",
+          "tests/_fixtures/_git/lx-music-desktop",
+          "tests/_fixtures/_git/vuestic-admin"
+        ]
+      },
+      "evidence": {
+        "file": "tools/fixtures/typecheck-divergence-report.mjs",
+        "selector": "--vue-tsc-bin is required"
+      }
+    },
+    {
+      "kind": "ssr",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/elk"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/elk.spec.ts",
+        "selector": "SSR: server-rendered HTML is not empty"
+      }
+    },
+    {
+      "kind": "ssr",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "SSR: server-rendered HTML contains expected content"
+      }
+    },
+    {
+      "kind": "ssr",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/vuefes.spec.ts",
+        "selector": "SSR: server-rendered HTML is not empty"
+      }
+    },
+    {
+      "kind": "hydration",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/elk"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/elk.spec.ts",
+        "selector": "no hydration mismatch errors"
+      }
+    },
+    {
+      "kind": "hydration",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/npmx.spec.ts",
+        "selector": "no hydration mismatch errors"
+      }
+    },
+    {
+      "kind": "hydration",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/nuxt-ui.spec.ts",
+        "selector": "unexpectedHydrationErrors"
+      }
+    },
+    {
+      "kind": "hydration",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/vuefes.spec.ts",
+        "selector": "no hydration mismatch errors"
+      }
+    },
+    {
+      "kind": "preview",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/elk"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"preview\", \"elk\""
+      }
+    },
+    {
+      "kind": "preview",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/misskey"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"preview\", \"misskey\""
+      }
+    },
+    {
+      "kind": "preview",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"preview\", \"npmx\""
+      }
+    },
+    {
+      "kind": "preview",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"preview\", \"vuefes\""
+      }
+    },
+    {
+      "kind": "vrt",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/elk"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"vrt\", \"elk\""
+      }
+    },
+    {
+      "kind": "vrt",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/frontend-phpcon-do-website"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "test:vrt:frontend-phpcon"
+      }
+    },
+    {
+      "kind": "vrt",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/misskey"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"vrt\", \"misskey\""
+      }
+    },
+    {
+      "kind": "vrt",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"vrt\", \"npmx\""
+      }
+    },
+    {
+      "kind": "vrt",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
+      },
+      "evidence": {
+        "file": "tools/github/app-e2e-plan.mjs",
+        "selector": "row(\"full\", \"vrt\", \"vuefes\""
+      }
+    },
+    {
+      "kind": "real-vite-hmr",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/nuxt-ui"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/nuxt-ui.spec.ts",
+        "selector": "authored component source hot-updates without reloading"
+      }
+    },
+    {
+      "kind": "real-vite-hmr",
+      "selection": {
+        "type": "fixtures",
+        "fixturePaths": ["tests/_fixtures/_git/misskey"]
+      },
+      "evidence": {
+        "file": "tests/app/dev/misskey.spec.ts",
+        "selector": "authored SFCs hot-update through pure Vite without reloading"
+      }
+    }
+  ],
+  "unresolved": [
+    {
+      "dimension": "vue-generation",
+      "value": "0.x",
+      "state": "unverified",
+      "reason": "No pinned authored Vue 0.x oracle is registered.",
+      "trackingIssue": 3227
+    },
+    {
+      "dimension": "vue-generation",
+      "value": "1.x",
+      "state": "unverified",
+      "reason": "No pinned authored Vue 1.x oracle is registered.",
+      "trackingIssue": 3227
+    },
+    {
+      "dimension": "vue-generation-runtime",
+      "value": "2.7",
+      "state": "unverified",
+      "reason": "The Vue 2.7 selector is exercised over a legacy source fixture, but no Vue 2.7 runtime dependency is pinned.",
+      "trackingIssue": 3227
+    },
+    {
+      "dimension": "corpus-capability-classification",
+      "value": "remaining-gitlinks",
+      "state": "unknown",
+      "reason": "Unlisted generation, API-style, and Nuxt-macro presence has not been promoted to an evidence-backed claim.",
+      "trackingIssue": 3227
+    }
+  ]
+}

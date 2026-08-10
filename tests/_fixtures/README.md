@@ -24,3 +24,10 @@ each recorded as `honored` (with the behavioral probe that proves it),
 `intentional-divergence` (with a reason), or `unimplemented` (with issue #3227 and a reason).
 `tests/tooling/vite-plugin-vue-option-parity.test.ts` re-enumerates the pinned upstream surface and
 fails when an entry is missing, so a new or newly honored option cannot pass unrecorded.
+
+`fixture-compatibility-ledger.json` joins every pinned gitlink to its ecosystem-matrix and App E2E
+memberships, then records only evidence-backed Vue generations, API styles, Nuxt macros, and test
+oracles. Capability presence, exercised behavior, and runtime verification are separate tiers:
+finding source text never promotes a project to runtime coverage. Run
+`node tools/fixtures/fixture-compatibility-report.mjs` for the deterministic coverage report. Any
+unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.
