@@ -169,7 +169,7 @@ export default class HelloDecorator extends Vue {
     let code = class_component_virtual_ts(script, "<div>{{ name }}</div>");
 
     assert!(
-        code.contains("$props: __VizeComponentProps<Props>;"),
+        code.contains("$props: Props;"),
         "the component instance must expose the props contract:\n{code}",
     );
     assert!(

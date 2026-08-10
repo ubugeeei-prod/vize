@@ -146,18 +146,28 @@ void emit;
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
     let constructor = generic_constructor_of(&virtual_ts);
+    let generic_instance = virtual_ts
+        .split_once("type __VizeGenericComponentInstance")
+        .expect("generic instance present")
+        .1
+        .split_once("type __VizeGenericComponentConstructor")
+        .expect("generic constructor follows instance")
+        .0;
 
     for expected in [
         "$slots: Slots<T>",
-        "$emit: __EmitFn<Emits<T>>",
-        "__EmitProps<Emits<T>>",
+        "$emit: __VizeStrictPublicEmit<Emits<T>>",
         "__VizeShallowUnwrapRef<Exposed<T>>",
     ] {
         assert!(
-            constructor.contains(expected),
-            "generic constructor must contain `{expected}`:\n{constructor}"
+            generic_instance.contains(expected),
+            "generic instance must contain `{expected}`:\n{generic_instance}"
         );
     }
+    assert!(
+        constructor.contains("__EmitProps<Emits<T>>"),
+        "generic input constructor must instantiate emit props:\n{constructor}"
+    );
 
     // The non-generic constructor has no parameters in scope, so it must keep
     // the bare aliases and rely on their declared defaults.
@@ -192,21 +202,28 @@ defineExpose<{ ready: boolean }>();
 
     let virtual_ts = generate_virtual_ts_from_sfc(source);
     let constructor = generic_constructor_of(&virtual_ts);
+    let generic_instance = virtual_ts
+        .split_once("type __VizeGenericComponentInstance")
+        .expect("generic instance present")
+        .1
+        .split_once("type __VizeGenericComponentConstructor")
+        .expect("generic constructor follows instance")
+        .0;
 
     assert!(
         virtual_ts.contains("export type Slots = {"),
         "slots alias should take no parameters here:\n{virtual_ts}"
     );
     assert!(
-        constructor.contains("$slots: Slots;"),
-        "a non-generic alias must not be instantiated:\n{constructor}"
+        generic_instance.contains("$slots: Slots;"),
+        "a non-generic alias must not be instantiated:\n{generic_instance}"
     );
     assert!(
         !constructor.contains("Slots<"),
         "a non-generic alias must not be instantiated:\n{constructor}"
     );
     assert!(
-        !constructor.contains("Exposed<T>"),
-        "a non-generic Exposed alias must not be instantiated:\n{constructor}"
+        !generic_instance.contains("Exposed<T>") && !constructor.contains("Exposed<T>"),
+        "a non-generic Exposed alias must not be instantiated:\n{generic_instance}{constructor}"
     );
 }

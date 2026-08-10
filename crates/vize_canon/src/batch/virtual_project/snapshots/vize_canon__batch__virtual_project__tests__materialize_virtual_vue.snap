@@ -62,12 +62,14 @@ export type Slots = {};
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: __VizeComponentProps<Props>;
+  $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: __EmitFn<Emits>;
+  $emit: __VizeStrictPublicEmit<Emits>;
   $slots: Slots;
+} & __VizeComponentPublicBase;
+type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
+$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, {}> & __VizeComponentInputGuard<Props, {}, __VizeAuthoredProps>;
 };
-type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;

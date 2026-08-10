@@ -195,9 +195,7 @@ pub(super) fn generic_instance_suffix(
     if needs_legacy_vue2_helpers(legacy_vue2, dialect) {
         cstr!("}} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed<{args}>>;\n")
     } else {
-        cstr!(
-            "}} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed<{args}>>;\n"
-        )
+        cstr!("}} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed<{args}>>;\n")
     }
 }
 
@@ -212,10 +210,8 @@ pub(super) fn instance_suffix(
     ) {
         (true, true) => "} & __VizeVue2ComponentInstance & __VizeShallowUnwrapRef<Exposed>;\n",
         (true, false) => "} & __VizeVue2ComponentInstance;\n",
-        (false, true) => {
-            "} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;\n"
-        }
-        (false, false) => "};\n",
+        (false, true) => "} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;\n",
+        (false, false) => "} & __VizeComponentPublicBase;\n",
     }
 }
 

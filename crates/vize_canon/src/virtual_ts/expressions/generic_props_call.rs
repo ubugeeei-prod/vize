@@ -146,8 +146,20 @@ pub(super) fn generate_generic_props_call(
                 )
             };
         let camel_prop_name = to_camel_case(prop.name.as_str());
+        // TypeScript reports TS2783 for `{ count: 1, ...bag }` when `bag` also
+        // has `count`, while Vue accepts the authored last-wins binding order
+        // and the pinned parity oracle excludes that synthetic warning.
+        // Express the named prefix as a singleton spread when
+        // an object `v-bind` still follows: `{ ...{ count: 1 }, ...bag }` has
+        // the same inferred result and runtime order without manufacturing a
+        // duplicate-property diagnostic. A trailing named prop stays direct,
+        // so real duplicate named attributes are not hidden.
+        let wrap_for_following_spread = spreads.peek().is_some();
 
         append!(*ts, "{expr_indent}  ");
+        if wrap_for_following_spread {
+            ts.push_str("...{ ");
+        }
         // Map the whole `"prop": value` entry (key through value) back to the
         // source attribute. TypeScript reports an assignability error for an
         // object-literal property at the property key, not the value, so a
@@ -158,7 +170,11 @@ pub(super) fn generate_generic_props_call(
         ts.push_str(": ");
         let value_gen_range = append_prop_value(ts, generated_value.as_str());
         let entry_gen_end = ts.len();
-        ts.push_str(",\n");
+        if wrap_for_following_spread {
+            ts.push_str(" },\n");
+        } else {
+            ts.push_str(",\n");
+        }
         // Without sub-spans the whole entry maps proportionally onto the whole
         // attribute, and `"prop": ` is one byte longer than `:prop="` — so an
         // error inside the value (TypeScript anchors a nested object-literal

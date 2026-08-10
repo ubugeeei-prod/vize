@@ -13,7 +13,9 @@ pub(super) const VUE_RUNTIME_DOM_STUB_PACKAGE_JSON: &str = r#"{
 }
 "#;
 
-pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentPublicInstance<Props = {}> {
+pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentCustomProperties {}
+
+export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
   $attrs: { [key: string]: unknown };
   $slots: { [key: string]: unknown };
