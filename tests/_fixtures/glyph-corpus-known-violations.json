@@ -10,15 +10,6 @@
   },
   {
     "property": "parse-preservation",
-    "category": "semantic-diff",
-    "project": "gui-for-singbox",
-    "path": "frontend/src/components/Table/index.vue",
-    "reason": "Attribute sorting moves a named binding across an order-sensitive v-bind object boundary.",
-    "trackingIssue": 4113,
-    "expiryCondition": "Remove after Glyph preserves binding precedence while sorting attributes."
-  },
-  {
-    "property": "parse-preservation",
     "category": "baseline-unusable",
     "project": "gogocode",
     "path": "packages/gogocode-plugin-vue/test/listeners-removed/Comp.vue",
