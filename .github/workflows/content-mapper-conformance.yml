@@ -23,9 +23,15 @@ on:
       - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
+      - "npm/cli/bin/vize"
       - "npm/cli/package.json"
+      - "npm/cli/src/**"
+      - "npm/native/**"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tools/npm/prepare-publish-manifest.mjs"
+      - "tools/npm/smoke-release-install.mjs"
+      - "tools/npm/smoke-release-runtime.mjs"
   push:
     branches: [main]
     paths:
@@ -48,9 +54,15 @@ on:
       - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
+      - "npm/cli/bin/vize"
       - "npm/cli/package.json"
+      - "npm/cli/src/**"
+      - "npm/native/**"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tools/npm/prepare-publish-manifest.mjs"
+      - "tools/npm/smoke-release-install.mjs"
+      - "tools/npm/smoke-release-runtime.mjs"
   workflow_dispatch:
 
 concurrency:
@@ -108,6 +120,30 @@ jobs:
         run: |
           go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo
           cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Build packed Content Mapper runtime
+        run: |
+          vp run --filter './npm/native' build:ci
+          (cd npm/cli && vp pack)
+      - name: Prepare native platform packages
+        working-directory: npm/native
+        run: |
+          vp exec napi create-npm-dirs
+          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+          for binary in vize-vitrine.*.node; do
+            [ -f "$binary" ] || continue
+            target="${binary#vize-vitrine.}"
+            target="${target%.node}"
+            if [ -d "npm/$target" ]; then
+              cp "$binary" "npm/$target/"
+            fi
+          done
+      - name: Run standard tsgo through fresh-installed package tarballs
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          node tools/npm/smoke-release-install.mjs --prepare-manifests --content-mapper-checks \
+            npm/native npm/native/npm/* \
+            npm/cli
       - name: Run standard project and declaration conformance
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo

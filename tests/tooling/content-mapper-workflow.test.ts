@@ -25,7 +25,13 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
     '"crates/vize/tests/content_mapper_tsgo_build.rs"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
+    '"npm/cli/bin/vize"',
     '"npm/cli/package.json"',
+    '"npm/cli/src/**"',
+    '"npm/native/**"',
+    '"tools/npm/prepare-publish-manifest.mjs"',
+    '"tools/npm/smoke-release-install.mjs"',
+    '"tools/npm/smoke-release-runtime.mjs"',
   ]) {
     assert.match(workflow, new RegExp(relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   }
@@ -48,6 +54,14 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture/);
   assert.match(job, /cargo test -p vize --test content_mapper_tsgo_build -- --nocapture/);
+  assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
+  assert.match(job, /\(cd npm\/cli && vp pack\)/);
+  assert.match(job, /vp exec napi create-npm-dirs/);
+  assert.match(job, /cp "\$binary" "npm\/\$target\/"/);
+  assert.match(
+    job,
+    /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
+  );
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
   assert.match(job, /cargo test -p vize_maestro/);
