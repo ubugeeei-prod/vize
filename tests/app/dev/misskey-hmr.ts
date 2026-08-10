@@ -84,6 +84,10 @@ function hmrUrlMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
   );
 }
 
+function moduleUrlMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
+  return new URL(urlValue).pathname.endsWith(target.moduleSuffix);
+}
+
 function initialModuleMatches(urlValue: string, target: MisskeyHmrTarget): boolean {
   const url = new URL(urlValue);
   return (
@@ -97,11 +101,35 @@ async function waitForFreshTransform(
   page: Page,
   target: MisskeyHmrTarget,
   expectedMarker: boolean,
+  observations: {
+    frames: readonly string[];
+    requests: readonly string[];
+    responses: readonly string[];
+  },
 ): Promise<Response> {
-  const response = await page.waitForResponse(
-    (candidate) => candidate.ok() && hmrUrlMatches(candidate.url(), target),
-    { timeout: 60_000 },
-  );
+  let response: Response;
+  try {
+    response = await page.waitForResponse((candidate) => hmrUrlMatches(candidate.url(), target), {
+      timeout: 60_000,
+    });
+  } catch (error) {
+    const relevantFrames = observations.frames.filter((frame) =>
+      frame.includes(target.moduleSuffix),
+    );
+    throw new Error(
+      [
+        `No fresh HMR transform reached the browser for ${target.moduleSuffix}.`,
+        `requests=${JSON.stringify(observations.requests)}`,
+        `responses=${JSON.stringify(observations.responses)}`,
+        `viteFrames=${JSON.stringify(relevantFrames)}`,
+      ].join("\n"),
+      { cause: error },
+    );
+  }
+  expect(
+    response.ok(),
+    `${target.moduleSuffix} HMR response ${response.status()} ${response.statusText()}`,
+  ).toBe(true);
   const body = await response.text();
   if (expectedMarker) expect(body).toContain(target.marker);
   else expect(body).not.toContain(target.marker);
@@ -144,6 +172,14 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
 
   await page.setViewportSize({ width: 1440, height: 900 });
   const consoleErrors = await collectConsoleErrors(page, appName);
+  const hmrFrames: string[] = [];
+  page.on("websocket", (socket) => {
+    socket.on("framereceived", (event) => {
+      const payload =
+        typeof event.payload === "string" ? event.payload : event.payload.toString("utf8");
+      if (payload.includes('"type":"update"')) hmrFrames.push(payload);
+    });
+  });
   const initialModules = targets.map((target) =>
     page.waitForResponse(
       (response) => response.ok() && initialModuleMatches(response.url(), target),
@@ -156,11 +192,31 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
   await expect(page.locator("[data-cy-signup]")).toBeVisible();
 
   const hmrRequests = new Map(targets.map((target) => [target.marker, [] as string[]]));
+  const hmrResponses = new Map(targets.map((target) => [target.marker, [] as string[]]));
+  const moduleRequests = new Map(targets.map((target) => [target.marker, [] as string[]]));
+  const moduleResponses = new Map(targets.map((target) => [target.marker, [] as string[]]));
   const completedUpdates = new Map(targets.map((target) => [target.marker, [] as string[]]));
   const leakedMarkerLogs: string[] = [];
   page.on("request", (request) => {
     for (const target of targets) {
+      if (moduleUrlMatches(request.url(), target)) {
+        moduleRequests.get(target.marker)?.push(request.url());
+      }
       if (hmrUrlMatches(request.url(), target)) hmrRequests.get(target.marker)?.push(request.url());
+    }
+  });
+  page.on("response", (response) => {
+    for (const target of targets) {
+      if (moduleUrlMatches(response.url(), target)) {
+        moduleResponses
+          .get(target.marker)
+          ?.push(`${response.status()} ${response.statusText()} ${response.url()}`);
+      }
+      if (hmrUrlMatches(response.url(), target)) {
+        hmrResponses
+          .get(target.marker)
+          ?.push(`${response.status()} ${response.statusText()} ${response.url()}`);
+      }
     }
   });
   page.on("console", (message) => {
@@ -194,20 +250,26 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
       const { originalSource, sourcePath, target, updatedSource } = source;
       const locator = page.locator(`[${target.marker}="updated"]`);
       await expect(locator).toHaveCount(0);
-      const forwardResponse = waitForFreshTransform(page, target, true);
+      const observations = {
+        frames: hmrFrames,
+        requests: moduleRequests.get(target.marker) ?? [],
+        responses: moduleResponses.get(target.marker) ?? [],
+      };
+      const forwardResponse = waitForFreshTransform(page, target, true, observations);
       fs.writeFileSync(sourcePath, updatedSource);
       await forwardResponse;
       await expect(locator).toBeVisible({ timeout: 60_000 });
       await expect.poll(() => completedUpdates.get(target.marker)?.length).toBe(1);
       await assertPageIdentity(page, sentinel, navigations);
 
-      const repairedResponse = waitForFreshTransform(page, target, false);
+      const repairedResponse = waitForFreshTransform(page, target, false, observations);
       fs.writeFileSync(sourcePath, originalSource);
       await repairedResponse;
       await expect(locator).toHaveCount(0, { timeout: 60_000 });
       await expect.poll(() => completedUpdates.get(target.marker)?.length).toBe(2);
       await page.waitForTimeout(1_000);
       expect(hmrRequests.get(target.marker)).toHaveLength(2);
+      expect(hmrResponses.get(target.marker)).toHaveLength(2);
       expect(completedUpdates.get(target.marker)).toHaveLength(2);
       await assertPageIdentity(page, sentinel, navigations);
     }
