@@ -219,6 +219,30 @@ test("same-sized but different Vue corpora are unusable", () => {
   }
 });
 
+test("transitive authored TypeScript sources stay out of the Vue corpus comparison", () => {
+  const fixture = setup();
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "src", "helper.ts"),
+      "export const helper = 1;\n",
+    );
+    updateVizeOutput(fixture, (parsed) => {
+      parsed.fileCount = 2;
+      parsed.files.push({ file: "src/helper.ts", diagnostics: [] });
+    });
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const coverage = readJson(artifactPath(fixture, "json")).baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.vizeVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("transitive Vue dependencies do not expand the authored fixture corpus", () => {
   const fixture = setup({
     baselineFiles: ["src/App.vue", "node_modules/pkg/RuntimeComponent.vue"],
