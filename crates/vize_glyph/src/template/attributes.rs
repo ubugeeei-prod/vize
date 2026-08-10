@@ -65,7 +65,11 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
 }
 
 fn is_order_sensitive_spread(name: &str) -> bool {
-    name == "v-bind" || name.starts_with("v-bind.") || name == "v-on" || name.starts_with("v-on.")
+    // `:` and `@` are the normalized names of no-argument object shorthand
+    // directives (`:="props"` / `@="listeners"`), not named bindings.
+    matches!(name, ":" | "@" | "v-bind" | "v-on")
+        || name.starts_with("v-bind.")
+        || name.starts_with("v-on.")
 }
 
 /// Generate a sort key for alphabetical ordering within a group.

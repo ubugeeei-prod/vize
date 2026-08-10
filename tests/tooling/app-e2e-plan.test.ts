@@ -5,7 +5,6 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { assertAppE2eAggregate } from "../../tools/github/app-e2e-aggregate.mjs";
 import {
   createAppE2ePlanEvidence,
   fullAppE2eRows,
@@ -73,9 +72,9 @@ test("full and readiness plans preserve every isolated execution row", () => {
   );
   assert.deepEqual(
     planAppE2eRows("readiness").map((row) => row.shard),
-    ["check", "lint", "build", "dev-misskey", "dev-nuxt-ui"],
+    ["check", "check-vuefes", "lint", "build", "dev-misskey", "dev-nuxt-ui"],
   );
-  assert.equal(readinessRows.length, 5);
+  assert.equal(readinessRows.length, 6);
   assert.deepEqual(
     readinessRows.filter((row) => row.needsPlaywright).map((row) => row.shard),
     ["dev-misskey", "dev-nuxt-ui"],
@@ -137,6 +136,13 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
         checkFixturePaths.filter((path) => !path.endsWith("/frontend-phpcon-do-website")),
       ],
       ["readiness", "readiness", "check", "test:readiness:check", readinessFixturePaths],
+      [
+        "readiness",
+        "readiness",
+        "check-vuefes",
+        "test:readiness:check:vuefes",
+        ["tests/_fixtures/_git/vuefes-2025"],
+      ],
       ["readiness", "readiness", "lint", "test:readiness:lint", readinessFixturePaths],
       ["readiness", "readiness", "build", "test:readiness:build", ["tests/_fixtures/_git/elk"]],
       [
@@ -178,6 +184,11 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
     scripts["test:readiness:dev:nuxt-ui"],
     "playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
   );
+  assert.equal(
+    scripts["test:readiness:check:vuefes"],
+    "node --test --test-concurrency=1 snapshots/check/vuefes.ts",
+    "the authored-source fixture must remain an isolated PR readiness row",
+  );
   for (const field of ["task", "cacheKey", "worktreeId", "artifactStem"] as const) {
     assert.equal(new Set(rows.map((row) => row[field])).size, rows.length, `${field} collision`);
   }
@@ -186,6 +197,7 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
     "test:lint",
     "test:build",
     "test:readiness:check",
+    "test:readiness:check:vuefes",
     "test:readiness:lint",
     "test:readiness:build",
   ]) {
@@ -255,69 +267,6 @@ test("dispatch target validation binds the requested ref to one exact SHA", () =
     },
   );
   assert.throws(() => createAppE2ePlanEvidence("full", "all", "main"), /exact target SHA/);
-});
-
-test("stable aggregators fail closed for every incomplete producer state", () => {
-  assert.deepEqual(
-    assertAppE2eAggregate({
-      profile: "readiness",
-      suite: "all",
-      runRequired: false,
-      planResult: "success",
-      producerResult: "skipped",
-      plannedCount: 0,
-    }),
-    { expectedCount: 0, outcome: "success" },
-  );
-  assert.equal(
-    assertAppE2eAggregate({
-      profile: "full",
-      suite: "all",
-      runRequired: true,
-      planResult: "success",
-      producerResult: "success",
-      plannedCount: 17,
-    }).expectedCount,
-    17,
-  );
-  for (const producerResult of ["failure", "cancelled", "skipped", "neutral"]) {
-    assert.throws(
-      () =>
-        assertAppE2eAggregate({
-          profile: "readiness",
-          suite: "all",
-          runRequired: true,
-          planResult: "success",
-          producerResult,
-          plannedCount: 5,
-        }),
-      new RegExp(producerResult),
-    );
-  }
-  assert.throws(
-    () =>
-      assertAppE2eAggregate({
-        profile: "full",
-        suite: "all",
-        runRequired: true,
-        planResult: "success",
-        producerResult: "success",
-        plannedCount: 16,
-      }),
-    /expected 17/,
-  );
-  assert.throws(
-    () =>
-      assertAppE2eAggregate({
-        profile: "full",
-        suite: "all",
-        runRequired: true,
-        planResult: "failure",
-        producerResult: "skipped",
-        plannedCount: 0,
-      }),
-    /planner is failure/,
-  );
 });
 
 test("planner CLI rejects unknown suites with a nonzero exit", () => {

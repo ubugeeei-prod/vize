@@ -14,12 +14,13 @@ import { test } from "node:test";
 
 import {
   collectProjectVueFiles,
-  isKnownViolation,
+  createKnownViolationConsumption,
   loadGlyphCorpusProjects,
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
   withFormattedWorkspace,
+  writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
 
@@ -35,6 +36,35 @@ type Violation = { project: string; file: string; detail: string };
 const property = "parse-preservation";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
+const waiverConsumption = createKnownViolationConsumption(knownViolations);
+
+function violationCategory(
+  original: string,
+  differences: string[],
+): "semantic-diff" | "baseline-unusable" | "oracle-unavailable" {
+  if (/<template(?=[\s>])[^>]*\blang\s*=\s*(["'])pug\1/i.test(original)) {
+    return "oracle-unavailable";
+  }
+  if (differences.some((difference) => difference.startsWith("comparison failed:"))) {
+    return "baseline-unusable";
+  }
+  return "semantic-diff";
+}
+
+test("glyph corpus classifies unavailable and crashed reference oracles precisely", () => {
+  assert.equal(
+    violationCategory('<template lang="pug">\ndiv hi\n</template>\n', ["different"]),
+    "oracle-unavailable",
+  );
+  assert.equal(
+    violationCategory("<template><p /></template>\n", ["comparison failed: parser crashed"]),
+    "baseline-unusable",
+  );
+  assert.equal(
+    violationCategory("<template><p /></template>\n", ["block disappeared"]),
+    "semantic-diff",
+  );
+});
 
 function compareFile(original: string, formatted: string, filename: string): string[] {
   try {
@@ -49,6 +79,7 @@ function sweepProject(
   launch: { command: string; prefix: string[] },
   violations: Violation[],
   counters: { files: number; skipped: number },
+  waivedViolations: Array<Violation & { waiver: object }> = [],
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
@@ -61,14 +92,22 @@ function sweepProject(
         counters.files += 1;
         continue;
       }
-      if (isKnownViolation(knownViolations, project.id, file)) {
+      const detail = differences.map((difference) => `  ${difference}`).join("\n");
+      const waiver = waiverConsumption.consume(
+        project.id,
+        file,
+        null,
+        violationCategory(original, differences),
+      );
+      if (waiver) {
+        waivedViolations.push({ project: project.id, file, detail, waiver });
         counters.skipped += 1;
         continue;
       }
       violations.push({
         project: project.id,
         file,
-        detail: differences.map((difference) => `  ${difference}`).join("\n"),
+        detail,
       });
     }
   });
@@ -83,10 +122,25 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const waivedViolations: Array<Violation & { waiver: object }> = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters);
+    sweepProject(project, launch, violations, counters, waivedViolations);
   }
+  let waiverValidationError: string | null = null;
+  try {
+    waiverConsumption.assertAllConsumed(new Set(hydrated.map((project) => project.id)));
+  } catch (error) {
+    waiverValidationError = error instanceof Error ? error.message : String(error);
+  }
+  writeGlyphCorpusPropertyEvidence(property, {
+    projectIds: hydrated.map((project) => project.id),
+    counters,
+    violations,
+    waivedViolations,
+    waiverValidationError,
+  });
+  assert.equal(waiverValidationError, null, waiverValidationError ?? undefined);
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +
@@ -163,6 +217,20 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
     ).join("\n"),
     /<div>\[0\]/,
   );
+  // The no-argument bind/on shorthands are the same merge boundaries as their
+  // longhand forms. Moving a named binding across either changes mergeProps.
+  for (const [before, after] of [
+    [
+      '<template><div title="before" :="rest" id="after" /></template>\n',
+      '<template><div :="rest" title="before" id="after" /></template>\n',
+    ],
+    [
+      '<template><button @click="before" @="listeners" @focus="after" /></template>\n',
+      '<template><button @="listeners" @click="before" @focus="after" /></template>\n',
+    ],
+  ]) {
+    assert.match(compareFile(before, after, "App.vue").join("\n"), /\[0\]/);
+  }
   // Rewriting interpolation content is corruption.
   assert.match(
     compareFile(
@@ -199,6 +267,48 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
     ).join("\n"),
     /styles changed/,
   );
+});
+
+test("glyph corpus normalizes only compiler-defined presence attributes", () => {
+  const style = (attr: string): string => `<style ${attr}>.a{}</style>`;
+  const script = (attr: string): string => `<script ${attr}>const x=1</script>`;
+  const template = (attr: string): string => `<template ${attr}><p/></template>`;
+  const presenceCases = [
+    ["scoped", style, "<style>.a{}</style>"],
+    ["setup", script, "<script>const x=1</script>"],
+    ["vapor", template, "<template><p/></template>"],
+    ["vapor", script, "<script>const x=1</script>"],
+    ["functional", template, "<template><p/></template>"],
+  ] as const;
+  for (const [attr, render, absent] of presenceCases) {
+    const forms = [attr, `${attr}=""`, `${attr}="${attr}"`, `${attr}="false"`];
+    for (const left of forms) {
+      for (const right of forms) {
+        assert.deepEqual(compareFile(render(left), render(right), "App.vue"), []);
+      }
+    }
+    assert.notDeepEqual(compareFile(render(forms[0]), absent, "App.vue"), []);
+  }
+  for (const [before, after] of [
+    ["<style module>.a{}</style>", '<style module="theme">.a{}</style>'],
+    ['<style module="first">.a{}</style>', '<style module="second">.a{}</style>'],
+    ['<style lang="scss">.a{}</style>', '<style lang="less">.a{}</style>'],
+    ['<style custom="first">.a{}</style>', '<style custom="second">.a{}</style>'],
+    [
+      '<script setup generic="T">const x=1</script>',
+      '<script setup generic="U">const x=1</script>',
+    ],
+    [
+      '<template><p/></template><style src="first.css"></style>',
+      '<template><p/></template><style src="second.css"></style>',
+    ],
+    [
+      '<template><p/></template><docs scoped="first">x</docs>',
+      '<template><p/></template><docs scoped="second">x</docs>',
+    ],
+  ]) {
+    assert.notDeepEqual(compareFile(before, after, "App.vue"), []);
+  }
 });
 
 function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {

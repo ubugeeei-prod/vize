@@ -57,7 +57,7 @@ test("App E2E keeps PR, nightly, dispatch, and immutable run identity", () => {
   assert.match(String(workflow.concurrency?.group), /inputs\.target_sha \|\| github\.sha/);
 });
 
-test("PR readiness plans five isolated rows behind one stable aggregator", () => {
+test("PR readiness plans six isolated rows behind one stable aggregator", () => {
   const jobs = loadWorkflow().jobs ?? {};
   const plan = jobs["app-readiness-plan"];
   const producer = jobs["app-readiness-producer"];
@@ -78,7 +78,7 @@ test("PR readiness plans five isolated rows behind one stable aggregator", () =>
     ".github/actions/app-e2e-row/**",
     ".github/workflows/e2e.yml",
     "tests/package.json",
-    "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui}",
+    "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui,vuefes-2025}",
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tools/github/app-e2e-*.mjs",
   ]) {

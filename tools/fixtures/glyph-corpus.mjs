@@ -17,6 +17,15 @@ import {
   validateFormatterChangeEvidence,
 } from "./tool-matrix-formatter.mjs";
 import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { readKnownViolationLedger } from "./glyph-corpus-waivers.mjs";
+
+export {
+  assertHydratedKnownViolationPaths,
+  auditKnownViolationIssues,
+  createKnownViolationConsumption,
+  validateKnownViolationEntries,
+  writeGlyphCorpusPropertyEvidence,
+} from "./glyph-corpus-waivers.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const registryPath = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
@@ -239,42 +248,16 @@ function truncateLine(line) {
   return line.length <= 160 ? line : `${line.slice(0, 160)}...`;
 }
 
-/**
- * Known-violation skip list: tracked defects recorded while the property
- * suite stays green. Entries pin `{ property, project, path, issue }` plus an
- * optional `rule` for lint-agreement waivers; `project` and `path` accept the
- * `"*"` wildcard so a systemic defect (e.g. a formatter/linter rule
- * disagreement) is one tracked entry instead of hundreds. The suites skip
- * matching findings and surface the skip count in their output.
- */
+export function loadKnownViolationLedger() {
+  return readKnownViolationLedger(knownViolationsPath, loadGlyphCorpusProjects());
+}
+
+/** Load the checked-in waiver ledger entries for one corpus property. */
 export function loadKnownViolations(property) {
-  if (!existsSync(knownViolationsPath)) return [];
-  const entries = JSON.parse(readFileSync(knownViolationsPath, "utf8"));
-  if (!Array.isArray(entries)) {
-    throw new Error("glyph-corpus-known-violations.json must be an array");
-  }
-  for (const entry of entries) {
-    for (const field of ["property", "project", "path", "issue"]) {
-      if (typeof entry[field] !== "string" || entry[field].length === 0) {
-        throw new Error(`known violation entries require a non-empty ${field}`);
-      }
-    }
-    if (entry.rule != null && (typeof entry.rule !== "string" || entry.rule.length === 0)) {
-      throw new Error("known violation rule must be a non-empty string when present");
-    }
-  }
-  return entries.filter((entry) => entry.property === property);
+  return loadKnownViolationLedger().filter((entry) => entry.property === property);
 }
 
-export function isKnownViolation(knownViolations, projectId, file, rule = null) {
-  return knownViolations.some(
-    (entry) =>
-      (entry.project === "*" || entry.project === projectId) &&
-      (entry.path === "*" || entry.path === file) &&
-      (entry.rule == null ? rule == null : entry.rule === rule),
-  );
-}
-
+/** Track exact waiver consumption so a fixed path makes its old waiver fail. */
 /** Render corpus violations, capped so failures stay readable. */
 export function renderViolations(property, violations, detailLimit = 8) {
   const details = violations
