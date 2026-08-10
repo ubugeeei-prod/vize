@@ -150,6 +150,12 @@ function validateCapabilities(capabilities, fixtureMap, rootDir) {
     if (values == null) invalid(`unknown capability dimension ${capability.dimension}`);
     enumValue(capability.value, values, `${capability.dimension} value`);
     enumValue(capability.tier, tiers, "capability tier");
+    if (
+      capability.tier === "runtime" &&
+      !fixtureMap.get(capability.fixturePath).memberships.includes("app")
+    ) {
+      invalid(`runtime capability claim is not an App fixture: ${capability.fixturePath}`);
+    }
     validateEvidence(capability.evidence, rootDir);
     identities.push(`${capability.fixturePath}\0${capability.dimension}\0${capability.value}`);
   }

@@ -180,6 +180,14 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /evidence selector is stale/,
     ],
     [
+      "runtime capability claim outside App membership",
+      (value) => {
+        value.capabilities.find((capability) => capability.tier === "runtime").fixturePath =
+          "tests/_fixtures/_git/airi";
+      },
+      /runtime capability claim is not an App fixture/,
+    ],
+    [
       "unknown oracle kind",
       (value) => (value.oracles[0].kind = "source-present"),
       /unknown oracle kind/,
