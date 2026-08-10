@@ -5,13 +5,13 @@
 mod block_indent;
 mod custom_block;
 mod raw_mask;
+mod template_block;
 mod template_indent;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use crate::script;
 use crate::style;
-use crate::template;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
@@ -236,57 +236,7 @@ impl<'a> GlyphFormatter<'a> {
         output: &mut Vec<u8>,
         block: &vize_atelier_sfc::SfcTemplateBlock<'_>,
     ) -> Result<(), FormatError> {
-        // The HTML template formatter owns HTML syntax only. Feeding Pug,
-        // Haml, Markdown, or another preprocessor language through it turns
-        // indentation-sensitive source into unrelated HTML text nodes and can
-        // flatten the program while still reaching a formatter fixed point.
-        let native_html = block
-            .lang
-            .as_deref()
-            .is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
-        let formatted_content = native_html
-            .then(|| template::format_template_content(&block.content, self.options))
-            .transpose()?;
-
-        // Build the opening tag
-        output.extend_from_slice(b"<template");
-        if let Some(lang) = &block.lang {
-            write_attr(output, "lang", Some(lang));
-        }
-        write_remaining_attrs(output, &block.attrs, &["lang"]);
-        output.push(b'>');
-        output.extend_from_slice(self.options.newline_bytes());
-
-        let indent = self.options.indent_bytes();
-        if let Some(formatted_content) = formatted_content {
-            // Native HTML is always indented by one level from the template
-            // tag — except inside whitespace-significant regions (`<pre>`,
-            // `<textarea>`, `v-pre`) where the inner content must round-trip
-            // byte-for-byte. (#963)
-            let trimmed = formatted_content
-                .trim_end_matches('\n')
-                .trim_end_matches('\r');
-            template_indent::write_indented_template(
-                output,
-                trimmed,
-                indent,
-                self.options.newline_bytes(),
-            );
-        } else {
-            // A preprocessor language owns every byte inside its block. Rebase
-            // only the common outer indentation so the SFC stays canonical;
-            // relative indentation and all line content remain source-owned.
-            template_indent::write_rebased_opaque_template(
-                output,
-                &block.content,
-                indent,
-                self.options.newline_bytes(),
-            );
-        }
-
-        output.extend_from_slice(b"</template>");
-
-        Ok(())
+        template_block::write_template_block(output, block, self.options)
     }
 
     /// Format a style block using lightningcss for CSS

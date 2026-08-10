@@ -48,6 +48,7 @@ runs:
         node --test --test-concurrency=1 \
           tests/tooling/glyph-corpus-idempotence.test.ts \
           tests/tooling/glyph-corpus-parse-preservation.test.ts \
+          tests/tooling/glyph-pug-oracle.test.ts \
           tests/tooling/glyph-corpus-lint-agreement.test.ts
 
     - name: Check incremental LSP against Misskey and Vue Vben Admin

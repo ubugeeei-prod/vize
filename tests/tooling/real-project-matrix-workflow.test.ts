@@ -205,7 +205,12 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     );
   }
   assert.match(glyphProperties?.run ?? "", /glyph-\$property\.json/);
-  assert.match(glyphProperties?.run ?? "", /glyph-pug-semantics\.json/);
+  // A missing or empty Pug oracle artifact must fail the job: assert the guard,
+  // not just the filename, so an inverted test or a dropped exit code is caught.
+  assert.match(
+    glyphProperties?.run ?? "",
+    /\[\[ ! -s "\$FIXTURE_REPORT_DIR\/glyph-pug-semantics\.json" \]\][\s\S]*?glyph_exit_code=1/,
+  );
   assert.ok(
     runIndex < divergenceIndex && divergenceIndex < verdictIndex && verdictIndex < summaryIndex,
   );

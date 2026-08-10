@@ -264,9 +264,12 @@ export function writeGlyphPugSemanticEvidence(
   reportDir = process.env.FIXTURE_REPORT_DIR,
 ) {
   if (reportDir == null || reportDir === "") return null;
+  // Code-point ordering, not localeCompare: the artifact must be byte-identical
+  // across runners regardless of the host's ICU locale data.
+  const byCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
   const sortedFiles = [...files].sort(
     (left, right) =>
-      left.project.localeCompare(right.project) || left.path.localeCompare(right.path),
+      byCodePoint(left.project, right.project) || byCodePoint(left.path, right.path),
   );
   const identities = new Set();
   for (const file of sortedFiles) {
@@ -278,12 +281,18 @@ export function writeGlyphPugSemanticEvidence(
     schema: "vize.glyphPugSemanticEvidence",
     version: 1,
     sourceCommit: process.env.GITHUB_SHA ?? null,
-    projectIds: [...projectIds].sort((left, right) => left.localeCompare(right)),
+    projectIds: [...projectIds].sort(byCodePoint),
     baseline,
+    // Enforced regressions, unusable baselines, and accepted waivers are three
+    // distinct outcomes; collapsing them would hide why a shard is not clean.
     summary: {
       evaluatedPugFileCount: sortedFiles.length,
       cleanFileCount: sortedFiles.filter((file) => file.verdict === "clean").length,
-      violationCount: sortedFiles.filter((file) => file.verdict !== "clean").length,
+      violationCount: sortedFiles.filter((file) => file.verdict === "violation" && !file.waived)
+        .length,
+      baselineUnusableCount: sortedFiles.filter((file) => file.verdict === "baseline-unusable")
+        .length,
+      waivedCount: sortedFiles.filter((file) => file.waived === true).length,
     },
     files: sortedFiles,
   };

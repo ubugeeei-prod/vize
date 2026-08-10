@@ -246,6 +246,7 @@ test("Pug semantic artifacts preserve fixed-baseline provenance and exact file i
     project: "fixture-a",
     path: "src/App.vue",
     verdict: "clean",
+    waived: false,
     differences: [],
     oracle: {
       contextSha256: "context",
@@ -278,8 +279,47 @@ test("Pug semantic artifacts preserve fixed-baseline provenance and exact file i
       evaluatedPugFileCount: 1,
       cleanFileCount: 1,
       violationCount: 0,
+      baselineUnusableCount: 0,
+      waivedCount: 0,
     });
     assert.deepEqual(artifact.files, [file]);
+
+    // Ordering is the determinism guarantee of this artifact, and a waived
+    // regression must not be counted as an enforced one.
+    const waived = { ...file, path: "src/Aaa.vue", verdict: "violation", waived: true };
+    const unusable = {
+      ...file,
+      project: "aaa-fixture",
+      path: "src/Zzz.vue",
+      verdict: "baseline-unusable",
+    };
+    const orderedOutput = writeGlyphPugSemanticEvidence(
+      { projectIds: ["fixture-a"], baseline, files: [file, waived, unusable] },
+      reportDir,
+    );
+    const ordered = JSON.parse(fs.readFileSync(orderedOutput!, "utf8"));
+    assert.deepEqual(
+      ordered.files.map((entry: { project: string; path: string }) => [entry.project, entry.path]),
+      [
+        ["aaa-fixture", "src/Zzz.vue"],
+        ["fixture-a", "src/Aaa.vue"],
+        ["fixture-a", "src/App.vue"],
+      ],
+    );
+    assert.deepEqual(ordered.summary, {
+      evaluatedPugFileCount: 3,
+      cleanFileCount: 1,
+      violationCount: 0,
+      baselineUnusableCount: 1,
+      waivedCount: 1,
+    });
+
+    // Without a report directory the artifact is not published at all.
+    assert.equal(writeGlyphPugSemanticEvidence({ projectIds: [], baseline, files: [] }, ""), null);
+    assert.equal(
+      writeGlyphPugSemanticEvidence({ projectIds: [], baseline, files: [] }, null),
+      null,
+    );
     assert.throws(
       () =>
         writeGlyphPugSemanticEvidence(

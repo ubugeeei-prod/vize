@@ -159,6 +159,7 @@ jobs:
           node --test --test-concurrency=1 \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
+            tests/tooling/glyph-pug-oracle.test.ts \
             tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
           for property in idempotence parse-preservation lint-agreement; do
             if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
