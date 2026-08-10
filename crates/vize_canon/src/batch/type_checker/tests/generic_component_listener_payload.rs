@@ -129,7 +129,7 @@ function wrong(payload: FormSubmitEvent<{ username: number; password: string }>)
             String::from(
                 "22:6:error Type '(payload: FormSubmitEvent<{ username: number; password: string; }>) => void' \
                  is not assignable to type '(payload: FormSubmitEvent<{ username: string; password: string; }>) => any'.\n\
-                 Types of parameters 'payload' and 'args' are incompatible.\n\
+                 Types of parameters 'payload' and 'payload' are incompatible.\n\
                  Type 'FormSubmitEvent<{ username: string; password: string; }>' is not assignable to type 'FormSubmitEvent<{ username: number; password: string; }>'.\n\
                  Type '{ username: string; password: string; }' is not assignable to type '{ username: number; password: string; }'.\n\
                  Types of property 'username' are incompatible.\n\
