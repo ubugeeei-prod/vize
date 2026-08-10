@@ -205,6 +205,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     );
   }
   assert.match(glyphProperties?.run ?? "", /glyph-\$property\.json/);
+  assert.match(glyphProperties?.run ?? "", /glyph-pug-semantics\.json/);
   assert.ok(
     runIndex < divergenceIndex && divergenceIndex < verdictIndex && verdictIndex < summaryIndex,
   );

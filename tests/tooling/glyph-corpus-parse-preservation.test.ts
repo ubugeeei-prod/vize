@@ -19,9 +19,17 @@ import {
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
+  snapshotWorkspaceFiles,
   withFormattedWorkspace,
+  writeGlyphPugSemanticEvidence,
   writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
+import {
+  PUG_ORACLE_BASELINE,
+  comparePugTemplateEquivalence,
+  isPugSfc,
+} from "./support/pug-template-equivalence.ts";
+import type { PugOracleComparison, PugOracleEvidence } from "./support/pug-template-equivalence.ts";
 import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
 
 type CorpusProject = {
@@ -32,38 +40,200 @@ type CorpusProject = {
 };
 
 type Violation = { project: string; file: string; detail: string };
+type PugEvidence = {
+  project: string;
+  path: string;
+  verdict: "clean" | "violation" | "baseline-unusable";
+  differences: string[];
+  oracle: PugOracleEvidence;
+  fixedPoint: {
+    sourceBytesEqual: boolean;
+    differences: string[];
+    oracle: PugOracleEvidence;
+  };
+};
 
 const property = "parse-preservation";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
 const waiverConsumption = createKnownViolationConsumption(knownViolations);
 
-function violationCategory(
-  original: string,
-  differences: string[],
-): "semantic-diff" | "baseline-unusable" | "oracle-unavailable" {
-  if (/<template(?=[\s>])[^>]*\blang\s*=\s*(["'])pug\1/i.test(original)) {
-    return "oracle-unavailable";
-  }
+function violationCategory(differences: string[]): "semantic-diff" | "baseline-unusable" {
   if (differences.some((difference) => difference.startsWith("comparison failed:"))) {
     return "baseline-unusable";
   }
   return "semantic-diff";
 }
 
-test("glyph corpus classifies unavailable and crashed reference oracles precisely", () => {
-  assert.equal(
-    violationCategory('<template lang="pug">\ndiv hi\n</template>\n', ["different"]),
-    "oracle-unavailable",
+test("glyph corpus classifies crashed reference oracles precisely", () => {
+  assert.equal(violationCategory(["comparison failed: parser crashed"]), "baseline-unusable");
+  assert.equal(violationCategory(["block disappeared"]), "semantic-diff");
+});
+
+const pugMutationBaseline = `<template lang="pug">
+main
+  //- authored comment
+  | pipe  text
+  button(@click="save" title="x") {{ label }}
+  span(v-for="entry in items" :key="entry.id") {{ entry.name }}
+  AppList
+    template(v-slot:item="{ item }")
+      strong {{ item.name }}
+  pre.
+    a  b
+</template>
+`;
+
+function temporaryPugContext() {
+  const basedir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pug-oracle-"));
+  return {
+    basedir,
+    context: {
+      filename: path.join(basedir, "App.vue"),
+      displayFilename: "synthetic/App.vue",
+      basedir,
+    },
+  };
+}
+
+test("Pug oracle pins provenance and accepts only an opaque outer-indent rebase", () => {
+  assert.deepEqual(
+    {
+      pug: PUG_ORACLE_BASELINE.pug,
+      vueCompiler: PUG_ORACLE_BASELINE.vueCompiler,
+      dialectContext: PUG_ORACLE_BASELINE.dialectContext,
+      mapBasis: PUG_ORACLE_BASELINE.mapBasis,
+      authoredPugMapAvailable: PUG_ORACLE_BASELINE.authoredPugMapAvailable,
+      executionPolicy: PUG_ORACLE_BASELINE.executionPolicy,
+    },
+    {
+      pug: {
+        package: "pug",
+        version: "3.0.4",
+        integrity:
+          "sha512-kFfq5mMzrS7+wrl5pLJzZEzemx34OQ0w4SARfhy/3yxTlhbstsudDwJzhf1hP02yHzbjoVMSXUj/Sz6RNfMyXg==",
+      },
+      vueCompiler: {
+        package: "@vue/compiler-dom",
+        version: "3.5.35",
+        integrity:
+          "sha512-k+bprkXxuqhVajgTx5mUHuir7TwQzUKOWR40ng1ncAqQRPnrLngGGgqVEEhOnTMlc8btHYVKmrP8s5Qyg0hvYA==",
+      },
+      dialectContext: "fixed-vue3",
+      mapBasis: "preprocessed-html",
+      authoredPugMapAvailable: false,
+      executionPolicy: "static-pug-only-with-explicit-filters",
+    },
   );
-  assert.equal(
-    violationCategory("<template><p /></template>\n", ["comparison failed: parser crashed"]),
-    "baseline-unusable",
-  );
-  assert.equal(
-    violationCategory("<template><p /></template>\n", ["block disappeared"]),
-    "semantic-diff",
-  );
+  const { basedir, context } = temporaryPugContext();
+  try {
+    const rebased = pugMutationBaseline.replace(
+      /<template lang="pug">\n([\s\S]*?)<\/template>/,
+      (_match, body: string) =>
+        `<template lang="pug">\n${body
+          .split("\n")
+          .map((line) => (line === "" ? line : `  ${line}`))
+          .join("\n")}</template>`,
+    );
+    const result = comparePugTemplateEquivalence(pugMutationBaseline, rebased, context);
+    assert.equal(result.baselineUsable, true);
+    assert.deepEqual(result.differences, []);
+    assert.equal(
+      result.evidence.pristine.pugBodySha256,
+      result.evidence.formatted.pugBodySha256,
+      "compiler-sfc dedent must expose the same authored Pug body",
+    );
+    assert.equal(
+      result.evidence.pristine.relativePugSha256,
+      result.evidence.formatted.relativePugSha256,
+    );
+    assert.equal(
+      result.evidence.pristine.preprocessedHtmlSha256,
+      result.evidence.formatted.preprocessedHtmlSha256,
+    );
+    assert.equal(
+      result.evidence.pristine.normalizedRenderSha256,
+      result.evidence.formatted.normalizedRenderSha256,
+    );
+    assert.equal(result.evidence.templateOffsetsMoved, true);
+
+    const otherContext = comparePugTemplateEquivalence(pugMutationBaseline, rebased, {
+      ...context,
+      displayFilename: "different-logical-name/App.vue",
+    });
+    assert.notEqual(result.evidence.contextSha256, otherContext.evidence.contextSha256);
+  } finally {
+    fs.rmSync(basedir, { recursive: true, force: true });
+  }
+});
+
+test("Pug oracle records include content and requires explicit deterministic filters", () => {
+  const { basedir, context } = temporaryPugContext();
+  const partial = path.join(basedir, "partial.pug");
+  const source = `<template lang="pug">
+main
+  include partial.pug
+  :upper
+    filter text
+</template>
+`;
+  const filters = {
+    upper: (content: string): string => `<p>${content.trim().toUpperCase()}</p>`,
+  };
+  try {
+    fs.writeFileSync(partial, "strong included\n");
+    const first = comparePugTemplateEquivalence(source, source, { ...context, filters });
+    assert.equal(first.baselineUsable, true);
+    assert.deepEqual(first.differences, []);
+    assert.equal(first.evidence.pristine.dependencies.length, 1);
+    assert.equal(first.evidence.pristine.dependencies[0].path, "partial.pug");
+
+    fs.writeFileSync(partial, "strong changed!\n");
+    const changed = comparePugTemplateEquivalence(source, source, { ...context, filters });
+    assert.notEqual(
+      first.evidence.pristine.dependencies[0].sha256,
+      changed.evidence.pristine.dependencies[0].sha256,
+    );
+
+    const missingFilter = comparePugTemplateEquivalence(source, source, context);
+    assert.equal(missingFilter.baselineUsable, false);
+    assert.match(missingFilter.differences.join("\n"), /no explicit deterministic oracle/);
+  } finally {
+    fs.rmSync(basedir, { recursive: true, force: true });
+  }
+});
+
+test("Pug oracle fails closed for semantic mutations and unusable baselines", () => {
+  const { basedir, context } = temporaryPugContext();
+  try {
+    for (const [label, mutated] of [
+      ["interpolation", pugMutationBaseline.replace("{{ label }}", "{{ other }}")],
+      ["event", pugMutationBaseline.replace('@click="save"', '@click="cancel"')],
+      ["v-for", pugMutationBaseline.replace("entry in items", "entry in others")],
+      ["slot", pugMutationBaseline.replace("{ item }", "{ value }")],
+      ["attribute deletion", pugMutationBaseline.replace(' title="x"', "")],
+      ["comment", pugMutationBaseline.replace("authored comment", "changed comment")],
+      ["pipe whitespace", pugMutationBaseline.replace("pipe  text", "pipe text")],
+      ["pre whitespace", pugMutationBaseline.replace("a  b", "a b")],
+      ["compiler diagnostic", pugMutationBaseline.replace('v-for="entry in items"', 'v-for=""')],
+    ]) {
+      const result = comparePugTemplateEquivalence(pugMutationBaseline, mutated, context);
+      assert.equal(result.baselineUsable, true, label);
+      assert.notDeepEqual(result.differences, [], label);
+    }
+
+    const invalid = '<template lang="pug">\nmain(\n</template>\n';
+    const matchingCrash = comparePugTemplateEquivalence(invalid, invalid, context);
+    assert.equal(matchingCrash.baselineUsable, false);
+    assert.match(matchingCrash.differences.join("\n"), /pristine Pug baseline failed/);
+
+    const ambientGlobal = '<template lang="pug">\np= process.env.HOME\n</template>\n';
+    const unsafe = comparePugTemplateEquivalence(ambientGlobal, ambientGlobal, context);
+    assert.equal(unsafe.baselineUsable, false);
+    assert.match(unsafe.differences.join("\n"), /executable Pug token code/);
+  } finally {
+    fs.rmSync(basedir, { recursive: true, force: true });
+  }
 });
 
 function compareFile(original: string, formatted: string, filename: string): string[] {
@@ -74,43 +244,122 @@ function compareFile(original: string, formatted: string, filename: string): str
   }
 }
 
+function pugContext(project: CorpusProject, file: string) {
+  return {
+    filename: path.join(project.fixtureDir, file),
+    displayFilename: `${project.id}/${file}`,
+    basedir: project.fixtureDir,
+  };
+}
+
+function compareCorpusFile(
+  original: string,
+  formatted: string,
+  project: CorpusProject,
+  file: string,
+): {
+  differences: string[];
+  category: "semantic-diff" | "baseline-unusable";
+  pug: PugOracleComparison | null;
+} {
+  const filename = path.join(project.fixtureDir, file);
+  try {
+    if (isPugSfc(original, filename)) {
+      const pug = comparePugTemplateEquivalence(original, formatted, pugContext(project, file));
+      return {
+        differences: pug.differences,
+        category: pug.baselineUsable ? "semantic-diff" : "baseline-unusable",
+        pug,
+      };
+    }
+  } catch (error) {
+    return {
+      differences: [`comparison failed: ${error instanceof Error ? error.message : String(error)}`],
+      category: "baseline-unusable",
+      pug: null,
+    };
+  }
+  const differences = compareFile(original, formatted, path.basename(file));
+  return { differences, category: violationCategory(differences), pug: null };
+}
+
 function sweepProject(
   project: CorpusProject,
   launch: { command: string; prefix: string[] },
   violations: Violation[],
   counters: { files: number; skipped: number },
   waivedViolations: Array<Violation & { waiver: object }> = [],
+  pugEvidence: PugEvidence[] = [],
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
-  withFormattedWorkspace(project, files, launch, (workspace: { workspaceDir: string }) => {
-    for (const file of files) {
-      const original = fs.readFileSync(path.join(project.fixtureDir, file), "utf8");
-      const formatted = fs.readFileSync(path.join(workspace.workspaceDir, file), "utf8");
-      const differences = compareFile(original, formatted, path.basename(file));
-      if (differences.length === 0) {
-        counters.files += 1;
-        continue;
+  withFormattedWorkspace(
+    project,
+    files,
+    launch,
+    (workspace: { workspaceDir: string; reformat: () => void }) => {
+      const firstPass = snapshotWorkspaceFiles(workspace.workspaceDir, files) as Map<
+        string,
+        Buffer
+      >;
+      workspace.reformat();
+      for (const file of files) {
+        const original = fs.readFileSync(path.join(project.fixtureDir, file), "utf8");
+        const formattedBuffer = firstPass.get(file);
+        assert.ok(formattedBuffer, `formatter snapshot omitted ${project.id}/${file}`);
+        const formatted = formattedBuffer.toString("utf8");
+        const formattedAgainBuffer = fs.readFileSync(path.join(workspace.workspaceDir, file));
+        const result = compareCorpusFile(original, formatted, project, file);
+        const differences = [...result.differences];
+
+        if (result.pug != null) {
+          const formattedAgain = formattedAgainBuffer.toString("utf8");
+          const fixedPoint = comparePugTemplateEquivalence(
+            formatted,
+            formattedAgain,
+            pugContext(project, file),
+          );
+          const sourceBytesEqual = formattedBuffer.equals(formattedAgainBuffer);
+          if (!sourceBytesEqual) differences.push("formatter fixed point changed source bytes");
+          differences.push(
+            ...fixedPoint.differences.map((difference) => `fixed point ${difference}`),
+          );
+          pugEvidence.push({
+            project: project.id,
+            path: file,
+            verdict: !result.pug.baselineUsable
+              ? "baseline-unusable"
+              : differences.length === 0
+                ? "clean"
+                : "violation",
+            differences,
+            oracle: result.pug.evidence,
+            fixedPoint: {
+              sourceBytesEqual,
+              differences: fixedPoint.differences,
+              oracle: fixedPoint.evidence,
+            },
+          });
+        }
+        if (differences.length === 0) {
+          counters.files += 1;
+          continue;
+        }
+        const detail = differences.map((difference) => `  ${difference}`).join("\n");
+        const waiver = waiverConsumption.consume(project.id, file, null, result.category);
+        if (waiver) {
+          waivedViolations.push({ project: project.id, file, detail, waiver });
+          counters.skipped += 1;
+          continue;
+        }
+        violations.push({
+          project: project.id,
+          file,
+          detail,
+        });
       }
-      const detail = differences.map((difference) => `  ${difference}`).join("\n");
-      const waiver = waiverConsumption.consume(
-        project.id,
-        file,
-        null,
-        violationCategory(original, differences),
-      );
-      if (waiver) {
-        waivedViolations.push({ project: project.id, file, detail, waiver });
-        counters.skipped += 1;
-        continue;
-      }
-      violations.push({
-        project: project.id,
-        file,
-        detail,
-      });
-    }
-  });
+    },
+  );
 }
 
 test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
@@ -123,9 +372,10 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
   const waivedViolations: Array<Violation & { waiver: object }> = [];
+  const pugEvidence: PugEvidence[] = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters, waivedViolations);
+    sweepProject(project, launch, violations, counters, waivedViolations, pugEvidence);
   }
   let waiverValidationError: string | null = null;
   try {
@@ -139,6 +389,11 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
     violations,
     waivedViolations,
     waiverValidationError,
+  });
+  writeGlyphPugSemanticEvidence({
+    projectIds: hydrated.map((project) => project.id),
+    baseline: PUG_ORACLE_BASELINE,
+    files: pugEvidence,
   });
   assert.equal(waiverValidationError, null, waiverValidationError ?? undefined);
   process.stderr.write(

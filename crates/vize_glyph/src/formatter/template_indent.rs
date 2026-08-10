@@ -114,6 +114,74 @@ pub(super) fn write_indented_template(
     }
 }
 
+/// Rebase an indentation-sensitive, non-HTML template without interpreting it.
+///
+/// Only the exact whitespace prefix shared by every non-blank line belongs to
+/// the surrounding SFC. Replacing that prefix with the configured one-level
+/// indent is semantics-preserving for Pug-like languages; all relative
+/// indentation, comments, pipe text, filters, and trailing bytes stay intact.
+pub(super) fn write_rebased_opaque_template(
+    output: &mut Vec<u8>,
+    source: &str,
+    indent: &[u8],
+    newline: &[u8],
+) {
+    let raw_lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
+    let Some(first) = raw_lines.iter().position(|line| !is_blank(line)) else {
+        return;
+    };
+    let last = raw_lines
+        .iter()
+        .rposition(|line| !is_blank(line))
+        .expect("a first non-blank line has a last non-blank line");
+    let lines = &raw_lines[first..=last];
+    let common = common_whitespace_prefix(lines);
+
+    for raw_line in lines {
+        let line = raw_line.strip_suffix(b"\r").unwrap_or(raw_line);
+        if is_blank(line) {
+            output.extend_from_slice(newline);
+            continue;
+        }
+        output.extend_from_slice(indent);
+        output.extend_from_slice(&line[common..]);
+        output.extend_from_slice(newline);
+    }
+}
+
+fn common_whitespace_prefix(lines: &[&[u8]]) -> usize {
+    let mut non_blank = lines
+        .iter()
+        .map(|line| line.strip_suffix(b"\r").unwrap_or(line))
+        .filter(|line| !is_blank(line));
+    let Some(first) = non_blank.next() else {
+        return 0;
+    };
+    let mut common = leading_whitespace(first);
+    for line in non_blank {
+        let limit = common.min(leading_whitespace(line));
+        common = first[..limit]
+            .iter()
+            .zip(&line[..limit])
+            .take_while(|(left, right)| left == right)
+            .count();
+        if common == 0 {
+            break;
+        }
+    }
+    common
+}
+
+fn leading_whitespace(line: &[u8]) -> usize {
+    line.iter()
+        .take_while(|byte| matches!(byte, b' ' | b'\t'))
+        .count()
+}
+
+fn is_blank(line: &[u8]) -> bool {
+    line.iter().all(|byte| matches!(byte, b' ' | b'\t' | b'\r'))
+}
+
 fn write_line(output: &mut Vec<u8>, line: &[u8], indent: &[u8], newline: &[u8], raw: bool) {
     if !line.is_empty() && line != b"\r" && !raw {
         output.extend_from_slice(indent);
@@ -124,7 +192,10 @@ fn write_line(output: &mut Vec<u8>, line: &[u8], indent: &[u8], newline: &[u8], 
 
 #[cfg(test)]
 mod tests {
-    use super::{compute_raw_line_mask, needs_raw_line_mask, write_indented_template, write_line};
+    use super::{
+        compute_raw_line_mask, needs_raw_line_mask, write_indented_template, write_line,
+        write_rebased_opaque_template,
+    };
 
     fn full_lexer_output(source: &str) -> Vec<u8> {
         let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
@@ -182,5 +253,27 @@ mod tests {
             );
             assert_eq!(selected_output(source), full_lexer_output(source));
         }
+    }
+
+    #[test]
+    fn opaque_templates_rebase_only_the_shared_prefix() {
+        let mut output = Vec::new();
+        write_rebased_opaque_template(
+            &mut output,
+            "\n\tmain\r\n\t  //- keep\r\n\t  :plain\r\n\t    a  b  \r\n\r\n",
+            b"  ",
+            b"\r\n",
+        );
+        assert_eq!(
+            output,
+            b"  main\r\n    //- keep\r\n    :plain\r\n      a  b  \r\n"
+        );
+    }
+
+    #[test]
+    fn empty_opaque_templates_emit_no_phantom_body_line() {
+        let mut output = Vec::new();
+        write_rebased_opaque_template(&mut output, "\n \t\r\n", b"  ", b"\n");
+        assert!(output.is_empty());
     }
 }

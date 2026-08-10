@@ -8,6 +8,7 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -255,6 +256,41 @@ export function loadKnownViolationLedger() {
 /** Load the checked-in waiver ledger entries for one corpus property. */
 export function loadKnownViolations(property) {
   return loadKnownViolationLedger().filter((entry) => entry.property === property);
+}
+
+/** Publish per-file Pug semantic-oracle provenance for a hydrated matrix shard. */
+export function writeGlyphPugSemanticEvidence(
+  { projectIds, baseline, files },
+  reportDir = process.env.FIXTURE_REPORT_DIR,
+) {
+  if (reportDir == null || reportDir === "") return null;
+  const sortedFiles = [...files].sort(
+    (left, right) =>
+      left.project.localeCompare(right.project) || left.path.localeCompare(right.path),
+  );
+  const identities = new Set();
+  for (const file of sortedFiles) {
+    const identity = `${file.project}\0${file.path}`;
+    if (identities.has(identity)) throw new Error(`duplicate Pug oracle evidence: ${identity}`);
+    identities.add(identity);
+  }
+  const artifact = {
+    schema: "vize.glyphPugSemanticEvidence",
+    version: 1,
+    sourceCommit: process.env.GITHUB_SHA ?? null,
+    projectIds: [...projectIds].sort((left, right) => left.localeCompare(right)),
+    baseline,
+    summary: {
+      evaluatedPugFileCount: sortedFiles.length,
+      cleanFileCount: sortedFiles.filter((file) => file.verdict === "clean").length,
+      violationCount: sortedFiles.filter((file) => file.verdict !== "clean").length,
+    },
+    files: sortedFiles,
+  };
+  const output = resolve(reportDir, "glyph-pug-semantics.json");
+  mkdirSync(dirname(output), { recursive: true });
+  writeFileSync(output, `${JSON.stringify(artifact, null, 2)}\n`);
+  return output;
 }
 
 /** Track exact waiver consumption so a fixed path makes its old waiver fail. */

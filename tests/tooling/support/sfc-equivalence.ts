@@ -50,7 +50,7 @@ type SfcDescriptor = {
   styles: SfcBlock[];
   customBlocks: SfcBlock[];
 };
-type TemplateNode = {
+export type TemplateNode = {
   type: number;
   tag?: string;
   ns?: number;
@@ -78,12 +78,8 @@ export function compareSfcEquivalence(
   const after = parse(formatted, { filename, sourceMap: false });
   const differences: string[] = [];
 
-  const beforeErrors = before.errors
-    .map((error) => String(error.code ?? error.message))
-    .sort((left, right) => left.localeCompare(right));
-  const afterErrors = after.errors
-    .map((error) => String(error.code ?? error.message))
-    .sort((left, right) => left.localeCompare(right));
+  const beforeErrors = parseErrorSignatures(before.errors);
+  const afterErrors = parseErrorSignatures(after.errors);
   if (JSON.stringify(beforeErrors) !== JSON.stringify(afterErrors)) {
     differences.push(
       `parse errors changed: [${beforeErrors.join(", ")}] -> [${afterErrors.join(", ")}]`,
@@ -98,6 +94,45 @@ export function compareSfcEquivalence(
     compareChildren(beforeAst, afterAst, "template", false, differences);
   }
   return differences;
+}
+
+/** Compare only the SFC envelope; a non-HTML language owns its template AST. */
+export function compareSfcBlockStructure(
+  original: string,
+  formatted: string,
+  filename: string,
+): string[] {
+  const before = parse(original, { filename, sourceMap: false });
+  const after = parse(formatted, { filename, sourceMap: false });
+  const differences: string[] = [];
+  const beforeErrors = parseErrorSignatures(before.errors);
+  const afterErrors = parseErrorSignatures(after.errors);
+  if (JSON.stringify(beforeErrors) !== JSON.stringify(afterErrors)) {
+    differences.push(
+      `parse errors changed: [${beforeErrors.join(", ")}] -> [${afterErrors.join(", ")}]`,
+    );
+    return differences;
+  }
+  compareBlocks(before.descriptor, after.descriptor, differences);
+  return differences;
+}
+
+function parseErrorSignatures(errors: Array<{ code?: number; message: string }>): string[] {
+  return errors
+    .map((error) => String(error.code ?? error.message))
+    .sort((left, right) => left.localeCompare(right));
+}
+
+/** Compare template ASTs already produced by one pinned compiler baseline. */
+export function compareTemplateAstEquivalence(before: TemplateNode, after: TemplateNode): string[] {
+  const differences: string[] = [];
+  compareChildren(before, after, "template", false, differences);
+  return differences;
+}
+
+/** Stable semantic signature used only for evidence hashes, never source maps. */
+export function templateAstSemanticSignature(root: TemplateNode): string {
+  return JSON.stringify(semanticTree(root, false));
 }
 
 function compareBlocks(before: SfcDescriptor, after: SfcDescriptor, differences: string[]): void {
@@ -266,6 +301,16 @@ function summarizeNode(node: TemplateNode, preserveWhitespace: boolean): string 
     ]);
   }
   return JSON.stringify(["node", node.type]);
+}
+
+function semanticTree(node: TemplateNode, preserveWhitespace: boolean): unknown {
+  const children = normalizedChildren(node, preserveWhitespace).map(({ node: child, summary }) => [
+    summary,
+    child.type === ELEMENT
+      ? semanticTree(child, preserveWhitespace || isWhitespacePreservingTag(child.tag))
+      : null,
+  ]);
+  return children;
 }
 
 /**

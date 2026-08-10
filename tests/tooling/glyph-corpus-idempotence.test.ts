@@ -141,16 +141,17 @@ test("glyph corpus idempotence machinery accepts the real formatter", () => {
   const project = makeSyntheticProject([
     ["src/App.vue", '<template>\n  <div   :class="foo">hi</div>\n</template>\n'],
     ["src/Card.vue", "<script setup>\nconst x=1\n</script>\n"],
+    ["src/Pug.vue", '<template lang="pug">\nmain\n  //- keep\n  | pipe  text\n</template>\n'],
   ]);
   try {
     const launch = resolveGlyphLaunch();
     const files = collectProjectVueFiles(project) as string[];
-    assert.deepEqual(files, ["src/App.vue", "src/Card.vue"]);
+    assert.deepEqual(files, ["src/App.vue", "src/Card.vue", "src/Pug.vue"]);
     const violations: Violation[] = [];
     const counters = { files: 0, skipped: 0 };
     sweepProject(project, launch, violations, counters);
     assert.deepEqual(violations, []);
-    assert.equal(counters.files, 2);
+    assert.equal(counters.files, 3);
   } finally {
     fs.rmSync(project.fixtureDir, { recursive: true, force: true });
   }

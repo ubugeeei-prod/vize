@@ -236,7 +236,17 @@ impl<'a> GlyphFormatter<'a> {
         output: &mut Vec<u8>,
         block: &vize_atelier_sfc::SfcTemplateBlock<'_>,
     ) -> Result<(), FormatError> {
-        let formatted_content = template::format_template_content(&block.content, self.options)?;
+        // The HTML template formatter owns HTML syntax only. Feeding Pug,
+        // Haml, Markdown, or another preprocessor language through it turns
+        // indentation-sensitive source into unrelated HTML text nodes and can
+        // flatten the program while still reaching a formatter fixed point.
+        let native_html = block
+            .lang
+            .as_deref()
+            .is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
+        let formatted_content = native_html
+            .then(|| template::format_template_content(&block.content, self.options))
+            .transpose()?;
 
         // Build the opening tag
         output.extend_from_slice(b"<template");
@@ -247,22 +257,32 @@ impl<'a> GlyphFormatter<'a> {
         output.push(b'>');
         output.extend_from_slice(self.options.newline_bytes());
 
-        // Template content is always indented by one level from the template
-        // tag — except inside whitespace-significant regions (`<pre>`,
-        // `<textarea>`, `v-pre`) where the inner content must round-trip
-        // byte-for-byte. The inner template formatter already preserves
-        // those regions verbatim; here we make sure the SFC layer doesn't
-        // re-indent each of their inner lines on top. (#963)
         let indent = self.options.indent_bytes();
-        let trimmed = formatted_content
-            .trim_end_matches('\n')
-            .trim_end_matches('\r');
-        template_indent::write_indented_template(
-            output,
-            trimmed,
-            indent,
-            self.options.newline_bytes(),
-        );
+        if let Some(formatted_content) = formatted_content {
+            // Native HTML is always indented by one level from the template
+            // tag — except inside whitespace-significant regions (`<pre>`,
+            // `<textarea>`, `v-pre`) where the inner content must round-trip
+            // byte-for-byte. (#963)
+            let trimmed = formatted_content
+                .trim_end_matches('\n')
+                .trim_end_matches('\r');
+            template_indent::write_indented_template(
+                output,
+                trimmed,
+                indent,
+                self.options.newline_bytes(),
+            );
+        } else {
+            // A preprocessor language owns every byte inside its block. Rebase
+            // only the common outer indentation so the SFC stays canonical;
+            // relative indentation and all line content remain source-owned.
+            template_indent::write_rebased_opaque_template(
+                output,
+                &block.content,
+                indent,
+                self.options.newline_bytes(),
+            );
+        }
 
         output.extend_from_slice(b"</template>");
 

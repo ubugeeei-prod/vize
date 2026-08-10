@@ -166,6 +166,10 @@ jobs:
               glyph_exit_code=1
             fi
           done
+          if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-pug-semantics.json" ]]; then
+            echo "::error title=Missing formatter evidence::Pug semantic oracle produced no artifact"
+            glyph_exit_code=1
+          fi
           exit "$glyph_exit_code"
 
       - name: Enforce typechecker baseline divergence

@@ -81,6 +81,11 @@ catalogs:
     "@nuxt/eslint": "1.16.0"
     "@nuxt/eslint-config": "1.16.0"
 
+  # Independent Pug compiler used by the real-project formatter semantic
+  # oracle. Bump deliberately because its generated HTML is ground truth.
+  pug-oracle:
+    pug: "3.0.4"
+
   # Shared repo and file-system utilities.
   repo-tooling:
     "@iarna/toml": "2.2.5"
