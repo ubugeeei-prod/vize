@@ -189,6 +189,7 @@ import { Widget } from "@/components";
 }
 
 #[test]
+#[cfg(unix)]
 fn definition_service_follows_a_workspace_package_vue_export() {
     let workspace = tempfile::tempdir().expect("temporary workspace");
     let app = workspace.path().join("app");
@@ -202,11 +203,7 @@ fn definition_service_follows_a_workspace_package_vue_export() {
     .unwrap();
     fs::write(&target_path, "<template><button /></template>\n").unwrap();
     let package_link = app.join("node_modules/@scope/ui");
-    fs::create_dir_all(package_link.parent().unwrap()).unwrap();
-    #[cfg(unix)]
-    std::os::unix::fs::symlink(&package, &package_link).unwrap();
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(&package, &package_link).unwrap();
+    crate::ide::tests::symlink_dir(&package, &package_link);
 
     let importer_path = app.join("src/App.vue");
     let source = r#"<script setup lang="ts">

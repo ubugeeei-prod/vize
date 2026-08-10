@@ -7,6 +7,10 @@ use vize_carton::{FxHashMap, String as CompactString};
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 
+#[path = "context/cache.rs"]
+mod cache;
+use cache::{ContextFingerprint, lock_session_cache};
+
 /// The alias map for the host document's package, resolved once per open,
 /// plus the materialized mirror the resolutions point into.
 ///
@@ -33,31 +37,17 @@ impl AliasContext {
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> std::sync::Arc<Self> {
         let fingerprint = ContextFingerprint::capture(source_path, content, overlays);
-        let cache = session_cache();
-        if let Ok(mut slots) = cache.lock() {
-            if let Some(cached) = slots.get(source_path)
-                && cached.fingerprint == fingerprint
-                && cached.fingerprint.stamps_still_valid()
-            {
-                return std::sync::Arc::clone(&cached.context);
-            }
-            slots.remove(source_path);
+        if let Some(context) = lock_session_cache().get(source_path, &fingerprint) {
+            return context;
         }
         let context = std::sync::Arc::new(Self::for_host(source_path, content, overlays));
         let mut fingerprint = fingerprint;
         fingerprint.stamp(context.as_ref());
-        if let Ok(mut slots) = cache.lock() {
-            if slots.len() >= 8 {
-                slots.clear();
-            }
-            slots.insert(
-                source_path.to_path_buf(),
-                CachedContext {
-                    fingerprint,
-                    context: std::sync::Arc::clone(&context),
-                },
-            );
-        }
+        lock_session_cache().insert(
+            source_path.to_path_buf(),
+            fingerprint,
+            std::sync::Arc::clone(&context),
+        );
         context
     }
 
@@ -79,6 +69,29 @@ impl AliasContext {
                     let mut resolver = crate::PackageRouteResolver::default();
                     let mut package_routes = FxHashMap::default();
                     let mut route_inputs = Vec::new();
+                    let host_registered = project
+                        .register_path_with_content(source_path, content)
+                        .is_ok();
+                    let host_specifiers = host_registered
+                        .then(|| {
+                            let virtual_file = project.find_by_original(source_path)?;
+                            let source_type = if virtual_file
+                                .virtual_path
+                                .extension()
+                                .is_some_and(|extension| extension == "tsx")
+                            {
+                                oxc_span::SourceType::tsx()
+                            } else {
+                                oxc_span::SourceType::ts()
+                            };
+                            Some(
+                                crate::batch::ImportRewriter::new()
+                                    .collect_all_specifiers(&virtual_file.content, source_type),
+                            )
+                        })
+                        .flatten()
+                        .unwrap_or_default();
+                    let importer_dir = source_path.parent().unwrap_or(source_path);
                     let registered = {
                         let mut resolve_package = |importer_dir: &Path, specifier: &str| {
                             let lookup = resolver.lookup(
@@ -93,21 +106,24 @@ impl AliasContext {
                                 return None;
                             }
                             let source_path = route.source_path.clone();
-                            package_routes.insert(
-                                (
-                                    vize_carton::path::canonicalize_non_verbatim(importer_dir),
-                                    specifier.into(),
-                                ),
-                                route,
-                            );
+                            package_routes
+                                .insert((logical_absolute(importer_dir), specifier.into()), route);
                             Some(source_path)
                         };
-                        project
-                            .register_path_with_content(source_path, content)
-                            .is_ok()
+                        let mut workspace_package_specifiers = host_specifiers
+                            .iter()
+                            .filter(|specifier| {
+                                resolve_package(importer_dir, specifier.as_str()).is_some()
+                            })
+                            .cloned()
+                            .collect::<Vec<_>>();
+                        workspace_package_specifiers.sort();
+                        workspace_package_specifiers.dedup();
+                        host_registered
                             && project
                                 .register_reachable_dependencies_with_package_resolver(
                                     overlays,
+                                    &workspace_package_specifiers,
                                     &mut resolve_package,
                                 )
                                 .is_ok()
@@ -214,134 +230,19 @@ impl AliasContext {
         importer_dir: &Path,
     ) -> Option<&crate::PackageRoute> {
         let package_key = (
-            vize_carton::path::canonicalize_non_verbatim(importer_dir),
+            logical_absolute(importer_dir),
             CompactString::from(specifier),
         );
         self.package_routes.get(&package_key)
     }
 }
 
-#[allow(clippy::disallowed_types)]
-struct CachedContext {
-    fingerprint: ContextFingerprint,
-    context: std::sync::Arc<AliasContext>,
-}
-
-#[allow(clippy::disallowed_types)]
-fn session_cache() -> &'static std::sync::Mutex<FxHashMap<PathBuf, CachedContext>> {
-    static CACHE: std::sync::OnceLock<std::sync::Mutex<FxHashMap<PathBuf, CachedContext>>> =
-        std::sync::OnceLock::new();
-    CACHE.get_or_init(|| std::sync::Mutex::new(FxHashMap::default()))
-}
-
-/// The import closure and disk inputs a cached editor route depends on.
-#[derive(PartialEq)]
-#[allow(clippy::disallowed_types)]
-struct ContextFingerprint {
-    host_content: u64,
-    overlays: u64,
-    stamps: Vec<DiskInputStamp>,
-}
-
-impl ContextFingerprint {
-    #[allow(clippy::disallowed_methods)]
-    fn capture(source_path: &Path, content: &str, overlays: &FxHashMap<PathBuf, &str>) -> Self {
-        use std::hash::{Hash, Hasher};
-        let mut host = std::hash::DefaultHasher::new();
-        source_path.hash(&mut host);
-        content.hash(&mut host);
-        let mut overlay_entries: Vec<_> = overlays.iter().collect();
-        overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
-        let mut overlay_hash = std::hash::DefaultHasher::new();
-        for (path, text) in overlay_entries {
-            path.hash(&mut overlay_hash);
-            text.hash(&mut overlay_hash);
-        }
-        Self {
-            host_content: host.finish(),
-            overlays: overlay_hash.finish(),
-            stamps: Vec::new(),
-        }
+fn logical_absolute(path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map(|cwd| cwd.join(path))
+            .unwrap_or_else(|_| path.to_path_buf())
     }
-
-    fn stamp(&mut self, context: &AliasContext) {
-        let mut paths = vec![context.project_root.join("tsconfig.json")];
-        if let Some(mirror) = context.mirror.as_ref() {
-            paths.extend(mirror.governing_config_paths());
-            paths.extend(mirror.registered_original_paths_sorted());
-        }
-        paths.extend(context.route_inputs.iter().cloned());
-        paths.sort();
-        paths.dedup();
-        self.stamps = paths.into_iter().map(DiskInputStamp::capture).collect();
-    }
-
-    fn stamps_still_valid(&self) -> bool {
-        self.stamps
-            .iter()
-            .all(|stamp| *stamp == DiskInputStamp::capture(stamp.path.clone()))
-    }
-}
-
-/// Disk identity strong enough for same-mtime edits and workspace-link retargets.
-#[derive(PartialEq)]
-struct DiskInputStamp {
-    path: PathBuf,
-    modified: Option<std::time::SystemTime>,
-    len: Option<u64>,
-    kind: Option<DiskInputKind>,
-    content_digest: Option<u64>,
-    symlink_target: Option<PathBuf>,
-}
-
-#[derive(Clone, Copy, PartialEq)]
-enum DiskInputKind {
-    File,
-    Directory,
-    Symlink,
-    Other,
-}
-
-impl DiskInputStamp {
-    fn capture(path: impl Into<PathBuf>) -> Self {
-        let path = path.into();
-        let metadata = std::fs::symlink_metadata(&path).ok();
-        let modified = metadata
-            .as_ref()
-            .and_then(|metadata| metadata.modified().ok());
-        let len = metadata.as_ref().map(std::fs::Metadata::len);
-        let kind = metadata.as_ref().map(|metadata| {
-            let file_type = metadata.file_type();
-            if file_type.is_file() {
-                DiskInputKind::File
-            } else if file_type.is_dir() {
-                DiskInputKind::Directory
-            } else if file_type.is_symlink() {
-                DiskInputKind::Symlink
-            } else {
-                DiskInputKind::Other
-            }
-        });
-        let content_digest = matches!(kind, Some(DiskInputKind::File))
-            .then(|| std::fs::read(&path).ok().map(|content| digest(&content)))
-            .flatten();
-        let symlink_target = matches!(kind, Some(DiskInputKind::Symlink))
-            .then(|| std::fs::read_link(&path).ok())
-            .flatten();
-        Self {
-            path,
-            modified,
-            len,
-            kind,
-            content_digest,
-            symlink_target,
-        }
-    }
-}
-
-fn digest(content: &[u8]) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut hasher = std::hash::DefaultHasher::new();
-    content.hash(&mut hasher);
-    hasher.finish()
 }

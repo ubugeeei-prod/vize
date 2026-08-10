@@ -9,6 +9,9 @@ use super::{
     collect_targets,
 };
 
+#[path = "package_route_tests/lifecycle.rs"]
+mod lifecycle;
+
 #[test]
 fn parses_scoped_and_unscoped_package_subpaths() {
     let scoped = PackageRequest::parse("@scope/pkg/feature").unwrap();
@@ -20,13 +23,26 @@ fn parses_scoped_and_unscoped_package_subpaths() {
 }
 
 #[test]
-fn rejects_scoped_specifiers_without_a_scope_or_package_name() {
-    for specifier in ["@/pkg", "@scope/", "@scope", "@/", "@"] {
+fn rejects_alias_and_absolute_spellings_as_package_requests() {
+    for specifier in [
+        "@/components",
+        "@/",
+        "@scope/",
+        "@scope",
+        "@",
+        "/src/App.vue",
+        "C:/src/App.vue",
+        r"C:\src\App.vue",
+    ] {
         assert!(
             PackageRequest::parse(specifier).is_none(),
-            "accepted malformed specifier {specifier}"
+            "accepted non-package specifier {specifier}"
         );
     }
+    assert_eq!(
+        PackageRequest::parse("@scope/package").unwrap().package,
+        "@scope/package"
+    );
 }
 
 #[test]
@@ -113,6 +129,36 @@ fn self_reference_and_private_imports_share_manifest_routing() {
 }
 
 #[test]
+fn self_reference_wins_over_a_nested_install_with_the_same_name() {
+    let root = tempfile::tempdir().unwrap();
+    let package = root.path();
+    let source = package.join("src");
+    let nested = source.join("node_modules/@scope/pkg");
+    std::fs::create_dir_all(&source).unwrap();
+    std::fs::create_dir_all(&nested).unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"name":"@scope/pkg","exports":"./src/self.ts"}"#,
+    )
+    .unwrap();
+    std::fs::write(source.join("self.ts"), "export {};\n").unwrap();
+    std::fs::write(
+        nested.join("package.json"),
+        r#"{"name":"@scope/pkg","exports":"./nested.ts"}"#,
+    )
+    .unwrap();
+    std::fs::write(nested.join("nested.ts"), "export {};\n").unwrap();
+
+    let route = PackageRouteResolver::default()
+        .resolve(&source, "@scope/pkg", PackageSourceOptions::default())
+        .unwrap();
+    assert_eq!(
+        route.source_path,
+        source.join("self.ts").canonicalize().unwrap()
+    );
+}
+
+#[test]
 fn installed_dependencies_remain_native_package_sources() {
     let root = tempfile::tempdir().unwrap();
     let source = root.path().join("src");
@@ -151,6 +197,27 @@ fn runtime_export_prefers_its_declaration_sidecar() {
         r#"{"exports":{".":{"import":"./dist/index.mjs"}}}"#,
     )
     .unwrap();
+    let route = PackageRouteResolver::default()
+        .resolve(&source, "runtime-package", PackageSourceOptions::default())
+        .unwrap();
+    assert_eq!(route.source_path, declaration.canonicalize().unwrap());
+}
+
+#[test]
+fn runtime_export_resolves_a_declaration_when_the_runtime_file_is_absent() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("src");
+    let package = root.path().join("node_modules/runtime-package");
+    let declaration = package.join("dist/index.d.ts");
+    std::fs::create_dir_all(&source).unwrap();
+    std::fs::create_dir_all(declaration.parent().unwrap()).unwrap();
+    std::fs::write(&declaration, "export declare const value: number\n").unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"exports":{".":{"import":"./dist/index.js"}}}"#,
+    )
+    .unwrap();
+
     let route = PackageRouteResolver::default()
         .resolve(&source, "runtime-package", PackageSourceOptions::default())
         .unwrap();
@@ -252,121 +319,4 @@ fn missing_explicit_vue_target_is_retained_for_create_invalidation() {
         .unwrap();
     assert_eq!(route.source_path, route.package_root.join("src/Future.vue"));
     assert!(route.invalidation_paths().contains(&route.manifest_path));
-}
-
-#[test]
-fn unresolved_packages_retain_searched_link_and_manifest_candidates() {
-    let root = tempfile::tempdir().unwrap();
-    let importer = root.path().join("app/src");
-    std::fs::create_dir_all(&importer).unwrap();
-    let link = root.path().join("app/node_modules/@scope/ui");
-    let lookup = PackageRouteResolver::default().lookup(
-        &importer,
-        "@scope/ui/widget",
-        PackageSourceOptions::default(),
-    );
-    let (route, inputs) = lookup.into_parts();
-
-    assert!(route.is_none());
-    assert!(inputs.contains(&link));
-    assert!(inputs.contains(&link.join("package.json")));
-}
-
-#[test]
-#[cfg(unix)]
-fn symlinked_workspace_route_records_link_and_real_manifest_inputs() {
-    use std::os::unix::fs::symlink;
-
-    let root = tempfile::tempdir().unwrap();
-    let app = root.path().join("app");
-    let package = root.path().join("packages/ui");
-    let link = app.join("node_modules/@scope/ui");
-    std::fs::create_dir_all(app.join("src")).unwrap();
-    std::fs::create_dir_all(package.join("src")).unwrap();
-    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
-    std::fs::write(
-        package.join("package.json"),
-        r#"{"name":"@scope/ui","exports":{".":"./src/Widget.vue"}}"#,
-    )
-    .unwrap();
-    let widget = package.join("src/Widget.vue");
-    std::fs::write(&widget, "<template />\n").unwrap();
-    symlink(&package, &link).unwrap();
-
-    let route = PackageRouteResolver::default()
-        .resolve(
-            &app.join("src"),
-            "@scope/ui",
-            PackageSourceOptions::default(),
-        )
-        .unwrap();
-    let inputs = route.invalidation_paths();
-    assert!(route.workspace_source);
-    assert_eq!(route.source_path, widget.canonicalize().unwrap());
-    assert_eq!(route.package_link_root, link);
-    assert_eq!(route.package_root, package.canonicalize().unwrap());
-    assert_ne!(route.package_link_root, route.package_root);
-    assert_ne!(
-        route.package_link_root.join("package.json"),
-        route.manifest_path
-    );
-    assert!(inputs.contains(&route.package_link_root));
-    assert!(inputs.contains(&route.package_link_root.join("package.json")));
-    assert!(inputs.contains(&route.manifest_path));
-    assert!(inputs.contains(&route.source_path));
-}
-
-#[test]
-fn a_declaration_sidecar_stands_in_for_a_missing_runtime_module() {
-    let root = tempfile::tempdir().unwrap();
-    let package = root.path().join("node_modules/pkg");
-    let dist = package.join("dist");
-    let importer = root.path().join("src");
-    std::fs::create_dir_all(&dist).unwrap();
-    std::fs::create_dir_all(&importer).unwrap();
-    std::fs::write(
-        package.join("package.json"),
-        r#"{"name":"pkg","exports":{".":"./dist/index.js"}}"#,
-    )
-    .unwrap();
-    std::fs::write(dist.join("index.d.ts"), "export {};\n").unwrap();
-
-    let route = PackageRouteResolver::default()
-        .resolve(&importer, "pkg", PackageSourceOptions::default())
-        .unwrap();
-
-    assert_eq!(
-        route.source_path,
-        dist.join("index.d.ts").canonicalize().unwrap()
-    );
-}
-
-#[test]
-#[cfg(unix)]
-fn importer_directories_sharing_a_canonical_path_resolve_independently() {
-    use std::os::unix::fs::symlink;
-
-    let root = tempfile::tempdir().unwrap();
-    let app = root.path().join("app");
-    let package = root.path().join("packages/ui");
-    let link = app.join("node_modules/@scope/ui");
-    let dependency = app.join("node_modules/dep");
-    std::fs::create_dir_all(package.join("src")).unwrap();
-    std::fs::create_dir_all(&dependency).unwrap();
-    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
-    std::fs::write(
-        dependency.join("package.json"),
-        r#"{"name":"dep","exports":{".":"./index.ts"}}"#,
-    )
-    .unwrap();
-    std::fs::write(dependency.join("index.ts"), "export {};\n").unwrap();
-    symlink(&package, &link).unwrap();
-
-    let mut resolver = PackageRouteResolver::default();
-    let through_link = resolver.resolve(&link.join("src"), "dep", PackageSourceOptions::default());
-    let through_real_path =
-        resolver.resolve(&package.join("src"), "dep", PackageSourceOptions::default());
-
-    assert!(through_link.is_some(), "the linked importer must see `dep`");
-    assert_eq!(through_real_path, None);
 }

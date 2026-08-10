@@ -131,4 +131,16 @@ mod tests {
             Some(original.into())
         );
     }
+
+    #[test]
+    #[cfg(windows)]
+    fn windows_external_mirror_path_round_trips_to_the_authored_path() {
+        let original = Path::new(r"C:\ws\packages\ui\src\UiButton.vue");
+        let mirrored =
+            super::external_mirror_path(Path::new(r"C:\project\.vize"), original).unwrap();
+        assert_eq!(
+            super::external_mirror_original_path(&mirrored),
+            Some(original.into())
+        );
+    }
 }

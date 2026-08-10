@@ -13,7 +13,11 @@ mod tests;
 
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let specifier = specifier_at_offset(&ctx.content, ctx.offset)?;
-    let target = resolve_specifier(ctx.uri, specifier)?;
+    let target = resolve_specifier_with(
+        ctx.uri,
+        specifier,
+        &mut ctx.state.package_route_resolver.lock(),
+    )?;
     let uri = Url::from_file_path(target).ok()?;
     let origin = Position::new(0, 0);
 
@@ -78,17 +82,25 @@ fn is_module_context(prefix: &str) -> bool {
 }
 
 pub(super) fn resolve_specifier(current_uri: &Url, specifier: &str) -> Option<PathBuf> {
+    resolve_specifier_with(current_uri, specifier, &mut PackageRouteResolver::default())
+}
+
+fn resolve_specifier_with(
+    current_uri: &Url,
+    specifier: &str,
+    package_routes: &mut PackageRouteResolver,
+) -> Option<PathBuf> {
     let current_file = current_uri.to_file_path().ok()?;
     let current_dir = current_file.parent()?;
 
     if specifier.starts_with("./") || specifier.starts_with("../") {
         return resolve_file_candidate(&current_dir.join(specifier));
     }
-    if specifier.starts_with('/') || Path::new(specifier).is_absolute() {
+    if is_absolute_specifier(specifier) {
         return None;
     }
 
-    PackageRouteResolver::default()
+    package_routes
         .resolve(
             current_dir,
             specifier,
@@ -96,6 +108,17 @@ pub(super) fn resolve_specifier(current_uri: &Url, specifier: &str) -> Option<Pa
         )
         .map(|route| route.source_path)
         .filter(|path| path.is_file())
+}
+
+fn is_absolute_specifier(specifier: &str) -> bool {
+    if Path::new(specifier).is_absolute() || specifier.starts_with("\\\\") {
+        return true;
+    }
+    let bytes = specifier.as_bytes();
+    bytes.len() >= 3
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && matches!(bytes[2], b'/' | b'\\')
 }
 
 fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {

@@ -14,8 +14,13 @@ use vize_carton::{FxHashMap, String, cstr};
 mod search;
 #[path = "package_route/source.rs"]
 mod source;
-use search::{PackageRequest, find_package_root, nearest_package_manifest, read_manifest};
+#[path = "package_route/stamp.rs"]
+mod stamp;
+use search::{
+    PackageRequest, PackageSearchCache, find_package_root, nearest_package_manifest, read_manifest,
+};
 use source::resolve_source;
+use stamp::{InputStamp, stamp_paths, stamps_are_current};
 
 type ResolutionKey = (PathBuf, String, PackageSourceOptions);
 
@@ -59,7 +64,13 @@ impl PackageRoute {
 
 #[derive(Default)]
 pub struct PackageRouteResolver {
-    resolutions: FxHashMap<ResolutionKey, PackageRouteLookup>,
+    resolutions: FxHashMap<ResolutionKey, CachedPackageRouteLookup>,
+    search: PackageSearchCache,
+}
+
+struct CachedPackageRouteLookup {
+    lookup: PackageRouteLookup,
+    stamps: Vec<InputStamp>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -98,12 +109,27 @@ impl PackageRouteResolver {
         // through a package symlink still see different `node_modules` chains.
         let logical_importer_dir = logical_absolute(importer_dir);
         let key = (logical_importer_dir.clone(), specifier.into(), options);
-        if let Some(cached) = self.resolutions.get(&key) {
-            return cached.clone();
+        if let Some(cached) = self.resolutions.get(&key)
+            && stamps_are_current(&cached.stamps)
+        {
+            return cached.lookup.clone();
         }
-        let lookup = lookup_uncached(&logical_importer_dir, specifier, options);
-        self.resolutions.insert(key, lookup.clone());
+        self.resolutions.remove(&key);
+        let lookup = lookup_uncached(&logical_importer_dir, specifier, options, &mut self.search);
+        let stamps = stamp_paths(&lookup.invalidation_paths);
+        self.resolutions.insert(
+            key,
+            CachedPackageRouteLookup {
+                lookup: lookup.clone(),
+                stamps,
+            },
+        );
         lookup
+    }
+
+    pub fn clear(&mut self) {
+        self.resolutions.clear();
+        self.search.clear();
     }
 }
 
@@ -111,9 +137,16 @@ fn lookup_uncached(
     importer_dir: &Path,
     specifier: &str,
     options: PackageSourceOptions,
+    search: &mut PackageSearchCache,
 ) -> PackageRouteLookup {
     let mut invalidation_paths = Vec::new();
-    let route = resolve_uncached(importer_dir, specifier, options, &mut invalidation_paths);
+    let route = resolve_uncached(
+        importer_dir,
+        specifier,
+        options,
+        &mut invalidation_paths,
+        search,
+    );
     if let Some(route) = route.as_ref() {
         invalidation_paths.extend(route.invalidation_paths());
     }
@@ -130,14 +163,15 @@ fn resolve_uncached(
     specifier: &str,
     options: PackageSourceOptions,
     invalidation_paths: &mut Vec<PathBuf>,
+    search: &mut PackageSearchCache,
 ) -> Option<PackageRoute> {
     let (package_link_root, manifest, request) = if specifier.starts_with('#') {
-        let (root, manifest) = nearest_package_manifest(importer_dir, invalidation_paths)?;
+        let (root, manifest) = nearest_package_manifest(importer_dir, invalidation_paths, search)?;
         (root, manifest, specifier.to_owned())
     } else {
         let request = PackageRequest::parse(specifier)?;
-        let root = find_package_root(importer_dir, request.package, invalidation_paths)?;
-        let manifest = read_manifest(&root)?;
+        let root = find_package_root(importer_dir, request.package, invalidation_paths, search)?;
+        let manifest = read_manifest(&root, search)?;
         let request = request
             .subpath
             .map_or_else(|| ".".to_owned(), |subpath| cstr!("./{subpath}").into());

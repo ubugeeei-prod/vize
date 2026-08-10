@@ -34,6 +34,8 @@ use super::VirtualProject;
 
 #[path = "dependency_scan/resolution.rs"]
 mod resolution;
+#[cfg(test)]
+use resolution::probe_candidates;
 pub(crate) use resolution::resolve_dependency;
 use resolution::{
     alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
@@ -61,20 +63,26 @@ impl VirtualProject {
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(overlays, None)
+        self.register_reachable_dependencies_inner(overlays, &[], None)
     }
 
     pub(crate) fn register_reachable_dependencies_with_package_resolver(
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
+        workspace_package_specifiers: &[CompactString],
         package_resolver: PackageResolver<'_>,
     ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(overlays, Some(package_resolver))
+        self.register_reachable_dependencies_inner(
+            overlays,
+            workspace_package_specifiers,
+            Some(package_resolver),
+        )
     }
 
     fn register_reachable_dependencies_inner(
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
+        workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
         let aliases = self.dependency_alias_map();
@@ -102,7 +110,7 @@ impl VirtualProject {
             if !may_resolve_a_dependency(
                 &virtual_file.content,
                 &alias_prefixes,
-                package_resolver.is_some(),
+                workspace_package_specifiers,
             ) {
                 continue;
             }

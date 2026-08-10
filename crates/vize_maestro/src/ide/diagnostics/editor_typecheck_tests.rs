@@ -78,11 +78,13 @@ fn async_collect_resolves_relative_vue_imports_in_script_setup() {
 }
 
 #[test]
+#[cfg(unix)]
 fn async_collect_resolves_workspace_package_vue_exports() {
     assert_workspace_package_vue_export_resolves("./src/Widget.vue", None);
 }
 
 #[test]
+#[cfg(unix)]
 fn async_collect_resolves_workspace_package_vue_exports_through_a_ts_barrel() {
     assert_workspace_package_vue_export_resolves(
         "./src/index.ts",
@@ -91,6 +93,7 @@ fn async_collect_resolves_workspace_package_vue_exports_through_a_ts_barrel() {
 }
 
 #[test]
+#[cfg(unix)]
 fn async_collect_recovers_when_a_workspace_package_is_created_after_open() {
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
@@ -154,6 +157,7 @@ void componentMustBeTyped;
     }));
 }
 
+#[cfg(unix)]
 fn assert_workspace_package_vue_export_resolves(entry: &str, barrel: Option<&str>) {
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
@@ -233,12 +237,9 @@ void componentMustBeTyped;
     assert_eq!(errors[0].range.start.line, 3);
 }
 
+#[cfg(unix)]
 fn link_workspace_package(source: &std::path::Path, target: &std::path::Path) {
-    std::fs::create_dir_all(target.parent().unwrap()).expect("package scope");
-    #[cfg(unix)]
-    std::os::unix::fs::symlink(source, target).expect("package symlink");
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(source, target).expect("package symlink");
+    crate::ide::tests::symlink_dir(source, target);
 }
 
 #[test]

@@ -49,36 +49,15 @@ pub(super) fn alias_may_reach_first_party(
 pub(super) fn may_resolve_a_dependency(
     content: &str,
     alias_prefixes: &[CompactString],
-    package_routes: bool,
+    workspace_package_specifiers: &[CompactString],
 ) -> bool {
     crate::batch::import_rewriter::source_may_contain_relative_specifier(content)
         || alias_prefixes
             .iter()
             .any(|prefix| prefix.is_empty() || content.contains(prefix.as_str()))
-        || package_routes && may_contain_bare_specifier(content)
-}
-
-/// Whether `content` can name a bare specifier — the only shape a package
-/// route resolves.
-///
-/// The prefilter exists to keep the walk from parsing every generated module
-/// (#3898), so a package resolver must not widen it to "contains ` from `":
-/// nearly every module does, which is the whole prefilter gone. The character
-/// after the opening quote decides instead — a relative or rooted specifier is
-/// already covered by [`source_may_contain_relative_specifier`] and the alias
-/// prefixes. Still a conservative superset: the lead-in is matched anywhere in
-/// the text, and a bare specifier naming a published package survives here and
-/// is rejected by the resolver (which memoizes that answer).
-fn may_contain_bare_specifier(content: &str) -> bool {
-    ["from", "import", "require"].iter().any(|lead_in| {
-        content.match_indices(lead_in).any(|(index, _)| {
-            let after =
-                content[index + lead_in.len()..].trim_start_matches([' ', '\t', '\r', '\n', '(']);
-            after
-                .strip_prefix(['\'', '"'])
-                .is_some_and(|specifier| !specifier.starts_with(['.', '/', '\'', '"']))
-        })
-    })
+        || workspace_package_specifiers
+            .iter()
+            .any(|specifier| content.contains(specifier.as_str()))
 }
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
@@ -130,17 +109,36 @@ pub(crate) fn resolve_dependency(
     best.map(|(_, path)| path)
 }
 
-fn probe_candidates(base: &Path) -> Option<PathBuf> {
-    if base.extension().is_some() && base.is_file() {
+pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
+    if base.is_file() {
         return Some(base.to_path_buf());
     }
-    for extension in ["ts", "tsx", "d.ts", "vue"] {
-        let candidate = PathBuf::from(cstr!("{}.{extension}", base.display()).as_str());
+    let extension = base.extension().and_then(|extension| extension.to_str());
+    let probe_base = match extension {
+        Some("js" | "jsx" | "mjs" | "cjs") => base.with_extension(""),
+        Some(_) => return None,
+        None => base.to_path_buf(),
+    };
+    for extension in ["ts", "tsx", "mts", "cts", "vue", "js", "jsx", "mjs", "cjs"] {
+        let candidate = PathBuf::from(cstr!("{}.{extension}", probe_base.display()).as_str());
         if candidate.is_file() {
             return Some(candidate);
         }
     }
-    for index in ["index.ts", "index.tsx", "index.d.ts"] {
+    if extension.is_some() {
+        return None;
+    }
+    for index in [
+        "index.ts",
+        "index.tsx",
+        "index.mts",
+        "index.cts",
+        "index.vue",
+        "index.js",
+        "index.jsx",
+        "index.mjs",
+        "index.cjs",
+    ] {
         let candidate = base.join(index);
         if candidate.is_file() {
             return Some(candidate);

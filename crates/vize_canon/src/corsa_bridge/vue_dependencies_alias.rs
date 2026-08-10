@@ -37,20 +37,14 @@ pub(super) fn queue_alias_imports(
     if context.aliases.is_empty() && context.package_routes.is_empty() {
         return;
     }
-    // Only a specifier under a configured alias prefix can resolve here, so
-    // pre-filter before touching the filesystem: `resolve_dependency` probes up
-    // to seven candidate paths per alias, and this walk runs on the request
-    // thread for every bare package name (`vue`, `pinia`, `@vueuse/core`) in
-    // every scanned document. The batch pass filters the same way (#3898).
+    // The context already holds only aliases and workspace-package routes that
+    // can reach first-party source. Published package imports never enter this
+    // filesystem probing path (#3898).
     for specifier in rewriter.collect_all_specifiers(code, source_type) {
         if specifier.starts_with("./") || specifier.starts_with("../") {
             continue; // the relative walk owns these
         }
-        let package_route = context.package_route(&specifier, dir);
-        let path = package_route
-            .map(|route| route.source_path.clone())
-            .or_else(|| context.resolve_first_party_source(&specifier, dir));
-        let Some(path) = path else {
+        let Some(path) = context.resolve_first_party_source(&specifier, dir) else {
             continue;
         };
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());

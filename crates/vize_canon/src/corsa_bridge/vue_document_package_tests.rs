@@ -1,8 +1,10 @@
 //! Importer-scoped workspace package routes in editor sessions (#4000).
+#![cfg(unix)]
 
 use std::path::{Path, PathBuf};
 
 use super::vue_document::{CorsaVueVirtualDocumentOptions, build_vue_virtual_project};
+use vize_carton::cstr;
 
 const TSCONFIG: &str = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler"}}"#;
 const UI_BUTTON: &str = "<script setup lang=\"ts\">\ndefineProps<{ variant: \"ghost\" | \"primary\" }>();\n</script>\n<template><button /></template>\n";
@@ -229,8 +231,8 @@ fn build(host: &Path, source: &str) -> super::vue_document::CorsaVueVirtualProje
     build_vue_virtual_project(host, source, CorsaVueVirtualDocumentOptions::default()).unwrap()
 }
 
-fn host_import(subpath: &str) -> String {
-    format!(
+fn host_import(subpath: &str) -> vize_carton::String {
+    cstr!(
         "<script setup lang=\"ts\">\nimport Widget from '@scope/ui/{subpath}'\nvoid Widget\n</script>\n"
     )
 }
@@ -240,8 +242,8 @@ fn write_package_manifest(package: &Path, target: &str) {
     std::fs::write(package.join("package.json"), package_manifest(target)).unwrap();
 }
 
-fn package_manifest(target: &str) -> String {
-    format!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}")
+fn package_manifest(target: &str) -> vize_carton::String {
+    cstr!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}")
 }
 
 fn write_component(package: &Path, name: &str, content: &str) {
