@@ -30,6 +30,12 @@ pub(super) fn generate_setup_props(
     });
     let mut type_mappings = MacroTypeMappings::new(source.mappings, source.script, source.offset);
     type_mappings.map_exported_type(ts, generated_start, summary.macros.define_props(), "Props");
+    type_mappings.map_model_props(
+        ts,
+        generated_start,
+        summary.macros.models(),
+        &summary.macros,
+    );
     plan
 }
 
@@ -38,6 +44,7 @@ pub(super) struct SetupPropsPlan {
     defer_options_api_props: bool,
     capture_options_api_default: bool,
     module_scope_declares_props: bool,
+    uses_resolved_props: bool,
 }
 
 impl SetupPropsPlan {
@@ -57,14 +64,17 @@ impl SetupPropsPlan {
                 .type_exports
                 .iter()
                 .any(|te| te.hoisted && te.name.as_str() == "Props");
+        let defer = define_props_type_requires_setup_scope(summary);
         Self {
-            defer: define_props_type_requires_setup_scope(summary),
+            defer,
             defer_options_api_props: !module_scope_declares_props
                 && options_api_props
                     .is_some_and(|source| source.deferred_object_source().is_some()),
             capture_options_api_default: options_api_props
                 .is_some_and(OptionsApiPropsSource::captures_default),
             module_scope_declares_props,
+            uses_resolved_props: module_scope_declares_props
+                && (defer || !summary.macros.models().is_empty()),
         }
     }
 
@@ -117,10 +127,9 @@ impl SetupPropsPlan {
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {
-        // Defer to `__VizeResolvedProps` only when a `Props` already lives at
-        // module scope; otherwise the public `Props` alias emitted from the
-        // setup return is the component prop source.
-        if self.defer && self.module_scope_declares_props {
+        // Resolve through the synthesized intersection when an authored
+        // module-level `Props` must absorb models or deferred setup props.
+        if self.uses_resolved_props {
             "__VizeResolvedProps"
         } else {
             "Props"
@@ -164,9 +173,16 @@ impl SetupPropsPlan {
         append!(ts, "  readonly __vizeRawProps?: {props_type_ref};\n");
     }
 
-    pub(super) fn emit_artifact(&self, ts: &mut String, summary: &Croquis) {
+    pub(super) fn emit_artifact(&self, ts: &mut String, source: PropsSource<'_>) {
         if self.defer {
-            generate_setup_scoped_props_artifact(ts, summary);
+            let generated_start = ts.len();
+            generate_setup_scoped_props_artifact(ts, source.summary);
+            MacroTypeMappings::new(source.mappings, source.script, source.offset).map_model_props(
+                ts,
+                generated_start,
+                source.summary.macros.models(),
+                &source.summary.macros,
+            );
         }
     }
 

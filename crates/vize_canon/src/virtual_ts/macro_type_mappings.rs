@@ -3,7 +3,7 @@
 use std::ops::Range;
 
 use vize_carton::cstr;
-use vize_croquis::macros::MacroCall;
+use vize_croquis::macros::{MacroCall, ModelDefinition};
 
 use super::VizeMapping;
 
@@ -75,6 +75,27 @@ impl<'a> MacroTypeMappings<'a> {
 
     pub(crate) fn authored_text(&self, range: (u32, u32)) -> Option<&str> {
         self.script?.get(range.0 as usize..range.1 as usize)
+    }
+
+    pub(crate) fn map_model_props(
+        &mut self,
+        ts: &str,
+        generated_start: usize,
+        models: &[ModelDefinition],
+        declarations: &vize_croquis::macros::MacroTracker,
+    ) {
+        let generated = &ts[generated_start..];
+        for model in models {
+            let Some(authored) = declarations.model_declaration(model.name.as_str()) else {
+                continue;
+            };
+            let needle = cstr!("  \"{}\"", model.name);
+            let Some(start) = generated.find(needle.as_str()) else {
+                continue;
+            };
+            let start = generated_start + start + 2;
+            self.map_exact(start..start + model.name.len() + 2, authored);
+        }
     }
 
     pub(crate) fn map_exact(&mut self, generated: Range<usize>, authored: (u32, u32)) {
