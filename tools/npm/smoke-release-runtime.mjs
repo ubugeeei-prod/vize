@@ -83,18 +83,24 @@ function writeRuntimeSmokeProject(installDir) {
   );
 }
 
-function assertInstalledMapperContract(installDir) {
+export function assertInstalledMapperContract(installDir) {
   const packageRoot = path.join(installDir, "node_modules", "vize");
   assert.equal(fs.lstatSync(packageRoot).isSymbolicLink(), false);
   const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"));
-  assert.deepEqual(manifest.tsContentMapper, {
-    exec: ["node", "./bin/vize", "content-mapper"],
-    compilerOptions: ["noUnusedLocals"],
-  });
-  const mapperBin = fs.statSync(path.join(packageRoot, "bin", "vize"));
+  assert.deepEqual(
+    manifest.tsContentMapper,
+    {
+      exec: ["node", "./bin/vize", "content-mapper"],
+      compilerOptions: ["noUnusedLocals"],
+    },
+    `${path.join(packageRoot, "package.json")} must expose the production tsContentMapper contract`,
+  );
+  const mapperPath = path.join(packageRoot, "bin", "vize");
+  assert.ok(fs.existsSync(mapperPath), `${mapperPath} must exist`);
+  const mapperBin = fs.statSync(mapperPath);
   assert.ok(mapperBin.isFile());
   if (process.platform !== "win32") {
-    assert.notEqual(mapperBin.mode & 0o111, 0);
+    assert.notEqual(mapperBin.mode & 0o111, 0, `${mapperPath} must be executable`);
   }
 }
 
