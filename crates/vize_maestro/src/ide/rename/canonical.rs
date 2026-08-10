@@ -51,8 +51,8 @@ pub(super) async fn rename(
     new_name: &str,
     bridge: Option<&CorsaBridge>,
 ) -> Answer<WorkspaceEdit> {
-    let is_component_event = event_rename::query_is_component_event(ctx);
-    let Some(semantic_name) = event_rename::semantic_name(is_component_event, new_name) else {
+    let rename_kind = event_rename::query_kind(ctx);
+    let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
         return Answer::Available(None);
     };
     let Some(bridge) = initialized_bridge(bridge) else {
@@ -80,7 +80,12 @@ pub(super) async fn rename(
     let Ok(response) = serde_json::from_value::<WorkspaceEdit>(response) else {
         return Answer::Available(None);
     };
-    let linked = linked_positions(&document, &response);
+    let mut linked = linked_positions(&document, &response);
+    if matches!(rename_kind, Some(event_rename::RenameKind::Model)) {
+        linked.extend(event_rename::model_linked_positions(
+            ctx, &document, &response,
+        ));
+    }
     let mut mapped = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
         .into_iter()
         .collect::<Vec<_>>();
@@ -110,9 +115,9 @@ pub(super) async fn rename(
         mapped.push(styles);
     }
 
-    if is_component_event {
+    if let Some(kind) = rename_kind {
         for edit in &mut mapped {
-            event_rename::rewrite_edits(ctx, edit, &semantic_name);
+            event_rename::rewrite_edits(ctx, edit, &semantic_name, kind);
         }
     }
 

@@ -1,34 +1,58 @@
 use std::ops::Range as OffsetRange;
 
-use tower_lsp::lsp_types::{
-    DocumentChangeOperation, DocumentChanges, OneOf, Range, TextEdit, Url, WorkspaceEdit,
-};
+use tower_lsp::lsp_types::{Range, WorkspaceEdit};
 use vize_croquis::{Drawer, DrawerOptions};
 
-use crate::ide::{IdeContext, corsa_support::CanonicalVirtualDocument, pascal_to_kebab};
+use crate::ide::{IdeContext, corsa_support::CanonicalVirtualDocument};
 
 use super::super::RenameService;
 
-pub(super) fn query_is_component_event(ctx: &IdeContext<'_>) -> bool {
-    component_event_range_at(ctx).is_some() || query_is_event_declaration(ctx)
+mod model;
+mod rewrite;
+
+#[derive(Clone, Copy)]
+pub(super) enum RenameKind {
+    Event,
+    Model,
 }
 
-pub(super) fn semantic_name(is_component_event: bool, new_name: &str) -> Option<String> {
-    if RenameService::is_valid_identifier(new_name) {
-        return Some(new_name.to_string());
+pub(super) fn query_kind(ctx: &IdeContext<'_>) -> Option<RenameKind> {
+    if let Some(range) = component_event_range_at(ctx) {
+        return Some(if ctx.content.get(range)?.starts_with("update:") {
+            RenameKind::Model
+        } else {
+            RenameKind::Event
+        });
     }
-    if !is_component_event {
+    if model::usage_range_at(ctx).is_some() {
+        return Some(RenameKind::Model);
+    }
+    if query_is_event_declaration(ctx) {
+        return Some(RenameKind::Event);
+    }
+    model::query_is_declaration(ctx).then_some(RenameKind::Model)
+}
+
+pub(super) fn semantic_name(kind: Option<RenameKind>, new_name: &str) -> Option<String> {
+    let candidate = match kind {
+        Some(RenameKind::Model) => new_name.strip_prefix("update:").unwrap_or(new_name),
+        _ => new_name,
+    };
+    if RenameService::is_valid_identifier(candidate) {
+        return Some(candidate.to_string());
+    }
+    kind?;
+    if !vize_croquis::naming::is_kebab_case(candidate) {
         return None;
     }
-    if !vize_croquis::naming::is_kebab_case(new_name) {
-        return None;
-    }
-    let camel = crate::ide::definition::helpers::kebab_to_camel(new_name);
+    let camel = crate::ide::definition::helpers::kebab_to_camel(candidate);
     RenameService::is_valid_identifier(&camel).then_some(camel)
 }
 
 pub(super) fn prepare_range(ctx: &IdeContext<'_>) -> Option<Range> {
-    component_event_range_at(ctx).map(|range| offset_range(&ctx.content, range))
+    component_event_range_at(ctx)
+        .or_else(|| model::usage_range_at(ctx))
+        .map(|range| offset_range(&ctx.content, range))
 }
 
 pub(super) fn semantic_position(
@@ -70,106 +94,21 @@ pub(super) fn semantic_position(
         })
 }
 
-pub(super) fn rewrite_edits(ctx: &IdeContext<'_>, edit: &mut WorkspaceEdit, semantic_name: &str) {
-    if let Some(changes) = edit.changes.as_mut() {
-        for (uri, edits) in changes {
-            rewrite_text_edits(ctx, uri, edits, semantic_name);
-        }
-    }
-    if let Some(changes) = edit.document_changes.as_mut() {
-        match changes {
-            DocumentChanges::Edits(edits) => {
-                for edit in edits {
-                    rewrite_annotatable_edits(
-                        ctx,
-                        &edit.text_document.uri,
-                        &mut edit.edits,
-                        semantic_name,
-                    );
-                }
-            }
-            DocumentChanges::Operations(operations) => {
-                for operation in operations {
-                    if let DocumentChangeOperation::Edit(edit) = operation {
-                        rewrite_annotatable_edits(
-                            ctx,
-                            &edit.text_document.uri,
-                            &mut edit.edits,
-                            semantic_name,
-                        );
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn rewrite_annotatable_edits(
+pub(super) fn rewrite_edits(
     ctx: &IdeContext<'_>,
-    uri: &Url,
-    edits: &mut [OneOf<TextEdit, tower_lsp::lsp_types::AnnotatedTextEdit>],
+    edit: &mut WorkspaceEdit,
     semantic_name: &str,
+    kind: RenameKind,
 ) {
-    let Some(source) = source_for_uri(ctx, uri) else {
-        return;
-    };
-    let ranges = component_event_ranges(&source, uri.path());
-    for edit in edits {
-        match edit {
-            OneOf::Left(edit) => rewrite_text_edit(&source, &ranges, edit, semantic_name),
-            OneOf::Right(edit) => {
-                rewrite_text_edit(&source, &ranges, &mut edit.text_edit, semantic_name);
-            }
-        }
-    }
+    rewrite::edits(ctx, edit, semantic_name, kind);
 }
 
-fn rewrite_text_edits(
+pub(super) fn model_linked_positions(
     ctx: &IdeContext<'_>,
-    uri: &Url,
-    edits: &mut [TextEdit],
-    semantic_name: &str,
-) {
-    let Some(source) = source_for_uri(ctx, uri) else {
-        return;
-    };
-    let ranges = component_event_ranges(&source, uri.path());
-    for edit in edits {
-        rewrite_text_edit(&source, &ranges, edit, semantic_name);
-    }
-}
-
-fn rewrite_text_edit(
-    source: &str,
-    ranges: &[OffsetRange<usize>],
-    edit: &mut TextEdit,
-    semantic_name: &str,
-) {
-    let Some(start) =
-        crate::ide::position_to_offset(source, edit.range.start.line, edit.range.start.character)
-    else {
-        return;
-    };
-    let Some(range) = ranges
-        .iter()
-        .find(|range| start >= range.start && start < range.end)
-    else {
-        return;
-    };
-    edit.range = offset_range(source, range.clone());
-    edit.new_text = pascal_to_kebab(semantic_name);
-}
-
-fn source_for_uri(ctx: &IdeContext<'_>, uri: &Url) -> Option<String> {
-    ctx.state
-        .documents
-        .text(uri)
-        .map(|source| source.to_string())
-        .or_else(|| {
-            uri.to_file_path()
-                .ok()
-                .and_then(|path| std::fs::read_to_string(path).ok())
-        })
+    document: &CanonicalVirtualDocument,
+    edit: &WorkspaceEdit,
+) -> Vec<crate::ide::corsa_support::CanonicalSemanticPosition> {
+    model::linked_positions(ctx, document, edit)
 }
 
 fn component_event_range_at(ctx: &IdeContext<'_>) -> Option<OffsetRange<usize>> {
@@ -178,7 +117,7 @@ fn component_event_range_at(ctx: &IdeContext<'_>) -> Option<OffsetRange<usize>> 
         .find(|range| ctx.offset >= range.start && ctx.offset < range.end)
 }
 
-fn component_event_ranges(source: &str, filename: &str) -> Vec<OffsetRange<usize>> {
+pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<OffsetRange<usize>> {
     let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
         source,
         vize_atelier_sfc::SfcParseOptions {
@@ -259,7 +198,7 @@ fn query_is_event_declaration(ctx: &IdeContext<'_>) -> bool {
     })
 }
 
-fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
+pub(super) fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
     let (start_line, start_character) = crate::ide::offset_to_position(source, range.start);
     let (end_line, end_character) = crate::ide::offset_to_position(source, range.end);
     Range {
@@ -278,7 +217,7 @@ fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
 mod tests {
     use tower_lsp::lsp_types::Url;
 
-    use super::{component_event_ranges, semantic_name};
+    use super::{RenameKind, component_event_ranges, semantic_name};
     use crate::ide::IdeContext;
     use crate::server::ServerState;
 
@@ -289,6 +228,19 @@ mod tests {
         let ranges = component_event_ranges(source, "Parent.vue");
         assert_eq!(ranges.len(), 1, "{ranges:#?}");
         assert_eq!(&source[ranges[0].clone()], "save-item");
+    }
+
+    #[test]
+    fn normalizes_model_replacements_without_leaking_the_update_event_prefix() {
+        assert_eq!(
+            semantic_name(Some(RenameKind::Model), "update:next-value").as_deref(),
+            Some("nextValue")
+        );
+        assert_eq!(
+            semantic_name(Some(RenameKind::Model), "nextValue").as_deref(),
+            Some("nextValue")
+        );
+        assert_eq!(semantic_name(Some(RenameKind::Model), "bad:name"), None);
     }
 
     #[test]
@@ -316,9 +268,9 @@ mod tests {
                 .open(uri.clone(), source.clone(), 1, "vue".to_string());
             let offset = source.find(needle).expect("event declaration") + 1;
             let ctx = IdeContext::new(&state, &uri, offset).expect("context");
-            assert!(super::query_is_component_event(&ctx), "{source}");
+            assert!(super::query_kind(&ctx).is_some(), "{source}");
             assert_eq!(
-                semantic_name(true, "next-event").as_deref(),
+                semantic_name(Some(RenameKind::Event), "next-event").as_deref(),
                 Some("nextEvent")
             );
         }
