@@ -528,39 +528,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  cloudflare-worker:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          targets: wasm32-unknown-unknown
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: cloudflare-worker
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-moonbit
-      - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: wasm-bindgen-cli@0.2.121
-      - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
-      - name: Install JS dependencies
-        run: vp install --filter vize-cloudflare-worker-example... --frozen-lockfile --prefer-offline
-      - name: Build browser and workerd WASM artifacts
-        run: moon run --target native tools/moon/cmd/build_vize_wasm_package --
-      - name: Smoke WASM package
-        run: node tools/npm/smoke-wasm-package.mjs npm/wasm
-      - name: Test and bundle Cloudflare Worker
-        run: vp run --filter vize-cloudflare-worker-example check
-
   playground-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -679,7 +646,6 @@ jobs:
       - coverage
       - source-coverage
       - branch-coverage
-      - cloudflare-worker
       - playground-test
     permissions:
       contents: read

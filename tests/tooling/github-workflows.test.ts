@@ -19,6 +19,7 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
     "build-docs.yml",
     "check.yml",
+    "cloudflare-worker.yml",
     "deploy-docs.yml",
     "miri.yml",
     "native-smoke.yml",

@@ -36,13 +36,37 @@ test("Cloudflare Worker lazily instantiates the compiled module and caches warm 
 });
 
 test("PR CI builds, smoke-tests, and bundles the Cloudflare Worker", () => {
-  const workflow = read(".github/workflows/check.yml");
-  const job = workflow.match(/\n  cloudflare-worker:\n([\s\S]*?)\n  playground-test:/)?.[1];
+  const workflow = read(".github/workflows/cloudflare-worker.yml");
 
-  assert.ok(job, "cloudflare-worker job should exist");
-  assert.match(job, /targets: wasm32-unknown-unknown/);
-  assert.match(job, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);
-  assert.match(job, /node tools\/npm\/smoke-wasm-package\.mjs npm\/wasm/);
-  assert.match(job, /vp run --filter vize-cloudflare-worker-example check/);
-  assert.match(workflow, /\n      - cloudflare-worker\n      - playground-test/);
+  assert.match(workflow, /^ {2}pull_request:\n {4}branches: \[main\]$/m);
+  assert.match(workflow, /^jobs:\n {2}cloudflare-worker:$/m);
+  assert.match(workflow, /targets: wasm32-unknown-unknown/);
+  assert.match(workflow, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);
+  assert.match(workflow, /node tools\/npm\/smoke-wasm-package\.mjs npm\/wasm/);
+  assert.match(workflow, /vp run --filter vize-cloudflare-worker-example check/);
+});
+
+test("wasm package publishes the workerd entrypoint and focused artifact", () => {
+  const wasmPackage = JSON.parse(read("npm/wasm/package.json")) as {
+    exports?: Record<string, unknown>;
+    files?: string[];
+  };
+
+  assert.deepEqual(wasmPackage.exports?.["./workerd"], {
+    types: "./workerd.d.ts",
+    import: "./workerd.js",
+    default: "./workerd.js",
+  });
+  assert.equal(wasmPackage.exports?.["./wasm.wasm"], "./vize_workerd_bg.wasm");
+
+  for (const file of [
+    "README.md",
+    "workerd.js",
+    "workerd.d.ts",
+    "vize_workerd.js",
+    "vize_workerd.d.ts",
+    "vize_workerd_bg.wasm",
+  ]) {
+    assert.ok(wasmPackage.files?.includes(file), `@vizejs/wasm files include ${file}`);
+  }
 });

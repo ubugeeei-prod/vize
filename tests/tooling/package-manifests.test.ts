@@ -542,26 +542,14 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
     default: "./vize_vitrine.js",
   });
   assert.equal(wasmPackage.exports?.["./vize_vitrine_bg.wasm"], "./vize_vitrine_bg.wasm");
-  assert.deepEqual(wasmPackage.exports?.["./workerd"], {
-    types: "./workerd.d.ts",
-    import: "./workerd.js",
-    default: "./workerd.js",
-  });
-  assert.equal(wasmPackage.exports?.["./wasm.wasm"], "./vize_workerd_bg.wasm");
 
   for (const file of [
     "index.js",
     "index.d.ts",
     "lint-format.d.ts",
-    "README.md",
-    "workerd.js",
-    "workerd.d.ts",
     "vize_vitrine.js",
     "vize_vitrine.d.ts",
     "vize_vitrine_bg.wasm",
-    "vize_workerd.js",
-    "vize_workerd.d.ts",
-    "vize_workerd_bg.wasm",
   ]) {
     assert.ok(wasmPackage.files?.includes(file), `@vizejs/wasm files include ${file}`);
   }
