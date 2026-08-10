@@ -15,11 +15,15 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.mjs";
+import { displayCommand, toolArgs } from "./tool-matrix-command.mjs";
 import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-formatter.mjs";
-import { collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validatedFileCount } from "./tool-matrix-metrics.mjs";
-import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
+import {
+  summarizeTypecheckerCoverage,
+  validateTypecheckerOutput,
+} from "./tool-matrix-typechecker.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export function runTool(project, tool, args, launch, outputDir) {
@@ -41,6 +45,7 @@ export function runTool(project, tool, args, launch, outputDir) {
     fileCount: null,
     exitCode: null,
     outputPath: null,
+    coverage: null,
   };
   if (args.dryRun) return { ...base, status: "planned" };
   if (!fixtureExists) return { ...base, status: "missing-fixture" };
@@ -50,7 +55,6 @@ export function runTool(project, tool, args, launch, outputDir) {
     tool === "typechecker" || tool === "linter" || tool === "formatter"
       ? collectVueInputPaths(cwd, project.vueGlobs)
       : null;
-
   try {
     const startedAt = Date.now();
     const result = spawnSync(launch.command, commandArgs, {
@@ -97,7 +101,13 @@ export function runTool(project, tool, args, launch, outputDir) {
       }
       if (tool === "typechecker" && payload.parseError == null) {
         try {
-          validateTypecheckerOutput(project, payload.parsed, result.status, expectedToolFiles);
+          payload.typecheckerCoverage = validateTypecheckerOutput(
+            project,
+            payload.parsed,
+            result.status,
+            expectedToolFiles,
+            collectTypecheckerAuthoredPaths(cwd),
+          );
         } catch (error) {
           payload.validationError = errorMessage(error);
         }
@@ -146,6 +156,8 @@ export function runTool(project, tool, args, launch, outputDir) {
     return {
       ...completed,
       fileCount: validatedFileCount(tool, payload),
+      coverage:
+        tool === "typechecker" ? summarizeTypecheckerCoverage(payload.typecheckerCoverage) : null,
       status: result.status === 0 ? "ok" : "findings",
     };
   } finally {
@@ -281,40 +293,6 @@ function validateCompilerArtifact(outputPath, artifact, inputPath) {
   }
 }
 
-function toolArgs(project, tool, compilerOutputDir) {
-  if (tool === "compiler") {
-    return [
-      "build",
-      ...project.vueGlobs,
-      "--format",
-      "json",
-      "--output",
-      compilerOutputDir,
-      "--template-syntax",
-      "quirks",
-      "--continue-on-error",
-      "--no-config",
-    ];
-  }
-  if (tool === "linter") {
-    return [
-      "lint",
-      ...project.vueGlobs,
-      "--format",
-      "json",
-      "--preset",
-      "ecosystem",
-      "--no-config",
-    ];
-  }
-  if (tool === "typechecker") {
-    const args = ["check", ...project.vueGlobs, "--format", "json", "--no-config"];
-    if (project.tsconfig != null) args.push("--tsconfig", project.tsconfig);
-    return args;
-  }
-  return ["fmt", ...project.vueGlobs, "--check", "--no-config"];
-}
-
 export function resolveVizeLaunch(vizeBin, dryRun) {
   const candidates = [
     vizeBin,
@@ -353,10 +331,4 @@ function failureOutput(result) {
 }
 function truncate(value) {
   return value.length <= 4000 ? value : `${value.slice(0, 4000)}\n...<truncated>`;
-}
-function displayCommand(command, args) {
-  return [command, ...args].map(shellQuote).join(" ");
-}
-function shellQuote(value) {
-  return /^[A-Za-z0-9_./:=@*-]+$/.test(value) ? value : `'${value.replaceAll("'", "'\\''")}'`;
 }

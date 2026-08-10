@@ -74,13 +74,13 @@ test("typechecker oracle requires every fixture input and rejects substitutions"
         "src/App.vue",
         "src/Card.vue",
       ]),
-    /checked file count 1 does not match 2 fixture inputs/,
+    /checked files are missing requested fixture inputs: \[src\/Card\.vue\]/,
   );
 
   const substituted = validOutput();
   assert.throws(
     () => validateTypecheckerOutput({ id: "substituted" }, substituted, 1, ["src/Other.vue"]),
-    /checked files do not match fixture inputs: missing \[src\/Other\.vue\], unexpected \[src\/App\.vue\]/,
+    /checked files are missing requested fixture inputs: \[src\/Other\.vue\]/,
   );
 });
 
@@ -298,9 +298,15 @@ process.stdout.write(JSON.stringify({ files: [{ file: "src/App.vue", diagnostics
       reportDir,
     );
     assert.equal(run.status, "failed");
-    assert.match(run.failure, /checked file count 1 does not match 2 fixture inputs/);
+    assert.match(
+      run.failure,
+      /checked files are missing requested fixture inputs: \[src\/Card\.vue\]/,
+    );
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
-    assert.match(raw.validationError, /checked file count 1 does not match 2 fixture inputs/);
+    assert.match(
+      raw.validationError,
+      /checked files are missing requested fixture inputs: \[src\/Card\.vue\]/,
+    );
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });

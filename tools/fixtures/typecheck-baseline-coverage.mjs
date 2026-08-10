@@ -5,12 +5,15 @@ import { isAbsolute, relative } from "node:path";
 /**
  * Prove that the diagnostic comparator ran over the same Vue corpus on both
  * sides. `vue-tsc --listFiles` prints absolute program paths after diagnostics;
- * Vize's matrix artifact already carries its sorted checked-file list.
+ * Vize's matrix artifact already carries its sorted checked-file list. That
+ * list also carries the transitive authored TS/TSX sources Vize pulled into the
+ * program, so only its `.vue` entries are comparable with the baseline set.
  */
 export function evaluateVueProgramCoverage(vizeReport, vueTscOutput, cwd) {
   const vizeVueFiles = vizeReport.files
     .slice(0, vizeReport.fileCount)
     .map((entry) => entry.file)
+    .filter((file) => file.endsWith(".vue"))
     .sort(byteOrder);
   const { authoredFiles: baselineVueFiles, dependencyFiles: baselineDependencyVueFiles } =
     collectVueTscProgramFiles(vueTscOutput, cwd);

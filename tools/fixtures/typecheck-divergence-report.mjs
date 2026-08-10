@@ -5,7 +5,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { validateTypecheckerOutput } from "./tool-matrix-typechecker.mjs";
+import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import {
+  summarizeTypecheckerCoverage,
+  validateTypecheckerOutput,
+} from "./tool-matrix-typechecker.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
@@ -137,7 +141,7 @@ function readDocumentedDifferences() {
 
 function readAndValidateSummary(reportDir, project) {
   const summary = readJson(join(reportDir, "summary.json"));
-  if (summary.schema !== "vize.fixtureToolMatrixReport" || summary.version !== 2) {
+  if (summary.schema !== "vize.fixtureToolMatrixReport" || summary.version !== 3) {
     throw new Error("Fixture matrix summary schema is unsupported");
   }
   if (!/^[0-9a-f]{40}$/.test(summary.evidence?.commitSha ?? "")) {
@@ -181,6 +185,7 @@ function readAndValidateVizeRun(reportDir, project, summary) {
     "stderr",
     "stdout",
     "tool",
+    "typecheckerCoverage",
     "version",
   ];
   if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedKeys)) {
@@ -206,13 +211,31 @@ function readAndValidateVizeRun(reportDir, project, summary) {
       `Fixture matrix typechecker stdout does not match parsed output for ${project.id}`,
     );
   }
-  validateTypecheckerOutput(project, payload.parsed, payload.exitCode);
+  const fixtureRoot = resolve(repoRoot, project.fixturePath);
+  const expectedCoverage = validateTypecheckerOutput(
+    project,
+    payload.parsed,
+    payload.exitCode,
+    collectVueInputPaths(fixtureRoot, project.vueGlobs),
+    collectTypecheckerAuthoredPaths(fixtureRoot),
+  );
+  if (canonicalJson(expectedCoverage) !== canonicalJson(payload.typecheckerCoverage)) {
+    throw new Error(`Fixture matrix typechecker coverage is inconsistent for ${project.id}`);
+  }
   const expectedStatus = payload.exitCode === 0 ? "ok" : "findings";
   if (runs[0].status !== expectedStatus) {
     throw new Error(`Fixture matrix typechecker status is inconsistent for ${project.id}`);
   }
   if (runs[0].fileCount !== payload.parsed.fileCount) {
     throw new Error(`Fixture matrix typechecker file count is inconsistent for ${project.id}`);
+  }
+  if (
+    canonicalJson(runs[0].coverage) !==
+    canonicalJson(summarizeTypecheckerCoverage(payload.typecheckerCoverage))
+  ) {
+    throw new Error(
+      `Fixture matrix typechecker summary coverage is inconsistent for ${project.id}`,
+    );
   }
   return {
     payload,

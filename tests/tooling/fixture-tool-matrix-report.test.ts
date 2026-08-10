@@ -33,7 +33,7 @@ test("fixture tool matrix plans every registered project across all four require
     assert.equal(result.status, 0, result.stderr);
     const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
     assert.equal(report.schema, "vize.fixtureToolMatrixReport");
-    assert.equal(report.version, 2);
+    assert.equal(report.version, 3);
     assert.match(report.evidence.commitSha, /^[0-9a-f]{40}$/);
     assert.deepEqual(Object.keys(report.evidence).sort(), ["commitSha", "machine", "runtime"]);
     assert.deepEqual(Object.keys(report.evidence.runtime).sort(), ["name", "version"]);
@@ -55,7 +55,8 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(markdown, new RegExp(`Commit: ${report.evidence.commitSha}`));
     assert.match(markdown, /Runtime: node \d+\.\d+\.\d+/);
     assert.match(markdown, /Machine: [^/]+\/[^,]+, \d+ logical CPUs, \d+ bytes memory/);
-    assert.match(markdown, /\| Project \| Tool \| Status \| Exit \| Files \| Duration \(ms\) \|/);
+    assert.match(markdown, /\bRequested\b/);
+    assert.match(markdown, /\bTransitive\b/);
     assert.equal(report.summary.projectCount, 134);
     assert.equal(report.summary.toolCount, 4);
     assert.equal(report.summary.runCount, 536);
@@ -67,7 +68,10 @@ test("fixture tool matrix plans every registered project across all four require
         ["compiler", "typechecker", "linter", "formatter"],
         `${project.id} should exercise every requested tool`,
       );
-      for (const entry of project.runs) assert.equal(entry.fileCount, null);
+      for (const entry of project.runs) {
+        assert.equal(entry.fileCount, null);
+        assert.equal(entry.coverage, null);
+      }
     }
   } finally {
     fs.rmSync(outputDir, { recursive: true, force: true });
