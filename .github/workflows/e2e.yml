@@ -42,6 +42,7 @@ jobs:
     name: Plan app readiness
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: read
@@ -171,6 +172,7 @@ jobs:
     needs: [app-readiness-plan, app-readiness-producer]
     if: ${{ always() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:

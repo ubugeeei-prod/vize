@@ -155,6 +155,7 @@ test("title policy workflow mutates only issue and PR metadata", () => {
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {
   const workflow = readRepoFile(".github", "workflows", "e2e.yml");
   const job = workflowJobBody(workflow, "testbox");
+  const appPlanJob = workflowJobBody(workflow, "app-e2e-plan");
   const appJob = workflowJobBody(workflow, "app-e2e");
 
   assert.match(workflow, /\n  workflow_dispatch:\n/);
@@ -173,30 +174,37 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
   );
   assert.doesNotMatch(job, /vp run --workspace-root test|cargo test --workspace/);
   assert.match(
-    appJob,
+    appPlanJob,
     /if:\s*\$\{\{\s*github\.event_name != 'pull_request' && \(github\.event_name != 'workflow_dispatch' \|\| inputs\.testbox_id == ''\)\s*\}\}/,
+  );
+  // The aggregator still has to report on cancelled or failed rows, so it keeps
+  // the same gate behind `always()`.
+  assert.match(
+    appJob,
+    /if:\s*\$\{\{\s*always\(\) && github\.event_name != 'pull_request' && \(github\.event_name != 'workflow_dispatch' \|\| inputs\.testbox_id == ''\)\s*\}\}/,
   );
 });
 
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
-  for (const workflowName of [
-    "benchmark.yml",
-    "build-docs.yml",
-    "check.yml",
-    "criterion-bench.yml",
-    "e2e.yml",
-    "native-smoke.yml",
-    "release-preflight.yml",
-    "release.yml",
-    "tool-benchmark.yml",
+  for (const relativePath of [
+    ".github/workflows/benchmark.yml",
+    ".github/workflows/build-docs.yml",
+    ".github/workflows/check.yml",
+    ".github/workflows/criterion-bench.yml",
+    // App E2E runs every row through the shared composite action.
+    ".github/actions/app-e2e-row/action.yml",
+    ".github/workflows/native-smoke.yml",
+    ".github/workflows/release-preflight.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/tool-benchmark.yml",
   ]) {
-    const workflow = readRepoFile(".github", "workflows", workflowName);
+    const file = readRepoFile(...relativePath.split("/"));
     assert.match(
-      workflow,
+      file,
       /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
-      `${workflowName} should install the pinned Wild linker action`,
+      `${relativePath} should install the pinned Wild linker action`,
     );
-    assert.match(workflow, /wild-version:\s*"0\.9\.0"/);
+    assert.match(file, /wild-version:\s*"0\.9\.0"/);
   }
 });
 
