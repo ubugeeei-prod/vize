@@ -27,6 +27,7 @@ pub(super) async fn open_virtual_project(
             CorsaVueVirtualDocumentOptions {
                 options_api: ctx.state.options_api_enabled(),
                 legacy_vue2: ctx.state.legacy_vue2_enabled(),
+                preserve_event_navigation: true,
             },
             &overlays,
         )

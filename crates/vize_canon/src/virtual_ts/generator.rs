@@ -726,7 +726,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
                             options_api,
-                            preserve_event_navigation: generation_options.component_name.is_some(),
+                            preserve_event_navigation: generation_options.preserve_event_navigation,
                             has_default_alias: declared_default_alias,
                             script_content,
                         },
@@ -865,7 +865,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &mut ts,
         summary,
         MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
-        generation_options.component_name.is_some(),
+        generation_options.preserve_event_navigation,
         generic_param,
         define_emits_runtime_args.is_some(),
     );

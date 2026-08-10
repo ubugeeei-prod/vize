@@ -49,6 +49,7 @@ pub(super) struct VueCodegenOptions<'a> {
     pub(super) options_api: bool,
     pub(super) preserve_authored_component: bool,
     pub(super) component_name: Option<&'a str>,
+    pub(super) preserve_event_navigation: bool,
     pub(super) legacy_vue2: bool,
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -249,6 +250,7 @@ pub(super) fn generate_vue_virtual_ts(
                 options_api: codegen_options.options_api || vue2_compat,
                 preserve_authored_component: codegen_options.preserve_authored_component,
                 component_name: codegen_options.component_name,
+                preserve_event_navigation: codegen_options.preserve_event_navigation,
                 legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,

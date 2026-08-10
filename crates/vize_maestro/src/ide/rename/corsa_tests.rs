@@ -164,6 +164,146 @@ function unrelated() { const shared = 0; return shared }
     });
 }
 
+#[test]
+fn canonical_component_event_rename_preserves_camel_and_kebab_sites() {
+    crate::runtime::block_on(async {
+        let Some(tsgo_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let project = tempfile::TempDir::new().expect("temp project");
+        let src = project.path().join("src");
+        fs::create_dir_all(&src).expect("src");
+        fs::write(
+            project.path().join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+        )
+        .expect("tsconfig");
+
+        let child_source = r#"<script setup lang="ts">
+defineEmits<{ saveItem: [id: string] }>();
+</script>
+"#;
+        let parent_source = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+const handleSave = (id: string) => id;
+</script>
+<template>💥 <Child @save-item="handleSave" /></template>
+"#;
+        let child_path = src.join("Child.vue");
+        let parent_path = src.join("Parent.vue");
+        fs::write(&child_path, child_source).expect("child");
+        fs::write(&parent_path, parent_source).expect("parent");
+        let child_uri = Url::from_file_path(&child_path).expect("child uri");
+        let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
+        let state = ServerState::new();
+        state.set_workspace_root(project.path().to_path_buf());
+        for (uri, source) in [(&child_uri, child_source), (&parent_uri, parent_source)] {
+            state
+                .documents
+                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+            state.update_virtual_docs(uri, source);
+        }
+        let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
+            corsa_path: Some(tsgo_path),
+            working_dir: Some(project.path().to_path_buf()),
+            timeout_ms: 30_000,
+            ..Default::default()
+        }));
+        bridge.spawn().await.expect("tsgo session");
+
+        let event_start = parent_source.find("save-item").expect("parent event");
+        for relative in 0.."save-item".len() {
+            let cursor_ctx =
+                IdeContext::new(&state, &parent_uri, event_start + relative).expect("cursor ctx");
+            let prepared =
+                RenameService::prepare_rename_with_corsa(&cursor_ctx, Some(Arc::clone(&bridge)))
+                    .await
+                    .expect("prepare event rename at every cursor");
+            assert_eq!(
+                authored_text(parent_source, prepare_range(prepared)),
+                "save-item"
+            );
+        }
+        let parent_offset = event_start + 2;
+        let parent_ctx = IdeContext::new(&state, &parent_uri, parent_offset).expect("parent ctx");
+        let prepared =
+            RenameService::prepare_rename_with_corsa(&parent_ctx, Some(Arc::clone(&bridge)))
+                .await
+                .expect("prepare event rename");
+        assert_eq!(
+            authored_text(parent_source, prepare_range(prepared)),
+            "save-item"
+        );
+        let from_parent =
+            RenameService::rename_with_corsa(&parent_ctx, "nextItem", Some(Arc::clone(&bridge)))
+                .await
+                .expect("rename from parent");
+        assert_component_event_edits(
+            &from_parent,
+            (&parent_uri, parent_source, "save-item", "next-item"),
+            (&child_uri, child_source, "saveItem", "nextItem"),
+        );
+        let kebab_from_parent =
+            RenameService::rename_with_corsa(&parent_ctx, "next-event", Some(Arc::clone(&bridge)))
+                .await
+                .expect("kebab rename from parent");
+        assert_component_event_edits(
+            &kebab_from_parent,
+            (&parent_uri, parent_source, "save-item", "next-event"),
+            (&child_uri, child_source, "saveItem", "nextEvent"),
+        );
+
+        let child_offset = child_source.find("saveItem").expect("child event") + 2;
+        let child_ctx = IdeContext::new(&state, &child_uri, child_offset).expect("child ctx");
+        let from_child =
+            RenameService::rename_with_corsa(&child_ctx, "anotherEvent", Some(Arc::clone(&bridge)))
+                .await
+                .expect("rename from child");
+        assert_component_event_edits(
+            &from_child,
+            (&parent_uri, parent_source, "save-item", "another-event"),
+            (&child_uri, child_source, "saveItem", "anotherEvent"),
+        );
+        let kebab_from_child =
+            RenameService::rename_with_corsa(&child_ctx, "final-event", Some(Arc::clone(&bridge)))
+                .await
+                .expect("kebab rename from child");
+        bridge.shutdown().await.expect("shutdown");
+        assert_component_event_edits(
+            &kebab_from_child,
+            (&parent_uri, parent_source, "save-item", "final-event"),
+            (&child_uri, child_source, "saveItem", "finalEvent"),
+        );
+    });
+}
+
+fn assert_component_event_edits(
+    edit: &tower_lsp::lsp_types::WorkspaceEdit,
+    parent: (&Url, &str, &str, &str),
+    child: (&Url, &str, &str, &str),
+) {
+    let changes = edit.changes.as_ref().expect("plain workspace changes");
+    for (uri, source, old_name, new_name) in [parent, child] {
+        let edits = changes.get(uri).expect("component event edits");
+        assert!(
+            edits.iter().any(|edit| {
+                authored_text(source, edit.range) == old_name && edit.new_text == new_name
+            }),
+            "missing {old_name} -> {new_name}: {changes:#?}"
+        );
+    }
+    assert!(changes.keys().all(|uri| !uri.path().ends_with(".vue.ts")));
+}
+
 fn prepare_range(response: PrepareRenameResponse) -> Range {
     match response {
         PrepareRenameResponse::Range(range)

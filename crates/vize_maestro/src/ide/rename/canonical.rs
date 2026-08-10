@@ -9,6 +9,8 @@ use vize_carton::{FxHashSet, String};
 
 use crate::ide::{IdeContext, ReferencesService, corsa_support};
 
+mod event_rename;
+
 pub(super) enum Answer<T> {
     Unavailable,
     Available(Option<T>),
@@ -24,8 +26,8 @@ pub(super) async fn prepare(
     let Some(document) = corsa_support::open_canonical_virtual_document(ctx, bridge).await else {
         return Answer::Unavailable;
     };
-    let Some((line, character)) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
+        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
     else {
         return Answer::Unavailable;
     };
@@ -37,11 +39,11 @@ pub(super) async fn prepare(
         Err(_) => return Answer::Unavailable,
     };
     let response = response.and_then(|response| serde_json::from_value(response).ok());
-    Answer::Available(
-        response.and_then(|response| {
-            corsa_support::map_canonical_prepare_rename(ctx, &document, response)
-        }),
-    )
+    Answer::Available(response.and_then(|response| {
+        event_rename::prepare_range(ctx)
+            .map(PrepareRenameResponse::Range)
+            .or_else(|| corsa_support::map_canonical_prepare_rename(ctx, &document, response))
+    }))
 }
 
 pub(super) async fn rename(
@@ -49,6 +51,10 @@ pub(super) async fn rename(
     new_name: &str,
     bridge: Option<&CorsaBridge>,
 ) -> Answer<WorkspaceEdit> {
+    let is_component_event = event_rename::query_is_component_event(ctx);
+    let Some(semantic_name) = event_rename::semantic_name(is_component_event, new_name) else {
+        return Answer::Available(None);
+    };
     let Some(bridge) = initialized_bridge(bridge) else {
         return Answer::Unavailable;
     };
@@ -56,13 +62,13 @@ pub(super) async fn rename(
     else {
         return Answer::Unavailable;
     };
-    let Some((line, character)) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
+        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
     else {
         return Answer::Unavailable;
     };
     let response = match bridge
-        .rename(&document.request_uri, line, character, new_name)
+        .rename(&document.request_uri, line, character, &semantic_name)
         .await
     {
         Ok(response) => response,
@@ -85,7 +91,7 @@ pub(super) async fn rename(
                 &position.request_uri,
                 position.line,
                 position.character,
-                new_name,
+                &semantic_name,
             )
             .await
         else {
@@ -102,6 +108,12 @@ pub(super) async fn rename(
     }
     if let Some(styles) = style_workspace_edit(ctx, &mapped, new_name) {
         mapped.push(styles);
+    }
+
+    if is_component_event {
+        for edit in &mut mapped {
+            event_rename::rewrite_edits(ctx, edit, &semantic_name);
+        }
     }
 
     Answer::Available(corsa_support::merge_canonical_workspace_edits(mapped))
