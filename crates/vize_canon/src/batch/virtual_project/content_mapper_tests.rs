@@ -88,11 +88,14 @@ defineProps<{ count: number }>();
         .iter()
         .filter(|mapping| mapping.0[2] == original && mapping.0[3] == "count".len())
         .collect::<Vec<_>>();
+    let exported = result.text.find("export type Props").unwrap();
+    let exported = exported + result.text[exported..].find("count").unwrap();
 
     assert!(
-        matching.len() >= 2,
-        "expected authored and synthetic projections: {matching:?}"
+        matching.len() >= 3,
+        "expected exported, authored, and synthetic projections: {matching:?}"
     );
+    assert!(matching.iter().any(|mapping| mapping.0[0] == exported));
     assert!(matching.iter().all(|mapping| mapping.0[4] == 0));
 }
 
