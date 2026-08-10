@@ -71,6 +71,55 @@ const emoji = "😀"
 }
 
 #[test]
+fn maps_synthetic_prop_bindings_to_the_authored_declaration() {
+    let source = r#"<script setup lang="ts">
+defineProps<{ count: number }>();
+</script>
+<template>{{ count.toFixed(0) }}</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Props.vue"), source).expect("transform");
+    let original = source.find("count: number").unwrap();
+    let matching = result
+        .mappings
+        .iter()
+        .filter(|mapping| mapping.0[2] == original && mapping.0[3] == "count".len())
+        .collect::<Vec<_>>();
+
+    assert!(
+        matching.len() >= 2,
+        "expected authored and synthetic projections: {matching:?}"
+    );
+    assert!(matching.iter().all(|mapping| mapping.0[4] == 0));
+}
+
+#[test]
+fn maps_synthetic_props_after_a_plain_script_to_the_setup_block() {
+    let source = r#"<script lang="ts">
+export const marker = true;
+</script>
+<script setup lang="ts">
+defineProps<{ count: number }>();
+</script>
+<template>{{ count.toFixed(0) }}</template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("SplitProps.vue"), source)
+        .expect("transform");
+    let original = source.find("count: number").unwrap();
+
+    assert!(
+        result
+            .mappings
+            .iter()
+            .filter(|mapping| {
+                mapping.0[2] == original && mapping.0[3] == "count".len() && mapping.0[4] == 0
+            })
+            .count()
+            >= 2
+    );
+}
+
+#[test]
 fn split_script_setup_spans_start_at_the_authored_block() {
     let source = r#"<script lang="ts">
 export type SearchQuery = { value: string };

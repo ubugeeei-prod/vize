@@ -85,4 +85,6 @@ mimalloc.workspace = true
 tempfile.workspace = true
 
 [dev-dependencies]
+corsa.workspace = true
 insta.workspace = true
+lsp-types.workspace = true

@@ -3,7 +3,7 @@ use vize_croquis::macros::PropDefinition;
 use vize_croquis::macros::PropsDestructuredBindings;
 use vize_croquis::{BindingType, Croquis};
 
-use super::emit_template_prop_binding;
+use super::mappings::PropBindingMappings;
 
 #[inline]
 pub(super) fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
@@ -30,6 +30,7 @@ fn is_define_props_destructure_local(
 
 pub(super) fn emit_macro_template_prop_bindings(
     ts: &mut String,
+    binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     props_type_ref: &str,
     props: &[PropDefinition],
@@ -42,7 +43,7 @@ pub(super) fn emit_macro_template_prop_bindings(
         {
             continue;
         }
-        emit_template_prop_binding(
+        binding_mappings.emit(
             ts,
             props_type_ref,
             prop.name.as_str(),

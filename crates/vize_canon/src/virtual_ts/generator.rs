@@ -42,7 +42,7 @@ use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
 use self::setup_helpers::emit_setup_helpers;
-use self::setup_props::generate_setup_props;
+use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{
     DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
@@ -670,7 +670,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             template_ref_unwraps.emit_type_captures(&mut ts);
 
             emit_props_shadow_anchor(&mut ts, summary, &template_usage_names);
-
             // Semicolon prevents ASI issues when user script doesn't end with `;`
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
             ts.push_str("  ;(function __template() {\n");
@@ -690,11 +689,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             );
             ts.push_str(&template_context);
             ts.push('\n');
-
+            let maps = &mut mappings;
+            let src = prop_source(maps, summary, script_content, &script_source_offset);
             profile!("canon.virtual_ts.generate_props_variables", {
                 setup_props_plan.generate_props_variables(
                     &mut ts,
-                    summary,
+                    src,
                     generic_param,
                     check_props && !legacy_vue2,
                 )
