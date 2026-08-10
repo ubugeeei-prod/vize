@@ -116,8 +116,17 @@ export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
   if (broken.error != null) throw broken.error;
   assert.notEqual(broken.status, 0, "installed mapper error fixture unexpectedly passed");
   const brokenOutput = `${broken.stdout}\n${broken.stderr}`;
-  for (const expected of ["errors/Broken.vue", "TS2322", "src/Unused.vue", "TS6133"]) {
-    assert.ok(brokenOutput.includes(expected), brokenOutput);
+  const diagnosticLines = brokenOutput.split(/\r?\n/u);
+  for (const [file, code] of [
+    ["errors/Broken.vue", "TS2322"],
+    ["errors/JavaScriptConsumer.js", "TS2322"],
+    ["errors/JsxConsumer.jsx", "TS2322"],
+    ["src/Unused.vue", "TS6133"],
+  ]) {
+    assert.ok(
+      diagnosticLines.some((line) => line.includes(file) && line.includes(code)),
+      `${file} did not report ${code}:\n${brokenOutput}`,
+    );
   }
   run(tsgo, [...common, "-p", "tsconfig.emit.json"], { cwd: projectDir });
 
