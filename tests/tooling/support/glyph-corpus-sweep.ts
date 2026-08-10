@@ -135,12 +135,12 @@ export function sweepProject(
         const formattedBuffer = firstPass.get(file);
         assert.ok(formattedBuffer, `formatter snapshot omitted ${project.id}/${file}`);
         const formatted = formattedBuffer.toString("utf8");
-        const formattedAgainBuffer = fs.readFileSync(path.join(workspace.workspaceDir, file));
         const result = compareCorpusFile(original, formatted, project, file);
         const differences = [...result.differences];
         let evidence: PugEvidence | null = null;
 
         if (result.pug != null) {
+          const formattedAgainBuffer = fs.readFileSync(path.join(workspace.workspaceDir, file));
           const formattedAgain = formattedAgainBuffer.toString("utf8");
           const fixedPoint = comparePugTemplateEquivalence(
             formatted,
