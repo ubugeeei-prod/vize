@@ -10,6 +10,15 @@
   },
   {
     "property": "parse-preservation",
+    "category": "semantic-diff",
+    "project": "gui-for-singbox",
+    "path": "frontend/src/components/Table/index.vue",
+    "reason": "Attribute sorting moves a named binding across an order-sensitive v-bind object boundary.",
+    "trackingIssue": 4113,
+    "expiryCondition": "Remove after Glyph preserves binding precedence while sorting attributes."
+  },
+  {
+    "property": "parse-preservation",
     "category": "baseline-unusable",
     "project": "gogocode",
     "path": "packages/gogocode-plugin-vue/test/listeners-removed/Comp.vue",
@@ -25,6 +34,15 @@
     "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
     "trackingIssue": 4106,
     "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "semantic-diff",
+    "project": "pinry",
+    "path": "pinry-spa/src/components/search/SearchPanel.vue",
+    "reason": "The comparator does not yet normalize Vue-equivalent presence forms of the scoped SFC block attribute.",
+    "trackingIssue": 4114,
+    "expiryCondition": "Remove after the semantic oracle treats equivalent scoped attribute spellings identically."
   },
   {
     "property": "parse-preservation",
