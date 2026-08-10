@@ -204,16 +204,10 @@ pub(super) fn generate_vue_virtual_ts(
             analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
         }
     );
-    let vize_atelier_sfc::croquis::SfcCroquisAnalysis {
-        mut croquis,
-        script_content,
-        script_offset,
-    } = analysis;
-    let split_script_setup_offsets = descriptor
-        .script
-        .as_ref()
-        .zip(descriptor.script_setup.as_ref())
-        .map(|(script, script_setup)| (script.content.len() + 1, script_setup.loc.start));
+    let split_script_setup_offsets = analysis.split_script_setup_offsets(descriptor);
+    let mut croquis = analysis.croquis;
+    let script_content = analysis.script_content;
+    let script_offset = analysis.script_offset;
     profile!(
         "canon.croquis.augment_type_props",
         augment_type_based_props_from_script_context(&mut croquis, descriptor, path)

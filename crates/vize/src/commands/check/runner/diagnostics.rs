@@ -22,11 +22,11 @@ pub(super) fn emit_json_output(json_output: JsonOutput) {
     }
 }
 
-/// Whether a registered file's diagnostics should be reported. Only listed
-/// source files are reported; ambient and transitively-registered files exist
-/// only to resolve cross-file types. Project-level diagnostics (anchored to a
-/// tsconfig or the project root, not a source file) describe the whole check and
-/// are always reported.
+/// Whether a registered file's diagnostics should be reported. Configured or
+/// explicit source roots and their authored transitive imports are reported;
+/// ambient-only support and dependency files exist only to resolve cross-file
+/// types. Project-level diagnostics (anchored to a tsconfig or the project root,
+/// not a source file) describe the whole check and are always reported.
 pub(super) fn is_reported(
     reported: &FxHashSet<PathBuf>,
     path: &Path,
@@ -45,7 +45,7 @@ fn is_source_path(path: &Path) -> bool {
         .is_some_and(|extension| {
             matches!(
                 extension,
-                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx"
+                "vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs"
             )
         })
 }

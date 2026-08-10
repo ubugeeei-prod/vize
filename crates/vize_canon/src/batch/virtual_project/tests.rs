@@ -1,4 +1,3 @@
-use super::build::source_type_for_path;
 use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::{batch::Diagnostic, batch::SfcBlockType, virtual_ts::VirtualTsOptions};
@@ -12,9 +11,11 @@ mod macro_scope;
 mod module_augmentations;
 mod ref_arity;
 mod setup_props;
+mod source_types;
 mod tsconfig_extends;
 mod tsconfig_native_options;
 mod windows_paths;
+mod workspace_package_routes;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -1022,26 +1023,6 @@ fn test_parse_jsonc_value_handles_comments_and_trailing_commas() {
 fn test_strip_json_comments_preserves_strings() {
     let stripped = strip_json_comments(r#"{ "url": "https://example.com" }"#);
     insta::assert_snapshot!(stripped.as_str());
-}
-
-#[test]
-fn test_source_type_for_path() {
-    assert_eq!(
-        source_type_for_path(Path::new("foo.ts")),
-        Some(oxc_span::SourceType::ts())
-    );
-    assert_eq!(
-        source_type_for_path(Path::new("foo.tsx")),
-        Some(oxc_span::SourceType::tsx())
-    );
-    for path in ["foo.js", "foo.mjs", "foo.cjs"] {
-        assert!(
-            source_type_for_path(Path::new(path))
-                .is_some_and(|source_type| !source_type.is_typescript()),
-            "{path} should retain a JavaScript source kind"
-        );
-    }
-    assert_eq!(source_type_for_path(Path::new("foo.vue")), None);
 }
 
 #[test]

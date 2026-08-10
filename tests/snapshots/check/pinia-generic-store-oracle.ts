@@ -165,19 +165,33 @@ function assertCleanParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
       files: vize.report.files,
       warningCount: vize.report.warningCount,
     },
-    { errorCount: 0, fileCount: 1, files: [{ diagnostics: [], file: appPath }], warningCount: 0 },
+    {
+      errorCount: 0,
+      fileCount: 2,
+      // The authored store the app imports is reported alongside it, so a
+      // regression that only surfaces in the dependency cannot hide (#3996).
+      files: [
+        { diagnostics: [], file: storePath },
+        { diagnostics: [], file: appPath },
+      ],
+      warningCount: 0,
+    },
   );
 }
 
 function assertBrokenParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
   assert.equal(vize.status, 1, vize.stderr || vize.stdout);
-  assert.equal(vize.report.fileCount, 1, JSON.stringify(vize.report));
+  assert.equal(vize.report.fileCount, 2, JSON.stringify(vize.report));
   assert.equal(vize.report.errorCount, 1, JSON.stringify(vize.report));
   assert.equal(vize.report.warningCount, 0, JSON.stringify(vize.report));
-  assert.equal(vize.report.files.length, 1, JSON.stringify(vize.report));
-  assert.equal(vize.report.files[0]?.file, appPath, JSON.stringify(vize.report));
+  assert.deepEqual(
+    vize.report.files.map((file) => file.file),
+    [storePath, appPath],
+    JSON.stringify(vize.report),
+  );
+  assert.deepEqual(vize.report.files[0]?.diagnostics, [], JSON.stringify(vize.report));
   assert.match(
-    vize.report.files[0]?.diagnostics.join("\n") ?? "",
+    vize.report.files[1]?.diagnostics.join("\n") ?? "",
     /TS2345.*number.*not assignable.*string/i,
   );
   assert.equal(vueTsc.status, 2, vueTsc.stderr || vueTsc.stdout);

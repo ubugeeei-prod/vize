@@ -65,12 +65,26 @@ fn mapping_for_source_offset(
 ) -> Option<&vize_canon::virtual_ts::VizeMapping> {
     mappings
         .iter()
-        .filter(|mapping| offset >= mapping.src_range.start && offset <= mapping.src_range.end)
+        .filter(|mapping| {
+            (offset >= mapping.src_range.start && offset <= mapping.src_range.end)
+                || mapping
+                    .sub_spans
+                    .iter()
+                    .any(|span| offset >= span.src_range.start && offset <= span.src_range.end)
+        })
         .min_by_key(|mapping| {
             mapping
-                .src_range
-                .end
-                .saturating_sub(mapping.src_range.start)
+                .sub_spans
+                .iter()
+                .filter(|span| offset >= span.src_range.start && offset <= span.src_range.end)
+                .map(|span| span.src_range.end.saturating_sub(span.src_range.start))
+                .min()
+                .unwrap_or_else(|| {
+                    mapping
+                        .src_range
+                        .end
+                        .saturating_sub(mapping.src_range.start)
+                })
         })
 }
 
@@ -144,30 +158,20 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    let uri = Url::parse(&location.uri).ok()?;
-    if uri.to_file_path().is_ok_and(|path| path.is_file()) {
-        return Some(raw_location(uri, &location.range));
-    }
-    if is_canonical_vue_virtual_uri(&uri) {
-        return None;
-    }
-    Some(raw_location(uri, &location.range))
-}
-
-fn raw_location(uri: Url, range: &vize_canon::LspRange) -> Location {
-    Location {
+    let uri = super::accessible_external_uri(ctx, &location.uri)?;
+    Some(Location {
         uri,
         range: Range {
             start: tower_lsp::lsp_types::Position {
-                line: range.start.line,
-                character: range.start.character,
+                line: location.range.start.line,
+                character: location.range.start.character,
             },
             end: tower_lsp::lsp_types::Position {
-                line: range.end.line,
-                character: range.end.character,
+                line: location.range.end.line,
+                character: location.range.end.character,
             },
         },
-    }
+    })
 }
 
 fn is_canonical_vue_virtual_uri(uri: &Url) -> bool {
@@ -289,4 +293,25 @@ fn location_matches_uri(actual: &str, expected: &str) -> bool {
     actual == expected
         || super::virtual_document_path(actual).as_deref()
             == super::virtual_document_path(expected).as_deref()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{map_source_offset_to_generated, mapping_for_source_offset};
+    use vize_canon::virtual_ts::{VizeMapping, VizeSubSpan};
+
+    #[test]
+    fn source_mapping_selects_a_value_sub_span_outside_the_parent_source_range() {
+        let mappings = [VizeMapping {
+            gen_range: 100..140,
+            src_range: 10..20,
+            sub_spans: vec![VizeSubSpan {
+                gen_range: 124..129,
+                src_range: 30..35,
+            }],
+        }];
+
+        let mapping = mapping_for_source_offset(&mappings, 32).expect("value sub-span mapping");
+        assert_eq!(map_source_offset_to_generated(mapping, 32), 126);
+    }
 }

@@ -88,7 +88,7 @@ impl ContentMapperTransformOptions {
 }
 
 /// A protocol v1 span tuple:
-/// `[generatedStart, generatedLength, originalStart, originalLength, kind, purpose]`.
+/// `[generatedStart, generatedLength, originalStart, originalLength, kind, featureMask]`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct ContentMapperSpan(pub [usize; 6]);
 

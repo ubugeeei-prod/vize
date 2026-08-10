@@ -1,5 +1,7 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_declaration_emit_cli/workspace_package_vue_exports.rs"]
+mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};
 

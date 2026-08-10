@@ -6,7 +6,6 @@ use oxc_ast::ast::{PropertyKey, Statement, TSSignature, TSType};
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, InsertTextFormat,
 };
-use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
 use crate::ide::definition::helpers as definition_helpers;
@@ -172,33 +171,16 @@ pub(super) fn extract_component_metadata(
     let mut seen_props = BTreeSet::new();
     let mut seen_slots = BTreeSet::new();
 
-    if let Some(script_content) = descriptor
-        .script_setup
-        .as_ref()
-        .map(|script| script.content.as_ref())
-        .or_else(|| {
-            descriptor
-                .script
-                .as_ref()
-                .map(|script| script.content.as_ref())
-        })
-    {
-        let drawer_options = DrawerOptions {
-            analyze_script: true,
-            ..Default::default()
-        };
-        let mut drawer = Drawer::with_options(drawer_options);
-        if legacy_vue2 {
-            drawer = drawer.with_legacy_vue2();
-        } else if options_api {
-            drawer = drawer.with_options_api();
-        }
-        if descriptor.script_setup.is_some() {
-            drawer.analyze_script_setup(script_content);
-        } else {
-            drawer.analyze_script_plain(script_content);
-        }
-        let summary = drawer.finish();
+    if descriptor.script_setup.is_some() || descriptor.script.is_some() {
+        let summary = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
+            &descriptor,
+            None,
+            vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
+            options_api,
+            legacy_vue2,
+            filename,
+        )
+        .croquis;
 
         for prop in summary.macros.props() {
             if seen_props.insert(prop.name.to_string()) {

@@ -70,7 +70,7 @@ fn check_resolves_hoisted_workspace_package_with_explicit_types() {
     write_file(
         &workspace,
         "packages/lib/src/index.ts",
-        "export const answer: number = 42;\n",
+        "export const answer: number = 'forty-two';\n",
     );
     write_file(
         &workspace,
@@ -140,14 +140,29 @@ fn check_resolves_hoisted_workspace_package_with_explicit_types() {
 
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
-    assert!(
-        output.status.success(),
-        "hoisted workspace check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
-    );
+    assert_eq!(output.status.code(), Some(1), "{stdout}\n{stderr}");
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    assert_eq!(json["errorCount"], 0, "{stdout}\n{stderr}");
+    assert_eq!(json["errorCount"], 1, "{stdout}\n{stderr}");
     assert_eq!(json["warningCount"], 0, "{stdout}\n{stderr}");
-    assert_eq!(json["fileCount"], 1, "{stdout}\n{stderr}");
+    assert_eq!(json["fileCount"], 2, "{stdout}\n{stderr}");
+    let package_source = workspace.join("packages/lib/src/index.ts");
+    let package_source = package_source.to_string_lossy();
+    let imported = json["files"]
+        .as_array()
+        .and_then(|files| {
+            files
+                .iter()
+                .find(|file| file["file"] == package_source.as_ref())
+        })
+        .expect("workspace package source result");
+    assert!(
+        imported["diagnostics"]
+            .as_array()
+            .is_some_and(|diagnostics| diagnostics.iter().any(|diagnostic| diagnostic
+                .as_str()
+                .is_some_and(|diagnostic| diagnostic.contains("TS2322")))),
+        "{stdout}\n{stderr}"
+    );
     assert!(
         !stdout.contains("Cannot find module '@repro/lib'"),
         "workspace package should resolve through app/node_modules:\n{stdout}\n{stderr}"

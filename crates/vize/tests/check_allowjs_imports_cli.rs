@@ -1,9 +1,15 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_allowjs_imports_cli/imported_diagnostics.rs"]
+mod imported_diagnostics;
+#[path = "check_allowjs_imports_cli/referenced_compiler_options.rs"]
+mod referenced_compiler_options;
+#[path = "check_allowjs_imports_cli/referenced_projects.rs"]
+mod referenced_projects;
 
 use std::{
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Output},
 };
 
 use vize_carton::cstr;
@@ -35,36 +41,44 @@ fn resolve_test_corsa_path() -> Option<PathBuf> {
     .find(|candidate| candidate.exists())
 }
 
+fn required_corsa_path() -> Option<PathBuf> {
+    corsa_requirement::required_or_skip(resolve_test_corsa_path())
+}
+
 fn write(root: &Path, rel: &str, content: &str) {
     let path = root.join(rel);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(path, content).unwrap();
 }
 
-fn run_project_check(project_root: &Path, corsa_path: &Path) -> std::process::Output {
-    run_check(project_root, corsa_path, &[])
-}
-
-fn run_check(project_root: &Path, corsa_path: &Path, patterns: &[&str]) -> std::process::Output {
+fn run_check(project_root: &Path, corsa_path: &Path, inputs: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project_root)
         .env("CORSA_PATH", corsa_path)
-        .args([
-            "check",
-            "--no-config",
-            "--tsconfig",
-            "tsconfig.json",
-            "--format",
-            "json",
-        ])
-        .args(patterns)
+        .args(["check", "--no-config", "--tsconfig", "tsconfig.json"])
+        .args(inputs)
+        .args(["--format", "json"])
         .output()
         .unwrap()
 }
 
+fn output_text(output: &Output) -> (std::string::String, std::string::String) {
+    (
+        std::string::String::from_utf8(output.stdout.clone()).unwrap(),
+        std::string::String::from_utf8(output.stderr.clone()).unwrap(),
+    )
+}
+
+fn output_json(output: &Output) -> serde_json::Value {
+    let (stdout, stderr) = output_text(output);
+    serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("invalid JSON ({error}):\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    })
+}
+
 #[test]
 fn check_allowjs_resolves_project_local_js_imports() {
-    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+    let Some(corsa_path) = required_corsa_path() else {
         return;
     };
     let project_root = unique_case_dir("local-js");
@@ -113,29 +127,17 @@ void message;
 "#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", &corsa_path)
-        .args([
-            "check",
-            "--no-config",
-            "--tsconfig",
-            "tsconfig.json",
-            "lint/__tests__/no-access-process.spec.ts",
-            "--format",
-            "json",
-        ])
-        .output()
-        .unwrap();
-
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    let output = run_check(
+        &project_root,
+        &corsa_path,
+        &["lint/__tests__/no-access-process.spec.ts"],
+    );
+    let (stdout, stderr) = output_text(&output);
     assert!(
         output.status.success(),
         "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
-    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+    assert_eq!(output_json(&output)["errorCount"], 0, "{stdout}");
     assert!(
         !stdout.contains("TS2307"),
         "project-local JS imports should resolve under allowJs:\n{stdout}"
@@ -145,25 +147,79 @@ void message;
 }
 
 #[test]
-fn check_allowjs_checks_javascript_roots_only_when_checkjs_is_enabled() {
-    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+fn default_check_follows_checkjs_across_broken_repaired_and_disabled_runs() {
+    let Some(corsa_path) = required_corsa_path() else {
         return;
     };
-    let project_root = unique_case_dir("javascript-roots");
+    let project_root = unique_case_dir("default-root-diagnostic");
     let _ = std::fs::remove_dir_all(&project_root);
-    const CHECK_JS_OFF: &str = r#"{
+    const BASE_PREFIX: &str = r#"{
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": "#;
+    const BASE_SUFFIX: &str = r#",
     "strict": true,
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true
-  },
-  "include": ["src/**/*"]
+  }
 }"#;
-    const CHECK_JS_ON: &str = r#"{
+    let config = |check_js| format!("{BASE_PREFIX}{check_js}{BASE_SUFFIX}");
+    const BROKEN: &str = "/** @type {string} */\nexport const message = 42;\n";
+    const REPAIRED: &str = "/** @type {string} */\nexport const message = 'ok';\n";
+
+    write(&project_root, "tsconfig.base.json", &config(true));
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{ "extends": "./tsconfig.base.json", "include": ["src/**/*"] }"#,
+    );
+    write(&project_root, "src/invalid.js", BROKEN);
+
+    let broken = run_check(&project_root, &corsa_path, &[]);
+    let (stdout, stderr) = output_text(&broken);
+    assert_eq!(
+        broken.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json = output_json(&broken);
+    assert_eq!(json["errorCount"], 1, "{stdout}");
+    assert_eq!(json["files"][0]["file"], "src/invalid.js", "{stdout}");
+    assert!(
+        json["files"][0]["diagnostics"][0]
+            .as_str()
+            .is_some_and(|diagnostic| diagnostic.contains("TS2322")),
+        "{stdout}"
+    );
+
+    write(&project_root, "src/invalid.js", REPAIRED);
+    let repaired = run_check(&project_root, &corsa_path, &[]);
+    assert!(repaired.status.success(), "{:?}", output_text(&repaired));
+    assert_eq!(output_json(&repaired)["errorCount"], 0);
+
+    write(&project_root, "src/invalid.js", BROKEN);
+    write(&project_root, "tsconfig.base.json", &config(false));
+    let unchecked = run_check(&project_root, &corsa_path, &[]);
+    assert!(unchecked.status.success(), "{:?}", output_text(&unchecked));
+    assert_eq!(output_json(&unchecked)["errorCount"], 0);
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn explicit_allowjs_file_reports_authored_diagnostics() {
+    let Some(corsa_path) = required_corsa_path() else {
+        return;
+    };
+    let project_root = unique_case_dir("explicit-root-diagnostic");
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    write(
+        &project_root,
+        "tsconfig.base.json",
+        r#"{
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
@@ -172,53 +228,35 @@ fn check_allowjs_checks_javascript_roots_only_when_checkjs_is_enabled() {
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true
-  },
-  "include": ["src/**/*"]
-}"#;
-    const BROKEN: &str = "/** @type {number} */\nexport const value = \"wrong\";\n";
-    const REPAIRED: &str = "/** @type {number} */\nexport const value = 1;\n";
-    write(&project_root, "tsconfig.json", CHECK_JS_OFF);
-    write(&project_root, "src/main.js", BROKEN);
+  }
+}"#,
+    );
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{ "extends": "./tsconfig.base.json", "include": ["src/**/*"] }"#,
+    );
+    write(
+        &project_root,
+        "src/invalid.js",
+        "/** @type {string} */\nexport const message = 42;\n",
+    );
 
-    let unchecked = run_project_check(&project_root, &corsa_path);
-    let unchecked_stdout = std::str::from_utf8(&unchecked.stdout).unwrap();
-    assert!(unchecked.status.success(), "{unchecked_stdout}");
+    let output = run_check(&project_root, &corsa_path, &["src/invalid.js"]);
+    let (stdout, stderr) = output_text(&output);
     assert_eq!(
-        serde_json::from_str::<serde_json::Value>(unchecked_stdout).unwrap()["errorCount"],
-        0
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-
-    write(&project_root, "tsconfig.json", CHECK_JS_ON);
-    let broken = run_project_check(&project_root, &corsa_path);
-    let broken_stdout = std::str::from_utf8(&broken.stdout).unwrap();
-    assert!(!broken.status.success(), "broken JavaScript root passed");
-    let broken_json: serde_json::Value = serde_json::from_str(broken_stdout).unwrap();
-    assert_eq!(broken_json["errorCount"], 1, "{broken_stdout}");
+    let json = output_json(&output);
+    assert_eq!(json["errorCount"], 1, "{stdout}");
+    assert_eq!(json["files"][0]["file"], "src/invalid.js", "{stdout}");
     assert!(
-        broken_stdout.contains("src/main.js")
-            && broken_stdout.contains("TS2322")
-            && broken_stdout.contains("Type 'string' is not assignable to type 'number'"),
-        "{broken_stdout}"
-    );
-
-    write(&project_root, "src/main.js", REPAIRED);
-    let repaired = run_project_check(&project_root, &corsa_path);
-    let repaired_stdout = std::str::from_utf8(&repaired.stdout).unwrap();
-    assert!(repaired.status.success(), "{repaired_stdout}");
-    assert_eq!(
-        serde_json::from_str::<serde_json::Value>(repaired_stdout).unwrap()["errorCount"],
-        0
-    );
-
-    write(&project_root, "src/main.js", BROKEN);
-    let explicit = run_check(&project_root, &corsa_path, &["src"]);
-    let explicit_stdout = std::str::from_utf8(&explicit.stdout).unwrap();
-    assert!(
-        !explicit.status.success()
-            && explicit_stdout.contains("src/main.js")
-            && explicit_stdout.contains("TS2322"),
-        "explicit allowJs input was not checked:\nstdout:\n{explicit_stdout}\nstderr:\n{}",
-        std::str::from_utf8(&explicit.stderr).unwrap()
+        json["files"][0]["diagnostics"][0]
+            .as_str()
+            .is_some_and(|diagnostic| diagnostic.contains("TS2322")),
+        "{stdout}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

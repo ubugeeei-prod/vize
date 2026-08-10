@@ -12,35 +12,8 @@ use super::glob::{compiler_option_dir_exclude, normalize_input_path};
 use super::jsonc::parse_jsonc_value;
 use super::spec::{GlobSpec, RelativePathSpec, TsconfigDeclarationOptions, TsconfigInputSpec};
 
-pub(super) fn collect_tsconfig_project_paths(tsconfig_path: &Path) -> Vec<PathBuf> {
-    let mut paths = Vec::new();
-    let mut seen = FxHashSet::default();
-    collect_tsconfig_project_paths_inner(tsconfig_path, &mut seen, &mut paths);
-    paths
-}
-
-fn collect_tsconfig_project_paths_inner(
-    tsconfig_path: &Path,
-    seen: &mut FxHashSet<PathBuf>,
-    paths: &mut Vec<PathBuf>,
-) {
-    let resolved = normalize_input_path(tsconfig_path);
-    if !seen.insert(resolved.clone()) {
-        return;
-    }
-    paths.push(resolved.clone());
-
-    let Ok(content) = tracked_read_to_string(&resolved) else {
-        return;
-    };
-    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
-    for reference in read_reference_entries(&value) {
-        let Some(reference_path) = resolve_referenced_tsconfig(&resolved, &reference) else {
-            continue;
-        };
-        collect_tsconfig_project_paths_inner(&reference_path, seen, paths);
-    }
-}
+mod project_graph;
+use project_graph::collect_tsconfig_project_paths;
 
 /// Run-scoped memo for merged tsconfig input specs, keyed by canonical
 /// tsconfig path.
@@ -53,9 +26,21 @@ fn collect_tsconfig_project_paths_inner(
 #[derive(Default)]
 pub(crate) struct TsconfigInputCache {
     specs: FxHashMap<PathBuf, Option<TsconfigInputSpec>>,
+    project_paths: FxHashMap<PathBuf, Vec<PathBuf>>,
 }
 
 impl TsconfigInputCache {
+    /// Resolve a solution-style project's transitive reference graph once per
+    /// check run. Callers receive an owned list so they can continue loading
+    /// specs through this same mutable cache without overlapping borrows.
+    pub(super) fn project_paths(&mut self, tsconfig_path: &Path) -> Vec<PathBuf> {
+        let resolved = normalize_input_path(tsconfig_path);
+        self.project_paths
+            .entry(resolved)
+            .or_insert_with_key(|resolved| collect_tsconfig_project_paths(resolved))
+            .clone()
+    }
+
     /// Load (or reuse) the merged input spec for `tsconfig_path`. Returns
     /// `None` when the tsconfig chain cannot be read, exactly like an uncached
     /// `load_tsconfig_inputs` call.
@@ -65,20 +50,6 @@ impl TsconfigInputCache {
             .entry(resolved)
             .or_insert_with_key(|resolved| load_tsconfig_inputs(resolved))
             .as_ref()
-    }
-
-    /// Whether the selected solution or any referenced project enables
-    /// JavaScript inputs. Explicit directory/glob collection needs this before
-    /// individual files are available for project ownership resolution.
-    pub(crate) fn project_graph_allows_javascript(&mut self, tsconfig_path: Option<&Path>) -> bool {
-        tsconfig_path.is_some_and(|tsconfig_path| {
-            collect_tsconfig_project_paths(tsconfig_path)
-                .iter()
-                .any(|project| {
-                    self.load(project)
-                        .is_some_and(|spec| spec.allow_js.unwrap_or(false))
-                })
-        })
     }
 }
 
@@ -131,6 +102,15 @@ fn load_tsconfig_inputs_inner(
             .into_iter()
             .filter_map(|value| GlobSpec::new(dir, &value))
             .collect();
+    }
+
+    if let Some(allow_js) = value
+        .get("compilerOptions")
+        .and_then(Value::as_object)
+        .and_then(|options| options.get("allowJs"))
+        .and_then(Value::as_bool)
+    {
+        merged.allow_js = Some(allow_js);
     }
 
     if let Some(out_dir) = compiler_option_dir_exclude(&value, dir, "outDir") {
@@ -220,19 +200,6 @@ pub(crate) fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> 
         push_node_modules_tsconfig_candidates(&mut candidates, base_dir, extends);
     }
 
-    candidates.into_iter().find(|candidate| candidate.is_file())
-}
-
-fn resolve_referenced_tsconfig(tsconfig_path: &Path, reference: &str) -> Option<PathBuf> {
-    let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
-    let reference_path = Path::new(reference);
-    let base = if reference_path.is_absolute() {
-        reference_path.to_path_buf()
-    } else {
-        base_dir.join(reference_path)
-    };
-    let mut candidates = Vec::new();
-    push_tsconfig_candidates(&mut candidates, base);
     candidates.into_iter().find(|candidate| candidate.is_file())
 }
 
@@ -350,15 +317,4 @@ pub(crate) fn read_extends_entries(value: &Value) -> Vec<std::string::String> {
             .collect(),
         _ => Vec::new(),
     }
-}
-
-fn read_reference_entries(value: &Value) -> Vec<std::string::String> {
-    value
-        .get("references")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter_map(|item| item.get("path").and_then(Value::as_str))
-        .map(std::string::String::from)
-        .collect()
 }

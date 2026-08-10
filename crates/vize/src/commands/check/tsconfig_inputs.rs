@@ -17,6 +17,7 @@ mod implicit_exclude;
 mod jsonc;
 mod loader;
 mod matching;
+mod ownership;
 mod spec;
 mod type_references;
 
@@ -34,10 +35,10 @@ mod tests;
 pub(crate) use ambient::{
     collect_ambient_declaration_files, collect_hidden_ambient_declaration_files,
 };
-pub(crate) use collect::resolve_tsconfig_for_files;
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
+pub(crate) use ownership::{resolve_tsconfig_for_files, resolve_tsconfig_program_inputs};
 pub(crate) use spec::TsconfigDeclarationOptions;
 pub(crate) use type_references::{
     collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
@@ -48,7 +49,6 @@ use collect::{
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
 };
 use glob::normalize_input_path;
-use loader::collect_tsconfig_project_paths;
 use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
     is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -68,6 +68,27 @@ pub(crate) fn collect_default_check_files(
     collect_default_check_files_inner(project_root, tsconfig_path, false, include_jsx, cache)
 }
 
+pub(crate) fn tsconfig_allows_js(tsconfig_path: &Path, cache: &mut TsconfigInputCache) -> bool {
+    cache
+        .load(tsconfig_path)
+        .and_then(|spec| spec.allow_js)
+        .unwrap_or(false)
+}
+
+/// Whether the root project or any transitively referenced project accepts
+/// JavaScript inputs. Explicit path collection uses this only as a broad
+/// extension gate; ownership resolution later selects the exact project and
+/// applies that project's own `allowJs` value.
+pub(crate) fn tsconfig_project_graph_allows_js(
+    tsconfig_path: &Path,
+    cache: &mut TsconfigInputCache,
+) -> bool {
+    cache
+        .project_paths(tsconfig_path)
+        .iter()
+        .any(|project| tsconfig_allows_js(project, cache))
+}
+
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
@@ -82,15 +103,15 @@ fn collect_default_check_files_inner(
             &[],
             FileCollectionOptions {
                 include_hidden: false,
-                include_jsx,
                 include_js: false,
+                include_jsx,
             },
         );
     };
 
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
-    for tsconfig_path in collect_tsconfig_project_paths(tsconfig_path) {
+    for tsconfig_path in cache.project_paths(tsconfig_path) {
         collect_default_check_files_for_tsconfig(
             project_root,
             &tsconfig_path,
@@ -125,8 +146,8 @@ fn collect_default_check_files_for_tsconfig(
             && is_supported_check_file_with_options(
                 &resolved,
                 SupportedFileOptions {
-                    include_jsx,
                     include_js,
+                    include_jsx,
                 },
             )
             && !is_nuxt_import_manifest_path(&resolved)
@@ -162,8 +183,8 @@ fn collect_default_check_files_for_tsconfig(
             excludes,
             FileCollectionOptions {
                 include_hidden: false,
-                include_jsx,
                 include_js,
+                include_jsx,
             },
         );
         for path in collected {
@@ -187,8 +208,8 @@ fn collect_default_check_files_for_tsconfig(
                 excludes,
                 FileCollectionOptions {
                     include_hidden: true,
-                    include_jsx,
                     include_js,
+                    include_jsx,
                 },
             ) {
                 // Declaration files under a hidden root are ambient program

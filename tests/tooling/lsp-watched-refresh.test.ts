@@ -25,7 +25,7 @@ defineProps<{ count: number }>();
 const CHILD_STRING = CHILD_NUMBER.replace("count: number", "count: string");
 
 const APP = `<script setup lang="ts">
-import Child from "./Child.vue";
+import Child from "./components/Child.vue";
 </script>
 <template>
   <Child :count="1" />
@@ -34,10 +34,10 @@ import Child from "./Child.vue";
 
 // A dependency changed outside the editor — a git checkout, a codegen run, a
 // delete — must refresh the open importer's diagnostics without any editor
-// edit (#3918). The lifecycle mirrors the Volar oracle: clean on open, one
-// mismatch after the prop type changes on disk, still broken while the file is
-// gone, clean again once it is restored.
-test("watched dependency changes refresh the open importer", async (t) => {
+// edit (#3918). The lifecycle starts with a missing import, heals on a file
+// operation create, reports a watched prop change, reports TS2307 on watched
+// delete, and heals again on watched recreation.
+test("created and watched dependency changes refresh the open importer", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
     resolveCorsaBinary(),
@@ -67,8 +67,10 @@ test("watched dependency changes refresh the open importer", async (t) => {
       JSON.stringify({ typeChecker: { corsaPath } }),
       "utf8",
     );
-    const childPath = path.join(workspaceDir, "Child.vue");
-    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
+    const componentsDir = path.join(workspaceDir, "components");
+    const movedComponentsDir = path.join(workspaceDir, "moved-components");
+    const childPath = path.join(componentsDir, "Child.vue");
+    const renamedChildPath = path.join(componentsDir, "RenamedChild.vue");
 
     await session.initialize(workspaceDir, {
       editor: true,
@@ -78,9 +80,16 @@ test("watched dependency changes refresh the open importer", async (t) => {
     });
     const appUri = pathToFileURL(path.join(workspaceDir, "App.vue")).href;
     const childUri = pathToFileURL(childPath).href;
+    const renamedChildUri = pathToFileURL(renamedChildPath).href;
+    const componentsUri = pathToFileURL(componentsDir).href;
+    const movedComponentsUri = pathToFileURL(movedComponentsDir).href;
     const diagnosticsFor = (uri: string) => (params: unknown) =>
       (params as { uri: string }).uri === uri;
     const counted = (params: unknown) => (params as { diagnostics: unknown[] }).diagnostics.length;
+    const diagnosticCodes = (params: unknown) =>
+      (params as { diagnostics: Array<{ code?: number | string }> }).diagnostics.map(
+        (diagnostic) => diagnostic.code,
+      );
     // `waitForNotification` resolves out of the backlog, so a stale republish
     // could satisfy the delete phase without the deletion ever being observed.
     // Draining to quiescence first forces the next publish to be the delete's.
@@ -106,9 +115,76 @@ test("watched dependency changes refresh the open importer", async (t) => {
       diagnosticsFor(appUri),
       60000,
     );
-    assert.equal(counted(opened), 0, "the importer opens clean");
+    assert.ok(diagnosticCodes(opened).includes(2307), "the missing dependency starts as TS2307");
 
-    // Phase 1: the dependency's prop narrows on disk, no editor edit.
+    // Phase 1: a file-operation create must heal the already-open importer at
+    // the same document version; requiring an importer edit hides stale state.
+    fs.mkdirSync(componentsDir);
+    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
+    session.notify("workspace/didCreateFiles", {
+      files: [{ uri: childUri }],
+    });
+    const afterCreate = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterCreate as { version?: number }).version, 1);
+
+    // Phase 2: a rename that removes the imported path must republish TS2307
+    // without relying on the client to apply a willRename workspace edit.
+    await drainAppDiagnostics();
+    fs.renameSync(childPath, renamedChildPath);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: childUri, newUri: renamedChildUri }],
+    });
+    const afterRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterRename as { version?: number }).version, 1);
+
+    // Phase 3: reversing the rename recreates the imported path and must heal
+    // the same importer version without an editor edit.
+    fs.renameSync(renamedChildPath, childPath);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: renamedChildUri, newUri: childUri }],
+    });
+    const afterReverseRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterReverseRename as { version?: number }).version, 1);
+
+    // Phase 4: a directory rename must invalidate nested dependencies, not
+    // only files whose URI exactly matches an indexed import.
+    await drainAppDiagnostics();
+    fs.renameSync(componentsDir, movedComponentsDir);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: componentsUri, newUri: movedComponentsUri }],
+    });
+    const afterDirectoryRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterDirectoryRename as { version?: number }).version, 1);
+
+    // Phase 5: restoring the directory must heal the same importer version.
+    fs.renameSync(movedComponentsDir, componentsDir);
+    session.notify("workspace/didRenameFiles", {
+      files: [{ oldUri: movedComponentsUri, newUri: componentsUri }],
+    });
+    const afterReverseDirectoryRename = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterReverseDirectoryRename as { version?: number }).version, 1);
+
+    // Phase 6: the dependency's prop narrows on disk, no editor edit.
     fs.writeFileSync(childPath, CHILD_STRING, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 2 }],
@@ -120,7 +196,7 @@ test("watched dependency changes refresh the open importer", async (t) => {
     );
     assert.equal(counted(afterEdit), 1, "the stale binding is reported");
 
-    // Phase 2: the dependency disappears; the importer must stay broken.
+    // Phase 7: the dependency disappears; the importer must stay broken.
     await drainAppDiagnostics();
     fs.rmSync(childPath);
     session.notify("workspace/didChangeWatchedFiles", {
@@ -131,19 +207,52 @@ test("watched dependency changes refresh the open importer", async (t) => {
       (params) => diagnosticsFor(appUri)(params) && counted(params) > 0,
       60000,
     );
-    assert.ok(counted(afterDelete) > 0, "a deleted dependency keeps the importer broken");
+    assert.ok(
+      diagnosticCodes(afterDelete).includes(2307),
+      `a deleted dependency reports TS2307 instead of a stale overlay diagnostic: ${JSON.stringify(
+        afterDelete,
+      )}`,
+    );
 
-    // Phase 3: restored with the matching type; the importer recovers.
+    // Phase 8: restored with the matching type; the importer recovers.
     fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
     session.notify("workspace/didChangeWatchedFiles", {
       changes: [{ uri: childUri, type: 1 }],
     });
-    const afterCreate = await session.waitForNotification(
+    const afterWatchedRestore = await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
       60000,
     );
-    assert.equal(counted(afterCreate), 0, "a restored dependency clears the importer");
+    assert.equal(counted(afterWatchedRestore), 0, "a restored dependency clears the importer");
+
+    // Phase 9: a directory file-operation delete must evict every nested Vue
+    // overlay and republish the open importer at the same document version.
+    await drainAppDiagnostics();
+    fs.rmSync(componentsDir, { recursive: true });
+    session.notify("workspace/didDeleteFiles", {
+      files: [{ uri: componentsUri }],
+    });
+    const afterDirectoryDelete = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && diagnosticCodes(params).includes(2307),
+      60000,
+    );
+    assert.equal((afterDirectoryDelete as { version?: number }).version, 1);
+
+    // Phase 10: recreating the directory and nested dependency heals without
+    // requiring a file-level event or an importer edit.
+    fs.mkdirSync(componentsDir);
+    fs.writeFileSync(childPath, CHILD_NUMBER, "utf8");
+    session.notify("workspace/didCreateFiles", {
+      files: [{ uri: componentsUri }],
+    });
+    const afterDirectoryCreate = await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => diagnosticsFor(appUri)(params) && counted(params) === 0,
+      60000,
+    );
+    assert.equal((afterDirectoryCreate as { version?: number }).version, 1);
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });

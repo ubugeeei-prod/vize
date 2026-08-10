@@ -3,11 +3,12 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashSet;
 
 use super::{
+    CollectedRoots,
     collect::path_is_inside_root,
     ignores::{CheckIgnoreSet, retain_unignored},
 };
 use crate::commands::check::{
-    imports::collect_transitive_local_imports,
+    imports::{ImportFileOptions, TransitiveLocalImports, collect_transitive_local_imports},
     imports_aliases::PathAliasResolver,
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
@@ -21,7 +22,12 @@ pub(super) struct ExplicitAmbientImportContext<'a> {
     cwd: &'a Path,
     tsconfig_path: &'a Path,
     explicit_input_root: &'a Path,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
+}
+
+pub(super) struct RegisteredLocalImports {
+    pub(super) authored: Vec<PathBuf>,
+    pub(super) virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
 }
 
 impl<'a> ExplicitAmbientImportContext<'a> {
@@ -30,14 +36,14 @@ impl<'a> ExplicitAmbientImportContext<'a> {
         cwd: &'a Path,
         tsconfig_path: &'a Path,
         explicit_input_root: &'a Path,
-        include_jsx: bool,
+        import_options: ImportFileOptions,
     ) -> Self {
         Self {
             project_root,
             cwd,
             tsconfig_path,
             explicit_input_root,
-            include_jsx,
+            import_options,
         }
     }
 }
@@ -46,39 +52,61 @@ pub(super) fn collect_default_run_files(
     project_root: &Path,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     check_ignore_set: Option<&CheckIgnoreSet>,
-) -> (Vec<PathBuf>, FxHashSet<PathBuf>) {
+) -> CollectedRoots {
     let mut files = collect_default_check_files(
         project_root,
         tsconfig_path,
-        include_jsx,
+        import_options.include_jsx,
         tsconfig_input_cache,
     );
     retain_unignored(&mut files, check_ignore_set);
-    let reported_files = canonical_file_set(&files, canonical_paths);
+    let inputs = files.clone();
+    let mut reported_files = canonical_file_set(&files, canonical_paths);
+    let discovered = register_transitive_local_imports(
+        &mut files,
+        cwd,
+        tsconfig_path,
+        import_options,
+        canonical_paths,
+        None,
+        false,
+    );
+    reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
+    let mut virtual_module_aliases = discovered.virtual_module_aliases;
     register_ambient_declaration_files(
         &mut files,
         project_root,
         tsconfig_path,
         tsconfig_input_cache,
     );
-    register_transitive_local_imports(
+    // Imports reached only through hidden ambient declarations provide type
+    // context, but are not authored members of the checked program.
+    let hidden_discovered = register_transitive_local_imports(
         &mut files,
         cwd,
         tsconfig_path,
-        include_jsx,
+        import_options,
         canonical_paths,
         None,
         false,
     );
+    virtual_module_aliases.extend(hidden_discovered.virtual_module_aliases);
+    virtual_module_aliases.sort();
+    virtual_module_aliases.dedup();
 
-    (files, reported_files)
+    CollectedRoots {
+        files,
+        inputs,
+        reported: reported_files,
+        virtual_module_aliases,
+    }
 }
 
-fn register_ambient_declaration_files(
+pub(super) fn register_ambient_declaration_files(
     files: &mut Vec<PathBuf>,
     project_root: &Path,
     tsconfig_path: Option<&Path>,
@@ -113,7 +141,7 @@ pub(super) fn register_explicit_ambient_imports(
         &ambient_declarations,
         context.cwd,
         Some(context.tsconfig_path),
-        context.include_jsx,
+        context.import_options,
         canonical_paths,
         Some(context.explicit_input_root),
         true,
@@ -137,25 +165,39 @@ pub(super) fn register_transitive_local_imports(
     files: &mut Vec<PathBuf>,
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
-) {
-    let discovered = collect_local_imports(files, cwd, tsconfig_path, include_jsx, canonical_paths);
-    append_local_imports(files, discovered, explicit_input_root, validate_inputs);
+) -> RegisteredLocalImports {
+    let discovered =
+        collect_local_imports(files, cwd, tsconfig_path, import_options, canonical_paths);
+    // The explicit-root boundary constrains user-selected roots and files that
+    // enter Vize's mirror. It must not hide authored modules that TypeScript
+    // legitimately resolves in place outside that boundary.
+    let TransitiveLocalImports {
+        registrations,
+        authored,
+        virtual_module_aliases,
+    } = discovered;
+    append_local_imports(files, registrations, explicit_input_root, validate_inputs);
+    RegisteredLocalImports {
+        authored,
+        virtual_module_aliases,
+    }
 }
 
 pub(super) fn collect_transitive_local_imports_from(
     roots: &[PathBuf],
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
 ) -> Vec<PathBuf> {
-    collect_local_imports(roots, cwd, tsconfig_path, include_jsx, canonical_paths)
+    collect_local_imports(roots, cwd, tsconfig_path, import_options, canonical_paths)
+        .registrations
         .into_iter()
         .filter(|path| local_import_is_allowed(path, explicit_input_root, validate_inputs))
         .collect()
@@ -165,11 +207,11 @@ fn collect_local_imports(
     roots: &[PathBuf],
     cwd: &Path,
     tsconfig_path: Option<&Path>,
-    include_jsx: bool,
+    import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
-) -> Vec<PathBuf> {
+) -> TransitiveLocalImports {
     let aliases = PathAliasResolver::from_tsconfig(tsconfig_path);
-    collect_transitive_local_imports(roots, cwd, canonical_paths, include_jsx, Some(&aliases))
+    collect_transitive_local_imports(roots, cwd, canonical_paths, import_options, Some(&aliases))
 }
 
 fn append_local_imports(
@@ -177,16 +219,19 @@ fn append_local_imports(
     discovered: Vec<PathBuf>,
     explicit_input_root: Option<&Path>,
     validate_inputs: bool,
-) {
+) -> Vec<PathBuf> {
+    let mut appended = Vec::new();
     for path in discovered {
         if local_import_is_allowed(&path, explicit_input_root, validate_inputs)
             && !files.contains(&path)
         {
-            files.push(path);
+            files.push(path.clone());
+            appended.push(path);
         }
     }
     files.sort();
     files.dedup();
+    appended
 }
 
 fn local_import_is_allowed(
@@ -198,144 +243,5 @@ fn local_import_is_allowed(
 }
 
 #[cfg(test)]
-mod tests {
-    use std::path::PathBuf;
-
-    use vize_carton::path::canonicalize_non_verbatim;
-
-    fn unique_case_dir(name: &str) -> PathBuf {
-        static NEXT_CASE_ID: std::sync::atomic::AtomicUsize =
-            std::sync::atomic::AtomicUsize::new(0);
-        let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("vize-tests")
-            .join(format!(
-                "check-runner-{name}-{}-{case_id}",
-                std::process::id()
-            ))
-    }
-
-    #[test]
-    fn default_tsconfig_run_registers_transitive_imports_outside_include_for_type_resolution() {
-        let project_root = unique_case_dir("default-transitive-imports");
-        let _ = std::fs::remove_dir_all(&project_root);
-        std::fs::create_dir_all(project_root.join("inside")).unwrap();
-        std::fs::create_dir_all(project_root.join("outside")).unwrap();
-        std::fs::write(
-            project_root.join("tsconfig.json"),
-            r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
-  },
-  "include": ["inside/**/*.ts"]
-}"#,
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join("inside/use.ts"),
-            r#"import { ITEMS } from '../outside/lib'
-
-export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
-"#,
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join("outside/lib.ts"),
-            "export const ITEMS = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Russian' }]\n",
-        )
-        .unwrap();
-
-        let mut tsconfig_input_cache = super::TsconfigInputCache::default();
-        let mut canonical_paths = super::CanonicalPathCache::default();
-        let (files, reported_files) = super::collect_default_run_files(
-            &project_root,
-            &project_root,
-            Some(&project_root.join("tsconfig.json")),
-            false,
-            &mut tsconfig_input_cache,
-            &mut canonical_paths,
-            None,
-        );
-
-        let included_file = canonicalize_non_verbatim(&project_root.join("inside/use.ts"));
-        let transitive_file = canonicalize_non_verbatim(&project_root.join("outside/lib.ts"));
-
-        assert!(files.contains(&included_file));
-        assert!(files.contains(&transitive_file));
-        assert!(reported_files.contains(&included_file));
-        assert!(
-            !reported_files.contains(&transitive_file),
-            "outside-include imports are registered for types, not reported"
-        );
-
-        let _ = std::fs::remove_dir_all(&project_root);
-    }
-
-    #[test]
-    fn default_tsconfig_run_registers_hidden_ambient_declarations_for_type_resolution() {
-        let project_root = unique_case_dir("default-hidden-ambient");
-        let _ = std::fs::remove_dir_all(&project_root);
-        std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
-        std::fs::create_dir_all(project_root.join("app/plugins")).unwrap();
-        std::fs::write(
-            project_root.join("tsconfig.json"),
-            r#"{
-  "extends": "./.nuxt/tsconfig.json"
-}"#,
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join(".nuxt/tsconfig.json"),
-            r#"{
-  "include": ["../app/**/*.ts", "./nuxt.d.ts"]
-}"#,
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join(".nuxt/nuxt.d.ts"),
-            "/// <reference path=\"types/import-meta.d.ts\" />\nexport {};\n",
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join(".nuxt/types/import-meta.d.ts"),
-            "export {};\ndeclare global { interface ImportMeta { vitest: boolean; } }\n",
-        )
-        .unwrap();
-        std::fs::write(
-            project_root.join("app/plugins/auth.ts"),
-            "export const runningUnderVitest = import.meta.vitest;\n",
-        )
-        .unwrap();
-
-        let mut tsconfig_input_cache = super::TsconfigInputCache::default();
-        let mut canonical_paths = super::CanonicalPathCache::default();
-        let (files, reported_files) = super::collect_default_run_files(
-            &project_root,
-            &project_root,
-            Some(&project_root.join("tsconfig.json")),
-            false,
-            &mut tsconfig_input_cache,
-            &mut canonical_paths,
-            None,
-        );
-
-        let app_file = canonicalize_non_verbatim(&project_root.join("app/plugins/auth.ts"));
-        let ambient_file =
-            canonicalize_non_verbatim(&project_root.join(".nuxt/types/import-meta.d.ts"));
-
-        assert!(files.contains(&app_file));
-        assert!(files.contains(&ambient_file));
-        assert!(reported_files.contains(&app_file));
-        assert!(
-            !reported_files.contains(&ambient_file),
-            "hidden ambient declarations are registered for types, not reported"
-        );
-
-        let _ = std::fs::remove_dir_all(&project_root);
-    }
-}
+#[path = "default_imports_tests.rs"]
+mod tests;

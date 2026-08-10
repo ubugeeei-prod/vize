@@ -19,6 +19,10 @@ use crate::batch::virtual_project::{
     AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE,
 };
 
+mod diagnostic_paths;
+
+use diagnostic_paths::{extend_diagnostic_path_uris, is_authored_diagnostic_input};
+
 #[derive(Default)]
 pub(super) struct IncrementalSessionState {
     session: Option<IncrementalSession>,
@@ -69,10 +73,11 @@ impl CorsaExecutor {
             }
             Err(error) => return Err(map_corsa_error(error)),
         };
-        let uris = profile!(
+        let mut uris = profile!(
             "canon.corsa.collect_uris",
             collect_virtual_file_uris(project.virtual_root())
         )?;
+        extend_diagnostic_path_uris(project, &mut uris);
         check_session_client(&mut client, project, &uris)
     }
 
@@ -87,10 +92,11 @@ impl CorsaExecutor {
                 "canon.executor.materialize_incremental",
                 project.materialize()
             )?;
-            let snapshot = profile!(
+            let mut snapshot = profile!(
                 "canon.corsa.incremental.snapshot",
                 MaterializedSnapshot::capture(project.virtual_root())
             )?;
+            snapshot.extend_diagnostic_paths(project)?;
             let mut state = self
                 .incremental_session
                 .lock()
@@ -232,6 +238,20 @@ impl MaterializedSnapshot {
         }
         delta.sort();
         delta
+    }
+
+    fn extend_diagnostic_paths(&mut self, project: &VirtualProject) -> CorsaResult<()> {
+        for path in project.diagnostic_paths_sorted() {
+            if !path.is_file() || !is_authored_diagnostic_input(&path) {
+                continue;
+            }
+            let content = std::fs::read(&path)?;
+            self.revisions.insert(path.clone(), hash_bytes(&content));
+            self.uris.push(path_to_file_uri(&path));
+        }
+        self.uris.sort();
+        self.uris.dedup();
+        Ok(())
     }
 }
 

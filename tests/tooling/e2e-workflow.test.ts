@@ -216,7 +216,7 @@ test("local app readiness action keeps setup, diagnostics, and aggregation bound
   assert.doesNotMatch(action, /playwright install --with-deps chromium/);
 
   for (const [id, script, log, timeout] of [
-    ["check", "test:readiness:check", "check.log", "3m"],
+    ["check", "test:readiness:check", "check.log", "5m"],
     ["lint", "test:readiness:lint", "lint.log", "2m"],
     ["build", "test:readiness:build", "build.log", "3m"],
     ["dev", "test:readiness:dev", "dev.log", "8m"],

@@ -1,4 +1,4 @@
-use super::{MaterializedDelta, MaterializedSnapshot};
+use super::{MaterializedDelta, MaterializedSnapshot, VirtualProject};
 use std::path::PathBuf;
 use vize_carton::FxHashMap;
 
@@ -40,6 +40,28 @@ fn snapshot_keeps_symlinked_typescript_files_as_diagnostic_inputs() {
     assert!(after.revisions.contains_key(&linked));
     assert_eq!(after.uris, vec![path_to_file_uri(&linked)]);
     assert_eq!(after.diff(&before).changed, vec![linked]);
+}
+
+#[test]
+fn snapshot_tracks_in_place_diagnostic_source_changes() {
+    use crate::file_uri::path_to_file_uri;
+
+    let temp = tempfile::tempdir().unwrap();
+    let source = temp.path().join("aliased.ts");
+    std::fs::write(&source, "export const value = 1\n").unwrap();
+    let mut project = VirtualProject::new(temp.path()).unwrap();
+    std::fs::create_dir_all(project.virtual_root()).unwrap();
+    project.set_diagnostic_paths([source.as_path()]);
+    let mut before = MaterializedSnapshot::capture(project.virtual_root()).unwrap();
+    before.extend_diagnostic_paths(&project).unwrap();
+
+    std::fs::write(&source, "export const value = 2\n").unwrap();
+    let mut after = MaterializedSnapshot::capture(project.virtual_root()).unwrap();
+    after.extend_diagnostic_paths(&project).unwrap();
+
+    let source = source.canonicalize().unwrap();
+    assert_eq!(after.uris, vec![path_to_file_uri(&source)]);
+    assert_eq!(after.diff(&before).changed, vec![source]);
 }
 
 fn snapshot(entries: &[(&str, u64)]) -> MaterializedSnapshot {

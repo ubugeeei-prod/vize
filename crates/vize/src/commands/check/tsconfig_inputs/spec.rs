@@ -16,12 +16,12 @@ pub(super) struct TsconfigInputSpec {
     pub(super) has_files: bool,
     pub(super) has_includes: bool,
     pub(super) has_excludes: bool,
+    /// The merged `compilerOptions.allowJs` value for this project.
+    pub(super) allow_js: Option<bool>,
     /// `compilerOptions.outDir`, as a glob over the directory it resolves to.
     pub(super) out_dir_exclude: Option<GlobSpec>,
     /// `compilerOptions.declarationDir`, likewise.
     pub(super) declaration_dir_exclude: Option<GlobSpec>,
-    /// Effective `compilerOptions.allowJs` value across the extends chain.
-    pub(super) allow_js: Option<bool>,
 }
 
 impl TsconfigInputSpec {
@@ -160,6 +160,6 @@ impl GlobSpec {
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct FileCollectionOptions {
     pub(super) include_hidden: bool,
-    pub(super) include_jsx: bool,
     pub(super) include_js: bool,
+    pub(super) include_jsx: bool,
 }

@@ -5,11 +5,12 @@
 //! merging, generic extraction, and virtual-script offsets.
 
 mod drawer;
+mod source_offsets;
 
 use self::drawer::{analyze_scripts, apply_options_api_mode};
 use crate::types::SfcDescriptor;
 use vize_atelier_core::RootNode;
-use vize_carton::{String, ToCompactString, cstr, profile};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile};
 use vize_croquis::{Croquis, Drawer, DrawerOptions};
 
 /// Options for descriptor-level Croquis analysis.
@@ -86,13 +87,6 @@ pub struct SfcCroquisAnalysis {
     pub croquis: Croquis,
     pub script_content: Option<String>,
     pub script_offset: u32,
-}
-
-impl SfcCroquisAnalysis {
-    #[inline]
-    pub fn script_content_ref(&self) -> Option<&str> {
-        self.script_content.as_deref()
-    }
 }
 
 /// Analyze an SFC descriptor into a Croquis summary.
@@ -271,56 +265,33 @@ pub fn merge_resolved_props_into_croquis(
     }
     ctx.analyze();
 
-    for (name, binding_type) in &ctx.bindings.bindings {
-        if matches!(binding_type, BindingType::Props | BindingType::PropsAliased)
-            && !croquis.bindings.contains(name.as_str())
-        {
-            croquis.bindings.add(name.as_str(), *binding_type);
+    let Some(type_args) = croquis
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_deref())
+    else {
+        return;
+    };
+    let type_args = type_args
+        .strip_prefix('<')
+        .and_then(|value| value.strip_suffix('>'))
+        .unwrap_or(type_args);
+    let mut known: FxHashSet<_> = croquis
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.clone())
+        .collect();
+    for prop in ctx.resolve_type_props(type_args) {
+        if !known.insert(prop.name.clone()) {
+            continue;
         }
+        if !croquis.bindings.contains(prop.name.as_str()) {
+            croquis.bindings.add(prop.name.as_str(), BindingType::Props);
+        }
+        croquis.macros.add_prop(prop);
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{SfcCroquisOptions, analyze_sfc_descriptor_with_context};
-    use crate::{SfcParseOptions, parse_sfc};
-
-    #[test]
-    fn split_scripts_share_one_synthetic_script_offset_space() {
-        let source = r#"<script lang="ts">
-import PlainCard from './PlainCard.vue'
-export interface PlainProps { label: string }
-</script>
-<script setup lang="ts" generic="T">
-import { ref } from 'vue'
-const count = ref(0)
-</script>
-"#;
-        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-        let analysis =
-            analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full());
-        let script = analysis.script_content_ref().unwrap();
-
-        let plain_import = analysis
-            .croquis
-            .import_statements
-            .iter()
-            .find(|span| script[span.start as usize..span.end as usize].contains("PlainCard"));
-        let setup_import = analysis
-            .croquis
-            .import_statements
-            .iter()
-            .find(|span| script[span.start as usize..span.end as usize].contains("{ ref }"));
-
-        assert!(plain_import.is_some());
-        assert!(setup_import.is_some());
-        assert!(analysis.croquis.bindings.contains("PlainCard"));
-        assert!(analysis.croquis.bindings.contains("count"));
-
-        let count_span = analysis.croquis.binding_spans.get("count").unwrap();
-        assert_eq!(
-            &script[count_span.0 as usize..count_span.1 as usize],
-            "count"
-        );
-    }
-}
+mod tests;

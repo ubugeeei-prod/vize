@@ -203,8 +203,14 @@ function assertCleanParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
     },
     {
       errorCount: 0,
-      fileCount: 1,
-      files: [{ diagnostics: [], file: sourcePath }],
+      fileCount: 3,
+      // The authored composables the theme imports are reported alongside it,
+      // so a regression that only surfaces in a dependency cannot hide (#3996).
+      files: [
+        { diagnostics: [], file: sourcePath },
+        { diagnostics: [], file: dataPath },
+        { diagnostics: [], file: langsPath },
+      ],
       warningCount: 0,
     },
   );
@@ -214,11 +220,18 @@ function assertCleanParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
 
 function assertBrokenParity(vize: VizeCheckResult, vueTsc: CommandResult): void {
   assert.equal(vize.status, 1, vize.stderr || vize.stdout);
-  assert.equal(vize.report.fileCount, 1, JSON.stringify(vize.report));
+  assert.equal(vize.report.fileCount, 3, JSON.stringify(vize.report));
   assert.equal(vize.report.errorCount, 1, JSON.stringify(vize.report));
   assert.equal(vize.report.warningCount, 0, JSON.stringify(vize.report));
-  assert.equal(vize.report.files.length, 1, JSON.stringify(vize.report));
-  assert.equal(vize.report.files[0]?.file, sourcePath, JSON.stringify(vize.report));
+  // The authored composables the theme imports are reported alongside it, so the
+  // single error must stay pinned to the SFC and the dependencies stay clean (#3996).
+  assert.deepEqual(
+    vize.report.files.map((file) => file.file),
+    [sourcePath, dataPath, langsPath],
+    JSON.stringify(vize.report),
+  );
+  assert.deepEqual(vize.report.files[1]?.diagnostics, [], JSON.stringify(vize.report));
+  assert.deepEqual(vize.report.files[2]?.diagnostics, [], JSON.stringify(vize.report));
   assert.match(
     vize.report.files[0]?.diagnostics.join("\n") ?? "",
     /TS2339.*code.*NotFoundOptions/i,

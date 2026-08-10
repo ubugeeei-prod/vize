@@ -84,7 +84,7 @@ runs:
       shell: bash
       run: |
         set -o pipefail
-        timeout --signal=TERM --kill-after=15s 3m \
+        timeout --signal=TERM --kill-after=15s 5m \
           vp run --filter './tests' test:readiness:check 2>&1 \
           | tee target/app-readiness-logs/check.log
 

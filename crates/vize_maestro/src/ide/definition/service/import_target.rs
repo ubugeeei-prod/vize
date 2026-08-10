@@ -10,13 +10,12 @@
 //! target — following `export … from` barrels a bounded number of hops.
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
-use vize_carton::cstr;
 
 use crate::ide::IdeContext;
-use crate::ide::definition::{helpers, module_specifier, script};
+use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier, script};
 
 mod alias;
 
@@ -30,15 +29,14 @@ pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse>
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
     let (specifier, exported) = importing_specifier(&ctx.content, ctx.offset, &word)?;
     let target = resolve_import_specifier(ctx.uri, &specifier)?;
-    locate_export(&target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
+    locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
 }
 
-/// Definition on a component tag whose import the manual finder cannot
-/// resolve (#3932): that path handles only relative specifiers, so a tag
-/// imported through a tsconfig `paths` alias or a package barrel —
-/// `import { Primitive } from '@/Primitive'` resolving through
-/// `src/Primitive/index.ts` — answered null while hover was typed. Follows
-/// the same import-resolution and re-export hops as the imported-name jump.
+/// Definition on an imported component tag, following tsconfig `paths`
+/// aliases and re-export barrels (#3932). This must run before the direct-file
+/// finder: `import { Primitive } from '@/Primitive'` can resolve first to
+/// `src/Primitive/index.ts`, but the editor jump belongs at the source that
+/// the barrel re-exports. Uses the same bounded walk as the imported-name jump.
 pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
     if !crate::ide::is_component_tag(&tag_name) {
@@ -52,7 +50,7 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
             .map_or_else(|| name.to_owned(), |(_, exported)| exported);
         if let Some(specifier) = helpers::find_import_path(ctx, name)
             && let Some(target) = resolve_import_specifier(ctx.uri, &specifier)
-            && let Some(location) = locate_export(&target, &exported, MAX_REEXPORT_HOPS)
+            && let Some(location) = locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
         }
@@ -164,90 +162,42 @@ fn split_rename(part: &str) -> (&str, &str) {
     }
 }
 
-/// Resolve relative and bare specifiers through the shared resolver, and
-/// tsconfig `paths` aliases through the nearest tsconfig — the shapes the
-/// audit measured (`../composables/useCounter`, `#ui`, `@/lib/format`).
-fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
-    if let Some(path) = module_specifier::resolve_specifier(uri, specifier) {
-        return Some(path);
-    }
-    // The shared reader anchors like the session does: nearest tsconfig,
-    // following a solution-style shell's references, with string-aware jsonc
-    // stripping — a naive stripper eats every `"@/*"` pattern (#3915, #3917).
-    let file = uri.to_file_path().ok()?;
-    let paths = crate::ide::tsconfig_paths::project_paths(&file)?;
-    let mut best: Option<(usize, PathBuf)> = None;
-    for (pattern, target) in &paths.entries {
-        let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
-            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
-                (Some(rest), Some(target_prefix)) => {
-                    Some(cstr!("{target_prefix}{rest}").to_string())
-                }
-                _ => None,
-            }
-        } else if specifier == pattern {
-            Some(target.clone())
-        } else {
-            None
-        };
-        let Some(substituted) = substituted else {
-            continue;
-        };
-        let base = paths.anchor.join(substituted);
-        if let Some(resolved) = probe(&base)
-            && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
-        {
-            best = Some((pattern.len(), resolved));
-        }
-    }
-    best.map(|(_, path)| path)
-}
-
-fn probe(base: &Path) -> Option<PathBuf> {
-    if base.extension().is_some() && base.is_file() {
-        return Some(base.to_path_buf());
-    }
-    for extension in ["ts", "tsx", "d.ts", "vue"] {
-        let candidate = PathBuf::from(cstr!("{}.{extension}", base.display()).as_str());
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    ["index.ts", "index.tsx"]
-        .iter()
-        .map(|index| base.join(index))
-        .find(|candidate| candidate.is_file())
-}
-
 /// The declaration of `word` inside `target`, following re-export barrels.
-fn locate_export(target: &Path, word: &str, hops: usize) -> Option<Location> {
+fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -> Option<Location> {
+    let uri = Url::from_file_path(target).ok()?;
     if target
         .extension()
         .is_some_and(|extension| extension == "vue")
     {
         // A `.vue` module's meaningful position is the file itself, matching
-        // how component-tag definition resolves today.
+        // how component-tag definition resolves today. Deleted targets are
+        // invalid, while an editor-open unsaved target remains navigable.
+        if !target.is_file() && !ctx.state.documents.contains(&uri) {
+            return None;
+        }
         return Some(Location {
-            uri: Url::from_file_path(target).ok()?,
+            uri,
             range: Range::new(Position::new(0, 0), Position::new(0, 0)),
         });
     }
-    let content = fs::read_to_string(target).ok()?;
+    let content = ctx
+        .state
+        .documents
+        .text(&uri)
+        .or_else(|| fs::read_to_string(target).ok())?;
 
     // A barrel both names the word and points elsewhere; the re-export hop
     // comes first so the jump lands on the real declaration, not the alias.
     if hops > 0
         && let Some((specifier, exported)) = reexport_specifier(&content, word)
-        && let Some(uri) = Url::from_file_path(target).ok()
         && let Some(next) = resolve_import_specifier(&uri, &specifier)
-        && let Some(location) = locate_export(&next, &exported, hops - 1)
+        && let Some(location) = locate_export(ctx, &next, &exported, hops - 1)
     {
         return Some(location);
     }
 
     if let Some(binding) = script::find_binding_location_raw(&content, word) {
         let (line, character) = helpers::offset_to_position(&content, binding.offset);
-        let uri = Url::from_file_path(target).ok()?;
         let position = Position::new(line, character);
         // The end must be a UTF-16 position too: `word.len()` is bytes, so a
         // non-ASCII identifier would overshoot the column.

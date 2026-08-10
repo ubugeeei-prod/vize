@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -23,10 +22,17 @@ import {
   writeLspReport,
   type DiagnosticEvidence,
   type FixtureProject,
+  type LspAuthoredOracle,
   type LspProjectEvidence,
 } from "./real-project-lsp-report.ts";
+import {
+  assertOracleFilesAreInCorpus,
+  exerciseAuthoredLspOracle,
+} from "./real-project-lsp-authored-oracle.ts";
+import { diagnosticEvidence, normalizeDiagnostics } from "./real-project-lsp-authored-utils.ts";
 
 export { selectProjects } from "./real-project-lsp-report.ts";
+export { normalizeDiagnostics } from "./real-project-lsp-authored-utils.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
@@ -43,6 +49,7 @@ const brokenProbeSource = fixedProbeSource.replace("= 1", '= "broken"');
 type LspAuditSession = {
   initialize(workspaceDir: string, options?: LspInitializationOptions): Promise<unknown>;
   notify(method: string, params: unknown): void;
+  request(method: string, params: unknown, timeoutMs?: number): Promise<unknown>;
   shutdown(): Promise<void>;
   waitForNotification(
     method: string,
@@ -61,10 +68,17 @@ export async function runRealProjectLspAudit(
   dependencies: AuditDependencies = {},
 ) {
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8")) as {
+    lspAuthoredOracleGate: { minimumProjectCount: number; trackingIssue: number };
     projects: FixtureProject[];
     requiredToolCoverage: string[];
   };
   assert.ok(registry.requiredToolCoverage.includes("lsp"));
+  assert.ok(registry.lspAuthoredOracleGate.minimumProjectCount > 0);
+  assert.ok(
+    registry.projects.filter((project) => project.lspAuthoredOracle != null).length >=
+      registry.lspAuthoredOracleGate.minimumProjectCount,
+    `authored LSP oracle count fell below the registry ratchet; see #${registry.lspAuthoredOracleGate.trackingIssue}`,
+  );
   const selection = selectProjects(registry.projects, environment);
   if (!selection.enforced && selection.projects.length === 0) return { skipped: true } as const;
 
@@ -87,7 +101,11 @@ export async function runRealProjectLspAudit(
       const files = collectVueInputPaths(fixtureDir, project.vueGlobs);
       assertFixtureFileCount(project, files);
       projectEvidence.vueFileCount = files.length;
-      projectEvidence.actualFile = files[0] ?? null;
+      const actualFile = project.lspAuthoredOracle?.templateBinding.file ?? files[0] ?? null;
+      projectEvidence.actualFile = actualFile;
+      if (project.lspAuthoredOracle != null) {
+        assertOracleFilesAreInCorpus(project, files, project.lspAuthoredOracle);
+      }
       const remainingMs = () => {
         const remaining = deadline - now();
         assert.ok(remaining > 0, `LSP fixture shard exceeded ${timeoutMs}ms`);
@@ -96,8 +114,9 @@ export async function runRealProjectLspAudit(
       const result = await exerciseLspLifecycle(
         dependencies.createSession?.() ?? new LspSession(),
         fixtureDir,
-        files[0] ?? null,
+        actualFile,
         remainingMs,
+        project.lspAuthoredOracle,
       );
       Object.assign(projectEvidence, result, { status: "ok" as const });
     } catch (error) {
@@ -117,6 +136,7 @@ export async function runRealProjectLspAudit(
   process.stderr.write(
     `LSP lifecycle: ${report.summary.projectCount} project(s), ` +
       `${report.summary.actualFileCount} actual file(s), ` +
+      `${report.summary.authoredFeatureProjectCount} authored feature oracle(s), ` +
       `${report.summary.failedProjectCount} failed project(s)\n`,
   );
   return { evidence, report, skipped: false } as const;
@@ -127,12 +147,14 @@ export async function exerciseLspLifecycle(
   workspaceDir: string,
   actualFile: string | null,
   timeoutMs: () => number = () => diagnosticsTimeoutMs,
+  authoredOracle?: LspAuthoredOracle,
 ) {
   const openUris: string[] = [];
   let primaryError: unknown = null;
   let shutdownError: unknown = null;
   let result: {
     actualFileDiagnostics: DiagnosticEvidence | null;
+    authoredFeatures: LspProjectEvidence["authoredFeatures"];
     brokenProbeDiagnostics: DiagnosticEvidence;
     fixedProbeDiagnostics: DiagnosticEvidence;
     repairedProbeDiagnostics: DiagnosticEvidence;
@@ -140,12 +162,31 @@ export async function exerciseLspLifecycle(
   try {
     await session.initialize(workspaceDir, {
       completion: true,
+      definition: true,
+      documentSymbols: true,
       editor: true,
+      fileRename: true,
+      hover: true,
+      references: true,
+      rename: true,
       typecheck: true,
+      workspaceSymbols: true,
     });
 
     let actualFileDiagnostics: DiagnosticEvidence | null = null;
-    if (actualFile != null) {
+    let authoredFeatures: LspProjectEvidence["authoredFeatures"] = null;
+    if (authoredOracle != null) {
+      assert.equal(actualFile, authoredOracle.templateBinding.file);
+      const authored = await exerciseAuthoredLspOracle(
+        session,
+        workspaceDir,
+        authoredOracle,
+        timeoutMs,
+      );
+      actualFileDiagnostics = authored.templateBindingDiagnostics;
+      const { templateBindingDiagnostics: _, ...featureEvidence } = authored;
+      authoredFeatures = featureEvidence;
+    } else if (actualFile != null) {
       const absolute = path.join(workspaceDir, actualFile);
       const uri = pathToFileURL(absolute).href;
       const source = fs.readFileSync(absolute, "utf8");
@@ -197,6 +238,7 @@ export async function exerciseLspLifecycle(
 
     result = {
       actualFileDiagnostics,
+      authoredFeatures,
       brokenProbeDiagnostics: diagnosticEvidence(broken.diagnostics),
       fixedProbeDiagnostics: diagnosticEvidence(fixed.diagnostics),
       repairedProbeDiagnostics: diagnosticEvidence(repaired.diagnostics),
@@ -223,14 +265,19 @@ export async function exerciseLspLifecycle(
   return result;
 }
 
-function openDocument(session: LspAuditSession, uri: string, text: string, version: number): void {
+function openDocument(
+  session: Pick<LspAuditSession, "notify">,
+  uri: string,
+  text: string,
+  version: number,
+): void {
   session.notify("textDocument/didOpen", {
     textDocument: { languageId: "vue", text, uri, version },
   });
 }
 
 function changeDocument(
-  session: LspAuditSession,
+  session: Pick<LspAuditSession, "notify">,
   uri: string,
   text: string,
   version: number,
@@ -242,7 +289,7 @@ function changeDocument(
 }
 
 async function waitForDiagnostics(
-  session: LspAuditSession,
+  session: Pick<LspAuditSession, "waitForNotification">,
   uri: string,
   version: number,
   timeoutMs: number,
@@ -267,30 +314,6 @@ function injectedMismatches(diagnostics: LspDiagnostic[]): LspDiagnostic[] {
       String(diagnostic.code).replace(/^TS/, "") === "2322" &&
       /string.*not assignable.*number/i.test(diagnostic.message ?? ""),
   );
-}
-
-export function normalizeDiagnostics(diagnostics: LspDiagnostic[]): string[] {
-  return diagnostics
-    .map((diagnostic) =>
-      JSON.stringify({
-        code: diagnostic.code,
-        message: diagnostic.message,
-        range: diagnostic.range,
-        severity: diagnostic.severity,
-        source: diagnostic.source,
-      }),
-    )
-    .sort();
-}
-
-function diagnosticEvidence(diagnostics: LspDiagnostic[]): DiagnosticEvidence {
-  const normalized = normalizeDiagnostics(diagnostics);
-  return {
-    count: normalized.length,
-    sha256: createHash("sha256")
-      .update(`${normalized.join("\n")}\n`)
-      .digest("hex"),
-  };
 }
 
 function assertBeforeDeadline(deadline: number, timeoutMs: number, now: () => number): void {

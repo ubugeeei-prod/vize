@@ -3,6 +3,8 @@ use crate::batch::TypeChecker;
 
 #[path = "incremental/file_lifecycle.rs"]
 mod file_lifecycle;
+#[path = "incremental/workspace_packages.rs"]
+mod workspace_packages;
 
 #[test]
 fn observes_broken_and_repaired_vue_patch() {

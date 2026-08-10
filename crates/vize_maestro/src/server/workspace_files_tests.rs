@@ -1,8 +1,8 @@
 use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
 
 use super::{
-    ServerState, global_component_watcher_registration, record_watcher_support,
-    register_created_files, register_deleted_files,
+    ServerState, global_component_watcher_registration, record_created_files, record_deleted_files,
+    record_watcher_support,
 };
 
 #[test]
@@ -52,7 +52,7 @@ fn vue_file_events_track_only_existing_created_files_and_forget_deletes() {
         ]
     }))
     .unwrap();
-    register_created_files(&state, &created);
+    record_created_files(&state, &created);
 
     assert_eq!(state.workspace_vue_file_uris(), vec![vue_uri.clone()]);
 
@@ -61,7 +61,7 @@ fn vue_file_events_track_only_existing_created_files_and_forget_deletes() {
         "files": [{ "uri": vue_uri.as_str() }]
     }))
     .unwrap();
-    register_deleted_files(&state, &deleted);
+    record_deleted_files(&state, &deleted);
 
     assert!(state.workspace_vue_file_uris().is_empty());
 }

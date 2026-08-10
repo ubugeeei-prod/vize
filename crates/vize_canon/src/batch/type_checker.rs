@@ -9,9 +9,12 @@ use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
+mod declarations;
+mod diagnostic_paths;
 mod metrics;
 mod paths;
 mod result;
+pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
 use paths::{IncrementalPaths, collect_project_paths};
 
@@ -33,47 +36,6 @@ pub struct BatchTypeCheckerOptions {
     pub tsconfig_path: Option<PathBuf>,
     /// Shared Vue virtual TS options.
     pub virtual_ts_options: VirtualTsOptions,
-}
-
-/// Options for declaration emit.
-#[derive(Debug, Clone)]
-pub struct DeclarationEmitOptions {
-    /// Output directory where emitted `.d.ts` files should be written.
-    pub out_dir: PathBuf,
-    /// Whether declaration maps should be emitted as well.
-    pub declaration_map: bool,
-}
-
-impl DeclarationEmitOptions {
-    /// Create declaration emit options for the given output directory.
-    pub fn new(out_dir: PathBuf) -> Self {
-        Self {
-            out_dir,
-            declaration_map: false,
-        }
-    }
-
-    /// Enable or disable declaration map emit.
-    pub fn with_declaration_map(mut self, declaration_map: bool) -> Self {
-        self.declaration_map = declaration_map;
-        self
-    }
-}
-
-/// A single emitted declaration file.
-#[derive(Debug, Clone)]
-pub struct DeclarationOutput {
-    /// Absolute emitted file path.
-    pub path: PathBuf,
-    /// Emitted file content.
-    pub content: String,
-}
-
-/// Result of declaration emit.
-#[derive(Debug, Clone, Default)]
-pub struct DeclarationEmitResult {
-    /// Emitted declaration files.
-    pub files: Vec<DeclarationOutput>,
 }
 
 /// Trait for type checking.
@@ -191,6 +153,16 @@ impl BatchTypeChecker {
             });
     }
 
+    /// Route exact bare workspace-package specifiers to registered source
+    /// modules in the virtual mirror. Authored imports keep their package
+    /// spelling, so declaration emit does not expose internal mirror paths.
+    pub fn set_virtual_module_aliases(
+        &mut self,
+        aliases: impl IntoIterator<Item = (String, PathBuf)>,
+    ) {
+        self.project.set_virtual_module_aliases(aliases);
+    }
+
     /// Configure template syntax compatibility for Vue template parsing.
     pub fn set_template_syntax(&mut self, template_syntax: vize_atelier_core::TemplateSyntaxMode) {
         self.project.set_template_syntax(template_syntax);
@@ -218,7 +190,9 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        self.project.set_declaration_roots(paths);
         self.project.register_paths(paths)?;
+        self.project.register_virtual_module_alias_targets()?;
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
         // (#3887).
@@ -231,7 +205,9 @@ impl BatchTypeChecker {
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let paths = collect_project_paths(self.project.project_root())?;
+        self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
+        self.project.register_virtual_module_alias_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
         self.project.register_reachable_dependencies()?;
@@ -307,6 +283,8 @@ impl TypeChecker for BatchTypeChecker {
 
         let mut refreshed = self.project.empty_with_same_options()?;
         refreshed.register_paths(&paths)?;
+        refreshed.register_virtual_module_alias_targets()?;
+        refreshed.register_reachable_dependencies()?;
         self.check_registered_project_incremental(&refreshed)
     }
 }

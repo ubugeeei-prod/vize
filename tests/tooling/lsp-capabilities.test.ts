@@ -43,6 +43,7 @@ async function withCapabilities(
 const FILE_EVENT_FILTERS = [
   { scheme: "file", pattern: { glob: "**/*.d.{ts,mts,cts}", matches: "file" } },
   { scheme: "file", pattern: { glob: "**/*.vue", matches: "file" } },
+  { scheme: "file", pattern: { glob: "**/*", matches: "folder" } },
 ];
 /** Everything a rename can move, plus folders. */
 const RENAME_FILTERS = [

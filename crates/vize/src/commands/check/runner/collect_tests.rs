@@ -4,11 +4,14 @@ use super::{
 };
 use crate::commands::check::{
     imports::collect_transitive_local_imports, imports_aliases::PathAliasResolver,
-    path_cache::CanonicalPathCache,
+    path_cache::CanonicalPathCache, patterns::CheckFileOptions,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::cstr;
+
+#[path = "collect_tests/allow_js.rs"]
+mod allow_js;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -95,8 +98,15 @@ fn collect_check_files_includes_javascript_only_when_enabled() {
     }
 
     let patterns = vec![case_dir.display().to_string()];
-    let excluded = collect_check_files_with_ignores(&patterns, false, false, None);
-    let included = collect_check_files_with_ignores(&patterns, false, true, None);
+    let excluded = collect_check_files_with_ignores(&patterns, CheckFileOptions::default(), None);
+    let included = collect_check_files_with_ignores(
+        &patterns,
+        CheckFileOptions {
+            include_js: true,
+            include_jsx: false,
+        },
+        None,
+    );
 
     assert!(excluded.is_empty());
     assert_eq!(
@@ -105,6 +115,7 @@ fn collect_check_files_includes_javascript_only_when_enabled() {
             case_dir.join("src/main.js"),
             case_dir.join("src/module.cjs"),
             case_dir.join("src/module.mjs"),
+            case_dir.join("src/view.jsx"),
         ]
     );
 
@@ -164,14 +175,12 @@ fn collect_check_files_applies_entry_ignores() {
 
     let files = collect_check_files_with_ignores(
         &vec![case_dir.display().to_string()],
-        false,
-        false,
+        CheckFileOptions::default(),
         ignore_set.as_ref(),
     );
     let explicit = collect_check_files_with_ignores(
         &vec![case_dir.join("src/Ignored.vue").display().to_string()],
-        false,
-        false,
+        CheckFileOptions::default(),
         ignore_set.as_ref(),
     );
 
@@ -242,8 +251,7 @@ fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
                 .display()
                 .to_string(),
         ],
-        false,
-        false,
+        CheckFileOptions::default(),
         ignore_set.as_ref(),
     );
 
@@ -304,7 +312,7 @@ void rootOnly;
     );
 
     assert!(
-        discovered.is_empty(),
+        discovered.registrations.is_empty(),
         "root app import leaked into package inputs: {discovered:#?}"
     );
 

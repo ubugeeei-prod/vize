@@ -2,12 +2,18 @@
 
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
-    MessageType, RenameFilesParams, Url, WorkspaceEdit,
+    FileChangeType, MessageType, RenameFilesParams, WorkspaceEdit,
 };
-use vize_carton::cstr;
 
 use super::{MaestroServer, ServerState};
 use crate::ide::FileRenameService;
+
+#[cfg(feature = "native")]
+mod dependents;
+#[cfg(feature = "native")]
+use dependents::{
+    affected_vue_source_paths, forget_corsa_vue_files, versioned_open_typecheck_dependents,
+};
 
 #[cfg(feature = "native")]
 use tower_lsp::lsp_types::{
@@ -77,24 +83,29 @@ pub(super) async fn did_change_watched_files(
 ) {
     #[cfg(feature = "native")]
     {
-        // A change to a discoverable global-component declaration invalidates
-        // that cache — but any watched change can break open importers (a git
-        // checkout rewriting a child SFC's props, a codegen run, a delete), so
-        // the dependent refresh below is not gated on it (#3918).
+        // Any watched change can affect an open importer; declaration changes
+        // additionally invalidate the discoverable global-component cache.
         let global_components_invalidated = server.state.invalidate_global_component_references(
             params.changes.iter().map(|change| change.uri.as_str()),
         );
-
-        refresh_dependents(
-            server,
+        let dependents = versioned_open_typecheck_dependents(
+            &server.state,
+            params.changes.iter().map(|change| change.uri.as_str()),
+        );
+        let deleted_paths = affected_vue_source_paths(
+            &server.state,
             params
                 .changes
                 .iter()
-                .map(|change| change.uri.clone())
-                .collect(),
-            global_components_invalidated,
-        )
-        .await;
+                .filter(|change| change.typ == FileChangeType::DELETED)
+                .map(|change| change.uri.as_str()),
+        );
+        if dependents.is_empty() && !global_components_invalidated && deleted_paths.is_empty() {
+            return;
+        }
+        server.state.invalidate_batch_cache();
+        forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
@@ -103,23 +114,64 @@ pub(super) async fn did_change_watched_files(
 pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {
     #[cfg(feature = "native")]
     {
-        let invalidated = register_created_files(&server.state, params);
-        refresh_dependents(server, file_event_uris(params), invalidated).await;
+        let dependents = versioned_open_typecheck_dependents(
+            &server.state,
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        record_created_files(&server.state, params);
+        publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
 }
 
+fn record_created_files(state: &ServerState, params: &CreateFilesParams) {
+    #[cfg(feature = "native")]
+    {
+        state.invalidate_global_component_references(
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        for file in &params.files {
+            state.track_workspace_vue_files(file.uri.as_str());
+        }
+        state.invalidate_batch_cache();
+    }
+    #[cfg(not(feature = "native"))]
+    let _ = (state, params);
+}
+
 pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFilesParams) {
     #[cfg(feature = "native")]
     {
-        let invalidated = register_deleted_files(&server.state, params);
-        let dependencies = file_event_uris(params);
-        close_vue_dependency_documents(server, &dependencies).await;
-        refresh_dependents(server, dependencies, invalidated).await;
+        let dependents = versioned_open_typecheck_dependents(
+            &server.state,
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        let deleted_paths = affected_vue_source_paths(
+            &server.state,
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        record_deleted_files(&server.state, params);
+        forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
+}
+
+fn record_deleted_files(state: &ServerState, params: &DeleteFilesParams) {
+    #[cfg(feature = "native")]
+    {
+        state.invalidate_global_component_references(
+            params.files.iter().map(|file| file.uri.as_str()),
+        );
+        for file in &params.files {
+            state.forget_workspace_vue_files(file.uri.as_str());
+        }
+        state.invalidate_batch_cache();
+    }
+    #[cfg(not(feature = "native"))]
+    let _ = (state, params);
 }
 
 pub(super) async fn will_rename_files(
@@ -135,7 +187,18 @@ pub(super) async fn will_rename_files(
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
     #[cfg(feature = "native")]
     {
-        let invalidated = server.state.invalidate_global_component_references(
+        let dependents = versioned_open_typecheck_dependents(
+            &server.state,
+            params
+                .files
+                .iter()
+                .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
+        );
+        let renamed_paths = affected_vue_source_paths(
+            &server.state,
+            params.files.iter().map(|file| file.old_uri.as_str()),
+        );
+        server.state.invalidate_global_component_references(
             params
                 .files
                 .iter()
@@ -144,25 +207,14 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         for file in &params.files {
             server
                 .state
-                .forget_workspace_vue_file(file.old_uri.as_str());
-            server.state.track_workspace_vue_file(file.new_uri.as_str());
+                .forget_workspace_vue_files(file.old_uri.as_str());
+            server
+                .state
+                .track_workspace_vue_files(file.new_uri.as_str());
         }
-        let dependencies = params
-            .files
-            .iter()
-            .flat_map(|file| [&file.old_uri, &file.new_uri])
-            .filter_map(|uri| Url::parse(uri).ok())
-            .collect();
-        close_vue_dependency_documents(
-            server,
-            &params
-                .files
-                .iter()
-                .filter_map(|file| Url::parse(&file.old_uri).ok())
-                .collect::<Vec<_>>(),
-        )
-        .await;
-        refresh_dependents(server, dependencies, invalidated).await;
+        server.state.invalidate_batch_cache();
+        forget_corsa_vue_files(&server.state, &renamed_paths).await;
+        publish_versioned_dependents(server, dependents).await;
     }
     if !server.state.lsp_features().file_rename {
         return;
@@ -179,118 +231,14 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
 }
 
 #[cfg(feature = "native")]
-fn register_created_files(state: &ServerState, params: &CreateFilesParams) -> bool {
-    let invalidated = state
-        .invalidate_global_component_references(params.files.iter().map(|file| file.uri.as_str()));
-    for file in &params.files {
-        state.track_workspace_vue_file(file.uri.as_str());
-    }
-    invalidated
-}
-
-#[cfg(feature = "native")]
-fn register_deleted_files(state: &ServerState, params: &DeleteFilesParams) -> bool {
-    let invalidated = state
-        .invalidate_global_component_references(params.files.iter().map(|file| file.uri.as_str()));
-    for file in &params.files {
-        state.forget_workspace_vue_file(file.uri.as_str());
-    }
-    invalidated
-}
-
-#[cfg(feature = "native")]
-fn file_event_uris<T>(params: &T) -> Vec<Url>
-where
-    T: FileEventParams,
-{
-    params
-        .uris()
-        .filter_map(|uri| Url::parse(uri).ok())
-        .collect()
-}
-
-#[cfg(feature = "native")]
-trait FileEventParams {
-    fn uris(&self) -> impl Iterator<Item = &str>;
-}
-
-#[cfg(feature = "native")]
-impl FileEventParams for CreateFilesParams {
-    fn uris(&self) -> impl Iterator<Item = &str> {
-        self.files.iter().map(|file| file.uri.as_str())
-    }
-}
-
-#[cfg(feature = "native")]
-impl FileEventParams for DeleteFilesParams {
-    fn uris(&self) -> impl Iterator<Item = &str> {
-        self.files.iter().map(|file| file.uri.as_str())
-    }
-}
-
-#[cfg(feature = "native")]
-async fn refresh_dependents(
+async fn publish_versioned_dependents(
     server: &MaestroServer,
-    dependencies: Vec<Url>,
-    force_invalidate: bool,
+    dependents: Vec<(tower_lsp::lsp_types::Url, i32)>,
 ) {
-    let mut dependents = dependencies
-        .iter()
-        .flat_map(|dependency| {
-            super::importers::open_typecheck_dependents(&server.state, dependency)
-        })
-        .collect::<Vec<_>>();
-    dependents.sort();
-    dependents.dedup();
-    let dependents = dependents
-        .into_iter()
-        .filter_map(|uri| {
-            server
-                .state
-                .documents
-                .version(&uri)
-                .map(|version| (uri, version))
-        })
-        .collect::<Vec<_>>();
-    if dependents.is_empty() && !force_invalidate {
-        return;
-    }
-    server.state.invalidate_batch_cache();
     for (dependent, version) in dependents {
         server
             .publish_diagnostics_if_version(&dependent, version)
             .await;
-    }
-}
-
-#[cfg(feature = "native")]
-async fn close_vue_dependency_documents(server: &MaestroServer, dependencies: &[Url]) {
-    if !server.state.has_corsa_bridge() {
-        return;
-    }
-    let Some(bridge) = server.state.get_corsa_bridge().await else {
-        return;
-    };
-    for source_path in dependencies
-        .iter()
-        .filter_map(|uri| uri.to_file_path().ok())
-    {
-        if source_path
-            .extension()
-            .and_then(|extension| extension.to_str())
-            != Some("vue")
-        {
-            continue;
-        }
-        let Some(file_name) = source_path.file_name().and_then(|name| name.to_str()) else {
-            continue;
-        };
-        for suffix in [".ts", ".tsx"] {
-            let virtual_path = source_path.with_file_name(cstr!("{file_name}{suffix}"));
-            if let Ok(uri) = Url::from_file_path(virtual_path) {
-                let _ = bridge.close_virtual_document(uri.as_str()).await;
-            }
-        }
     }
 }
 

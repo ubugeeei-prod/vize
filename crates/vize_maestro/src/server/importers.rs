@@ -1,6 +1,13 @@
 //! Reverse dependency index for open SFC and script documents.
+
 mod dependents;
-use std::path::{Component, Path, PathBuf};
+mod package;
+mod specifiers;
+
+use std::{
+    collections::BTreeMap,
+    path::{Component, Path, PathBuf},
+};
 
 use oxc_span::SourceType;
 use parking_lot::RwLock;
@@ -10,8 +17,6 @@ use vize_carton::{FxHashMap, FxHashSet};
 use self::package::resolve_package_import;
 use super::ServerState;
 pub(super) use dependents::open_typecheck_dependents;
-mod package;
-mod specifiers;
 
 const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 
@@ -22,7 +27,7 @@ pub(super) struct OpenImportIndex {
 
 #[derive(Default)]
 struct ImportIndexData {
-    by_dependency: FxHashMap<PathBuf, FxHashSet<Url>>,
+    by_dependency: BTreeMap<PathBuf, FxHashSet<Url>>,
     by_importer: FxHashMap<Url, Vec<PathBuf>>,
 }
 
@@ -31,7 +36,7 @@ impl OpenImportIndex {
         let dependencies = importer
             .to_file_path()
             .ok()
-            .map(|path| collect_dependencies(&path, source))
+            .map(|path| collect_dependencies(&path, importer, source))
             .unwrap_or_default();
         let mut index = self.inner.write();
         remove_importer(&mut index, importer);
@@ -59,12 +64,29 @@ impl OpenImportIndex {
     }
 
     fn importers(&self, dependency: &Path) -> Vec<Url> {
-        self.inner
-            .read()
+        let dependency = comparable_path(dependency);
+        let index = self.inner.read();
+        let mut importers = index
             .by_dependency
-            .get(&comparable_path(dependency))
-            .map(|importers| importers.iter().cloned().collect())
-            .unwrap_or_default()
+            .range(dependency.clone()..)
+            .take_while(|(path, _)| path.starts_with(&dependency))
+            .flat_map(|(_, importers)| importers.iter().cloned())
+            .collect::<FxHashSet<_>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        importers.sort();
+        importers
+    }
+
+    fn dependency_paths(&self, dependency: &Path) -> Vec<PathBuf> {
+        let dependency = comparable_path(dependency);
+        let index = self.inner.read();
+        index
+            .by_dependency
+            .range(dependency.clone()..)
+            .take_while(|(path, _)| path.starts_with(&dependency))
+            .map(|(path, _)| path.clone())
+            .collect()
     }
 }
 
@@ -90,13 +112,17 @@ pub(super) fn open_importers(state: &ServerState, dependency: &Url) -> Vec<Url> 
         .unwrap_or_default()
 }
 
+pub(super) fn indexed_dependency_paths(state: &ServerState, dependency: &Path) -> Vec<PathBuf> {
+    state.open_imports.dependency_paths(dependency)
+}
+
 impl ServerState {
     pub(crate) fn open_importers(&self, dependency: &Url) -> Vec<Url> {
         open_importers(self, dependency)
     }
 }
 
-fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
+fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Vec<PathBuf> {
     let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
@@ -108,7 +134,13 @@ fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
             return Vec::new();
         };
         let mut dependencies = FxHashSet::default();
-        collect_script_dependencies(source, source_type, importer_dir, &mut dependencies);
+        collect_script_dependencies(
+            source,
+            source_type,
+            importer_dir,
+            Some(importer_uri),
+            &mut dependencies,
+        );
         return dependencies.into_iter().collect();
     }
     let options = vize_atelier_sfc::SfcParseOptions {
@@ -129,6 +161,7 @@ fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
             script.content.as_ref(),
             source_type(script.lang.as_deref()),
             importer_dir,
+            Some(importer_uri),
             &mut dependencies,
         );
     }
@@ -139,10 +172,20 @@ fn collect_script_dependencies(
     source: &str,
     source_type: SourceType,
     importer_dir: &Path,
+    importer_uri: Option<&Url>,
     dependencies: &mut FxHashSet<PathBuf>,
 ) {
     for specifier in specifiers::collect(source, source_type) {
-        if let Some(dependency) = resolve_import(importer_dir, specifier.as_str()) {
+        let specifier = specifier.as_str();
+        if let Some(dependency) = resolve_import(importer_dir, specifier)
+            .or_else(|| {
+                crate::ide::definition::import_resolver::resolve_import_specifier(
+                    importer_uri?,
+                    specifier,
+                )
+            })
+            .map(|dependency| comparable_path(&dependency))
+        {
             dependencies.insert(dependency);
         }
     }
@@ -227,3 +270,7 @@ fn source_type(lang: Option<&str>) -> SourceType {
 #[cfg(test)]
 #[path = "importers_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "importers/tests.rs"]
+mod directory_tests;

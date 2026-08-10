@@ -4,6 +4,7 @@ mod control_alias;
 mod native_options;
 mod path_rebase;
 pub(super) mod references;
+mod remap;
 mod vue_alias;
 
 use std::path::{Path, PathBuf};
@@ -15,9 +16,7 @@ use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::write_if_changed;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject};
-use control_alias::protect_control_file_aliases;
 use native_options::normalize_native_removed_options;
-use vue_alias::remap_path_targets;
 
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "baseUrl",
@@ -175,11 +174,14 @@ impl VirtualProject {
         // target gets a mirror candidate first (so the generated `.vue.ts`
         // modules win) and the real-tree path as a fallback (so aliases to files
         // outside the checked set keep resolving).
-        if !original_paths.is_empty() {
-            compiler_options.insert(
-                "paths".into(),
-                Value::Object(self.remap_paths(&original_paths)),
-            );
+        let mut remapped_paths = if original_paths.is_empty() {
+            Map::new()
+        } else {
+            self.remap_paths(&original_paths)
+        };
+        self.insert_virtual_module_alias_paths(&mut remapped_paths);
+        if !remapped_paths.is_empty() {
+            compiler_options.insert("paths".into(), Value::Object(remapped_paths));
         }
 
         // Re-anchor custom `typeRoots` the same way: list the mirror copy and
@@ -201,12 +203,29 @@ impl VirtualProject {
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
             // Honor a configured `rootDir` (see [`path_rebase`]) and fall back
             // to inference when nothing is configured.
-            let root_dir = path_rebase::root_dir_into_mirror(
+            let desired_root_dir = path_rebase::root_dir_into_mirror(
                 &self.project_root,
                 &self.virtual_root,
                 original_root_dir.as_deref(),
             )
             .unwrap_or_else(|| self.common_virtual_source_dir());
+            // A workspace-package source is part of the declaration program so
+            // its public type can flow into the caller's output, but it is not
+            // one of the caller-selected declaration roots. TypeScript still
+            // applies TS6059 to imported files, so temporarily widen rootDir
+            // when such an inferred source sits outside the configured root.
+            // The output finalizer restores the configured layout and removes
+            // declarations for those inferred dependencies after emit.
+            let has_inferred_source_outside_root = self.virtual_files.values().any(|file| {
+                let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+                !self.is_declaration_root(&original)
+                    && !file.virtual_path.starts_with(&desired_root_dir)
+            });
+            let root_dir = if has_inferred_source_outside_root {
+                self.common_virtual_source_dir()
+            } else {
+                desired_root_dir
+            };
             compiler_options.insert(
                 "rootDir".into(),
                 Value::String(root_dir.to_string_lossy().into_owned()),
@@ -237,6 +256,16 @@ impl VirtualProject {
         config.insert("exclude".into(), Value::Array(Vec::new()));
 
         Ok(Value::Object(config))
+    }
+
+    pub(super) fn configured_declaration_root_dir(&self) -> CorsaResult<Option<PathBuf>> {
+        let original_tsconfig = self.resolved_tsconfig_path();
+        let flattened = self.load_compiler_options_flattened(original_tsconfig.as_deref())?;
+        Ok(path_rebase::root_dir_into_mirror(
+            &self.project_root,
+            &self.virtual_root,
+            flattened.options.get("rootDir").and_then(Value::as_str),
+        ))
     }
 
     pub(super) fn needs_vue_jsx_compiler_options(&self) -> bool {
@@ -275,71 +304,6 @@ impl VirtualProject {
         }
         includes.sort();
         includes
-    }
-
-    /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
-    /// target yields two candidates: the mirror copy (resolved relative to the
-    /// virtual tsconfig, which lives in the mirror root) followed by the real
-    /// source-tree path as a fallback, plus a trailing `.vue.ts` mirror
-    /// candidate so extensionless SFC aliases resolve (see [`remap_path_targets`]).
-    /// Absolute and non-string targets pass through unchanged.
-    #[allow(clippy::disallowed_types)]
-    fn remap_paths(
-        &self,
-        paths: &Map<std::string::String, Value>,
-    ) -> Map<std::string::String, Value> {
-        let up = self.virtual_root_to_project_prefix();
-        let mut remapped = Map::new();
-        for (alias, targets) in paths {
-            let Some(targets) = targets.as_array() else {
-                remapped.insert(alias.clone(), targets.clone());
-                continue;
-            };
-            remapped.insert(
-                alias.clone(),
-                Value::Array(remap_path_targets(targets, &up)),
-            );
-        }
-        protect_control_file_aliases(paths, &mut remapped, &up);
-        remapped
-    }
-
-    /// Re-anchor a list of project-root-relative directories (e.g. `typeRoots`)
-    /// into the virtual mirror: each relative entry yields the mirror copy
-    /// followed by the real source-tree directory. Absolute and non-string
-    /// entries pass through unchanged.
-    fn remap_dir_entries(&self, entries: &[Value]) -> Vec<Value> {
-        let up = self.virtual_root_to_project_prefix();
-        let mut remapped = Vec::with_capacity(entries.len() * 2);
-        for entry in entries {
-            let Some(entry_str) = entry.as_str() else {
-                remapped.push(entry.clone());
-                continue;
-            };
-            if Path::new(entry_str).is_absolute() {
-                remapped.push(Value::String(entry_str.to_owned()));
-                continue;
-            }
-            let core = entry_str.strip_prefix("./").unwrap_or(entry_str);
-            remapped.push(Value::String(cstr!("./{core}").into()));
-            remapped.push(Value::String(cstr!("{up}{core}").into()));
-        }
-        remapped
-    }
-
-    /// Relative prefix (e.g. `../../../`) from the virtual root back to the
-    /// project root, used to aim alias fallbacks at the real source tree.
-    fn virtual_root_to_project_prefix(&self) -> CompactString {
-        let depth = self
-            .virtual_root
-            .strip_prefix(&self.project_root)
-            .map(|relative| relative.components().count())
-            .unwrap_or(0);
-        let mut prefix = CompactString::with_capacity(depth * 3);
-        for _ in 0..depth {
-            prefix.push_str("../");
-        }
-        prefix
     }
 }
 

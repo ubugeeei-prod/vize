@@ -1,13 +1,12 @@
 //! Transitive resolution of source imports for `vize check` virtual projects.
 //!
 //! A check run may intentionally report diagnostics for only a subset of
-//! sources, but imported local sources still need to be registered so
-//! cross-file types resolve like tsc/vue-tsc. This module walks the reachable
-//! graph and returns on-disk source files to register.
+//! sources. This module separates authored files that TypeScript can resolve
+//! in place from files that must enter Vize's mirror for Vue import rewriting.
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::imports_aliases::PathAliasResolver;
 use super::path_cache::CanonicalPathCache;
@@ -15,6 +14,12 @@ use super::path_cache::CanonicalPathCache;
 #[path = "imports_registration.rs"]
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
+#[path = "imports_packages.rs"]
+mod packages;
+use packages::PackageImportResolver;
+#[path = "imports_specifiers.rs"]
+mod specifiers;
+use specifiers::{extract_import_specifiers, is_relative_specifier};
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
@@ -23,35 +28,42 @@ use registration::non_relative_import_needs_virtual_registration;
 /// `shims.d.ts` with a top-level `declare module "vue"`) shadow the real module
 /// when registered as program roots, so pulling them in would break `vue`
 /// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
-const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
-const JSX_RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".jsx", ".vue", ".mts", ".cts"];
+#[path = "imports_options.rs"]
+mod options;
+pub(super) use options::{ImportFileOptions, TransitiveLocalImports};
 
-/// Walk the relative-import graph reachable from `roots` and return the extra
-/// on-disk source files that should be registered alongside them. The roots
-/// themselves are excluded from the result; every returned path is absolute.
+/// Walk the local import graph reachable from `roots`. The returned sets keep
+/// virtual registrations separate from authored in-place diagnostic sources;
+/// roots are excluded from both and every returned path is absolute.
 pub(super) fn collect_transitive_local_imports(
     roots: &[PathBuf],
     cwd: &Path,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: impl Into<ImportFileOptions>,
     aliases: Option<&PathAliasResolver>,
-) -> Vec<PathBuf> {
+) -> TransitiveLocalImports {
+    let options = options.into();
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
+    let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
-    let mut queue: Vec<PathBuf> = Vec::new();
+    let mut packages = PackageImportResolver::default();
+    let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
     for root in roots {
         if let Some(absolute) = absolutize(root, cwd, canonical_paths)
             && visited.insert(absolute.clone())
         {
-            queue.push(absolute);
+            registered.insert(absolute.clone());
+            queue.push((absolute, true, false));
         }
     }
 
-    let mut discovered: Vec<PathBuf> = Vec::new();
+    let mut registrations: Vec<PathBuf> = Vec::new();
+    let mut authored: Vec<PathBuf> = Vec::new();
+    let mut virtual_module_aliases: FxHashSet<(String, PathBuf)> = FxHashSet::default();
 
-    while let Some(file) = queue.pop() {
+    while let Some((file, materialized_parent, package_graph)) = queue.pop() {
         let Some(dir) = file.parent() else {
             continue;
         };
@@ -64,19 +76,23 @@ pub(super) fn collect_transitive_local_imports(
         for specifier in extract_import_specifiers(&source) {
             let relative_specifier = is_relative_specifier(&specifier);
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
+            let mut package_resolution = false;
             let resolved = if relative_specifier {
-                resolve_relative_import(dir, &specifier, canonical_paths, include_jsx)
+                resolve_relative_import(dir, &specifier, canonical_paths, options)
             } else if absolute_specifier {
-                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, include_jsx)
+                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
             } else {
-                aliases.and_then(|aliases| {
-                    aliases.resolve(
-                        &specifier,
-                        canonical_paths,
-                        include_jsx,
-                        resolve_import_base,
-                    )
-                })
+                let aliased = aliases.and_then(|aliases| {
+                    aliases.resolve(&specifier, canonical_paths, options, resolve_import_base)
+                });
+                match aliased {
+                    Some(resolved) => Some(resolved),
+                    None => {
+                        let resolved = packages.resolve(dir, &specifier, canonical_paths, options);
+                        package_resolution = resolved.is_some();
+                        resolved
+                    }
+                }
             };
             let Some(resolved) = resolved else {
                 continue;
@@ -86,25 +102,46 @@ pub(super) fn collect_transitive_local_imports(
             if is_declaration_file(&resolved) || is_node_modules_path(&resolved) {
                 continue;
             }
-            if !relative_specifier
-                && !non_relative_import_needs_virtual_registration(
+            let needs_registration = if relative_specifier {
+                materialized_parent
+            } else {
+                non_relative_import_needs_virtual_registration(
                     &resolved,
                     canonical_paths,
-                    include_jsx,
+                    options,
                     aliases,
                     &mut registration_cache,
                 )
-            {
-                continue;
+            };
+            let in_package_graph = package_graph || package_resolution;
+            if package_resolution && needs_registration {
+                virtual_module_aliases.insert((specifier.clone(), resolved.clone()));
             }
-            if visited.insert(resolved.clone()) {
-                discovered.push(resolved.clone());
-                queue.push(resolved);
+            let first_visit = visited.insert(resolved.clone());
+            let first_registration = needs_registration && registered.insert(resolved.clone());
+            if first_visit {
+                authored.push(resolved.clone());
+            }
+            // A bare package route is registered by Canon after the project
+            // root is fixed. Adding it (or its relative descendants) to the
+            // user's roots here would widen the project to the workspace and
+            // defeat the external mirror.
+            if first_registration && !in_package_graph {
+                registrations.push(resolved.clone());
+            }
+            if first_visit || first_registration {
+                queue.push((resolved, needs_registration, in_package_graph));
             }
         }
     }
 
-    discovered
+    let mut virtual_module_aliases = virtual_module_aliases.into_iter().collect::<Vec<_>>();
+    virtual_module_aliases.sort();
+    TransitiveLocalImports {
+        registrations,
+        authored,
+        virtual_module_aliases,
+    }
 }
 
 /// Resolve `path` against `cwd` and canonicalize it so duplicate registrations
@@ -122,81 +159,6 @@ fn absolutize(
     Some(canonical_paths.canonicalize(&joined))
 }
 
-/// Collect module specifiers of `source`'s import/export/dynamic-imports.
-///
-/// This is a deliberately lightweight byte scan rather than a full parse: the
-/// transitive walk runs on every checked file, so an AST per file regressed the
-/// benchmark. Over-matching (e.g. an import-like fragment inside a string) is
-/// harmless because each specifier is resolved against the filesystem and only
-/// real source files are registered.
-fn extract_import_specifiers(source: &str) -> Vec<String> {
-    let bytes = source.as_bytes();
-    let len = bytes.len();
-    let mut specifiers = Vec::new();
-    let mut i = 0;
-
-    while i < len {
-        let keyword_len = if matches_keyword(bytes, i, b"from") {
-            4
-        } else if matches_keyword(bytes, i, b"import") {
-            6
-        } else {
-            i += 1;
-            continue;
-        };
-
-        let mut j = i + keyword_len;
-        while j < len && bytes[j].is_ascii_whitespace() {
-            j += 1;
-        }
-        // `import('./x')` / `import ( './x' )` — step over the call paren.
-        if j < len && bytes[j] == b'(' {
-            j += 1;
-            while j < len && bytes[j].is_ascii_whitespace() {
-                j += 1;
-            }
-        }
-
-        if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
-            let quote = bytes[j];
-            let start = j + 1;
-            let mut k = start;
-            while k < len && bytes[k] != quote {
-                k += 1;
-            }
-            if k < len {
-                let specifier = &source[start..k];
-                specifiers.push(specifier.to_compact_string());
-                i = k + 1;
-                continue;
-            }
-        }
-        // `import {` / `import Foo` — no string yet; keep scanning for `from`.
-        i += keyword_len;
-    }
-
-    specifiers
-}
-
-/// Whether `bytes[at..]` begins with `keyword` as a standalone identifier token.
-fn matches_keyword(bytes: &[u8], at: usize, keyword: &[u8]) -> bool {
-    if at + keyword.len() > bytes.len() || &bytes[at..at + keyword.len()] != keyword {
-        return false;
-    }
-    let before_ok = at == 0 || !is_identifier_byte(bytes[at - 1]);
-    let after = at + keyword.len();
-    let after_ok = after >= bytes.len() || !is_identifier_byte(bytes[after]);
-    before_ok && after_ok
-}
-
-fn is_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
-}
-
-fn is_relative_specifier(specifier: &str) -> bool {
-    matches!(specifier, "." | "..") || specifier.starts_with("./") || specifier.starts_with("../")
-}
-
 /// Resolve a relative module specifier against `dir` to an existing on-disk
 /// source file, mirroring TypeScript's extension and `index` probing (including
 /// the `.js` → `.ts` rewrite used under bundler/Node-ESM resolution).
@@ -204,36 +166,41 @@ fn resolve_relative_import(
     dir: &Path,
     specifier: &str,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
 ) -> Option<PathBuf> {
-    resolve_import_base(&dir.join(specifier), canonical_paths, include_jsx)
+    resolve_import_base(&dir.join(specifier), canonical_paths, options)
 }
 
 pub(super) fn resolve_import_base(
     base: &Path,
     canonical_paths: &mut CanonicalPathCache,
-    include_jsx: bool,
+    options: ImportFileOptions,
 ) -> Option<PathBuf> {
-    // 1. The specifier already points at an existing source file.
-    if has_source_extension(base, include_jsx) && base.is_file() {
+    // 1. The specifier already points at an existing TS/Vue source file.
+    if ImportFileOptions::path_has_typescript_source_extension(base) && base.is_file() {
         return Some(canonical_paths.canonicalize(base));
     }
 
-    // 2. A `.js`/`.mjs`/`.cjs` specifier resolving to its TS sibling.
-    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths, include_jsx) {
+    // 2. A `.js`/`.jsx`/`.mjs`/`.cjs` specifier resolving to its TS sibling.
+    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths, options.include_jsx) {
         return Some(rewritten);
     }
 
-    // 3. Append a source extension: `./types` → `./types.ts`.
-    for ext in resolve_extensions(include_jsx) {
+    // 3. Under allowJs (or the JSX feature), keep an existing JS-family file.
+    if options.javascript_extension_is_enabled(base) && base.is_file() {
+        return Some(canonical_paths.canonicalize(base));
+    }
+
+    // 4. Append a source extension: `./types` → `./types.ts`.
+    for ext in options.resolve_extensions() {
         let candidate = append_extension(base, ext);
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
         }
     }
 
-    // 4. Directory index: `./feature` → `./feature/index.ts`.
-    for ext in resolve_extensions(include_jsx) {
+    // 5. Directory index: `./feature` → `./feature/index.ts`.
+    for ext in options.resolve_extensions() {
         let candidate = base.join(cstr_index(ext));
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
@@ -253,6 +220,8 @@ fn rewrite_js_to_ts(
         (stem, &[".mts"])
     } else if let Some(stem) = name.strip_suffix(".cjs") {
         (stem, &[".cts"])
+    } else if let Some(stem) = name.strip_suffix(".jsx") {
+        (stem, &[".tsx"])
     } else if let Some(stem) = name.strip_suffix(".js") {
         (
             stem,
@@ -287,23 +256,6 @@ fn is_node_modules_path(path: &Path) -> bool {
         .any(|component| component.as_os_str() == std::ffi::OsStr::new("node_modules"))
 }
 
-fn has_source_extension(path: &Path, include_jsx: bool) -> bool {
-    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    resolve_extensions(include_jsx)
-        .iter()
-        .any(|ext| name.ends_with(ext) && name.len() > ext.len())
-}
-
-fn resolve_extensions(include_jsx: bool) -> &'static [&'static str] {
-    if include_jsx {
-        JSX_RESOLVE_EXTENSIONS
-    } else {
-        RESOLVE_EXTENSIONS
-    }
-}
-
 /// Append a full extension (e.g. `.d.ts`) to a path's file name without
 /// replacing any existing one, so `./a.b` → `./a.b.ts`.
 fn append_extension(base: &Path, ext: &str) -> PathBuf {
@@ -316,6 +268,9 @@ fn append_extension(base: &Path, ext: &str) -> PathBuf {
 #[cfg(test)]
 #[path = "imports_generated_tests.rs"]
 mod generated_tests;
+#[cfg(test)]
+#[path = "imports_js_tests.rs"]
+mod js_tests;
 #[cfg(test)]
 #[path = "imports_tests.rs"]
 mod tests;

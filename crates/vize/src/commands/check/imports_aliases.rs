@@ -3,12 +3,14 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use vize_carton::{FxHashSet, String};
 
+use super::imports::ImportFileOptions;
 use super::path_cache::CanonicalPathCache;
 use super::tsconfig_inputs::{parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig};
 
 #[derive(Default)]
 pub(super) struct PathAliasResolver {
     aliases: Vec<PathAlias>,
+    base_url: Option<PathBuf>,
 }
 
 struct PathAlias {
@@ -32,9 +34,10 @@ impl PathAliasResolver {
         &self,
         specifier: &str,
         canonical_paths: &mut CanonicalPathCache,
-        include_jsx: bool,
-        resolve_base: impl Fn(&Path, &mut CanonicalPathCache, bool) -> Option<PathBuf>,
+        options: impl Into<ImportFileOptions>,
+        resolve_base: impl Fn(&Path, &mut CanonicalPathCache, ImportFileOptions) -> Option<PathBuf>,
     ) -> Option<PathBuf> {
+        let options = options.into();
         for alias in &self.aliases {
             let Some(matched) = alias.match_specifier(specifier) else {
                 continue;
@@ -45,12 +48,14 @@ impl PathAliasResolver {
                 } else {
                     alias.base_dir.join(target.as_str())
                 };
-                if let Some(resolved) = resolve_base(&target, canonical_paths, include_jsx) {
+                if let Some(resolved) = resolve_base(&target, canonical_paths, options) {
                     return Some(resolved);
                 }
             }
         }
-        None
+        self.base_url
+            .as_ref()
+            .and_then(|base_url| resolve_base(&base_url.join(specifier), canonical_paths, options))
     }
 }
 
@@ -90,14 +95,20 @@ fn load_aliases(
     let Some(options) = value.get("compilerOptions").and_then(Value::as_object) else {
         return Ok(resolver);
     };
-    let base_dir = options
+    if let Some(base_url) = options
         .get("baseUrl")
         .and_then(Value::as_str)
         .map(|base| dir.join(base))
-        .unwrap_or_else(|| dir.to_path_buf());
+    {
+        resolver.base_url = Some(base_url);
+    }
     let Some(paths) = options.get("paths").and_then(Value::as_object) else {
         return Ok(resolver);
     };
+    let base_dir = resolver
+        .base_url
+        .clone()
+        .unwrap_or_else(|| dir.to_path_buf());
 
     resolver.aliases.clear();
     for (pattern, targets) in paths {
@@ -257,6 +268,9 @@ void EnglishKeyboard;
             Some(&resolver),
         );
 
-        assert_eq!(discovered, vec![keyboard.canonicalize().unwrap()]);
+        assert_eq!(
+            discovered.registrations,
+            vec![keyboard.canonicalize().unwrap()]
+        );
     }
 }

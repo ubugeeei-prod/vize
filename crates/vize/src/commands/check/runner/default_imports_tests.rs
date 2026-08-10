@@ -1,0 +1,152 @@
+use std::path::PathBuf;
+
+use vize_carton::path::canonicalize_non_verbatim;
+
+fn unique_case_dir(name: &str) -> PathBuf {
+    static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("vize-tests")
+        .join(format!(
+            "check-runner-{name}-{}-{case_id}",
+            std::process::id()
+        ))
+}
+
+#[test]
+fn default_tsconfig_run_reports_transitive_imports_outside_include() {
+    let project_root = unique_case_dir("default-transitive-imports");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("inside")).unwrap();
+    std::fs::create_dir_all(project_root.join("outside")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["inside/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("inside/use.ts"),
+        r#"import { ITEMS } from '../outside/lib'
+
+export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("outside/lib.ts"),
+        "export const ITEMS = [{ code: 'en', name: 'English' }, { code: 'ru', name: 'Russian' }]\n",
+    )
+    .unwrap();
+
+    let mut tsconfig_input_cache = super::TsconfigInputCache::default();
+    let mut canonical_paths = super::CanonicalPathCache::default();
+    let collected = super::collect_default_run_files(
+        &project_root,
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        super::ImportFileOptions::default(),
+        &mut tsconfig_input_cache,
+        &mut canonical_paths,
+        None,
+    );
+    let files = collected.files;
+    let inputs = collected.inputs;
+    let reported_files = collected.reported;
+    let virtual_module_aliases = collected.virtual_module_aliases;
+
+    let included_file = canonicalize_non_verbatim(&project_root.join("inside/use.ts"));
+    let transitive_file = canonicalize_non_verbatim(&project_root.join("outside/lib.ts"));
+
+    assert!(files.contains(&included_file));
+    assert!(files.contains(&transitive_file));
+    assert!(inputs.contains(&included_file));
+    assert!(!inputs.contains(&transitive_file));
+    assert!(reported_files.contains(&included_file));
+    assert!(
+        reported_files.contains(&transitive_file),
+        "authored imports outside include remain part of the checked program"
+    );
+    assert!(virtual_module_aliases.is_empty());
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn default_tsconfig_run_registers_hidden_ambient_declarations_for_type_resolution() {
+    let project_root = unique_case_dir("default-hidden-ambient");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join(".nuxt/types")).unwrap();
+    std::fs::create_dir_all(project_root.join("app/plugins")).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "extends": "./.nuxt/tsconfig.json"
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/tsconfig.json"),
+        r#"{
+  "include": ["../app/**/*.ts", "./nuxt.d.ts"]
+}"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/nuxt.d.ts"),
+        "/// <reference path=\"types/import-meta.d.ts\" />\nexport {};\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/types/import-meta.d.ts"),
+        "export {};\ndeclare global { interface ImportMeta { vitest: boolean; } }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join("app/plugins/auth.ts"),
+        "export const runningUnderVitest = import.meta.vitest;\n",
+    )
+    .unwrap();
+
+    let mut tsconfig_input_cache = super::TsconfigInputCache::default();
+    let mut canonical_paths = super::CanonicalPathCache::default();
+    let collected = super::collect_default_run_files(
+        &project_root,
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        super::ImportFileOptions::default(),
+        &mut tsconfig_input_cache,
+        &mut canonical_paths,
+        None,
+    );
+    let files = collected.files;
+    let inputs = collected.inputs;
+    let reported_files = collected.reported;
+    let virtual_module_aliases = collected.virtual_module_aliases;
+
+    let app_file = canonicalize_non_verbatim(&project_root.join("app/plugins/auth.ts"));
+    let ambient_file =
+        canonicalize_non_verbatim(&project_root.join(".nuxt/types/import-meta.d.ts"));
+
+    assert!(files.contains(&app_file));
+    assert!(files.contains(&ambient_file));
+    assert!(inputs.contains(&app_file));
+    assert!(!inputs.contains(&ambient_file));
+    assert!(reported_files.contains(&app_file));
+    assert!(
+        !reported_files.contains(&ambient_file),
+        "hidden ambient declarations are registered for types, not reported"
+    );
+    assert!(virtual_module_aliases.is_empty());
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

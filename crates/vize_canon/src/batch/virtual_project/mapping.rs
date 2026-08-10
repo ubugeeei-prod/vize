@@ -9,6 +9,39 @@ use crate::batch::SfcBlockType;
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
 impl VirtualProject {
+    pub(crate) fn set_diagnostic_paths<'a>(&mut self, paths: impl IntoIterator<Item = &'a Path>) {
+        self.diagnostic_paths = paths
+            .into_iter()
+            .filter(|path| path.is_file())
+            .map(vize_carton::path::canonicalize_non_verbatim)
+            .collect();
+    }
+
+    pub(crate) fn diagnostic_path(&self, path: &Path) -> Option<&Path> {
+        let normalized = vize_carton::path::canonicalize_non_verbatim(path);
+        self.diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+    }
+
+    pub(crate) fn diagnostic_position(
+        &self,
+        path: &Path,
+        line: u32,
+        column: u32,
+    ) -> Option<OriginalPosition> {
+        Some(OriginalPosition {
+            path: self.diagnostic_path(path)?.to_path_buf(),
+            line,
+            column,
+            block_type: None,
+        })
+    }
+
+    pub(crate) fn diagnostic_paths_sorted(&self) -> Vec<PathBuf> {
+        let mut paths: Vec<_> = self.diagnostic_paths.iter().cloned().collect();
+        paths.sort();
+        paths
+    }
+
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
         let virtual_path = self.original_index.get(original_path)?;
@@ -31,6 +64,18 @@ impl VirtualProject {
     pub(crate) fn registered_original_paths_sorted(&self) -> Vec<PathBuf> {
         let mut paths: Vec<_> = self.original_index.keys().cloned().collect();
         paths.sort();
+        paths
+    }
+
+    /// Source paths an incremental project is allowed to refresh even when
+    /// they live outside the project root. This includes the initial reachable
+    /// graph (so delete/recreate works) and newly configured package routes (so
+    /// a package-export rename can enter the next snapshot).
+    pub(crate) fn known_source_paths(&self) -> Vec<PathBuf> {
+        let mut paths = self.registered_original_paths_sorted();
+        paths.extend(self.virtual_module_aliases.values().flatten().cloned());
+        paths.sort();
+        paths.dedup();
         paths
     }
 

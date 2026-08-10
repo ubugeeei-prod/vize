@@ -1,6 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 6,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
+  "lspAuthoredOracleGate": {
+    "minimumProjectCount": 3,
+    "trackingIssue": 3952
+  },
   "projects": [
     {
       "id": "vue-vben-admin",
@@ -177,6 +181,70 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/core/src/RadioGroup/Radio.vue",
+          "symbol": "ariaLabel",
+          "usageAnchor": ":aria-label=\"ariaLabel\"",
+          "declarationAnchor": "const ariaLabel = computed(() => props.id && triggerElement.value ? (document.querySelector(`[for=\"${props.id}\"]`) as HTMLLabelElement)?.innerText ?? props.value : undefined)",
+          "hoverContains": ["const ariaLabel"],
+          "renameTo": "__vizeRenamedAriaLabel"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/core/src/Toolbar/ToolbarToggleItem.vue",
+          "componentFile": "packages/core/src/Toolbar/ToolbarButton.vue",
+          "tagName": "ToolbarButton",
+          "tagAnchor": "<ToolbarButton ",
+          "completionItemCount": 31,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "as-child", "rank": 28 },
+            { "label": "as", "rank": 29 },
+            { "label": "disabled", "rank": 30 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  disabled?: boolean\n",
+            "replacement": "  disabled?: boolean\n  vizeOracleProbe?: boolean\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/core/src/Toolbar/__VizeOracleToolbarButton.vue",
+          "renamedFile": "packages/core/src/Toolbar/__VizeOracleRenamedToolbarButton.vue",
+          "originalImportSpecifier": "./ToolbarButton.vue",
+          "copiedImportSpecifier": "./__VizeOracleToolbarButton.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedToolbarButton.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\">\n",
+          "markerSymbol": "__vizeRekaFileLifecycleMarker__"
+        }
+      },
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
@@ -339,6 +407,69 @@
         "lsp"
       ],
       "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "app/components/common/CommonErrorMessage.vue",
+          "symbol": "describedBy",
+          "usageAnchor": ":aria-describedby=\"describedBy\"",
+          "declarationAnchor": "defineProps<{ describedBy: string }>()",
+          "hoverContains": ["const describedBy: string"],
+          "renameTo": "__vizeRenamedDescribedBy"
+        },
+        "componentBoundary": {
+          "importerFile": "app/pages/[[server]]/list/[list]/index/accounts.vue",
+          "componentFile": "app/components/list/AccountSearchResult.vue",
+          "tagName": "AccountSearchResult",
+          "tagAnchor": "<AccountSearchResult\n",
+          "completionItemCount": 30,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "result", "rank": 28 },
+            { "label": "active", "rank": 29 }
+          ],
+          "dependencyEdit": {
+            "anchor": "  active: boolean\n",
+            "replacement": "  active: boolean\n  vizeOracleProbe?: boolean\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "app/components/list/__VizeOracleAccountSearchResult.vue",
+          "renamedFile": "app/components/list/__VizeOracleRenamedAccountSearchResult.vue",
+          "originalImportSpecifier": "~/components/list/AccountSearchResult.vue",
+          "copiedImportSpecifier": "~/components/list/__VizeOracleAccountSearchResult.vue",
+          "renamedImportSpecifier": "~/components/list/__VizeOracleRenamedAccountSearchResult.vue",
+          "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+          "markerSymbol": "__vizeElkFileLifecycleMarker__"
+        }
+      },
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
@@ -377,6 +508,76 @@
         "lsp"
       ],
       "diff": "e2e-vrt",
+      "lspAuthoredOracle": {
+        "templateBinding": {
+          "file": "packages/frontend/src/components/MkCodeInline.vue",
+          "symbol": "code",
+          "usageAnchor": "{{ code }}",
+          "declarationAnchor": "\tcode: string;",
+          "hoverContains": ["const code: string"],
+          "renameTo": "__vizeRenamedCode"
+        },
+        "componentBoundary": {
+          "importerFile": "packages/frontend/src/components/MkReactionTooltip.vue",
+          "componentFile": "packages/frontend/src/components/MkTooltip.vue",
+          "tagName": "MkTooltip",
+          "tagAnchor": "<MkTooltip ",
+          "completionItemCount": 37,
+          "completionItems": [
+            { "label": "v-if", "rank": 0 },
+            { "label": "v-else-if", "rank": 1 },
+            { "label": "v-else", "rank": 2 },
+            { "label": "v-for", "rank": 3 },
+            { "label": "v-on", "rank": 4 },
+            { "label": "v-bind", "rank": 5 },
+            { "label": "v-model", "rank": 6 },
+            { "label": "v-slot", "rank": 7 },
+            { "label": "v-show", "rank": 8 },
+            { "label": "v-pre", "rank": 9 },
+            { "label": "v-once", "rank": 10 },
+            { "label": "v-memo", "rank": 11 },
+            { "label": "v-cloak", "rank": 12 },
+            { "label": "v-text", "rank": 13 },
+            { "label": "v-html", "rank": 14 },
+            { "label": "@", "rank": 15 },
+            { "label": ":", "rank": 16 },
+            { "label": "#", "rank": 17 },
+            { "label": "@click", "rank": 18 },
+            { "label": "@input", "rank": 19 },
+            { "label": "@change", "rank": 20 },
+            { "label": "@submit", "rank": 21 },
+            { "label": "@keydown", "rank": 22 },
+            { "label": "@keyup", "rank": 23 },
+            { "label": "@focus", "rank": 24 },
+            { "label": "@blur", "rank": 25 },
+            { "label": "@mouseenter", "rank": 26 },
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "showing", "rank": 28 },
+            { "label": "anchor-element", "rank": 29 },
+            { "label": "x", "rank": 30 },
+            { "label": "y", "rank": 31 },
+            { "label": "text", "rank": 32 },
+            { "label": "as-mfm", "rank": 33 },
+            { "label": "max-width", "rank": 34 },
+            { "label": "direction", "rank": 35 },
+            { "label": "inner-margin", "rank": 36 }
+          ],
+          "dependencyEdit": {
+            "anchor": "\tinnerMargin?: number;\n",
+            "replacement": "\tinnerMargin?: number;\n\tvizeOracleProbe?: boolean;\n",
+            "completionLabel": "vize-oracle-probe"
+          }
+        },
+        "fileLifecycle": {
+          "copiedFile": "packages/frontend/src/components/__VizeOracleMkTooltip.vue",
+          "renamedFile": "packages/frontend/src/components/__VizeOracleRenamedTooltip.vue",
+          "originalImportSpecifier": "./MkTooltip.vue",
+          "copiedImportSpecifier": "./__VizeOracleMkTooltip.vue",
+          "renamedImportSpecifier": "./__VizeOracleRenamedTooltip.vue",
+          "markerInsertionAnchor": "<script lang=\"ts\" setup>\n",
+          "markerSymbol": "__vizeFileLifecycleMarker__"
+        }
+      },
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",

@@ -10,12 +10,44 @@ import {
   runRealProjectLspAudit,
   selectProjects,
 } from "./support/real-project-lsp-audit.ts";
+import { createLspReport } from "./support/real-project-lsp-report.ts";
+import type { AuthoredLspEvidence, LspProjectEvidence } from "./support/real-project-lsp-report.ts";
 
 test("production LSP opens and repairs a probe in every selected real project", async () => {
   const result = await runRealProjectLspAudit();
   if (result.skipped) return;
   assert.ok(result.report.summary.projectCount > 0);
   assert.equal(result.report.summary.failedProjectCount, 0);
+  const summary = result.report.summary;
+  assert.equal(
+    summary.authoredFeatureProjectCount + summary.missingAuthoredFeatureProjectIds.length,
+    summary.projectCount,
+  );
+  for (const id of summary.missingAuthoredFeatureProjectIds) {
+    assert.ok(
+      result.evidence.some((project) => project.id === id),
+      `${id} is reported as missing authored features but is not an audited project`,
+    );
+  }
+});
+
+test("LSP report summarizes authored feature coverage from project evidence", () => {
+  const report = createLspReport(
+    { enforced: true, projects: [], shardCount: 2, shardIndex: 1 },
+    [
+      projectEvidence("with-oracle", authoredEvidence()),
+      projectEvidence("missing-oracle", null),
+      projectEvidence("also-missing-oracle", null),
+    ],
+    { GITHUB_SHA: "0".repeat(40) },
+  );
+
+  assert.equal(report.summary.projectCount, 3);
+  assert.equal(report.summary.authoredFeatureProjectCount, 1);
+  assert.deepEqual(report.summary.missingAuthoredFeatureProjectIds, [
+    "missing-oracle",
+    "also-missing-oracle",
+  ]);
 });
 
 test("real-project LSP lifecycle opens an authored file and restores exact diagnostics", async () => {
@@ -105,6 +137,10 @@ class FakeLspSession {
     return {};
   }
 
+  async request(): Promise<unknown> {
+    throw new Error("fake lifecycle session received an unexpected request");
+  }
+
   notify(method: string, params: unknown): void {
     const payload = params as {
       contentChanges?: Array<{ text: string }>;
@@ -180,6 +216,61 @@ function unrelatedDiagnostic(): LspDiagnostic {
     },
     severity: 1,
     source: "vize/types",
+  };
+}
+
+function projectEvidence(
+  id: string,
+  authoredFeatures: AuthoredLspEvidence | null,
+): LspProjectEvidence {
+  return {
+    actualFile: null,
+    actualFileDiagnostics: null,
+    authoredFeatures,
+    brokenProbeDiagnostics: null,
+    durationMs: 0,
+    fixedProbeDiagnostics: null,
+    id,
+    repairedProbeDiagnostics: null,
+    revision: "0".repeat(40),
+    status: "ok",
+    vueFileCount: 1,
+  };
+}
+
+function authoredEvidence(): AuthoredLspEvidence {
+  const response = { count: 1, sha256: "0".repeat(64) };
+  return {
+    completion: response,
+    componentDefinition: response,
+    componentFile: "FeatureChild.vue",
+    definition: response,
+    dependencyCompletion: {
+      baselineContainsProbe: false,
+      changedContainsProbe: true,
+      repairedContainsProbe: false,
+    },
+    fileLifecycle: {
+      copiedFile: "Copied.vue",
+      createdDefinition: response,
+      createdWorkspaceSymbols: response,
+      deletedDefinition: { ...response, count: 0 },
+      deletedDocumentSymbols: { ...response, count: 0 },
+      deletedImporterDiagnostics: { ...response, count: 0 },
+      deletedWorkspaceSymbols: { ...response, count: 0 },
+      repairedDiagnostics: { ...response, count: 0 },
+      renameEdit: response,
+      renamedDefinition: response,
+      renamedFile: "Renamed.vue",
+      renamedWorkspaceSymbols: response,
+      restoredDefinition: response,
+      staleCopiedDocumentSymbols: { ...response, count: 0 },
+    },
+    hover: response,
+    importerFile: "FeatureParent.vue",
+    references: response,
+    rename: response,
+    templateBindingFile: "Binding.vue",
   };
 }
 

@@ -141,12 +141,9 @@ pub(crate) fn find_analyzed_binding_location(ctx: &IdeContext, word: &str) -> Op
         return None;
     }
 
-    let offset = analysis.script_offset as usize + start as usize;
-    Some(location_from_sfc_offset(
-        ctx,
-        offset,
-        (end - start) as usize,
-    ))
+    let offset = analysis.script_source_offset(&descriptor, start) as usize;
+    let len = analysis.script_source_len(&descriptor, start, end) as usize;
+    Some(location_from_sfc_offset(ctx, offset, len))
 }
 
 pub(crate) fn location_from_sfc_offset(ctx: &IdeContext, offset: usize, len: usize) -> Location {

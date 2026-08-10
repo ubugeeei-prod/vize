@@ -314,35 +314,7 @@ pub(crate) fn extract_import_path_from_pos(content: &str, pos: usize) -> Option<
     Some(rest[path_start..path_start + path_end].to_string())
 }
 
-/// Resolve an import path relative to the current file.
+/// Resolve a relative, package, or tsconfig-path import from the current file.
 pub(crate) fn resolve_import_path(current_uri: &Url, import_path: &str) -> Option<PathBuf> {
-    let current_path = PathBuf::from(current_uri.path());
-    let current_dir = current_path.parent()?;
-
-    if import_path.starts_with("./") || import_path.starts_with("../") {
-        let resolved = current_dir.join(import_path);
-
-        if !resolved.exists() {
-            let extensions = [".vue", ".ts", ".tsx", ".js", ".jsx"];
-            for ext in extensions {
-                let with_ext = resolved.with_extension(&ext[1..]);
-                if with_ext.exists() {
-                    return Some(with_ext);
-                }
-            }
-            // Try index files
-            for ext in extensions {
-                #[allow(clippy::disallowed_macros)]
-                let index_name = format!("index{}", ext);
-                let index_file = resolved.join(index_name);
-                if index_file.exists() {
-                    return Some(index_file);
-                }
-            }
-        }
-
-        Some(resolved.canonicalize().unwrap_or(resolved))
-    } else {
-        None
-    }
+    super::import_resolver::resolve_import_specifier(current_uri, import_path)
 }

@@ -12,8 +12,42 @@ export type FixtureProject = {
   expectedVueFileCount: number | null;
   fixturePath: string;
   id: string;
+  lspAuthoredOracle?: LspAuthoredOracle;
   revision: string;
   vueGlobs: string[];
+};
+
+export type LspAuthoredOracle = {
+  componentBoundary: {
+    componentFile: string;
+    completionItemCount: number;
+    completionItems: Array<{ label: string; rank: number }>;
+    dependencyEdit: {
+      anchor: string;
+      completionLabel: string;
+      replacement: string;
+    };
+    importerFile: string;
+    tagAnchor: string;
+    tagName: string;
+  };
+  fileLifecycle: {
+    copiedFile: string;
+    copiedImportSpecifier: string;
+    markerInsertionAnchor: string;
+    markerSymbol: string;
+    originalImportSpecifier: string;
+    renamedFile: string;
+    renamedImportSpecifier: string;
+  };
+  templateBinding: {
+    declarationAnchor: string;
+    file: string;
+    hoverContains: string[];
+    renameTo: string;
+    symbol: string;
+    usageAnchor: string;
+  };
 };
 
 export type DiagnosticEvidence = {
@@ -21,9 +55,50 @@ export type DiagnosticEvidence = {
   sha256: string;
 };
 
+export type LspResponseEvidence = {
+  count: number;
+  sha256: string;
+};
+
+export type AuthoredFileLifecycleEvidence = {
+  copiedFile: string;
+  createdDefinition: LspResponseEvidence;
+  createdWorkspaceSymbols: LspResponseEvidence;
+  deletedDefinition: LspResponseEvidence;
+  deletedDocumentSymbols: LspResponseEvidence;
+  deletedImporterDiagnostics: DiagnosticEvidence;
+  deletedWorkspaceSymbols: LspResponseEvidence;
+  repairedDiagnostics: DiagnosticEvidence;
+  renameEdit: LspResponseEvidence;
+  renamedDefinition: LspResponseEvidence;
+  renamedFile: string;
+  renamedWorkspaceSymbols: LspResponseEvidence;
+  restoredDefinition: LspResponseEvidence;
+  staleCopiedDocumentSymbols: LspResponseEvidence;
+};
+
+export type AuthoredLspEvidence = {
+  completion: LspResponseEvidence;
+  componentDefinition: LspResponseEvidence;
+  componentFile: string;
+  definition: LspResponseEvidence;
+  dependencyCompletion: {
+    baselineContainsProbe: boolean;
+    changedContainsProbe: boolean;
+    repairedContainsProbe: boolean;
+  };
+  fileLifecycle: AuthoredFileLifecycleEvidence;
+  hover: LspResponseEvidence;
+  importerFile: string;
+  references: LspResponseEvidence;
+  rename: LspResponseEvidence;
+  templateBindingFile: string;
+};
+
 export type LspProjectEvidence = {
   actualFile: string | null;
   actualFileDiagnostics: DiagnosticEvidence | null;
+  authoredFeatures: AuthoredLspEvidence | null;
   brokenProbeDiagnostics: DiagnosticEvidence | null;
   durationMs: number;
   failure?: string;
@@ -64,12 +139,17 @@ export function createLspReport(
 ) {
   return {
     schema: "vize.realProjectLspLifecycle",
-    version: 1,
+    version: 2,
     commitSha: resolveCommitSha(environment),
     shard: { count: selection.shardCount, index: selection.shardIndex },
     summary: {
       projectCount: projects.length,
       actualFileCount: projects.filter((project) => project.actualFile != null).length,
+      authoredFeatureProjectCount: projects.filter((project) => project.authoredFeatures != null)
+        .length,
+      missingAuthoredFeatureProjectIds: projects
+        .filter((project) => project.authoredFeatures == null)
+        .map((project) => project.id),
       vueFileCount: projects.reduce((total, project) => total + project.vueFileCount, 0),
       failedProjectCount: projects.filter((project) => project.status === "failed").length,
     },
@@ -92,6 +172,7 @@ export function emptyLspEvidence(project: FixtureProject): LspProjectEvidence {
   return {
     actualFile: null,
     actualFileDiagnostics: null,
+    authoredFeatures: null,
     brokenProbeDiagnostics: null,
     durationMs: 0,
     fixedProbeDiagnostics: null,

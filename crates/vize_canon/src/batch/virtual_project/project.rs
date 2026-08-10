@@ -14,6 +14,8 @@ use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
+mod config;
+
 use super::VirtualProject;
 use super::build::{
     RegisteredFile, VirtualBuildContext, build_registered_file, build_script_registered_file,
@@ -22,7 +24,6 @@ use super::build::{
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
-
 fn is_musea_art_vue_path(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
@@ -45,7 +46,10 @@ impl VirtualProject {
             preserve_unused_diagnostics: false,
             check_js: false,
             virtual_ts_options: VirtualTsOptions::default(),
+            diagnostic_paths: FxHashSet::default(),
+            declaration_roots: None,
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
+            virtual_module_aliases: FxHashMap::default(),
             options_api: false,
             session_scripts: false,
             legacy_vue2: false,
@@ -74,7 +78,10 @@ impl VirtualProject {
         let mut project = Self::new(&self.project_root)?;
         project.set_tsconfig_path(self.tsconfig_path.clone());
         project.virtual_ts_options = self.virtual_ts_options.clone();
+        project.diagnostic_paths = self.diagnostic_paths.clone();
+        project.declaration_roots = self.declaration_roots.clone();
         project.virtual_ts_check_options = self.virtual_ts_check_options;
+        project.virtual_module_aliases = self.virtual_module_aliases.clone();
         project.options_api = self.options_api;
         project.legacy_vue2 = self.legacy_vue2;
         project.jsx_typecheck = self.jsx_typecheck;
@@ -82,76 +89,6 @@ impl VirtualProject {
         project.template_syntax = self.template_syntax;
         project.experimental_in_tag_comments = self.experimental_in_tag_comments;
         Ok(project)
-    }
-
-    /// Set the tsconfig path to extend.
-    pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
-        self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);
-        self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
-        self.check_js = self.resolve_tsconfig_checks_javascript();
-    }
-
-    /// Whether TypeScript diagnostics landing in `virtual_path` must be dropped
-    /// because the file is a JavaScript SFC and the project does not enable
-    /// `checkJs` (#3322).
-    pub(crate) fn skips_typescript_diagnostics(&self, virtual_path: &Path) -> bool {
-        !self.check_js && self.unchecked_javascript_files.contains(virtual_path)
-    }
-
-    /// Set the shared virtual TS options.
-    pub fn set_virtual_ts_options(&mut self, options: VirtualTsOptions) {
-        self.virtual_ts_options = options;
-    }
-
-    pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
-        self.virtual_ts_check_options = options;
-    }
-
-    pub(crate) fn set_options_api(&mut self, enabled: bool) {
-        self.options_api = enabled;
-    }
-
-    pub(crate) fn set_legacy_vue2(&mut self, enabled: bool) {
-        self.legacy_vue2 = enabled;
-    }
-
-    /// Enable opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
-    pub(crate) fn set_jsx_typecheck(&mut self, enabled: bool) {
-        self.jsx_typecheck = enabled;
-    }
-
-    /// Set the configured Vue dialect (default [`VueVersion::V3`]).
-    ///
-    /// Carried into virtual-TS generation for dialect-aware instance and helper
-    /// typing while keeping default-V3 output stable.
-    pub(crate) fn set_dialect(&mut self, dialect: vize_carton::config::VueVersion) {
-        self.dialect = dialect;
-    }
-
-    pub(crate) fn uses_shared_helpers(&self) -> bool {
-        !self.legacy_vue2
-            && !matches!(
-                self.dialect,
-                vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
-            )
-    }
-
-    pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {
-        self.template_syntax = template_syntax;
-    }
-
-    pub(crate) fn set_experimental_in_tag_comments(&mut self, enabled: bool) {
-        self.experimental_in_tag_comments = enabled;
-    }
-
-    /// Get the project root.
-    pub fn project_root(&self) -> &Path {
-        &self.project_root
-    }
-
-    /// Get the virtual root.
-    pub fn virtual_root(&self) -> &Path {
-        &self.virtual_root
     }
 
     /// Register a supported file path.

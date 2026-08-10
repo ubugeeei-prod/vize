@@ -36,7 +36,7 @@ fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
 }
 
 #[test]
-fn emits_protocol_v1_spans_without_forbidden_overlaps() {
+fn emits_protocol_v1_spans_with_all_features_and_without_forbidden_overlaps() {
     let source = r#"<script setup lang="ts">
 const message = "hello"
 </script>

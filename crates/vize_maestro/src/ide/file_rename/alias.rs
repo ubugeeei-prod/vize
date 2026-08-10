@@ -13,8 +13,9 @@
 use std::path::{Path, PathBuf};
 
 use super::manual::{
-    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, apply_all_path_renames, candidate_exists,
-    normalize_path_buf, relative_module_path, split_specifier_suffix, strip_extension,
+    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, RenderStyle, apply_all_path_renames,
+    candidate_exists, is_index_file, normalize_path_buf, render_module_specifier,
+    split_specifier_suffix, strip_extension,
 };
 use crate::server::ServerState;
 
@@ -76,56 +77,70 @@ fn rewrite_alias_specifier(
             continue;
         };
         let base = normalize_path_buf(&alias.target_base.join(rest));
-        let Some((resolved, extensionless)) = probe_alias_target(state, &base, rename_targets)
-        else {
+        let Some((resolved, style)) = probe_alias_target(state, &base, rename_targets) else {
             continue;
         };
         let future = apply_all_path_renames(&resolved, rename_targets)?;
 
         if let Ok(remainder) = future.strip_prefix(&alias.target_base) {
             let mut rendered = alias.pattern_prefix.clone();
-            let remainder = if extensionless {
-                strip_extension(remainder)
-            } else {
-                remainder.to_path_buf()
-            };
-            rendered.push_str(&remainder.to_string_lossy().replace('\\', "/"));
+            rendered.push_str(&render_alias_remainder(remainder, style));
             rendered.push_str(suffix);
             return Some(rendered);
         }
         // The file left the alias subtree: no alias spelling exists any more,
         // so fall back to a relative path from the importer.
-        let rendered_target = if extensionless {
-            strip_extension(&future)
-        } else {
-            future
-        };
-        let mut rendered = relative_module_path(future_importer_dir, &rendered_target)?;
+        let mut rendered = render_module_specifier(future_importer_dir, &future, style)?;
         rendered.push_str(suffix);
         return Some(rendered);
     }
     None
 }
 
-/// Resolve the alias-substituted base to a real (or being-renamed) file:
-/// exact when the specifier carries an extension, extension probing otherwise.
-/// The flag reports whether the specifier was extensionless, which decides the
-/// rendered style.
+/// The alias-relative spelling of a renamed target, in the style the original
+/// specifier used. A directory-index import keeps that spelling as long as the
+/// moved file is still an `index.*`; `@/` alone is not a module, so a target
+/// landing directly on the alias root degrades to the extensionless spelling.
+fn render_alias_remainder(remainder: &Path, style: RenderStyle) -> std::string::String {
+    let rendered = match style {
+        RenderStyle::Explicit => normalize_path_buf(remainder),
+        RenderStyle::Extensionless => strip_extension(remainder),
+        RenderStyle::DirectoryIndex if is_index_file(remainder) => remainder
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .map_or_else(|| strip_extension(remainder), normalize_path_buf),
+        RenderStyle::DirectoryIndex => strip_extension(remainder),
+    };
+    rendered.to_string_lossy().replace('\\', "/")
+}
+
+/// Resolve the alias-substituted base to a real (or being-renamed) file: exact
+/// when the specifier carries an extension, otherwise extension probing and
+/// then directory-index probing, mirroring the relative scanner's candidate
+/// order. The style decides how the rename is re-spelled.
 fn probe_alias_target(
     state: &ServerState,
     base: &Path,
     rename_targets: &[RenameTarget],
-) -> Option<(PathBuf, bool)> {
+) -> Option<(PathBuf, RenderStyle)> {
     let resolvable = |path: &Path| {
         candidate_exists(state, path) || apply_all_path_renames(path, rename_targets).is_some()
     };
     if base.extension().is_some() {
-        return resolvable(base).then(|| (base.to_path_buf(), false));
+        return resolvable(base).then(|| (base.to_path_buf(), RenderStyle::Explicit));
     }
     for extension in RESOLVABLE_SCRIPT_EXTENSIONS {
         let candidate = base.with_extension(extension);
         if resolvable(&candidate) {
-            return Some((candidate, true));
+            return Some((candidate, RenderStyle::Extensionless));
+        }
+    }
+    for extension in RESOLVABLE_SCRIPT_EXTENSIONS {
+        let mut index_name = std::string::String::from("index.");
+        index_name.push_str(extension);
+        let candidate = base.join(index_name);
+        if resolvable(&candidate) {
+            return Some((candidate, RenderStyle::DirectoryIndex));
         }
     }
     None

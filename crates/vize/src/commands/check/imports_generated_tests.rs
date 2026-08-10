@@ -42,8 +42,12 @@ fn skips_plain_absolute_generated_graphql_imports() {
     );
 
     assert!(
-        discovered.is_empty(),
+        discovered.registrations.is_empty(),
         "plain absolute generated type modules should resolve from their real path, not be copied into .vize/canon: {discovered:#?}"
+    );
+    assert_eq!(
+        discovered.authored,
+        vec![canonicalize_non_verbatim(&schema)]
     );
 
     let _ = std::fs::remove_dir_all(&root);
@@ -67,7 +71,7 @@ fn skips_plain_aliased_generated_graphql_imports() {
 }"#,
     )
     .unwrap();
-    write(
+    let schema = write(
         &root,
         "types/codegen/schema.ts",
         "// Generated GraphQL schema types.\nexport enum AimQuestionDisplayKind { Text = 'TEXT' }\n",
@@ -88,8 +92,12 @@ fn skips_plain_aliased_generated_graphql_imports() {
     );
 
     assert!(
-        discovered.is_empty(),
+        discovered.registrations.is_empty(),
         "plain aliased generated type modules should use the real tsconfig path fallback, not be copied into .vize/canon: {discovered:#?}"
+    );
+    assert_eq!(
+        discovered.authored,
+        vec![canonicalize_non_verbatim(&schema)]
     );
 
     let _ = std::fs::remove_dir_all(&root);
@@ -135,7 +143,7 @@ fn collects_absolute_project_imports_that_need_vue_rewrites() {
     );
 
     assert_eq!(
-        discovered,
+        discovered.registrations,
         vec![
             canonicalize_non_verbatim(&feature),
             canonicalize_non_verbatim(&nested),

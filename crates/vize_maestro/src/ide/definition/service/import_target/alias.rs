@@ -51,7 +51,7 @@ pub(in crate::ide::definition::service) fn unwrap_bound_name_definition(
         return None;
     }
     let target = resolve_import_specifier(ctx.uri, &specifier)?;
-    locate_export(&target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
+    locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
 }
 
 fn word_start_at_offset(content: &str, offset: usize) -> Option<usize> {
