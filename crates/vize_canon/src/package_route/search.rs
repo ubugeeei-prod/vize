@@ -17,10 +17,18 @@ impl<'a> PackageRequest<'a> {
             return None;
         }
         let package_end = if let Some(scoped) = specifier.strip_prefix('@') {
-            let scope_end = scoped.find('/')? + 1;
-            specifier[scope_end + 1..]
+            let scope_length = scoped.find('/')?;
+            if scope_length == 0 {
+                return None;
+            }
+            let scope_end = scope_length + 1;
+            let package_end = specifier[scope_end + 1..]
                 .find('/')
-                .map_or(specifier.len(), |end| scope_end + 1 + end)
+                .map_or(specifier.len(), |end| scope_end + 1 + end);
+            if package_end == scope_end + 1 {
+                return None;
+            }
+            package_end
         } else {
             specifier.find('/').unwrap_or(specifier.len())
         };

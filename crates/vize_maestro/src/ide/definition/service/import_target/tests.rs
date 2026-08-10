@@ -218,6 +218,7 @@ import Widget from "@scope/ui/widget";
     fs::write(&importer_path, source).unwrap();
     let importer_uri = Url::from_file_path(&importer_path).unwrap();
     let state = ServerState::new();
+    state.set_workspace_root(app.clone());
     state
         .documents
         .open(importer_uri.clone(), source.to_owned(), 1, "vue".to_owned());

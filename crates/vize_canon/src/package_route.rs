@@ -93,12 +93,11 @@ impl PackageRouteResolver {
         specifier: &str,
         options: PackageSourceOptions,
     ) -> PackageRouteLookup {
+        // Key on the logical importer directory: resolution walks the logical
+        // ancestors, so two importer directories that share a canonical path
+        // through a package symlink still see different `node_modules` chains.
         let logical_importer_dir = logical_absolute(importer_dir);
-        let key = (
-            canonical_path(&logical_importer_dir),
-            specifier.into(),
-            options,
-        );
+        let key = (logical_importer_dir.clone(), specifier.into(), options);
         if let Some(cached) = self.resolutions.get(&key) {
             return cached.clone();
         }

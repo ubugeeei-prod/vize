@@ -20,6 +20,16 @@ fn parses_scoped_and_unscoped_package_subpaths() {
 }
 
 #[test]
+fn rejects_scoped_specifiers_without_a_scope_or_package_name() {
+    for specifier in ["@/pkg", "@scope/", "@scope", "@/", "@"] {
+        assert!(
+            PackageRequest::parse(specifier).is_none(),
+            "accepted malformed specifier {specifier}"
+        );
+    }
+}
+
+#[test]
 fn prefers_the_most_specific_export_pattern() {
     let mappings = json!({
         "./*": "./fallback/*.ts",
@@ -304,4 +314,59 @@ fn symlinked_workspace_route_records_link_and_real_manifest_inputs() {
     assert!(inputs.contains(&route.package_link_root.join("package.json")));
     assert!(inputs.contains(&route.manifest_path));
     assert!(inputs.contains(&route.source_path));
+}
+
+#[test]
+fn a_declaration_sidecar_stands_in_for_a_missing_runtime_module() {
+    let root = tempfile::tempdir().unwrap();
+    let package = root.path().join("node_modules/pkg");
+    let dist = package.join("dist");
+    let importer = root.path().join("src");
+    std::fs::create_dir_all(&dist).unwrap();
+    std::fs::create_dir_all(&importer).unwrap();
+    std::fs::write(
+        package.join("package.json"),
+        r#"{"name":"pkg","exports":{".":"./dist/index.js"}}"#,
+    )
+    .unwrap();
+    std::fs::write(dist.join("index.d.ts"), "export {};\n").unwrap();
+
+    let route = PackageRouteResolver::default()
+        .resolve(&importer, "pkg", PackageSourceOptions::default())
+        .unwrap();
+
+    assert_eq!(
+        route.source_path,
+        dist.join("index.d.ts").canonicalize().unwrap()
+    );
+}
+
+#[test]
+#[cfg(unix)]
+fn importer_directories_sharing_a_canonical_path_resolve_independently() {
+    use std::os::unix::fs::symlink;
+
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let package = root.path().join("packages/ui");
+    let link = app.join("node_modules/@scope/ui");
+    let dependency = app.join("node_modules/dep");
+    std::fs::create_dir_all(package.join("src")).unwrap();
+    std::fs::create_dir_all(&dependency).unwrap();
+    std::fs::create_dir_all(link.parent().unwrap()).unwrap();
+    std::fs::write(
+        dependency.join("package.json"),
+        r#"{"name":"dep","exports":{".":"./index.ts"}}"#,
+    )
+    .unwrap();
+    std::fs::write(dependency.join("index.ts"), "export {};\n").unwrap();
+    symlink(&package, &link).unwrap();
+
+    let mut resolver = PackageRouteResolver::default();
+    let through_link = resolver.resolve(&link.join("src"), "dep", PackageSourceOptions::default());
+    let through_real_path =
+        resolver.resolve(&package.join("src"), "dep", PackageSourceOptions::default());
+
+    assert!(through_link.is_some(), "the linked importer must see `dep`");
+    assert_eq!(through_real_path, None);
 }

@@ -84,7 +84,7 @@ pub(super) fn resolve_specifier(current_uri: &Url, specifier: &str) -> Option<Pa
     if specifier.starts_with("./") || specifier.starts_with("../") {
         return resolve_file_candidate(&current_dir.join(specifier));
     }
-    if specifier.starts_with('/') {
+    if specifier.starts_with('/') || Path::new(specifier).is_absolute() {
         return None;
     }
 

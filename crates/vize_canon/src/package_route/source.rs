@@ -18,13 +18,13 @@ const JS_EXTENSIONS: &[&str] = &[
 ];
 
 pub(super) fn resolve_source(base: &Path, options: PackageSourceOptions) -> Option<PathBuf> {
-    if base.is_file() {
-        if let Some(sidecar) = declaration_sidecar(base) {
-            return Some(canonical_path(&sidecar));
-        }
-        if accepted_source(base, options) {
-            return Some(canonical_path(base));
-        }
+    // A declaration sidecar stands in for its runtime module even when that
+    // module is absent, so probe it before requiring `base` on disk.
+    if let Some(sidecar) = declaration_sidecar(base) {
+        return Some(canonical_path(&sidecar));
+    }
+    if base.is_file() && accepted_source(base, options) {
+        return Some(canonical_path(base));
     }
     for extension in source_extensions(options) {
         let candidate = append_extension(base, extension);
