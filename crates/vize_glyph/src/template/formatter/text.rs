@@ -131,6 +131,11 @@ impl TemplateFormatter<'_> {
                 return None;
             }
             let expr = &text[next + 2..k];
+            if !expr.contains('\n') {
+                out.push_str(&text[next..k + 2]);
+                cursor = k + 2;
+                continue;
+            }
             out.push_str("{{");
             out.push_str(self.newline_str());
             out.push_str(self.render_interpolation_expr_lines(expr, depth).as_str());

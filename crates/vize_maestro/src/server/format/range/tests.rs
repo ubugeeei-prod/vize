@@ -19,7 +19,7 @@ const SOURCE: &str = "<script setup lang=\"ts\">\nconst   a=1\nconst   b=2\n</sc
 /// Whole-document `vize fmt` output for SOURCE, as the block contents it
 /// rewrites. Recorded by running `vize fmt --write` on the fixture.
 const FORMATTED_SCRIPT: &str = "\nconst a = 1;\nconst b = 2;\n";
-const FORMATTED_TEMPLATE: &str = "\n  <div class=\"x\">\n    {{ a }}\n  </div>\n";
+const FORMATTED_TEMPLATE: &str = "\n  <div class=\"x\">{{ a }}</div>\n";
 
 /// `<template>`'s content, from just after the open tag to just before
 /// `</template>`.

@@ -90,10 +90,9 @@ fn sfc_formatting_still_runs() {
         edits,
         Some(vec![TextEdit {
             range: Range::new(Position::new(0, 0), Position::new(3, 0)),
-            // The formatter indents the block and breaks the element's text
-            // onto its own line — the reflow that makes a whole-document line
-            // pairing unusable, hence the per-block one in `format::on_type`.
-            new_text: "<template>\n  <div>\n    hello\n  </div>\n</template>\n".to_string(),
+            // The formatter indents the block while preserving the authored
+            // text boundary, and still returns a whole-document edit.
+            new_text: "<template>\n  <div>hello</div>\n</template>\n".to_string(),
         }])
     );
 }

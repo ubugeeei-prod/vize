@@ -11,9 +11,9 @@ import { resolveVizeCommand } from "../../_helpers/realworld-typecheck.ts";
 
 const appPath = "packages/playground/src/AppLink.vue";
 const sourceSha256 = "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96";
-const formattedSourceSha256 = "429014eaa3524652fd4428883a8a2137e73324cdcb85beee817b6eae5f8bd25f";
-const formattedOutputSha256 = "e9347bc68a59c99f08cabcd96bf0c93d772bf3e545bf82ddf7669b8e5d1b0224";
-const formattedCodeSha256 = "54085fb4ccaed5691115f553cee4f2ac57e23f7812ef6b4a6c201e56435e5f01";
+const formattedSourceSha256 = "28cf96bec91ca56fff12447fa4fb135c28a40586421729ff274e9c5f9764f712";
+const formattedOutputSha256 = "3713f2ddd52bd7722925b7458c64e89cf48b5670c0a611374430c3137f0e9a48";
+const formattedCodeSha256 = "c68549e117eb5d7669c9591ed8299b1c8fc37b3e26772ffd60163723fbfbbd66";
 const cleanAttrs = "const attrs = useAttrs();";
 const brokenAttrs = "const  attrs = useAttrs();";
 
@@ -103,6 +103,22 @@ test("Vue Router formatter converges without moving object v-bind spreads", asyn
       }
       assert.equal(compiled.output.code.includes("_mergeProps(_unref(attrs), {"), false);
       assert.equal(compiled.output.code.includes("_normalizeClass"), false);
+      const externalBranchStart = compiled.output.code.indexOf("_mergeProps({ key: 0 }");
+      const internalBranchStart = compiled.output.code.indexOf("_mergeProps({ key: 1 }");
+      assert.ok(externalBranchStart >= 0 && internalBranchStart > externalBranchStart);
+      assertOrdered(compiled.output.code.slice(externalBranchStart, internalBranchStart), [
+        "class:",
+        "href:",
+        "tabindex:",
+        '"aria-disabled":',
+      ]);
+      assertOrdered(compiled.output.code.slice(internalBranchStart), [
+        "class:",
+        "href:",
+        "tabindex:",
+        '"aria-disabled":',
+        "onClick:",
+      ]);
 
       const cleanFirst = runFmt(fixture.workspaceDir, "--check");
       const cleanSecond = runFmt(fixture.workspaceDir, "--check");
@@ -190,6 +206,20 @@ function sha256(source: string | Buffer): string {
 
 function count(source: string, needle: string): number {
   return source.split(needle).length - 1;
+}
+
+function assertOrdered(source: string, needles: string[]): void {
+  const offsets = needles.map((needle) => source.indexOf(needle));
+  assert.equal(
+    offsets.every((offset) => offset >= 0),
+    true,
+    source,
+  );
+  assert.equal(
+    offsets.slice(1).every((offset, index) => offsets[index] < offset),
+    true,
+    source,
+  );
 }
 
 const wouldReformatOutput = `Found 1 file(s)

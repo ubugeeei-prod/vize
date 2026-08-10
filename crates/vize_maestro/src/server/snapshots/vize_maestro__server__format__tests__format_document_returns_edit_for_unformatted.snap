@@ -14,6 +14,6 @@ expression: edits
                 character: 0,
             },
         },
-        new_text: "<template>\n  <div>\n    hello\n  </div>\n</template>\n",
+        new_text: "<template>\n  <div>hello</div>\n</template>\n",
     },
 ]

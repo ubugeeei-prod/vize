@@ -30,14 +30,14 @@ import { LspSession } from "../../tooling/support/lsp/session.ts";
 const appPath = createVueTypecheckAppPath;
 const sourceSha256 = "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a";
 const compiledCodeSha256 = "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7";
-const formattedSourceSha256 = "c76449690404ce5538a17786fa17b812ceab69fe947dc5f29b408fc9354b4b53";
-const formattedCodeSha256 = "0a27e93344b74054768fd90a55023f5c670ddb8ad812bf98cf1e2e3036749836";
+const formattedSourceSha256 = "70a313db2f293cad24d1ea32a0a24538d81f78df3a73712172968624b092bd42";
+const formattedCodeSha256 = "17e394dd258667ffaae5ae7bc92357ff703fcb15f26854244404c8587f47d07b";
 const cleanHeading = "  <h1>You did it!</h1>";
 const brokenHeading = "  <h1>You did it!</h2>";
 const cleanHref = 'href="https://vuejs.org/"';
 const brokenHref = "href='https://vuejs.org/'";
-const formattedAnchor = '    <a href="https://vuejs.org/" rel="noopener" target="_blank">';
-const brokenFormattedAnchor = '    <a href="https://vuejs.org/" rel="noopener"  target="_blank">';
+const formattedAnchor = '<a href="https://vuejs.org/" rel="noopener" target="_blank">';
+const brokenFormattedAnchor = '<a href="https://vuejs.org/" rel="noopener"  target="_blank">';
 
 type CompilerOutput = {
   code: string;
@@ -230,6 +230,11 @@ test("create-vue formatter converges and repairs one exact attribute-spacing edi
       const compiled = runBuild(fixture.workspaceDir, ".vize-formatter-compile");
       assertSuccessfulBuild(compiled);
       assert.equal(sha256(compiled.output.code), formattedCodeSha256, compiled.output.code);
+      assert.equal(count(compiled.output.code, '_createTextVNode(" Visit ")'), 1);
+      assert.equal(
+        count(compiled.output.code, '_createTextVNode(" to read the documentation ")'),
+        1,
+      );
       assert.deepEqual(
         {
           css: compiled.output.css,

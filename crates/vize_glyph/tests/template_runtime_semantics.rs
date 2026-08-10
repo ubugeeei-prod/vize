@@ -147,4 +147,30 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
     assert_eq!(first, second);
     assert!(first.starts_with("<p>A {{\n"), "{first}");
     assert!(first.ends_with("}} B</p>"), "{first}");
+
+    let mixed = concat!(
+        "<a>{{ result.fields ? result.fields[0]?.tableAlias ?? ",
+        "result.fields[0]?.table : fallback }} ({{ result.rows.length }})</a>",
+    );
+    let first = format_template(mixed, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(first.starts_with("<a>{{\n"), "{first}");
+    assert!(
+        first.ends_with("}} ({{ result.rows.length }})</a>"),
+        "{first}"
+    );
+
+    let reversed = concat!(
+        "<a>{{ result.rows.length }} ({{ result.fields ? ",
+        "result.fields[0]?.tableAlias ?? result.fields[0]?.table : fallback }})</a>",
+    );
+    let first = format_template(reversed, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(
+        first.starts_with("<a>{{ result.rows.length }} ({{\n"),
+        "{first}"
+    );
+    assert!(first.ends_with("}})</a>"), "{first}");
 }

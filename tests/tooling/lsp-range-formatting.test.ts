@@ -63,7 +63,7 @@ const TEMPLATE_CONTENT = {
 
 /** What whole-document `vize fmt` makes of each block's content. */
 const FORMATTED_SCRIPT = "\nconst a = 1;\nconst b = 2;\n";
-const FORMATTED_TEMPLATE = '\n  <div class="x">\n    {{ a }}\n  </div>\n';
+const FORMATTED_TEMPLATE = '\n  <div class="x">{{ a }}</div>\n';
 
 async function withDocument(
   run: (
