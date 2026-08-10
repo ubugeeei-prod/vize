@@ -19,6 +19,7 @@ use crate::virtual_ts::{VirtualTsOptions, VizeMapping};
 pub struct CorsaVueVirtualDocumentOptions {
     pub options_api: bool,
     pub legacy_vue2: bool,
+    pub preserve_event_navigation: bool,
 }
 
 /// A Vue SFC projected into the TypeScript document queried by Corsa.
@@ -289,6 +290,7 @@ fn generate_vue_document_with_options(
         VueDocumentVirtualTsOptions {
             options_api: options.options_api,
             legacy_vue2: options.legacy_vue2,
+            preserve_event_navigation: options.preserve_event_navigation,
         },
         alias_resolver
             .as_ref()

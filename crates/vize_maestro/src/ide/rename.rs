@@ -127,10 +127,6 @@ impl RenameService {
         new_name: &str,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
-        if !Self::is_valid_identifier(new_name) {
-            return None;
-        }
-
         if let canonical::Answer::Available(edit) =
             canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await
         {

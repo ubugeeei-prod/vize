@@ -36,6 +36,7 @@ pub(super) async fn open_canonical_virtual_document_with_overlays(
             CorsaVueVirtualDocumentOptions {
                 options_api: ctx.state.options_api_enabled(),
                 legacy_vue2: ctx.state.legacy_vue2_enabled(),
+                preserve_event_navigation: true,
             },
             overlays,
             &vize_canon::virtual_ts::VirtualTsOptions::default(),

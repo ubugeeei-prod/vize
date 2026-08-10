@@ -131,6 +131,7 @@ impl DiagnosticService {
                 CorsaVueVirtualDocumentOptions {
                     options_api,
                     legacy_vue2,
+                    preserve_event_navigation: false,
                 },
             )
             .await;
@@ -165,6 +166,7 @@ impl DiagnosticService {
                     CorsaVueVirtualDocumentOptions {
                         options_api,
                         legacy_vue2,
+                        preserve_event_navigation: false,
                     },
                     &overlays,
                     &virtual_ts_options,
