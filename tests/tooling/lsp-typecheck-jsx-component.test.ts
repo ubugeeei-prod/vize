@@ -74,7 +74,6 @@ export const view = <Counter {...props} />;
     const spreadRepaired = spreadBroken.replace('count: "wrong"', "count: 1");
     const counterPath = path.join(sourceDir, "Counter.vue");
     const consumerPath = path.join(sourceDir, "Consumer.tsx");
-    const counterUri = pathToFileURL(counterPath).href;
     const consumerUri = pathToFileURL(consumerPath).href;
     fs.writeFileSync(counterPath, counter, "utf8");
     fs.writeFileSync(consumerPath, broken, "utf8");
@@ -84,12 +83,6 @@ export const view = <Counter {...props} />;
       lint: false,
       typecheck: true,
     });
-    session.notify("textDocument/didOpen", {
-      textDocument: { uri: counterUri, languageId: "vue", version: 1, text: counter },
-    });
-    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
-      isDiagnosticsForUri(params, counterUri),
-    );
     session.notify("textDocument/didOpen", {
       textDocument: {
         uri: consumerUri,

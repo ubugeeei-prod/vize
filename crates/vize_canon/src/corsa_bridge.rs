@@ -5,6 +5,9 @@
 //! behind the bridge surface.
 
 mod bridge;
+mod script_document;
+#[cfg(test)]
+mod script_document_tests;
 mod session;
 mod types;
 mod vue_dependencies;

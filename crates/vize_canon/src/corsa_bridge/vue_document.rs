@@ -140,7 +140,7 @@ impl CorsaBridge {
         Ok(project.host)
     }
 
-    async fn open_virtual_documents_batch(
+    pub(super) async fn open_virtual_documents_batch(
         &self,
         documents: &[(String, String)],
     ) -> Result<(), CorsaBridgeError> {
