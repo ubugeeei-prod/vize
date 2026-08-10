@@ -339,15 +339,11 @@ defineProps<{ itemTitle?: string }>()
         vize_canon::project_virtual_root(&project_root).join("__vize_helpers.d.ts"),
     )
     .unwrap();
-    assert!(
-        helpers.contains("type __VizeComponentInputProps<T, Declared = {}>"),
-        "shared helpers should define __VizeComponentInputProps:\n{helpers}"
-    );
-    assert!(
-        !helpers.contains("type __VizeComponentProps<T>")
-            && !helpers.contains("type __VizeKebabOptionalKeys<T>"),
-        "modern shared helpers must not retain dead legacy input aliases:\n{helpers}"
-    );
+    let has_input = helpers.contains("type __VizeComponentInputProps<T, Declared = {}>");
+    assert!(has_input, "{helpers}");
+    let dead_props = helpers.contains("type __VizeComponentProps<T>");
+    let dead_kebab = helpers.contains("type __VizeKebabOptionalKeys<T>");
+    assert!(!dead_props && !dead_kebab, "{helpers}");
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
