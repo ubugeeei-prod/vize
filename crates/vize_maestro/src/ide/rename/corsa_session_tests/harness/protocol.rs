@@ -103,6 +103,7 @@ pub(super) fn traced_corsa_executable(
     std::os::unix::fs::symlink(corsa_path, &actual).map_err(|error| error.to_string())?;
     let wrapper = root.join("traced-tsgo");
     let (wrapper_source, shutdown_gate) = if observe_shutdown {
+        assert_shutdown_gate_runtime()?;
         let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|error| error.to_string())?;
         let gate_port = listener
             .local_addr()
@@ -138,6 +139,25 @@ exit "$status"
     permissions.set_mode(0o755);
     fs::set_permissions(&wrapper, permissions).map_err(|error| error.to_string())?;
     Ok((wrapper, trace_dir, shutdown_gate))
+}
+
+/// The shutdown-gated wrapper proxies the editor stream through Perl, so a
+/// missing interpreter or `IO::Socket::INET` would otherwise surface as an
+/// opaque bridge spawn failure.
+fn assert_shutdown_gate_runtime() -> Result<(), String> {
+    let probe = std::process::Command::new("perl")
+        .args(["-MIO::Socket::INET", "-e", "1"])
+        .output()
+        .map_err(|error| {
+            format!("editor shutdown gate requires perl with IO::Socket::INET: {error}")
+        })?;
+    if !probe.status.success() {
+        return Err(format!(
+            "editor shutdown gate requires perl with IO::Socket::INET: {}",
+            String::from_utf8_lossy(&probe.stderr).trim()
+        ));
+    }
+    Ok(())
 }
 
 const TRACE_CLIENT_TEE: &str = r#"#!/bin/sh

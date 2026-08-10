@@ -21,7 +21,7 @@ const PARENT_SOURCE: &str = r#"<script setup lang="ts">
 import Child from "./Child.vue";
 const handleSave = (id: string) => id;
 </script>
-<template><Child @save-item="handleSave" /></template>
+<template>💥 <Child @save-item="handleSave" /></template>
 "#;
 
 pub(super) struct RealCorsaRenameSession {
@@ -96,7 +96,12 @@ impl RealCorsaRenameSession {
             timeout_ms: 30_000,
             ..Default::default()
         }));
-        crate::runtime::block_on(bridge.spawn()).map_err(|error| error.to_string())?;
+        if let Err(error) = crate::runtime::block_on(bridge.spawn()) {
+            // Without this the partially started child would outlive the
+            // failed setup: `Self` is never constructed, so `Drop` never runs.
+            let _ = crate::runtime::block_on(bridge.shutdown());
+            return Err(error.to_string());
+        }
 
         Ok(Self {
             root,

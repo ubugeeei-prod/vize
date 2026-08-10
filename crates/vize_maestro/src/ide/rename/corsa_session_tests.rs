@@ -141,6 +141,10 @@ fn assert_during_sibling_shutdown(
 }
 
 fn resolve_tsgo_binary_required() -> std::path::PathBuf {
+    assert!(
+        std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_none(),
+        "real-Corsa isolation coverage cannot be skipped with VIZE_TEST_DISABLE_TSGO",
+    );
     super::corsa_tests::resolve_tsgo_binary()
         .unwrap_or_else(|| panic!("real-Corsa isolation requires pinned tsgo"))
 }
