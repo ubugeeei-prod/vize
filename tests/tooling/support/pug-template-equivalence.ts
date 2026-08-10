@@ -426,7 +426,7 @@ function diagnosticSignature(diagnostic: CapturedDiagnostic): string {
   return JSON.stringify([
     diagnostic.severity,
     diagnostic.value.code ?? diagnostic.value.name ?? "unknown",
-    diagnostic.value.message ?? String(diagnostic.value),
+    diagnostic.value.message ?? JSON.stringify(diagnostic.value),
   ]);
 }
 
