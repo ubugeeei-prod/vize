@@ -1,7 +1,43 @@
 use std::path::Path;
+use std::str::FromStr;
 
+use corsa::lsp::LspClient;
+use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
 use vize_carton::String as CompactString;
+
+struct RawDocumentDiagnostic;
+
+impl lsp_types::request::Request for RawDocumentDiagnostic {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/diagnostic";
+}
+
+pub async fn pull_diagnostics(client: &LspClient, uri: &str) -> Value {
+    try_pull_diagnostics(client, uri).await.unwrap()
+}
+
+pub async fn try_pull_diagnostics(client: &LspClient, uri: &str) -> corsa::Result<Value> {
+    client
+        .request::<RawDocumentDiagnostic>(json!({ "textDocument": { "uri": uri } }))
+        .await
+}
+
+pub fn notify_file_changes(client: &LspClient, changes: &[(&str, FileChangeType)]) {
+    let changes = changes
+        .iter()
+        .map(|(uri, typ)| FileEvent {
+            uri: Uri::from_str(uri).unwrap(),
+            typ: *typ,
+        })
+        .collect();
+    client
+        .notify::<lsp_types::notification::DidChangeWatchedFiles>(
+            lsp_types::DidChangeWatchedFilesParams { changes },
+        )
+        .unwrap();
+}
 
 pub fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
