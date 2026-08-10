@@ -14,12 +14,13 @@ import { test } from "node:test";
 
 import {
   collectProjectVueFiles,
-  isKnownViolation,
+  createKnownViolationConsumption,
   loadGlyphCorpusProjects,
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
   withFormattedWorkspace,
+  writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
 
@@ -35,6 +36,35 @@ type Violation = { project: string; file: string; detail: string };
 const property = "parse-preservation";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
+const waiverConsumption = createKnownViolationConsumption(knownViolations);
+
+function violationCategory(
+  original: string,
+  differences: string[],
+): "semantic-diff" | "baseline-unusable" | "oracle-unavailable" {
+  if (/<template(?=[\s>])[^>]*\blang\s*=\s*(["'])pug\1/i.test(original)) {
+    return "oracle-unavailable";
+  }
+  if (differences.some((difference) => difference.startsWith("comparison failed:"))) {
+    return "baseline-unusable";
+  }
+  return "semantic-diff";
+}
+
+test("glyph corpus classifies unavailable and crashed reference oracles precisely", () => {
+  assert.equal(
+    violationCategory('<template lang="pug">\ndiv hi\n</template>\n', ["different"]),
+    "oracle-unavailable",
+  );
+  assert.equal(
+    violationCategory("<template><p /></template>\n", ["comparison failed: parser crashed"]),
+    "baseline-unusable",
+  );
+  assert.equal(
+    violationCategory("<template><p /></template>\n", ["block disappeared"]),
+    "semantic-diff",
+  );
+});
 
 function compareFile(original: string, formatted: string, filename: string): string[] {
   try {
@@ -49,6 +79,7 @@ function sweepProject(
   launch: { command: string; prefix: string[] },
   violations: Violation[],
   counters: { files: number; skipped: number },
+  waivedViolations: Array<Violation & { waiver: object }> = [],
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
@@ -61,14 +92,22 @@ function sweepProject(
         counters.files += 1;
         continue;
       }
-      if (isKnownViolation(knownViolations, project.id, file)) {
+      const detail = differences.map((difference) => `  ${difference}`).join("\n");
+      const waiver = waiverConsumption.consume(
+        project.id,
+        file,
+        null,
+        violationCategory(original, differences),
+      );
+      if (waiver) {
+        waivedViolations.push({ project: project.id, file, detail, waiver });
         counters.skipped += 1;
         continue;
       }
       violations.push({
         project: project.id,
         file,
-        detail: differences.map((difference) => `  ${difference}`).join("\n"),
+        detail,
       });
     }
   });
@@ -83,10 +122,25 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const waivedViolations: Array<Violation & { waiver: object }> = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters);
+    sweepProject(project, launch, violations, counters, waivedViolations);
   }
+  let waiverValidationError: string | null = null;
+  try {
+    waiverConsumption.assertAllConsumed(new Set(hydrated.map((project) => project.id)));
+  } catch (error) {
+    waiverValidationError = error instanceof Error ? error.message : String(error);
+  }
+  writeGlyphCorpusPropertyEvidence(property, {
+    projectIds: hydrated.map((project) => project.id),
+    counters,
+    violations,
+    waivedViolations,
+    waiverValidationError,
+  });
+  assert.equal(waiverValidationError, null, waiverValidationError ?? undefined);
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +

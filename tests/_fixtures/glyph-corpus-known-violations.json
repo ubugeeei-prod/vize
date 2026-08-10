@@ -1,524 +1,407 @@
 [
   {
     "property": "parse-preservation",
-    "project": "crater",
-    "path": "resources/scripts/components/base/BaseModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox10/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox11/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox12/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox13/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox2/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox3/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox4/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox5/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox6/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/borderBox9/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/decoration11/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "lib/components/scrollBoard/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox10/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox11/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox12/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox13/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox2/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox3/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox4/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox5/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox6/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/borderBox9/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/decoration11/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "datav",
-    "path": "src/components/scrollBoard/src/main.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "element-plus-x",
-    "path": "packages/core/src/components/Bubble/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "elk",
-    "path": "app/components/nav/NavSideItem.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
+    "category": "baseline-unusable",
     "project": "gogocode",
     "path": "packages/gogocode-plugin-vue/test/key-attribute/Comp.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "The pinned @vue/compiler-sfc baseline crashes on this legacy v-bind.sync form before equivalence can be evaluated.",
+    "trackingIssue": 4108,
+    "expiryCondition": "Remove after a dialect-aware legacy SFC baseline can compare this file without crashing."
   },
   {
     "property": "parse-preservation",
-    "project": "gogocode",
-    "path": "packages/gogocode-plugin-vue/test/listeners-removed/Comp.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
+    "category": "semantic-diff",
     "project": "gui-for-singbox",
     "path": "frontend/src/components/Table/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "Attribute sorting moves a named binding across an order-sensitive v-bind object boundary.",
+    "trackingIssue": 4113,
+    "expiryCondition": "Remove after Glyph preserves binding precedence while sorting attributes."
   },
   {
     "property": "parse-preservation",
-    "project": "inspira-ui",
-    "path": "app/components/inspira/ui/spinning-text/SpinningText.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "category": "baseline-unusable",
+    "project": "gogocode",
+    "path": "packages/gogocode-plugin-vue/test/listeners-removed/Comp.vue",
+    "reason": "The pinned @vue/compiler-sfc baseline crashes on this legacy v-bind.sync form before equivalence can be evaluated.",
+    "trackingIssue": 4108,
+    "expiryCondition": "Remove after a dialect-aware legacy SFC baseline can compare this file without crashing."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "lx-music-desktop",
     "path": "src/renderer/components/layout/PlayDetail/components/MusicComment/CommentFloor.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/components/layout/PlayDetail/components/MusicComment/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/components/layout/PlayDetail/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/components/layout/UpdateModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/DislikeListModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/PlayTimeoutModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingAbout.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingBackup.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingBasic.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingDesktopLyric.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingDownload.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingHotKey.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingList.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingNetwork.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingOdc.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingOpenAPI.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingOther.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingPlay.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingPlayDetail.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingSearch.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingSync/ServerDeviceListModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingSync/SyncClient.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingSync/SyncServer.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingSync/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/SettingUpdate.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "lx-music-desktop",
-    "path": "src/renderer/views/Setting/components/UserApiModal.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
+    "category": "semantic-diff",
     "project": "pinry",
     "path": "pinry-spa/src/components/search/SearchPanel.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "The comparator does not yet normalize Vue-equivalent presence forms of the scoped SFC block attribute.",
+    "trackingIssue": 4114,
+    "expiryCondition": "Remove after the semantic oracle treats equivalent scoped attribute spellings identically."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/components/layout/PlayDetail/components/MusicComment/index.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/components/layout/PlayDetail/index.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/components/layout/UpdateModal.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/DislikeListModal.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/PlayTimeoutModal.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingAbout.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingBackup.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingBasic.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingDesktopLyric.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingDownload.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingHotKey.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingList.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingNetwork.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingOdc.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingOpenAPI.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingOther.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingPlay.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingPlayDetail.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingSearch.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingSync/ServerDeviceListModal.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingSync/SyncClient.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingSync/SyncServer.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingSync/index.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/SettingUpdate.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "oracle-unavailable",
+    "project": "lx-music-desktop",
+    "path": "src/renderer/views/Setting/components/UserApiModal.vue",
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
+  },
+  {
+    "property": "parse-preservation",
+    "category": "semantic-diff",
     "project": "sigma-file-manager",
     "path": "src/components/ui/dialog/dialog-header.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "Formatting removes an empty script setup block, changing the official SFC descriptor.",
+    "trackingIssue": 4107,
+    "expiryCondition": "Remove after formatting preserves the empty script setup block and the semantic comparator is clean."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "splitpanes",
     "path": "src/app.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "splitpanes",
     "path": "src/components/release-notes.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "splitpanes",
     "path": "src/views/documentation.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
-    "project": "vue-bits",
-    "path": "src/components/landing/Hero/ColorValue.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vue-cal-v4",
     "path": "src/app.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vue-cal-v4",
     "path": "src/documentation/api.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vue-cal-v4",
     "path": "src/documentation/examples.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vue-cal-v4",
     "path": "src/documentation/release-notes.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vue-cal-v4",
     "path": "src/vue-cal/index.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/atoms/Digit.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-bump.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-chord.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-dumbbell.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-flow.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-skeleton.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-stackbar.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-stackline.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-data-ui",
-    "path": "src/components/vue-ui-word-cloud.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-termui",
-    "path": "playground/src/pages/demos/notifications.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vue-termui",
-    "path": "playground/src/pages/demos/text-selection.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/LangSwitcher.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/partials/examples/ExampleAnyDirty.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/partials/examples/ExampleBasic.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/partials/examples/ExampleDelayedTouch.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/partials/examples/ExampleEvent.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   },
   {
     "property": "parse-preservation",
+    "category": "oracle-unavailable",
     "project": "vuelidate",
     "path": "docs-v1/partials/examples/ExampleSubmit.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vuestic-ui",
-    "path": "packages/docs/page-config/ui-elements/image/examples/SrcSet.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
-  },
-  {
-    "property": "parse-preservation",
-    "project": "vuestic-ui",
-    "path": "packages/ui/src/components/va-image/VaImage.demo.vue",
-    "issue": "https://github.com/ubugeeei-prod/vize/issues/3334"
+    "reason": "@vue/compiler-sfc does not parse Pug template syntax, so the current semantic comparator has no independent template oracle.",
+    "trackingIssue": 4106,
+    "expiryCondition": "Remove after a Pug-aware baseline proves formatter output preserves template semantics."
   }
 ]

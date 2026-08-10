@@ -5,8 +5,10 @@ import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type WorkflowStep = {
+  "continue-on-error"?: boolean;
   env?: Record<string, string>;
   if?: string;
+  id?: string;
   name?: string;
   run?: string;
   uses?: string;
@@ -34,7 +36,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   const job = workflow.jobs?.["real-project-matrix"];
 
   assert.ok(job);
-  assert.deepEqual(workflow.permissions, { contents: "read" });
+  assert.deepEqual(workflow.permissions, { contents: "read", issues: "read" });
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
@@ -72,6 +74,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   );
   assert.ok(dependency, "Missing 'Install pinned typecheck baseline dependencies' step");
   const dependencyIndex = steps.indexOf(dependency);
+  const waiverAudit = steps.find((step) => step.name === "Audit formatter waiver owners");
+  assert.ok(waiverAudit, "Missing 'Audit formatter waiver owners' step");
+  const waiverAuditIndex = steps.indexOf(waiverAudit);
   const run = steps.find((step) => step.name === "Exercise real projects with every core tool");
   const runIndex = steps.indexOf(run!);
   const lsp = steps.find((step) => step.name === "Check real-project LSP lifecycle");
@@ -88,6 +93,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const glyphPropertiesIndex = steps.indexOf(glyphProperties!);
   const divergence = steps.find((step) => step.name === "Enforce typechecker baseline divergence");
   const divergenceIndex = steps.indexOf(divergence!);
+  const verdict = steps.find((step) => step.name === "Enforce all real-project surface verdicts");
+  assert.ok(verdict, "Missing final real-project surface verdict");
+  const verdictIndex = steps.indexOf(verdict);
   const summary = steps.find((step) => step.name === "Publish shard summary");
   const summaryIndex = steps.indexOf(summary!);
   const upload = steps.find((step) => step.name === "Upload shard report");
@@ -112,16 +120,49 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(hydration?.run ?? "", /git submodule update --init --depth 1/);
   assert.doesNotMatch(hydration?.run ?? "", /--recursive/);
   assert.match(hydration?.run ?? "", /"\$\{fixture_paths\[@\]\}"/);
-  assert.ok(hydrationIndex < dependencyIndex && dependencyIndex < runIndex);
+  assert.ok(
+    hydrationIndex < dependencyIndex &&
+      dependencyIndex < waiverAuditIndex &&
+      waiverAuditIndex < runIndex,
+  );
   assert.match(dependency.run ?? "", /tools\/fixtures\/typecheck-dependency-prepare\.mjs/);
   assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(dependency.run ?? "", /--timeout-ms 600000/);
+  assert.deepEqual(
+    {
+      id: dependency.id,
+      if: dependency.if,
+      continueOnError: dependency["continue-on-error"],
+    },
+    {
+      id: "typecheck_dependencies",
+      if: "${{ !cancelled() }}",
+      continueOnError: true,
+    },
+  );
+  assert.equal(waiverAudit.id, "waiver_audit");
+  assert.equal(waiverAudit.if, "${{ !cancelled() }}");
+  assert.equal(waiverAudit["continue-on-error"], true);
+  assert.deepEqual(waiverAudit.env, { GITHUB_TOKEN: "${{ github.token }}" });
+  assert.match(waiverAudit.run ?? "", /glyph-corpus-waiver-audit\.mjs/);
+  assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
   assert.match(run?.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run?.run ?? "", /--timeout-ms 600000/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  for (const [step, id] of [
+    [run, "core_tools"],
+    [lsp, "lsp"],
+    [syntaxHighlighter, "syntax_highlighter"],
+    [glyphProperties, "glyph"],
+    [divergence, "typecheck_divergence"],
+  ] as const) {
+    assert.equal(step?.id, id);
+    assert.equal(step?.if, "${{ !cancelled() }}");
+    assert.equal(step?.["continue-on-error"], true);
+  }
   assert.ok(
     runIndex < lspIndex && lspIndex < syntaxHighlighterIndex,
     "the hydrated fixture corpus must run through the production LSP before syntax audit",
@@ -163,7 +204,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       new RegExp(`tests/tooling/glyph-corpus-${property}\\.test\\.ts`),
     );
   }
-  assert.ok(runIndex < divergenceIndex && divergenceIndex < summaryIndex);
+  assert.match(glyphProperties?.run ?? "", /glyph-\$property\.json/);
+  assert.ok(
+    runIndex < divergenceIndex && divergenceIndex < verdictIndex && verdictIndex < summaryIndex,
+  );
   assert.match(divergence?.run ?? "", /tools\/fixtures\/typecheck-divergence-report\.mjs/);
   assert.match(divergence?.run ?? "", /--report-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(divergence?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
@@ -171,6 +215,29 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
   assert.equal(divergence?.env?.BUDGET_MODE, "enforce");
+  assert.equal(verdict.if, "${{ always() }}");
+  assert.deepEqual(verdict.env, {
+    VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
+    VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
+    VIZE_CORE_TOOLS_OUTCOME: "${{ steps.core_tools.outcome }}",
+    VIZE_LSP_OUTCOME: "${{ steps.lsp.outcome }}",
+    VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: "${{ steps.syntax_highlighter.outcome }}",
+    VIZE_GLYPH_OUTCOME: "${{ steps.glyph.outcome }}",
+    VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "${{ steps.typecheck_divergence.outcome }}",
+  });
+  assert.match(verdict.run ?? "", /real-project-surface-verdict\.mjs/);
+  assert.match(verdict.run ?? "", /surface-verdict\.json/);
+  for (const [surface, variable] of [
+    ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
+    ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
+    ["core-tools", "VIZE_CORE_TOOLS_OUTCOME"],
+    ["lsp", "VIZE_LSP_OUTCOME"],
+    ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
+    ["glyph", "VIZE_GLYPH_OUTCOME"],
+    ["typecheck-divergence", "VIZE_TYPECHECK_DIVERGENCE_OUTCOME"],
+  ]) {
+    assert.match(verdict.run ?? "", new RegExp(`--surface "${surface}=\\$${variable}"`));
+  }
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /lsp-lifecycle-summary\.json/);
@@ -189,6 +256,15 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(summary?.run ?? "", /No syntax-highlighter divergence report was produced/);
   assert.match(summary?.run ?? "", /\*-typecheck-divergence\.md/);
   assert.match(summary?.run ?? "", /divergence_reports\[@\]/);
+  assert.match(summary?.run ?? "", /glyph-waiver-issues\.json/);
+  assert.match(summary?.run ?? "", /surface-verdict\.json/);
+  const jqPrograms = summary?.run?.match(/jq -r '[^']*'/g) ?? [];
+  assert.equal(jqPrograms.length, 4);
+  for (const program of jqPrograms) {
+    // A single-quoted shell argument reaches jq verbatim, so an escaped double
+    // quote is a jq compile error rather than a nested string delimiter.
+    assert.doesNotMatch(program, /\\"/, `jq program escapes a double quote: ${program}`);
+  }
   assert.equal(upload?.if, "${{ always() }}");
   assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload?.with, {

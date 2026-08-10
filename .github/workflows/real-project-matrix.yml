@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  issues: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -64,12 +65,25 @@ jobs:
           git submodule update --init --depth 1 -- "${fixture_paths[@]}"
 
       - name: Install pinned typecheck baseline dependencies
+        id: typecheck_dependencies
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: |
           node tools/fixtures/typecheck-dependency-prepare.mjs \
             --output-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --timeout-ms 600000
+
+      - name: Audit formatter waiver owners
+        id: waiver_audit
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node tools/fixtures/glyph-corpus-waiver-audit.mjs \
+            --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
 
       - uses: ./.github/actions/setup-moonbit
 
@@ -93,6 +107,9 @@ jobs:
         run: cargo build --profile ci -p vize
 
       - name: Exercise real projects with every core tool
+        id: core_tools
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: |
           node tools/fixtures/tool-matrix-report.mjs \
             --shard-index "$FIXTURE_SHARD_INDEX" \
@@ -102,6 +119,9 @@ jobs:
             --output-dir "$FIXTURE_REPORT_DIR"
 
       - name: Check real-project LSP lifecycle
+        id: lsp
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/.bin/tsgo
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
@@ -116,6 +136,9 @@ jobs:
           test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
 
       - name: Check real-project syntax highlighting
+        id: syntax_highlighter
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "600000"
         run: |
@@ -125,15 +148,30 @@ jobs:
           test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
 
       - name: Check glyph formatter corpus properties
+        id: glyph
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           VIZE_TEST_BIN: target/ci/vize
+        shell: bash
         run: |
+          glyph_exit_code=0
           node --test --test-concurrency=1 \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
-            tests/tooling/glyph-corpus-lint-agreement.test.ts
+            tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
+          for property in idempotence parse-preservation lint-agreement; do
+            if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
+              echo "::error title=Missing formatter evidence::$property produced no artifact"
+              glyph_exit_code=1
+            fi
+          done
+          exit "$glyph_exit_code"
 
       - name: Enforce typechecker baseline divergence
+        id: typecheck_divergence
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           # This workflow is release evidence as well as a scheduled ecosystem
           # sweep. A breached or unusable baseline must fail every entry path.
@@ -145,6 +183,28 @@ jobs:
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --budget-mode "$BUDGET_MODE" \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
+
+      - name: Enforce all real-project surface verdicts
+        id: surface_verdict
+        if: ${{ always() }}
+        env:
+          VIZE_WAIVER_AUDIT_OUTCOME: ${{ steps.waiver_audit.outcome }}
+          VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
+          VIZE_CORE_TOOLS_OUTCOME: ${{ steps.core_tools.outcome }}
+          VIZE_LSP_OUTCOME: ${{ steps.lsp.outcome }}
+          VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: ${{ steps.syntax_highlighter.outcome }}
+          VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
+          VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
+        run: |
+          node tools/fixtures/real-project-surface-verdict.mjs \
+            --output "$FIXTURE_REPORT_DIR/surface-verdict.json" \
+            --surface "waiver-audit=$VIZE_WAIVER_AUDIT_OUTCOME" \
+            --surface "typecheck-dependencies=$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME" \
+            --surface "core-tools=$VIZE_CORE_TOOLS_OUTCOME" \
+            --surface "lsp=$VIZE_LSP_OUTCOME" \
+            --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
+            --surface "glyph=$VIZE_GLYPH_OUTCOME" \
+            --surface "typecheck-divergence=$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"
 
       - name: Publish shard summary
         if: ${{ always() }}
@@ -183,6 +243,20 @@ jobs:
             cat "${divergence_reports[0]}" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No unique typecheck divergence report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          waiver_report="$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
+          if [[ -s "$waiver_report" ]]; then
+            jq -r '"Formatter waivers: \(.waiverCount) precise waiver(s), \(.issues | length) open owner Issue(s)"' \
+              "$waiver_report" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No formatter waiver owner report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          surface_verdict="$FIXTURE_REPORT_DIR/surface-verdict.json"
+          if [[ -s "$surface_verdict" ]]; then
+            jq -r '"Surface verdict: \(.status); failed: \(.failedSurfaceNames | join(", "))"' \
+              "$surface_verdict" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No real-project surface verdict was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload shard report

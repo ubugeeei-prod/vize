@@ -14,13 +14,14 @@ import { test } from "node:test";
 
 import {
   collectProjectVueFiles,
-  isKnownViolation,
+  createKnownViolationConsumption,
   loadGlyphCorpusProjects,
   loadKnownViolations,
   renderViolations,
   resolveGlyphLaunch,
   runVize,
   withFormattedWorkspace,
+  writeGlyphCorpusPropertyEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 
 type CorpusProject = {
@@ -38,6 +39,7 @@ type Violation = { project: string; file: string; detail: string };
 const property = "lint-agreement";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
+const waiverConsumption = createKnownViolationConsumption(knownViolations);
 
 function lintTree(launch: Launch, cwd: string, globs: string[]): FindingsByFile {
   const result = runVize(launch, cwd, [
@@ -101,6 +103,7 @@ function sweepProject(
   launch: Launch,
   violations: Violation[],
   counters: { files: number; skipped: number },
+  waivedViolations: Array<Violation & { rule: string; waiver: object }> = [],
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
@@ -111,12 +114,24 @@ function sweepProject(
       const introduced = introducedFindings(baseline.get(file) ?? [], formatted.get(file) ?? []);
       // Skip-list entries are rule-scoped so a tracked systemic disagreement
       // (e.g. one rule) cannot mask newly introduced findings of other rules.
-      const real = introduced.filter(
-        (entry) => !isKnownViolation(knownViolations, project.id, file, entry.ruleId),
-      );
+      const real: typeof introduced = [];
+      for (const entry of introduced) {
+        const waiver = waiverConsumption.consume(project.id, file, entry.ruleId, "semantic-diff");
+        if (waiver) {
+          waivedViolations.push({
+            project: project.id,
+            file,
+            rule: entry.ruleId,
+            detail: entry.detail,
+            waiver,
+          });
+        } else {
+          real.push(entry);
+        }
+      }
       counters.skipped += introduced.length - real.length;
       if (real.length === 0) {
-        counters.files += 1;
+        if (introduced.length === 0) counters.files += 1;
         continue;
       }
       violations.push({
@@ -137,10 +152,25 @@ test("glyph corpus lint-agreement holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const waivedViolations: Array<Violation & { rule: string; waiver: object }> = [];
   const counters = { files: 0, skipped: 0 };
   for (const project of hydrated) {
-    sweepProject(project, launch, violations, counters);
+    sweepProject(project, launch, violations, counters, waivedViolations);
   }
+  let waiverValidationError: string | null = null;
+  try {
+    waiverConsumption.assertAllConsumed(new Set(hydrated.map((project) => project.id)));
+  } catch (error) {
+    waiverValidationError = error instanceof Error ? error.message : String(error);
+  }
+  writeGlyphCorpusPropertyEvidence(property, {
+    projectIds: hydrated.map((project) => project.id),
+    counters,
+    violations,
+    waivedViolations,
+    waiverValidationError,
+  });
+  assert.equal(waiverValidationError, null, waiverValidationError ?? undefined);
   process.stderr.write(
     `glyph ${property}: ${counters.files} file(s) across ${hydrated.length} project(s), ` +
       `${projects.length - hydrated.length} project(s) not hydrated, ` +
@@ -179,11 +209,6 @@ test("glyph corpus lint-agreement comparator allows removals and flags growth", 
   );
   assert.equal(fresh.length, 1);
   assert.match(fresh[0].detail, /template\/no-parsing-error: 0 -> 1 finding\(s\)/);
-  // Rule-scoped waivers match wildcards without masking other rules.
-  const waivers = [{ property, project: "*", path: "*", rule: "vue/attribute-order", issue: "#0" }];
-  assert.equal(isKnownViolation(waivers, "misskey", "a/b.vue", "vue/attribute-order"), true);
-  assert.equal(isKnownViolation(waivers, "misskey", "a/b.vue", "vue/no-v-html"), false);
-  assert.equal(isKnownViolation(waivers, "misskey", "a/b.vue"), false);
 });
 
 test("glyph corpus lint-agreement machinery accepts the real formatter", () => {
