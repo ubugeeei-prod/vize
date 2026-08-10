@@ -187,10 +187,7 @@ test("check workflow enforces the Maestro non-native feature contract", () => {
     job,
     /cargo test -p vize_maestro --no-default-features --test non_native_structural\s*$/m,
   );
-  assert.match(
-    job,
-    /cargo check -p vize_maestro --no-default-features --features glyph\s*$/m,
-  );
+  assert.match(job, /cargo check -p vize_maestro --no-default-features --features glyph\s*$/m);
   assert.match(
     job,
     /cargo test -p vize_maestro --no-default-features --features glyph --test non_native_structural\s*$/m,
