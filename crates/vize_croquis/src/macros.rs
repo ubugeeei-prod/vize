@@ -369,6 +369,7 @@ pub struct MacroTracker {
     /// Written prop declarations, relative to the parsed script block.
     prop_declarations: FxHashMap<CompactString, (u32, u32)>,
     emits: Vec<EmitDefinition>,
+    emit_declarations: FxHashMap<CompactString, (u32, u32)>,
     /// Actual emit() calls in the code (not declarations)
     emit_calls: Vec<EmitCall>,
     models: Vec<ModelDefinition>,
@@ -381,7 +382,6 @@ pub struct MacroTracker {
     props_destructure: Option<PropsDestructuredBindings>,
     top_level_awaits: Vec<TopLevelAwait>,
     next_id: u32,
-    /// Cached indices for quick lookup
     define_props_idx: Option<usize>,
     define_emits_idx: Option<usize>,
     define_expose_idx: Option<usize>,
