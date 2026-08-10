@@ -65,6 +65,13 @@ pub(super) fn emit_default_export_declaration(
     // checks after an editor changes a child's props. This optional static
     // marker creates the dependency edge without changing InstanceType or the
     // authored call-site contract (#4034).
+    //
+    // Keep the metadata intersection first. Non-generic components defer their
+    // input contract behind `__VizeComponentInput`; putting that constructor
+    // before the raw-props member lets TypeScript's incremental relation cache
+    // settle only the first of multiple consumers of the same changed SFC.
+    // Leading with the direct `Props` identity makes every dependent program
+    // observe the edit while the last construct signature remains unchanged.
     let static_raw_props_field = static_raw_props_ref
         .map(|props_ref| cstr!("readonly __vizeRawProps?: {props_ref};"))
         .unwrap_or_default();
@@ -78,18 +85,18 @@ pub(super) fn emit_default_export_declaration(
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {static_raw_props_field} }};\n",
+            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {static_raw_props_field} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static}{event_map_separator}{event_map_static} {static_raw_props_field} }};\n",
+            "declare const __vize_component__: {{ {emit_props_static}{event_map_separator}{event_map_static} {static_raw_props_field} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else if !static_raw_props_field.is_empty() {
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions & {{ {static_raw_props_field} }};\n",
+            "declare const __vize_component__: {{ {static_raw_props_field} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else {
         append!(

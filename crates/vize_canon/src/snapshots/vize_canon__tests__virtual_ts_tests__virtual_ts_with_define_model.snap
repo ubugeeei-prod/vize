@@ -197,5 +197,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeEmitProps?: __VizeStaticEmitProps; readonly __vizeRawProps?: Props; };
+declare const __vize_component__: { __vizeEmitProps?: __VizeStaticEmitProps; readonly __vizeRawProps?: Props; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;
