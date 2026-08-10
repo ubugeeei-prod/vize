@@ -17,6 +17,7 @@ mod diagnostics;
 mod diagnostics_api;
 mod diagnostics_lsp;
 mod editor_lsp;
+mod language_id;
 mod lifecycle;
 mod lifecycle_setup;
 mod materialized_refresh;

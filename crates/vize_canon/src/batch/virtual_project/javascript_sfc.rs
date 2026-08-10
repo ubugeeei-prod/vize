@@ -18,8 +18,6 @@
 
 use vize_atelier_sfc::SfcDescriptor;
 
-use super::VirtualProject;
-
 /// TypeScript-flavoured `<script lang>` values. Everything else (`js`, `jsx`,
 /// or an absent `lang`) is JavaScript.
 fn is_typescript_lang(lang: &str) -> bool {
@@ -90,22 +88,6 @@ fn opts_into_type_checking(content: &str) -> bool {
         return false;
     }
     false
-}
-
-impl VirtualProject {
-    /// Whether the effective tsconfig asks TypeScript to check JavaScript.
-    pub(super) fn resolve_tsconfig_checks_javascript(&self) -> bool {
-        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
-            return false;
-        };
-        let Ok(compiler_options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
-            return false;
-        };
-        compiler_options
-            .get("checkJs")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false)
-    }
 }
 
 #[cfg(test)]

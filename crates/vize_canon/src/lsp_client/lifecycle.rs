@@ -1,6 +1,7 @@
 use super::{
     CorsaProjectClient,
     bootstrap::resolve_corsa_executable,
+    language_id::for_uri as language_id_for_uri,
     lifecycle_setup::{
         cleanup_stale_sessions, install_node_modules_link, write_session_meta,
         write_shared_helper_decls, write_temp_tsconfig, write_vue_module_stubs,
@@ -157,7 +158,7 @@ impl CorsaProjectClient {
                     document: uri_document_identifier(document_uri.as_str()),
                     text: (*content).into(),
                     version: Some(version),
-                    language_id: Some("typescript".into()),
+                    language_id: Some(language_id_for_uri(document_uri.as_str()).into()),
                 });
             }
         }

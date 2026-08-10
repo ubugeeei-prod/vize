@@ -204,7 +204,10 @@ impl BatchTypeChecker {
 
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
-        let paths = collect_project_paths(self.project.project_root())?;
+        let paths = collect_project_paths(
+            self.project.project_root(),
+            self.project.source_file_policy(),
+        )?;
         self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
         self.project.register_virtual_module_alias_targets()?;
@@ -279,9 +282,12 @@ impl TypeChecker for BatchTypeChecker {
         // Rebuilding source-derived virtual files preserves the observable
         // correctness contract; the executor reuses Corsa's dependency graph
         // after diffing the complete materialized snapshot.
-        let paths = self.incremental_paths.refresh(&self.project, changed)?;
-
         let mut refreshed = self.project.empty_with_same_options()?;
+        let paths = self.incremental_paths.refresh(
+            &self.project,
+            refreshed.source_file_policy(),
+            changed,
+        )?;
         refreshed.register_paths(&paths)?;
         refreshed.register_virtual_module_alias_targets()?;
         refreshed.register_reachable_dependencies()?;

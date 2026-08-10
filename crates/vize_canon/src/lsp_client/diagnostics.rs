@@ -2,6 +2,7 @@ use super::{
     CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
     diagnostics_api::{document_identifier_uri, flatten_file_diagnostics, map_project_diagnostics},
     diagnostics_lsp::{initialize_lsp_client, request_lsp_document_diagnostics},
+    language_id::for_uri as language_id_for_uri,
     session::uri_document_identifier,
     session_paths::overlay_root_for_project,
     utils::convert_diagnostics,
@@ -623,14 +624,6 @@ fn json_code_to_lsp_code(code: serde_json::Value) -> lsp_types::NumberOrString {
 fn read_file_uri(uri: &str) -> Option<String> {
     let path = file_uri_to_path(uri)?;
     std::fs::read_to_string(path).ok().map(Into::into)
-}
-
-fn language_id_for_uri(uri: &str) -> &'static str {
-    if uri.ends_with(".tsx") || uri.ends_with(".jsx") {
-        "typescriptreact"
-    } else {
-        "typescript"
-    }
 }
 
 #[cfg(test)]

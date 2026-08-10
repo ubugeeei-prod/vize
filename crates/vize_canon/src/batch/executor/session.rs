@@ -14,6 +14,7 @@ use super::{
 };
 use crate::batch::error::CorsaResult;
 use crate::batch::executor::diagnostics::map_batch_diagnostics;
+use crate::batch::source_policy::SourceFilePolicy;
 use crate::batch::type_checker::IncrementalCheckMetrics;
 use crate::batch::virtual_project::{
     AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE,
@@ -75,7 +76,7 @@ impl CorsaExecutor {
         };
         let mut uris = profile!(
             "canon.corsa.collect_uris",
-            collect_virtual_file_uris(project.virtual_root())
+            collect_virtual_file_uris(project.virtual_root(), project.source_file_policy())
         )?;
         extend_diagnostic_path_uris(project, &mut uris);
         check_session_client(&mut client, project, &uris)
@@ -94,7 +95,7 @@ impl CorsaExecutor {
             )?;
             let mut snapshot = profile!(
                 "canon.corsa.incremental.snapshot",
-                MaterializedSnapshot::capture(project.virtual_root())
+                MaterializedSnapshot::capture(project.virtual_root(), project.source_file_policy())
             )?;
             snapshot.extend_diagnostic_paths(project)?;
             let mut state = self
@@ -136,7 +137,6 @@ impl IncrementalSessionState {
         self.metrics.last_changed_files = 0;
         self.metrics.last_created_files = 0;
         self.metrics.last_deleted_files = 0;
-
         if let Some(session) = &mut self.session {
             self.metrics.last_session_reused = true;
             let delta = snapshot.diff(&session.snapshot);
@@ -180,7 +180,7 @@ impl IncrementalSessionState {
 }
 
 impl MaterializedSnapshot {
-    fn capture(virtual_root: &Path) -> CorsaResult<Self> {
+    fn capture(virtual_root: &Path, source_policy: SourceFilePolicy) -> CorsaResult<Self> {
         let mut snapshot = Self::default();
         for entry in walkdir::WalkDir::new(virtual_root) {
             let entry = entry?;
@@ -195,7 +195,7 @@ impl MaterializedSnapshot {
                 };
                 snapshot.revisions.insert(path.to_path_buf(), revision);
                 if resolves_to_file
-                    && is_diagnostic_input(path)
+                    && source_policy.accepts_diagnostic_input(path)
                     && !is_under_virtual_node_modules(virtual_root, path)
                     && !is_internal_virtual_project_stub(path)
                 {
@@ -211,7 +211,7 @@ impl MaterializedSnapshot {
             snapshot
                 .revisions
                 .insert(path.to_path_buf(), hash_bytes(&content));
-            if is_diagnostic_input(path)
+            if source_policy.accepts_diagnostic_input(path)
                 && !is_under_virtual_node_modules(virtual_root, path)
                 && !is_internal_virtual_project_stub(path)
             {
@@ -298,7 +298,10 @@ fn check_session_client(
     })
 }
 
-pub(super) fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
+pub(super) fn collect_virtual_file_uris(
+    virtual_root: &Path,
+    source_policy: SourceFilePolicy,
+) -> CorsaResult<Vec<String>> {
     let mut uris = Vec::new();
     for entry in walkdir::WalkDir::new(virtual_root) {
         let entry = entry?;
@@ -306,20 +309,13 @@ pub(super) fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<
         if path.is_file()
             && !is_under_virtual_node_modules(virtual_root, path)
             && !is_internal_virtual_project_stub(path)
-            && is_diagnostic_input(path)
+            && source_policy.accepts_diagnostic_input(path)
         {
             uris.push(path_to_file_uri(path));
         }
     }
     uris.sort();
     Ok(uris)
-}
-
-fn is_diagnostic_input(path: &Path) -> bool {
-    matches!(
-        path.extension().and_then(|extension| extension.to_str()),
-        Some("ts" | "tsx" | "mts" | "cts")
-    )
 }
 
 fn is_internal_virtual_project_stub(path: &Path) -> bool {

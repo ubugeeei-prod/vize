@@ -206,7 +206,7 @@ impl CorsaProjectClient {
                     document: uri_document_identifier(document_uri.as_str()),
                     text: content.into(),
                     version: Some(version),
-                    language_id: Some("typescript".into()),
+                    language_id: Some(super::language_id::for_uri(document_uri.as_str()).into()),
                 }],
                 delete: Vec::new(),
             }),

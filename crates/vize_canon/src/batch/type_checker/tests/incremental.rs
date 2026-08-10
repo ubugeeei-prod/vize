@@ -3,6 +3,8 @@ use crate::batch::TypeChecker;
 
 #[path = "incremental/file_lifecycle.rs"]
 mod file_lifecycle;
+#[path = "incremental/javascript.rs"]
+mod javascript;
 #[path = "incremental/workspace_packages.rs"]
 mod workspace_packages;
 

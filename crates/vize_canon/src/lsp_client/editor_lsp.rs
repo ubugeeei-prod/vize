@@ -10,7 +10,10 @@
 //! pay for the extra process, and a session that has answered one hover is
 //! reused for every later request.
 
-use super::{CorsaProjectClient, diagnostics_lsp::initialize_lsp_client};
+use super::{
+    CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
+    language_id::for_uri as language_id_for_uri,
+};
 use corsa::{
     jsonrpc::InboundEvent,
     lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument},
@@ -92,14 +95,12 @@ impl EditorLspSession {
                 })?;
             }
             None => {
-                let language_id =
-                    if document_uri.ends_with(".tsx") || document_uri.ends_with(".jsx") {
-                        "typescriptreact"
-                    } else {
-                        "typescript"
-                    };
                 self.overlay
-                    .open(VirtualDocument::new(uri.clone(), language_id, text))
+                    .open(VirtualDocument::new(
+                        uri.clone(),
+                        language_id_for_uri(document_uri),
+                        text,
+                    ))
                     .map_err(|error| {
                         cstr!("Failed to open editor LSP overlay for {document_uri}: {error}")
                     })?;

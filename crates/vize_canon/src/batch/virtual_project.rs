@@ -21,6 +21,7 @@ use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use super::import_rewriter::ImportRewriter;
 use super::source_map::CompositeSourceMap;
+use super::source_policy::SourceFilePolicy;
 use super::{Diagnostic, SfcBlockType};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
@@ -112,9 +113,8 @@ pub struct VirtualProject {
     /// Whether the effective tsconfig asks TypeScript to report unused symbols.
     preserve_unused_diagnostics: bool,
 
-    /// Whether the effective tsconfig enables `checkJs`. When it does not,
-    /// TypeScript diagnostics on JavaScript SFCs are not reportable (#3322).
-    check_js: bool,
+    /// Effective TypeScript source membership and JavaScript diagnostic policy.
+    source_policy: SourceFilePolicy,
 
     /// Global virtual TS options applied to every Vue file.
     virtual_ts_options: VirtualTsOptions,

@@ -74,6 +74,7 @@ mod tests {
             PathBuf::from("/workspace/a.ts"),
             PathBuf::from("/workspace/a.ts"),
         ];
+
         let created = vec![PathBuf::from("/workspace/created.ts")];
         let deleted = vec![PathBuf::from("/workspace/deleted.ts")];
 

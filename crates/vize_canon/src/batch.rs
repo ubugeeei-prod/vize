@@ -24,6 +24,7 @@ mod materialize_fs;
 mod materialize_lock;
 mod runtime_deps;
 mod source_map;
+mod source_policy;
 mod type_checker;
 pub(crate) mod virtual_project;
 mod virtual_specifier_message;
