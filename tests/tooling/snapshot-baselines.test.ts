@@ -41,6 +41,8 @@ const assertionOnlyCheckTests = {
     "framework patch oracle asserts clean, broken, and repaired Nuxt checking without a root tsconfig",
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
+  "typescript-go-module-resolution-determinism":
+    "module-resolution determinism gate asserts the pinned tsgo build and byte-identical output across fresh processes",
   "typescript-project-references-oracle":
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
   "vue-benchmarks-correctness-plants":
