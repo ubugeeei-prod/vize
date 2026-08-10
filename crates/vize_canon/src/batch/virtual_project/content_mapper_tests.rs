@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use super::CONTENT_MAPPER_SPAN_FEATURES_ALL;
+use super::{
+    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM, ContentMapperSpanKind,
+};
 use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options,
@@ -8,6 +10,8 @@ use crate::batch::{
 
 #[path = "content_mapper_component_export_tests.rs"]
 mod component_exports;
+#[path = "content_mapper_navigation_tests.rs"]
+mod navigation;
 
 #[test]
 fn emits_protocol_v1_spans_without_forbidden_overlaps() {
@@ -44,13 +48,14 @@ const message = "hello"
             );
         }
     }
-    assert!(
-        result
-            .mappings
-            .iter()
-            .all(|mapping| mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_ALL),
-        "protocol v1 spans must participate in every language-service feature"
-    );
+    assert!(result.mappings.iter().all(|mapping| {
+        mapping.0[5]
+            == if mapping.0[4] == ContentMapperSpanKind::Verbatim as usize {
+                CONTENT_MAPPER_SPAN_FEATURES_ALL
+            } else {
+                CONTENT_MAPPER_SPAN_FEATURES_ATOM
+            }
+    }));
 }
 
 #[test]
@@ -97,34 +102,6 @@ defineProps<{ count: number }>();
     );
     assert!(matching.iter().any(|mapping| mapping.0[0] == exported));
     assert!(matching.iter().all(|mapping| mapping.0[4] == 0));
-}
-
-#[test]
-fn maps_component_event_navigation_to_the_authored_name() {
-    let source = r#"<script setup lang="ts">
-import Child from "./Child.vue";
-const handler = (value: number) => value;
-</script>
-<template><Child @sa="handler" /></template>
-"#;
-    let result =
-        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
-    let original = source.find("@sa").unwrap() + 1;
-    let navigation = result.text.find("__vize_events_nav_0.sa").unwrap();
-    let generated = navigation + "__vize_events_nav_0.".len();
-    let handler = result.text.find("// @sa handler").unwrap();
-
-    assert!(
-        navigation < handler,
-        "completion projection must win reverse mapping"
-    );
-    assert!(result.mappings.iter().any(|mapping| {
-        mapping.0[0] == generated
-            && mapping.0[1] == "sa".len()
-            && mapping.0[2] == original
-            && mapping.0[3] == "sa".len()
-            && mapping.0[4] == 0
-    }));
 }
 
 #[test]

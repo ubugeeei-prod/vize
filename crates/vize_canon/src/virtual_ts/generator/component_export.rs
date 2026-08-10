@@ -52,6 +52,7 @@ pub(super) fn emit_default_export_declaration(
     has_authored_default: bool,
 ) {
     let emit_props_static = emits_info.static_emit_props_field();
+    let event_map_static = emits_info.static_event_map_field();
     let authored_component = if has_authored_default {
         "__VizeAuthoredComponent & "
     } else {
@@ -60,6 +61,11 @@ pub(super) fn emit_default_export_declaration(
     if let Some((generic_decl, generic_names)) = generic_component_params {
         let emit_props_resolver =
             emits_info.generic_emit_props_resolver_field(generic_decl, generic_names);
+        let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
+            ""
+        } else {
+            " "
+        };
         let emit_props_separator = if emit_props_resolver.is_empty() {
             ""
         } else {
@@ -67,12 +73,13 @@ pub(super) fn emit_default_export_declaration(
         };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{emit_props_separator}{emit_props_resolver} }};\n",
+            "declare const __vize_component__: {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_props_resolver} }};\n",
         );
     } else if emits_info.has_emits_for_props {
+        let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static} }};\n",
+            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static}{event_map_separator}{event_map_static} }};\n",
         );
     } else {
         append!(

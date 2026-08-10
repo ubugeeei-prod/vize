@@ -174,11 +174,29 @@ pub async fn assert_prop_navigation(
         "{prop_definition:#}"
     );
     assert!(
+        !contains_location(&prop_definition, uri, position),
+        "definition must not point back to its usage: {prop_definition:#}"
+    );
+    assert!(
         !serde_json::to_string(&prop_definition)
             .unwrap()
             .contains(".vue.ts"),
         "{prop_definition:#}"
     );
+}
+pub async fn assert_component_members(
+    client: &LspClient,
+    parent: (&str, &str),
+    child: (&str, &str),
+) {
+    for (usage, declaration, name, ty) in [
+        (":count", "count: number", "count", "number"),
+        ("@save", "save: [value", "save", "number"),
+    ] {
+        let usage = position(parent.1, parent.1.find(usage).unwrap() + 1);
+        let declaration = position(child.1, child.1.find(declaration).unwrap());
+        assert_prop_navigation(client, parent.0, &usage, name, ty, child.0, &declaration).await;
+    }
 }
 
 pub async fn pull_diagnostics(client: &LspClient, uri: &str) -> Value {
