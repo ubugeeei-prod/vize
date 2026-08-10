@@ -269,6 +269,48 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
   );
 });
 
+test("glyph corpus normalizes only compiler-defined presence attributes", () => {
+  const style = (attr: string): string => `<style ${attr}>.a{}</style>`;
+  const script = (attr: string): string => `<script ${attr}>const x=1</script>`;
+  const template = (attr: string): string => `<template ${attr}><p/></template>`;
+  const presenceCases = [
+    ["scoped", style, "<style>.a{}</style>"],
+    ["setup", script, "<script>const x=1</script>"],
+    ["vapor", template, "<template><p/></template>"],
+    ["vapor", script, "<script>const x=1</script>"],
+    ["functional", template, "<template><p/></template>"],
+  ] as const;
+  for (const [attr, render, absent] of presenceCases) {
+    const forms = [attr, `${attr}=""`, `${attr}="${attr}"`, `${attr}="false"`];
+    for (const left of forms) {
+      for (const right of forms) {
+        assert.deepEqual(compareFile(render(left), render(right), "App.vue"), []);
+      }
+    }
+    assert.notDeepEqual(compareFile(render(forms[0]), absent, "App.vue"), []);
+  }
+  for (const [before, after] of [
+    ["<style module>.a{}</style>", '<style module="theme">.a{}</style>'],
+    ['<style module="first">.a{}</style>', '<style module="second">.a{}</style>'],
+    ['<style lang="scss">.a{}</style>', '<style lang="less">.a{}</style>'],
+    ['<style custom="first">.a{}</style>', '<style custom="second">.a{}</style>'],
+    [
+      '<script setup generic="T">const x=1</script>',
+      '<script setup generic="U">const x=1</script>',
+    ],
+    [
+      '<template><p/></template><style src="first.css"></style>',
+      '<template><p/></template><style src="second.css"></style>',
+    ],
+    [
+      '<template><p/></template><docs scoped="first">x</docs>',
+      '<template><p/></template><docs scoped="second">x</docs>',
+    ],
+  ]) {
+    assert.notDeepEqual(compareFile(before, after, "App.vue"), []);
+  }
+});
+
 function makeSyntheticProject(files: Array<[string, string]>): CorpusProject {
   const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-corpus-"));
   for (const [file, content] of files) {

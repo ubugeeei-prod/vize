@@ -28,15 +28,6 @@
   },
   {
     "property": "parse-preservation",
-    "category": "semantic-diff",
-    "project": "pinry",
-    "path": "pinry-spa/src/components/search/SearchPanel.vue",
-    "reason": "The comparator does not yet normalize Vue-equivalent presence forms of the scoped SFC block attribute.",
-    "trackingIssue": 4114,
-    "expiryCondition": "Remove after the semantic oracle treats equivalent scoped attribute spellings identically."
-  },
-  {
-    "property": "parse-preservation",
     "category": "oracle-unavailable",
     "project": "lx-music-desktop",
     "path": "src/renderer/components/layout/PlayDetail/components/MusicComment/index.vue",
