@@ -14,6 +14,7 @@ import {
   setup,
   sharedVizeDiagnostic,
   unusableFailure,
+  updateVizeOutput,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
 /**
@@ -184,17 +185,11 @@ test("a diagnostic-free baseline is a real breach when it covered every Vue file
 test("a partially covered Vue corpus is unusable even when diagnostics overlap", () => {
   const fixture = setup();
   try {
-    const payload = readJson(fixture.outputPath);
-    payload.parsed.fileCount = 2;
-    payload.parsed.files.splice(1, 0, { file: "src/Other.vue", diagnostics: [] });
-    payload.stdout = JSON.stringify(payload.parsed);
-    fs.writeFileSync(fixture.outputPath, `${JSON.stringify(payload, null, 2)}\n`);
-    const summary = readJson(path.join(fixture.reportDir, "summary.json"));
-    summary.projects[0].runs[0].fileCount = 2;
-    fs.writeFileSync(
-      path.join(fixture.reportDir, "summary.json"),
-      `${JSON.stringify(summary, null, 2)}\n`,
-    );
+    fs.writeFileSync(path.join(fixture.fixtureRoot, "src", "Other.vue"), "<template />\n");
+    updateVizeOutput(fixture, (parsed) => {
+      parsed.fileCount = 2;
+      parsed.files.splice(1, 0, { file: "src/Other.vue", diagnostics: [] });
+    });
 
     const result = run(fixture);
     assert.equal(result.status, 1);
@@ -219,6 +214,30 @@ test("same-sized but different Vue corpora are unusable", () => {
     const coverage = readJson(artifactPath(fixture, "json")).baseline.coverage;
     assert.deepEqual(coverage.missingVueFiles, ["src/App.vue"]);
     assert.deepEqual(coverage.unexpectedVueFiles, ["src/Other.vue"]);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("transitive authored TypeScript sources stay out of the Vue corpus comparison", () => {
+  const fixture = setup();
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "src", "helper.ts"),
+      "export const helper = 1;\n",
+    );
+    updateVizeOutput(fixture, (parsed) => {
+      parsed.fileCount = 2;
+      parsed.files.push({ file: "src/helper.ts", diagnostics: [] });
+    });
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const coverage = readJson(artifactPath(fixture, "json")).baseline.coverage;
+    assert.equal(coverage.verdict, "usable");
+    assert.equal(coverage.vizeVueFileCount, 1);
+    assert.deepEqual(coverage.missingVueFiles, []);
+    assert.deepEqual(coverage.unexpectedVueFiles, []);
   } finally {
     cleanup(fixture);
   }
