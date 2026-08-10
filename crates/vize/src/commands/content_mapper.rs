@@ -54,8 +54,15 @@ struct TransformParams {
     content: CompactString,
     #[serde(default)]
     options: Option<TransformOptions>,
-    #[allow(dead_code)]
-    compiler_options: Value,
+    #[serde(default)]
+    compiler_options: CompilerOptions,
+}
+
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CompilerOptions {
+    #[serde(default)]
+    no_unused_locals: bool,
 }
 
 #[derive(Deserialize)]
@@ -146,10 +153,13 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                     }
                 };
                 let options = params.options.unwrap_or_default();
+                let transform_options = ContentMapperTransformOptions::default()
+                    .with_options_api(options.options_api)
+                    .with_preserve_unused_diagnostics(params.compiler_options.no_unused_locals);
                 match generate_vue_content_mapper_transform_with_options(
                     Path::new(params.file_name.as_str()),
                     params.content.as_str(),
-                    ContentMapperTransformOptions::default().with_options_api(options.options_api),
+                    transform_options,
                 ) {
                     Ok(result) => write_result(writer, id, result)?,
                     Err(error) => {

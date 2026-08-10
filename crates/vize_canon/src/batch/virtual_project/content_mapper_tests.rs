@@ -224,6 +224,26 @@ export default {
 }
 
 #[test]
+fn unused_diagnostic_setting_only_anchors_template_references() {
+    let source = r#"<script setup lang="ts">
+const used = 1
+const unused = 2
+</script>
+<template>{{ used }}</template>
+"#;
+
+    let result = generate_vue_content_mapper_transform_with_options(
+        Path::new("Unused.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_preserve_unused_diagnostics(true),
+    )
+    .expect("transform");
+
+    assert!(result.text.contains("void used;"), "{}", result.text);
+    assert!(!result.text.contains("void unused;"), "{}", result.text);
+}
+
+#[test]
 fn default_transform_matches_vize_options_api_default() {
     let source = r#"<script lang="ts">
 export default { data() { return { count: 1 } } }

@@ -37,6 +37,7 @@ fn install_mapper_manifest(project_root: &Path) {
         "private": true,
         "tsContentMapper": {
             "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+            "compilerOptions": ["noUnusedLocals"],
         },
     });
     std::fs::write(
@@ -225,6 +226,22 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
             && broken_output.contains("not assignable to type 'number'"),
         "{broken_output}"
     );
+    assert!(
+        broken_output.contains("src/Unused.vue")
+            && broken_output.contains("TS6133")
+            && broken_output.contains("'unused' is declared but its value is never read"),
+        "{broken_output}"
+    );
+    assert!(
+        !broken_output.contains("'used' is declared"),
+        "{broken_output}"
+    );
+    assert_eq!(
+        broken_output.matches("TS6133").count(),
+        1,
+        "{broken_output}"
+    );
+    assert!(!broken_output.contains("TS6196"), "{broken_output}");
 
     let emit = run_tsgo(
         &tsgo,
