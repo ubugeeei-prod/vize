@@ -99,7 +99,7 @@ impl EmitsInfo {
 
     pub(super) fn static_event_map_field(&self) -> &'static str {
         if self.has_emits_for_props && self.preserve_event_navigation {
-            "__vizeRawEmits?: Emits; __vizeEventMap?: __VizeStaticEventMap;"
+            "__vizeRawEmits?: __VizeAuthoredEventMap; __vizeEventMap?: __VizeStaticEventMap;"
         } else {
             ""
         }
@@ -229,13 +229,51 @@ pub(super) fn emit_emits_type(
         }
     }
 
-    mappings.map_exported_type(ts, generated_start, summary.macros.define_emits(), "Emits");
+    if summary.macros.emits().is_empty() {
+        mappings.map_exported_type(ts, generated_start, summary.macros.define_emits(), "Emits");
+    }
+    if preserve_event_navigation && has_emits_for_props {
+        emit_authored_event_map(ts, summary, &mut mappings);
+    }
     EmitsInfo {
         has_emits_for_props,
         has_runtime_emits,
         has_generic_emits: emits_generic_decl.is_some(),
         preserve_event_navigation,
     }
+}
+
+fn emit_authored_event_map(
+    ts: &mut String,
+    summary: &Croquis,
+    mappings: &mut MacroTypeMappings<'_>,
+) {
+    ts.push_str("type __VizeAuthoredEventMap = Emits & {\n");
+    let mut emitted_names = FxHashSet::default();
+    for emit in summary.macros.emits() {
+        if !emitted_names.insert(emit.name.as_str()) {
+            continue;
+        }
+        let Some(authored_range) = summary.macros.emit_declaration(emit.name.as_str()) else {
+            continue;
+        };
+        let Some(authored_name) = mappings.authored_text(authored_range).map(String::from) else {
+            continue;
+        };
+        ts.push_str("  ");
+        let generated_start = ts.len();
+        ts.push_str(authored_name.as_str());
+        let generated_end = ts.len();
+        ts.push_str(": __VizeStaticEventMap[");
+        ts.push_str(
+            serde_json::to_string(emit.name.as_str())
+                .expect("event names serialize as JSON strings")
+                .as_str(),
+        );
+        ts.push_str("];\n");
+        mappings.map_exact(generated_start..generated_end, authored_range);
+    }
+    ts.push_str("};\n");
 }
 
 pub(super) fn emit_emit_props_helper(

@@ -41,7 +41,7 @@ const handler = (value: number) => value;
 }
 
 #[test]
-fn maps_exported_emits_type_to_the_authored_macro() {
+fn maps_authored_event_members_without_overlapping_the_macro_type() {
     let source = r#"<script setup lang="ts">
 defineEmits<{ save: [value: number] }>();
 </script>
@@ -50,15 +50,14 @@ defineEmits<{ save: [value: number] }>();
     let result =
         generate_vue_content_mapper_transform(Path::new("Child.vue"), source).expect("transform");
     let original = source.find("save: [value").unwrap();
-    let exported = result.text.find("export type Emits").unwrap();
-    let generated = exported + result.text[exported..].find("save: [value").unwrap();
+    let event_map = result.text.find("type __VizeAuthoredEventMap").unwrap();
+    let generated = event_map + result.text[event_map..].find("save:").unwrap();
 
     assert!(result.mappings.iter().any(|mapping| {
-        generated >= mapping.0[0]
-            && generated < mapping.0[0] + mapping.0[1]
-            && original >= mapping.0[2]
-            && original < mapping.0[2] + mapping.0[3]
-            && generated - mapping.0[0] == original - mapping.0[2]
+        generated == mapping.0[0]
+            && mapping.0[1] == "save".len()
+            && original == mapping.0[2]
+            && mapping.0[3] == "save".len()
             && mapping.0[4] == ContentMapperSpanKind::Verbatim as usize
     }));
 }

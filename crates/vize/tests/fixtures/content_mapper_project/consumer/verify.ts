@@ -1,10 +1,14 @@
+import CallSignatureChild from "./CallSignatureChild.vue";
 import Options from "./Options.vue";
+import RuntimeChild from "./RuntimeChild.vue";
 import type { AppProps, PublicInstance } from "./main";
 import { readChildCount } from "./javascript-consumer";
 import { renderChild } from "./jsx-consumer";
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+type CallSignatureChildInstance = InstanceType<typeof CallSignatureChild>;
 type OptionsInstance = InstanceType<typeof Options>;
+type RuntimeChildInstance = InstanceType<typeof RuntimeChild>;
 
 const propsMustBeTyped: IsAny<AppProps> = false;
 const publicInstanceMustBeTyped: IsAny<PublicInstance> = false;
@@ -20,6 +24,14 @@ const optionsLabelMustBeTyped: IsAny<OptionsInstance["label"]> = false;
 const optionsComputedMustBeTyped: IsAny<OptionsInstance["doubled"]> = false;
 const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
 declare const options: OptionsInstance;
+declare const callSignatureChild: CallSignatureChildInstance;
+declare const runtimeChild: RuntimeChildInstance;
+callSignatureChild.$emit("submit", true);
+// @ts-expect-error submit payload must remain boolean through declaration emit
+callSignatureChild.$emit("submit", "yes");
+runtimeChild.$emit("cancel", "reason");
+// @ts-expect-error cancel payload must remain string through declaration emit
+runtimeChild.$emit("cancel", false);
 const optionsCount: number = options.count;
 const optionsLabel: string = options.label;
 const optionsComputed: number = options.doubled;

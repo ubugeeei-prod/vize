@@ -1,5 +1,7 @@
 //! Authored mappings for module-level types synthesized from compiler macros.
 
+use std::ops::Range;
+
 use vize_carton::cstr;
 use vize_croquis::macros::MacroCall;
 
@@ -67,6 +69,25 @@ impl<'a> MacroTypeMappings<'a> {
             gen_range: generated_start + generated_type_start
                 ..generated_start + generated_type_start + emitted.len(),
             src_range: authored_start..authored_start + emitted.len(),
+            sub_spans: Vec::new(),
+        });
+    }
+
+    pub(crate) fn authored_text(&self, range: (u32, u32)) -> Option<&str> {
+        self.script?.get(range.0 as usize..range.1 as usize)
+    }
+
+    pub(crate) fn map_exact(&mut self, generated: Range<usize>, authored: (u32, u32)) {
+        let Some(authored_len) = authored.1.checked_sub(authored.0).map(|len| len as usize) else {
+            return;
+        };
+        if generated.len() != authored_len {
+            return;
+        }
+        let authored_start = (self.source_offset)(authored.0 as usize);
+        self.mappings.push(VizeMapping {
+            gen_range: generated,
+            src_range: authored_start..authored_start + authored_len,
             sub_spans: Vec::new(),
         });
     }
