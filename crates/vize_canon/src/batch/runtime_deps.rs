@@ -15,10 +15,12 @@ pub(crate) use resolver::{test_env_var_os, with_test_env_overrides};
 use resolver::{
     VueRuntimePackages, resolve_package, resolve_vue_package, resolve_vue_runtime_packages,
 };
-pub(crate) use stubs::VUE_RUNTIME_DOM_STUB_TYPES;
 use stubs::{
     VITE_CLIENT_STUB, VITE_STUB_PACKAGE_JSON, VUE_FACADE_PACKAGE_JSON, VUE_FACADE_TYPES,
     VUE_RUNTIME_DOM_STUB_PACKAGE_JSON,
+};
+pub(crate) use stubs::{
+    VUE_FACADE_JSX_GLOBAL_TYPES, VUE_FACADE_JSX_RUNTIME_TYPES, VUE_RUNTIME_DOM_STUB_TYPES,
 };
 
 pub(super) fn materialize_runtime_dependencies(
@@ -91,7 +93,18 @@ fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
         VUE_FACADE_PACKAGE_JSON.as_bytes(),
     )?;
     write_if_changed(&vue_dir.join("index.d.ts"), VUE_FACADE_TYPES.as_bytes())?;
-    prune_stub_dir(&vue_dir, &["package.json", "index.d.ts"])?;
+    write_if_changed(
+        &vue_dir.join("jsx-runtime.d.ts"),
+        VUE_FACADE_JSX_RUNTIME_TYPES.as_bytes(),
+    )?;
+    write_if_changed(
+        &vue_dir.join("jsx.d.ts"),
+        VUE_FACADE_JSX_GLOBAL_TYPES.as_bytes(),
+    )?;
+    prune_stub_dir(
+        &vue_dir,
+        &["package.json", "index.d.ts", "jsx-runtime.d.ts", "jsx.d.ts"],
+    )?;
     Ok(())
 }
 
