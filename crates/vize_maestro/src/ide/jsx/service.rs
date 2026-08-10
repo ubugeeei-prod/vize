@@ -176,12 +176,8 @@ impl JsxService {
         }
     }
 
-    /// Type diagnostics for a `.jsx`/`.tsx` document, surfaced from its virtual
-    /// TS through Corsa. Returned alongside the JSX compiler diagnostics.
-    ///
-    /// Each Corsa diagnostic is mapped from virtual-TS coordinates back to the
-    /// source via the byte-range mappings; diagnostics that don't map to any
-    /// user range (e.g. ones on the synthesized ambient preamble) are dropped.
+    /// Type diagnostics surfaced from JSX virtual TS through Corsa. Diagnostics
+    /// outside authored mappings (such as the ambient preamble) are dropped.
     pub async fn diagnostics(
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
@@ -246,6 +242,9 @@ impl JsxService {
                         3 => DiagnosticSeverity::INFORMATION,
                         _ => DiagnosticSeverity::HINT,
                     }),
+                    code: diag
+                        .code
+                        .map(crate::ide::diagnostics::corsa::corsa_diagnostic_code),
                     source: Some(sources::TYPE_CHECKER.to_string()),
                     message: diag.message,
                     ..Default::default()

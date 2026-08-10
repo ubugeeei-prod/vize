@@ -1,24 +1,12 @@
-//! Semantic JSX component calls for the plain-TypeScript check document.
-//!
-//! JSX lowering keeps a rich component/prop tree, but the original check
-//! codegen retained only dynamic expressions. This module turns component
-//! elements into type-only calls whose props parameter comes from the imported
-//! SFC constructor or local function component contract.
+//! Semantic JSX component calls for the editor's plain-TypeScript document.
 
-use std::vec::Vec;
-
-use vize_carton::{String as CompactString, ToCompactString};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
-use crate::virtual_ts::{VizeMapping, VizeSubSpan};
+use vize_canon::virtual_ts::{VizeMapping, VizeSubSpan};
 
 use super::{JsxExpr, push_mapped_expr};
 
-/// Type-only component invocation. The constructor branch consumes the
-/// `$props` contract exported by generated SFC modules; the function branch
-/// covers locally declared functional components. Unknown component shapes
-/// remain a permissive fallback instead of introducing false positives.
-pub(super) const HELPER: &str = crate::virtual_ts::JSX_COMPONENT_HELPER;
+pub(super) const HELPER: &str = vize_canon::virtual_ts::JSX_COMPONENT_HELPER;
 
 pub(super) struct JsxComponent {
     tag: JsxExpr,
@@ -41,7 +29,7 @@ enum JsxComponentProp {
 
 enum PropName {
     Static {
-        content: CompactString,
+        content: String,
         start: u32,
         end: u32,
     },
@@ -66,9 +54,8 @@ pub(super) fn collect(element: &ElementNode<'_>) -> Option<JsxComponent> {
     Some(JsxComponent { tag, props })
 }
 
-/// Whether `component_prop` already preserves this prop. Props that do not
-/// participate in the component contract continue through the general JSX
-/// expression collector so directive/model expressions are never lost.
+/// Whether the semantic call already preserves this prop. Other directives
+/// continue through the expression collector so model/lvalue checks survive.
 pub(super) fn captures_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> bool {
     match prop {
         PropNode::Attribute(attribute) => !is_reserved_prop(attribute.name.as_str()),
@@ -90,11 +77,7 @@ pub(super) fn captures_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> b
     }
 }
 
-pub(super) fn render(
-    out: &mut CompactString,
-    mappings: &mut Vec<VizeMapping>,
-    component: &JsxComponent,
-) {
+pub(super) fn render(out: &mut String, mappings: &mut Vec<VizeMapping>, component: &JsxComponent) {
     out.push_str("__vize_jsx_component__(");
     push_mapped_expr(out, mappings, &component.tag);
     out.push_str(", ");
@@ -116,7 +99,7 @@ pub(super) fn render(
     out.push(')');
 }
 
-fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &JsxComponentProp) {
+fn render_prop(out: &mut String, mappings: &mut Vec<VizeMapping>, prop: &JsxComponentProp) {
     match prop {
         JsxComponentProp::Property {
             name,
@@ -129,9 +112,7 @@ fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &
             out.push_str(": ");
             match value {
                 PropValue::Boolean => out.push_str("true"),
-                PropValue::Expression(expression) => {
-                    push_mapped_expr(out, mappings, expression);
-                }
+                PropValue::Expression(expression) => push_mapped_expr(out, mappings, expression),
             }
             let entry_end = out.len();
             mappings.push(VizeMapping {
@@ -167,7 +148,7 @@ fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &
 }
 
 fn render_name(
-    out: &mut CompactString,
+    out: &mut String,
     mappings: &mut Vec<VizeMapping>,
     name: &PropName,
 ) -> (
@@ -212,7 +193,7 @@ fn component_tag(element: &ElementNode<'_>) -> Option<JsxExpr> {
 
     let start = element.loc.start.offset.saturating_add(1);
     Some(JsxExpr {
-        content: element.tag.as_str().to_compact_string(),
+        content: element.tag.as_str().to_string(),
         start,
         end: start.saturating_add(element.tag.len() as u32),
     })
@@ -291,12 +272,8 @@ fn is_reserved_prop(name: &str) -> bool {
     matches!(name, "key" | "ref")
 }
 
-/// JSX accepts Vue's kebab aliases, while the generated SFC exposes its raw
-/// required contract under camelCase keys. Canonicalizing the authored key lets
-/// the helper intersect `$props` with that raw contract without making both
-/// spellings optional (which would silently lose required props).
-fn canonical_prop_name(name: &str) -> CompactString {
-    let mut out = CompactString::default();
+fn canonical_prop_name(name: &str) -> String {
+    let mut out = String::new();
     let mut uppercase_next = false;
     for ch in name.chars() {
         if ch == '-' {
@@ -311,8 +288,6 @@ fn canonical_prop_name(name: &str) -> CompactString {
     out
 }
 
-fn json_string(value: &str) -> CompactString {
-    serde_json::to_string(value)
-        .expect("serializing a Rust string to JSON cannot fail")
-        .to_compact_string()
+fn json_string(value: &str) -> String {
+    serde_json::to_string(value).expect("serializing a Rust string to JSON cannot fail")
 }
