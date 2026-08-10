@@ -28,11 +28,17 @@ const vue2Globs = [
   "packages/gogocode-plugin-sample/test/**/*.vue",
 ];
 
-test("Vue 2 render signatures normalize compiler-owned attribute and text layout", () => {
+test("Vue 2 render signatures normalize only pure attribute layout", () => {
   const before = `with(this){return _c('p',{attrs:{"name":"slide","appear":""},on:{"focus":function(){return focus()},"click":function(){return click()}}},[_v("Vue版本："+_s(version))])}`;
-  const after = `with(this){return _c("p",{attrs:{appear:"",name:"slide"},on:{click:function(){return click()},focus:function(){return focus()}}},[_v(" Vue版本："+_s(version)+" ")])}`;
+  const after = `with(this){return _c("p",{attrs:{appear:"",name:"slide"},on:{click:function(){return click()},focus:function(){return focus()}}},[_v("Vue版本："+_s(version))])}`;
 
   assert.deepEqual(vue2RenderFunctionSignature(before), vue2RenderFunctionSignature(after));
+  assert.notDeepEqual(
+    vue2RenderFunctionSignature(before),
+    vue2RenderFunctionSignature(
+      `with(this){return _c("p",{attrs:{appear:"",name:"slide"},on:{click:function(){return click()},focus:function(){return focus()}}},[_v(" Vue版本："+_s(version)+" ")])}`,
+    ),
+  );
 });
 
 test("Vue 2 render signatures preserve direct binding evaluation order", () => {
@@ -50,8 +56,14 @@ test("Vue 2 render signatures preserve direct binding evaluation order", () => {
 
 test("Vue 2.7 module render signatures use the same scoped normalization", () => {
   const before = `var render = function render(){var _vm=this,_c=_vm._self._c;return _c('p',{attrs:{"name":"slide","appear":""}},[_vm._v("Vue版本："+_vm._s(_vm.version))])}\nvar staticRenderFns = []`;
-  const after = `var render = function render(){var _vm=this,_c=_vm._self._c;return _c("p",{attrs:{appear:"",name:"slide"}},[_vm._v(" Vue版本："+_vm._s(_vm.version)+" ")])}\nvar staticRenderFns = []`;
+  const after = `var render = function render(){var _vm=this,_c=_vm._self._c;return _c("p",{attrs:{appear:"",name:"slide"}},[_vm._v("Vue版本："+_vm._s(_vm.version))])}\nvar staticRenderFns = []`;
   assert.deepEqual(vue27RenderCodeSignature(before), vue27RenderCodeSignature(after));
+  assert.notDeepEqual(
+    vue27RenderCodeSignature(before),
+    vue27RenderCodeSignature(
+      `var render = function render(){var _vm=this,_c=_vm._self._c;return _c("p",{attrs:{appear:"",name:"slide"}},[_vm._v(" Vue版本："+_vm._s(_vm.version)+" ")])}\nvar staticRenderFns = []`,
+    ),
+  );
 
   assert.notDeepEqual(
     vue27RenderCodeSignature(

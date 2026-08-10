@@ -145,8 +145,7 @@ function normalizedChildren(node: TemplateNode, preserveWhitespace: boolean): No
 function summarizeNode(node: TemplateNode, preserveWhitespace: boolean): string | null {
   if (node.type === TEXT) {
     const content = node.content as string;
-    if (!preserveWhitespace && content.trim() === "") return null;
-    return JSON.stringify(["text", preserveWhitespace ? content : condense(content)]);
+    return JSON.stringify(["text", preserveWhitespace ? content : content.replace(/\s+/g, " ")]);
   }
   if (node.type === INTERPOLATION) {
     return JSON.stringify(["interpolation", expressionSignature(node.content as ExpressionNode)]);
@@ -176,27 +175,28 @@ function semanticTree(node: TemplateNode, preserveWhitespace: boolean): unknown 
   return children;
 }
 
-/**
- * Group props into segments split at no-arg v-bind / v-on spreads. Segments
- * are compared as sorted multisets (glyph sorts attributes by default) while
- * the segment boundaries pin every prop's position relative to each spread,
- * because crossing a spread changes runtime merge behavior.
- */
+/** Sort unique static runs; directives and duplicate literals stay fixed. */
 function normalizeProps(props: TemplateProp[]): unknown[] {
-  const segments: string[][] = [[]];
+  const normalized: unknown[] = [];
+  let literals: TemplateProp[] = [];
+  const flushLiterals = (): void => {
+    if (literals.length === 0) return;
+    const names = literals.map((prop) => prop.name.toLowerCase());
+    const unique = new Set(names).size === names.length;
+    const entries = literals.map((prop) => JSON.stringify(normalizeProp(prop)));
+    normalized.push(...(unique ? entries.sort() : entries));
+    literals = [];
+  };
   for (const prop of props) {
-    const normalized = normalizeProp(prop);
-    if (
-      prop.type === DIRECTIVE &&
-      prop.arg == null &&
-      (prop.name === "bind" || prop.name === "on")
-    ) {
-      segments.push([JSON.stringify(normalized)], []);
-    } else {
-      segments[segments.length - 1].push(JSON.stringify(normalized));
+    if (prop.type === ATTRIBUTE) {
+      literals.push(prop);
+      continue;
     }
+    flushLiterals();
+    normalized.push(JSON.stringify(normalizeProp(prop)));
   }
-  return segments.map((segment, index) => (index % 2 === 1 ? segment : [...segment].sort()));
+  flushLiterals();
+  return normalized;
 }
 
 function normalizeProp(prop: TemplateProp): unknown {

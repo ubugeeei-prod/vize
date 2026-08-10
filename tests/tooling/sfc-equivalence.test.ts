@@ -9,7 +9,7 @@ test("glyph SFC comparator flags structural corruption", () => {
   assert.deepEqual(
     compareSfcEquivalence(
       original,
-      '<template>\n  <div\n    :class="foo"\n    title="x"\n    v-bind="rest"\n  >\n    a {{ n + 1 }}\n  </div>\n</template>\n',
+      '<template>\n  <div\n    title="x"\n    :class="foo"\n    v-bind="rest"\n  >a {{ n + 1 }}</div>\n</template>\n',
       "App.vue",
     ),
     [],
@@ -57,6 +57,22 @@ test("glyph SFC comparator flags structural corruption", () => {
       "App.vue",
     ).join("\n"),
     /#interpolation/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><p>A{{ name }}B</p></template>\n",
+      "<template><p>A {{ name }} B</p></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /#text/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      '<template><Widget :z="first()" :a="second()" /></template>\n',
+      '<template><Widget :a="second()" :z="first()" /></template>\n',
+      "App.vue",
+    ).join("\n"),
+    /<Widget>/,
   );
   assert.match(
     compareSfcEquivalence(
