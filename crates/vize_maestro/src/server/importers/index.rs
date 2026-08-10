@@ -70,6 +70,7 @@ impl OpenVueImportIndex {
         importers
     }
 
+    #[cfg(any(test, feature = "native"))]
     pub(super) fn dependency_paths(&self, dependency: &Path) -> Vec<PathBuf> {
         let dependency = comparable_path(dependency);
         let index = self.inner.read();

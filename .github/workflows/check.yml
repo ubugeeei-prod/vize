@@ -377,6 +377,14 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
+      - name: Check Maestro non-native feature contract
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: |
+          cargo check -p vize_maestro --no-default-features
+          cargo test -p vize_maestro --no-default-features --test non_native_structural
+          cargo check -p vize_maestro --no-default-features --features glyph
+          cargo test -p vize_maestro --no-default-features --features glyph --test non_native_structural
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test

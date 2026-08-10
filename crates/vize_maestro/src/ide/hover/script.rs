@@ -8,7 +8,9 @@
     clippy::disallowed_macros
 )]
 
-use tower_lsp::lsp_types::{Hover, HoverContents};
+use tower_lsp::lsp_types::Hover;
+#[cfg(any(test, feature = "native"))]
+use tower_lsp::lsp_types::HoverContents;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
@@ -371,6 +373,7 @@ impl HoverService {
     }
 }
 
+#[cfg(any(test, feature = "native"))]
 fn hover_has_unknown_reactive_type(hover: &Hover) -> bool {
     let value = match &hover.contents {
         HoverContents::Markup(markup) => markup.value.as_str(),
@@ -382,6 +385,7 @@ fn hover_has_unknown_reactive_type(hover: &Hover) -> bool {
     value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
 }
 
+#[cfg(any(test, feature = "native"))]
 fn marked_string_has_unknown_reactive_type(value: &tower_lsp::lsp_types::MarkedString) -> bool {
     let value = match value {
         tower_lsp::lsp_types::MarkedString::String(value) => value.as_str(),

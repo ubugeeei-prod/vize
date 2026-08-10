@@ -6,7 +6,9 @@ use crate::ide::ecosystem;
 use crate::server::ServerState;
 use crate::utils::{is_jsx_path, is_standalone_html_path};
 
-use super::{LineIndex, Severity, sources};
+#[cfg(feature = "native")]
+use super::sources;
+use super::{LineIndex, Severity};
 
 /// Source position mapping from @vize-map comments.
 #[cfg(feature = "native")]

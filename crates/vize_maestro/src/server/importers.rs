@@ -27,6 +27,7 @@ pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<U
         .unwrap_or_default()
 }
 
+#[cfg(any(test, feature = "native"))]
 pub(super) fn indexed_dependency_paths(state: &ServerState, dependency: &Path) -> Vec<PathBuf> {
     state.open_vue_imports.dependency_paths(dependency)
 }

@@ -323,6 +323,7 @@ impl ServerState {
     /// `vize check` uses — so React `.tsx` files are never type-checked as Vue
     /// JSX unless the user explicitly enables it (#1498).
     #[inline]
+    #[cfg(any(test, feature = "native"))]
     pub(crate) fn jsx_typecheck_enabled(&self) -> bool {
         *self.type_checker_jsx_typecheck.read()
     }

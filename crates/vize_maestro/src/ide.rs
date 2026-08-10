@@ -10,6 +10,7 @@ pub mod auto_insert;
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
+#[cfg(feature = "native")]
 mod corsa_support;
 pub mod cursor_context;
 pub mod definition;

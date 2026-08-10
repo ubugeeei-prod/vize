@@ -42,6 +42,7 @@ pub(crate) use self::reactive_infer::infer_reactive_value_type;
 /// composition APIs, plus compiler macros in `<script setup>`. After `.` or
 /// `?.` only the accessed type's members belong, the list tsserver and Volar
 /// show, so member-access positions get none (#3933).
+#[cfg(any(test, feature = "native"))]
 pub(crate) fn script_extras(ctx: &IdeContext, is_setup: bool) -> Vec<CompletionItem> {
     if completes_a_member(&ctx.content, ctx.offset) {
         return Vec::new();
@@ -60,6 +61,7 @@ pub(crate) fn script_extras(ctx: &IdeContext, is_setup: bool) -> Vec<CompletionI
 /// in-progress decimal literal (`1.`) is not a member position. The scan is
 /// ASCII-conservative — an exotic identifier falls back to including the
 /// extras, today's behavior.
+#[cfg(any(test, feature = "native"))]
 fn completes_a_member(content: &str, offset: usize) -> bool {
     let clamped = offset.min(content.len());
     let Some(before_cursor) = content.get(..clamped) else {

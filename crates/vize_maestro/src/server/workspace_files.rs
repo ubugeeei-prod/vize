@@ -1,8 +1,10 @@
 //! Workspace file-event handling used by LSP diagnostics and rename support.
 
+#[cfg(feature = "native")]
+use tower_lsp::lsp_types::FileChangeType;
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
-    FileChangeType, MessageType, RenameFilesParams, WorkspaceEdit,
+    MessageType, RenameFilesParams, WorkspaceEdit,
 };
 
 use super::{MaestroServer, ServerState};
@@ -137,6 +139,7 @@ pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFile
     let _ = (server, params);
 }
 
+#[cfg(any(test, feature = "native"))]
 fn record_created_files(state: &ServerState, params: &CreateFilesParams) {
     #[cfg(feature = "native")]
     {
@@ -175,6 +178,7 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
     let _ = (server, params);
 }
 
+#[cfg(any(test, feature = "native"))]
 fn record_deleted_files(state: &ServerState, params: &DeleteFilesParams) {
     #[cfg(feature = "native")]
     {

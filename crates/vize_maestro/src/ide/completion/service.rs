@@ -7,17 +7,20 @@
 #[cfg(feature = "native")]
 use std::sync::Arc;
 
+use tower_lsp::lsp_types::CompletionResponse;
+#[cfg(feature = "native")]
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, CompletionResponse, Documentation, InsertTextFormat,
-    MarkupContent, MarkupKind,
+    CompletionItem, CompletionItemKind, Documentation, InsertTextFormat, MarkupContent, MarkupKind,
 };
 
 #[cfg(feature = "native")]
 use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 
 #[cfg(feature = "native")]
+use super::is_inside_html_comment;
+#[cfg(feature = "native")]
 use super::service_corsa_template;
-use super::{is_inside_html_comment, script, service_inline_art, style, template};
+use super::{script, service_inline_art, style, template};
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
 use crate::ide::{IdeContext, ecosystem};

@@ -19,6 +19,7 @@ use vize_canon::CorsaBridge;
 use super::IdeContext;
 #[cfg(feature = "native")]
 use crate::ide::corsa_support;
+#[cfg(feature = "native")]
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 /// Rename service for identifier renaming across SFC.

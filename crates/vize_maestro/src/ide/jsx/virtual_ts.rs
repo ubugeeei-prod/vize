@@ -20,6 +20,7 @@
 //! machinery is batch-specific.
 
 use vize_atelier_jsx::{JsxLang, StyleExprSpan, lower_source};
+#[cfg(any(test, feature = "native"))]
 use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
 use vize_relief::{
@@ -31,6 +32,7 @@ use vize_relief::{
 /// Name of the synthesized helper that swallows every re-emitted JSX
 /// expression. Declaring it ambient and `any`-returning lets each argument be
 /// type-checked independently while the whole call stays a valid render return.
+#[cfg(any(test, feature = "native"))]
 const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
 
 /// Ambient `Ctx<Emits, Slots>` type injected at module scope so the typed
@@ -44,12 +46,14 @@ const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
 /// reuses the emits-as-tuple convention (`emit('change', 1)` checks the payload
 /// against the declared tuple); `slots` is the second type argument. The type
 /// is purely ambient and fully erased — no runtime is emitted.
+#[cfg(any(test, feature = "native"))]
 const CTX_HELPER: &str = "type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;\n\
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n\
 type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n\
 type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };\n";
 
 /// The generated plain-`.ts` virtual document for one `.jsx`/`.tsx` source.
+#[cfg(any(test, feature = "native"))]
 pub(in crate::ide) struct JsxVirtualTs {
     /// Generated plain TypeScript.
     pub(in crate::ide) code: String,
@@ -108,6 +112,7 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
 /// Returns `None` only when lowering cannot proceed at all (it never does
 /// today — `lower_source` always yields a tree even for empty input — but the
 /// signature leaves room for that without forcing callers to handle a panic).
+#[cfg(any(test, feature = "native"))]
 pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Option<JsxVirtualTs> {
     let bump = Bump::new();
     let lowered = lower_source(&bump, source, lang);
@@ -134,6 +139,7 @@ pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Op
 /// Every byte outside a JSX render root is copied verbatim; each render root is
 /// replaced by `__vize_jsx_expr__(<expr>, <expr>, …)`, with each re-emitted
 /// expression mapped back to its original byte range.
+#[cfg(any(test, feature = "native"))]
 fn render_plain_ts(source: &str, roots: &[(u32, u32, Vec<JsxEmit>)]) -> (String, Vec<VizeMapping>) {
     let mut out = String::new();
     let mut mappings: Vec<VizeMapping> = Vec::new();
@@ -173,6 +179,7 @@ fn render_plain_ts(source: &str, roots: &[(u32, u32, Vec<JsxEmit>)]) -> (String,
 
 /// Emit `__vize_jsx_expr__(<unit>, <unit>, …)` for one render scope, recursing
 /// into `v-for` bodies so their loop aliases stay in scope.
+#[cfg(any(test, feature = "native"))]
 fn render_sink_call(out: &mut String, mappings: &mut Vec<VizeMapping>, emits: &[JsxEmit]) {
     out.push_str(JSX_EXPR_SINK);
     out.push('(');
@@ -185,6 +192,7 @@ fn render_sink_call(out: &mut String, mappings: &mut Vec<VizeMapping>, emits: &[
     out.push(')');
 }
 
+#[cfg(any(test, feature = "native"))]
 fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit) {
     match emit {
         JsxEmit::Expr(expr) => push_mapped_expr(out, mappings, expr),
@@ -220,6 +228,7 @@ fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit
     }
 }
 
+#[cfg(any(test, feature = "native"))]
 fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &JsxExpr) {
     let gen_start = out.len();
     out.push_str(&expr.content);
@@ -233,6 +242,7 @@ fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &Js
 
 /// Copy `source[src_start..src_end)` verbatim into `out`, recording an identity
 /// mapping (generated range -> original range) for diagnostics in the region.
+#[cfg(any(test, feature = "native"))]
 fn push_verbatim(
     out: &mut String,
     mappings: &mut Vec<VizeMapping>,
