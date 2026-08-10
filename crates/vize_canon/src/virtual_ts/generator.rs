@@ -377,19 +377,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     global_components.emit(&mut ts, summary, options, &imported_names);
     ts.push('\n');
 
-    // For an Options API component with no `defineProps` macro, derive a real
-    // `export type Props` from its runtime `props:` option so cross-file prop
-    // checking is no longer a `{}` no-op. Macro-driven props (script setup) take
-    // precedence and are emitted by `generate_props_type` itself.
+    // Derive a real cross-file `Props` type from macro or Options API input.
     let options_api_props: Option<OptionsApiPropsSource> =
         if options_api && summary.macros.props().is_empty() {
             script_content.and_then(find_options_api_props)
         } else {
             None
         };
+    let source_offset = &script_source_offset;
+    let src = prop_source(&mut mappings, summary, script_content, source_offset);
     let setup_props_plan = generate_setup_props(
         &mut ts,
-        summary,
+        src,
         generic_param,
         options_api_props.as_ref(),
         setup_type_exports.exports_public_type("Props"),

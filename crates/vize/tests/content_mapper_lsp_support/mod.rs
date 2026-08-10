@@ -42,6 +42,59 @@ pub async fn definition(client: &LspClient, uri: &str, position: &Value) -> Valu
         .unwrap()
 }
 
+pub async fn assert_component_navigation(
+    client: &LspClient,
+    uri: &str,
+    position: &Value,
+    component_name: &str,
+    target_uri: &str,
+) {
+    let component_hover = hover(client, uri, position).await;
+    let hover_text = serde_json::to_string(&component_hover).unwrap();
+    assert!(
+        hover_text.contains(component_name) && !hover_text.contains("__vize_component__"),
+        "{component_hover:#}"
+    );
+    let component_definition = definition(client, uri, position).await;
+    let definition_text = serde_json::to_string(&component_definition).unwrap();
+    assert!(
+        definition_text.contains(target_uri),
+        "{component_definition:#}"
+    );
+    assert!(
+        !definition_text.contains(".vue.ts"),
+        "{component_definition:#}"
+    );
+}
+
+pub async fn assert_prop_navigation(
+    client: &LspClient,
+    uri: &str,
+    position: &Value,
+    prop_name: &str,
+    prop_type: &str,
+    target_uri: &str,
+    target_start: &Value,
+) {
+    let prop_hover = hover(client, uri, position).await;
+    let hover_text = serde_json::to_string(&prop_hover).unwrap();
+    assert!(
+        hover_text.contains(prop_name) && hover_text.contains(prop_type),
+        "{prop_hover:#}"
+    );
+    let prop_definition = definition(client, uri, position).await;
+    assert!(
+        contains_location(&prop_definition, target_uri, target_start),
+        "{prop_definition:#}"
+    );
+    assert!(
+        !serde_json::to_string(&prop_definition)
+            .unwrap()
+            .contains(".vue.ts"),
+        "{prop_definition:#}"
+    );
+}
+
 pub async fn pull_diagnostics(client: &LspClient, uri: &str) -> Value {
     try_pull_diagnostics(client, uri).await.unwrap()
 }

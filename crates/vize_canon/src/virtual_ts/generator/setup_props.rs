@@ -100,15 +100,20 @@ pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool 
 /// call site (and from growing past the source-length gate).
 pub(super) fn generate_setup_props(
     ts: &mut String,
-    summary: &Croquis,
+    source: PropsSource<'_>,
     generic_param: Option<&str>,
     options_api_props: Option<&OptionsApiPropsSource>,
     props_is_public_export: bool,
 ) -> SetupPropsPlan {
+    let summary = source.summary;
     let plan = SetupPropsPlan::new(summary, options_api_props, props_is_public_export);
+    let generated_start = ts.len();
     profile!("canon.virtual_ts.generate_props_type", {
         plan.generate_props_type(ts, summary, generic_param, options_api_props);
     });
+    let mut binding_mappings =
+        PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
+    binding_mappings.map_exported_props_type(ts, generated_start);
     plan
 }
 

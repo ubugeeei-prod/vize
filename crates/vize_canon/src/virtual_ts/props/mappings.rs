@@ -80,6 +80,46 @@ impl<'a> PropBindingMappings<'a> {
         });
     }
 
+    pub(crate) fn map_exported_props_type(&mut self, ts: &str, generated_start: usize) {
+        let Some(call) = self.summary.macros.define_props() else {
+            return;
+        };
+        let Some(type_args) = call.type_args.as_deref() else {
+            return;
+        };
+        let emitted = type_args
+            .strip_prefix('<')
+            .and_then(|value| value.strip_suffix('>'))
+            .unwrap_or(type_args);
+        let Some(script) = self.script_content else {
+            return;
+        };
+        let Some(call_source) = script.get(call.start as usize..call.end as usize) else {
+            return;
+        };
+        let Some(authored_type_start) = call_source
+            .find(type_args)
+            .and_then(|start| type_args.find(emitted).map(|inner| start + inner))
+        else {
+            return;
+        };
+        let generated = &ts[generated_start..];
+        let Some(generated_type_start) = generated
+            .find("export type Props")
+            .and_then(|start| generated[start..].find(" = ").map(|rhs| start + rhs + 3))
+            .and_then(|start| generated[start..].find(emitted).map(|inner| start + inner))
+        else {
+            return;
+        };
+        let authored_start = (self.script_source_offset)(call.start as usize + authored_type_start);
+        self.mappings.push(VizeMapping {
+            gen_range: generated_start + generated_type_start
+                ..generated_start + generated_type_start + emitted.len(),
+            src_range: authored_start..authored_start + emitted.len(),
+            sub_spans: Vec::new(),
+        });
+    }
+
     fn authored_name_range(&self, name: &str) -> Option<Range<usize>> {
         let script = self.script_content?;
         let (start, end) = self.summary.macros.prop_declaration(name)?;

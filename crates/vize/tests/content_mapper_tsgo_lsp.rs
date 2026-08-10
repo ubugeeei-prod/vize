@@ -10,9 +10,9 @@ use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
-    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
-    workspace_root,
+    assert_component_navigation, assert_prop_navigation, contains_location, copy_fixture,
+    definition, editor_capabilities, file_uri, hover, install_packages, notify_file_changes,
+    position, pull_diagnostics, try_pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -87,6 +87,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
     let app_source = std::fs::read_to_string(&app_path).unwrap();
     let app_uri = file_uri(&app_path);
     let component_position = position(&app_source, app_source.find("<Child").unwrap() + 1);
+    let component_prop_position = position(&app_source, app_source.find(":count").unwrap() + 1);
 
     let stop = AtomicBool::new(false);
     std::thread::scope(|scope| {
@@ -155,23 +156,25 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                     app_source.as_str(),
                 ))
                 .unwrap();
-            let component_hover = hover(&client, &app_uri, &component_position).await;
-            let component_hover_text = serde_json::to_string(&component_hover).unwrap();
-            assert!(
-                component_hover_text.contains("Child")
-                    && !component_hover_text.contains("__vize_component__"),
-                "{component_hover:#}"
-            );
-            let component_definition = definition(&client, &app_uri, &component_position).await;
-            let component_definition_text = serde_json::to_string(&component_definition).unwrap();
-            assert!(
-                component_definition_text.contains(child_uri.as_str()),
-                "{component_definition:#}"
-            );
-            assert!(
-                !component_definition_text.contains(".vue.ts"),
-                "{component_definition:#}"
-            );
+            assert_component_navigation(
+                &client,
+                &app_uri,
+                &component_position,
+                "Child",
+                &child_uri,
+            )
+            .await;
+
+            assert_prop_navigation(
+                &client,
+                &app_uri,
+                &component_prop_position,
+                "count",
+                "number",
+                &child_uri,
+                &declaration_position,
+            )
+            .await;
 
             let completion = client
                 .request::<RawCompletion>(json!({
