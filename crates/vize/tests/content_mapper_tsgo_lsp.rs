@@ -273,6 +273,13 @@ const value = 1;
             std::fs::write(&created_path, created_source).unwrap();
             let created_uri = file_uri(&created_path);
             notify_file_changes(&client, &[(created_uri.as_str(), FileChangeType::CREATED)]);
+            let unopened_created = pull_diagnostics(&client, &created_uri).await;
+            assert!(
+                serde_json::to_string(&unopened_created)
+                    .unwrap()
+                    .contains("2339"),
+                "{unopened_created:#}"
+            );
             let created_document_uri = Uri::from_str(&created_uri).unwrap();
             overlay
                 .open(VirtualDocument::new(
@@ -302,6 +309,13 @@ const value = 1;
                     (created_uri.as_str(), FileChangeType::DELETED),
                     (renamed_uri.as_str(), FileChangeType::CREATED),
                 ],
+            );
+            let unopened_renamed = pull_diagnostics(&client, &renamed_uri).await;
+            assert!(
+                serde_json::to_string(&unopened_renamed)
+                    .unwrap()
+                    .contains("2339"),
+                "{unopened_renamed:#}"
             );
             let renamed_document_uri = Uri::from_str(&renamed_uri).unwrap();
             overlay
