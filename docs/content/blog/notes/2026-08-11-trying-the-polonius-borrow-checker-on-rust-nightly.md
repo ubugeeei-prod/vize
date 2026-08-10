@@ -27,7 +27,7 @@ Vize is a 23-crate Rust workspace pinned to stable 1.95.0, with 411 locked packa
 
 - Does anything in the workspace behave differently under the new checker?
 - What does the new checker cost in build time?
-- How much of the code we wrote *around* the old borrow checker can now be deleted?
+- How much of the code we wrote _around_ the old borrow checker can now be deleted?
 
 This note answers all three. The short version: nothing breaks, it costs about 5% of check CPU time, and the amount of code Polonius lets us delete today is smaller than we expected — but not zero.
 
@@ -64,13 +64,13 @@ error[E0502]: cannot borrow `*map` as mutable because it is also borrowed as imm
 
 Polonius makes the analysis flow-sensitive, so the borrow ends where it actually ends. Here is the same file across the configurations we tested, all on `rustc 1.99.0-nightly (2026-08-09)` except the stable row:
 
-| Configuration | Result |
-| --- | --- |
-| stable 1.95.0 | rejected (E0502) |
-| nightly, default | **accepted** — Polonius Alpha is on by default |
-| nightly, `-Zpolonius=no` | rejected — the old NLL checker |
-| nightly, `-Zpolonius=legacy` | accepted — the original datalog prototype |
-| nightly, `-Zpolonius=next` | accepted — the full location-sensitive analysis |
+| Configuration                | Result                                          |
+| ---------------------------- | ----------------------------------------------- |
+| stable 1.95.0                | rejected (E0502)                                |
+| nightly, default             | **accepted** — Polonius Alpha is on by default  |
+| nightly, `-Zpolonius=no`     | rejected — the old NLL checker                  |
+| nightly, `-Zpolonius=legacy` | accepted — the original datalog prototype       |
+| nightly, `-Zpolonius=next`   | accepted — the full location-sensitive analysis |
 
 The alpha that is heading for stabilization is a restricted formulation of the full analysis: flow-sensitive on lifetime outlives relationships, chosen because it covers the common false rejections at an acceptable compile-time cost. `-Zpolonius=next` is the complete location-sensitive implementation that is still under development, and `-Zpolonius=no` is the opt-out the Rust team suggests if the new default causes trouble.
 
@@ -92,17 +92,17 @@ That is the boring result, and boring is what you want here: when Polonius Alpha
 
 The Rust team's own measurements say most crates see minimal impact, with the worst known cases (outside the top 10,000 crates) regressing 2–3x. We measured what it costs Vize.
 
-Our first attempt measured wall-clock time across eight interleaved rounds and produced garbage: ratios against the NLL baseline ranged from 0.66x to 1.97x, and in three of the eight rounds the *slower* checker finished first. On a laptop with background load, wall clock is measuring the machine, not the compiler. So the numbers below are CPU time (`user + sys`), which is far less sensitive to contention, over three clean `cargo check --workspace` runs per configuration with a fresh `CARGO_TARGET_DIR` each time.
+Our first attempt measured wall-clock time across eight interleaved rounds and produced garbage: ratios against the NLL baseline ranged from 0.66x to 1.97x, and in three of the eight rounds the _slower_ checker finished first. On a laptop with background load, wall clock is measuring the machine, not the compiler. So the numbers below are CPU time (`user + sys`), which is far less sensitive to contention, over three clean `cargo check --workspace` runs per configuration with a fresh `CARGO_TARGET_DIR` each time.
 
 Machine: Apple M2 Max (12 cores, 96 GB), `rustc 1.99.0-nightly (969b803cb 2026-08-09)`.
 
-| Configuration | Median CPU time | vs. old NLL |
-| --- | --- | --- |
-| `-Zpolonius=no` (old NLL) | 194.4s | — |
-| default (Polonius Alpha) | 204.2s | **1.05x** |
-| `-Zpolonius=next` (full analysis) | 198.6s | 1.02x |
+| Configuration                     | Median CPU time | vs. old NLL |
+| --------------------------------- | --------------- | ----------- |
+| `-Zpolonius=no` (old NLL)         | 194.4s          | —           |
+| default (Polonius Alpha)          | 204.2s          | **1.05x**   |
+| `-Zpolonius=next` (full analysis) | 198.6s          | 1.02x       |
 
-About 5% more CPU to check the entire workspace. That is comfortably inside the range the Rust team called reasonable, and nowhere near the 2–3x worst case. Interestingly the full `next` analysis measured *cheaper* than the shipping alpha here; with three samples per configuration that gap is inside the noise, and the honest reading is that alpha and next cost about the same on this codebase.
+About 5% more CPU to check the entire workspace. That is comfortably inside the range the Rust team called reasonable, and nowhere near the 2–3x worst case. Interestingly the full `next` analysis measured _cheaper_ than the shipping alpha here; with three samples per configuration that gap is inside the noise, and the honest reading is that alpha and next cost about the same on this codebase.
 
 Note also that this is worst-case exposure: a clean check of all 411 packages. Incremental flows recompile a handful of crates, and full builds bury the difference under codegen.
 
@@ -110,12 +110,12 @@ Note also that this is worst-case exposure: a clean check of all 411 packages. I
 
 A workspace-level number tells you what to budget for but not what happened. `-Ztime-passes` reports the borrow-check pass on its own, so we measured it directly on the three largest crates, with `CARGO_INCREMENTAL=0` and a forced rebuild before each sample so no run could be served from the incremental cache. Five samples per crate per configuration, medians below.
 
-| Crate | old NLL | Polonius Alpha | `-Zpolonius=next` |
-| --- | --- | --- | --- |
-| `vize_patina` (90k lines) | 0.622s | 0.749s (1.20x) | 0.674s (1.08x) |
-| `vize_canon` (75k lines) | 0.729s | 0.876s (1.20x) | 0.798s (1.09x) |
-| `vize_croquis` (36k lines) | 0.443s | 0.468s (1.06x) | 0.472s (1.07x) |
-| **total** | **1.79s** | **2.09s (1.17x)** | **1.94s (1.08x)** |
+| Crate                      | old NLL   | Polonius Alpha    | `-Zpolonius=next` |
+| -------------------------- | --------- | ----------------- | ----------------- |
+| `vize_patina` (90k lines)  | 0.622s    | 0.749s (1.20x)    | 0.674s (1.08x)    |
+| `vize_canon` (75k lines)   | 0.729s    | 0.876s (1.20x)    | 0.798s (1.09x)    |
+| `vize_croquis` (36k lines) | 0.443s    | 0.468s (1.06x)    | 0.472s (1.07x)    |
+| **total**                  | **1.79s** | **2.09s (1.17x)** | **1.94s (1.08x)** |
 
 So the borrow-check pass itself gets about 20% more expensive on the two largest crates — a much larger relative regression than the 5% the workspace showed. Both numbers are true, and the gap between them is the actual lesson: borrow checking is a small enough slice of compilation that a 20% regression inside it lands as a rounding error outside it. In absolute terms the alpha costs an extra 0.30 seconds across 200k lines of Rust.
 
@@ -152,7 +152,7 @@ None of these are Polonius wins. They are code that was shaped defensively aroun
 
 The largest category by far — ten sites — is not a borrow-checker precision problem at all. Every one is the same shape: a shared borrow derived from a context object held across a call that needs `&mut` on that same object. The lint rules are the clearest example, collecting owned strings out of `ctx.analysis()` before calling `ctx.report()`.
 
-Polonius changes *when* borrows end. It does not make them *finer-grained*. Splitting a borrow of `ctx` into disjoint borrows of `ctx.analysis` and `ctx.diagnostics` is view types, a separate feature still in design. Those ten sites stay exactly as they are, and would stay even under the full `-Zpolonius=next`.
+Polonius changes _when_ borrows end. It does not make them _finer-grained_. Splitting a borrow of `ctx` into disjoint borrows of `ctx.analysis` and `ctx.diagnostics` is view types, a separate feature still in design. Those ten sites stay exactly as they are, and would stay even under the full `-Zpolonius=next`.
 
 Worth noting for anyone doing a similar audit: a sweep of this kind produces a lot of false positives. More than fifteen sites in this codebase have the exact silhouette of Problem Case #3 — `contains_key` guards, three-lookup cache reads, an `expect("just inserted")` on an impossible branch — and are accepted by NLL today, because the reference never escapes the function. Several of those triple lookups exist to avoid `entry()`'s owned-key allocation, which is a performance decision, not a borrow-checker one. Reading for the shape is not enough; the compiler has to be the judge.
 
