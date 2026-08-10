@@ -37,6 +37,7 @@ pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
+pub(crate) use helpers::to_safe_identifier;
 pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,

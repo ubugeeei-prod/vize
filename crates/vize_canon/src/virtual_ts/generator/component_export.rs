@@ -81,3 +81,46 @@ pub(super) fn emit_default_export_declaration(
         );
     }
 }
+
+pub(super) fn emit_component_default_export(ts: &mut String, component_name: Option<&str>) {
+    let Some(component_name) = component_name else {
+        ts.push_str("export default __vize_component__;\n");
+        return;
+    };
+    let mut export_name = String::from(component_name);
+    if module_scope_contains_identifier(ts, export_name.as_str()) {
+        export_name.push_str("VueComponent");
+        while module_scope_contains_identifier(ts, export_name.as_str()) {
+            export_name.push('_');
+        }
+    }
+    append!(
+        *ts,
+        "declare const {export_name}: typeof __vize_component__;\nexport default {export_name};\n",
+    );
+}
+
+fn module_scope_contains_identifier(ts: &str, name: &str) -> bool {
+    const SETUP: &str = "// ========== Setup Scope ==========";
+    const AFTER_SETUP: &str = "// Invoke setup to verify types";
+    let before_setup = ts.split_once(SETUP).map_or(ts, |(before, _)| before);
+    let after_setup = ts.rsplit_once(AFTER_SETUP).map_or("", |(_, after)| after);
+    [before_setup, after_setup]
+        .into_iter()
+        .any(|source| contains_identifier(source, name))
+}
+
+fn contains_identifier(source: &str, name: &str) -> bool {
+    source.match_indices(name).any(|(start, _)| {
+        let end = start + name.len();
+        let boundary = |byte: u8| !byte.is_ascii_alphanumeric() && !matches!(byte, b'_' | b'$');
+        source
+            .as_bytes()
+            .get(start.wrapping_sub(1))
+            .is_none_or(|byte| boundary(*byte))
+            && source
+                .as_bytes()
+                .get(end)
+                .is_none_or(|byte| boundary(*byte))
+    })
+}

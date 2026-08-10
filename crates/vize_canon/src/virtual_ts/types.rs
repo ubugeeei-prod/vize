@@ -162,6 +162,9 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// Declaration-producing callers enable this until the batch path can do
     /// so without changing its committed virtual-code baselines.
     pub(crate) preserve_authored_component: bool,
+    /// Public-facing component symbol used by Content Mapper hover responses.
+    /// `None` preserves the internal default export used by batch projections.
+    pub(crate) component_name: Option<&'a str>,
     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
     pub(crate) legacy_vue2: bool,
     /// Preserve Vue parser compatibility semantics when generating template
