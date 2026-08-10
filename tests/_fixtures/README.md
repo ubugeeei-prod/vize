@@ -27,7 +27,7 @@ fails when an entry is missing, so a new or newly honored option cannot pass unr
 
 `fixture-compatibility-ledger.json` joins every pinned gitlink to its ecosystem-matrix and App E2E
 memberships, then records only evidence-backed Vue generations, API styles, Nuxt macros, and test
-oracles. Capability presence, exercised behavior, and runtime verification are separate tiers:
+oracles. Capability presence, exercised behavior, and runtime verification are independent levels:
 finding source text never promotes a project to runtime coverage. Run
 `node tools/fixtures/fixture-compatibility-report.mjs` for the deterministic coverage report. Any
 unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.

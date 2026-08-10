@@ -61,11 +61,12 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
       "formatter-idempotency": 134,
       linter: 134,
       typechecker: 134,
+      "production-build": 4,
       "authored-lsp": 3,
       "vue-tsc-parity": 11,
       ssr: 3,
       hydration: 4,
-      preview: 4,
+      preview: 0,
       vrt: 5,
       "real-vite-hmr": 2,
     },
@@ -78,7 +79,7 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
       "tests/_fixtures/_git/vue-element-admin",
       "tests/_fixtures/_git/vue2-elm",
     ]),
-    "2.7": counts(1, 1, 0, ["tests/_fixtures/_git/vue-element-admin"]),
+    "2.7": counts(0, 1, 0, ["tests/_fixtures/_git/vue-element-admin"]),
     "3.x": counts(1, 1, 1, ["tests/_fixtures/_git/npmx.dev"]),
   });
   assert.deepEqual(report.capabilities["api-style"], {
@@ -99,7 +100,7 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
     (capability) => capability.dimension === "vue-generation" && capability.value === "3.x",
   );
   assert.ok(vue3);
-  vue3.tier = "present";
+  vue3.levels = ["present"];
   const presentOnlyReport = createCompatibilityReport(presentOnly, context);
   assert.deepEqual(
     presentOnlyReport.capabilities["vue-generation"]["3.x"],
@@ -125,6 +126,12 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
     ["schema", (value) => (value.schema = "other"), /unsupported ledger schema/],
     ["version", (value) => (value.version = 2), /unsupported ledger version/],
     ["unknown root field", (value) => (value.extra = true), /shape is not closed/],
+    [
+      "unknown tracking issue field",
+      (value) => (value.trackingIssues.extra = 1),
+      /shape is not closed/,
+    ],
+    ["unknown fixture field", (value) => (value.fixtures[0].extra = true), /shape is not closed/],
     ["missing fixture", (value) => value.fixtures.pop(), /exactly partition/],
     [
       "duplicate fixture",
@@ -138,6 +145,11 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /membership drifted/,
     ],
     [
+      "unknown membership",
+      (value) => (value.fixtures[0].memberships[0] = "preview"),
+      /unknown membership/,
+    ],
+    [
       "unknown capability dimension",
       (value) => (value.capabilities[0].dimension = "framework"),
       /unknown capability dimension/,
@@ -148,9 +160,52 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /unknown vue-generation value/,
     ],
     [
-      "unknown capability tier",
-      (value) => (value.capabilities[0].tier = "inferred"),
-      /unknown capability tier/,
+      "unknown capability level",
+      (value) => (value.capabilities[0].levels[0] = "inferred"),
+      /unknown capability level/,
+    ],
+    [
+      "duplicate capability",
+      (value) => value.capabilities.push(structuredClone(value.capabilities[0])),
+      /capability claims contain duplicates/,
+    ],
+    [
+      "unknown capability evidence field",
+      (value) => (value.capabilities[0].evidence.extra = true),
+      /shape is not closed/,
+    ],
+    [
+      "runtime capability without runtime oracle",
+      (value) => {
+        value.capabilities
+          .find(
+            (capability) =>
+              capability.fixturePath === "tests/_fixtures/_git/create-vue" &&
+              capability.value === "composition-api",
+          )
+          .levels.push("runtime");
+      },
+      /runtime capability lacks matching runtime oracle evidence/,
+    ],
+    [
+      "runtime capability without exercised level",
+      (value) => {
+        value.capabilities.find((capability) => capability.levels.includes("runtime")).levels = [
+          "present",
+          "runtime",
+        ];
+      },
+      /runtime capability must also be present and exercised/,
+    ],
+    [
+      "runtime capability without present level",
+      (value) => {
+        value.capabilities.find((capability) => capability.levels.includes("runtime")).levels = [
+          "exercised",
+          "runtime",
+        ];
+      },
+      /runtime capability must also be present and exercised/,
     ],
     [
       "stale evidence path",
@@ -172,6 +227,17 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       (value) => (value.oracles[0].kind = "source-present"),
       /unknown oracle kind/,
     ],
+    ["unknown oracle field", (value) => (value.oracles[0].extra = true), /shape is not closed/],
+    [
+      "unknown oracle selection field",
+      (value) => (value.oracles[0].selection.extra = true),
+      /shape is not closed/,
+    ],
+    [
+      "unknown oracle selection type",
+      (value) => (value.oracles[0].selection = { type: "all" }),
+      /unknown oracle selection type/,
+    ],
     [
       "duplicate oracle",
       (value) => value.oracles.push(structuredClone(value.oracles[0])),
@@ -192,7 +258,22 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
         value.oracles.find((oracle) => oracle.kind === "ssr").selection.fixturePaths[0] =
           "tests/_fixtures/_git/airi";
       },
-      /runtime oracle is not an App fixture/,
+      /App oracle is not an App fixture/,
+    ],
+    [
+      "unknown unresolved field",
+      (value) => (value.unresolved[0].extra = true),
+      /shape is not closed/,
+    ],
+    [
+      "unknown unresolved dimension",
+      (value) => (value.unresolved[0].dimension = "other"),
+      /unknown unresolved dimension/,
+    ],
+    [
+      "unknown unresolved state",
+      (value) => (value.unresolved[0].state = "ignored"),
+      /unknown unresolved state/,
     ],
     [
       "missing unresolved reason",
@@ -210,13 +291,40 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /trackingIssue must be a positive integer/,
     ],
     [
+      "required unresolved state drift",
+      (value) => (value.unresolved[0].state = "excluded"),
+      /unresolved state drifted/,
+    ],
+    [
+      "required unresolved owner drift",
+      (value) => (value.unresolved[0].trackingIssue = 1),
+      /unresolved owner drifted/,
+    ],
+    [
       "silent legacy omission",
       (value) => value.unresolved.splice(0, 1),
       /missing explicit unresolved dimension/,
     ],
     [
       "silent remaining corpus omission",
-      (value) => value.unresolved.pop(),
+      (value) => {
+        const index = value.unresolved.findIndex(
+          (item) =>
+            item.dimension === "corpus-capability-classification" &&
+            item.value === "remaining-gitlinks",
+        );
+        value.unresolved.splice(index, 1);
+      },
+      /missing explicit unresolved dimension/,
+    ],
+    [
+      "silent preview omission",
+      (value) => {
+        const index = value.unresolved.findIndex(
+          (item) => item.dimension === "oracle-coverage" && item.value === "preview",
+        );
+        value.unresolved.splice(index, 1);
+      },
       /missing explicit unresolved dimension/,
     ],
   ];
@@ -228,5 +336,12 @@ function counts(
   runtimeVerified: number,
   fixturePaths: string[],
 ) {
-  return { present, exercised, runtimeVerified, fixturePaths };
+  return {
+    present: { count: present, fixturePaths: present === 0 ? [] : fixturePaths },
+    exercised: { count: exercised, fixturePaths: exercised === 0 ? [] : fixturePaths },
+    runtimeVerified: {
+      count: runtimeVerified,
+      fixturePaths: runtimeVerified === 0 ? [] : fixturePaths,
+    },
+  };
 }

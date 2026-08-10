@@ -4,6 +4,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { fullAppE2eRows } from "../github/app-e2e-plan.mjs";
+import {
+  array,
+  compareCodepoints,
+  countMembership,
+  deepEqual,
+  enumValue,
+  equal,
+  exactKeys,
+  invalid,
+  record,
+  string,
+  unique,
+} from "./fixture-compatibility-validation.mjs";
 
 const moduleRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 export const compatibilityLedgerPath = path.join(
@@ -21,6 +34,7 @@ export const oracleKinds = [
   "formatter-idempotency",
   "linter",
   "typechecker",
+  "production-build",
   "authored-lsp",
   "vue-tsc-parity",
   "ssr",
@@ -30,19 +44,22 @@ export const oracleKinds = [
   "real-vite-hmr",
 ];
 
-const tiers = ["present", "exercised", "runtime"];
+const capabilityLevels = ["present", "exercised", "runtime"];
 const memberships = ["ecosystem", "app"];
 const unresolvedStates = ["unknown", "unverified", "excluded"];
 const unresolvedDimensions = [
   "vue-generation",
   "vue-generation-runtime",
   "corpus-capability-classification",
+  "oracle-coverage",
 ];
 const unresolvedValues = {
   "vue-generation": capabilityValues["vue-generation"],
   "vue-generation-runtime": capabilityValues["vue-generation"],
   "corpus-capability-classification": ["remaining-gitlinks"],
+  "oracle-coverage": ["preview"],
 };
+const runtimeOracleKinds = new Set(["ssr", "hydration", "preview", "vrt", "real-vite-hmr"]);
 
 export function readCompatibilityLedger(file = compatibilityLedgerPath) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -91,7 +108,12 @@ export function validateCompatibilityLedger(ledger, context = createCompatibilit
 
   const fixtureMap = validateFixtures(ledger.fixtures, context);
   validateCapabilities(ledger.capabilities, fixtureMap, context.rootDir);
-  const oracleFixtures = validateOracles(ledger.oracles, fixtureMap, context.rootDir);
+  const { byKind: oracleFixtures, runtimeEvidence } = validateOracles(
+    ledger.oracles,
+    fixtureMap,
+    context.rootDir,
+  );
+  validateCapabilityRuntimeClaims(ledger.capabilities, runtimeEvidence);
   validateUnresolved(ledger.unresolved);
   validateRatchets(oracleFixtures, fixtureMap, context);
   return { fixtureMap, oracleFixtures };
@@ -143,13 +165,22 @@ function validateCapabilities(capabilities, fixtureMap, rootDir) {
   const identities = [];
   for (const [index, capability] of capabilities.entries()) {
     record(capability, `capabilities[${index}]`);
-    exactKeys(capability, ["fixturePath", "dimension", "value", "tier", "evidence"]);
+    exactKeys(capability, ["fixturePath", "dimension", "value", "levels", "evidence"]);
     if (!fixtureMap.has(capability.fixturePath))
       invalid(`unknown fixture ${capability.fixturePath}`);
     const values = capabilityValues[capability.dimension];
     if (values == null) invalid(`unknown capability dimension ${capability.dimension}`);
     enumValue(capability.value, values, `${capability.dimension} value`);
-    enumValue(capability.tier, tiers, "capability tier");
+    array(capability.levels, "capability levels");
+    if (capability.levels.length === 0) invalid("capability levels must not be empty");
+    unique(capability.levels, "capability levels");
+    for (const level of capability.levels) enumValue(level, capabilityLevels, "capability level");
+    if (
+      capability.levels.includes("runtime") &&
+      (!capability.levels.includes("present") || !capability.levels.includes("exercised"))
+    ) {
+      invalid("runtime capability must also be present and exercised");
+    }
     validateEvidence(capability.evidence, rootDir);
     identities.push(`${capability.fixturePath}\0${capability.dimension}\0${capability.value}`);
   }
@@ -160,6 +191,7 @@ function validateOracles(oracles, fixtureMap, rootDir) {
   array(oracles, "oracles");
   const identities = [];
   const byKind = new Map(oracleKinds.map((kind) => [kind, new Set()]));
+  const runtimeEvidence = new Set();
   for (const [index, oracle] of oracles.entries()) {
     record(oracle, `oracles[${index}]`);
     exactKeys(oracle, ["kind", "selection", "evidence"]);
@@ -170,16 +202,36 @@ function validateOracles(oracles, fixtureMap, rootDir) {
     for (const fixturePath of selected) {
       identities.push(`${oracle.kind}\0${fixturePath}`);
       byKind.get(oracle.kind).add(fixturePath);
+      if (runtimeOracleKinds.has(oracle.kind)) {
+        runtimeEvidence.add(evidenceIdentity(fixturePath, oracle.evidence));
+      }
       if (
-        ["ssr", "hydration", "preview", "vrt", "real-vite-hmr"].includes(oracle.kind) &&
+        ["production-build", "ssr", "hydration", "preview", "vrt", "real-vite-hmr"].includes(
+          oracle.kind,
+        ) &&
         !fixtureMap.get(fixturePath).memberships.includes("app")
       ) {
-        invalid(`${oracle.kind} runtime oracle is not an App fixture: ${fixturePath}`);
+        invalid(`${oracle.kind} App oracle is not an App fixture: ${fixturePath}`);
       }
     }
   }
   unique(identities, "oracle fixture claims");
-  return byKind;
+  return { byKind, runtimeEvidence };
+}
+
+function validateCapabilityRuntimeClaims(capabilities, runtimeEvidence) {
+  for (const capability of capabilities) {
+    if (!capability.levels.includes("runtime")) continue;
+    if (!runtimeEvidence.has(evidenceIdentity(capability.fixturePath, capability.evidence))) {
+      invalid(
+        `runtime capability lacks matching runtime oracle evidence: ${capability.fixturePath} ${capability.dimension} ${capability.value}`,
+      );
+    }
+  }
+}
+
+function evidenceIdentity(fixturePath, evidence) {
+  return `${fixturePath}\0${evidence.file}\0${evidence.selector}`;
 }
 
 export function expandSelection(selection, fixtureMap) {
@@ -224,6 +276,7 @@ function validateEvidence(evidence, rootDir) {
 function validateUnresolved(unresolved) {
   array(unresolved, "unresolved");
   const identities = [];
+  const rows = new Map();
   for (const [index, item] of unresolved.entries()) {
     record(item, `unresolved[${index}]`);
     exactKeys(item, ["dimension", "value", "state", "reason", "trackingIssue"]);
@@ -234,17 +287,23 @@ function validateUnresolved(unresolved) {
     if (!Number.isInteger(item.trackingIssue) || item.trackingIssue <= 0) {
       invalid("unresolved trackingIssue must be a positive integer");
     }
-    identities.push(`${item.dimension}\0${item.value}`);
+    const identity = `${item.dimension}\0${item.value}`;
+    identities.push(identity);
+    rows.set(identity, item);
   }
   unique(identities, "unresolved dimensions");
-  for (const required of [
-    ["vue-generation", "0.x"].join("\u0000"),
-    ["vue-generation", "1.x"].join("\u0000"),
-    ["vue-generation-runtime", "2.7"].join("\u0000"),
-    ["corpus-capability-classification", "remaining-gitlinks"].join("\u0000"),
-  ]) {
-    if (!identities.includes(required))
-      invalid(`missing explicit unresolved dimension ${required}`);
+  const required = new Map([
+    [["vue-generation", "0.x"].join("\u0000"), "unverified"],
+    [["vue-generation", "1.x"].join("\u0000"), "unverified"],
+    [["vue-generation-runtime", "2.7"].join("\u0000"), "unverified"],
+    [["corpus-capability-classification", "remaining-gitlinks"].join("\u0000"), "unknown"],
+    [["oracle-coverage", "preview"].join("\u0000"), "unverified"],
+  ]);
+  for (const [identity, state] of required) {
+    const row = rows.get(identity);
+    if (row == null) invalid(`missing explicit unresolved dimension ${identity}`);
+    equal(row.state, state, `unresolved state drifted for ${identity}`);
+    equal(row.trackingIssue, 3227, `unresolved owner drifted for ${identity}`);
   }
 }
 
@@ -286,46 +345,4 @@ function validateRatchets(oracles, fixtureMap, context) {
       .sort(compareCodepoints),
     "vue-tsc parity membership drifted",
   );
-}
-
-function countMembership(fixtureMap, membership) {
-  return [...fixtureMap.values()].filter((fixture) => fixture.memberships.includes(membership))
-    .length;
-}
-
-function exactKeys(value, keys) {
-  deepEqual(
-    Object.keys(value).sort(compareCodepoints),
-    [...keys].sort(compareCodepoints),
-    "object shape is not closed",
-  );
-}
-function compareCodepoints(left, right) {
-  return left < right ? -1 : left > right ? 1 : 0;
-}
-function record(value, label) {
-  if (value == null || typeof value !== "object" || Array.isArray(value))
-    invalid(`${label} must be an object`);
-}
-function array(value, label) {
-  if (!Array.isArray(value)) invalid(`${label} must be an array`);
-}
-function string(value, label) {
-  if (typeof value !== "string" || value.length === 0)
-    invalid(`${label} must be a non-empty string`);
-}
-function enumValue(value, allowed, label) {
-  if (!allowed.includes(value)) invalid(`unknown ${label}: ${value}`);
-}
-function unique(values, label) {
-  if (new Set(values).size !== values.length) invalid(`${label} contain duplicates`);
-}
-function equal(actual, expected, message) {
-  if (actual !== expected) invalid(`${message}: expected ${expected}, got ${actual}`);
-}
-function deepEqual(actual, expected, message) {
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) invalid(message);
-}
-function invalid(message) {
-  throw new Error(`Invalid fixture compatibility ledger: ${message}`);
 }

@@ -565,7 +565,7 @@
       "fixturePath": "tests/_fixtures/_git/vue2-elm",
       "dimension": "vue-generation",
       "value": "2.x",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue2-elm.ts",
         "selector": "vue2-elm detects and repairs an exact authored JavaScript type error"
@@ -575,7 +575,7 @@
       "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
       "dimension": "vue-generation",
       "value": "2.x",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
         "selector": "pinned Vue 2 class-component app detects and repairs an exact authored error"
@@ -585,7 +585,7 @@
       "fixturePath": "tests/_fixtures/_git/vue-element-admin",
       "dimension": "vue-generation",
       "value": "2.x",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue-element-admin-legacy-oracle.ts",
         "selector": "vue-element-admin compiler lowers legacy slot scopes and filters deterministically"
@@ -595,7 +595,7 @@
       "fixturePath": "tests/_fixtures/_git/vue-element-admin",
       "dimension": "vue-generation",
       "value": "2.7",
-      "tier": "exercised",
+      "levels": ["exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts",
         "selector": "Vue 2.7 dialect alone"
@@ -605,7 +605,7 @@
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
       "dimension": "vue-generation",
       "value": "3.x",
-      "tier": "runtime",
+      "levels": ["present", "exercised", "runtime"],
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
         "selector": "authored head macros stay exact across SSR, hydration, and navigation"
@@ -615,7 +615,7 @@
       "fixturePath": "tests/_fixtures/_git/vue-element-admin",
       "dimension": "api-style",
       "value": "options-api",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue-element-admin-legacy-oracle.ts",
         "selector": "vue-element-admin legacy slot scopes recover exact CLI diagnostics"
@@ -625,7 +625,7 @@
       "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
       "dimension": "api-style",
       "value": "class-api",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
         "selector": "pinned Vue 2 class-component app detects and repairs an exact authored error"
@@ -635,7 +635,7 @@
       "fixturePath": "tests/_fixtures/_git/create-vue",
       "dimension": "api-style",
       "value": "composition-api",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/create-vue-generated-template-oracle.ts",
         "selector": "create-vue generated template repairs one exact broken prop usage in batch check"
@@ -645,7 +645,7 @@
       "fixturePath": "tests/_fixtures/_git/create-vue",
       "dimension": "api-style",
       "value": "script-setup",
-      "tier": "exercised",
+      "levels": ["present", "exercised"],
       "evidence": {
         "file": "tests/snapshots/check/create-vue-editor-range-oracle.ts",
         "selector": "create-vue editor features answer in authored Vue ranges"
@@ -655,17 +655,17 @@
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
       "dimension": "nuxt-macro",
       "value": "define-page-meta",
-      "tier": "runtime",
+      "levels": ["present", "exercised", "runtime"],
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
-        "selector": "SSR: accessibility route keeps definePageMeta route name"
+        "selector": "authored head macros stay exact across SSR, hydration, and navigation"
       }
     },
     {
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
       "dimension": "nuxt-macro",
       "value": "use-head",
-      "tier": "runtime",
+      "levels": ["present", "exercised", "runtime"],
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
         "selector": "authored head macros stay exact across SSR, hydration, and navigation"
@@ -675,7 +675,7 @@
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
       "dimension": "nuxt-macro",
       "value": "use-seo-meta",
-      "tier": "runtime",
+      "levels": ["present", "exercised", "runtime"],
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
         "selector": "authored head macros stay exact across SSR, hydration, and navigation"
@@ -701,8 +701,8 @@
         "membership": "ecosystem"
       },
       "evidence": {
-        "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "payload.formatterCheck = validateFormatterOutput("
+        "file": "tests/tooling/glyph-corpus-idempotence.test.ts",
+        "selector": "glyph corpus idempotence holds for every hydrated fixture"
       }
     },
     {
@@ -738,8 +738,8 @@
         ]
       },
       "evidence": {
-        "file": "tests/tooling/real-project-lsp-authored-registry.test.ts",
-        "selector": "authored LSP feature oracles are explicit and ratcheted"
+        "file": "tests/tooling/real-project-lsp.test.ts",
+        "selector": "production LSP opens and repairs a probe in every selected real project"
       }
     },
     {
@@ -784,7 +784,7 @@
       },
       "evidence": {
         "file": "tests/app/dev/npmx.spec.ts",
-        "selector": "SSR: server-rendered HTML contains expected content"
+        "selector": "authored head macros stay exact across SSR, hydration, and navigation"
       }
     },
     {
@@ -828,7 +828,7 @@
       },
       "evidence": {
         "file": "tests/app/dev/nuxt-ui.spec.ts",
-        "selector": "home page renders the playground shell"
+        "selector": "authored component source hot-updates without reloading"
       }
     },
     {
@@ -843,47 +843,47 @@
       }
     },
     {
-      "kind": "preview",
+      "kind": "production-build",
       "selection": {
         "type": "fixtures",
         "fixturePaths": ["tests/_fixtures/_git/elk"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
-        "selector": "row(\"full\", \"preview\", \"elk\""
+        "file": "tests/app/preview/elk.ts",
+        "selector": "build succeeds"
       }
     },
     {
-      "kind": "preview",
+      "kind": "production-build",
       "selection": {
         "type": "fixtures",
         "fixturePaths": ["tests/_fixtures/_git/misskey"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
-        "selector": "row(\"full\", \"preview\", \"misskey\""
+        "file": "tests/app/preview/misskey.ts",
+        "selector": "build succeeds"
       }
     },
     {
-      "kind": "preview",
+      "kind": "production-build",
       "selection": {
         "type": "fixtures",
         "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
-        "selector": "row(\"full\", \"preview\", \"npmx\""
+        "file": "tests/app/preview/npmx.ts",
+        "selector": "build succeeds"
       }
     },
     {
-      "kind": "preview",
+      "kind": "production-build",
       "selection": {
         "type": "fixtures",
         "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
       },
       "evidence": {
-        "file": "tools/github/app-e2e-plan.mjs",
-        "selector": "row(\"full\", \"preview\", \"vuefes\""
+        "file": "tests/app/preview/vuefes.ts",
+        "selector": "build succeeds"
       }
     },
     {
@@ -991,6 +991,13 @@
       "value": "remaining-gitlinks",
       "state": "unknown",
       "reason": "Unlisted generation, API-style, and Nuxt-macro presence has not been promoted to an evidence-backed claim.",
+      "trackingIssue": 3227
+    },
+    {
+      "dimension": "oracle-coverage",
+      "value": "preview",
+      "state": "unverified",
+      "reason": "The tasks named preview currently prove production builds only; they do not start or request a preview server.",
       "trackingIssue": 3227
     }
   ]

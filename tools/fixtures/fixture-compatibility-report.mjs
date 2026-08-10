@@ -10,8 +10,6 @@ import {
   validateCompatibilityLedger,
 } from "./fixture-compatibility-ledger.mjs";
 
-const tierRank = { present: 0, exercised: 1, runtime: 2 };
-
 export function createCompatibilityReport(ledger, context = createCompatibilityContext()) {
   const { fixtureMap } = validateCompatibilityLedger(ledger, context);
   const capabilityReport = Object.fromEntries(
@@ -60,25 +58,20 @@ function capabilityCounts(capabilities, dimension, value) {
   const claims = capabilities.filter(
     (capability) => capability.dimension === dimension && capability.value === value,
   );
-  const present = fixturePathsAtOrAbove(claims, "present");
-  const exercised = fixturePathsAtOrAbove(claims, "exercised");
-  const runtimeVerified = fixturePathsAtOrAbove(claims, "runtime");
   return {
-    present: present.length,
-    exercised: exercised.length,
-    runtimeVerified: runtimeVerified.length,
-    fixturePaths: present,
+    present: levelSummary(claims, "present"),
+    exercised: levelSummary(claims, "exercised"),
+    runtimeVerified: levelSummary(claims, "runtime"),
   };
 }
 
-function fixturePathsAtOrAbove(claims, tier) {
-  return [
+function levelSummary(claims, level) {
+  const fixturePaths = [
     ...new Set(
-      claims
-        .filter((claim) => tierRank[claim.tier] >= tierRank[tier])
-        .map((claim) => claim.fixturePath),
+      claims.filter((claim) => claim.levels.includes(level)).map((claim) => claim.fixturePath),
     ),
   ].sort(compareCodepoints);
+  return { count: fixturePaths.length, fixturePaths };
 }
 
 function countMembership(fixtureMap, membership) {
