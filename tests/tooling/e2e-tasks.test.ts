@@ -5,6 +5,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import {
+  MISSKEY_HMR_EXTERNAL_TEMPLATE,
+  MISSKEY_HMR_TARGETS,
+} from "../app/dev/misskey-hmr-targets.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readRepoFile(...segments: string[]): string {
@@ -139,14 +144,28 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assertExists("tests", "app", "dev", "misskey-hmr.ts");
   const misskeyHmr = readRepoFile("tests", "app", "dev", "misskey-hmr.ts");
   assert.match(misskeyHmr, /prepareMisskeyHmrFixture/);
-  assert.match(misskeyHmr, /<template\s+src=['"]\.\/MkVisitorDashboard\.hmr\.html['"]\s*>/);
-  assert.match(
-    misskeyHmr,
-    /sourceRelativePath:\s*['"]src\/components\/MkVisitorDashboard\.hmr\.html['"]/,
+  assert.deepEqual(
+    MISSKEY_HMR_TARGETS.map(({ marker, moduleSuffix, sourceRelativePath }) => ({
+      marker,
+      moduleSuffix,
+      sourceRelativePath,
+    })),
+    [
+      {
+        marker: "data-vize-hmr-direct",
+        moduleSuffix: "/src/ui/visitor.vue.ts",
+        sourceRelativePath: "src/ui/visitor.vue",
+      },
+      {
+        marker: "data-vize-hmr-dependency",
+        moduleSuffix: "/src/components/MkVisitorDashboard.vue.ts",
+        sourceRelativePath: "src/components/MkVisitorDashboard.hmr.html",
+      },
+    ],
   );
-  assert.match(
-    misskeyHmr,
-    /moduleSuffix:\s*['"]\/src\/components\/MkVisitorDashboard\.vue\.ts['"]/,
+  assert.equal(
+    MISSKEY_HMR_EXTERNAL_TEMPLATE,
+    '<template src="./MkVisitorDashboard.hmr.html"></template>',
   );
 
   const nuxtUiDevSpec = readRepoFile("tests", "app", "dev", "nuxt-ui.spec.ts");

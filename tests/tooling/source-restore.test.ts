@@ -58,29 +58,43 @@ test("HMR source cleanup rejects empty and duplicate restore plans", () => {
   );
 });
 
-test("HMR source cleanup honors detach and markRestored", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-hmr-source-restore-guard-"));
-  try {
-    const sourcePath = path.join(root, "App.vue");
-    fs.writeFileSync(sourcePath, "updated");
+test("HMR source cleanup restores on normal process exit", async () => {
+  assert.deepEqual(await verifyRestoreOnTermination("exit"), { code: 0, signal: null });
+});
 
-    const guard = installSourceRestores([{ sourcePath, originalSource: "original" }]);
+test("HMR source cleanup honors markRestored and detach", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-hmr-source-restore-guard-"));
+  const sourcePath = path.join(root, "App.vue");
+  let guard: ReturnType<typeof installSourceRestores> | undefined;
+  let second: ReturnType<typeof installSourceRestores> | undefined;
+  const baseline = {
+    exit: process.listenerCount("exit"),
+    SIGINT: process.listenerCount("SIGINT"),
+    SIGTERM: process.listenerCount("SIGTERM"),
+  };
+  try {
+    fs.writeFileSync(sourcePath, "updated");
+    guard = installSourceRestores([{ sourcePath, originalSource: "original" }]);
+    assert.equal(process.listenerCount("exit"), baseline.exit + 1);
+    assert.equal(process.listenerCount("SIGINT"), baseline.SIGINT + 1);
+    assert.equal(process.listenerCount("SIGTERM"), baseline.SIGTERM + 1);
     guard.markRestored();
     guard.restore();
     assert.equal(fs.readFileSync(sourcePath, "utf8"), "updated");
     guard.detach();
+    assert.equal(process.listenerCount("exit"), baseline.exit);
+    assert.equal(process.listenerCount("SIGINT"), baseline.SIGINT);
+    assert.equal(process.listenerCount("SIGTERM"), baseline.SIGTERM);
 
-    const second = installSourceRestores([{ sourcePath, originalSource: "original" }]);
+    second = installSourceRestores([{ sourcePath, originalSource: "original" }]);
     second.restore();
     second.detach();
     assert.equal(fs.readFileSync(sourcePath, "utf8"), "original");
   } finally {
+    guard?.detach();
+    second?.detach();
     fs.rmSync(root, { force: true, recursive: true });
   }
-});
-
-test("HMR source cleanup restores on normal process exit", async () => {
-  assert.deepEqual(await verifyRestoreOnTermination("exit"), { code: 0, signal: null });
 });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
