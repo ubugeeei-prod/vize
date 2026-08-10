@@ -259,6 +259,23 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 .unwrap();
             assert_eq!(repaired["items"], json!([]), "{repaired:#}");
 
+            overlay.replace(&uri, broken_source.as_str()).unwrap();
+            let dirty = client
+                .request::<RawDocumentDiagnostic>(json!({
+                    "textDocument": { "uri": child_uri }
+                }))
+                .await
+                .unwrap();
+            assert!(!dirty["items"].as_array().unwrap().is_empty(), "{dirty:#}");
+
+            assert!(overlay.close(&uri).unwrap().is_some());
+            let closed = client
+                .request::<RawDocumentDiagnostic>(json!({
+                    "textDocument": { "uri": child_uri }
+                }))
+                .await
+                .unwrap();
+            assert_eq!(closed["items"], json!([]), "{closed:#}");
             stop.store(true, Ordering::Relaxed);
             client.close().await.unwrap();
             responder.join().unwrap();
