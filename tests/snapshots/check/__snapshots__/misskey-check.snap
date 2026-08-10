@@ -412,7 +412,7 @@
     {
       "file": "src/components/MkImgPreviewDialog.vue",
       "diagnostics": [
-        "error:38:15 [TS2339] Property 'close' does not exist on type '__VizeComponentConstructor & __VizeVueComponentOptions & { __vizeEmitProps?: __VizeStaticEmitProps | undefined; }'."
+        "error:38:15 [TS2339] Property 'close' does not exist on type '{ __vizeEmitProps?: __VizeStaticEmitProps | undefined; readonly __vizeRawProps?: Props | undefined; } & __VizeComponentConstructor & __VizeVueComponentOptions'."
       ]
     },
     {
