@@ -10,8 +10,9 @@ use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    contains_location, copy_fixture, editor_capabilities, file_uri, install_packages,
-    notify_file_changes, position, pull_diagnostics, try_pull_diagnostics, workspace_root,
+    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
+    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
+    workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -28,8 +29,6 @@ struct RawInitialize;
 struct RawDiscoverContentMappers;
 struct RawCompletion;
 struct RawSignatureHelp;
-struct RawHover;
-struct RawDefinition;
 struct RawReferences;
 struct RawRename;
 
@@ -47,8 +46,6 @@ raw_request!(RawInitialize, "initialize");
 raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
 raw_request!(RawCompletion, "textDocument/completion");
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
-raw_request!(RawHover, "textDocument/hover");
-raw_request!(RawDefinition, "textDocument/definition");
 raw_request!(RawReferences, "textDocument/references");
 raw_request!(RawRename, "textDocument/rename");
 
@@ -86,6 +83,10 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
     let signature_position = position(&source, symbol_offset + "count.toFixed(".len());
     let declaration_offset = source.find("count: number").unwrap();
     let declaration_position = position(&source, declaration_offset);
+    let app_path = project.path().join("src/App.vue");
+    let app_source = std::fs::read_to_string(&app_path).unwrap();
+    let app_uri = file_uri(&app_path);
+    let component_position = position(&app_source, app_source.find("<Child").unwrap() + 1);
 
     let stop = AtomicBool::new(false);
     std::thread::scope(|scope| {
@@ -146,8 +147,31 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             overlay
                 .open(VirtualDocument::new(uri.clone(), "vue", source.as_str()))
                 .unwrap();
-            let params =
-                json!({ "textDocument": { "uri": child_uri }, "position": symbol_position });
+            let app_document_uri = Uri::from_str(&app_uri).unwrap();
+            overlay
+                .open(VirtualDocument::new(
+                    app_document_uri,
+                    "vue",
+                    app_source.as_str(),
+                ))
+                .unwrap();
+            let component_hover = hover(&client, &app_uri, &component_position).await;
+            let component_hover_text = serde_json::to_string(&component_hover).unwrap();
+            assert!(
+                component_hover_text.contains("Child")
+                    && !component_hover_text.contains("__vize_component__"),
+                "{component_hover:#}"
+            );
+            let component_definition = definition(&client, &app_uri, &component_position).await;
+            let component_definition_text = serde_json::to_string(&component_definition).unwrap();
+            assert!(
+                component_definition_text.contains(child_uri.as_str()),
+                "{component_definition:#}"
+            );
+            assert!(
+                !component_definition_text.contains(".vue.ts"),
+                "{component_definition:#}"
+            );
 
             let completion = client
                 .request::<RawCompletion>(json!({
@@ -176,17 +200,14 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 "{signature:#}"
             );
 
-            let hover = client.request::<RawHover>(params.clone()).await.unwrap();
+            let hover = hover(&client, &child_uri, &symbol_position).await;
             let hover_text = serde_json::to_string(&hover).unwrap();
             assert!(
                 hover_text.contains("count") && hover_text.contains("number"),
                 "{hover:#}"
             );
 
-            let definition = client
-                .request::<RawDefinition>(params.clone())
-                .await
-                .unwrap();
+            let definition = definition(&client, &child_uri, &symbol_position).await;
             let definition_text = serde_json::to_string(&definition).unwrap();
             assert!(
                 definition_text.contains(child_uri.as_str()),

@@ -6,6 +6,9 @@ use crate::batch::{
     generate_vue_content_mapper_transform_with_options,
 };
 
+#[path = "content_mapper_component_export_tests.rs"]
+mod component_exports;
+
 #[test]
 fn emits_protocol_v1_spans_without_forbidden_overlaps() {
     let source = r#"<script setup lang="ts">

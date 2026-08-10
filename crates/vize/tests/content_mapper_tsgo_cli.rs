@@ -287,7 +287,8 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
     let options_text = std::fs::read_to_string(&options_declaration).unwrap();
     assert!(options_text.contains("$props"), "{options_text}");
     assert!(
-        options_text.contains("export default __vize_component__"),
+        options_text.contains("declare const Options: typeof __vize_component__")
+            && options_text.contains("export default Options"),
         "{options_text}"
     );
     let public_text = std::fs::read_to_string(&public_declaration).unwrap();

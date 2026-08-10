@@ -141,6 +141,7 @@ pub(super) fn build_vue_registered_file(
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 preserve_authored_component: false,
+                component_name: None,
                 legacy_vue2: context.legacy_vue2,
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,

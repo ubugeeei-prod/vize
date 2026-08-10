@@ -43,11 +43,12 @@ pub(super) struct GeneratedVueFile {
 }
 
 #[derive(Clone, Copy)]
-pub(super) struct VueCodegenOptions {
+pub(super) struct VueCodegenOptions<'a> {
     pub(super) check_options: VirtualTsCheckOptions,
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) preserve_authored_component: bool,
+    pub(super) component_name: Option<&'a str>,
     pub(super) legacy_vue2: bool,
     pub(super) dialect: VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -64,7 +65,7 @@ pub(super) fn generate_vue_virtual_ts(
     source: &str,
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
-    codegen_options: VueCodegenOptions,
+    codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Bump::new();
     let mut diagnostics = Vec::new();
@@ -247,6 +248,7 @@ pub(super) fn generate_vue_virtual_ts(
                 extra_template_referenced_names: extra_template_referenced_names.as_ref(),
                 options_api: codegen_options.options_api || vue2_compat,
                 preserve_authored_component: codegen_options.preserve_authored_component,
+                component_name: codegen_options.component_name,
                 legacy_vue2: vue2_compat,
                 template_syntax_quirks: matches!(
                     codegen_options.template_syntax,

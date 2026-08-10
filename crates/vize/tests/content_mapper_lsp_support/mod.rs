@@ -7,11 +7,39 @@ use serde_json::{Value, json};
 use vize_carton::String as CompactString;
 
 struct RawDocumentDiagnostic;
+struct RawHover;
+struct RawDefinition;
 
 impl lsp_types::request::Request for RawDocumentDiagnostic {
     type Params = Value;
     type Result = Value;
     const METHOD: &'static str = "textDocument/diagnostic";
+}
+
+impl lsp_types::request::Request for RawHover {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/hover";
+}
+
+impl lsp_types::request::Request for RawDefinition {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/definition";
+}
+
+pub async fn hover(client: &LspClient, uri: &str, position: &Value) -> Value {
+    client
+        .request::<RawHover>(json!({ "textDocument": { "uri": uri }, "position": position }))
+        .await
+        .unwrap()
+}
+
+pub async fn definition(client: &LspClient, uri: &str, position: &Value) -> Value {
+    client
+        .request::<RawDefinition>(json!({ "textDocument": { "uri": uri }, "position": position }))
+        .await
+        .unwrap()
 }
 
 pub async fn pull_diagnostics(client: &LspClient, uri: &str) -> Value {

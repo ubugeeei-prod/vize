@@ -115,6 +115,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             preserve_unused_diagnostics: false,
             options_api: document_options.options_api,
             preserve_authored_component: false,
+            component_name: None,
             legacy_vue2: document_options.legacy_vue2,
             dialect: vize_carton::config::VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),

@@ -10,7 +10,7 @@ use vize_carton::{String as CompactString, ToCompactString, config::VueVersion};
 
 use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, to_safe_identifier};
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -143,6 +143,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
 
     let options = virtual_ts_options_for_descriptor(&VirtualTsOptions::default(), &descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
+    let component_name = content_mapper_component_name(path);
     let GeneratedVueFile {
         mut code,
         mut mappings,
@@ -157,6 +158,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
+            component_name: Some(component_name.as_str()),
             legacy_vue2: false,
             dialect: VueVersion::default(),
             template_syntax: TemplateSyntaxMode::default(),
@@ -183,6 +185,20 @@ pub fn generate_vue_content_mapper_transform_with_options(
             SCRIPT_KIND_TS
         },
     })
+}
+
+fn content_mapper_component_name(path: &Path) -> CompactString {
+    let stem = path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("VueComponent");
+    let pascal = vize_croquis::naming::to_pascal_case(stem);
+    let name = to_safe_identifier(pascal.as_str());
+    if name.as_str().bytes().all(|byte| byte == b'_') {
+        CompactString::from("VueComponent")
+    } else {
+        name
+    }
 }
 
 fn sfc_parse_diagnostic(source: &str, error: &SfcError) -> ContentMapperDiagnostic {
