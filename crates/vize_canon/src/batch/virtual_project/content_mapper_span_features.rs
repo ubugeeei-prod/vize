@@ -55,3 +55,10 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ALL: usize = ContentMapperSpanFeat
     | ContentMapperSpanFeature::AutoInsert as usize
     | ContentMapperSpanFeature::DocumentSymbols as usize
     | ContentMapperSpanFeature::CodeLens as usize;
+
+/// Read-only features that can safely project through a synthesized atom.
+/// Symbol navigation and every edit-producing feature require verbatim text;
+/// advertising them on generated identifiers creates self-definitions and
+/// edits that cannot be applied source-faithfully.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ATOM: usize =
+    ContentMapperSpanFeature::Hover as usize | ContentMapperSpanFeature::SignatureHelp as usize;

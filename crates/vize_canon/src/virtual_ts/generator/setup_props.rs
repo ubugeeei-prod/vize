@@ -4,6 +4,7 @@ use vize_croquis::Croquis;
 use super::generics::{
     generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
 };
+use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
     add_generic_defaults, append_default_props, extract_generic_names, generate_props_type,
@@ -111,9 +112,8 @@ pub(super) fn generate_setup_props(
     profile!("canon.virtual_ts.generate_props_type", {
         plan.generate_props_type(ts, summary, generic_param, options_api_props);
     });
-    let mut binding_mappings =
-        PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
-    binding_mappings.map_exported_props_type(ts, generated_start);
+    let mut type_mappings = MacroTypeMappings::new(source.mappings, source.script, source.offset);
+    type_mappings.map_exported_type(ts, generated_start, summary.macros.define_props(), "Props");
     plan
 }
 

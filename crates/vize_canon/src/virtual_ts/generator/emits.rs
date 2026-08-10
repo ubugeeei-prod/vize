@@ -4,6 +4,7 @@ use vize_croquis::Croquis;
 use super::generics::module_alias_generic_suffix;
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
+    macro_type_mappings::MacroTypeMappings,
     props::{add_generic_defaults, strip_const_modifiers},
 };
 
@@ -78,6 +79,7 @@ pub(super) struct EmitsInfo {
     pub(super) has_emits_for_props: bool,
     has_runtime_emits: bool,
     has_generic_emits: bool,
+    preserve_event_navigation: bool,
 }
 
 impl EmitsInfo {
@@ -90,6 +92,14 @@ impl EmitsInfo {
     pub(super) fn static_emit_props_field(&self) -> &'static str {
         if self.has_emits_for_props {
             "__vizeEmitProps?: __VizeStaticEmitProps;"
+        } else {
+            ""
+        }
+    }
+
+    pub(super) fn static_event_map_field(&self) -> &'static str {
+        if self.has_emits_for_props && self.preserve_event_navigation {
+            "__vizeRawEmits?: Emits; __vizeEventMap?: __VizeStaticEventMap;"
         } else {
             ""
         }
@@ -132,9 +142,12 @@ fn model_update_payload(model: &vize_croquis::macros::ModelDefinition) -> String
 pub(super) fn emit_emits_type(
     ts: &mut String,
     summary: &Croquis,
+    mut mappings: MacroTypeMappings<'_>,
+    preserve_event_navigation: bool,
     generic_param: Option<&str>,
     has_runtime_emits: bool,
 ) -> EmitsInfo {
+    let generated_start = ts.len();
     let emits_already_defined = summary
         .type_exports
         .iter()
@@ -216,10 +229,12 @@ pub(super) fn emit_emits_type(
         }
     }
 
+    mappings.map_exported_type(ts, generated_start, summary.macros.define_emits(), "Emits");
     EmitsInfo {
         has_emits_for_props,
         has_runtime_emits,
         has_generic_emits: emits_generic_decl.is_some(),
+        preserve_event_navigation,
     }
 }
 
@@ -237,8 +252,14 @@ pub(super) fn emit_emit_props_helper(
     ts.push_str(EMIT_PROPS_HELPER);
     ts.push('\n');
     if info.has_runtime_emits {
+        if info.preserve_event_navigation {
+            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n");
+        }
         ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
     } else {
+        if info.preserve_event_navigation {
+            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Emits>;\n");
+        }
         ts.push_str("type __VizeStaticEmitProps = __EmitProps<Emits>;\n\n");
     }
 }

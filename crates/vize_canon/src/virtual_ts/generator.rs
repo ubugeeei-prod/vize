@@ -51,6 +51,7 @@ use self::spans::{
 use super::{
     helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
     import_meta::emit_import_meta_augmentation,
+    macro_type_mappings::MacroTypeMappings,
     props::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
         extract_generic_names, strip_const_modifiers,
@@ -850,7 +851,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         append!(ts, "\n  return {{ {} }};\n", setup_return_fields.join(", "));
     }
 
-    // Close setup function
     ts.push_str("}\n\n");
 
     // Invoke setup to keep diagnostics inside the generated setup body.
@@ -864,14 +864,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let emits_info = emit_emits_type(
         &mut ts,
         summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
+        generation_options.component_name.is_some(),
         generic_param,
         define_emits_runtime_args.is_some(),
     );
 
-    // Slots type
     let slots_is_generic = emit_slots_type(&mut ts, summary, generic_injection.as_ref());
 
-    // Exposed type (for InstanceType and useTemplateRef)
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');

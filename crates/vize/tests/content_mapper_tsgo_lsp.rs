@@ -10,8 +10,8 @@ use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_component_completions, assert_component_navigation, assert_prop_navigation, completion,
-    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
+    assert_component_completions, assert_component_members, assert_component_navigation,
+    completion, contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
     install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
     workspace_root,
 };
@@ -86,7 +86,6 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
     let app_source = std::fs::read_to_string(&app_path).unwrap();
     let app_uri = file_uri(&app_path);
     let component_position = position(&app_source, app_source.find("<Child").unwrap() + 1);
-    let component_prop_position = position(&app_source, app_source.find(":count").unwrap() + 1);
 
     let stop = AtomicBool::new(false);
     std::thread::scope(|scope| {
@@ -164,16 +163,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             )
             .await;
 
-            assert_prop_navigation(
-                &client,
-                &app_uri,
-                &component_prop_position,
-                "count",
-                "number",
-                &child_uri,
-                &declaration_position,
-            )
-            .await;
+            assert_component_members(&client, (&app_uri, &app_source), (&child_uri, &source)).await;
 
             assert_component_completions(&client, &overlay, &app_document_uri, &app_source).await;
 
