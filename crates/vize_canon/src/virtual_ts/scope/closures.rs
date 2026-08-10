@@ -29,9 +29,8 @@ use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
-/// Generate scope closures from Croquis scope chain.
-/// Uses recursive tree-based generation so nested v-for/v-slot scopes
-/// are properly contained within their parent closures.
+/// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
+/// scopes remain contained within their parent closures.
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -131,6 +130,7 @@ pub(crate) fn generate_scope_closures(
         template_prop_names,
         template_offset,
         options: virtual_ts_options,
+        preserve_event_navigation: options.preserve_event_navigation,
         check_unresolved_global_components: options.check_unresolved_global_components,
         legacy_vue2: options.legacy_vue2,
     };

@@ -57,6 +57,7 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// Options API generation declares `__default__`; template names outside
     /// the known bindings then resolve on the public instance (#3888).
     pub(crate) options_api: bool,
+    pub(crate) preserve_event_navigation: bool,
     /// Whether the default-export rewrite declared the `__default__` alias. The
     /// public-instance form reads `typeof __default__`, so it stays off for a
     /// shape that never produced one (a re-exported default, no default export
@@ -112,6 +113,7 @@ pub(super) struct ComponentPropsContext<'a> {
     pub(super) template_prop_names: &'a FxHashSet<String>,
     pub(super) template_offset: u32,
     pub(super) options: &'a VirtualTsOptions,
+    pub(super) preserve_event_navigation: bool,
     pub(super) check_unresolved_global_components: GlobalComponentCheck,
     pub(super) legacy_vue2: bool,
 }

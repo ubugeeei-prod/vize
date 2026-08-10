@@ -198,7 +198,7 @@ fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
 }
 
-fn generated_prop_value(
+pub(super) fn generated_prop_value(
     prop: &PassedProp,
     template_prop_names: &FxHashSet<String>,
 ) -> Option<String> {
