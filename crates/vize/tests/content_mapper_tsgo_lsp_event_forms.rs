@@ -78,6 +78,17 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             true,
         ),
         (
+            "ConditionalGenericChild.vue",
+            "@confirm",
+            "confirm: [value",
+            "confirm",
+            "\\\"conditional\\\"",
+            "renamedConfirm",
+            0,
+            "confirm".len(),
+            true,
+        ),
+        (
             "Child.vue",
             "@save-item",
             "saveItem: [id",
@@ -363,6 +374,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             let partial = app_source
                 .replace("@activate", "@act")
                 .replace("@choose", "@cho")
+                .replace("@confirm", "@con")
                 .replace("@submit", "@sub")
                 .replace("@cancel", "@can")
                 .replace("@select", "@sel")
@@ -374,6 +386,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             for (usage, label, payload) in [
                 ("@act", "activate", "\\\"slot\\\""),
                 ("@cho", "choose", "\\\"top-level\\\""),
+                ("@con", "confirm", "\\\"conditional\\\""),
                 ("@sub", "submit", "boolean"),
                 ("@can", "cancel", "string"),
                 ("@sel", "select", "\\\"nested\\\""),

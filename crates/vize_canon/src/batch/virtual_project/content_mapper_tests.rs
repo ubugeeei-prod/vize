@@ -15,6 +15,8 @@ use crate::batch::{
 mod component_exports;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
+#[path = "content_mapper_scoped_event_navigation_tests.rs"]
+mod scoped_event_navigation;
 
 #[test]
 fn keeps_diagnostic_handler_anchors_out_of_editor_features() {

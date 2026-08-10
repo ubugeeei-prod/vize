@@ -4,8 +4,11 @@ use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::croquis::{ComponentUsage, EventListener};
 use vize_croquis::{Croquis, ScopeKind};
 
-use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier};
-use crate::virtual_ts::types::VizeMapping;
+use crate::virtual_ts::{
+    expressions::rewrite_reserved_template_prop,
+    helpers::{to_camel_case, to_safe_identifier},
+    types::VizeMapping,
+};
 
 use super::component_events::generated_prop_value;
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
@@ -101,12 +104,28 @@ fn emit_usage_event_references(
     let mut emitted_model_ref = false;
     let mut emitted_model_completion_ref = false;
     let mut emitted_resolved_events = false;
+    let guard = usage.vif_guard.as_ref().map(|guard| {
+        rewrite_reserved_template_prop(guard.as_str(), ctx.template_prop_names)
+            .unwrap_or_else(|| guard.clone())
+    });
+    let guarded_indent = guard.as_ref().map(|_| cstr!("{indent}  "));
+    let event_indent = guarded_indent.as_deref().unwrap_or(indent);
+    let mut emitted_guard = false;
     for event in &usage.events {
         let camel_event_name = to_camel_case(event.name.as_str());
         let is_complete_kebab = camel_event_name != event.name && !event.name.ends_with('-');
         let Some(source_range) = event_navigation_source_range(ctx, event) else {
             continue;
         };
+        if !emitted_guard {
+            if let Some(guard) = guard.as_deref() {
+                append!(
+                    *ts,
+                    "{indent}// @ts-ignore Navigation-only guard; authored binding checks own diagnostics.\n{indent}if ({guard}) {{\n"
+                );
+            }
+            emitted_guard = true;
+        }
         let is_model_event = ctx.preserve_event_navigation && event.name.starts_with("update:");
         if !emitted_resolved_events && ctx.preserve_event_navigation {
             emit_resolved_events(
@@ -116,7 +135,7 @@ fn emit_usage_event_references(
                 component_ref,
                 idx,
                 resolved_events.as_str(),
-                indent,
+                event_indent,
             );
             emitted_resolved_events = true;
         }
@@ -124,11 +143,11 @@ fn emit_usage_event_references(
             if !emitted_model_completion_ref {
                 append!(
                     *ts,
-                    "{indent}const {model_completion_ref} = {resolved_events};\n"
+                    "{event_indent}const {model_completion_ref} = {resolved_events};\n"
                 );
                 emitted_model_completion_ref = true;
             }
-            append!(*ts, "{indent}void {model_completion_ref}[");
+            append!(*ts, "{event_indent}void {model_completion_ref}[");
             let generated = push_ts_single_quoted_literal(ts, event.name.as_str());
             ts.push_str("];\n");
             mappings.push(VizeMapping {
@@ -146,17 +165,20 @@ fn emit_usage_event_references(
         };
         if !*emitted_ref {
             if ctx.preserve_event_navigation {
-                append!(*ts, "{indent}const {events_ref} = {resolved_events};\n");
+                append!(
+                    *ts,
+                    "{event_indent}const {events_ref} = {resolved_events};\n"
+                );
             } else {
                 append!(
                     *ts,
-                    "{indent}const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+                    "{event_indent}const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
                 );
             }
             *emitted_ref = true;
         }
 
-        append!(*ts, "{indent}void {events_ref}");
+        append!(*ts, "{event_indent}void {events_ref}");
         let event_gen_range = if is_complete_kebab {
             if is_ts_identifier(camel_event_name.as_str()) {
                 ts.push('.');
@@ -186,6 +208,9 @@ fn emit_usage_event_references(
             src_range: source_range,
             sub_spans: Vec::new(),
         });
+    }
+    if emitted_guard && guard.is_some() {
+        append!(*ts, "{indent}}}\n");
     }
 }
 
