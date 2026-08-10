@@ -20,6 +20,8 @@ use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtu
 
 #[path = "content_mapper_span_features.rs"]
 mod span_features;
+#[path = "content_mapper_span_normalize.rs"]
+mod span_normalize;
 
 use span_features::CONTENT_MAPPER_SPAN_FEATURES_ALL;
 
@@ -230,7 +232,7 @@ fn protocol_spans(
     generated: &str,
     mappings: &[VizeMapping],
 ) -> Vec<ContentMapperSpan> {
-    let mut candidates = mappings
+    let candidates = mappings
         .iter()
         .filter_map(|mapping| {
             if mapping.sub_spans.is_empty() {
@@ -260,28 +262,7 @@ fn protocol_spans(
         .flatten()
         .collect::<Vec<_>>();
 
-    // Narrow authored spans win over enclosing synthetic projections.
-    candidates.sort_by_key(|candidate| {
-        (
-            candidate.generated.len(),
-            candidate.original.len(),
-            candidate.generated.start,
-        )
-    });
-
-    let mut accepted = Vec::<SpanCandidate>::new();
-    for candidate in candidates {
-        let generated_overlap = accepted
-            .iter()
-            .any(|span| ranges_overlap(&candidate.generated, &span.generated));
-        let invalid_original_overlap = accepted.iter().any(|span| {
-            candidate.original != span.original
-                && ranges_overlap(&candidate.original, &span.original)
-        });
-        if !generated_overlap && !invalid_original_overlap {
-            accepted.push(candidate);
-        }
-    }
+    let mut accepted = span_normalize::normalize(candidates);
     accepted.sort_by_key(|candidate| candidate.generated.start);
     accepted
         .into_iter()

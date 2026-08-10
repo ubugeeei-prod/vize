@@ -5,10 +5,12 @@ use super::generics::{
     generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
 };
 use crate::virtual_ts::props::{
-    OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, append_default_props,
-    extract_generic_names, generate_props_type, generate_props_variables,
-    generate_setup_scoped_props_artifact,
+    OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
+    add_generic_defaults, append_default_props, extract_generic_names, generate_props_type,
+    generate_props_variables, generate_setup_scoped_props_artifact,
 };
+
+pub(super) use crate::virtual_ts::props::prop_source;
 
 fn is_identifier_start_byte(b: u8) -> bool {
     b == b'_' || b == b'$' || b.is_ascii_alphabetic()
@@ -172,12 +174,16 @@ impl SetupPropsPlan {
     pub(super) fn generate_props_variables(
         &self,
         ts: &mut String,
-        summary: &Croquis,
+        source: PropsSource<'_>,
         generic_param: Option<&str>,
         check_props: bool,
     ) {
+        let summary = source.summary;
+        let mut binding_mappings =
+            PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
         generate_props_variables(
             ts,
+            &mut binding_mappings,
             summary,
             generic_param,
             self.template_props_type_ref(),

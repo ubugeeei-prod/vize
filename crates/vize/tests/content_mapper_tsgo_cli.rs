@@ -19,6 +19,9 @@ fn copy_fixture(source: &Path, destination: &Path) {
     std::fs::create_dir_all(destination).unwrap();
     for entry in std::fs::read_dir(source).unwrap() {
         let entry = entry.unwrap();
+        if entry.file_name() == "node_modules" {
+            continue;
+        }
         let source_path = entry.path();
         let destination_path = destination.join(entry.file_name());
         if entry.file_type().unwrap().is_dir() {

@@ -154,6 +154,8 @@ jobs:
       - name: Run exact editor backend conformance
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
+          cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
           cargo test -p vize_maestro
