@@ -107,9 +107,15 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
     "source presence must not be promoted to an exercised or runtime oracle",
   );
 
-  const first = formatCompatibilityReport(report);
-  const second = formatCompatibilityReport(createCompatibilityReport(ledger, context));
-  assert.equal(second, first, "the report must be byte-deterministic");
+  const reordered = structuredClone(ledger);
+  reordered.capabilities.reverse();
+  reordered.oracles.reverse();
+  reordered.unresolved.reverse();
+  assert.equal(
+    formatCompatibilityReport(createCompatibilityReport(reordered, context)),
+    formatCompatibilityReport(report),
+    "the report must be byte-identical under reordered ledger input",
+  );
 });
 
 test("invalid ledger mutations fail closed", () => {
@@ -130,6 +136,12 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       "duplicate fixture",
       (value) => value.fixtures.push(structuredClone(value.fixtures.at(-1))),
       /duplicates/,
+    ],
+    ["unsorted fixture paths", (value) => value.fixtures.reverse(), /codepoint sorted/],
+    [
+      "duplicate capability claim",
+      (value) => value.capabilities.push(structuredClone(value.capabilities[0])),
+      /capability claims contain duplicates/,
     ],
     [
       "membership drift",

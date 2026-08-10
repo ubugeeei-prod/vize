@@ -54,7 +54,7 @@ export function createCompatibilityContext(rootDir = moduleRoot) {
   );
   const gitmodulePaths = execFileSync(
     "git",
-    ["config", "-f", ".gitmodules", "--get-regexp", "path"],
+    ["config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$"],
     { cwd: rootDir, encoding: "utf8" },
   )
     .trim()
@@ -288,7 +288,7 @@ function validateRatchets(oracles, fixtureMap, context) {
   );
 }
 
-function countMembership(fixtureMap, membership) {
+export function countMembership(fixtureMap, membership) {
   return [...fixtureMap.values()].filter((fixture) => fixture.memberships.includes(membership))
     .length;
 }
@@ -300,7 +300,7 @@ function exactKeys(value, keys) {
     "object shape is not closed",
   );
 }
-function compareCodepoints(left, right) {
+export function compareCodepoints(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 function record(value, label) {

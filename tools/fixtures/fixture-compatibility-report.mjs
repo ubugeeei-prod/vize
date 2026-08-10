@@ -3,6 +3,8 @@ import { pathToFileURL } from "node:url";
 
 import {
   capabilityValues,
+  compareCodepoints,
+  countMembership,
   createCompatibilityContext,
   expandSelection,
   oracleKinds,
@@ -79,15 +81,6 @@ function fixturePathsAtOrAbove(claims, tier) {
         .map((claim) => claim.fixturePath),
     ),
   ].sort(compareCodepoints);
-}
-
-function countMembership(fixtureMap, membership) {
-  return [...fixtureMap.values()].filter((fixture) => fixture.memberships.includes(membership))
-    .length;
-}
-
-function compareCodepoints(left, right) {
-  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 export function formatCompatibilityReport(report) {
