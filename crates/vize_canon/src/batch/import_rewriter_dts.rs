@@ -1,8 +1,8 @@
 //! Redirecting relative re-exports/imports of generated declaration files to
 //! their real on-disk path when a non-`.vue` script is materialized into canon.
 //!
-//! Generated GraphQL `.d.ts` schemas are intentionally never mirrored into
-//! `node_modules/.vize/canon` (#2047). A barrel like `types/index.ts` reached
+//! Generated GraphQL `.d.ts` schemas are intentionally never mirrored into a
+//! Canon project namespace (#2047). A barrel like `types/index.ts` reached
 //! transitively from a `.vue` *is* mirrored, but its relative
 //! `export * from './codegen/schema'` would then dangle inside the mirror where
 //! the schema is absent — dropping the generated module's type identity and

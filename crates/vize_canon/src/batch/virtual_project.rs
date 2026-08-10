@@ -1,7 +1,8 @@
 //! Virtual project management for Corsa-backed type checking.
 //!
 //! This module materializes a mirrored TypeScript project in
-//! `node_modules/.vize/canon/` so Corsa can type-check Vue SFCs together with
+//! a project-keyed namespace under `node_modules/.vize/canon/` so Corsa can
+//! type-check Vue SFCs together with
 //! regular TypeScript sources, ambient declarations, and emitted `.d.ts` files.
 //!
 //! The implementation is split across submodules:
@@ -45,6 +46,8 @@ pub use document::{
 pub(crate) use document::generate_vue_document_virtual_ts_with_options_and_alias_resolver;
 mod diagnostics;
 mod external_mirror;
+mod identity;
+pub use identity::{project_virtual_lock_paths, project_virtual_root};
 mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;
@@ -104,7 +107,7 @@ pub struct VirtualProject {
     /// Project root directory.
     project_root: PathBuf,
 
-    /// Virtual project root (`node_modules/.vize/canon`).
+    /// Project-keyed virtual root under `node_modules/.vize/canon/projects`.
     virtual_root: PathBuf,
 
     /// Explicit tsconfig path, if one was provided by the caller.

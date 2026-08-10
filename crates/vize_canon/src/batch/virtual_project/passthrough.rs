@@ -227,7 +227,7 @@ mod tests {
             "export declare const runtime: true\n",
         );
         write(&root, "tokens/colors.json", "{}\n");
-        let virtual_root = root.join("node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(&root);
 
         let mut files = collect_passthrough_modules(
             &entry,
@@ -291,7 +291,7 @@ mod tests {
             "src/styles/tokens.d.ts",
             "export declare const tokens: Record<string, string>\n",
         );
-        let virtual_root = root.join("node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(&root);
 
         let mut files = collect_passthrough_modules(
             &entry,

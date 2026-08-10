@@ -9,6 +9,7 @@ mod declaration_root_dir;
 mod graphql_generated;
 mod macro_scope;
 mod module_augmentations;
+mod project_isolation;
 mod ref_arity;
 mod setup_props;
 mod source_types;
@@ -79,19 +80,6 @@ fn snapshot_text(source: &str) -> std::string::String {
     }
     output
 }
-#[test]
-fn test_virtual_project_new() {
-    let case_dir = unique_case_dir("new");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(&case_dir).unwrap();
-
-    let project = VirtualProject::new(&case_dir).unwrap();
-    assert_eq!(project.project_root(), case_dir.as_path());
-    assert!(project.virtual_root().ends_with("node_modules/.vize/canon"));
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
 #[test]
 fn test_materialize_writes_inert_vue_module_stub_file() {
     let case_dir = unique_case_dir("vue-module-stubs");
@@ -631,9 +619,9 @@ const message = 'Hello'
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let virtual_vue_path = case_dir.join("node_modules/.vize/canon/src/App.vue.ts");
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
-    let auto_imports_path = case_dir.join("node_modules/.vize/canon/__vize_auto_imports.d.ts");
+    let virtual_vue_path = project.virtual_root().join("src/App.vue.ts");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
+    let auto_imports_path = project.virtual_root().join("__vize_auto_imports.d.ts");
 
     assert!(virtual_vue_path.exists());
     assert!(tsconfig_path.exists());
@@ -674,8 +662,9 @@ fn test_materialize_writes_relative_json_modules() {
     project.register_path(&ts_path).unwrap();
     project.materialize().unwrap();
 
-    let virtual_json_path =
-        case_dir.join("node_modules/.vize/canon/src/tokens/source/colors.tokens.json");
+    let virtual_json_path = project
+        .virtual_root()
+        .join("src/tokens/source/colors.tokens.json");
     assert_eq!(
         fs::read_to_string(&virtual_json_path).unwrap(),
         "{\"primary\":\"#0057ff\"}\n"
@@ -870,7 +859,7 @@ fn materialized_tsconfig_preserves_original_path_option_bases() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let compiler_options = value["compilerOptions"].as_object().unwrap();
@@ -890,7 +879,7 @@ fn materialized_tsconfig_preserves_original_path_option_bases() {
     // source tree as fallback, so `types: [...]` entries keep resolving.
     assert_eq!(
         compiler_options["typeRoots"],
-        serde_json::json!(["./types", "../../../types"])
+        serde_json::json!(["./types", "../../../../../types"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -926,7 +915,7 @@ fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
@@ -935,11 +924,11 @@ fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
     // `.vue.ts` mirror candidate for extensionless SFC aliases (#3300).
     assert_eq!(
         paths["@/*"],
-        serde_json::json!(["./src/*", "../../../src/*", "./src/*.vue.ts"])
+        serde_json::json!(["./src/*", "../../../../../src/*", "./src/*.vue.ts"])
     );
     assert_eq!(
         paths["#shared"],
-        serde_json::json!(["./shared/index.ts", "../../../shared/index.ts"])
+        serde_json::json!(["./shared/index.ts", "../../../../../shared/index.ts"])
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -981,15 +970,15 @@ fn materialized_tsconfig_reanchors_extended_paths_from_declaring_config_dir() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
 
-    let app = ["./app/*", "../../../app/*", "./app/*.vue.ts"];
+    let app = ["./app/*", "../../../../../app/*", "./app/*.vue.ts"];
     let imports = [
         "./.nuxt/imports",
-        "../../../.nuxt/imports",
+        "../../../../../.nuxt/imports",
         "./.nuxt/imports.vue.ts",
     ];
     assert_eq!(paths["~/*"], serde_json::json!(app));

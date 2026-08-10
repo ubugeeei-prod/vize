@@ -49,6 +49,7 @@ tracing.workspace = true
 dirs = { workspace = true, optional = true }
 thiserror.workspace = true
 corsa = { workspace = true, optional = true }
+sha2.workspace = true
 
 [target.'cfg(unix)'.dependencies]
 libc.workspace = true

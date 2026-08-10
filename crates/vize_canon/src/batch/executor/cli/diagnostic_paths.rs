@@ -116,9 +116,9 @@ mod tests {
 
     #[test]
     fn keeps_missing_paths_untouched() {
-        let virtual_root = Path::new("/does/not/exist/node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(Path::new("/does/not/exist"));
         assert_eq!(
-            normalize_cli_path("src/App.vue.ts", virtual_root),
+            normalize_cli_path("src/App.vue.ts", &virtual_root),
             virtual_root.join("src/App.vue.ts")
         );
     }
@@ -126,7 +126,7 @@ mod tests {
     #[test]
     fn resolves_relative_paths_against_the_virtual_root() {
         let root = temp_dir("cli-diagnostic-paths-plain");
-        let virtual_root = root.join("node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(&root);
         write_virtual_file(&virtual_root, "src/App.vue.ts");
 
         assert_eq!(
@@ -153,16 +153,23 @@ mod tests {
         std::fs::create_dir_all(&store).unwrap();
         std::os::unix::fs::symlink(&store, project_root.join("node_modules")).unwrap();
 
-        let virtual_root = project_root.join("node_modules/.vize/canon");
-        write_virtual_file(&virtual_root, "src/App.vue.ts");
+        let physical_virtual_root = crate::batch::project_virtual_root(&project_root);
+        let relative_in_store = physical_virtual_root
+            .strip_prefix(std::fs::canonicalize(&store).unwrap())
+            .unwrap();
+        let through_link_virtual_root = project_root.join("node_modules").join(relative_in_store);
+        write_virtual_file(&through_link_virtual_root, "src/App.vue.ts");
 
         // What the CLI prints from the link target: up out of
-        // `<store>/.vize/canon` to the shared parent, then down the
+        // the physical virtual root to the shared parent, then down the
         // through-link project path.
-        let reported = "../../../app/node_modules/.vize/canon/src/App.vue.ts";
+        let through_link_root = through_link_virtual_root.strip_prefix(&root).unwrap();
+        let reported = Path::new("../../../../..")
+            .join(through_link_root)
+            .join("src/App.vue.ts");
         assert_eq!(
-            normalize_cli_path(reported, &virtual_root),
-            virtual_root.join("src/App.vue.ts"),
+            normalize_cli_path(reported.to_str().unwrap(), &through_link_virtual_root),
+            through_link_virtual_root.join("src/App.vue.ts"),
             "a diagnostic reported against the link target must map back to the registered virtual path"
         );
 
@@ -174,12 +181,12 @@ mod tests {
     fn keeps_files_outside_the_virtual_project_at_their_resolved_path() {
         let root = temp_dir("cli-diagnostic-paths-outside");
         let project_root = root.join("app");
-        let virtual_root = project_root.join("node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(&project_root);
         std::fs::create_dir_all(&virtual_root).unwrap();
         std::fs::create_dir_all(project_root.join("types")).unwrap();
         std::fs::write(project_root.join("types/globals.d.ts"), "export {};\n").unwrap();
 
-        let resolved = normalize_cli_path("../../../types/globals.d.ts", &virtual_root);
+        let resolved = normalize_cli_path("../../../../../types/globals.d.ts", &virtual_root);
         assert!(
             resolved.ends_with("types/globals.d.ts"),
             "unexpected resolved path: {resolved:?}"

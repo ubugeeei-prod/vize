@@ -1,6 +1,6 @@
 //! Re-anchoring of tsconfig path-like options into the virtual mirror.
 
-use std::path::Path;
+use std::path::{Component, Path, PathBuf};
 
 use serde_json::{Map, Value};
 use vize_carton::{String as CompactString, cstr};
@@ -92,18 +92,94 @@ impl VirtualProject {
         remapped
     }
 
-    /// Relative prefix (e.g. `../../../`) from the virtual root back to the
-    /// project root, used to aim alias fallbacks at the real source tree.
+    /// Relative prefix from the virtual root back to the project root, used to
+    /// aim alias fallbacks at the real source tree. Project-keyed mirrors may
+    /// live in a shared physical dependency store, so this must compare both
+    /// paths instead of assuming that the mirror is nested under the source.
     fn virtual_root_to_project_prefix(&self) -> CompactString {
-        let depth = self
-            .virtual_root
-            .strip_prefix(&self.project_root)
-            .map(|relative| relative.components().count())
-            .unwrap_or(0);
-        let mut prefix = CompactString::with_capacity(depth * 3);
-        for _ in 0..depth {
-            prefix.push_str("../");
+        let relative = relative_path_from(&self.virtual_root, &self.project_root);
+        let normalized = relative.to_string_lossy().replace('\\', "/");
+        if normalized == "." {
+            return CompactString::new("");
+        }
+        let mut prefix = CompactString::from(normalized);
+        if !prefix.ends_with('/') {
+            prefix.push('/');
         }
         prefix
+    }
+}
+
+fn relative_path_from(from_dir: &Path, target: &Path) -> PathBuf {
+    let from = path_components(from_dir);
+    let to = path_components(target);
+    let mut common = 0usize;
+    while common < from.len() && common < to.len() && from[common] == to[common] {
+        common += 1;
+    }
+    if common == 0 {
+        return target.to_path_buf();
+    }
+
+    let mut relative = PathBuf::new();
+    for _ in common..from.len() {
+        relative.push("..");
+    }
+    for component in to.iter().skip(common) {
+        relative.push(component);
+    }
+    if relative.as_os_str().is_empty() {
+        PathBuf::from(".")
+    } else {
+        relative
+    }
+}
+
+fn path_components(path: &Path) -> Vec<std::ffi::OsString> {
+    path.components()
+        .filter_map(|component| match component {
+            Component::CurDir => None,
+            Component::Prefix(prefix) => Some(prefix.as_os_str().to_os_string()),
+            Component::RootDir => Some(std::path::MAIN_SEPARATOR_STR.into()),
+            Component::ParentDir => Some("..".into()),
+            Component::Normal(value) => Some(value.to_os_string()),
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::relative_path_from;
+    use std::path::{Path, PathBuf};
+
+    #[test]
+    fn sibling_storage_paths_rebase_to_the_source_tree() {
+        assert_eq!(
+            relative_path_from(
+                Path::new("/workspace/shared/.vize/canon/projects/key"),
+                Path::new("/workspace/apps/first"),
+            ),
+            PathBuf::from("../../../../../apps/first")
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_rebasing_respects_drive_prefix_boundaries() {
+        assert_eq!(
+            relative_path_from(
+                Path::new(r"C:\store\.vize\canon\projects\key"),
+                Path::new(r"C:\repo\app"),
+            ),
+            PathBuf::from(r"..\..\..\..\..\repo\app")
+        );
+        assert_eq!(
+            relative_path_from(
+                Path::new(r"C:\store\.vize\canon\projects\key"),
+                Path::new(r"D:\repo\app"),
+            ),
+            PathBuf::from(r"D:\repo\app"),
+            "a different drive must remain an absolute paths target"
+        );
     }
 }

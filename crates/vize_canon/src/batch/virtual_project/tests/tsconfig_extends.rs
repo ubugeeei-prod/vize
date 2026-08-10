@@ -58,7 +58,7 @@ fn materialized_tsconfig_inlines_extends_chain_without_extending_original() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
 
@@ -139,7 +139,7 @@ fn a_shared_ancestor_is_inherited_by_every_sibling_extends_entry() {
     project.register_path(&vue_path).unwrap();
     project.materialize().unwrap();
 
-    let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+    let tsconfig_path = project.virtual_root().join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let compiler_options = value["compilerOptions"].as_object().unwrap();

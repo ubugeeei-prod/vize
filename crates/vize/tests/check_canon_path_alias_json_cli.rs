@@ -91,8 +91,9 @@ export const versions: [string, string] = [tildeVersion, atVersion];
         output.status.success(),
         "project JSON aliases resolved to Canon control files:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
+    let canon_package = vize_canon::project_virtual_root(&project_root).join("package");
     assert!(
-        !stdout.contains("node_modules/.vize/canon/package"),
+        !stdout.contains(canon_package.to_string_lossy().as_ref()),
         "diagnostics must not resolve aliases to Canon's package boundary:\n{stdout}\n{stderr}"
     );
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();

@@ -26,11 +26,7 @@ fn alias_project() -> tempfile::TempDir {
 }
 
 fn mirror_companion(project: &tempfile::TempDir) -> std::path::PathBuf {
-    project
-        .path()
-        .join("node_modules")
-        .join(".vize")
-        .join("canon")
+    crate::batch::project_virtual_root(project.path())
         .join("src")
         .join("UiButton.vue.ts")
 }

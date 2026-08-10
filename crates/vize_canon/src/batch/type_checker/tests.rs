@@ -19,6 +19,7 @@ mod no_check_props;
 mod no_unused;
 mod options_api_required_props;
 mod package_exports_types;
+mod project_isolation;
 mod recent_issues;
 mod scan;
 mod template_block;
@@ -80,7 +81,6 @@ fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
     // (`toFixed`, `toString`), proving that completion is not silently
     // collapsing to the heuristic fallback.
     use crate::corsa_bridge::{CorsaBridge, CorsaBridgeConfig};
-
     let Some(corsa_path) = resolve_test_tsgo_binary() else {
         return;
     };

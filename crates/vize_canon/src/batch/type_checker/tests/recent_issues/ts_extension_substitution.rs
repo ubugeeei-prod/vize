@@ -106,7 +106,7 @@ const mainNumber: number = main;
         let mut checker = BatchTypeChecker::new(&project_root).unwrap();
         checker.scan_paths(&scan_paths).unwrap();
         let result = checker.check_project().unwrap();
-        let virtual_root = project_root.join("node_modules/.vize/canon");
+        let virtual_root = crate::batch::project_virtual_root(&project_root);
         let virtual_root = virtual_root.to_string_lossy();
         let mut snapshot: Vec<_> = result
             .diagnostics

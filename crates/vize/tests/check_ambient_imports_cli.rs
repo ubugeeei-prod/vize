@@ -141,8 +141,10 @@ const result: string = window.welcomeRuntime.ping();
     );
 
     let generated: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(project_root.join("node_modules/.vize/canon/tsconfig.json"))
-            .unwrap(),
+        &std::fs::read_to_string(
+            vize_canon::project_virtual_root(&project_root).join("tsconfig.json"),
+        )
+        .unwrap(),
     )
     .unwrap();
     let includes = generated["include"].as_array().unwrap();

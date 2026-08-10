@@ -10,7 +10,7 @@ fn authored_vue_ts_specifiers_cannot_resolve_generated_mirrors() {
     let case = TempDir::new().expect("temp project");
     let project = std::fs::canonicalize(case.path()).expect("canonical temp project");
     let source_dir = project.join("src");
-    let virtual_root = project.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&project);
     std::fs::create_dir_all(&source_dir).expect("source directory");
     std::fs::write(source_dir.join("Mirror.vue"), "<template />").expect("SFC mirror");
     std::fs::write(source_dir.join("MirrorJsx.vue"), "<template />").expect("TSX SFC mirror");

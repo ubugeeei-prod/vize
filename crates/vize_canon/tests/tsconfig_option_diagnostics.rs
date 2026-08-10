@@ -10,7 +10,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, project_virtual_root};
 use vize_carton::cstr;
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
@@ -163,8 +163,8 @@ fn a_config_the_generated_one_carries_through_reports_nothing_extra() {
 
     assert_eq!(diagnostics, Vec::new());
     assert!(
-        !root
-            .join("node_modules/.vize/canon/tsconfig.options.json")
+        !project_virtual_root(&root)
+            .join("tsconfig.options.json")
             .exists(),
         "an unsanitized config needs no probe"
     );
@@ -269,9 +269,8 @@ fn an_explicit_relative_paths_target_stays_valid_without_base_url() {
         "an authored relative path must not produce TS5090: {diagnostics:?}"
     );
 
-    let probe =
-        std::fs::read_to_string(root.join("node_modules/.vize/canon/tsconfig.options.json"))
-            .expect("rootDir should require an option probe");
+    let probe = std::fs::read_to_string(project_virtual_root(&root).join("tsconfig.options.json"))
+        .expect("rootDir should require an option probe");
     let probe: serde_json::Value = serde_json::from_str(&probe).unwrap();
     assert_eq!(
         probe["compilerOptions"]["paths"]["@/*"],

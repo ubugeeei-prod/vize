@@ -105,7 +105,7 @@ fn rewrite_absolute_vue_specifier_through_symlinked_project_path() {
     std::fs::write(real.path().join("src/App.vue"), "<template />").unwrap();
 
     let source = cstr!(r#"export * from "{}";"#, link.join("src/App.vue").display());
-    let virtual_root = real.path().join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(real.path());
     let roots = (
         vize_carton::path::canonicalize_non_verbatim(&link),
         virtual_root.clone(),
@@ -141,7 +141,7 @@ fn test_keeps_plain_absolute_generated_graphql_import_for_virtual_project() {
         "import type {{ Kind }} from '{}';",
         schema.with_extension("").display()
     );
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);
@@ -181,7 +181,7 @@ fn test_rewrite_relative_generated_dts_reexport_to_real_path_for_virtual_project
     let schema = vize_carton::path::canonicalize_non_verbatim(&schema);
     let rewriter = ImportRewriter::new();
     let source = "export * from './codegen/schema'";
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());
@@ -207,7 +207,7 @@ fn test_keeps_relative_source_reexport_for_virtual_project() {
     let barrel = write(&root, "types/index.ts", "export * from './helpers'\n");
     let rewriter = ImportRewriter::new();
     let source = "export * from './helpers'";
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source, SourceType::ts(), roots, barrel.parent());
@@ -240,7 +240,7 @@ fn test_rewrite_absolute_ts_import_that_needs_vue_rewrite_for_virtual_project() 
         "import {{ Widget }} from '{}';",
         feature.with_extension("").display()
     );
-    let virtual_root = root.join("node_modules/.vize/canon");
+    let virtual_root = crate::batch::project_virtual_root(&root);
     let roots = (root.as_path(), virtual_root.as_path());
     let result =
         rewriter.rewrite_for_virtual_project(source.as_str(), SourceType::ts(), roots, None);

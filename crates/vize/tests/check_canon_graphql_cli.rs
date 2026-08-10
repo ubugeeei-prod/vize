@@ -208,13 +208,13 @@ void childComponents
 
     run_check_json(&project_root, &corsa_path);
     assert!(
-        project_root
-            .join("node_modules/.vize/canon/pages/_studyInfoId.vue.ts")
+        vize_canon::project_virtual_root(&project_root)
+            .join("pages/_studyInfoId.vue.ts")
             .exists()
     );
     assert!(
-        !project_root
-            .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
+        !vize_canon::project_virtual_root(&project_root)
+            .join("types/codegen/schema.d.ts")
             .exists()
     );
 }
@@ -329,8 +329,8 @@ void childComponents
         "generated GraphQL symbols should keep one type identity:\n{stdout}"
     );
     assert!(
-        !project_root
-            .join("node_modules/.vize/canon/types/codegen/schema.d.ts")
+        !vize_canon::project_virtual_root(&project_root)
+            .join("types/codegen/schema.d.ts")
             .exists()
     );
 }
