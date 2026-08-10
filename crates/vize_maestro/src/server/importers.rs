@@ -1,10 +1,7 @@
-//! Reverse dependency index for open Vue documents.
+//! Reverse dependency index for open SFC and script documents.
 mod dependents;
 use std::path::{Component, Path, PathBuf};
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::Statement;
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use parking_lot::RwLock;
 use tower_lsp::lsp_types::Url;
@@ -12,13 +9,14 @@ use vize_carton::{FxHashMap, FxHashSet};
 
 use self::package::resolve_package_import;
 use super::ServerState;
-pub(super) use dependents::open_vue_dependents;
+pub(super) use dependents::open_typecheck_dependents;
 mod package;
+mod specifiers;
 
 const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 
 #[derive(Default)]
-pub(super) struct OpenVueImportIndex {
+pub(super) struct OpenImportIndex {
     inner: RwLock<ImportIndexData>,
 }
 
@@ -28,12 +26,11 @@ struct ImportIndexData {
     by_importer: FxHashMap<Url, Vec<PathBuf>>,
 }
 
-impl OpenVueImportIndex {
+impl OpenImportIndex {
     pub(super) fn update(&self, importer: &Url, source: &str) {
         let dependencies = importer
             .to_file_path()
             .ok()
-            .filter(|path| path.extension().is_some_and(|extension| extension == "vue"))
             .map(|path| collect_dependencies(&path, source))
             .unwrap_or_default();
         let mut index = self.inner.write();
@@ -85,29 +82,40 @@ fn remove_importer(index: &mut ImportIndexData, importer: &Url) {
     }
 }
 
-pub(super) fn open_vue_importers(state: &ServerState, dependency: &Url) -> Vec<Url> {
+pub(super) fn open_importers(state: &ServerState, dependency: &Url) -> Vec<Url> {
     dependency
         .to_file_path()
         .ok()
-        .map(|path| state.open_vue_imports.importers(&path))
+        .map(|path| state.open_imports.importers(&path))
         .unwrap_or_default()
 }
 
 impl ServerState {
-    pub(crate) fn open_vue_importers(&self, dependency: &Url) -> Vec<Url> {
-        open_vue_importers(self, dependency)
+    pub(crate) fn open_importers(&self, dependency: &Url) -> Vec<Url> {
+        open_importers(self, dependency)
     }
 }
 
 fn collect_dependencies(importer: &Path, source: &str) -> Vec<PathBuf> {
+    let Some(importer_dir) = importer.parent() else {
+        return Vec::new();
+    };
+    if importer
+        .extension()
+        .is_none_or(|extension| extension != "vue")
+    {
+        let Ok(source_type) = SourceType::from_path(importer) else {
+            return Vec::new();
+        };
+        let mut dependencies = FxHashSet::default();
+        collect_script_dependencies(source, source_type, importer_dir, &mut dependencies);
+        return dependencies.into_iter().collect();
+    }
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: importer.to_string_lossy().into_owned().into(),
         ..Default::default()
     };
     let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) else {
-        return Vec::new();
-    };
-    let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
     let mut dependencies = FxHashSet::default();
@@ -133,14 +141,8 @@ fn collect_script_dependencies(
     importer_dir: &Path,
     dependencies: &mut FxHashSet<PathBuf>,
 ) {
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-
-    for statement in &parsed.program.body {
-        let Statement::ImportDeclaration(import) = statement else {
-            continue;
-        };
-        if let Some(dependency) = resolve_import(importer_dir, import.source.value.as_str()) {
+    for specifier in specifiers::collect(source, source_type) {
+        if let Some(dependency) = resolve_import(importer_dir, specifier.as_str()) {
             dependencies.insert(dependency);
         }
     }
@@ -211,114 +213,5 @@ fn source_type(lang: Option<&str>) -> SourceType {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::disallowed_methods)]
-
-    use super::{open_vue_importers, resolve_import};
-    use crate::server::ServerState;
-    use tower_lsp::lsp_types::Url;
-
-    #[test]
-    fn index_tracks_and_removes_open_vue_imports() {
-        let dir = tempfile::tempdir().unwrap();
-        let child = dir.path().join("Child.vue");
-        let parent = dir.path().join("Parent.vue");
-        std::fs::write(&child, "<template />").unwrap();
-        std::fs::write(&parent, "<template />").unwrap();
-        let child_uri = Url::from_file_path(&child).unwrap();
-        let parent_uri = Url::from_file_path(&parent).unwrap();
-        let state = ServerState::new();
-        let source = "<script setup lang=\"ts\">import Child from './Child'</script>";
-
-        state.update_virtual_docs(&parent_uri, source);
-        assert_eq!(
-            open_vue_importers(&state, &child_uri),
-            vec![parent_uri.clone()]
-        );
-
-        state.update_virtual_docs(&parent_uri, "<script setup>const local = 1</script>");
-        assert!(open_vue_importers(&state, &child_uri).is_empty());
-    }
-
-    #[test]
-    fn index_resolves_explicit_script_dependencies_and_query_suffixes() {
-        let dir = tempfile::tempdir().unwrap();
-        let child = dir.path().join("types.ts");
-        let parent = dir.path().join("Parent.vue");
-        std::fs::write(&child, "export type Count = number").unwrap();
-        std::fs::write(&parent, "<template />").unwrap();
-        let child_uri = Url::from_file_path(&child).unwrap();
-        let parent_uri = Url::from_file_path(&parent).unwrap();
-        let state = ServerState::new();
-        let source = "<script>import './types.ts?raw'</script>";
-
-        state.update_virtual_docs(&parent_uri, source);
-        assert_eq!(open_vue_importers(&state, &child_uri), vec![parent_uri]);
-    }
-
-    #[test]
-    fn index_resolves_package_export_declaration_variants() {
-        let dir = tempfile::tempdir().unwrap();
-        let package = dir.path().join("node_modules/vue-router");
-        let parent = dir.path().join("Parent.vue");
-        let module_declaration = package.join("routes.d.mts");
-        let common_declaration = package.join("plugin.d.cts");
-        std::fs::create_dir_all(&package).unwrap();
-        std::fs::write(
-            package.join("package.json"),
-            r#"{
-  "exports": {
-    "./auto-routes": { "types": "./routes.d.mts" },
-    "./volar/plugin": { "types": "./plugin.d.cts" }
-  }
-}"#,
-        )
-        .unwrap();
-        std::fs::write(
-            &module_declaration,
-            "export declare const routes: unknown[]",
-        )
-        .unwrap();
-        std::fs::write(&common_declaration, "export declare const plugin: unknown").unwrap();
-        std::fs::write(&parent, "<template />").unwrap();
-        let parent_uri = Url::from_file_path(&parent).unwrap();
-        let module_uri = Url::from_file_path(&module_declaration).unwrap();
-        let common_uri = Url::from_file_path(&common_declaration).unwrap();
-        let state = ServerState::new();
-        let source = r#"<script setup lang="ts">
-import { routes } from 'vue-router/auto-routes'
-import { plugin } from 'vue-router/volar/plugin'
-void routes
-void plugin
-</script>"#;
-
-        state.update_virtual_docs(&parent_uri, source);
-
-        assert_eq!(
-            open_vue_importers(&state, &module_uri),
-            vec![parent_uri.clone()]
-        );
-        assert_eq!(open_vue_importers(&state, &common_uri), vec![parent_uri]);
-    }
-
-    #[test]
-    fn exact_directory_specifiers_resolve_index_files() {
-        let dir = tempfile::tempdir().unwrap();
-        let source_dir = dir.path().join("src");
-        let source_index = source_dir.join("index.ts");
-        let parent_index = dir.path().join("index.ts");
-        std::fs::create_dir_all(&source_dir).unwrap();
-        std::fs::write(&source_index, "export const source = true").unwrap();
-        std::fs::write(&parent_index, "export const parent = true").unwrap();
-        std::fs::write(dir.path().join("src.vue"), "<template />").unwrap();
-
-        assert_eq!(
-            resolve_import(&source_dir, ".?raw"),
-            Some(std::fs::canonicalize(&source_index).unwrap())
-        );
-        assert_eq!(
-            resolve_import(&source_dir, "..#parent"),
-            Some(std::fs::canonicalize(&parent_index).unwrap())
-        );
-    }
-}
+#[path = "importers_tests.rs"]
+mod tests;
