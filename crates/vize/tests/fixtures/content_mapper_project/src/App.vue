@@ -13,8 +13,7 @@ import SlotProvider from "./SlotProvider.vue";
 import { increment } from "./model";
 
 defineProps<{ count: number }>();
-const conditionalValue: "conditional" | null =
-  Math.random() > 0.5 ? "conditional" : null;
+const conditionalValue: "conditional" | null = Math.random() > 0.5 ? "conditional" : null;
 const defaultModelValue = 1;
 const handleCancel = (reason: string) => reason;
 const handleChoose = (value: "top-level") => value;
