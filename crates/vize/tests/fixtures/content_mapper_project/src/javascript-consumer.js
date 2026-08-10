@@ -6,3 +6,7 @@ export function readChildCount(props) {
 }
 
 readChildCount({ count: 1 });
+
+// `Child` is only referenced from the JSDoc type above, which the repo linter
+// does not count as a use; keep a value reference so the fixture stays lint-clean.
+void Child;
