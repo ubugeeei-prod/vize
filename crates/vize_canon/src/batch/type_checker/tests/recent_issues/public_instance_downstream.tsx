@@ -61,7 +61,7 @@ instance.$emit.call(instance, "other", 1);
 instance.$emit.bind(instance)("other", 1);
 
 type NoEmitsInstance = InstanceType<typeof NoEmits>;
-declare const broadInstance: import("vue").ComponentPublicInstance | null;
+declare const broadInstance: import("vue").ComponentPublicInstance;
 const noEmits = broadInstance as NoEmitsInstance;
 noEmits.ping();
 type NoEmitsParameters = Parameters<NoEmitsInstance["$emit"]>;
@@ -115,6 +115,7 @@ const fallthrough = (
     onClick={(event) => {
       const mouse: MouseEvent = event;
       const notAny: false = null as unknown as IsAny<typeof event>;
+      void notAny;
       return mouse.preventDefault();
     }}
     onInput={(event) => {
@@ -162,3 +163,21 @@ void genericItem;
 void publicEmitThisIsUnknown;
 void broadEmitParameters;
 void noEmitsBroadParameters;
+void [
+  camel,
+  kebab,
+  mixed,
+  fallthrough,
+  unionText,
+  unionCount,
+  nativeListenerProp,
+  missing,
+  extra,
+  wrongListener,
+  unknownListener,
+  extraGeneric,
+  missingUnionBranchProp,
+  mixedUnionBranches,
+  missingNativeListenerProp,
+  wrongNativeListenerProp,
+];

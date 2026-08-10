@@ -60,7 +60,7 @@ instance.$emit.call(instance, "other", 1);
 instance.$emit.bind(instance)("other", 1);
 
 type NoEmitsInstance = InstanceType<typeof NoEmits>;
-declare const broadInstance: ComponentPublicInstance | null;
+declare const broadInstance: ComponentPublicInstance;
 const noEmits = broadInstance as NoEmitsInstance;
 noEmits.ping();
 type NoEmitsParameters = Parameters<NoEmitsInstance["$emit"]>;
@@ -119,6 +119,7 @@ const listeners = (
     someValue="ok"
     onSelect={(value) => {
       const notAny: false = null as unknown as IsAny<typeof value>;
+      void notAny;
       return value.toUpperCase();
     }}
   />
@@ -141,6 +142,7 @@ const fallthrough = (
     onClick={(event) => {
       const mouse: MouseEvent = event;
       const notAny: false = null as unknown as IsAny<typeof event>;
+      void notAny;
       return mouse.preventDefault();
     }}
     onInput={(event) => {
@@ -220,3 +222,34 @@ void genericItem;
 void publicEmitThisIsUnknown;
 void broadEmitParameters;
 void noEmitsBroadParameters;
+void [
+  camel,
+  kebab,
+  mixed,
+  optionalModels,
+  listeners,
+  modelListener,
+  fallthrough,
+  callableListeners,
+  runtimeObjectListeners,
+  runtimeArrayListeners,
+  genericListener,
+  unionText,
+  unionCount,
+  nativeListenerProp,
+  missing,
+  missingModel,
+  wrongModel,
+  extra,
+  wrongListener,
+  unknownListener,
+  wrongModelListener,
+  wrongCallable,
+  wrongRuntimeObject,
+  wrongRuntimeArray,
+  extraGeneric,
+  missingUnionBranchProp,
+  mixedUnionBranches,
+  missingNativeListenerProp,
+  wrongNativeListenerProp,
+];
