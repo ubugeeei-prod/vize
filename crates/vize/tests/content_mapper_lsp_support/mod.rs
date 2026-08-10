@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::str::FromStr;
 
-use corsa::lsp::LspClient;
+use corsa::lsp::{LspClient, LspOverlay};
 use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
 use vize_carton::String as CompactString;
@@ -9,6 +9,8 @@ use vize_carton::String as CompactString;
 struct RawDocumentDiagnostic;
 struct RawHover;
 struct RawDefinition;
+struct RawCompletion;
+struct RawCompletionResolve;
 
 impl lsp_types::request::Request for RawDocumentDiagnostic {
     type Params = Value;
@@ -28,6 +30,18 @@ impl lsp_types::request::Request for RawDefinition {
     const METHOD: &'static str = "textDocument/definition";
 }
 
+impl lsp_types::request::Request for RawCompletion {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/completion";
+}
+
+impl lsp_types::request::Request for RawCompletionResolve {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "completionItem/resolve";
+}
+
 pub async fn hover(client: &LspClient, uri: &str, position: &Value) -> Value {
     client
         .request::<RawHover>(json!({ "textDocument": { "uri": uri }, "position": position }))
@@ -40,6 +54,78 @@ pub async fn definition(client: &LspClient, uri: &str, position: &Value) -> Valu
         .request::<RawDefinition>(json!({ "textDocument": { "uri": uri }, "position": position }))
         .await
         .unwrap()
+}
+
+pub async fn completion(client: &LspClient, uri: &str, position: &Value) -> Value {
+    client
+        .request::<RawCompletion>(json!({ "textDocument": { "uri": uri }, "position": position }))
+        .await
+        .unwrap()
+}
+
+pub async fn assert_completion(
+    client: &LspClient,
+    uri: &str,
+    position: &Value,
+    label: &str,
+    resolved_fragments: &[&str],
+) {
+    let response = completion(client, uri, position).await;
+    let items = response
+        .get("items")
+        .and_then(Value::as_array)
+        .or_else(|| response.as_array())
+        .unwrap_or_else(|| panic!("{response:#}"));
+    let item = items
+        .iter()
+        .find(|item| item["label"] == label)
+        .cloned()
+        .unwrap_or_else(|| panic!("{response:#}"));
+    let resolved = client.request::<RawCompletionResolve>(item).await.unwrap();
+    assert_eq!(resolved["label"], label, "{resolved:#}");
+    let resolved_text = serde_json::to_string(&resolved).unwrap();
+    assert!(
+        resolved_fragments
+            .iter()
+            .all(|fragment| resolved_text.contains(fragment)),
+        "{resolved:#}"
+    );
+    assert!(!resolved_text.contains(".vue.ts"), "{resolved:#}");
+}
+
+pub async fn assert_component_completions(
+    client: &LspClient,
+    overlay: &LspOverlay,
+    uri: &Uri,
+    source: &str,
+) {
+    let partial = source
+        .replace(":count", ":cou")
+        .replace("@save=", "@sa=")
+        .replace("@save-item", "@save-");
+    let prop_position = position(&partial, partial.find(":cou").unwrap() + ":cou".len());
+    let event_position = position(&partial, partial.find("@sa").unwrap() + "@sa".len());
+    let kebab_event_position = position(&partial, partial.find("@save-").unwrap() + "@save-".len());
+    overlay.replace(uri, partial.as_str()).unwrap();
+    let uri_text = uri.as_str();
+    assert_completion(
+        client,
+        uri_text,
+        &prop_position,
+        "count",
+        &["(property) count: number"],
+    )
+    .await;
+    assert_completion(client, uri_text, &event_position, "save", &["number"]).await;
+    assert_completion(
+        client,
+        uri_text,
+        &kebab_event_position,
+        "save-item",
+        &["string"],
+    )
+    .await;
+    overlay.replace(uri, source).unwrap();
 }
 
 pub async fn assert_component_navigation(

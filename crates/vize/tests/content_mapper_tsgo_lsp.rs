@@ -10,9 +10,10 @@ use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_component_navigation, assert_prop_navigation, contains_location, copy_fixture,
-    definition, editor_capabilities, file_uri, hover, install_packages, notify_file_changes,
-    position, pull_diagnostics, try_pull_diagnostics, workspace_root,
+    assert_component_completions, assert_component_navigation, assert_prop_navigation, completion,
+    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
+    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
+    workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -27,7 +28,6 @@ impl Drop for StopOnDrop<'_> {
 
 struct RawInitialize;
 struct RawDiscoverContentMappers;
-struct RawCompletion;
 struct RawSignatureHelp;
 struct RawReferences;
 struct RawRename;
@@ -44,7 +44,6 @@ macro_rules! raw_request {
 
 raw_request!(RawInitialize, "initialize");
 raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
-raw_request!(RawCompletion, "textDocument/completion");
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
 raw_request!(RawReferences, "textDocument/references");
 raw_request!(RawRename, "textDocument/rename");
@@ -151,7 +150,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             let app_document_uri = Uri::from_str(&app_uri).unwrap();
             overlay
                 .open(VirtualDocument::new(
-                    app_document_uri,
+                    app_document_uri.clone(),
                     "vue",
                     app_source.as_str(),
                 ))
@@ -176,13 +175,9 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             )
             .await;
 
-            let completion = client
-                .request::<RawCompletion>(json!({
-                    "textDocument": { "uri": child_uri },
-                    "position": completion_position
-                }))
-                .await
-                .unwrap();
+            assert_component_completions(&client, &overlay, &app_document_uri, &app_source).await;
+
+            let completion = completion(&client, &child_uri, &completion_position).await;
             assert!(
                 serde_json::to_string(&completion)
                     .unwrap()

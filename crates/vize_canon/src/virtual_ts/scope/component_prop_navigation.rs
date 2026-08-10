@@ -1,12 +1,25 @@
 use std::ops::Range;
 
 use vize_carton::{String, append, cstr};
-use vize_croquis::croquis::{ComponentUsage, PassedProp};
+use vize_croquis::croquis::{ComponentUsage, EventListener, PassedProp};
 
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
 use super::context::ComponentPropsContext;
+use super::event_handler::event_name_source_range;
+
+pub(super) fn emit_event_references(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &ComponentPropsContext<'_>,
+    checkable_usages: &[(usize, &ComponentUsage)],
+) {
+    for &(idx, usage) in checkable_usages {
+        let component_ref = to_safe_identifier(usage.name.as_str());
+        emit_usage_event_references(ts, mappings, ctx, idx, usage, component_ref.as_str());
+    }
+}
 
 pub(super) fn emit_references(
     ts: &mut String,
@@ -34,6 +47,64 @@ pub(super) fn emit_references(
 
         emit_prop_references(ts, mappings, ctx, idx, usage, component_type_name.as_str());
     }
+}
+
+fn emit_usage_event_references(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    ctx: &ComponentPropsContext<'_>,
+    idx: usize,
+    usage: &ComponentUsage,
+    component_ref: &str,
+) {
+    let events_ref = cstr!("__vize_events_nav_{idx}");
+    let mut emitted_events_ref = false;
+    for event in &usage.events {
+        let Some(source_range) = event_navigation_source_range(ctx, event) else {
+            continue;
+        };
+        if !emitted_events_ref {
+            append!(
+                *ts,
+                "  const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+            );
+            emitted_events_ref = true;
+        }
+
+        append!(*ts, "  void {events_ref}");
+        let event_gen_range = if is_ts_identifier(event.name.as_str()) {
+            ts.push('.');
+            let start = ts.len();
+            ts.push_str(event.name.as_str());
+            start..ts.len()
+        } else {
+            ts.push('[');
+            let range = push_ts_single_quoted_literal(ts, event.name.as_str());
+            ts.push(']');
+            range
+        };
+        ts.push_str(";\n");
+        mappings.push(VizeMapping {
+            gen_range: event_gen_range,
+            src_range: source_range,
+            sub_spans: Vec::new(),
+        });
+    }
+}
+
+fn event_navigation_source_range(
+    ctx: &ComponentPropsContext<'_>,
+    event: &EventListener,
+) -> Option<Range<usize>> {
+    if event.name_is_dynamic || event.name.is_empty() {
+        return None;
+    }
+    event_name_source_range(
+        ctx.template_source,
+        ctx.template_offset,
+        event.start..event.end,
+        event.name.as_str(),
+    )
 }
 
 fn emit_prop_references(
