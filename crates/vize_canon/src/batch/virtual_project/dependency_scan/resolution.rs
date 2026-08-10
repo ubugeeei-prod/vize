@@ -55,10 +55,30 @@ pub(super) fn may_resolve_a_dependency(
         || alias_prefixes
             .iter()
             .any(|prefix| prefix.is_empty() || content.contains(prefix.as_str()))
-        || package_routes
-            && (content.contains(" from ")
-                || content.contains("import(")
-                || content.contains("require("))
+        || package_routes && may_contain_bare_specifier(content)
+}
+
+/// Whether `content` can name a bare specifier — the only shape a package
+/// route resolves.
+///
+/// The prefilter exists to keep the walk from parsing every generated module
+/// (#3898), so a package resolver must not widen it to "contains ` from `":
+/// nearly every module does, which is the whole prefilter gone. The character
+/// after the opening quote decides instead — a relative or rooted specifier is
+/// already covered by [`source_may_contain_relative_specifier`] and the alias
+/// prefixes. Still a conservative superset: the lead-in is matched anywhere in
+/// the text, and a bare specifier naming a published package survives here and
+/// is rejected by the resolver (which memoizes that answer).
+fn may_contain_bare_specifier(content: &str) -> bool {
+    ["from", "import", "require"].iter().any(|lead_in| {
+        content.match_indices(lead_in).any(|(index, _)| {
+            let after =
+                content[index + lead_in.len()..].trim_start_matches([' ', '\t', '\r', '\n', '(']);
+            after
+                .strip_prefix(['\'', '"'])
+                .is_some_and(|specifier| !specifier.starts_with(['.', '/', '\'', '"']))
+        })
+    })
 }
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
@@ -100,8 +120,9 @@ pub(crate) fn resolve_dependency(
         } else {
             project_root.join(&substituted)
         };
-        if let Some(resolved) = probe_candidates(&absolute)
-            && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
+        // Length first: a pattern that cannot win must not cost a probe.
+        if best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
+            && let Some(resolved) = probe_candidates(&absolute)
         {
             best = Some((pattern.len(), resolved));
         }

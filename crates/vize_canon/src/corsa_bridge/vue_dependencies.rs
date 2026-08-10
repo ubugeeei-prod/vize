@@ -283,7 +283,7 @@ pub(super) fn queue_script_dependency(
     let source_type = source_type_for_path(path);
     let script_dir = parent_dir(path);
     let rewritten = rewriter
-        .rewrite_with_alias_resolver(&content, source_type, path.parent(), &|specifier| {
+        .rewrite_with_alias_resolver(&content, source_type, Some(&script_dir), &|specifier| {
             alias_context
                 .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
                 .or_else(|| alias_context.resolve_specifier_to_mirror_path(specifier, &script_dir))

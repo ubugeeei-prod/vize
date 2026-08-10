@@ -183,7 +183,6 @@ fn full_host_content_invalidates_export_from_routes() {
 }
 
 #[test]
-#[cfg(unix)]
 fn cache_detects_workspace_package_symlink_retarget() {
     let fixture = package_fixture("ui-a");
     let second = fixture.root.path().join("packages/ui-b");
@@ -272,8 +271,5 @@ fn restore_mtime(path: &Path, modified: std::time::SystemTime) {
 
 fn link_package(source: &Path, target: &Path) {
     std::fs::create_dir_all(target.parent().unwrap()).unwrap();
-    #[cfg(unix)]
     std::os::unix::fs::symlink(source, target).unwrap();
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(source, target).unwrap();
 }

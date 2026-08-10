@@ -108,6 +108,20 @@ mod tests {
     }
 
     #[test]
+    #[cfg(windows)]
+    fn external_mirror_path_round_trips_a_drive_letter_path() {
+        // The drive prefix is the only encoded component: `%3A` must come back
+        // off, and the rebuilt root must not be pushed twice.
+        let original = Path::new(r"C:\ws\packages\ui\src\UiButton.vue");
+        let mirrored =
+            super::external_mirror_path(Path::new(r"C:\project\.vize"), original).unwrap();
+        assert_eq!(
+            super::external_mirror_original_path(&mirrored),
+            Some(original.into())
+        );
+    }
+
+    #[test]
     #[cfg(not(windows))]
     fn external_mirror_path_round_trips_to_the_authored_path() {
         let original = Path::new("/ws/packages/ui/src/UiButton.vue");

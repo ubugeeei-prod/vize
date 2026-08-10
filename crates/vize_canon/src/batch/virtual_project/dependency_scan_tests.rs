@@ -49,6 +49,39 @@ fn a_published_package_alias_does_not_force_a_parse() {
 }
 
 #[test]
+fn a_package_resolver_still_rejects_a_module_with_no_bare_specifier() {
+    // #4000: the editor walk passes a package resolver, and a bare specifier
+    // is the only shape it can resolve. Widening the prefilter to " from "
+    // would match nearly every generated module and reinstate the per-file
+    // parse #3898 removed, so the character after the quote decides.
+    assert!(!may_resolve_a_dependency(
+        "export const count = 1\nexport type Ref = { value: number }\n",
+        &[],
+        true,
+    ));
+    assert!(may_resolve_a_dependency(
+        "import Widget from '@scope/ui/widget'\n",
+        &[],
+        true,
+    ));
+    assert!(!may_resolve_a_dependency(
+        "import Widget from '@scope/ui/widget'\n",
+        &[],
+        false,
+    ));
+    assert!(may_resolve_a_dependency(
+        "const mod = await import(\"@scope/ui/widget\")\n",
+        &[],
+        true,
+    ));
+    assert!(may_resolve_a_dependency(
+        "export { Widget } from '#internal/widget'\n",
+        &[],
+        true,
+    ));
+}
+
+#[test]
 fn a_published_package_alias_with_a_declaration_barrel_does_not_force_a_parse() {
     // The other published layout: a root `index.d.ts` does probe, and the
     // walk still refuses it for being a declaration file inside
