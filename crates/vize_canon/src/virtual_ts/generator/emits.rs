@@ -269,7 +269,7 @@ pub(super) fn emit_emits_type(
             ts,
             summary,
             &mut mappings,
-            !emits_already_defined && !has_model_emits,
+            !emits_already_defined,
             emits_generic_decl.as_deref().filter(|_| !has_runtime_emits),
             generic_event_map_names.as_str(),
         );

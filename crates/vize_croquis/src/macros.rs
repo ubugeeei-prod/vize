@@ -370,9 +370,9 @@ pub struct MacroTracker {
     prop_declarations: FxHashMap<CompactString, (u32, u32)>,
     emits: Vec<EmitDefinition>,
     emit_declarations: FxHashMap<CompactString, (u32, u32)>,
-    /// Actual emit() calls in the code (not declarations)
     emit_calls: Vec<EmitCall>,
     models: Vec<ModelDefinition>,
+    model_declarations: FxHashMap<CompactString, (u32, u32)>,
     /// Exposed properties from defineExpose
     exposes: Vec<ExposeDefinition>,
     /// Slots from defineSlots

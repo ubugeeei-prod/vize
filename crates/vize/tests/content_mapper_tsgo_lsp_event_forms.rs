@@ -74,6 +74,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "number",
             "renamedSave",
             0,
+            "save".len(),
             true,
         ),
         (
@@ -84,6 +85,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "string",
             "renamedSaveItem",
             0,
+            "saveItem".len(),
             false,
         ),
         (
@@ -94,7 +96,19 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "boolean",
             "renamedSubmit",
             1,
+            "submit".len(),
             true,
+        ),
+        (
+            "DefaultModelChild.vue",
+            "@update:modelValue",
+            "defineModel",
+            "update:modelValue",
+            "number",
+            "renamedModelValue",
+            0,
+            "defineModel".len(),
+            false,
         ),
         (
             "GenericChild.vue",
@@ -104,7 +118,19 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "\\\"chosen\\\"",
             "renamedPick",
             0,
+            "pick".len(),
             true,
+        ),
+        (
+            "ModelChild.vue",
+            "@update:title",
+            "\"title\"",
+            "update:title",
+            "string",
+            "renamedTitle",
+            0,
+            "\"title\"".len(),
+            false,
         ),
         (
             "RuntimeChild.vue",
@@ -114,11 +140,22 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "string",
             "renamedCancel",
             0,
+            "cancel".len(),
             true,
         ),
     ]
     .map(
-        |(file, usage, declaration, name, ty, renamed, reference_shift, rename_supported)| {
+        |(
+            file,
+            usage,
+            declaration,
+            name,
+            ty,
+            renamed,
+            reference_shift,
+            reference_len,
+            rename_supported,
+        )| {
             let path = project.path().join("src").join(file);
             let source = std::fs::read_to_string(&path).unwrap();
             let uri = file_uri(&path);
@@ -129,7 +166,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 position(&source, source.find(declaration).unwrap() + reference_shift);
             let reference_end = position(
                 &source,
-                source.find(declaration).unwrap() + reference_shift + name.len(),
+                source.find(declaration).unwrap() + reference_shift + reference_len,
             );
             (
                 uri,
@@ -273,13 +310,18 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
 
             let partial = app_source
                 .replace("@submit", "@sub")
-                .replace("@cancel", "@can");
+                .replace("@cancel", "@can")
+                .replace("@update:modelValue", "@update:m")
+                .replace("@update:title", "@update:t");
             overlay
                 .replace(&app_document_uri, partial.as_str())
                 .unwrap();
-            for (usage, label, payload) in
-                [("@sub", "submit", "boolean"), ("@can", "cancel", "string")]
-            {
+            for (usage, label, payload) in [
+                ("@sub", "submit", "boolean"),
+                ("@can", "cancel", "string"),
+                ("@update:m", "update:modelValue", "number"),
+                ("@update:t", "update:title", "string"),
+            ] {
                 let completion_position =
                     position(&partial, partial.find(usage).unwrap() + usage.len());
                 assert_completion(&client, &app_uri, &completion_position, label, &[payload]).await;

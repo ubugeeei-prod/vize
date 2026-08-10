@@ -93,6 +93,14 @@ pub fn process_call_expression(
                     }
                 })
                 .unwrap_or("modelValue");
+            let declaration = call
+                .arguments
+                .first()
+                .and_then(|arg| match arg {
+                    Argument::StringLiteral(literal) => Some(literal.span),
+                    _ => None,
+                })
+                .unwrap_or_else(|| call.callee.span());
             let model_type = call
                 .type_arguments
                 .as_ref()
@@ -120,13 +128,17 @@ pub fn process_call_expression(
                 })
                 .unwrap_or((false, None));
 
-            result.macros.add_model(ModelDefinition {
-                name: CompactString::new(model_name),
-                local_name: CompactString::new(model_name),
-                model_type,
-                required,
-                default_value,
-            });
+            result.macros.add_model_with_declaration(
+                ModelDefinition {
+                    name: CompactString::new(model_name),
+                    local_name: CompactString::new(model_name),
+                    model_type,
+                    required,
+                    default_value,
+                },
+                declaration.start,
+                declaration.end,
+            );
         }
 
         MacroKind::WithDefaults => {

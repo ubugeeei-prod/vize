@@ -12,12 +12,19 @@ pub(super) fn emit_authored_event_map(
     generic_names: &str,
 ) {
     let events = summary.macros.emits();
+    let models = summary.macros.models();
     let all_events_authored = can_replace_emits
-        && !events.is_empty()
+        && (!events.is_empty() || !models.is_empty())
         && events.iter().all(|emit| {
             summary
                 .macros
                 .emit_declaration(emit.name.as_str())
+                .is_some()
+        })
+        && models.iter().all(|model| {
+            summary
+                .macros
+                .model_declaration(model.name.as_str())
                 .is_some()
         });
     let authored_map = generic_decl.map_or_else(
@@ -56,6 +63,35 @@ pub(super) fn emit_authored_event_map(
         );
         ts.push_str("];\n");
         mappings.map_exact(generated_start..generated_end, authored_range);
+    }
+    let mut emitted_models = FxHashSet::default();
+    for model in models {
+        if !emitted_models.insert(model.name.as_str()) {
+            continue;
+        }
+        let event_name = cstr!("update:{}", model.name);
+        if emitted_names.contains(event_name.as_str()) {
+            continue;
+        }
+        let Some(authored_range) = summary.macros.model_declaration(model.name.as_str()) else {
+            continue;
+        };
+        ts.push_str("  /* __vize_model_event */ ");
+        let generated_start = ts.len();
+        ts.push_str(
+            serde_json::to_string(event_name.as_str())
+                .expect("model event names serialize as JSON strings")
+                .as_str(),
+        );
+        let generated_end = ts.len();
+        append!(*ts, ": __VizeStaticEventMap{generic_suffix}[");
+        ts.push_str(
+            serde_json::to_string(event_name.as_str())
+                .expect("model event names serialize as JSON strings")
+                .as_str(),
+        );
+        ts.push_str("];\n");
+        mappings.map_whole_symbol(generated_start..generated_end, authored_range);
     }
     ts.push_str("};\n");
 }
