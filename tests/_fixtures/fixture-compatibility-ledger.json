@@ -628,7 +628,7 @@
       "tier": "exercised",
       "evidence": {
         "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
-        "selector": "export default class Card extends Vue"
+        "selector": "pinned Vue 2 class-component app detects and repairs an exact authored error"
       }
     },
     {
@@ -691,7 +691,7 @@
       },
       "evidence": {
         "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "tool === \"compiler\""
+        "selector": "payload.compilerArtifacts = inspectCompilerArtifacts("
       }
     },
     {
@@ -702,7 +702,7 @@
       },
       "evidence": {
         "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "tool === \"formatter\""
+        "selector": "payload.formatterCheck = validateFormatterOutput("
       }
     },
     {
@@ -713,7 +713,7 @@
       },
       "evidence": {
         "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "tool === \"linter\""
+        "selector": "validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);"
       }
     },
     {
@@ -724,7 +724,7 @@
       },
       "evidence": {
         "file": "tools/fixtures/tool-matrix-run.mjs",
-        "selector": "tool === \"typechecker\""
+        "selector": "payload.typecheckerCoverage = validateTypecheckerOutput("
       }
     },
     {
@@ -761,8 +761,8 @@
         ]
       },
       "evidence": {
-        "file": "tools/fixtures/typecheck-divergence-report.mjs",
-        "selector": "--vue-tsc-bin is required"
+        "file": ".github/workflows/real-project-matrix.yml",
+        "selector": "--vue-tsc-bin tests/node_modules/.bin/vue-tsc"
       }
     },
     {
@@ -828,7 +828,7 @@
       },
       "evidence": {
         "file": "tests/app/dev/nuxt-ui.spec.ts",
-        "selector": "unexpectedHydrationErrors"
+        "selector": "home page renders the playground shell"
       }
     },
     {

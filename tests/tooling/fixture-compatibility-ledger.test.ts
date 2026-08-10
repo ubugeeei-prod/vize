@@ -163,6 +163,11 @@ function mutationCases(): Array<[string, (value: typeof ledger) => void, RegExp]
       /evidence selector is stale/,
     ],
     [
+      "ambiguous evidence selector",
+      (value) => (value.capabilities[0].evidence.selector = "test("),
+      /evidence selector is stale/,
+    ],
+    [
       "unknown oracle kind",
       (value) => (value.oracles[0].kind = "source-present"),
       /unknown oracle kind/,

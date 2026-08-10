@@ -215,7 +215,8 @@ function validateEvidence(evidence, rootDir) {
   if (!fs.statSync(absolute, { throwIfNoEntry: false })?.isFile()) {
     invalid(`evidence file does not exist: ${evidence.file}`);
   }
-  if (!fs.readFileSync(absolute, "utf8").includes(evidence.selector)) {
+  const occurrences = fs.readFileSync(absolute, "utf8").split(evidence.selector).length - 1;
+  if (occurrences !== 1) {
     invalid(`evidence selector is stale in ${evidence.file}: ${evidence.selector}`);
   }
 }
