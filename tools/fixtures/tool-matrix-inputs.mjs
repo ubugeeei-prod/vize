@@ -3,16 +3,16 @@ import { globSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 const typecheckerAuthoredGlobs = [
-  "**/*.vue",
-  "**/*.ts",
-  "**/*.tsx",
-  "**/*.mts",
-  "**/*.cts",
-  "**/*.js",
-  "**/*.jsx",
-  "**/*.mjs",
-  "**/*.cjs",
-];
+  "vue",
+  "ts",
+  "tsx",
+  "mts",
+  "cts",
+  "js",
+  "jsx",
+  "mjs",
+  "cjs",
+].flatMap((extension) => [`**/*.${extension}`, `**/.*/**/*.${extension}`]);
 
 export function collectVueInputPaths(cwd, patterns) {
   return [

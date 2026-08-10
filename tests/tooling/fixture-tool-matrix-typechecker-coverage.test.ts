@@ -159,14 +159,20 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-matrix-coverage-"));
   const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-matrix-coverage-report-"));
   const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(fixtureDir, ".storybook"), { recursive: true });
+  fs.mkdirSync(path.join(fixtureDir, ".yarn", "cache"), { recursive: true });
+  fs.mkdirSync(path.join(fixtureDir, "node_modules", "pkg"), { recursive: true });
   fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
   fs.mkdirSync(path.join(fixtureDir, "packages"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, ".storybook", "Hidden.ts"), "export {};\n");
+  fs.writeFileSync(path.join(fixtureDir, ".yarn", "cache", "Injected.ts"), "export {};\n");
+  fs.writeFileSync(path.join(fixtureDir, "node_modules", "pkg", "Injected.ts"), "export {};\n");
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(path.join(fixtureDir, "packages", "Dep.ts"), "export {};\n");
   fs.writeFileSync(
     executable,
     `#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify(${JSON.stringify(
-      output(["packages/Dep.ts", "src/App.vue"]),
+      output([".storybook/Hidden.ts", "packages/Dep.ts", "src/App.vue"]),
     )}));\n`,
   );
   fs.chmodSync(executable, 0o755);
@@ -187,13 +193,17 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
     assert.deepEqual(run.coverage, {
       requestedFileCount: 1,
       requestedSha256: digest(["src/App.vue"]),
-      transitiveAuthoredFileCount: 1,
-      transitiveAuthoredSha256: digest(["packages/Dep.ts"]),
-      checkedFileCount: 2,
-      checkedSha256: digest(["packages/Dep.ts", "src/App.vue"]),
+      transitiveAuthoredFileCount: 2,
+      transitiveAuthoredSha256: digest([".storybook/Hidden.ts", "packages/Dep.ts"]),
+      checkedFileCount: 3,
+      checkedSha256: digest([".storybook/Hidden.ts", "packages/Dep.ts", "src/App.vue"]),
     });
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
-    assert.deepEqual(raw.typecheckerCoverage.checked.files, ["packages/Dep.ts", "src/App.vue"]);
+    assert.deepEqual(raw.typecheckerCoverage.checked.files, [
+      ".storybook/Hidden.ts",
+      "packages/Dep.ts",
+      "src/App.vue",
+    ]);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });
