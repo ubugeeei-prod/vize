@@ -1,25 +1,6 @@
-// Structural SFC equivalence for the glyph parse-preservation property.
-//
-// Both sides are parsed with @vue/compiler-sfc (the reference Vue parser, so
-// the check is independent of vize's own parser) and compared on:
-//   - parse error codes (formatting must not add or remove parse errors),
-//   - the block multiset: kind, lang, and attrs (glyph reorders blocks into
-//     canonical order by default, so order is compared per kind only),
-//   - template AST shape: tags, structure, text (exact inside <pre>-like
-//     elements, whitespace-condensed elsewhere), interpolations, comments,
-//   - expressions by Babel AST signature (glyph legitimately reprints
-//     expressions via oxc, so token spacing and quote style may change while
-//     the parsed AST must not); expressions the Vue parser leaves unparsed
-//     fall back to a whitespace-stripped text comparison,
-//   - props as per-spread-segment multisets: glyph sorts attributes inside a
-//     priority group by default, but moving a prop across a no-arg v-bind /
-//     v-on spread changes merge semantics and is reported.
-// Script content is intentionally not compared (glyph reprints scripts via
-// oxc; text-level comparison cannot separate reformatting from corruption)
-// and style content is intentionally not compared (glyph canonicalizes CSS
-// values via lightningcss, which is not whitespace-only). Those blocks are
-// still compared by kind and attrs, and script/style corruption stays visible
-// through the compile-facing oracles and the lint-agreement property.
+// Vue 3 semantic signatures keep structure and spread/pre boundaries exact.
+// Script/style bodies use separate compile/lint oracles; this comparator keeps
+// their block identity and attrs because text alone cannot separate reprints.
 import { createRequire } from "node:module";
 
 import { expressionSignature } from "./babel-expression-signature.ts";
@@ -143,7 +124,6 @@ function compareChildren(
         preserveWhitespace || isWhitespacePreservingTag(left.node.tag),
         differences,
       );
-      // Report at most one template difference per file to keep output small.
       if (differences.length > baseline) return;
     }
   }

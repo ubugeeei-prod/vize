@@ -140,6 +140,15 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
       new RegExp(`tests/tooling/glyph-corpus-${property}\\.test\\.ts`),
     );
   }
+  for (const oracle of [
+    "sfc-baseline-routes",
+    "sfc-baselines",
+    "vue2-render-signature",
+    "glyph-sfc-evidence",
+    "sfc-equivalence",
+  ]) {
+    assert.match(glyphProperties?.run ?? "", new RegExp(`tests/tooling/${oracle}\\.test\\.ts`));
+  }
 
   const incremental = steps.find(
     (step) => step.name === "Check incremental LSP against Misskey and Vue Vben Admin",

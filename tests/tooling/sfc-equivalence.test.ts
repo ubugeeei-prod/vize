@@ -1,0 +1,135 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
+
+test("glyph SFC comparator flags structural corruption", () => {
+  const original =
+    '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{n+1}}</div>\n</template>\n';
+  assert.deepEqual(
+    compareSfcEquivalence(
+      original,
+      '<template>\n  <div\n    :class="foo"\n    title="x"\n    v-bind="rest"\n  >\n    a {{ n + 1 }}\n  </div>\n</template>\n',
+      "App.vue",
+    ),
+    [],
+  );
+  assert.deepEqual(
+    compareSfcEquivalence(
+      '<template>\n  <Widget\n    v-model:pos="\n      buttonPosition\n    "\n  />\n</template>\n',
+      '<template>\n  <Widget v-model:pos="buttonPosition" />\n</template>\n',
+      "App.vue",
+    ),
+    [],
+  );
+  assert.match(
+    compareSfcEquivalence(
+      original,
+      '<template>\n  <div :class="foo" v-bind="rest">a {{ n + 1 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /<div>\[0\]/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      original,
+      '<template>\n  <div v-bind="rest" title="x" :class="foo">a {{ n + 1 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /<div>\[0\]/,
+  );
+  for (const [before, after] of [
+    [
+      '<template><div title="before" :="rest" id="after" /></template>\n',
+      '<template><div :="rest" title="before" id="after" /></template>\n',
+    ],
+    [
+      '<template><button @click="before" @="listeners" @focus="after" /></template>\n',
+      '<template><button @="listeners" @click="before" @focus="after" /></template>\n',
+    ],
+  ]) {
+    assert.match(compareSfcEquivalence(before, after, "App.vue").join("\n"), /\[0\]/);
+  }
+  assert.match(
+    compareSfcEquivalence(
+      original,
+      '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{ n + 2 }}</div>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /#interpolation/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><pre>  a  b</pre></template>\n",
+      "<template><pre>  a b</pre></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /<pre>/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      original,
+      '<template>\n  <div :class="foo">a</span>\n</template>\n',
+      "App.vue",
+    ).join("\n"),
+    /parse errors changed/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><p/></template>\n<style scoped>.a{}</style>\n",
+      "<template><p/></template>\n<style>.a{}</style>\n",
+      "App.vue",
+    ).join("\n"),
+    /styles changed/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<script setup>;</script>\n<template><p/></template>\n",
+      "<script setup></script>\n<template><p/></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /scriptSetup block disappeared/,
+  );
+});
+
+test("glyph SFC comparator normalizes only compiler-defined presence attributes", () => {
+  const style = (attr: string): string => `<style ${attr}>.a{}</style>`;
+  const script = (attr: string): string => `<script ${attr}>const x=1</script>`;
+  const template = (attr: string): string => `<template ${attr}><p/></template>`;
+  const presenceCases = [
+    ["scoped", style, "<style>.a{}</style>"],
+    ["setup", script, "<script>const x=1</script>"],
+    ["vapor", template, "<template><p/></template>"],
+    ["vapor", script, "<script>const x=1</script>"],
+    ["functional", template, "<template><p/></template>"],
+  ] as const;
+  for (const [attr, render, absent] of presenceCases) {
+    const forms = [attr, `${attr}=""`, `${attr}="${attr}"`, `${attr}="false"`];
+    for (const left of forms) {
+      for (const right of forms) {
+        assert.deepEqual(compareSfcEquivalence(render(left), render(right), "App.vue"), []);
+      }
+    }
+    assert.notDeepEqual(compareSfcEquivalence(render(forms[0]), absent, "App.vue"), []);
+  }
+  for (const [before, after] of [
+    ["<style module>.a{}</style>", '<style module="theme">.a{}</style>'],
+    ['<style module="first">.a{}</style>', '<style module="second">.a{}</style>'],
+    ['<style lang="scss">.a{}</style>', '<style lang="less">.a{}</style>'],
+    ['<style custom="first">.a{}</style>', '<style custom="second">.a{}</style>'],
+    [
+      '<script setup generic="T">const x=1</script>',
+      '<script setup generic="U">const x=1</script>',
+    ],
+    [
+      '<template><p/></template><style src="first.css"></style>',
+      '<template><p/></template><style src="second.css"></style>',
+    ],
+    [
+      '<template><p/></template><docs scoped="first">x</docs>',
+      '<template><p/></template><docs scoped="second">x</docs>',
+    ],
+  ]) {
+    assert.notDeepEqual(compareSfcEquivalence(before, after, "App.vue"), []);
+  }
+});

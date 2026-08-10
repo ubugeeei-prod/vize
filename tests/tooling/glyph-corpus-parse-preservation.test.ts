@@ -55,6 +55,23 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   }
   const launch = resolveGlyphLaunch();
   const violations: Violation[] = [];
+  const evidenceFiles: EvidenceFile[] = [];
+  const expectedEvidenceFiles = hydrated.flatMap((project) => {
+    const files = collectProjectVueFiles(project) as string[];
+    const partition = resolveSfcDialectPartition(project, files);
+    return files.map((file) => {
+      const selected = partition.get(file);
+      assert.ok(selected, `${project.id}:${file} must have a dialect route`);
+      return {
+        project: project.id,
+        revision: project.revision,
+        path: file,
+        routeId: selected.routeId,
+        dialect: selected.dialect,
+        baselineId: getSfcBaselineProvenance(selected.dialect).id,
+      };
+    });
+  });
   const waivedViolations: Array<Violation & { waiver: object }> = [];
   const pugEvidence: PugEvidence[] = [];
   const counters = { files: 0, skipped: 0 };
@@ -73,11 +90,19 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   } catch (error) {
     waiverValidationError = error instanceof Error ? error.message : String(error);
   }
-  writeGlyphCorpusPropertyEvidence(property, {
-    projectIds: hydrated.map((project) => project.id),
-    counters,
-    violations,
-    waivedViolations,
+  const reportEnabled =
+    process.env.FIXTURE_REPORT_DIR != null && process.env.FIXTURE_REPORT_DIR !== "";
+  const version = reportEnabled ? runVize(launch, process.cwd(), ["--version"], 30_000) : null;
+  if (version != null) assert.equal(version.status, 0, version.stderr);
+  writeGlyphSfcEquivalenceEvidence({
+    sourceCommit: process.env.GITHUB_SHA ?? null,
+    formatter:
+      version == null
+        ? null
+        : formatterEvidence(launch.command, `${version.stdout}\n${version.stderr}`.trim()),
+    files: evidenceFiles,
+    availableBaselines: sfcDialects.map(getSfcBaselineProvenance),
+    expectedFiles: expectedEvidenceFiles,
     waiverValidationError,
   });
   writeGlyphPugSemanticEvidence({

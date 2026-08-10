@@ -74,6 +74,14 @@ catalogs:
     "@babel/plugin-syntax-typescript": "7.28.6"
     "@vue/babel-plugin-jsx": "2.0.1"
 
+  # Official legacy Vue compiler baselines used by the formatter's
+  # dialect-aware SFC semantic-preservation oracle. These aliases must remain
+  # exact so evidence can name one compiler implementation unambiguously.
+  legacy-vue-oracle:
+    "@babel/parser": "7.29.0"
+    "vue-sfc-compiler-2-6": "npm:vue-template-compiler@2.6.14"
+    "vue-sfc-compiler-2-7": "npm:@vue/compiler-sfc@2.7.16"
+
   # Real @nuxt/eslint toolchain, used only as the differential oracle for the
   # Nuxt lint config port (npm/framework/nuxt/test/nuxt-eslint-compat).
   # Bump deliberately: a version change re-records the committed ground truth.

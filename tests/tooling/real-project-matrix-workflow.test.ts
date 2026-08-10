@@ -204,6 +204,15 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       new RegExp(`tests/tooling/glyph-corpus-${property}\\.test\\.ts`),
     );
   }
+  for (const oracle of [
+    "sfc-baseline-routes",
+    "sfc-baselines",
+    "vue2-render-signature",
+    "glyph-sfc-evidence",
+    "sfc-equivalence",
+  ]) {
+    assert.match(glyphProperties?.run ?? "", new RegExp(`tests/tooling/${oracle}\\.test\\.ts`));
+  }
   assert.match(glyphProperties?.run ?? "", /glyph-\$property\.json/);
   // A missing or empty Pug oracle artifact must fail the job: assert the guard,
   // not just the filename, so an inverted test or a dropped exit code is caught.

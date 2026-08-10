@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@apollo/client": "3.14.1",
+    "@babel/parser": "catalog:legacy-vue-oracle",
     "@formkit/vue": "2.1.0",
     "@ionic/vue": "8.8.9",
     "@nuxt/ui": "4.8.2",
@@ -75,6 +76,8 @@
     "vue-property-decorator": "10.0.0-rc.3",
     "vue-router": "catalog:vue-stable",
     "vue-select": "4.0.0-beta.6",
+    "vue-sfc-compiler-2-6": "catalog:legacy-vue-oracle",
+    "vue-sfc-compiler-2-7": "catalog:legacy-vue-oracle",
     "vue-tsc": "catalog:typescript",
     "vue-virtual-scroller": "3.0.4"
   }

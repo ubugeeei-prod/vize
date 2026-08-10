@@ -46,6 +46,11 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: |
         node --test --test-concurrency=1 \
+          tests/tooling/sfc-baseline-routes.test.ts \
+          tests/tooling/sfc-baselines.test.ts \
+          tests/tooling/vue2-render-signature.test.ts \
+          tests/tooling/glyph-sfc-evidence.test.ts \
+          tests/tooling/sfc-equivalence.test.ts \
           tests/tooling/glyph-corpus-idempotence.test.ts \
           tests/tooling/glyph-corpus-parse-preservation.test.ts \
           tests/tooling/glyph-pug-oracle.test.ts \

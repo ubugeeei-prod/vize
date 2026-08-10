@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "requiredToolCoverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
   "lspAuthoredOracleGate": {
     "minimumProjectCount": 3,
@@ -1920,6 +1920,27 @@
       },
       "vueGlobs": [
         "**/*.vue"
+      ],
+      "sfcDialectRoutes": [
+        {
+          "id": "vue2",
+          "dialect": "2",
+          "globs": [
+            "packages/gogocode-element-playground/packages/vue2/**/*.vue",
+            "packages/gogocode-vue-playground/packages/vue2/**/*.vue",
+            "packages/gogocode-plugin-vue/test/**/*.vue",
+            "packages/transform-project/vue-hackernews-2.0/**/*.vue",
+            "packages/gogocode-plugin-sample/test/**/*.vue"
+          ]
+        },
+        {
+          "id": "vue3",
+          "dialect": "3",
+          "globs": [
+            "packages/gogocode-element-playground/packages/vue3/**/*.vue",
+            "packages/gogocode-vue-playground/packages/vue3/**/*.vue"
+          ]
+        }
       ],
       "coverage": [
         "compiler",

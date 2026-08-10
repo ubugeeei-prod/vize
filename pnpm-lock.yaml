@@ -69,6 +69,16 @@ catalogs:
     '@ox-content/vite-plugin':
       specifier: 2.68.0
       version: 2.68.0
+  legacy-vue-oracle:
+    '@babel/parser':
+      specifier: 7.29.0
+      version: 7.29.0
+    vue-sfc-compiler-2-6:
+      specifier: npm:vue-template-compiler@2.6.14
+      version: 2.6.14
+    vue-sfc-compiler-2-7:
+      specifier: npm:@vue/compiler-sfc@2.7.16
+      version: 2.7.16
   linting:
     '@oxlint/plugins':
       specifier: 1.64.0
@@ -1071,6 +1081,9 @@ importers:
       '@apollo/client':
         specifier: 3.14.1
         version: 3.14.1(graphql@16.14.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@babel/parser':
+        specifier: catalog:legacy-vue-oracle
+        version: 7.29.0
       '@formkit/vue':
         specifier: 2.1.0
         version: 2.1.0(vue@3.6.0-beta.10(typescript@6.0.3))
@@ -1179,6 +1192,12 @@ importers:
       vue-select:
         specifier: 4.0.0-beta.6
         version: 4.0.0-beta.6(vue@3.6.0-beta.10(typescript@6.0.3))
+      vue-sfc-compiler-2-6:
+        specifier: catalog:legacy-vue-oracle
+        version: vue-template-compiler@2.6.14
+      vue-sfc-compiler-2-7:
+        specifier: catalog:legacy-vue-oracle
+        version: '@vue/compiler-sfc@2.7.16'
       vue-tsc:
         specifier: catalog:typescript
         version: 3.3.4(typescript@6.0.3)
@@ -1411,6 +1430,11 @@ packages:
   '@babel/helpers@7.29.2':
     resolution: {integrity: sha512-HoGuUs4sCZNezVEKdVcwqmZN8GoHirLUcLaYVNBK2J0DadGtdcqgr3BCbvH8+XUo4NGjNl3VOtSjEKNzqfFgKw==}
     engines: {node: '>=6.9.0'}
+
+  '@babel/parser@7.29.0':
+    resolution: {integrity: sha512-IyDgFV5GeDUVX4YdF/3CPULtVGSXXMLh1xVIgdCgxApktqnQV0r7/8Nqthg+8YLGaAtdyIlo2qIdZrbCv4+7ww==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
 
   '@babel/parser@7.29.3':
     resolution: {integrity: sha512-b3ctpQwp+PROvU/cttc4OYl4MzfJUWy6FZg+PMXfzmt/+39iHVF0sDfqay8TQM3JA2EUOyKcFZt75jWriQijsA==}
@@ -6089,6 +6113,9 @@ packages:
   '@vue/compiler-dom@3.6.0-beta.10':
     resolution: {integrity: sha512-syaKfkW2D4VFFndlNYweR/EqYWxpf1zCF2URtDcN8IJXV3jvsfOSZA+p8+kyNSbDtBEq8CAeulUXrRfORrM0mQ==}
 
+  '@vue/compiler-sfc@2.7.16':
+    resolution: {integrity: sha512-KWhJ9k5nXuNtygPU7+t1rX6baZeqOYLEforUPjgNDBnLicfHCoi48H87Q8XyLZOrNNsmhuwKqtpDQWjEFe6Ekg==}
+
   '@vue/compiler-sfc@3.5.35':
     resolution: {integrity: sha512-G5VPMcXTSywXBgtFOZOnHKBxKSrwXUcvY1iaF5/hRcy7t0J6CH/d8ha9F4nzi00Fax1eLV0QHM7v4mQu68jydw==}
 
@@ -7282,6 +7309,9 @@ packages:
       sqlite3:
         optional: true
 
+  de-indent@1.0.2:
+    resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
+
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -8110,6 +8140,10 @@ packages:
 
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
+
+  he@1.2.0:
+    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
+    hasBin: true
 
   hey-listen@1.0.8:
     resolution: {integrity: sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==}
@@ -9622,6 +9656,11 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  prettier@2.8.8:
+    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
 
   prettier@3.8.3:
     resolution: {integrity: sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==}
@@ -11229,6 +11268,9 @@ packages:
     peerDependencies:
       vue: 3.x
 
+  vue-template-compiler@2.6.14:
+    resolution: {integrity: sha512-ODQS1SyMbjKoO1JBJZojSw6FE4qnh9rIpUZn2EUT86FKizx9uH5z6uXiIrm4/Nb/gwxTi/o17ZDEGWAXHvtC7g==}
+
   vue-tsc@3.2.9:
     resolution: {integrity: sha512-qm8/nbo+9eZc1SCndm9wT+gq23pM+wRIdHY0wjm83B3lIginHTwcdrLUyTrKjDWXbMVNjKegNrnymhpdqnCL3A==}
     hasBin: true
@@ -11806,6 +11848,10 @@ snapshots:
     dependencies:
       '@babel/template': 7.28.6
       '@babel/types': 7.29.0
+
+  '@babel/parser@7.29.0':
+    dependencies:
+      '@babel/types': 7.29.8
 
   '@babel/parser@7.29.3':
     dependencies:
@@ -16266,6 +16312,14 @@ snapshots:
       '@vue/compiler-core': 3.6.0-beta.10
       '@vue/shared': 3.6.0-beta.10
 
+  '@vue/compiler-sfc@2.7.16':
+    dependencies:
+      '@babel/parser': 7.29.8
+      postcss: 8.5.23
+      source-map: 0.6.1
+    optionalDependencies:
+      prettier: 2.8.8
+
   '@vue/compiler-sfc@3.5.35':
     dependencies:
       '@babel/parser': 7.29.3
@@ -17612,6 +17666,8 @@ snapshots:
 
   db0@0.3.4: {}
 
+  de-indent@1.0.2: {}
+
   debug@4.4.3:
     dependencies:
       ms: 2.1.3
@@ -18567,6 +18623,8 @@ snapshots:
       hast-util-parse-selector: 4.0.0
       property-information: 7.1.0
       space-separated-tokens: 2.0.2
+
+  he@1.2.0: {}
 
   hey-listen@1.0.8: {}
 
@@ -20278,6 +20336,9 @@ snapshots:
   powershell-utils@0.1.0: {}
 
   prelude-ls@1.2.1: {}
+
+  prettier@2.8.8:
+    optional: true
 
   prettier@3.8.3: {}
 
@@ -22188,6 +22249,11 @@ snapshots:
   vue-select@4.0.0-beta.6(vue@3.6.0-beta.10(typescript@6.0.3)):
     dependencies:
       vue: 3.6.0-beta.10(typescript@6.0.3)
+
+  vue-template-compiler@2.6.14:
+    dependencies:
+      de-indent: 1.0.2
+      he: 1.2.0
 
   vue-tsc@3.2.9(typescript@6.0.3):
     dependencies:
