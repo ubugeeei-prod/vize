@@ -143,7 +143,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assert.match(misskeyDevSpec, /verifyMisskeyAuthoredSourceHmr/);
   assertExists("tests", "app", "dev", "misskey-hmr.ts");
   const misskeyHmr = readRepoFile("tests", "app", "dev", "misskey-hmr.ts");
-  assert.match(misskeyHmr, /prepareMisskeyHmrFixture/);
+  assert.match(misskeyHmr, /export function prepareMisskeyHmrFixture\s*\(/);
   assert.deepEqual(
     MISSKEY_HMR_TARGETS.map(({ marker, moduleSuffix, sourceRelativePath }) => ({
       marker,

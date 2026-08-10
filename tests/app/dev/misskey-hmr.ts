@@ -29,21 +29,31 @@ function sha256(source: string): string {
   return createHash("sha256").update(source).digest("hex");
 }
 
+function targetByMarker(marker: string): MisskeyHmrTarget {
+  const target = targets.find((candidate) => candidate.marker === marker);
+  assert.ok(target, `unknown Misskey HMR target marker: ${marker}`);
+  return target;
+}
+
+const directTarget = targetByMarker("data-vize-hmr-direct");
+const dependencyTarget = targetByMarker("data-vize-hmr-dependency");
+
 /** Convert one pinned authored SFC to a real external-template owner before Vite starts. */
 export function prepareMisskeyHmrFixture(cwd: string): MisskeyHmrFixture {
-  const directPath = path.join(cwd, targets[0].sourceRelativePath);
+  assert.equal(DASHBOARD_DEPENDENCY_RELATIVE_PATH, dependencyTarget.sourceRelativePath);
+  const directPath = path.join(cwd, directTarget.sourceRelativePath);
   const ownerPath = path.join(cwd, DASHBOARD_OWNER_RELATIVE_PATH);
   const dependencyPath = path.join(cwd, DASHBOARD_DEPENDENCY_RELATIVE_PATH);
   const directSource = fs.readFileSync(directPath, "utf8");
   const ownerSource = fs.readFileSync(ownerPath, "utf8");
-  assert.equal(sha256(directSource), targets[0].expectedSha256, "pinned direct SFC changed");
+  assert.equal(sha256(directSource), directTarget.expectedSha256, "pinned direct SFC changed");
   assert.equal(sha256(ownerSource), DASHBOARD_OWNER_SHA256, "pinned dashboard owner changed");
   assert.equal(fs.existsSync(dependencyPath), false, "HMR dependency path must start absent");
   const match = DASHBOARD_TEMPLATE.exec(ownerSource);
   assert.ok(match, "dashboard owner must contain one inline template");
   assert.equal(ownerSource.match(new RegExp(DASHBOARD_TEMPLATE.source, "g"))?.length, 1);
   const dependencySource = match[1];
-  assert.equal(sha256(dependencySource), targets[1].expectedSha256);
+  assert.equal(sha256(dependencySource), dependencyTarget.expectedSha256);
   const externalOwnerSource = ownerSource.replace(
     DASHBOARD_TEMPLATE,
     MISSKEY_HMR_EXTERNAL_TEMPLATE,
