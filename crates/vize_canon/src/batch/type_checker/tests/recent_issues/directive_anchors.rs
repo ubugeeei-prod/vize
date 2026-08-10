@@ -23,11 +23,11 @@ use vize_carton::String;
 /// expressions. Line 8 — an error *inside* an inline arrow — was already
 /// byte-identical and must stay on the authored bytes.
 ///
-/// The message still diverges: vize's listener type is
-/// `(...args: [value: number]) => any` where vue-tsc's prop type is
-/// `(value: number) => any`, so the rendered return type and the elaboration's
-/// parameter name (`args` versus `value`) differ. That is a message-only
-/// divergence, which the ledger now scores as one (#3447).
+/// The pinned TypeScript-Go build normalizes vize's named rest tuple
+/// `(...args: [value: number]) => any` to `(value: number) => any` when it
+/// renders the diagnostic. The parameter label and listener shape therefore
+/// stay byte-identical to vue-tsc instead of creating a message-only
+/// divergence (#3447).
 #[test]
 fn component_event_handler_anchors_at_the_event_name() {
     if resolve_test_tsgo_binary().is_none() {
@@ -75,7 +75,7 @@ const take = (value: string) => value
                 Some(2322),
                 String::from(
                     "7:11:error Type '(value: string) => string' is not assignable to type '(value: number) => any'.\n\
-                     Types of parameters 'value' and 'args' are incompatible.\n\
+                     Types of parameters 'value' and 'value' are incompatible.\n\
                      Type 'number' is not assignable to type 'string'."
                 ),
             ),
