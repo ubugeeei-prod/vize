@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -19,92 +19,13 @@ import {
   getComputedStyleValue,
   verifySSRContent,
 } from "../../_helpers/assertions";
+import {
+  navigateWithNuxtRouter,
+  readCurrentRoute,
+  verifyNpmxHeadMacros,
+} from "./npmx-head-macros.ts";
 
 const app = npmxApp;
-
-type RouteSnapshot = {
-  fullPath: string;
-  meta: Record<string, unknown>;
-  name: string | null;
-  params: Record<string, unknown>;
-  path: string;
-};
-
-async function readCurrentRoute(page: Page): Promise<RouteSnapshot> {
-  await page.waitForFunction(() => {
-    const root = document.querySelector("#__nuxt") as {
-      __vue_app__?: {
-        config?: {
-          globalProperties?: {
-            $router?: {
-              currentRoute?: {
-                value?: unknown;
-              };
-            };
-          };
-        };
-      };
-    } | null;
-
-    return root?.__vue_app__?.config?.globalProperties?.$router?.currentRoute?.value !== undefined;
-  });
-
-  return page.evaluate(() => {
-    const root = document.querySelector("#__nuxt") as {
-      __vue_app__?: {
-        config?: {
-          globalProperties?: {
-            $router?: {
-              currentRoute?: {
-                value?: {
-                  fullPath?: string;
-                  meta?: Record<string, unknown>;
-                  name?: string | symbol | null;
-                  params?: Record<string, unknown>;
-                  path?: string;
-                };
-              };
-            };
-          };
-        };
-      };
-    } | null;
-    const route = root?.__vue_app__?.config?.globalProperties?.$router?.currentRoute?.value;
-    if (!route?.path || !route.fullPath) {
-      throw new Error("Nuxt router currentRoute is not available");
-    }
-
-    return {
-      fullPath: route.fullPath,
-      meta: JSON.parse(JSON.stringify(route.meta ?? {})) as Record<string, unknown>,
-      name: route.name == null ? null : String(route.name),
-      params: JSON.parse(JSON.stringify(route.params ?? {})) as Record<string, unknown>,
-      path: route.path,
-    };
-  });
-}
-
-async function navigateWithNuxtRouter(page: Page, path: string): Promise<void> {
-  await page.evaluate(async (targetPath) => {
-    const root = document.querySelector("#__nuxt") as {
-      __vue_app__?: {
-        config?: {
-          globalProperties?: {
-            $router?: {
-              push?: (target: string) => Promise<unknown> | void;
-            };
-          };
-        };
-      };
-    } | null;
-    const router = root?.__vue_app__?.config?.globalProperties?.$router;
-    if (typeof router?.push !== "function") {
-      throw new Error("Nuxt router is not available");
-    }
-
-    await router.push(targetPath);
-  }, path);
-}
 
 test.describe("npmx.dev dev", () => {
   let devServer: ChildProcess;
@@ -211,6 +132,14 @@ test.describe("npmx.dev dev", () => {
     expect(route.params).toMatchObject({
       path: ["nuxt", "v", "4.0.0"],
     });
+  });
+
+  test("authored head macros stay exact across SSR, hydration, and navigation", async ({
+    page,
+  }) => {
+    const hydrationErrors = await collectHydrationErrors(page);
+    await verifyNpmxHeadMacros(page, app.url, app.cwd);
+    expect(hydrationErrors).toEqual([]);
   });
 
   test("server logs stay clean during docs prefetch", async ({ page }) => {
