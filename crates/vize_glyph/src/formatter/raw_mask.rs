@@ -6,6 +6,8 @@ mod tests;
 use interpolation::InterpolationScan;
 use tags::{RawRegion, starts_v_pre_attribute, tag_name_at};
 
+use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
+
 pub(super) use tags::starts_v_pre_attribute as starts_v_pre_attribute_at;
 
 /// Per-line "this line is inside a whitespace-significant block" mask.
@@ -47,12 +49,6 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
     // rest of the document, so activation is gated on a closing pair
     // actually following.
     let last_close_line = lines.iter().rposition(|line| contains(line, b"}}"));
-    const TAGS: [(&str, &str, &str); 3] = [
-        ("pre", "<pre", "</pre>"),
-        ("textarea", "<textarea", "</textarea>"),
-        ("listing", "<listing", "</listing>"),
-    ];
-
     for (i, line) in lines.iter().enumerate() {
         // `'…'` / `"…"` cannot span a newline in JS, so an unbalanced quote
         // must not swallow the following lines as string content.
@@ -154,27 +150,23 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
             }
 
             let mut matched = false;
-            for (tag, open_needle, close_needle) in &TAGS {
-                if starts_with_ascii_ci(&bytes[cursor..], close_needle.as_bytes()) {
+            for tag in WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS {
+                let tag_bytes = tag.as_bytes();
+                if starts_native_close_tag(&bytes[cursor..], tag_bytes) {
                     if let Some(idx) = depth_stack
                         .iter()
-                        .rposition(|region| !region.v_pre && region.tag == tag.as_bytes())
+                        .rposition(|region| !region.v_pre && region.tag == tag_bytes)
                     {
                         depth_stack.remove(idx);
                     }
-                    cursor += close_needle.len();
+                    cursor += 2 + tag_bytes.len();
                     matched = true;
                     break;
                 }
-                if starts_with_ascii_ci(&bytes[cursor..], open_needle.as_bytes())
-                    && bytes
-                        .get(cursor + open_needle.len())
-                        .copied()
-                        .is_none_or(|after| matches!(after, b'>' | b' ' | b'\t' | b'\r' | b'/'))
-                {
+                if starts_native_open_tag(&bytes[cursor..], tag_bytes) {
                     pending_raw_tag = Some(tag);
                     in_tag = true;
-                    cursor += open_needle.len();
+                    cursor += 1 + tag_bytes.len();
                     matched = true;
                     break;
                 }
@@ -220,6 +212,24 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
         }
     }
     mask
+}
+
+fn starts_native_open_tag(tail: &[u8], tag: &[u8]) -> bool {
+    tail.starts_with(b"<")
+        && tail.get(1..1 + tag.len()) == Some(tag)
+        && tail
+            .get(1 + tag.len())
+            .is_none_or(|after| matches!(after, b'>' | b' ' | b'\t' | b'\r' | b'\n' | b'/'))
+}
+
+fn starts_native_close_tag(tail: &[u8], tag: &[u8]) -> bool {
+    tail.starts_with(b"</")
+        && tail
+            .get(2..2 + tag.len())
+            .is_some_and(|name| name.eq_ignore_ascii_case(tag))
+        && tail
+            .get(2 + tag.len())
+            .is_none_or(|after| matches!(after, b'>' | b' ' | b'\t' | b'\r' | b'\n'))
 }
 
 /// Whether the tag starting at `cursor` closes itself before this line ends.
@@ -321,12 +331,4 @@ fn directive_expr_attr(name: &[u8]) -> bool {
 
 fn contains(haystack: &[u8], needle: &[u8]) -> bool {
     haystack.len() >= needle.len() && haystack.windows(needle.len()).any(|w| w == needle)
-}
-
-fn starts_with_ascii_ci(haystack: &[u8], needle: &[u8]) -> bool {
-    haystack.len() >= needle.len()
-        && haystack[..needle.len()]
-            .iter()
-            .zip(needle.iter())
-            .all(|(a, b)| a.eq_ignore_ascii_case(b))
 }

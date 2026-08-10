@@ -13,6 +13,14 @@ mod directives;
 mod formatter;
 pub(crate) mod helpers;
 
+/// Native HTML elements whose authored text is whitespace-significant.
+///
+/// Keep this list shared with the SFC indentation mask: if the two formatter
+/// layers disagree, each pass can add another indentation level. Vue treats
+/// names containing uppercase ASCII as components, so callers must match
+/// these lowercase names exactly.
+pub(crate) const WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS: [&str; 3] = ["pre", "textarea", "listing"];
+
 #[cfg(test)]
 mod attribute_priority_tests;
 

@@ -27,12 +27,13 @@ fn textarea_whitespace_only_content_preserved() {
     let pre = "<pre>\n    </pre>";
     assert_eq!(format_template(pre, &options).unwrap().as_str(), pre);
 
-    // Tag-name matching is case-insensitive: mixed-case forms are just as
-    // whitespace-significant and must not be collapsed. (#3250)
-    let mixed_case = "<TeXtArEa>\n    </TeXtArEa>";
+    // PascalCase resolves as a Vue component, not as the native textarea.
+    // It therefore follows ordinary component formatting instead of the raw
+    // HTML path.
+    let mixed_case = "<Textarea>\n    </Textarea>";
     assert_eq!(
         format_template(mixed_case, &options).unwrap().as_str(),
-        mixed_case
+        "<Textarea></Textarea>"
     );
 
     // Any element carrying `v-pre` is whitespace-significant too, so a
@@ -46,6 +47,33 @@ fn textarea_whitespace_only_content_preserved() {
         v_pre_result,
         "v-pre preservation must be idempotent"
     );
+}
+
+#[test]
+fn pascal_case_raw_names_remain_components_in_template_and_sfc_paths() {
+    let options = FormatOptions::default();
+    for tag in ["Pre", "Textarea", "Listing"] {
+        let source = format!(r#"<{tag}><span class="value" id="child">value</span></{tag}>"#);
+        let expected = format!(r#"<{tag}><span id="child" class="value">value</span></{tag}>"#);
+        assert_eq!(
+            format_template(&source, &options).unwrap(),
+            expected,
+            "{tag}"
+        );
+
+        let sfc = format!(
+            "<template>\n  <{tag}>\n<span class=\"value\" id=\"child\">value</span>\n</{tag}>\n</template>\n"
+        );
+        let expected_sfc = format!(
+            "<template>\n  <{tag}>\n    <span id=\"child\" class=\"value\">value</span>\n  </{tag}>\n</template>\n"
+        );
+        let formatted = format_sfc(&sfc, &options).unwrap();
+        assert_eq!(formatted.code, expected_sfc, "{tag}");
+        assert_eq!(
+            format_sfc(&formatted.code, &options).unwrap().code,
+            expected_sfc
+        );
+    }
 }
 
 #[test]

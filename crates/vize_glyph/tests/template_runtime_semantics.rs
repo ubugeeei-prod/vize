@@ -104,6 +104,9 @@ fn comments_and_inline_sibling_whitespace_keep_their_boundaries() {
         "<div><i>A</i>\r<i>B</i></div>",
         "<div><i>A</i>\n  <i>B</i></div>",
     );
+    // Vue's default whitespace condensation removes whitespace-only sibling
+    // gaps containing either CR or LF. Rewriting the lone CR to the configured
+    // layout newline therefore preserves runtime text instead of injecting it.
 }
 
 #[test]
@@ -117,8 +120,11 @@ fn configured_crlf_and_tabs_do_not_leak_into_adjacent_text() {
     let first = format_template(source, &options).unwrap();
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
-    assert!(first.contains("<span>Hello</span>"));
-    assert!(!first.contains("<span>\r\n"));
+    assert_eq!(
+        first.as_str(),
+        "<div>\r\n\t<span>Hello</span>\r\n</div>",
+        "configured CRLF and tabs must drive layout only, never adjacent text"
+    );
 }
 
 #[test]

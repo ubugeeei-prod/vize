@@ -91,6 +91,20 @@ impl AttrCategory {
     }
 }
 
+fn is_ordering_barrier(prop: &PropNode<'_>) -> bool {
+    match prop {
+        // Glyph preserves every directive in authored order because its
+        // expression can observe Vue getters or otherwise affect evaluation.
+        // Attribute-order must not chain style categories across that runtime
+        // boundary and then reject formatter output.
+        PropNode::Directive(_) => true,
+        PropNode::Attribute(attr) => attr
+            .value
+            .as_ref()
+            .is_some_and(|value| value.content.contains("{{")),
+    }
+}
+
 pub struct AttributeOrder;
 
 impl Rule for AttributeOrder {
@@ -106,6 +120,10 @@ impl Rule for AttributeOrder {
         let mut previous_category = None;
 
         for prop in element.props.iter() {
+            if is_ordering_barrier(prop) {
+                previous_category = None;
+                continue;
+            }
             let category = AttrCategory::from_prop(prop);
 
             if let Some(previous_category_value) = previous_category
@@ -151,11 +169,11 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_event_before_conditional() {
+    fn dynamic_directives_are_ordering_barriers() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<div @click="onClick" v-if="show"></div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
@@ -169,12 +187,27 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_id_before_v_for() {
+    fn static_attributes_still_enforce_category_order() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div id="list" v-for="item in items" :key="item.id"></div>"#,
-            "test.vue",
-        );
+        let result = linter.lint_template(r#"<div class="list" id="list"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn glyph_output_lints_clean_across_dynamic_barriers() {
+        let source =
+            r#"<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>"#;
+        let formatted = vize_glyph::format_template(source, &vize_glyph::FormatOptions::default())
+            .expect("formatting must succeed");
+        let result = create_linter().lint_template(&formatted, "test.vue");
+        assert_eq!(result.warning_count, 0, "{formatted}");
+
+        let slotted = vize_glyph::format_template(
+            r#"<Comp :data="d" #default="{ x }"></Comp>"#,
+            &vize_glyph::FormatOptions::default(),
+        )
+        .expect("formatting must succeed");
+        let result = create_linter().lint_template(&slotted, "test.vue");
+        assert_eq!(result.warning_count, 0, "{slotted}");
     }
 }

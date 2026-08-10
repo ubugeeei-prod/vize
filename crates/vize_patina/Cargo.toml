@@ -48,6 +48,7 @@ libc.workspace = true
 [dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
+vize_glyph.workspace = true
 
 [[bench]]
 name = "lint_bench"

@@ -5,6 +5,7 @@
 
 use super::TemplateFormatter;
 use crate::template::{
+    WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS,
     attributes::ParsedAttribute,
     helpers::{find_bytes, is_void_element_str},
 };
@@ -58,18 +59,14 @@ impl TemplateFormatter<'_> {
 /// Whitespace and interpolations inside these regions are rendered as-is
 /// at runtime, so the formatter must not touch them. (#963)
 pub(super) fn is_whitespace_significant_element(tag_name: &str, attrs: &[ParsedAttribute]) -> bool {
-    if matches_ignore_ascii_case(tag_name, &["pre", "textarea", "listing"]) {
+    // Vue resolves tags containing uppercase ASCII as components. Only the
+    // lowercase native spelling owns HTML whitespace-significant semantics.
+    if WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS.contains(&tag_name) {
         return true;
     }
     attrs
         .iter()
         .any(|attr| attr.name.eq_ignore_ascii_case("v-pre"))
-}
-
-fn matches_ignore_ascii_case(value: &str, candidates: &[&str]) -> bool {
-    candidates
-        .iter()
-        .any(|candidate| value.eq_ignore_ascii_case(candidate))
 }
 
 /// Find the start of the matching `</tag_name>` for a content region that

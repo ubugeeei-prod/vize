@@ -2,6 +2,7 @@
 //! formatted template cannot contain a raw continuation line.
 
 use super::raw_mask::{compute_raw_line_mask, starts_v_pre_attribute_at};
+use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
 use memchr::{memchr, memchr2, memchr3};
 
 /// Whether the full raw-region lexer can mark any continuation line.
@@ -79,15 +80,11 @@ fn earliest(left: Option<usize>, right: Option<usize>) -> Option<usize> {
 }
 
 fn starts_raw_tag(tail: &[u8]) -> bool {
-    for name in [
-        b"pre".as_slice(),
-        b"textarea".as_slice(),
-        b"listing".as_slice(),
-    ] {
+    for name in WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS.map(str::as_bytes) {
         let Some(head) = tail.get(1..1 + name.len()) else {
             continue;
         };
-        if head.eq_ignore_ascii_case(name)
+        if head == name
             && tail
                 .get(1 + name.len())
                 .is_none_or(|byte| matches!(byte, b'>' | b' ' | b'\t' | b'\r' | b'\n' | b'/'))
@@ -243,7 +240,7 @@ mod tests {
     fn every_raw_continuation_shape_keeps_the_full_lexer() {
         let raw = [
             "<pre>\nraw\n</pre>",
-            "<TEXTAREA>\nraw\n</TEXTAREA>",
+            "<textarea>\nraw\n</TEXTAREA>",
             "<listing>\nraw\n</listing>",
             "<code V-PRE>\n  {{ raw }}\n</code>",
             "<!--\nraw\n-->",
