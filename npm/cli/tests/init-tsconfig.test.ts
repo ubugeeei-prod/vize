@@ -47,7 +47,6 @@ const EXPECTED_TYPESCRIPT_TSCONFIG = `{
 }
 `;
 
-
 test("a JavaScript-only project scaffolds checkJs typechecking", async () => {
   const root = temporaryProject("javascript");
   writeManifest(root, {

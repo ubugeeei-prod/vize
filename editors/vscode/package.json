@@ -3,7 +3,11 @@
   "displayName": "Vize",
   "version": "0.346.0",
   "description": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
-  "categories": ["Formatters", "Linters", "Programming Languages"],
+  "categories": [
+    "Formatters",
+    "Linters",
+    "Programming Languages"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -46,17 +50,31 @@
     "languages": [
       {
         "id": "art-vue",
-        "aliases": ["Art Vue"],
-        "extensions": [".art.vue"],
+        "aliases": [
+          "Art Vue"
+        ],
+        "extensions": [
+          ".art.vue"
+        ],
         "configuration": "./language-configuration.json",
-        "icon": { "light": "./icons/vue.svg", "dark": "./icons/vue.svg" }
+        "icon": {
+          "light": "./icons/vue.svg",
+          "dark": "./icons/vue.svg"
+        }
       },
       {
         "id": "vue",
-        "aliases": ["Vue"],
-        "extensions": [".vue"],
+        "aliases": [
+          "Vue"
+        ],
+        "extensions": [
+          ".vue"
+        ],
         "configuration": "./language-configuration.json",
-        "icon": { "light": "./icons/vue.svg", "dark": "./icons/vue.svg" }
+        "icon": {
+          "light": "./icons/vue.svg",
+          "dark": "./icons/vue.svg"
+        }
       }
     ],
     "grammars": [

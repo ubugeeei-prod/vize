@@ -103,7 +103,6 @@ export default defineConfig({
   assert.equal(overridden.output.split("\n")[1], "  framework:       Vite (vite.config.ts)");
 });
 
-
 test("a hand-written lint block is never overwritten and never silently bypassed", async () => {
   const root = temporaryProject("hand-written");
   writeManifest(root, {
