@@ -172,10 +172,17 @@ test("Pug oracle fails closed for semantic mutations and unusable baselines", ()
     assert.equal(matchingCrash.baselineUsable, false);
     assert.match(matchingCrash.differences.join("\n"), /pristine Pug baseline failed/);
 
-    const ambientGlobal = '<template lang="pug">\np= process.env.HOME\n</template>\n';
-    const unsafe = comparePugTemplateEquivalence(ambientGlobal, ambientGlobal, context);
-    assert.equal(unsafe.baselineUsable, false);
-    assert.match(unsafe.differences.join("\n"), /executable Pug token code/);
+    for (const [source, expected] of [
+      ['<template lang="pug">\np= process.env.HOME\n</template>\n', /executable Pug token code/],
+      [
+        '<template lang="pug">\nmain(class=process.env.HOME)\n</template>\n',
+        /executable Pug attribute class/,
+      ],
+    ] as const) {
+      const unsafe = comparePugTemplateEquivalence(source, source, context);
+      assert.equal(unsafe.baselineUsable, false);
+      assert.match(unsafe.differences.join("\n"), expected);
+    }
   } finally {
     fs.rmSync(basedir, { recursive: true, force: true });
   }

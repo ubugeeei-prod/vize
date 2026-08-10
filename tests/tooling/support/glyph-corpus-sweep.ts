@@ -102,6 +102,8 @@ function compareCorpusFile(
         pug,
       };
     }
+    const differences = compareSfcEquivalence(original, formatted, path.basename(file));
+    return { differences, category: "semantic-diff", pug: null };
   } catch (error) {
     return {
       differences: [`comparison failed: ${error instanceof Error ? error.message : String(error)}`],
@@ -109,8 +111,6 @@ function compareCorpusFile(
       pug: null,
     };
   }
-  const differences = compareFile(original, formatted, path.basename(file));
-  return { differences, category: violationCategory(differences), pug: null };
 }
 
 export function sweepProject(

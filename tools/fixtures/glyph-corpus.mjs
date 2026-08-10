@@ -286,11 +286,12 @@ export function writeGlyphPugSemanticEvidence(
     // distinct outcomes; collapsing them would hide why a shard is not clean.
     summary: {
       evaluatedPugFileCount: sortedFiles.length,
-      cleanFileCount: sortedFiles.filter((file) => file.verdict === "clean").length,
+      cleanFileCount: sortedFiles.filter((file) => file.verdict === "clean" && !file.waived).length,
       violationCount: sortedFiles.filter((file) => file.verdict === "violation" && !file.waived)
         .length,
-      baselineUnusableCount: sortedFiles.filter((file) => file.verdict === "baseline-unusable")
-        .length,
+      baselineUnusableCount: sortedFiles.filter(
+        (file) => file.verdict === "baseline-unusable" && !file.waived,
+      ).length,
       waivedCount: sortedFiles.filter((file) => file.waived === true).length,
     },
     files: sortedFiles,

@@ -34,10 +34,12 @@ export type TemplateProp = {
   modifiers?: Array<{ content: string }>;
 };
 
+function codePointCompare(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function parseErrorSignatures(errors: Array<{ code?: number; message: string }>): string[] {
-  return errors
-    .map((error) => String(error.code ?? error.message))
-    .sort((left, right) => left.localeCompare(right));
+  return errors.map((error) => String(error.code ?? error.message)).sort(codePointCompare);
 }
 
 export function condense(value: string): string {
@@ -129,5 +131,5 @@ function semanticAttrEntries(
 }
 
 function sortedAttrEntries(attrs: Record<string, string | true>): Array<[string, string | true]> {
-  return Object.entries(attrs).sort(([left], [right]) => left.localeCompare(right));
+  return Object.entries(attrs).sort(([left], [right]) => codePointCompare(left, right));
 }

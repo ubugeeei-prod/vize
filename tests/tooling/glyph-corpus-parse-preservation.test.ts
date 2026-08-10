@@ -43,8 +43,14 @@ test("glyph corpus classifies crashed reference oracles precisely", () => {
 test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   const hydrated = projects.filter((project) => project.hydrated);
   if (hydrated.length === 0) {
-    // Per-PR lanes run without hydrated fixtures; the machinery subtests below
-    // still exercise the property end-to-end on synthetic projects.
+    // Per-PR lanes run without hydrated fixtures. Still publish a valid empty
+    // Pug artifact so the workflow can distinguish an empty shard from a
+    // missing or crashed oracle.
+    writeGlyphPugSemanticEvidence({
+      projectIds: [],
+      baseline: PUG_ORACLE_BASELINE,
+      files: [],
+    });
     return;
   }
   const launch = resolveGlyphLaunch();

@@ -11,6 +11,7 @@ import {
   PUG_ORACLE_BASELINE,
   assertStaticPug,
   canonicalRelativePug,
+  codePointCompare,
   compileVueTemplate,
   dependencyEvidence,
   diagnosticLocation,
@@ -123,7 +124,7 @@ export function comparePugTemplateEquivalence(
           basedirMode: "registry-project-root",
           filters: Object.entries(context.filters ?? {})
             .map(([name, filter]) => [name, sha256(String(filter))])
-            .sort(([left], [right]) => left.localeCompare(right)),
+            .sort(([left], [right]) => codePointCompare(left, right)),
           baseline: PUG_ORACLE_BASELINE.optionsSha256,
         }),
       ),
@@ -221,7 +222,7 @@ function compileSide(
 
   evidence.diagnosticsSha256 = sha256(JSON.stringify(diagnosticSignatures(diagnostics)));
   evidence.diagnosticLocationsSha256 = sha256(
-    JSON.stringify(diagnostics.map(diagnosticLocation).sort()),
+    JSON.stringify(diagnostics.map(diagnosticLocation).sort(codePointCompare)),
   );
 
   return { compiled, semanticAst, diagnostics, evidence, error: evidence.error };

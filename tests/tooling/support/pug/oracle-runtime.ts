@@ -125,6 +125,11 @@ export type Diagnostic = {
 };
 export type CapturedDiagnostic = { severity: "error" | "warning"; value: Diagnostic };
 
+/** Deterministic Unicode code-point ordering, independent of host ICU data. */
+export function codePointCompare(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 /** Reject anything whose rendered HTML could depend on ambient state. */
 export function assertStaticPug(
   source: string,
@@ -139,6 +144,9 @@ export function assertStaticPug(
       continue;
     }
     if (token.type === "attribute") {
+      // A quoted Pug string remains static even when its name is a Vue
+      // directive; compiler-dom interprets the rendered attribute later.
+      // Unquoted Pug expressions stay rejected because Pug would execute them.
       if (token.val === true || (typeof token.val === "string" && isQuotedLiteral(token.val))) {
         continue;
       }
@@ -224,16 +232,14 @@ export function dependencyEvidence(
   dependencies: string[],
   basedir: string,
 ): Array<{ path: string; sha256: string }> {
-  return [...new Set(dependencies)]
-    .sort((left, right) => left.localeCompare(right))
-    .map((dependency) => ({
-      path: path.relative(basedir, dependency).split(path.sep).join("/"),
-      sha256: sha256(fs.readFileSync(dependency)),
-    }));
+  return [...new Set(dependencies)].sort(codePointCompare).map((dependency) => ({
+    path: path.relative(basedir, dependency).split(path.sep).join("/"),
+    sha256: sha256(fs.readFileSync(dependency)),
+  }));
 }
 
 export function diagnosticSignatures(diagnostics: CapturedDiagnostic[]): string[] {
-  return diagnostics.map(diagnosticSignature).sort((left, right) => left.localeCompare(right));
+  return diagnostics.map(diagnosticSignature).sort(codePointCompare);
 }
 
 function diagnosticSignature(diagnostic: CapturedDiagnostic): string {

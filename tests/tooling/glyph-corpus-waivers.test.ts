@@ -283,9 +283,6 @@ test("Pug semantic artifacts preserve fixed-baseline provenance and exact file i
       waivedCount: 0,
     });
     assert.deepEqual(artifact.files, [file]);
-
-    // Ordering is the determinism guarantee of this artifact, and a waived
-    // regression must not be counted as an enforced one.
     const waived = { ...file, path: "src/Aaa.vue", verdict: "violation", waived: true };
     const unusable = {
       ...file,
@@ -293,8 +290,19 @@ test("Pug semantic artifacts preserve fixed-baseline provenance and exact file i
       path: "src/Zzz.vue",
       verdict: "baseline-unusable",
     };
+    const waivedUnusable = {
+      ...file,
+      project: "zzz-fixture",
+      path: "src/WaivedUnusable.vue",
+      verdict: "baseline-unusable",
+      waived: true,
+    };
     const orderedOutput = writeGlyphPugSemanticEvidence(
-      { projectIds: ["fixture-a"], baseline, files: [file, waived, unusable] },
+      {
+        projectIds: ["fixture-a"],
+        baseline,
+        files: [file, waived, unusable, waivedUnusable],
+      },
       reportDir,
     );
     const ordered = JSON.parse(fs.readFileSync(orderedOutput!, "utf8"));
@@ -304,17 +312,25 @@ test("Pug semantic artifacts preserve fixed-baseline provenance and exact file i
         ["aaa-fixture", "src/Zzz.vue"],
         ["fixture-a", "src/Aaa.vue"],
         ["fixture-a", "src/App.vue"],
+        ["zzz-fixture", "src/WaivedUnusable.vue"],
       ],
     );
     assert.deepEqual(ordered.summary, {
-      evaluatedPugFileCount: 3,
+      evaluatedPugFileCount: 4,
       cleanFileCount: 1,
       violationCount: 0,
       baselineUnusableCount: 1,
-      waivedCount: 1,
+      waivedCount: 2,
     });
 
-    // Without a report directory the artifact is not published at all.
+    const emptyOutput = writeGlyphPugSemanticEvidence(
+      { projectIds: [], baseline, files: [] },
+      reportDir,
+    );
+    const empty = JSON.parse(fs.readFileSync(emptyOutput!, "utf8"));
+    assert.deepEqual([empty.projectIds, empty.files], [[], []]);
+    assert.deepEqual(Object.values(empty.summary), [0, 0, 0, 0, 0]);
+
     assert.equal(writeGlyphPugSemanticEvidence({ projectIds: [], baseline, files: [] }, ""), null);
     assert.equal(
       writeGlyphPugSemanticEvidence({ projectIds: [], baseline, files: [] }, null),
