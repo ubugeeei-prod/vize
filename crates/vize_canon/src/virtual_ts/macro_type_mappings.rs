@@ -91,4 +91,16 @@ impl<'a> MacroTypeMappings<'a> {
             sub_spans: Vec::new(),
         });
     }
+
+    pub(crate) fn map_whole_symbol(&mut self, generated: Range<usize>, authored: (u32, u32)) {
+        let Some(authored_len) = authored.1.checked_sub(authored.0).map(|len| len as usize) else {
+            return;
+        };
+        let authored_start = (self.source_offset)(authored.0 as usize);
+        self.mappings.push(VizeMapping {
+            gen_range: generated,
+            src_range: authored_start..authored_start + authored_len,
+            sub_spans: Vec::new(),
+        });
+    }
 }

@@ -61,8 +61,12 @@ fn emit_usage_event_references(
     let resolved_events = cstr!("__vize_events_resolved_{idx}");
     let direct_events_ref = cstr!("__vize_events_nav_{idx}");
     let kebab_events_ref = cstr!("__vize_kebab_events_nav_{idx}");
+    let model_events_ref = cstr!("__vize_model_events_nav_{idx}");
+    let model_completion_ref = cstr!("__vize_model_events_completion_{idx}");
     let mut emitted_direct_ref = false;
     let mut emitted_kebab_ref = false;
+    let mut emitted_model_ref = false;
+    let mut emitted_model_completion_ref = false;
     let mut emitted_resolved_events = false;
     for event in &usage.events {
         let camel_event_name = to_camel_case(event.name.as_str());
@@ -70,15 +74,32 @@ fn emit_usage_event_references(
         let Some(source_range) = event_navigation_source_range(ctx, event) else {
             continue;
         };
-        let (events_ref, emitted_ref) = if is_complete_kebab {
-            (&kebab_events_ref, &mut emitted_kebab_ref)
-        } else {
-            (&direct_events_ref, &mut emitted_direct_ref)
-        };
+        let is_model_event = ctx.preserve_event_navigation && event.name.starts_with("update:");
         if !emitted_resolved_events && ctx.preserve_event_navigation {
             emit_resolved_events(ts, ctx, usage, component_ref, idx, resolved_events.as_str());
             emitted_resolved_events = true;
         }
+        if is_model_event {
+            if !emitted_model_completion_ref {
+                append!(*ts, "  const {model_completion_ref} = {resolved_events};\n");
+                emitted_model_completion_ref = true;
+            }
+            append!(*ts, "  void {model_completion_ref}[");
+            let generated = push_ts_single_quoted_literal(ts, event.name.as_str());
+            ts.push_str("];\n");
+            mappings.push(VizeMapping {
+                gen_range: generated,
+                src_range: source_range.clone(),
+                sub_spans: Vec::new(),
+            });
+        }
+        let (events_ref, emitted_ref) = if is_model_event {
+            (&model_events_ref, &mut emitted_model_ref)
+        } else if is_complete_kebab {
+            (&kebab_events_ref, &mut emitted_kebab_ref)
+        } else {
+            (&direct_events_ref, &mut emitted_direct_ref)
+        };
         if !*emitted_ref {
             if ctx.preserve_event_navigation {
                 append!(*ts, "  const {events_ref} = {resolved_events};\n");

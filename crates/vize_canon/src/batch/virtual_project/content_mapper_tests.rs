@@ -3,7 +3,7 @@ use std::path::Path;
 use super::ContentMapperSpanKind;
 use super::span_features::{
     CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
-    CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL,
+    CONTENT_MAPPER_SPAN_FEATURES_COMPLETION, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
 };
 use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform,

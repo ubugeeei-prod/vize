@@ -1,5 +1,7 @@
 import CallSignatureChild from "./CallSignatureChild.vue";
+import DefaultModelChild from "./DefaultModelChild.vue";
 import GenericChild from "./GenericChild.vue";
+import ModelChild from "./ModelChild.vue";
 import Options from "./Options.vue";
 import RuntimeChild from "./RuntimeChild.vue";
 import type { AppProps, PublicInstance } from "./main";
@@ -8,7 +10,9 @@ import { renderChild } from "./jsx-consumer";
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 type CallSignatureChildInstance = InstanceType<typeof CallSignatureChild>;
+type DefaultModelChildInstance = InstanceType<typeof DefaultModelChild>;
 type GenericChildInstance = InstanceType<typeof GenericChild>;
+type ModelChildInstance = InstanceType<typeof ModelChild>;
 type OptionsInstance = InstanceType<typeof Options>;
 type RuntimeChildInstance = InstanceType<typeof RuntimeChild>;
 
@@ -27,14 +31,22 @@ const optionsComputedMustBeTyped: IsAny<OptionsInstance["doubled"]> = false;
 const optionsMethodMustBeTyped: IsAny<OptionsInstance["increment"]> = false;
 declare const options: OptionsInstance;
 declare const callSignatureChild: CallSignatureChildInstance;
+declare const defaultModelChild: DefaultModelChildInstance;
 declare const genericChild: GenericChildInstance;
+declare const modelChild: ModelChildInstance;
 declare const runtimeChild: RuntimeChildInstance;
 callSignatureChild.$emit("submit", true);
 // @ts-expect-error submit payload must remain boolean through declaration emit
 callSignatureChild.$emit("submit", "yes");
+defaultModelChild.$emit("update:modelValue", 1);
+// @ts-expect-error default model update payload must remain number through declaration emit
+defaultModelChild.$emit("update:modelValue", "1");
 genericChild.$emit("pick", "value");
 // @ts-expect-error generic event constraint must remain string through declaration emit
 genericChild.$emit("pick", 1);
+modelChild.$emit("update:title", "value");
+// @ts-expect-error model update payload must remain string through declaration emit
+modelChild.$emit("update:title", 1);
 runtimeChild.$emit("cancel", "reason");
 // @ts-expect-error cancel payload must remain string through declaration emit
 runtimeChild.$emit("cancel", false);

@@ -64,8 +64,11 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ALL: usize = ContentMapperSpanFeat
 pub(super) const CONTENT_MAPPER_SPAN_FEATURES_ATOM: usize =
     ContentMapperSpanFeature::Hover as usize | ContentMapperSpanFeature::SignatureHelp as usize;
 
-/// Whole-symbol features that remain exact across a camel/kebab casing rewrite.
-pub(super) const CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL: usize = ContentMapperSpanFeature::Hover
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_COMPLETION: usize =
+    ContentMapperSpanFeature::Completion as usize;
+
+/// Whole-symbol features that remain exact across a spelling rewrite.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL: usize = ContentMapperSpanFeature::Hover
     as usize
     | ContentMapperSpanFeature::Definition as usize
     | ContentMapperSpanFeature::TypeDefinition as usize
@@ -79,16 +82,33 @@ pub(super) fn content_mapper_span_features(
     start: usize,
     kind: ContentMapperSpanKind,
 ) -> usize {
-    match kind {
-        ContentMapperSpanKind::Verbatim => CONTENT_MAPPER_SPAN_FEATURES_ALL,
-        ContentMapperSpanKind::Atom if is_cased_symbol_projection(generated, start) => {
-            CONTENT_MAPPER_SPAN_FEATURES_CASED_SYMBOL
+    let prefix = projection_prefix(generated, start);
+    match (kind, prefix) {
+        (_, Some(prefix)) if prefix.starts_with("  void __vize_model_events_completion_") => {
+            CONTENT_MAPPER_SPAN_FEATURES_COMPLETION
         }
-        ContentMapperSpanKind::Atom => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
+        (_, Some(prefix)) if is_whole_symbol_projection(prefix) => {
+            CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
+        }
+        (ContentMapperSpanKind::Verbatim, _) => CONTENT_MAPPER_SPAN_FEATURES_ALL,
+        (ContentMapperSpanKind::Atom, _) => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
     }
 }
 
-fn is_cased_symbol_projection(generated: &str, start: usize) -> bool {
-    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
-    generated[line_start..start].starts_with("  void __vize_kebab_events_nav_")
+fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
+    const MARKER: &[u8] = b"__vize_";
+    let probe_start = start.saturating_sub(64);
+    generated.as_bytes()[probe_start..start]
+        .windows(MARKER.len())
+        .any(|window| window == MARKER)
+        .then(|| {
+            let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
+            &generated[line_start..start]
+        })
+}
+
+fn is_whole_symbol_projection(prefix: &str) -> bool {
+    prefix.starts_with("  void __vize_kebab_events_nav_")
+        || prefix.starts_with("  void __vize_model_events_nav_")
+        || prefix.starts_with("  /* __vize_model_event */ ")
 }
