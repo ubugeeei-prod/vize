@@ -4,7 +4,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
-import { ownersOfDependency } from "./compiled-module-cache.ts";
+import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
 import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
@@ -164,8 +164,8 @@ export async function handleHotUpdateHook(
         : collectedModules;
       if (options.requireAcceptingClientModule && modules.size === 0) continue;
 
-      state.cache.delete(vueFile);
-      state.ssrCache.delete(vueFile);
+      evictCompiledModule(state.cache, vueFile);
+      evictCompiledModule(state.ssrCache, vueFile);
       state.collectedCss.delete(vueFile);
       state.precompileMetadata.delete(vueFile);
       state.pendingHmrUpdateTypes.set(vueFile, "full-reload");
