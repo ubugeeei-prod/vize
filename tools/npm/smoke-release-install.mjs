@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { preparePublishManifest } from "./prepare-publish-manifest.mjs";
+import { runInitTypecheckChecks } from "./smoke-release-init-typecheck.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const dependencySections = [
@@ -406,14 +407,10 @@ function writeRuntimeSmokeProject(installDir) {
   );
 }
 
-function hasPackage(packages, name) {
-  return packages.some((pkg) => pkg.name === name);
-}
-
 function runRuntimeChecks(installDir, packages) {
   writeRuntimeSmokeProject(installDir);
 
-  if (hasPackage(packages, "@vizejs/native")) {
+  if (packages.some((pkg) => pkg.name === "@vizejs/native")) {
     run(
       process.execPath,
       [
@@ -448,7 +445,7 @@ function runRuntimeChecks(installDir, packages) {
   // drop them mid-run. The single combined install above already settled the
   // dependency tree; re-entering npm here is what previously broke vite/rolldown
   // native bindings on the fresh-install smoke matrix.
-  if (hasPackage(packages, "vize")) {
+  if (packages.some((pkg) => pkg.name === "vize")) {
     const vizeBin = resolveInstalledBin(installDir, "vize", "vize");
     run(process.execPath, [vizeBin, "--version"], { cwd: installDir });
     console.log("runtime: vize --version");
@@ -464,9 +461,10 @@ function runRuntimeChecks(installDir, packages) {
       { cwd: installDir },
     );
     console.log("runtime: vize lint");
+    runInitTypecheckChecks(installDir, vizeBin, root, RUNTIME_PEER_DEPENDENCIES);
   }
 
-  if (hasPackage(packages, "@vizejs/vite-plugin")) {
+  if (packages.some((pkg) => pkg.name === "@vizejs/vite-plugin")) {
     const viteBin = resolveInstalledBin(installDir, "vite", "vite");
     run(process.execPath, [viteBin, "build"], { cwd: installDir });
     console.log("runtime: @vizejs/vite-plugin vite build");
