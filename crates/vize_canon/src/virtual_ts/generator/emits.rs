@@ -233,7 +233,12 @@ pub(super) fn emit_emits_type(
         mappings.map_exported_type(ts, generated_start, summary.macros.define_emits(), "Emits");
     }
     if preserve_event_navigation && has_emits_for_props {
-        emit_authored_event_map(ts, summary, &mut mappings);
+        emit_authored_event_map(
+            ts,
+            summary,
+            &mut mappings,
+            !emits_already_defined && !has_model_emits,
+        );
     }
     EmitsInfo {
         has_emits_for_props,
@@ -247,10 +252,24 @@ fn emit_authored_event_map(
     ts: &mut String,
     summary: &Croquis,
     mappings: &mut MacroTypeMappings<'_>,
+    can_replace_emits: bool,
 ) {
-    ts.push_str("type __VizeAuthoredEventMap = Emits & {\n");
+    let events = summary.macros.emits();
+    let all_events_authored = can_replace_emits
+        && !events.is_empty()
+        && events.iter().all(|emit| {
+            summary
+                .macros
+                .emit_declaration(emit.name.as_str())
+                .is_some()
+        });
+    ts.push_str(if all_events_authored {
+        "type __VizeAuthoredEventMap = {\n"
+    } else {
+        "type __VizeAuthoredEventMap = Emits & {\n"
+    });
     let mut emitted_names = FxHashSet::default();
-    for emit in summary.macros.emits() {
+    for emit in events {
         if !emitted_names.insert(emit.name.as_str()) {
             continue;
         }

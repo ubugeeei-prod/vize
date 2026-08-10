@@ -7,28 +7,28 @@ use corsa::jsonrpc::InboundEvent;
 use corsa::lsp::{LspClient, LspSpawnConfig, VirtualDocument};
 use lsp_types::Uri;
 use serde_json::{Value, json};
+use vize_carton::FxHashSet;
 
 #[allow(dead_code)]
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_completion, assert_prop_navigation, copy_fixture, editor_capabilities, file_uri,
-    install_packages, position, pull_diagnostics, workspace_root,
+    assert_completion, assert_prop_navigation, contains_location, copy_fixture,
+    editor_capabilities, file_uri, install_packages, position, pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 
 struct StopOnDrop<'a>(&'a AtomicBool);
-
 impl Drop for StopOnDrop<'_> {
     fn drop(&mut self) {
         self.0.store(true, Ordering::Relaxed);
     }
 }
-
 struct RawInitialize;
 struct RawDiscoverContentMappers;
+struct RawReferences;
+struct RawRename;
 struct RawInitialized;
-
 impl lsp_types::request::Request for RawInitialize {
     type Params = Value;
     type Result = Value;
@@ -41,13 +41,64 @@ impl lsp_types::request::Request for RawDiscoverContentMappers {
     const METHOD: &'static str = "custom/discoverContentMappers";
 }
 
+impl lsp_types::request::Request for RawReferences {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/references";
+}
+
+impl lsp_types::request::Request for RawRename {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/rename";
+}
+
 impl lsp_types::notification::Notification for RawInitialized {
     type Params = Value;
     const METHOD: &'static str = "initialized";
 }
 
+fn contains_location_range(value: &Value, uri: &str, start: &Value, end: &Value) -> bool {
+    match value {
+        Value::Array(values) => values
+            .iter()
+            .any(|value| contains_location_range(value, uri, start, end)),
+        Value::Object(object) => {
+            object.get("uri") == Some(&Value::String(uri.to_owned()))
+                && object.get("range").and_then(|range| range.get("start")) == Some(start)
+                && object.get("range").and_then(|range| range.get("end")) == Some(end)
+        }
+        _ => false,
+    }
+}
+
+fn contains_text_edit(
+    value: &Value,
+    uri: &str,
+    start: &Value,
+    end: &Value,
+    new_name: &str,
+) -> bool {
+    let matches = |edit: &Value| {
+        edit["range"]["start"] == *start
+            && edit["range"]["end"] == *end
+            && edit["newText"].as_str() == Some(new_name)
+    };
+    value["changes"][uri]
+        .as_array()
+        .is_some_and(|edits| edits.iter().any(matches))
+        || value["documentChanges"].as_array().is_some_and(|changes| {
+            changes.iter().any(|change| {
+                change["textDocument"]["uri"] == uri
+                    && change["edits"]
+                        .as_array()
+                        .is_some_and(|edits| edits.iter().any(matches))
+            })
+        })
+}
+
 #[test]
-fn standard_tsgo_lsp_maps_call_signature_and_runtime_events() {
+fn standard_tsgo_lsp_maps_event_symbol_navigation() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping exact Content Mapper LSP conformance: {TSGO_ENV} is not set");
         return;
@@ -68,22 +119,75 @@ fn standard_tsgo_lsp_maps_call_signature_and_runtime_events() {
     let app_uri = file_uri(&app_path);
     let cases = [
         (
+            "Child.vue",
+            "@save",
+            "save: [value",
+            "save",
+            "number",
+            "renamedSave",
+            0,
+            true,
+        ),
+        (
+            "Child.vue",
+            "@save-item",
+            "saveItem: [id",
+            "saveItem",
+            "string",
+            "renamedSaveItem",
+            0,
+            false,
+        ),
+        (
             "CallSignatureChild.vue",
             "@submit",
             "\"submit\"",
             "submit",
             "boolean",
+            "renamedSubmit",
+            1,
+            true,
         ),
-        ("RuntimeChild.vue", "@cancel", "cancel:", "cancel", "string"),
+        (
+            "RuntimeChild.vue",
+            "@cancel",
+            "cancel:",
+            "cancel",
+            "string",
+            "renamedCancel",
+            0,
+            true,
+        ),
     ]
-    .map(|(file, usage, declaration, name, ty)| {
-        let path = project.path().join("src").join(file);
-        let source = std::fs::read_to_string(&path).unwrap();
-        let uri = file_uri(&path);
-        let usage_position = position(&app_source, app_source.find(usage).unwrap() + 1);
-        let declaration_position = position(&source, source.find(declaration).unwrap());
-        (uri, source, usage_position, declaration_position, name, ty)
-    });
+    .map(
+        |(file, usage, declaration, name, ty, renamed, reference_shift, rename_supported)| {
+            let path = project.path().join("src").join(file);
+            let source = std::fs::read_to_string(&path).unwrap();
+            let uri = file_uri(&path);
+            let usage_position = position(&app_source, app_source.find(usage).unwrap() + 1);
+            let usage_end = position(&app_source, app_source.find(usage).unwrap() + usage.len());
+            let declaration_position = position(&source, source.find(declaration).unwrap());
+            let reference_position =
+                position(&source, source.find(declaration).unwrap() + reference_shift);
+            let reference_end = position(
+                &source,
+                source.find(declaration).unwrap() + reference_shift + name.len(),
+            );
+            (
+                uri,
+                source,
+                usage_position,
+                usage_end,
+                declaration_position,
+                reference_position,
+                reference_end,
+                name,
+                ty,
+                renamed,
+                rename_supported,
+            )
+        },
+    );
     let root_uri = file_uri(project.path());
 
     let stop = AtomicBool::new(false);
@@ -149,15 +253,76 @@ fn standard_tsgo_lsp_maps_call_signature_and_runtime_events() {
                     app_source.as_str(),
                 ))
                 .unwrap();
-            for (uri, source, usage, declaration, name, ty) in &cases {
-                overlay
-                    .open(VirtualDocument::new(
-                        Uri::from_str(uri).unwrap(),
-                        "vue",
-                        source.as_str(),
-                    ))
-                    .unwrap();
+            let mut opened = FxHashSet::default();
+            let zero = json!({ "line": 0, "character": 0 });
+            for (
+                uri,
+                source,
+                usage,
+                usage_end,
+                declaration,
+                reference,
+                reference_end,
+                name,
+                ty,
+                renamed,
+                rename_supported,
+            ) in &cases
+            {
+                if opened.insert(uri.as_str()) {
+                    overlay
+                        .open(VirtualDocument::new(
+                            Uri::from_str(uri).unwrap(),
+                            "vue",
+                            source.as_str(),
+                        ))
+                        .unwrap();
+                }
                 assert_prop_navigation(&client, &app_uri, usage, name, ty, uri, declaration).await;
+                let references = client
+                    .request::<RawReferences>(json!({
+                        "textDocument": { "uri": app_uri },
+                        "position": usage,
+                        "context": { "includeDeclaration": true }
+                    }))
+                    .await
+                    .unwrap();
+                assert!(
+                    contains_location_range(&references, &app_uri, usage, usage_end),
+                    "{references:#}"
+                );
+                assert!(
+                    contains_location_range(&references, uri, reference, reference_end),
+                    "{references:#}"
+                );
+                assert!(
+                    !contains_location(&references, uri, &zero),
+                    "references must not retain a generated fallback: {references:#}"
+                );
+                let rename = client
+                    .request::<RawRename>(json!({
+                        "textDocument": { "uri": app_uri },
+                        "position": usage,
+                        "newName": renamed
+                    }))
+                    .await
+                    .unwrap();
+                if *rename_supported {
+                    assert!(
+                        contains_text_edit(&rename, &app_uri, usage, usage_end, renamed),
+                        "{rename:#}"
+                    );
+                    assert!(
+                        contains_text_edit(&rename, uri, reference, reference_end, renamed),
+                        "{rename:#}"
+                    );
+                    assert!(
+                        !serde_json::to_string(&rename).unwrap().contains(".vue.ts"),
+                        "{rename:#}"
+                    );
+                } else {
+                    assert!(rename.is_null(), "{rename:#}");
+                }
                 let clean = pull_diagnostics(&client, uri).await;
                 assert_eq!(clean["items"], json!([]), "{clean:#}");
             }
