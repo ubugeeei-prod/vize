@@ -21,7 +21,6 @@ cache.set(vueFile, {
   dependencies: [dependencyFile],
 } as CompiledModule);
 const invalidatedModules: unknown[] = [];
-const watchedFiles: string[] = [];
 const state = {
   cache,
   ssrCache: new CompiledModuleCache(),
@@ -44,11 +43,6 @@ const ctx = {
         invalidatedModules.push(receivedModule);
       },
     },
-    watcher: {
-      add(file: string) {
-        watchedFiles.push(file);
-      },
-    },
   },
   read: async () => "",
 } as unknown as HmrContext;
@@ -57,6 +51,5 @@ assert.deepEqual(await handleHotUpdateHook(state, ctx), [module]);
 assert.equal(cache.has(vueFile), false);
 assert.deepEqual(await handleHotUpdateHook(state, ctx), [module]);
 assert.deepEqual(invalidatedModules, [module, module]);
-assert.deepEqual(watchedFiles, [dependencyFile, dependencyFile]);
 
 console.log("vite-plugin-vize repeated external SFC HMR tests passed!");

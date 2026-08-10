@@ -20,7 +20,9 @@ const DASHBOARD_OWNER_RELATIVE_PATH = "src/components/MkVisitorDashboard.vue";
 const DASHBOARD_DEPENDENCY_RELATIVE_PATH = "src/components/MkVisitorDashboard.hmr.html";
 const DASHBOARD_OWNER_SHA256 = "8b15393e0c6bb8783bbcbe4c18832936a2f04b3d3f5768ac5c1f3566e542a7bc";
 const DASHBOARD_TEMPLATE = /<template>\n([\s\S]*?)\n<\/template>/;
-
+// Chokidar coalesces same-path `change` events inside this window. Start the
+// distinct repair save in the next window even on fast Linux runners.
+const VITE_CHANGE_EVENT_WINDOW_MS = 50;
 export interface MisskeyHmrFixture {
   restore(): void;
 }
@@ -105,6 +107,40 @@ function initialModuleMatches(urlValue: string, target: MisskeyHmrTarget): boole
     url.searchParams.has("vize") &&
     !url.searchParams.has("vize-ssr")
   );
+}
+
+async function waitForNextChangeEventWindow(
+  frames: readonly string[],
+  target: MisskeyHmrTarget,
+): Promise<void> {
+  let latestTimestamp = 0;
+  for (const frame of frames) {
+    let payload: unknown;
+    try {
+      payload = JSON.parse(frame);
+    } catch {
+      continue;
+    }
+    if (payload == null || typeof payload !== "object" || !("updates" in payload)) continue;
+    const updates = (payload as { updates?: unknown }).updates;
+    if (!Array.isArray(updates)) continue;
+    for (const update of updates) {
+      if (update == null || typeof update !== "object") continue;
+      const candidate = update as { path?: unknown; timestamp?: unknown };
+      if (
+        typeof candidate.path === "string" &&
+        candidate.path.includes(target.moduleSuffix) &&
+        typeof candidate.timestamp === "number"
+      ) {
+        latestTimestamp = Math.max(latestTimestamp, candidate.timestamp);
+      }
+    }
+  }
+  assert.notEqual(latestTimestamp, 0, `missing Vite update timestamp for ${target.moduleSuffix}`);
+  const remaining = latestTimestamp + VITE_CHANGE_EVENT_WINDOW_MS + 1 - Date.now();
+  if (remaining > 0) {
+    await new Promise<void>((resolve) => setTimeout(resolve, remaining));
+  }
 }
 
 async function waitForFreshTransform(
@@ -271,6 +307,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
       await expect(locator).toBeVisible({ timeout: 60_000 });
       await expect.poll(() => completedUpdates.get(target.marker)?.length).toBe(1);
       await assertPageIdentity(page, sentinel, navigations);
+      await waitForNextChangeEventWindow(hmrFrames, target);
 
       const repairedResponse = waitForFreshTransform(page, target, false, observations);
       fs.writeFileSync(sourcePath, originalSource);
