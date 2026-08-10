@@ -82,6 +82,33 @@ test("glyph SFC comparator flags structural corruption", () => {
     ).join("\n"),
     /<pre>/,
   );
+  for (const tag of ["pre", "textarea", "listing"]) {
+    assert.match(
+      compareSfcEquivalence(
+        `<template><${tag}><span>  keep   me  </span></${tag}></template>\n`,
+        `<template><${tag}><span> keep me </span></${tag}></template>\n`,
+        "App.vue",
+      ).join("\n"),
+      new RegExp(`<${tag}>`),
+    );
+  }
+  assert.match(
+    compareSfcEquivalence(
+      "<template><div v-pre>{{  raw   text  }}</div></template>\n",
+      "<template><div v-pre>{{ raw text }}</div></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /#text/,
+  );
+  // PascalCase component names are not native whitespace-preserving elements.
+  assert.deepEqual(
+    compareSfcEquivalence(
+      "<template><Pre>  layout   text  </Pre></template>\n",
+      "<template><Pre> layout text </Pre></template>\n",
+      "App.vue",
+    ),
+    [],
+  );
   assert.match(
     compareSfcEquivalence(
       original,
@@ -105,6 +132,30 @@ test("glyph SFC comparator flags structural corruption", () => {
       "App.vue",
     ).join("\n"),
     /scriptSetup block disappeared/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><!--  keep   comment  --></template>\n",
+      "<template><!-- keep comment --></template>\n",
+      "App.vue",
+    ).join("\n"),
+    /#comment/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><p /></template>\n<style scoped>.a{}</style>\n<style module>.b{}</style>\n",
+      "<template><p /></template>\n<style module>.b{}</style>\n<style scoped>.a{}</style>\n",
+      "App.vue",
+    ).join("\n"),
+    /styles changed/,
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><p /></template>\n<docs>  first   value  </docs>\n<docs>second</docs>\n",
+      "<template><p /></template>\n<docs>second</docs>\n<docs> first value </docs>\n",
+      "App.vue",
+    ).join("\n"),
+    /customBlocks changed/,
   );
 });
 

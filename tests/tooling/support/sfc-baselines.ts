@@ -139,7 +139,7 @@ function loadVue26Baseline() {
       options: object,
     ) => { render: string; staticRenderFns: string[]; errors: unknown[]; tips: unknown[] };
   };
-  const compileOptions = { comments: true, outputSourceRange: true, whitespace: "condense" };
+  const compileOptions = { comments: true, outputSourceRange: true, whitespace: "preserve" };
   const provenance = createBaselineProvenance(
     "vue2.6",
     "2",
@@ -174,7 +174,7 @@ function loadVue27Baseline() {
   const options = {
     isProduction: true,
     prettify: false,
-    compilerOptions: { comments: true, outputSourceRange: true, whitespace: "condense" },
+    compilerOptions: { comments: true, outputSourceRange: true, whitespace: "preserve" },
   };
   const provenance = createBaselineProvenance(
     "vue2.7",

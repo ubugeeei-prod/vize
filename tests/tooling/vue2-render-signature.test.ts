@@ -109,6 +109,16 @@ test("Vue 2 render signatures preserve text inside pre-like ancestors", () => {
     vue2RenderFunctionSignature(`with(this){return _c('span',[_v("  keep   me  ")])}`),
     vue2RenderFunctionSignature(`with(this){return _c('span',[_v(" keep me ")])}`),
   );
+  assert.deepEqual(
+    vue2RenderFunctionSignature(`with(this){return _c('Pre',[_v("  layout   text  ")])}`),
+    vue2RenderFunctionSignature(`with(this){return _c('Pre',[_v(" layout text ")])}`),
+  );
+  assert.notDeepEqual(
+    vue2RenderFunctionSignature(
+      `with(this){return _c('div',{pre:true},[_v("{{  raw   text  }}")])}`,
+    ),
+    vue2RenderFunctionSignature(`with(this){return _c('div',{pre:true},[_v("{{ raw text }}")])}`),
+  );
 });
 
 test("Vue 2 render signatures preserve interpolation boundary whitespace", () => {
@@ -212,7 +222,7 @@ function compileTemplate(
   const result = compiler.compile(descriptor.template.content, {
     comments: true,
     outputSourceRange: true,
-    whitespace: "condense",
+    whitespace: "preserve",
   });
   assert.deepEqual(result.errors, [], `${file}: official Vue 2.6 baseline rejected the template`);
   return vue2RenderSignature(result.render, result.staticRenderFns);

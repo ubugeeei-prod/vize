@@ -5,7 +5,11 @@ import { createRequire } from "node:module";
 
 import { expressionSignature } from "./babel-expression-signature.ts";
 import type { ExpressionNode } from "./babel-expression-signature.ts";
-import { compareBlocks, condense, parseErrorSignatures } from "./sfc-equivalence/blocks.ts";
+import {
+  compareBlocks,
+  parseErrorSignatures,
+  sfcEnvelopeSemanticSignature,
+} from "./sfc-equivalence/blocks.ts";
 import type { SfcDescriptor, TemplateNode, TemplateProp } from "./sfc-equivalence/blocks.ts";
 
 export type { TemplateNode } from "./sfc-equivalence/blocks.ts";
@@ -71,6 +75,18 @@ export function compareSfcBlockStructure(
   return differences;
 }
 
+/** Canonical Vue 3 semantic signature used by dialect evidence hashes. */
+export function sfcSemanticSignature(source: string, filename: string): string {
+  const parsed = parse(source, { filename, sourceMap: false });
+  return JSON.stringify([
+    parseErrorSignatures(parsed.errors),
+    sfcEnvelopeSemanticSignature(parsed.descriptor),
+    parsed.descriptor.template?.ast == null
+      ? null
+      : semanticTree(parsed.descriptor.template.ast, false),
+  ]);
+}
+
 /** Compare template ASTs already produced by one pinned compiler baseline. */
 export function compareTemplateAstEquivalence(before: TemplateNode, after: TemplateNode): string[] {
   const differences: string[] = [];
@@ -88,7 +104,6 @@ const TEXT = 2;
 const COMMENT = 3;
 const INTERPOLATION = 5;
 const ATTRIBUTE = 6;
-const DIRECTIVE = 7;
 
 function compareChildren(
   before: TemplateNode,
@@ -121,7 +136,7 @@ function compareChildren(
         left.node,
         right.node,
         childPath,
-        preserveWhitespace || isWhitespacePreservingTag(left.node.tag),
+        preserveWhitespace || preservesAuthoredWhitespace(left.node),
         differences,
       );
       if (differences.length > baseline) return;
@@ -145,13 +160,16 @@ function normalizedChildren(node: TemplateNode, preserveWhitespace: boolean): No
 function summarizeNode(node: TemplateNode, preserveWhitespace: boolean): string | null {
   if (node.type === TEXT) {
     const content = node.content as string;
-    return JSON.stringify(["text", preserveWhitespace ? content : content.replace(/\s+/g, " ")]);
+    const authored = preserveWhitespace
+      ? (node.loc?.source ?? content)
+      : content.replace(/\s+/g, " ");
+    return JSON.stringify(["text", authored]);
   }
   if (node.type === INTERPOLATION) {
     return JSON.stringify(["interpolation", expressionSignature(node.content as ExpressionNode)]);
   }
   if (node.type === COMMENT) {
-    return JSON.stringify(["comment", condense(node.content as string)]);
+    return JSON.stringify(["comment", node.content as string]);
   }
   if (node.type === ELEMENT) {
     return JSON.stringify([
@@ -169,7 +187,7 @@ function semanticTree(node: TemplateNode, preserveWhitespace: boolean): unknown 
   const children = normalizedChildren(node, preserveWhitespace).map(({ node: child, summary }) => [
     summary,
     child.type === ELEMENT
-      ? semanticTree(child, preserveWhitespace || isWhitespacePreservingTag(child.tag))
+      ? semanticTree(child, preserveWhitespace || preservesAuthoredWhitespace(child))
       : null,
   ]);
   return children;
@@ -222,6 +240,12 @@ function describeNode(child: NormalizedChild | undefined): string {
   return `#node${node.type}`;
 }
 
-function isWhitespacePreservingTag(tag: string | undefined): boolean {
-  return tag === "pre" || tag === "textarea" || tag === "listing";
+function preservesAuthoredWhitespace(node: TemplateNode): boolean {
+  if (node.tag === "pre" || node.tag === "textarea" || node.tag === "listing") {
+    return true;
+  }
+  const source = node.loc?.source;
+  if (source == null) return false;
+  const openingTag = source.slice(0, source.indexOf(">") + 1);
+  return /(?:^|\s)v-pre(?:\s|=|\/?>)/u.test(openingTag);
 }

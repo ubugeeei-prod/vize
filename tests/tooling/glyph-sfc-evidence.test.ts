@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
 import {
   createGlyphSfcEquivalenceEvidence,
   validateGlyphSfcEquivalenceEvidence,
+  writeGlyphSfcEquivalenceEvidence,
 } from "../../tools/fixtures/glyph-sfc-evidence.mjs";
 
 const hash = (value: string): string => createHash("sha256").update(value).digest("hex");
@@ -16,6 +20,15 @@ function input() {
     formatter: { version: "0.346.0", binarySha256: hash("vize") },
     waiverValidationError: null,
     availableBaselines: [
+      ...["0.10", "0.11", "1"].map((dialect) => ({
+        id: `unsupported-vue-${dialect}`,
+        dialect,
+        package: null,
+        version: null,
+        entrySha256: null,
+        normalization: "unavailable",
+        options: {},
+      })),
       {
         id: "vue2.7",
         dialect: "2.7",
@@ -23,7 +36,27 @@ function input() {
         version: "2.7.16",
         entrySha256: hash("compiler-2.7"),
         normalization: "vue2-render-v1",
-        options: { isProduction: true },
+        options: {
+          parse: { pad: false },
+          compile: {
+            isProduction: true,
+            prettify: false,
+            compilerOptions: {
+              comments: true,
+              outputSourceRange: true,
+              whitespace: "preserve",
+            },
+          },
+        },
+      },
+      {
+        id: "vue3",
+        dialect: "3",
+        package: "@vue/compiler-sfc",
+        version: "3.6.0-beta.10",
+        entrySha256: hash("compiler-3"),
+        normalization: "vue3-template-ast-v1",
+        options: { sourceMap: false },
       },
     ],
     expectedFiles: [
@@ -60,7 +93,10 @@ function input() {
           version: "2.6.14",
           entrySha256: hash("compiler"),
           normalization: "vue2-render-v1",
-          options: { comments: true },
+          options: {
+            parse: { pad: false },
+            compile: { comments: true, outputSourceRange: true, whitespace: "preserve" },
+          },
         },
       },
     ],
@@ -72,10 +108,14 @@ test("glyph SFC evidence binds per-file dialect, compiler, hashes, and verdict",
   assert.equal(artifact.files.length, 1);
   assert.equal(artifact.files[0].dialect, "2");
   assert.deepEqual(
-    artifact.baselines.map(({ id, version }) => ({ id, version })),
+    artifact.baselines.map(({ id }) => id),
     [
-      { id: "vue2.6", version: "2.6.14" },
-      { id: "vue2.7", version: "2.7.16" },
+      "unsupported-vue-0.10",
+      "unsupported-vue-0.11",
+      "unsupported-vue-1",
+      "vue2.6",
+      "vue2.7",
+      "vue3",
     ],
   );
   assert.deepEqual(artifact.summary, {
@@ -84,13 +124,23 @@ test("glyph SFC evidence binds per-file dialect, compiler, hashes, and verdict",
       equivalent: 1,
       "semantic-diff": 0,
       "baseline-unusable": 0,
-      "oracle-unavailable": 0,
     },
     waivedDifferenceCount: 0,
     waiverValidationError: null,
   });
   assert.equal(artifact.sha256.length, 64);
   assert.doesNotThrow(() => validateGlyphSfcEquivalenceEvidence(artifact, input().expectedFiles));
+});
+
+test("dialect evidence cannot overwrite the corpus property artifact", () => {
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-sfc-evidence-"));
+  try {
+    const output = writeGlyphSfcEquivalenceEvidence(input(), reportDir);
+    assert.equal(output, path.join(reportDir, "glyph-sfc-dialect-equivalence.json"));
+    assert.equal(JSON.parse(fs.readFileSync(output, "utf8")).files.length, 1);
+  } finally {
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
 });
 
 test("glyph SFC evidence rejects missing, duplicate, and mismatched files", () => {
@@ -119,14 +169,21 @@ test("glyph SFC evidence rejects missing, duplicate, and mismatched files", () =
 
 test("glyph SFC evidence fails closed on forged verdicts and provenance", () => {
   const artifact = createGlyphSfcEquivalenceEvidence(input());
+  const forgeBaseline = (changes: Record<string, unknown>) =>
+    artifact.baselines.map((baseline) =>
+      baseline.id === "vue2.6" ? { ...baseline, ...changes } : baseline,
+    );
   for (const mutation of [
     { files: [{ ...artifact.files[0], originalSha256: "bad" }] },
     { files: [{ ...artifact.files[0], differences: ["hidden corruption"] }] },
     { files: [{ ...artifact.files[0], revision: "not-a-commit" }] },
     { files: [{ ...artifact.files[0], routeId: "" }] },
-    { baselines: [{ ...artifact.baselines[0], dialect: "4" }] },
-    { baselines: [{ ...artifact.baselines[0], normalization: "" }] },
-    { baselines: [{ ...artifact.baselines[0], options: null }] },
+    { baselines: forgeBaseline({ dialect: "4" }) },
+    { baselines: forgeBaseline({ package: "forged-compiler" }) },
+    { baselines: forgeBaseline({ version: "0.0.0" }) },
+    { baselines: forgeBaseline({ normalization: "" }) },
+    { baselines: forgeBaseline({ options: { whitespace: "condense" } }) },
+    { baselines: artifact.baselines.slice(1) },
     { sourceCommit: null },
     { sha256: hash("forged") },
   ]) {

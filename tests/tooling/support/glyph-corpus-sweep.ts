@@ -10,18 +10,25 @@ import path from "node:path";
 
 import {
   collectProjectVueFiles,
+  sha256,
   snapshotWorkspaceFiles,
   withFormattedWorkspace,
 } from "../../../tools/fixtures/glyph-corpus.mjs";
 import { comparePugTemplateEquivalence, isPugSfc } from "./pug-template-equivalence.ts";
 import type { PugOracleComparison, PugOracleEvidence } from "./pug-template-equivalence.ts";
+import { resolveSfcDialectPartition } from "./sfc-baseline-routes.ts";
+import type { ResolvedSfcDialect, SfcDialectRoute } from "./sfc-baseline-routes.ts";
+import { compareSfcWithDialectBaseline } from "./sfc-baselines.ts";
+import type { SfcBaselineComparison } from "./sfc-baselines.ts";
 import { compareSfcEquivalence } from "./sfc-equivalence.ts";
 
 export type CorpusProject = {
   id: string;
   fixtureDir: string;
   hydrated: boolean;
+  revision: string;
   vueGlobs: string[];
+  sfcDialectRoutes?: SfcDialectRoute[];
 };
 
 export type Violation = { project: string; file: string; detail: string };
@@ -41,6 +48,25 @@ export type PugEvidence = {
   };
 };
 
+export type SfcDialectEvidence = {
+  project: string;
+  revision: string;
+  path: string;
+  routeId: string;
+  dialect: string;
+  baselineId: string;
+  originalSha256: string;
+  formattedSha256: string;
+  beforeSemanticSha256: string | null;
+  afterSemanticSha256: string | null;
+  verdict: string;
+  reasonCode: string | null;
+  differences: string[];
+  failure: object | null;
+  waiver: object | null;
+  baseline: object;
+};
+
 type WaiverConsumption = {
   consume: (
     project: string,
@@ -57,6 +83,7 @@ export type SweepSink = {
   counters: { files: number; skipped: number };
   waivedViolations?: Array<Violation & { waiver: object }>;
   pugEvidence?: PugEvidence[];
+  sfcDialectEvidence?: SfcDialectEvidence[];
 };
 
 export function violationCategory(differences: string[]): "semantic-diff" | "baseline-unusable" {
@@ -87,10 +114,12 @@ function compareCorpusFile(
   formatted: string,
   project: CorpusProject,
   file: string,
+  route: ResolvedSfcDialect | null,
 ): {
   differences: string[];
   category: "semantic-diff" | "baseline-unusable";
   pug: PugOracleComparison | null;
+  dialect: SfcBaselineComparison | null;
 } {
   const filename = path.join(project.fixtureDir, file);
   try {
@@ -100,15 +129,26 @@ function compareCorpusFile(
         differences: pug.differences,
         category: pug.baselineUsable ? "semantic-diff" : "baseline-unusable",
         pug,
+        dialect: null,
+      };
+    }
+    if (route != null) {
+      const dialect = compareSfcWithDialectBaseline(original, formatted, filename, route.dialect);
+      return {
+        differences: dialect.differences,
+        category: dialect.verdict === "baseline-unusable" ? "baseline-unusable" : "semantic-diff",
+        pug: null,
+        dialect,
       };
     }
     const differences = compareSfcEquivalence(original, formatted, path.basename(file));
-    return { differences, category: "semantic-diff", pug: null };
+    return { differences, category: "semantic-diff", pug: null, dialect: null };
   } catch (error) {
     return {
       differences: [`comparison failed: ${error instanceof Error ? error.message : String(error)}`],
       category: "baseline-unusable",
       pug: null,
+      dialect: null,
     };
   }
 }
@@ -120,6 +160,11 @@ export function sweepProject(
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
+  // Only projects with an explicit machine-readable partition enter the
+  // dialect artifact. The ordinary Vue 3 and Pug corpus paths remain owned by
+  // their existing oracles, avoiding a second 34k-file parser pass.
+  const partition =
+    project.sfcDialectRoutes == null ? null : resolveSfcDialectPartition(project, files);
   withFormattedWorkspace(
     project,
     files,
@@ -135,7 +180,8 @@ export function sweepProject(
         const formattedBuffer = firstPass.get(file);
         assert.ok(formattedBuffer, `formatter snapshot omitted ${project.id}/${file}`);
         const formatted = formattedBuffer.toString("utf8");
-        const result = compareCorpusFile(original, formatted, project, file);
+        const route = partition?.get(file) ?? null;
+        const result = compareCorpusFile(original, formatted, project, file, route);
         const differences = [...result.differences];
         let evidence: PugEvidence | null = null;
 
@@ -170,19 +216,39 @@ export function sweepProject(
             },
           };
         }
+        let waiver: object | null = null;
         if (differences.length === 0) {
           sink.counters.files += 1;
-          if (evidence) sink.pugEvidence?.push(evidence);
-          continue;
+        } else {
+          waiver = sink.waiverConsumption.consume(project.id, file, null, result.category);
         }
-        const detail = differences.map((difference) => `  ${difference}`).join("\n");
-        // Record the waiver decision on the evidence before publishing it, so a
-        // reader can tell an enforced regression from an accepted waiver.
-        const waiver = sink.waiverConsumption.consume(project.id, file, null, result.category);
+        // Record the waiver decision on both artifacts before publishing them.
         if (evidence) {
           evidence.waived = waiver != null;
           sink.pugEvidence?.push(evidence);
         }
+        if (result.dialect != null && route != null) {
+          sink.sfcDialectEvidence?.push({
+            project: project.id,
+            revision: project.revision,
+            path: file,
+            routeId: route.routeId,
+            dialect: route.dialect,
+            baselineId: result.dialect.baseline.id,
+            originalSha256: sha256(original),
+            formattedSha256: sha256(formatted),
+            beforeSemanticSha256: result.dialect.beforeSemanticSha256,
+            afterSemanticSha256: result.dialect.afterSemanticSha256,
+            verdict: result.dialect.verdict,
+            reasonCode: result.dialect.reasonCode,
+            differences: result.dialect.differences,
+            failure: result.dialect.failure,
+            waiver,
+            baseline: result.dialect.baseline,
+          });
+        }
+        if (differences.length === 0) continue;
+        const detail = differences.map((difference) => `  ${difference}`).join("\n");
         if (waiver) {
           sink.waivedViolations?.push({ project: project.id, file, detail, waiver });
           sink.counters.skipped += 1;
@@ -204,6 +270,7 @@ export function makeSyntheticProject(files: Array<[string, string]>): CorpusProj
     id: "synthetic-parse-preservation",
     fixtureDir,
     hydrated: true,
+    revision: "0".repeat(40),
     vueGlobs: ["src/**/*.vue"],
   };
 }

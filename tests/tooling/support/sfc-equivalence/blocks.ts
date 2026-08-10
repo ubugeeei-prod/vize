@@ -24,6 +24,7 @@ export type TemplateNode = {
   props?: TemplateProp[];
   children?: TemplateNode[];
   content?: string | { content: string };
+  loc?: { source?: string };
 };
 export type TemplateProp = {
   type: number;
@@ -40,10 +41,6 @@ function codePointCompare(left: string, right: string): number {
 
 export function parseErrorSignatures(errors: Array<{ code?: number; message: string }>): string[] {
   return errors.map((error) => String(error.code ?? error.message)).sort(codePointCompare);
-}
-
-export function condense(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
 }
 
 export function compareBlocks(
@@ -71,10 +68,10 @@ export function compareBlocks(
       JSON.stringify([
         block.type,
         semanticAttrEntries(kind === "styles" ? "style" : "customBlock", block),
-        kind === "customBlocks" ? condense(block.content) : null,
+        kind === "customBlocks" ? block.content : null,
       ]);
-    const beforeSignatures = beforeBlocks.map(signature).sort();
-    const afterSignatures = afterBlocks.map(signature).sort();
+    const beforeSignatures = beforeBlocks.map(signature);
+    const afterSignatures = afterBlocks.map(signature);
     for (let index = 0; index < beforeSignatures.length; index += 1) {
       if (beforeSignatures[index] !== afterSignatures[index]) {
         differences.push(
@@ -84,6 +81,27 @@ export function compareBlocks(
       }
     }
   }
+}
+
+/** Canonical SFC envelope shared by comparison and evidence hashing. */
+export function sfcEnvelopeSemanticSignature(descriptor: SfcDescriptor): unknown {
+  const single = (kind: "template" | "script" | "scriptSetup"): unknown => {
+    const block = descriptor[kind];
+    return block == null ? null : semanticAttrEntries(kind, block);
+  };
+  const many = (kind: "styles" | "customBlocks"): unknown[] =>
+    descriptor[kind].map((block) => [
+      block.type,
+      semanticAttrEntries(kind === "styles" ? "style" : "customBlock", block),
+      kind === "customBlocks" ? block.content : null,
+    ]);
+  return [
+    single("template"),
+    single("script"),
+    single("scriptSetup"),
+    many("styles"),
+    many("customBlocks"),
+  ];
 }
 
 function compareAttrs(

@@ -1,5 +1,7 @@
 import { parse } from "@babel/parser";
 
+import { sortPurePropertyRuns } from "./vue2-render-purity.ts";
+
 type AstRecord = Record<string, unknown> & { type?: string };
 
 const ignoredBabelKeys = new Set([
@@ -86,7 +88,9 @@ function normalizeCreateElementCall(record: AstRecord, preserveWhitespace: boole
   const args = arrayField(record, "arguments");
   const tag = stringLiteralValue(args[0]);
   const childPreservesWhitespace =
-    preserveWhitespace || (tag != null && whitespacePreservingTags.has(tag.toLowerCase()));
+    preserveWhitespace ||
+    (tag != null && whitespacePreservingTags.has(tag)) ||
+    hasVPreDataArgument(args[1]);
   const hasDataArgument =
     args.length >= 3 || isObjectExpression(args[1]) || isDataHelperCall(args[1]);
   const childIndex = hasDataArgument ? 2 : 1;
@@ -99,6 +103,19 @@ function normalizeCreateElementCall(record: AstRecord, preserveWhitespace: boole
       return normalizeNode(argument, childPreservesWhitespace);
     }
     return normalizeNode(argument, preserveWhitespace);
+  });
+}
+
+function hasVPreDataArgument(node: unknown): boolean {
+  const record = asRecord(node);
+  if (record?.type !== "ObjectExpression") return false;
+  return arrayField(record, "properties").some((property) => {
+    const candidate = asRecord(property);
+    if (candidate?.type !== "ObjectProperty" || staticPropertyName(candidate) !== "pre") {
+      return false;
+    }
+    const value = asRecord(candidate.value);
+    return value?.type === "BooleanLiteral" && value.value === true;
   });
 }
 
@@ -164,79 +181,6 @@ function normalizeOrdinaryObject(record: AstRecord, preserveWhitespace: boolean)
       normalizeNode(property, preserveWhitespace),
     ),
   });
-}
-
-function sortPurePropertyRuns(properties: unknown[], normalized: unknown[]): unknown[] {
-  const result = [...normalized];
-  let start = 0;
-  while (start < properties.length) {
-    if (!isReorderSafeProperty(properties[start])) {
-      start += 1;
-      continue;
-    }
-    let end = start + 1;
-    while (end < properties.length && isReorderSafeProperty(properties[end])) end += 1;
-    const names = properties
-      .slice(start, end)
-      .map((property) => staticPropertyName(asRecord(property) as AstRecord));
-    if (new Set(names).size === names.length) {
-      result.splice(start, end - start, ...result.slice(start, end).sort(compareSignatures));
-    }
-    start = end;
-  }
-  return result;
-}
-
-function isReorderSafeProperty(node: unknown): boolean {
-  const record = asRecord(node);
-  return (
-    record?.type === "ObjectProperty" &&
-    staticPropertyName(record) != null &&
-    isPureExpression(record.value)
-  );
-}
-
-function isPureExpression(node: unknown): boolean {
-  const record = asRecord(node);
-  if (record == null) return node == null;
-  switch (record.type) {
-    case "StringLiteral":
-    case "NumericLiteral":
-    case "BooleanLiteral":
-    case "NullLiteral":
-    case "BigIntLiteral":
-    case "RegExpLiteral":
-    case "ThisExpression":
-    case "FunctionExpression":
-    case "ArrowFunctionExpression":
-      return true;
-    case "UnaryExpression":
-      return record.operator !== "delete" && isPureExpression(record.argument);
-    case "BinaryExpression":
-    case "LogicalExpression":
-      return isPureExpression(record.left) && isPureExpression(record.right);
-    case "ConditionalExpression":
-      return (
-        isPureExpression(record.test) &&
-        isPureExpression(record.consequent) &&
-        isPureExpression(record.alternate)
-      );
-    case "ArrayExpression":
-      return arrayField(record, "elements").every(isPureExpression);
-    case "ObjectExpression":
-      return arrayField(record, "properties").every(isReorderSafeProperty);
-    case "TemplateLiteral":
-      return arrayField(record, "expressions").every(isPureExpression);
-    case "ParenthesizedExpression":
-    case "TSAsExpression":
-    case "TSTypeAssertion":
-    case "TSNonNullExpression":
-      return isPureExpression(record.expression);
-    default:
-      // Identifiers and member reads can resolve through Vue instance getters;
-      // calls, constructors, assignments, updates, and spreads are effectful.
-      return false;
-  }
 }
 
 function normalizeVueTextCall(record: AstRecord, preserveWhitespace: boolean): unknown {
@@ -378,8 +322,4 @@ function asRecord(value: unknown): AstRecord | null {
   return value != null && typeof value === "object" && !Array.isArray(value)
     ? (value as AstRecord)
     : null;
-}
-
-function compareSignatures(left: unknown, right: unknown): number {
-  return JSON.stringify(left).localeCompare(JSON.stringify(right));
 }

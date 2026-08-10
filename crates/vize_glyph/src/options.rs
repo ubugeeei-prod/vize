@@ -97,7 +97,8 @@ pub struct FormatOptions {
     pub normalize_directive_shorthands: bool,
 
     /// Sort SFC blocks in canonical order (default: true)
-    /// Order: script → script setup → template → style scoped → style → custom blocks
+    /// Order: script → script setup → template → styles → custom blocks.
+    /// Authored order is retained within the style and custom-block groups.
     /// When false, blocks are preserved in their original source order.
     #[serde(default = "default_true")]
     pub sort_blocks: bool,

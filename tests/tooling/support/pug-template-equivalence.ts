@@ -66,9 +66,59 @@ export type PugOracleComparison = {
   evidence: PugOracleEvidence;
 };
 
-export function isPugSfc(source: string, filename: string): boolean {
-  const template = parseSfc(source, { filename, sourceMap: false }).descriptor.template;
-  return template?.lang?.toLowerCase() === "pug";
+export function isPugSfc(source: string, _filename: string): boolean {
+  const openingTag = findTopLevelTemplateOpeningTag(source);
+  if (openingTag == null) return false;
+  const lang = /(?:^|\s)lang\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/iu.exec(openingTag);
+  return (lang?.[1] ?? lang?.[2] ?? lang?.[3] ?? "").toLowerCase() === "pug";
+}
+
+/** Read only top-level SFC opening tags, without invoking a dialect parser. */
+function findTopLevelTemplateOpeningTag(source: string): string | null {
+  let offset = 0;
+  while (offset < source.length) {
+    const start = source.indexOf("<", offset);
+    if (start < 0) return null;
+    if (source.startsWith("<!--", start)) {
+      const end = source.indexOf("-->", start + 4);
+      offset = end < 0 ? source.length : end + 3;
+      continue;
+    }
+    const nameMatch = /^<([A-Za-z][\w-]*)\b/u.exec(source.slice(start));
+    if (nameMatch == null) {
+      offset = start + 1;
+      continue;
+    }
+    const end = findTagEnd(source, start + nameMatch[0].length);
+    if (end < 0) return null;
+    const name = nameMatch[1].toLowerCase();
+    const openingTag = source.slice(start, end + 1);
+    if (name === "template") return openingTag;
+    if (!/\/\s*>$/u.test(openingTag)) {
+      const closePattern = new RegExp(`</${name}\\s*>`, "iu");
+      const remainder = source.slice(end + 1);
+      const close = closePattern.exec(remainder);
+      offset = close == null ? source.length : end + 1 + close.index + close[0].length;
+    } else {
+      offset = end + 1;
+    }
+  }
+  return null;
+}
+
+function findTagEnd(source: string, offset: number): number {
+  let quote: '"' | "'" | null = null;
+  for (let index = offset; index < source.length; index += 1) {
+    const character = source[index];
+    if (quote != null) {
+      if (character === quote) quote = null;
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === ">") {
+      return index;
+    }
+  }
+  return -1;
 }
 
 export function comparePugTemplateEquivalence(

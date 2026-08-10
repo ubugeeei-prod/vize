@@ -6,13 +6,62 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const hashPattern = /^[0-9a-f]{64}$/;
 const commitPattern = /^[0-9a-f]{40}$/;
-const verdicts = new Set([
-  "equivalent",
-  "semantic-diff",
-  "baseline-unusable",
-  "oracle-unavailable",
-]);
+const verdicts = new Set(["equivalent", "semantic-diff", "baseline-unusable"]);
 const dialects = new Set(["0.10", "0.11", "1", "2", "2.7", "3"]);
+const baselineContracts = new Map([
+  [
+    "unsupported-vue-0.10",
+    { dialect: "0.10", package: null, version: null, normalization: "unavailable", options: {} },
+  ],
+  [
+    "unsupported-vue-0.11",
+    { dialect: "0.11", package: null, version: null, normalization: "unavailable", options: {} },
+  ],
+  [
+    "unsupported-vue-1",
+    { dialect: "1", package: null, version: null, normalization: "unavailable", options: {} },
+  ],
+  [
+    "vue2.6",
+    {
+      dialect: "2",
+      package: "vue-template-compiler",
+      version: "2.6.14",
+      normalization: "vue2-render-v1",
+      options: {
+        parse: { pad: false },
+        compile: { comments: true, outputSourceRange: true, whitespace: "preserve" },
+      },
+    },
+  ],
+  [
+    "vue2.7",
+    {
+      dialect: "2.7",
+      package: "@vue/compiler-sfc",
+      version: "2.7.16",
+      normalization: "vue2-render-v1",
+      options: {
+        parse: { pad: false },
+        compile: {
+          isProduction: true,
+          prettify: false,
+          compilerOptions: { comments: true, outputSourceRange: true, whitespace: "preserve" },
+        },
+      },
+    },
+  ],
+  [
+    "vue3",
+    {
+      dialect: "3",
+      package: "@vue/compiler-sfc",
+      version: "3.6.0-beta.10",
+      normalization: "vue3-template-ast-v1",
+      options: { sourceMap: false },
+    },
+  ],
+]);
 
 export function writeGlyphSfcEquivalenceEvidence(
   input,
@@ -20,7 +69,7 @@ export function writeGlyphSfcEquivalenceEvidence(
 ) {
   if (reportDir == null || reportDir === "") return null;
   const artifact = createGlyphSfcEquivalenceEvidence(input);
-  const output = resolve(repoRoot, reportDir, "glyph-parse-preservation.json");
+  const output = resolve(repoRoot, reportDir, "glyph-sfc-dialect-equivalence.json");
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, `${JSON.stringify(artifact, null, 2)}\n`);
   return output;
@@ -136,6 +185,8 @@ function validateBaselines(records) {
       throw new Error("baseline id must be non-empty");
     }
     if (baselines.has(baseline.id)) throw new Error(`duplicate baseline id: ${baseline.id}`);
+    const contract = baselineContracts.get(baseline.id);
+    if (contract == null) throw new Error(`unknown baseline id: ${baseline.id}`);
     if (!dialects.has(baseline.dialect)) {
       throw new Error(`baseline ${baseline.id} has an invalid dialect`);
     }
@@ -149,6 +200,14 @@ function validateBaselines(records) {
     ) {
       throw new Error(`baseline ${baseline.id} options must be an object`);
     }
+    for (const field of ["dialect", "package", "version", "normalization"]) {
+      if (baseline[field] !== contract[field]) {
+        throw new Error(`baseline ${baseline.id} ${field} violates the pinned contract`);
+      }
+    }
+    if (canonicalJson(baseline.options) !== canonicalJson(contract.options)) {
+      throw new Error(`baseline ${baseline.id} options violate the pinned contract`);
+    }
     if (baseline.package == null) {
       if (baseline.version != null || baseline.entrySha256 != null) {
         throw new Error(`unsupported baseline ${baseline.id} has package provenance`);
@@ -160,6 +219,12 @@ function validateBaselines(records) {
       requireHash(baseline.entrySha256, `${baseline.id} entry sha256`);
     }
     baselines.set(baseline.id, baseline);
+  }
+  for (const id of baselineContracts.keys()) {
+    if (!baselines.has(id)) throw new Error(`missing baseline contract: ${id}`);
+  }
+  if (baselines.size !== baselineContracts.size) {
+    throw new Error("glyph SFC baseline contracts are not an exact partition");
   }
   return baselines;
 }

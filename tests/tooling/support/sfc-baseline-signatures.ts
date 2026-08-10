@@ -27,18 +27,14 @@ export function blockSignature(descriptor: SfcDescriptor): unknown {
           value.type ?? null,
           value.lang ?? null,
           Object.entries(value.attrs ?? {}).sort(([left], [right]) => left.localeCompare(right)),
-          includeContent ? condense(value.content ?? "") : null,
+          includeContent ? (value.content ?? "") : null,
         ];
   return {
     template: block(descriptor.template),
     script: block(descriptor.script),
     scriptSetup: block(descriptor.scriptSetup),
-    styles: (descriptor.styles ?? [])
-      .map((value) => block(value))
-      .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
-    customBlocks: (descriptor.customBlocks ?? [])
-      .map((value) => block(value, true))
-      .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
+    styles: (descriptor.styles ?? []).map((value) => block(value)),
+    customBlocks: (descriptor.customBlocks ?? []).map((value) => block(value, true)),
   };
 }
 
@@ -77,10 +73,6 @@ export function normalizeCompilerMessages(messages: unknown[]): string[] {
 
 export function semanticSha256(signature: string): string {
   return sha256(signature);
-}
-
-function condense(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
 }
 
 function sha256(value: string | Buffer): string {

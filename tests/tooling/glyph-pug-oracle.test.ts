@@ -13,6 +13,7 @@ import { test } from "node:test";
 import {
   PUG_ORACLE_BASELINE,
   comparePugTemplateEquivalence,
+  isPugSfc,
 } from "./support/pug-template-equivalence.ts";
 
 const pugMutationBaseline = `<template lang="pug">
@@ -40,6 +41,27 @@ function temporaryPugContext() {
     },
   };
 }
+
+test("Pug routing reads only the top-level template start tag", () => {
+  assert.equal(isPugSfc('<template LANG="PUG">\nmain\n</template>\n', "App.vue"), true);
+  assert.equal(
+    isPugSfc(
+      '<script>const decoy = `<template lang="pug">`</script>\n<template><p /></template>\n',
+      "App.vue",
+    ),
+    false,
+  );
+  assert.equal(
+    isPugSfc('<!-- <template lang="pug"> -->\n<template><p /></template>\n', "App.vue"),
+    false,
+  );
+  // Routing must not invoke Vue 3's parser: this authored Vue 2 syntax is the
+  // exact crash that the dialect selector exists to send to Vue 2.6.
+  assert.equal(
+    isPugSfc('<template><div v-bind.sync="displayProperties" /></template>\n', "Legacy.vue"),
+    false,
+  );
+});
 
 test("Pug oracle pins provenance and accepts only an opaque outer-indent rebase", () => {
   assert.deepEqual(

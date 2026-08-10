@@ -87,7 +87,10 @@ impl<'a> GlyphFormatter<'a> {
         }
         for style in &descriptor.styles {
             let order = if self.options.sort_blocks {
-                if style.scoped { 3 } else { 4 }
+                // CSS cascade order is semantic. Canonicalize the style group
+                // after template, but let stable sorting retain authored order
+                // across scoped/module/plain style blocks.
+                3
             } else {
                 style.loc.tag_start
             };
@@ -95,7 +98,7 @@ impl<'a> GlyphFormatter<'a> {
         }
         for block in &descriptor.custom_blocks {
             let order = if self.options.sort_blocks {
-                5
+                4
             } else {
                 block.loc.tag_start
             };

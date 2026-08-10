@@ -44,11 +44,44 @@ test("legacy compiler signatures reject semantic mutations", () => {
     legacySource.replace('name="row"', 'name="other"'),
     legacySource.replace("first(1) | second", "second | first(2)"),
     legacySource.replace("<slot", '<div v-on="$listeners" /><slot'),
+    legacySource.replace(
+      "<p>{{ value | first(1) | second }}</p>",
+      "<p> {{ value | first(1) | second }} </p>",
+    ),
   ];
   for (const mutation of mutations) {
     const result = compareSfcWithDialectBaseline(legacySource, mutation, "Legacy.vue", "2");
     assert.equal(result.verdict, "semantic-diff", result.differences.join("\n"));
   }
+  assert.equal(
+    compareSfcWithDialectBaseline(
+      '<template><Widget :a="first()" :b="second()" /></template>\n',
+      '<template><Widget :b="second()" :a="first()" /></template>\n',
+      "Legacy.vue",
+      "2",
+    ).verdict,
+    "semantic-diff",
+  );
+});
+
+test("legacy baselines preserve native raw-text and v-pre bytes", () => {
+  for (const tag of ["pre", "textarea", "listing"]) {
+    const before = `<template><${tag}>  keep   me  </${tag}></template>\n`;
+    const after = `<template><${tag}> keep me </${tag}></template>\n`;
+    assert.equal(
+      compareSfcWithDialectBaseline(before, after, "Raw.vue", "2").verdict,
+      "semantic-diff",
+    );
+  }
+  assert.equal(
+    compareSfcWithDialectBaseline(
+      "<template><div v-pre>{{  raw   text  }}</div></template>\n",
+      "<template><div v-pre>{{ raw text }}</div></template>\n",
+      "Raw.vue",
+      "2",
+    ).verdict,
+    "semantic-diff",
+  );
 });
 
 test("Options and Class API fixtures retain their SFC block contract", () => {
