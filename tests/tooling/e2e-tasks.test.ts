@@ -107,6 +107,11 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     scripts["test:readiness:build"],
     "node --test --test-concurrency=1 snapshots/build/generic.ts snapshots/build/elk.ts",
   );
+  assert.equal(
+    scripts["test:readiness:check:vuefes"],
+    "node --test --test-concurrency=1 snapshots/check/vuefes.ts",
+    "VueFes authored diagnostics must run in an isolated readiness row",
+  );
   // nuxt-ui is the release gate that no pull request could exercise until it
   // joined this smoke: its SSR render output is what broke in #3736, twice, at
   // release time. Each spec gets its own Playwright run so one app's dev server

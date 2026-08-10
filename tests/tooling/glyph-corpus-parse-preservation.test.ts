@@ -217,6 +217,20 @@ test("glyph corpus parse-preservation comparator flags structural corruption", (
     ).join("\n"),
     /<div>\[0\]/,
   );
+  // The no-argument bind/on shorthands are the same merge boundaries as their
+  // longhand forms. Moving a named binding across either changes mergeProps.
+  for (const [before, after] of [
+    [
+      '<template><div title="before" :="rest" id="after" /></template>\n',
+      '<template><div :="rest" title="before" id="after" /></template>\n',
+    ],
+    [
+      '<template><button @click="before" @="listeners" @focus="after" /></template>\n',
+      '<template><button @="listeners" @click="before" @focus="after" /></template>\n',
+    ],
+  ]) {
+    assert.match(compareFile(before, after, "App.vue").join("\n"), /\[0\]/);
+  }
   // Rewriting interpolation content is corruption.
   assert.match(
     compareFile(

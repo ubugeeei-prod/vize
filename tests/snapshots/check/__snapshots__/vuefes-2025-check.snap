@@ -308,9 +308,77 @@
     {
       "file": "app/pages/tokusho/index.vue",
       "diagnostics": []
+    },
+    {
+      "file": "app/stores/animation.ts",
+      "diagnostics": [
+        "error:82:28 [TS7006] Parameter 'value' implicitly has an 'any' type."
+      ]
+    },
+    {
+      "file": "i18n/en/goods.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/en/related-events.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/en/speakers.ts",
+      "diagnostics": [
+        "error:34:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:35:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:57:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:58:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:73:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:74:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:100:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:101:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:118:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:119:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:140:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:141:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'."
+      ]
+    },
+    {
+      "file": "i18n/goods.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/ja/goods.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/ja/related-events.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/ja/speakers.ts",
+      "diagnostics": [
+        "error:34:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:35:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:57:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:58:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:73:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:74:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:100:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:101:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:118:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:119:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:140:28 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'.",
+        "error:141:31 [TS2339] Property 'vfFeatures' does not exist on type 'ImportMeta'."
+      ]
+    },
+    {
+      "file": "i18n/related-events.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "i18n/speaker.ts",
+      "diagnostics": []
     }
   ],
-  "errorCount": 17,
+  "errorCount": 42,
   "warningCount": 0,
-  "fileCount": 71
+  "fileCount": 81
 }

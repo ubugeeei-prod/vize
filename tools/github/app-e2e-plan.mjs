@@ -77,6 +77,15 @@ export const fullAppE2eRows = [
 
 export const readinessRows = [
   row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "5m"),
+  row(
+    "readiness",
+    "readiness",
+    "check-vuefes",
+    "test:readiness:check:vuefes",
+    ["vuefes-2025"],
+    false,
+    "2m",
+  ),
   row("readiness", "readiness", "lint", "test:readiness:lint", readinessFixtures, false, "2m"),
   row("readiness", "readiness", "build", "test:readiness:build", ["elk"], false, "3m"),
   row(
