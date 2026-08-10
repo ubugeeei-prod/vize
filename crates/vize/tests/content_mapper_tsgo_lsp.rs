@@ -28,6 +28,7 @@ struct RawInitialize;
 struct RawDiscoverContentMappers;
 struct RawCompletion;
 struct RawSignatureHelp;
+struct RawDocumentDiagnostic;
 struct RawHover;
 struct RawDefinition;
 struct RawReferences;
@@ -47,6 +48,7 @@ raw_request!(RawInitialize, "initialize");
 raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
 raw_request!(RawCompletion, "textDocument/completion");
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
+raw_request!(RawDocumentDiagnostic, "textDocument/diagnostic");
 raw_request!(RawHover, "textDocument/hover");
 raw_request!(RawDefinition, "textDocument/definition");
 raw_request!(RawReferences, "textDocument/references");
@@ -142,9 +144,9 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             assert_eq!(discovered["extensions"], json!([".vue"]), "{discovered:#}");
 
             let uri = Uri::from_str(&child_uri).unwrap();
-            client
-                .overlay()
-                .open(VirtualDocument::new(uri, "vue", source.as_str()))
+            let overlay = client.overlay();
+            overlay
+                .open(VirtualDocument::new(uri.clone(), "vue", source.as_str()))
                 .unwrap();
             let params =
                 json!({ "textDocument": { "uri": child_uri }, "position": symbol_position });
@@ -228,6 +230,34 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 "{rename:#}"
             );
             assert!(!rename_text.contains(".vue.ts"), "{rename:#}");
+
+            let diagnostic_params = json!({ "textDocument": { "uri": child_uri } });
+            let clean = client
+                .request::<RawDocumentDiagnostic>(diagnostic_params.clone())
+                .await
+                .unwrap();
+            assert_eq!(clean["items"], json!([]), "{clean:#}");
+
+            let broken_source = source.replace("count.toFixed(0)", "count.missing()");
+            overlay.replace(&uri, broken_source.as_str()).unwrap();
+            let broken = client
+                .request::<RawDocumentDiagnostic>(diagnostic_params.clone())
+                .await
+                .unwrap();
+            let broken_text = serde_json::to_string(&broken).unwrap();
+            assert!(
+                broken_text.contains("2339") && broken_text.contains("missing"),
+                "{broken:#}"
+            );
+            let missing = position(&broken_source, broken_source.find("missing").unwrap());
+            assert_eq!(broken["items"][0]["range"]["start"], missing, "{broken:#}");
+
+            overlay.replace(&uri, source.as_str()).unwrap();
+            let repaired = client
+                .request::<RawDocumentDiagnostic>(diagnostic_params)
+                .await
+                .unwrap();
+            assert_eq!(repaired["items"], json!([]), "{repaired:#}");
 
             stop.store(true, Ordering::Relaxed);
             client.close().await.unwrap();
