@@ -88,11 +88,13 @@ pub(super) fn generate_generic_props_call(
     // `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
     // Both lists are already sorted, so walking them together is enough.
     let mut spreads = usage.spread_props.iter().peekable();
+    let mut open_named_group = false;
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
+            close_named_group(ts, &mut open_named_group);
             append_spread_entry(
                 ts,
                 mappings,
@@ -154,11 +156,25 @@ pub(super) fn generate_generic_props_call(
         // the same inferred result and runtime order without manufacturing a
         // duplicate-property diagnostic. A trailing named prop stays direct,
         // so real duplicate named attributes are not hidden.
+        //
+        // The whole run of named props up to the next spread shares one
+        // singleton, rather than getting one each: `:count="1" :count="2"
+        // v-bind="bag"` stays `{ ...{ "count": 1, "count": 2 }, ...bag }`, so
+        // TypeScript still reports the authored duplicate (TS1117) inside the
+        // run. One singleton per prop would split the duplicates into separate
+        // literals and silently drop that diagnostic.
         let wrap_for_following_spread = spreads.peek().is_some();
 
-        append!(*ts, "{expr_indent}  ");
         if wrap_for_following_spread {
-            ts.push_str("...{ ");
+            if open_named_group {
+                ts.push_str(", ");
+            } else {
+                append!(*ts, "{expr_indent}  ...{{ ");
+                open_named_group = true;
+            }
+        } else {
+            close_named_group(ts, &mut open_named_group);
+            append!(*ts, "{expr_indent}  ");
         }
         // Map the whole `"prop": value` entry (key through value) back to the
         // source attribute. TypeScript reports an assignability error for an
@@ -170,9 +186,7 @@ pub(super) fn generate_generic_props_call(
         ts.push_str(": ");
         let value_gen_range = append_prop_value(ts, generated_value.as_str());
         let entry_gen_end = ts.len();
-        if wrap_for_following_spread {
-            ts.push_str(" },\n");
-        } else {
+        if !wrap_for_following_spread {
             ts.push_str(",\n");
         }
         // Without sub-spans the whole entry maps proportionally onto the whole
@@ -207,6 +221,7 @@ pub(super) fn generate_generic_props_call(
         });
     }
     for spread in spreads {
+        close_named_group(ts, &mut open_named_group);
         append_spread_entry(
             ts,
             mappings,
@@ -217,6 +232,7 @@ pub(super) fn generate_generic_props_call(
             expr_indent.as_str(),
         );
     }
+    close_named_group(ts, &mut open_named_group);
 
     append!(*ts, "{expr_indent}}}");
     let literal_gen_end = ts.len();
@@ -235,6 +251,17 @@ pub(super) fn generate_generic_props_call(
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
+    }
+}
+
+/// Terminate the singleton spread that holds the current run of named props,
+/// if one is open. Called before every following spread entry and once the
+/// literal is complete, so the run never swallows what the template authored
+/// after it.
+fn close_named_group(ts: &mut String, open: &mut bool) {
+    if *open {
+        ts.push_str(" },\n");
+        *open = false;
     }
 }
 

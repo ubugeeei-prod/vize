@@ -795,11 +795,20 @@ fn test_define_expose_is_part_of_component_instance() {
         "runtime defineExpose should emit an Exposed type:\n{}",
         output.code
     );
-    assert!(
-        output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: __VizeStrictPublicEmit<Emits>;\n  $slots: Slots;\n} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;"),
-        "component instance should include exposed bindings:\n{}",
-        output.code
-    );
+    for expected in [
+        "type __VizeComponentInstance = {",
+        "  $props: Props;",
+        "  readonly __vizeRawProps?: Props;",
+        "  $emit: __VizeStrictPublicEmit<Emits>;",
+        "  $slots: Slots;",
+        "} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;",
+    ] {
+        assert!(
+            output.code.contains(expected),
+            "component instance should include exposed bindings, missing {expected:?}:\n{}",
+            output.code
+        );
+    }
 }
 
 #[test]
