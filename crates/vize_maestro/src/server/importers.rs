@@ -188,19 +188,31 @@ fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathB
 }
 
 fn comparable_path(path: &Path) -> PathBuf {
-    std::fs::canonicalize(path).unwrap_or_else(|_| {
-        let mut normalized = PathBuf::new();
-        for component in path.components() {
-            match component {
-                Component::CurDir => {}
-                Component::ParentDir => {
-                    normalized.pop();
-                }
-                _ => normalized.push(component.as_os_str()),
-            }
+    let mut ancestor = path;
+    let mut unresolved = Vec::new();
+    while let Some(parent) = ancestor.parent() {
+        if let Some(name) = ancestor.file_name() {
+            unresolved.push(name.to_os_string());
         }
-        normalized
-    })
+        if let Ok(mut canonical) = std::fs::canonicalize(parent) {
+            for component in unresolved.into_iter().rev() {
+                canonical.push(component);
+            }
+            return canonical;
+        }
+        ancestor = parent;
+    }
+    let mut normalized = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            _ => normalized.push(component.as_os_str()),
+        }
+    }
+    normalized
 }
 
 fn source_type(lang: Option<&str>) -> SourceType {
