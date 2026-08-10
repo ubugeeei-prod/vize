@@ -1,7 +1,10 @@
 //! Clean command - Remove Vize-generated cache artifacts.
 
 use std::path::{Path, PathBuf};
-use std::{fs, io::ErrorKind};
+use std::{
+    fs,
+    io::{self, ErrorKind},
+};
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct CleanArgs {
@@ -104,10 +107,7 @@ fn managed_vize_artifact_paths(root: &Path, scope: CleanScope) -> Vec<PathBuf> {
     paths
 }
 
-fn force_vize_artifact_paths(
-    root: &Path,
-    scope: CleanScope,
-) -> Result<Vec<PathBuf>, std::io::Error> {
+fn force_vize_artifact_paths(root: &Path, scope: CleanScope) -> io::Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
     if matches!(scope, CleanScope::All | CleanScope::Project) {
         paths.push(project_vize_dir(root));

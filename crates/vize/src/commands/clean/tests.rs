@@ -1,6 +1,7 @@
 use super::{
-    CleanArgs, CleanScope, managed_vize_artifact_paths, node_modules_vize_artifact_paths,
-    node_modules_vize_dir, project_vize_artifact_paths, project_vize_dir, run,
+    CleanArgs, CleanScope, current_canon_artifact_paths, force_vize_artifact_paths,
+    managed_vize_artifact_paths, node_modules_vize_artifact_paths, node_modules_vize_dir,
+    project_vize_artifact_paths, project_vize_dir, run,
 };
 use std::path::Path;
 
@@ -139,6 +140,26 @@ fn clean_never_removes_a_foreign_canon_namespace() {
             "force={force} removed foreign Windows lock"
         );
     }
+}
+
+#[test]
+fn force_node_modules_paths_treat_a_missing_vize_directory_as_empty() {
+    let dir = tempfile::tempdir().unwrap();
+    assert_eq!(
+        force_vize_artifact_paths(dir.path(), CleanScope::NodeModules).unwrap(),
+        current_canon_artifact_paths(dir.path())
+    );
+}
+
+#[test]
+fn force_node_modules_paths_reject_a_non_directory_vize_path() {
+    let dir = tempfile::tempdir().unwrap();
+    let node_modules = dir.path().join("node_modules");
+    std::fs::create_dir_all(&node_modules).unwrap();
+    std::fs::write(node_modules.join(".vize"), "not a directory").unwrap();
+
+    let error = force_vize_artifact_paths(dir.path(), CleanScope::NodeModules).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::NotADirectory);
 }
 
 #[test]
