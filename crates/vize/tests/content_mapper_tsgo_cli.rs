@@ -226,6 +226,14 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
             && broken_output.contains("not assignable to type 'number'"),
         "{broken_output}"
     );
+    for script_error in ["errors/JavaScriptConsumer.js", "errors/JsxConsumer.jsx"] {
+        assert!(
+            broken_output
+                .lines()
+                .any(|line| line.contains(script_error) && line.contains("TS2322")),
+            "{script_error} was not checked:\n{broken_output}"
+        );
+    }
     assert!(
         broken_output.contains("src/Unused.vue")
             && broken_output.contains("TS6133")

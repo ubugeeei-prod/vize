@@ -1,9 +1,13 @@
 {
   "compilerOptions": {
     "strict": true,
+    "allowJs": true,
+    "checkJs": true,
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
