@@ -1,9 +1,9 @@
 use std::path::Path;
 
 use super::{
-    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
-    CONTENT_MAPPER_SPAN_FEATURES_COMPLETION, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
-    ContentMapperSpanKind, generate_vue_content_mapper_transform,
+    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
+    CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL, ContentMapperSpanKind,
+    generate_vue_content_mapper_transform,
 };
 
 #[test]
@@ -37,7 +37,7 @@ const handler = (value: number) => value;
         mapping.0[2] == original
             && mapping.0[3] == "sa".len()
             && mapping.0[4] == ContentMapperSpanKind::Atom as usize
-            && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_ATOM
+            && mapping.0[5] == 0
     }));
 }
 
@@ -234,5 +234,53 @@ import ModelChild from "./ModelChild.vue";
     }));
     assert!(parent.mappings.iter().any(|mapping| {
         mapping.0[0] == navigation && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
+    }));
+}
+
+#[test]
+fn emits_dynamic_generic_event_navigation_inside_the_v_for_scope() {
+    let source = r#"<script setup lang="ts">
+import NestedGenericChild from "./NestedGenericChild.vue";
+const values = ["nested"] as const;
+const handleSelect = (value: "nested") => value;
+</script>
+<template>
+  <NestedGenericChild
+    v-for="value in values"
+    :key="value"
+    :value="value"
+    @select="handleSelect"
+  />
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let resolver = result
+        .text
+        .find("const __vize_events_resolved_0")
+        .expect("event resolver");
+    let closure = result.text[..resolver]
+        .rfind("// Component props in v-for scope")
+        .expect("component prop v-for closure");
+
+    assert!(closure < resolver, "{}", result.text);
+    assert!(
+        result.text[resolver..].contains("\"value\": value"),
+        "{}",
+        result.text
+    );
+    assert_eq!(
+        result
+            .text
+            .matches("const __vize_events_resolved_0")
+            .count(),
+        1
+    );
+
+    let original = source.find("@select").unwrap() + 1;
+    assert!(result.mappings.iter().any(|mapping| {
+        mapping.0[2] == original
+            && mapping.0[3] == "select".len()
+            && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_ALL
     }));
 }

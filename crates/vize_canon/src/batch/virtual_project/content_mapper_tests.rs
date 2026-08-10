@@ -4,6 +4,7 @@ use super::ContentMapperSpanKind;
 use super::span_features::{
     CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
     CONTENT_MAPPER_SPAN_FEATURES_COMPLETION, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
+    content_mapper_span_features,
 };
 use crate::batch::{
     ContentMapperTransformOptions, generate_vue_content_mapper_transform,
@@ -14,6 +15,21 @@ use crate::batch::{
 mod component_exports;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
+
+#[test]
+fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
+    let generated = "  const __vize_handler_1_2: unknown = handler;";
+    let start = generated.find("__vize_handler_").unwrap();
+
+    assert_eq!(
+        content_mapper_span_features(generated, start, ContentMapperSpanKind::Atom),
+        0
+    );
+    assert_eq!(
+        content_mapper_span_features(generated, start, ContentMapperSpanKind::Verbatim),
+        CONTENT_MAPPER_SPAN_FEATURES_ALL
+    );
+}
 
 #[test]
 fn emits_protocol_v1_spans_without_forbidden_overlaps() {
