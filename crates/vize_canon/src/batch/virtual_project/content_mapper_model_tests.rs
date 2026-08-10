@@ -116,9 +116,9 @@ defineModel<string>("title", { required: true });
         result.text
     );
     assert!(
-        result
-            .text
-            .contains("__VizeComponentInputProps<__VizeResolvedProps, __EmitProps<Emits>>"),
+        result.text.contains(
+            "__VizeComponentInput<__VizeResolvedProps, __EmitProps<Emits>, __VizeAuthoredProps>"
+        ),
         "text:\n{}",
         result.text
     );

@@ -50,6 +50,7 @@ type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T
 type __VizeMissingRequiredInputKeys<T, Authored, K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : __VizeKebabCase<K> extends keyof Authored ? never : K : never;
 type __VizeExtraInputKeys<Allowed, Authored> = Exclude<keyof Authored, keyof Allowed>;
 type __VizeComponentInputGuard<T, Declared, Authored> = T extends unknown ? [__VizeMissingRequiredInputKeys<T, Authored> | __VizeExtraInputKeys<__VizeComponentInputProps<T, Declared>, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: __VizeMissingRequiredInputKeys<T, Authored>; readonly extra: __VizeExtraInputKeys<__VizeComponentInputProps<T, Declared>, Authored>; } } : never;
+type __VizeComponentInput<T, Declared, Authored> = [Authored] extends [unknown] ? __VizeComponentInputProps<T, Declared> & __VizeComponentInputGuard<T, Declared, Authored> : never;
 type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
@@ -104,7 +105,7 @@ function __setup() {
     emit('update', 42)
   }
   
-  // @vize-map: 9106:9208 -> 0:163
+  // @vize-map: 9287:9389 -> 0:163
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -157,8 +158,8 @@ type __VizeComponentInstance = {
   $emit: __VizeStrictPublicEmit<Emits>;
   $slots: Slots;
 } & __VizeComponentPublicBase;
-type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
-$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props, __EmitProps<Emits>> & __VizeComponentInputGuard<Props, __EmitProps<Emits>, __VizeAuthoredProps>;
+type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
+$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInput<Props, __EmitProps<Emits>, __VizeAuthoredProps>;
 };
 type __VizeVueComponentOptions = {
   name?: string;
