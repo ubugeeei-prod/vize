@@ -69,20 +69,59 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
 
 /// Whether the `.` at `dot` is the decimal point of a numeric literal rather
 /// than a member-access operator.
+///
+/// Only a literal that can still take a decimal point owns the dot, and that is
+/// a bare run of decimal digits (`1.`, `1_000.`). Every other numeric spelling
+/// has already ended by the time the `.` arrives, so the dot reads a member off
+/// the finished number: a decimal point the literal already spent
+/// (`1.5.toFixed`, `.5.toFixed`), an exponent (`1e3.toFixed`, `1e-3.toFixed`), a
+/// radix prefix (`0xFF.toString`), or the BigInt suffix (`1n.toString`).
 #[cfg(feature = "native")]
 fn is_decimal_point(content: &str, dot: usize) -> bool {
     let start = identifier_start(content, dot);
+    let token = &content[start..dot];
     // A digit-led token before the `.` is the integer part of a literal, which
     // covers every fragment of one (`1.`, `1.5`, `1.na`). An identifier that
     // merely contains digits (`foo1.bar`) is still a member read, so this tests
     // the start of the token, not the character next to the dot.
-    if !content[start..dot].starts_with(|ch: char| ch.is_ascii_digit()) {
+    if !token.starts_with(|ch: char| ch.is_ascii_digit()) {
         return false;
     }
-    // Unless the literal already spent its decimal point, in which case this
-    // `.` reads a member off the finished number (`1.5.toFixed`).
-    let before = &content[..start];
-    !(before.ends_with('.') && before[..before.len() - 1].ends_with(|ch: char| ch.is_ascii_digit()))
+    // Anything other than decimal digits inside that token closed the literal
+    // before the dot: a radix prefix (`0xFF`), an exponent indicator (`1e3`), or
+    // the BigInt suffix (`1n`). None of those can take a decimal point.
+    if !token
+        .bytes()
+        .all(|byte| byte.is_ascii_digit() || byte == b'_')
+    {
+        return false;
+    }
+    // Those digits can still be the tail of a literal that ended before them,
+    // in which case the `.` reads a member too.
+    !closes_numeric_literal(&content[..start])
+}
+
+/// Whether the text ending right before a run of decimal digits already closed
+/// the numeric literal those digits belong to.
+#[cfg(feature = "native")]
+fn closes_numeric_literal(before: &str) -> bool {
+    // A decimal point the literal already spent (`1.5.`, `.5.`): the scan back
+    // over identifier characters stops at that dot, so the digits behind the
+    // caret's dot are only the fraction.
+    if before.ends_with('.') {
+        return true;
+    }
+    // A signed exponent (`1e-3.`, `1E+3.`): the sign is not an identifier
+    // character, so those digits are only the exponent. The `e` has to belong to
+    // a number rather than to an identifier, so `abcde-3.` stays a decimal point.
+    let Some(mantissa) = before
+        .strip_suffix(|ch: char| ch == '+' || ch == '-')
+        .and_then(|signed| signed.strip_suffix(|ch: char| ch == 'e' || ch == 'E'))
+    else {
+        return false;
+    };
+    mantissa[identifier_start(mantissa, mantissa.len())..]
+        .starts_with(|ch: char| ch.is_ascii_digit())
 }
 
 /// Walk back from `end` over identifier characters and return the token start.
@@ -266,6 +305,8 @@ mod member_access_tests {
         assert!(!is_member_access("{{ 1.| }}"));
         assert!(!is_member_access("{{ 1.na| }}"));
         assert!(!is_member_access("{{ 42.toStrin| }}"));
+        // Separators do not close the integer part either.
+        assert!(!is_member_access("{{ 1_000.toStrin| }}"));
     }
 
     #[test]
@@ -277,5 +318,26 @@ mod member_access_tests {
         assert!(is_member_access("{{ 42..| }}"));
         assert!(is_member_access("{{ 42 .toStrin| }}"));
         assert!(is_member_access("{{ 1.5.toFixe| }}"));
+    }
+
+    #[test]
+    fn literals_that_cannot_take_a_decimal_point_read_members() {
+        // An exponent ends the literal, so the `.` after it is a member read
+        // even though the digits next to it look like an integer part.
+        assert!(is_member_access("{{ 1e3.toFixe| }}"));
+        assert!(is_member_access("{{ 1e-3.toFixe| }}"));
+        assert!(is_member_access("{{ 1E+3.toFixe| }}"));
+        assert!(is_member_access("{{ 1.5e-3.toFixe| }}"));
+        // A leading-dot decimal already spent its decimal point.
+        assert!(is_member_access("{{ .5.toFixe| }}"));
+        // Non-decimal radices have no decimal point to spend.
+        assert!(is_member_access("{{ 0xFF.toStrin| }}"));
+        assert!(is_member_access("{{ 0b11.toStrin| }}"));
+        assert!(is_member_access("{{ 0o17.toStrin| }}"));
+        // Neither does a BigInt.
+        assert!(is_member_access("{{ 1n.toStrin| }}"));
+        // The `e` still has to belong to a number: `abcde - 3.foo` is an
+        // identifier minus a numeric literal, not an exponent.
+        assert!(!is_member_access("{{ abcde-3.toFixe| }}"));
     }
 }
