@@ -191,7 +191,12 @@ fn collect_script_dependencies(
             resolved.dependencies.push(dependency);
         }
         for dependency in resolved.dependencies {
-            dependencies.insert(dependency);
+            // Package lookups intentionally retain logical paths so a future
+            // symlink can be observed. Normalize them at the index boundary,
+            // where lookups use the same comparable spelling; this also
+            // collapses platform aliases such as macOS `/var` -> `/private/var`
+            // without erasing the resolver's logical package identity.
+            dependencies.insert(comparable_path(&dependency));
         }
     }
 }

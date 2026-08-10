@@ -22,7 +22,7 @@ pub(super) fn versioned_open_typecheck_dependents<'a>(
     // source path without waiting for the user to type in the importer.
     for dependent in &dependents {
         if let Some(content) = state.documents.text(dependent) {
-            state.open_vue_imports.update(dependent, &content);
+            state.open_imports.update(dependent, &content);
         }
     }
     dependents
@@ -78,7 +78,7 @@ mod tests {
 
     use tower_lsp::lsp_types::Url;
 
-    use super::{ServerState, versioned_open_vue_dependents};
+    use super::{ServerState, versioned_open_typecheck_dependents};
 
     #[test]
     fn package_manifest_event_reindexes_the_retargeted_vue_source() {
@@ -106,12 +106,12 @@ mod tests {
         write_manifest(&package, "Renamed.vue");
         let manifest_uri = Url::from_file_path(package.join("package.json")).unwrap();
         assert_eq!(
-            versioned_open_vue_dependents(&state, [manifest_uri.as_str()].into_iter()),
+            versioned_open_typecheck_dependents(&state, [manifest_uri.as_str()].into_iter()),
             [(parent_uri.clone(), 1)]
         );
         let renamed_uri = Url::from_file_path(renamed.canonicalize().unwrap()).unwrap();
         assert_eq!(
-            versioned_open_vue_dependents(&state, [renamed_uri.as_str()].into_iter()),
+            versioned_open_typecheck_dependents(&state, [renamed_uri.as_str()].into_iter()),
             [(parent_uri, 1)],
             "the manifest refresh must index the new physical target",
         );

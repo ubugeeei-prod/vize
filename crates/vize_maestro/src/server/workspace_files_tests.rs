@@ -1,13 +1,13 @@
 use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
 
 use super::{
-    ServerState, global_component_watcher_registration, record_created_files, record_deleted_files,
-    record_watcher_support,
+    ServerState, record_created_files, record_deleted_files, record_watcher_support,
+    typecheck_dependency_watcher_registration,
 };
 
 #[test]
 fn declaration_watcher_tracks_create_change_and_delete_recursively() {
-    let registration = global_component_watcher_registration();
+    let registration = typecheck_dependency_watcher_registration();
     assert_eq!(registration.method, "workspace/didChangeWatchedFiles");
     let options = registration.register_options.unwrap();
     assert_eq!(options["watchers"][0]["globPattern"], "**/*.d.{ts,mts,cts}");
