@@ -29,7 +29,8 @@ napi = [
   "vize_atelier_sfc/native",
   "glyph",
 ]
-wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys", "glyph"]
+workerd = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys"]
+wasm = ["workerd", "glyph"]
 
 [dependencies]
 vize_carton = { workspace = true }

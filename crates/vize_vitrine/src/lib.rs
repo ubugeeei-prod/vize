@@ -13,10 +13,10 @@ pub mod napi;
 #[path = "napi/lint_fix.rs"]
 mod lint_fix_tests;
 
-#[cfg(feature = "wasm")]
+#[cfg(any(feature = "wasm", feature = "workerd"))]
 pub mod wasm;
 
-#[cfg(any(feature = "napi", feature = "wasm"))]
+#[cfg(any(feature = "napi", feature = "wasm", feature = "workerd"))]
 mod template_syntax;
 pub mod typecheck;
 pub mod types;

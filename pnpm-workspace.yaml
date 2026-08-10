@@ -14,6 +14,7 @@ packages:
   - "examples/vite-musea"
   - "examples/oxlint-vize"
   - "examples/jsx-tsx"
+  - "examples/cloudflare-worker"
   - "docs"
   - "tests"
   - "bench"
@@ -166,6 +167,7 @@ catalogs:
     "@napi-rs/cli": "3.6.2"
     "@nuxt/kit": "4.5.2"
     "@ox-content/vite-plugin": "2.81.0"
+    wrangler: "4.120.0"
 
   # Runtime kit loaded by @vizejs/nuxt. Keep this aligned with Nuxt 2 Bridge's
   # kit line so Nuxt 2's module loader does not pull in Nuxt 4-only syntax.
@@ -216,3 +218,4 @@ allowBuilds:
   puppeteer: false
   unrs-resolver: false
   vue-demi: false
+  workerd: false

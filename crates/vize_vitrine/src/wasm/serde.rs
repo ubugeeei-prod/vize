@@ -19,6 +19,7 @@ pub(crate) fn to_json_js_value<T: Serialize>(value: &T) -> Result<JsValue, JsVal
 /// Convert a UTF-8 byte offset to a JavaScript string offset (UTF-16 code units).
 /// OXC and the SFC parser report byte offsets, while Monaco/JS consumers expect
 /// UTF-16 offsets.
+#[cfg(feature = "wasm")]
 pub(crate) fn utf8_byte_to_utf16_offset(content: &str, byte_offset: u32) -> u32 {
     let byte_offset = byte_offset as usize;
     if byte_offset >= content.len() {

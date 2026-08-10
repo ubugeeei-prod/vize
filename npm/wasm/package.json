@@ -1,7 +1,7 @@
 {
   "name": "@vizejs/wasm",
   "version": "0.348.0",
-  "description": "Vize WASM bindings for browser environments",
+  "description": "Vize WASM bindings for browser and Cloudflare Workers environments",
   "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
     "url": "https://github.com/ubugeeei-prod/vize/issues"
@@ -16,9 +16,15 @@
     "index.js",
     "index.d.ts",
     "lint-format.d.ts",
+    "README.md",
+    "workerd.js",
+    "workerd.d.ts",
     "vize_vitrine_bg.wasm",
     "vize_vitrine.js",
     "vize_vitrine.d.ts",
+    "vize_workerd_bg.wasm",
+    "vize_workerd.js",
+    "vize_workerd.d.ts",
     "snippets/**"
   ],
   "type": "module",
@@ -38,7 +44,13 @@
       "import": "./vize_vitrine.js",
       "default": "./vize_vitrine.js"
     },
-    "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm"
+    "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm",
+    "./workerd": {
+      "types": "./workerd.d.ts",
+      "import": "./workerd.js",
+      "default": "./workerd.js"
+    },
+    "./wasm.wasm": "./vize_workerd_bg.wasm"
   },
   "publishConfig": {
     "access": "public"

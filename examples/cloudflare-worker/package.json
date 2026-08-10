@@ -1,0 +1,19 @@
+{
+  "name": "vize-cloudflare-worker-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "check": "pnpm test && pnpm test:runtime && pnpm build",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --remote",
+    "test": "node --test src/handler.test.js",
+    "test:runtime": "node scripts/test-runtime.mjs"
+  },
+  "dependencies": {
+    "@vizejs/wasm": "workspace:*"
+  },
+  "devDependencies": {
+    "wrangler": "catalog:integrations"
+  }
+}

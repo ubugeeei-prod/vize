@@ -170,6 +170,23 @@ inputs alongside the other checked examples.
 
 ---
 
+## Cloudflare Workers Example
+
+`examples/cloudflare-worker/` runs the focused `@vizejs/wasm` compiler artifact inside workerd. It
+includes a JSON `compileSfc` endpoint, request-handler tests, a Wrangler dry-run size check, and
+deployment instructions.
+
+```bash
+moon run --target native tools/moon/cmd/build_vize_wasm_package --
+vp install
+vp run --filter vize-cloudflare-worker-example check
+```
+
+See [the example README](./cloudflare-worker/README.md) for local remote-preview, deployment, and
+request examples.
+
+---
+
 ## Vite + Musea Example
 
 The `examples/vite-musea/` directory contains a sample component gallery built with Vite + Musea.

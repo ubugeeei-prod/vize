@@ -21,6 +21,9 @@ test("wasm package smoke validates exports, init guards, and runtime APIs", asyn
   copyRepoFile(packageDir, "npm/wasm/index.js");
   copyRepoFile(packageDir, "npm/wasm/index.d.ts");
   copyRepoFile(packageDir, "npm/wasm/lint-format.d.ts");
+  copyRepoFile(packageDir, "npm/wasm/README.md");
+  copyRepoFile(packageDir, "npm/wasm/workerd.js");
+  copyRepoFile(packageDir, "npm/wasm/workerd.d.ts");
   fs.writeFileSync(path.join(packageDir, "vize_vitrine.d.ts"), "export {};\n");
   fs.writeFileSync(
     path.join(packageDir, "vize_vitrine_bg.wasm"),
@@ -107,6 +110,8 @@ export function compileSfc(_source, options = {}) {
 }
 export function compileJsx() {}
 export function compileCss() {}
+export function parseCssAst() {}
+export function printCssAst() {}
 export function lintSfc(_source, options = {}) {
   return {
     filename: options.filename ?? "anonymous.vue",
@@ -129,6 +134,15 @@ export function formatSfc(source) {
 }
 `,
   );
+  fs.copyFileSync(
+    path.join(packageDir, "vize_vitrine.js"),
+    path.join(packageDir, "vize_workerd.js"),
+  );
+  fs.writeFileSync(path.join(packageDir, "vize_workerd.d.ts"), "export {};\n");
+  fs.writeFileSync(
+    path.join(packageDir, "vize_workerd_bg.wasm"),
+    Buffer.from([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]),
+  );
 
   await smokeWasmPackage(packageDir);
 });
@@ -137,6 +151,7 @@ test("wasm package smoke fails when wrapper entrypoint is missing", async () => 
   const packageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-wasm-smoke-missing-"));
 
   copyRepoFile(packageDir, "npm/wasm/package.json");
+  copyRepoFile(packageDir, "npm/wasm/README.md");
   fs.writeFileSync(path.join(packageDir, "index.d.ts"), "export {};\n");
   fs.writeFileSync(
     path.join(packageDir, "vize_vitrine.js"),
@@ -144,6 +159,14 @@ test("wasm package smoke fails when wrapper entrypoint is missing", async () => 
   );
   fs.writeFileSync(path.join(packageDir, "vize_vitrine.d.ts"), "export {};\n");
   fs.writeFileSync(path.join(packageDir, "vize_vitrine_bg.wasm"), "");
+  copyRepoFile(packageDir, "npm/wasm/workerd.js");
+  copyRepoFile(packageDir, "npm/wasm/workerd.d.ts");
+  fs.copyFileSync(
+    path.join(packageDir, "vize_vitrine.js"),
+    path.join(packageDir, "vize_workerd.js"),
+  );
+  fs.writeFileSync(path.join(packageDir, "vize_workerd.d.ts"), "export {};\n");
+  fs.writeFileSync(path.join(packageDir, "vize_workerd_bg.wasm"), "");
 
   await assert.rejects(() => smokeWasmPackage(packageDir), /index\.js is missing/);
 });
@@ -155,6 +178,20 @@ test("wasm package declarations type-check a strict consumer", (t) => {
   copyRepoFile(packageDir, "npm/wasm/package.json");
   copyRepoFile(packageDir, "npm/wasm/index.d.ts");
   copyRepoFile(packageDir, "npm/wasm/lint-format.d.ts");
+  copyRepoFile(packageDir, "npm/wasm/workerd.d.ts");
+  fs.writeFileSync(
+    path.join(packageDir, "vize_workerd.d.ts"),
+    `export declare class Compiler {}
+export declare function compile(source: string, options?: object): object;
+export declare function compileCss(source: string, options?: object): object;
+export declare function compileSfc(source: string, options?: object): object;
+export declare function compileVapor(source: string, options?: object): object;
+export declare function parseCssAst(source: string, options?: object): object;
+export declare function parseSfc(source: string, options?: object): object;
+export declare function parseTemplate(source: string, options?: object): object;
+export declare function printCssAst(ast: object, options?: object): object;
+`,
+  );
   t.after(() => fs.rmSync(consumerDir, { force: true, recursive: true }));
 
   fs.writeFileSync(
@@ -168,8 +205,12 @@ test("wasm package declarations type-check a strict consumer", (t) => {
   type FormatResult,
   type LintResult,
 } from "@vizejs/wasm";
+import { instantiate, type VizeWorkerdBinding } from "@vizejs/wasm/workerd";
 
 void init();
+declare const compiledWasm: WebAssembly.Module;
+const workerdBinding: Promise<Readonly<VizeWorkerdBinding>> = instantiate(compiledWasm);
+void workerdBinding;
 
 const bindingMetadata: BindingMetadata = {
   bindings: { message: "setup-ref" },

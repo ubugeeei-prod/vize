@@ -7,14 +7,21 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { gzipSync } from "node:zlib";
 
 const REQUIRED_FILES = [
   "index.js",
   "index.d.ts",
   "lint-format.d.ts",
+  "README.md",
+  "workerd.js",
+  "workerd.d.ts",
   "vize_vitrine.js",
   "vize_vitrine.d.ts",
   "vize_vitrine_bg.wasm",
+  "vize_workerd.js",
+  "vize_workerd.d.ts",
+  "vize_workerd_bg.wasm",
 ];
 
 const EXPECTED_EXPORTS = [
@@ -55,6 +62,9 @@ function assertManifest(packageJson) {
   assert.equal(packageJson.exports?.["./vize_vitrine.js"]?.import, "./vize_vitrine.js");
   assert.equal(packageJson.exports?.["./vize_vitrine.js"]?.types, "./vize_vitrine.d.ts");
   assert.equal(packageJson.exports?.["./vize_vitrine_bg.wasm"], "./vize_vitrine_bg.wasm");
+  assert.equal(packageJson.exports?.["./workerd"]?.import, "./workerd.js");
+  assert.equal(packageJson.exports?.["./workerd"]?.types, "./workerd.d.ts");
+  assert.equal(packageJson.exports?.["./wasm.wasm"], "./vize_workerd_bg.wasm");
 
   for (const file of REQUIRED_FILES) {
     assert.ok(packageJson.files?.includes(file), `package files must include ${file}`);
@@ -176,11 +186,32 @@ async function assertEntryPoint(packageDir) {
   assert.equal(formatResult.changed, true);
 }
 
+async function assertWorkerdEntryPoint(packageDir) {
+  const entry = await import(
+    `${pathToFileURL(path.join(packageDir, "workerd.js")).href}?smoke=${Date.now()}`
+  );
+  assert.deepEqual(Object.keys(entry), ["instantiate"]);
+
+  const bytes = fs.readFileSync(path.join(packageDir, "vize_workerd_bg.wasm"));
+  assert.ok(
+    gzipSync(bytes, { level: 9 }).byteLength < 3 * 1024 * 1024,
+    "workerd artifact must fit the Cloudflare Workers free-plan compressed size limit",
+  );
+  const module = await WebAssembly.compile(bytes);
+  const first = entry.instantiate(module);
+  const second = entry.instantiate(module);
+  assert.equal(first, second, "warm requests should reuse the same initialization promise");
+
+  const binding = await first;
+  assertCompilerOptions(binding);
+}
+
 export async function smokeWasmPackage(packageDir) {
   const packageJson = readPackageJson(packageDir);
   assertManifest(packageJson);
   assertFilesExist(packageDir);
   await assertEntryPoint(packageDir);
+  await assertWorkerdEntryPoint(packageDir);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
