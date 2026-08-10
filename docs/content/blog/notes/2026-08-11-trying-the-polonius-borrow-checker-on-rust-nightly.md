@@ -137,9 +137,9 @@ These three are real Problem Case #3. The natural formulation is rejected by NLL
 
 **None of these are fixed in this PR, and that is deliberate.** Vize pins stable 1.95.0 in `rust-toolchain.toml`, in CI, and in every crate's `rust-version`. Writing any of them in the natural form would break the stable build immediately. They are recorded here so the eventual toolchain bump has a ready-made worklist.
 
-### What we could delete today: 5 sites
+### What we could delete today: 6 sites
 
-Separately, the audit found five workarounds that were never required by NLL in the first place. These are fixed in this PR, and each was verified to compile on stable 1.95.0:
+Separately, the audit found six workarounds that were never required by NLL in the first place. These are fixed in this PR, and each was verified to compile on stable 1.95.0:
 
 - `vize_croquis`, `scope/chain/resolution.rs` (two sites) — cloned a `SmallVec` of parent scope IDs before iterating. A shared reborrow works; the loop body only touches locals.
 - `vize_croquis`, `call_graph/analysis.rs` (two sites) — built an intermediate `Vec` of `(index, bool)` pairs before writing back. An index loop reads the `Copy` field, does the lookup, and writes in place, with no allocation.
@@ -165,6 +165,6 @@ What we bought with this experiment is certainty about that future bump:
 - The entire workspace already borrow-checks cleanly under the new default and under the stricter `-Zpolonius=next`.
 - The cost for this workspace is measured, not guessed: about 5% more CPU on a full clean check, less in any incremental flow.
 - Three specific sites are queued for simplification the day Polonius stabilizes, with the failing error code recorded for each.
-- Five gratuitous workarounds are already gone, independent of any toolchain change.
+- Six gratuitous workarounds are already gone, independent of any toolchain change.
 
 When stabilization lands, the toolchain bump PR can point at this note instead of re-running the investigation.
