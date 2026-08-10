@@ -17,6 +17,10 @@ Use this section for writing that does not fit a release announcement: architect
 ## Posts
 
 <div class="blog-post-list">
+  <a class="blog-post-list-item" href="./2026-08-11-trying-the-polonius-borrow-checker-on-rust-nightly/">
+    <strong>Polonius on Nightly</strong>
+    <span>Rust's next-generation borrow checker is now on by default on nightly. We ran the whole Vize workspace through it, measured what it costs, and audited every borrow-checker workaround in the codebase.</span>
+  </a>
   <a class="blog-post-list-item" href="./2026-06-07-real-world-testing/">
     <strong>Real World Testing</strong>
     <span>Vize enters the Real World Testing phase — real projects are the test suite now, with a clear roadmap to v1.0.0.</span>
