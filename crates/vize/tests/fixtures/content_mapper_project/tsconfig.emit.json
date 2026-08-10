@@ -7,9 +7,11 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
+    "noUnusedLocals": true,
     "rootDir": "src",
     "outDir": "dist"
   },
   "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/Unused.vue"]
 }

@@ -122,6 +122,29 @@ export default { data() { return { count: 1 } } }
 }
 
 #[test]
+fn transform_honors_no_unused_locals_compiler_option() {
+    let source = r#"<script setup lang="ts">
+const used = 1
+const unused = 2
+</script>
+<template>{{ used }}</template>
+"#;
+    let input = frames(&[
+        initialize_request(),
+        transform_request_with_compiler_options(2, source, json!({ "noUnusedLocals": true })),
+        transform_request_with_compiler_options(3, source, json!({ "noUnusedLocals": false })),
+    ]);
+    let responses = exchange(&input);
+    let preserving = responses[1]["result"]["text"].as_str().unwrap();
+    let suppressing = responses[2]["result"]["text"].as_str().unwrap();
+
+    assert!(preserving.contains("void used;"), "{preserving}");
+    assert!(!preserving.contains("void unused;"), "{preserving}");
+    assert!(suppressing.contains("void used;"), "{suppressing}");
+    assert!(suppressing.contains("void unused;"), "{suppressing}");
+}
+
+#[test]
 fn transform_defaults_options_api_on_for_absent_null_and_empty_options() {
     let source = r#"<script lang="ts">
 export default { data() { return { count: 1 } } }
@@ -213,6 +236,23 @@ fn transform_request(id: u8, content: &str, options: Value) -> Value {
             "content": content,
             "options": options,
             "compilerOptions": {}
+        }
+    })
+}
+
+fn transform_request_with_compiler_options(
+    id: u8,
+    content: &str,
+    compiler_options: Value,
+) -> Value {
+    json!({
+        "jsonrpc": "2.0",
+        "id": id,
+        "method": "transform",
+        "params": {
+            "fileName": "Unused.vue",
+            "content": content,
+            "compilerOptions": compiler_options
         }
     })
 }

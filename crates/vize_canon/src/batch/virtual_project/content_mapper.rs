@@ -43,18 +43,23 @@ pub struct ContentMapperTransform {
     pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
 
-/// Vize-specific settings supplied through a TypeScript content-mapper entry's
-/// `options` object.
+/// Settings resolved from a TypeScript content-mapper entry and its declared
+/// compiler-option dependencies.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct ContentMapperTransformOptions {
     /// Resolve Vue Options API instance bindings in templates.
     options_api: bool,
+    /// Preserve diagnostics for user-authored unused locals.
+    preserve_unused_diagnostics: bool,
 }
 
 impl Default for ContentMapperTransformOptions {
     fn default() -> Self {
-        Self { options_api: true }
+        Self {
+            options_api: true,
+            preserve_unused_diagnostics: false,
+        }
     }
 }
 
@@ -70,6 +75,13 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn options_api(self) -> bool {
         self.options_api
+    }
+
+    /// Preserve diagnostics for user-authored unused locals.
+    #[must_use]
+    pub const fn with_preserve_unused_diagnostics(mut self, enabled: bool) -> Self {
+        self.preserve_unused_diagnostics = enabled;
+        self
     }
 }
 
@@ -140,7 +152,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
-            preserve_unused_diagnostics: false,
+            preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
             legacy_vue2: false,

@@ -97,6 +97,9 @@
       "node",
       "./bin/vize",
       "content-mapper"
+    ],
+    "compilerOptions": [
+      "noUnusedLocals"
     ]
   }
 }

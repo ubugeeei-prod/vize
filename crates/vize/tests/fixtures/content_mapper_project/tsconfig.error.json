@@ -4,6 +4,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "noUnusedLocals": true,
     "noEmit": true
   },
   "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
