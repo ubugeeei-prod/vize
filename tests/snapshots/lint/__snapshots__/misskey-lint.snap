@@ -887,17 +887,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 28,
-        "column": 36,
-        "endLine": 28,
-        "endColumn": 58,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -953,7 +942,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 13
+    "warningCount": 12
   },
   {
     "file": "src/components/MkAutocomplete.vue",
@@ -13618,17 +13607,6 @@
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 12,
-        "column": 4,
-        "endLine": 12,
-        "endColumn": 31,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -13641,33 +13619,11 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/components/MkTagCloud.vue",
     "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 8,
-        "column": 28,
-        "endLine": 8,
-        "endColumn": 42,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 9,
-        "column": 23,
-        "endLine": 9,
-        "endColumn": 35,
-        "help": "Reorder attributes to follow the recommended order"
-      },
       {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -13681,7 +13637,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "src/components/MkTagItem.vue",
@@ -17819,17 +17775,6 @@
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 12,
-        "column": 4,
-        "endLine": 12,
-        "endColumn": 31,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -17842,7 +17787,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/components/global/MkPageHeader.vue",
@@ -19735,17 +19680,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 23,
-        "column": 33,
-        "endLine": 23,
-        "endColumn": 48,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -19758,7 +19692,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/pages/about.overview.vue",
@@ -21660,17 +21594,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 25,
-        "column": 35,
-        "endLine": 25,
-        "endColumn": 54,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/sfc-element-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -21683,7 +21606,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/pages/admin/files.vue",
@@ -29700,17 +29623,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 15,
-        "column": 59,
-        "endLine": 15,
-        "endColumn": 75,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -29789,7 +29701,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "src/pages/flash/flash.vue",
@@ -37208,17 +37120,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 59,
-        "column": 12,
-        "endLine": 59,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -37240,17 +37141,6 @@
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 79,
-        "column": 12,
-        "endLine": 79,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -37270,17 +37160,6 @@
         "endLine": 96,
         "endColumn": 50,
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 99,
-        "column": 12,
-        "endLine": 99,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/permitted-contents",
@@ -37315,17 +37194,6 @@
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 130,
-        "column": 12,
-        "endLine": 130,
-        "endColumn": 33,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -37347,17 +37215,6 @@
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 150,
-        "column": 12,
-        "endLine": 150,
-        "endColumn": 33,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -37377,17 +37234,6 @@
         "endLine": 167,
         "endColumn": 49,
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 170,
-        "column": 12,
-        "endLine": 170,
-        "endColumn": 33,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/permitted-contents",
@@ -37434,7 +37280,7 @@
       }
     ],
     "errorCount": 10,
-    "warningCount": 15
+    "warningCount": 9
   },
   {
     "file": "src/pages/settings/webhook.edit.vue",
@@ -41210,17 +41056,6 @@
         "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 34,
-        "column": 8,
-        "endLine": 34,
-        "endColumn": 17,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -41244,7 +41079,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/ui/deck/antenna-column.vue",

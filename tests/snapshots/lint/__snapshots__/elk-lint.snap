@@ -778,21 +778,9 @@
   },
   {
     "file": "app/components/common/dropdown/Dropdown.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 25,
-        "column": 30,
-        "endLine": 25,
-        "endColumn": 44,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/common/dropdown/DropdownItem.vue",
@@ -807,21 +795,10 @@
         "endLine": 64,
         "endColumn": 7,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 54,
-        "column": 5,
-        "endLine": 54,
-        "endColumn": 13,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/content/ContentCode.vue",
@@ -1556,17 +1533,6 @@
     "file": "app/components/nav/button/MoreMenu.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 7,
-        "column": 38,
-        "endLine": 7,
-        "endColumn": 54,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1579,7 +1545,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/nav/button/Notification.vue",
@@ -2199,17 +2165,6 @@
     "file": "app/components/report/ReportModal.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 138,
-        "column": 15,
-        "endLine": 138,
-        "endColumn": 40,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2232,17 +2187,6 @@
         "help": "Use CSS border instead."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 194,
-        "column": 15,
-        "endLine": 194,
-        "endColumn": 42,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2255,7 +2199,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 3
   },
   {
     "file": "app/components/search/SearchAccountInfo.vue",
@@ -2535,21 +2479,9 @@
   },
   {
     "file": "app/components/status/StatusActionButton.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 52,
-        "column": 21,
-        "endLine": 52,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/status/StatusActions.vue",
@@ -2886,17 +2818,6 @@
     "file": "app/components/status/StatusLink.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 40,
-        "column": 5,
-        "endLine": 40,
-        "endColumn": 13,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "a11y/no-static-element-interactions",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2909,7 +2830,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/status/StatusMedia.vue",
@@ -3714,17 +3635,6 @@
         "help": "Use CSS border instead."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 148,
-        "column": 13,
-        "endLine": 148,
-        "endColumn": 24,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3737,7 +3647,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "app/components/user/UserSignInEntry.vue",

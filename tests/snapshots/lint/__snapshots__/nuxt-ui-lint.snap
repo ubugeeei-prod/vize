@@ -3,17 +3,6 @@
     "file": "src/runtime/components/Accordion.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 109,
-        "column": 7,
-        "endLine": 109,
-        "endColumn": 19,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -26,7 +15,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Alert.vue",
@@ -65,21 +54,9 @@
   },
   {
     "file": "src/runtime/components/AuthForm.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 273,
-        "column": 15,
-        "endLine": 273,
-        "endColumn": 42,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Avatar.vue",
@@ -308,21 +285,9 @@
   },
   {
     "file": "src/runtime/components/Checkbox.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 121,
-        "column": 9,
-        "endLine": 121,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/CheckboxGroup.vue",
@@ -408,17 +373,6 @@
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 528,
-        "column": 53,
-        "endLine": 528,
-        "endColumn": 66,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
@@ -453,7 +407,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 8
+    "warningCount": 7
   },
   {
     "file": "src/runtime/components/Container.vue",
@@ -510,21 +464,9 @@
   },
   {
     "file": "src/runtime/components/DashboardPanel.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 58,
-        "column": 5,
-        "endLine": 58,
-        "endColumn": 13,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/DashboardResizeHandle.vue",
@@ -546,21 +488,9 @@
   },
   {
     "file": "src/runtime/components/DashboardSidebar.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 178,
-        "column": 5,
-        "endLine": 178,
-        "endColumn": 13,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/DashboardSidebarCollapse.vue",
@@ -700,21 +630,10 @@
         "endLine": 290,
         "endColumn": 47,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 389,
-        "column": 7,
-        "endLine": 389,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Footer.vue",
@@ -742,21 +661,9 @@
   },
   {
     "file": "src/runtime/components/Form.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 461,
-        "column": 5,
-        "endLine": 461,
-        "endColumn": 18,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/FormField.vue",
@@ -778,21 +685,9 @@
   },
   {
     "file": "src/runtime/components/Input.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 188,
-        "column": 7,
-        "endLine": 188,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/InputDate.vue",
@@ -809,17 +704,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 184,
-        "column": 5,
-        "endLine": 184,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -832,7 +716,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/InputMenu.vue",
@@ -871,28 +755,6 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 617,
-        "column": 13,
-        "endLine": 617,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 630,
-        "column": 9,
-        "endLine": 630,
-        "endColumn": 23,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -905,70 +767,36 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/InputNumber.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/InputTags.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
+        "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 190,
-        "column": 7,
-        "endLine": 190,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 159,
+        "column": 5,
+        "endLine": 159,
+        "endColumn": 34,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
     "warningCount": 1
   },
   {
-    "file": "src/runtime/components/InputTags.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 159,
-        "column": 5,
-        "endLine": 159,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/v-slot-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 159,
-        "column": 5,
-        "endLine": 159,
-        "endColumn": 34,
-        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 2
-  },
-  {
     "file": "src/runtime/components/InputTime.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 142,
-        "column": 5,
-        "endLine": 142,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -981,7 +809,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Kbd.vue",
@@ -1111,39 +939,16 @@
         "endLine": 461,
         "endColumn": 75,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 532,
-        "column": 9,
-        "endLine": 532,
-        "endColumn": 78,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/OverlayProvider.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 26,
-        "column": 5,
-        "endLine": 26,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Page.vue",
@@ -1418,21 +1223,10 @@
         "endLine": 299,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 311,
-        "column": 7,
-        "endLine": 311,
-        "endColumn": 23,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/SelectMenu.vue",
@@ -1447,17 +1241,6 @@
         "endLine": 511,
         "endColumn": 47,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 568,
-        "column": 5,
-        "endLine": 568,
-        "endColumn": 34,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -1483,7 +1266,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "src/runtime/components/Separator.vue",
@@ -1517,57 +1300,21 @@
   },
   {
     "file": "src/runtime/components/Slider.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 113,
-        "column": 5,
-        "endLine": 113,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Stepper.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 147,
-        "column": 35,
-        "endLine": 147,
-        "endColumn": 61,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Switch.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 116,
-        "column": 9,
-        "endLine": 116,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Table.vue",
@@ -1617,21 +1364,9 @@
   },
   {
     "file": "src/runtime/components/Textarea.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 217,
-        "column": 7,
-        "endLine": 217,
-        "endColumn": 24,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/Theme.vue",
@@ -2256,17 +1991,6 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 87,
-        "column": 46,
-        "endLine": 87,
-        "endColumn": 65,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2301,7 +2025,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "src/runtime/components/prose/Kbd.vue",

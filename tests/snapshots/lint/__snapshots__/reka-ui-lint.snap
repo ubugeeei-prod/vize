@@ -264,21 +264,9 @@
   },
   {
     "file": "packages/core/src/Autocomplete/AutocompleteRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 253,
-        "column": 7,
-        "endLine": 253,
-        "endColumn": 43,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Autocomplete/story/_Autocomplete.vue",
@@ -293,21 +281,10 @@
         "endLine": 20,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 23,
-        "column": 5,
-        "endLine": 23,
-        "endColumn": 16,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Avatar/AvatarFallback.vue",
@@ -511,17 +488,6 @@
     "file": "packages/core/src/Calendar/story/CalendarPopover.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 28,
-        "column": 9,
-        "endLine": 28,
-        "endColumn": 24,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -578,22 +544,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarSelect.story.vue",
     "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 203,
-        "column": 11,
-        "endLine": 203,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -607,7 +562,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarValidation.story.vue",
@@ -772,17 +727,6 @@
     "file": "packages/core/src/Checkbox/CheckboxRoot.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 138,
-        "column": 5,
-        "endLine": 138,
-        "endColumn": 80,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "a11y/interactive-supports-focus",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -795,7 +739,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Checkbox/story/Checkbox.story.vue",
@@ -889,21 +833,10 @@
         "endLine": 14,
         "endColumn": 15,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 20,
-        "column": 5,
-        "endLine": 20,
-        "endColumn": 25,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Checkbox/story/_CheckboxGroup.vue",
@@ -918,36 +851,14 @@
         "endLine": 13,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 16,
-        "column": 5,
-        "endLine": 16,
-        "endColumn": 25,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Collapsible/CollapsibleContent.vue",
     "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 99,
-        "column": 5,
-        "endLine": 99,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
-      },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -961,7 +872,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Collapsible/CollapsibleRoot.vue",
@@ -1038,17 +949,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 29,
-        "column": 7,
-        "endLine": 29,
-        "endColumn": 22,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1061,7 +961,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/ColorField/ColorFieldInput.vue",
@@ -1148,21 +1048,9 @@
   },
   {
     "file": "packages/core/src/ColorSlider/ColorSliderRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 201,
-        "column": 5,
-        "endLine": 201,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/ColorSlider/ColorSliderThumb.vue",
@@ -1268,21 +1156,9 @@
   },
   {
     "file": "packages/core/src/ColorSwatchPicker/ColorSwatchPickerRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 40,
-        "column": 5,
-        "endLine": 40,
-        "endColumn": 25,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/ColorSwatchPicker/story/ColorSwatchPickerDemo.story.vue",
@@ -1381,21 +1257,9 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxItem.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 82,
-        "column": 5,
-        "endLine": 82,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Combobox/ComboboxItemIndicator.vue",
@@ -1417,21 +1281,9 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 254,
-        "column": 7,
-        "endLine": 254,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Combobox/ComboboxSeparator.vue",
@@ -1550,17 +1402,6 @@
     "file": "packages/core/src/Combobox/story/ComboboxSelectMenu.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 41,
-        "column": 9,
-        "endLine": 41,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -1573,7 +1414,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxVirtual.story.vue",
@@ -1606,21 +1447,10 @@
         "endLine": 25,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 28,
-        "column": 5,
-        "endLine": 28,
-        "endColumn": 16,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/_ComboboxManualFilter.vue",
@@ -1635,21 +1465,10 @@
         "endLine": 24,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 27,
-        "column": 5,
-        "endLine": 27,
-        "endColumn": 16,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/_ComboboxObject.vue",
@@ -1664,21 +1483,10 @@
         "endLine": 19,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 22,
-        "column": 5,
-        "endLine": 22,
-        "endColumn": 16,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ConfigProvider/ConfigProvider.vue",
@@ -1844,21 +1652,9 @@
   },
   {
     "file": "packages/core/src/DateField/DateFieldRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 288,
-        "column": 5,
-        "endLine": 288,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldChromatic.story.vue",
@@ -1895,17 +1691,6 @@
         "endLine": 73,
         "endColumn": 30,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 100,
-        "column": 9,
-        "endLine": 100,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -1964,7 +1749,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldDefault.story.vue",
@@ -2174,17 +1959,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 17,
-        "column": 5,
-        "endLine": 17,
-        "endColumn": 20,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2197,7 +1971,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerAnchor.vue",
@@ -2562,21 +2336,9 @@
   },
   {
     "file": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 381,
-        "column": 5,
-        "endLine": 381,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DateRangeField/story/DateRangeFieldChromatic.story.vue",
@@ -2629,17 +2391,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 17,
-        "column": 5,
-        "endLine": 17,
-        "endColumn": 20,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -2652,7 +2403,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/DateRangeField/story/_DummyDateRangeField.vue",
@@ -3601,21 +3352,9 @@
   },
   {
     "file": "packages/core/src/Editable/EditableRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 223,
-        "column": 5,
-        "endLine": 223,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Editable/EditableSubmitTrigger.vue",
@@ -3964,21 +3703,9 @@
   },
   {
     "file": "packages/core/src/Listbox/ListboxItem.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 79,
-        "column": 7,
-        "endLine": 79,
-        "endColumn": 43,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Listbox/ListboxItemIndicator.vue",
@@ -4989,75 +4716,27 @@
   },
   {
     "file": "packages/core/src/NumberField/NumberFieldDecrement.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 33,
-        "column": 5,
-        "endLine": 33,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/NumberField/NumberFieldIncrement.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 33,
-        "column": 5,
-        "endLine": 33,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/NumberField/NumberFieldInput.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 63,
-        "column": 5,
-        "endLine": 63,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/NumberField/NumberFieldRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 225,
-        "column": 5,
-        "endLine": 225,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/NumberField/story/NumberField.story.vue",
@@ -5084,21 +4763,10 @@
         "endLine": 9,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 12,
-        "column": 5,
-        "endLine": 12,
-        "endColumn": 22,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Pagination/PaginationEllipsis.vue",
@@ -5243,21 +4911,10 @@
         "endLine": 15,
         "endColumn": 19,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 18,
-        "column": 5,
-        "endLine": 18,
-        "endColumn": 20,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Popover/PopoverAnchor.vue",
@@ -5576,21 +5233,10 @@
         "endLine": 13,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 22,
-        "column": 9,
-        "endLine": 22,
-        "endColumn": 19,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Presence/story/_Toggle.vue",
@@ -5863,17 +5509,6 @@
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarPopover.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 25,
-        "column": 9,
-        "endLine": 25,
-        "endColumn": 42,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -5930,7 +5565,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarValidation.story.vue",
@@ -6042,17 +5677,6 @@
     "file": "packages/core/src/Rating/story/RatingDefault.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 21,
-        "column": 11,
-        "endLine": 21,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -6076,7 +5700,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Rating/story/_Rating.vue",
@@ -6852,21 +6476,10 @@
         "endLine": 17,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 20,
-        "column": 5,
-        "endLine": 20,
-        "endColumn": 26,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/SplitterGroup.vue",
@@ -7202,17 +6815,6 @@
     "file": "packages/core/src/TagsInput/story/TagsInputCombobox.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 35,
-        "column": 13,
-        "endLine": 35,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7225,7 +6827,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TagsInput/story/TagsInputObject.story.vue",
@@ -7264,21 +6866,10 @@
         "endLine": 15,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 18,
-        "column": 5,
-        "endLine": 18,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Teleport/Teleport.vue",
@@ -7306,21 +6897,9 @@
   },
   {
     "file": "packages/core/src/TimeField/TimeFieldRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 341,
-        "column": 5,
-        "endLine": 341,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldChromatic.story.vue",
@@ -7357,17 +6936,6 @@
         "endLine": 72,
         "endColumn": 30,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 99,
-        "column": 9,
-        "endLine": 99,
-        "endColumn": 29,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/v-slot-style",
@@ -7426,7 +6994,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldDefault.story.vue",
@@ -7614,17 +7182,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 18,
-        "column": 5,
-        "endLine": 18,
-        "endColumn": 20,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7637,7 +7194,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/TimeRangeField/TimeRangeFieldInput.vue",
@@ -7659,21 +7216,9 @@
   },
   {
     "file": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 446,
-        "column": 5,
-        "endLine": 446,
-        "endColumn": 27,
-        "help": "Reorder attributes to follow the recommended order"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldChromatic.story.vue",
@@ -7755,17 +7300,6 @@
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 18,
-        "column": 5,
-        "endLine": 18,
-        "endColumn": 20,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7778,7 +7312,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Toast/FocusProxy.vue",
@@ -7844,17 +7378,6 @@
     "file": "packages/core/src/Toast/ToastRoot.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 58,
-        "column": 7,
-        "endLine": 58,
-        "endColumn": 50,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -7911,7 +7434,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/Toast/ToastRootImpl.vue",
@@ -8010,17 +7533,6 @@
     "file": "packages/core/src/Toast/story/ToastMultiple.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 27,
-        "column": 9,
-        "endLine": 27,
-        "endColumn": 31,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8033,7 +7545,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/story/_Toast.vue",
@@ -8069,17 +7581,6 @@
     "file": "packages/core/src/ToggleGroup/ToggleGroupItem.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 41,
-        "column": 7,
-        "endLine": 41,
-        "endColumn": 25,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8092,7 +7593,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ToggleGroup/ToggleGroupRoot.vue",
@@ -8444,17 +7945,6 @@
     "file": "packages/core/src/Tree/story/TreeCheckbox.story.vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 18,
-        "column": 9,
-        "endLine": 18,
-        "endColumn": 25,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8489,7 +7979,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Tree/story/TreeNested.story.vue",
