@@ -10,8 +10,11 @@ mod project;
 pub(super) mod rename;
 mod semantic_links;
 
-pub(crate) use open::open_canonical_virtual_document;
-pub(crate) use project::open_canonical_virtual_project_document;
+pub(crate) use open::{open_canonical_virtual_document, open_canonical_virtual_document_strict};
+pub(crate) use project::{
+    CanonicalProjectOpenError, open_canonical_virtual_project_document,
+    open_canonical_virtual_project_document_strict,
+};
 pub(crate) use rename::{
     map_canonical_corsa_workspace_edit, map_canonical_prepare_rename,
     merge_canonical_workspace_edits,

@@ -124,8 +124,13 @@ impl CorsaProjectClient {
 
     /// Drop the editor session so the next request respawns it after a project
     /// session transition.
-    pub(in crate::lsp_client) fn retire_editor_lsp(&mut self) {
+    pub(in crate::lsp_client) fn retire_editor_lsp(&mut self) -> Result<(), String> {
+        let result = match self.editor_lsp.as_mut() {
+            Some(session) => session.shutdown(),
+            None => Ok(()),
+        };
         self.editor_lsp = None;
         self.editor_lsp_documents_dirty = true;
+        result
     }
 }

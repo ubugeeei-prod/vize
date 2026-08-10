@@ -10,7 +10,7 @@ metadata.vize.stability = "compatibility-preview"
 
 [features]
 default = ["native"]
-native = ["dep:walkdir", "dep:dirs", "dep:corsa", "dep:lsp-types"]
+native = ["dep:walkdir", "dep:dirs", "dep:corsa", "dep:corsa_lsp", "dep:lsp-types"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
 # default Vue 3 build; turns on the parser-side legacy feature too.
 legacy = ["vize_armature/legacy", "vize_atelier_jsx/legacy"]
@@ -49,6 +49,7 @@ tracing.workspace = true
 dirs = { workspace = true, optional = true }
 thiserror.workspace = true
 corsa = { workspace = true, optional = true }
+corsa_lsp = { workspace = true, optional = true }
 sha2.workspace = true
 
 [target.'cfg(unix)'.dependencies]

@@ -85,15 +85,16 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        if let Some(session) = self.session.take() {
-            let _ = corsa::runtime::block_on(session.close());
-        }
-        self.retire_editor_lsp();
+        let project_result = self.session.take().map_or(Ok(()), |session| {
+            corsa::runtime::block_on(session.close())
+                .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
+        });
+        let editor_result = self.retire_editor_lsp();
         self.document_texts.clear();
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
-        Ok(())
+        project_result.and(editor_result)
     }
 
     /// Open a virtual document.

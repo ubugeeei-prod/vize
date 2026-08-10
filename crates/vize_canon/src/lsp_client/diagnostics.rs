@@ -8,12 +8,8 @@ use super::{
     utils::convert_diagnostics,
 };
 use crate::file_uri::file_uri_to_path;
-use corsa::{
-    CorsaError,
-    jsonrpc::InboundEvent,
-    lsp::{LspClient, LspSpawnConfig, VirtualDocument},
-    runtime::block_on,
-};
+use corsa::{CorsaError, runtime::block_on};
+use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportResult, Uri};
 use std::{
     str::FromStr,
@@ -555,14 +551,14 @@ fn spawn_lsp_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread:
 }
 
 fn cleanup_lsp_session(
-    _overlay: &corsa::lsp::LspOverlay,
+    _overlay: &LspOverlay,
     _opened_documents: &[(String, Uri)],
     stop: Arc<AtomicBool>,
     responder: std::thread::JoinHandle<()>,
     client: &LspClient,
 ) {
+    let _ = block_on(client.graceful_close());
     stop.store(true, Ordering::Relaxed);
-    let _ = block_on(client.close());
     let _ = responder.join();
 }
 

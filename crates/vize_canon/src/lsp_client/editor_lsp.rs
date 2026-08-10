@@ -14,11 +14,8 @@ use super::{
     CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
     language_id::for_uri as language_id_for_uri,
 };
-use corsa::{
-    jsonrpc::InboundEvent,
-    lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument},
-    runtime::block_on,
-};
+use corsa::runtime::block_on;
+use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::Uri;
 use serde_json::Value;
 use std::{
@@ -48,6 +45,7 @@ pub(super) struct EditorLspSession {
     overlay: LspOverlay,
     stop: Arc<AtomicBool>,
     responder: Option<std::thread::JoinHandle<()>>,
+    closed: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: FxHashMap<String, String>,
 }
@@ -73,6 +71,7 @@ impl EditorLspSession {
             client,
             stop,
             responder: Some(responder),
+            closed: false,
             documents: Default::default(),
         })
     }
@@ -254,15 +253,40 @@ impl EditorLspSession {
         )
         .map_err(|error| cstr!("Failed to request editor LSP signature help: {error}"))
     }
+
+    /// Complete the standard LSP lifecycle before closing and reaping the
+    /// owned process. The responder remains alive until `shutdown` returns so
+    /// server-initiated requests cannot deadlock the final response.
+    fn shutdown(&mut self) -> Result<(), String> {
+        if self.closed {
+            return Ok(());
+        }
+
+        let mut first_error = None;
+        if let Err(error) = block_on(self.client.graceful_close()) {
+            first_error = Some(cstr!(
+                "Failed to gracefully close editor LSP process: {error}"
+            ));
+        }
+        self.stop.store(true, Ordering::Relaxed);
+        if let Some(responder) = self.responder.take()
+            && responder.join().is_err()
+            && first_error.is_none()
+        {
+            first_error = Some(cstr!("Editor LSP responder panicked during shutdown"));
+        }
+        self.closed = true;
+
+        match first_error {
+            Some(error) => Err(error),
+            None => Ok(()),
+        }
+    }
 }
 
 impl Drop for EditorLspSession {
     fn drop(&mut self) {
-        self.stop.store(true, Ordering::Relaxed);
-        let _ = block_on(self.client.close());
-        if let Some(responder) = self.responder.take() {
-            let _ = responder.join();
-        }
+        let _ = self.shutdown();
     }
 }
 

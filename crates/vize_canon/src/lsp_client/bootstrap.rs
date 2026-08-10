@@ -129,7 +129,6 @@ impl CorsaProjectClient {
         self.materialized_project_session = true;
         // The overlay root moved, so the editor session must be respawned
         // against the materialized tree on the next request.
-        self.retire_editor_lsp();
-        Ok(())
+        self.retire_editor_lsp()
     }
 }

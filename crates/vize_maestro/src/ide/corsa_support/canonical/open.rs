@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
-use vize_canon::{CorsaBridge, CorsaVueVirtualDocumentOptions};
+use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueVirtualDocumentOptions};
 
 use super::{CanonicalDependencyDocument, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
@@ -11,24 +11,39 @@ pub(crate) async fn open_canonical_virtual_document(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
 ) -> Option<CanonicalVirtualDocument> {
+    open_canonical_virtual_document_strict(ctx, bridge)
+        .await
+        .ok()
+        .flatten()
+}
+
+/// Open the canonical document while preserving bridge failures for strict
+/// editor-feature callers. The lenient wrapper above retains the production
+/// fallback contract used by hover, completion, and definition.
+pub(crate) async fn open_canonical_virtual_document_strict(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
         .map(|(path, content)| (path.clone(), &**content))
         .collect::<Vec<_>>();
-    open_canonical_virtual_document_with_overlays(ctx, bridge, &overlays).await
+    open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays).await
 }
 
-pub(super) async fn open_canonical_virtual_document_with_overlays(
+pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
     overlays: &[(PathBuf, &str)],
-) -> Option<CanonicalVirtualDocument> {
+) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
-        return None;
+        return Ok(None);
     }
 
-    let source_path = ctx.uri.to_file_path().ok()?;
+    let Some(source_path) = ctx.uri.to_file_path().ok() else {
+        return Ok(None);
+    };
     let opened = bridge
         .open_vue_virtual_document_with_borrowed_overlays_and_options(
             &source_path,
@@ -41,8 +56,7 @@ pub(super) async fn open_canonical_virtual_document_with_overlays(
             overlays,
             &vize_canon::virtual_ts::VirtualTsOptions::default(),
         )
-        .await
-        .ok()?;
+        .await?;
 
     let dependencies = opened
         .dependencies
@@ -67,7 +81,7 @@ pub(super) async fn open_canonical_virtual_document_with_overlays(
         })
         .collect();
 
-    Some(CanonicalVirtualDocument {
+    Ok(Some(CanonicalVirtualDocument {
         request_uri: opened.request_uri,
         virtual_result: VirtualTsResult {
             code: opened.code.to_string(),
@@ -80,5 +94,5 @@ pub(super) async fn open_canonical_virtual_document_with_overlays(
             skipped_import_lines: 0,
         },
         dependencies,
-    })
+    }))
 }

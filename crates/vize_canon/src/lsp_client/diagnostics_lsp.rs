@@ -1,5 +1,6 @@
 use crate::file_uri::path_to_file_uri;
-use corsa::{lsp::LspClient, runtime::block_on};
+use corsa::runtime::block_on;
+use corsa_lsp::LspClient;
 use lsp_types::{DocumentDiagnosticReportResult, Uri};
 use std::path::Path;
 use vize_carton::{String, cstr};
