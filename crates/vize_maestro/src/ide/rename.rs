@@ -9,6 +9,8 @@
 #[cfg(feature = "native")]
 mod canonical;
 #[cfg(all(test, feature = "native"))]
+mod corsa_model_tests;
+#[cfg(all(test, feature = "native"))]
 mod corsa_tests;
 
 use std::collections::HashMap;
