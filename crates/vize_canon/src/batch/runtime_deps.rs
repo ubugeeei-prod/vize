@@ -85,7 +85,7 @@ fn package_link_source(source: &Path) -> PathBuf {
     vize_carton::path::canonicalize_non_verbatim(source)
 }
 
-fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
+pub(crate) fn write_vue_facade(node_modules_dir: &Path) -> std::io::Result<()> {
     let vue_dir = node_modules_dir.join("vue");
     ensure_stub_dir(&vue_dir)?;
     write_if_changed(
@@ -121,7 +121,7 @@ fn link_vue_runtime_dom_package(
     )
 }
 
-fn write_vue_runtime_dom_stub(node_modules_dir: &Path) -> std::io::Result<()> {
+pub(crate) fn write_vue_runtime_dom_stub(node_modules_dir: &Path) -> std::io::Result<()> {
     let vue_namespace_dir = node_modules_dir.join("@vue");
     ensure_stub_dir(&vue_namespace_dir)?;
     let runtime_dom_dir = vue_namespace_dir.join("runtime-dom");

@@ -157,12 +157,8 @@ pub(super) fn generate_generic_props_call(
         // duplicate-property diagnostic. A trailing named prop stays direct,
         // so real duplicate named attributes are not hidden.
         //
-        // The whole run of named props up to the next spread shares one
-        // singleton, rather than getting one each: `:count="1" :count="2"
-        // v-bind="bag"` stays `{ ...{ "count": 1, "count": 2 }, ...bag }`, so
-        // TypeScript still reports the authored duplicate (TS1117) inside the
-        // run. One singleton per prop would split the duplicates into separate
-        // literals and silently drop that diagnostic.
+        // Keep each named run in one singleton so authored duplicate props stay
+        // in the same object literal and TypeScript still reports TS1117.
         let wrap_for_following_spread = spreads.peek().is_some();
 
         if wrap_for_following_spread {
@@ -254,10 +250,6 @@ pub(super) fn generate_generic_props_call(
     }
 }
 
-/// Terminate the singleton spread that holds the current run of named props,
-/// if one is open. Called before every following spread entry and once the
-/// literal is complete, so the run never swallows what the template authored
-/// after it.
 fn close_named_group(ts: &mut String, open: &mut bool) {
     if *open {
         ts.push_str(" },\n");
