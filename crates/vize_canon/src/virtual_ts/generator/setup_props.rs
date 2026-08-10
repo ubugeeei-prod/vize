@@ -1,9 +1,8 @@
 use vize_carton::{String, append, cstr, profile};
 use vize_croquis::Croquis;
 
-use super::generics::{
-    generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
-};
+use super::generics::generic_fallback_args;
+use super::setup_scope::define_props_type_requires_setup_scope;
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
     OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
@@ -12,89 +11,6 @@ use crate::virtual_ts::props::{
 };
 
 pub(super) use crate::virtual_ts::props::prop_source;
-
-fn is_identifier_start_byte(b: u8) -> bool {
-    b == b'_' || b == b'$' || b.is_ascii_alphabetic()
-}
-
-fn collect_typeof_root_identifiers(source: &str) -> Vec<&str> {
-    let bytes = source.as_bytes();
-    let mut idents = Vec::new();
-    let mut from = 0usize;
-
-    while let Some(rel) = source[from..].find("typeof") {
-        let at = from + rel;
-        let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
-        let after_keyword = at + "typeof".len();
-        let after_ok = after_keyword >= bytes.len() || !is_ident_byte(bytes[after_keyword]);
-        if !before_ok || !after_ok {
-            from = after_keyword;
-            continue;
-        }
-
-        let ident_start = skip_ascii_ws(bytes, after_keyword);
-        if ident_start >= bytes.len() || !is_identifier_start_byte(bytes[ident_start]) {
-            from = after_keyword;
-            continue;
-        }
-
-        let mut ident_end = ident_start + 1;
-        while ident_end < bytes.len() && is_ident_byte(bytes[ident_end]) {
-            ident_end += 1;
-        }
-
-        let ident = &source[ident_start..ident_end];
-        if ident != "import" {
-            idents.push(ident);
-        }
-        from = ident_end;
-    }
-
-    idents
-}
-
-fn binding_is_import(summary: &Croquis, name: &str) -> bool {
-    summary.binding_spans.get(name).is_some_and(|(start, end)| {
-        summary
-            .import_statements
-            .iter()
-            .any(|imp| *start >= imp.start && *end <= imp.end)
-    })
-}
-
-fn is_setup_value_binding(summary: &Croquis, name: &str) -> bool {
-    summary.bindings.bindings.contains_key(name) && !binding_is_import(summary, name)
-}
-
-pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
-    let Some(type_args) = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref())
-    else {
-        return false;
-    };
-    let inner_type = type_args
-        .strip_prefix('<')
-        .and_then(|s| s.strip_suffix('>'))
-        .unwrap_or(type_args.as_str());
-
-    if collect_typeof_root_identifiers(inner_type)
-        .into_iter()
-        .any(|name| is_setup_value_binding(summary, name))
-    {
-        return true;
-    }
-
-    let non_hoisted_type_names: Vec<String> = summary
-        .type_exports
-        .iter()
-        .filter(|te| !te.hoisted)
-        .map(|te| te.name.as_str().into())
-        .collect();
-    !non_hoisted_type_names.is_empty()
-        && references_any_identifier(inner_type, &non_hoisted_type_names)
-}
 
 /// Build the setup props plan and emit the module-level props type in one step.
 /// Keeps `generator.rs` from re-threading `options_api_props` through a second

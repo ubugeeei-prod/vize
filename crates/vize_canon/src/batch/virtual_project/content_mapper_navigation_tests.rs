@@ -114,3 +114,43 @@ defineEmits<{ save: [value: number] }>();
         result.text
     );
 }
+
+#[test]
+fn maps_the_emits_alias_only_when_it_resolves_from_module_scope() {
+    let module_scoped = r#"<script setup lang="ts">
+import type { Emits as Authored } from "./types";
+defineEmits<Authored>();
+</script>
+<template><button /></template>
+"#;
+    assert!(
+        emits_alias_is_mapped(module_scoped),
+        "an imported emits type stays navigable from the module-scope alias"
+    );
+
+    // The alias sits outside `__setup`, so it cannot see a setup-scope type.
+    // Mapping it would report the synthetic "cannot find name" on the macro.
+    let setup_scoped = r#"<script setup lang="ts">
+import type { GetFormResult } from "./types";
+const definition = { transparent: false };
+type WidgetProps = GetFormResult<typeof definition>;
+defineEmits<WidgetProps>();
+</script>
+<template><button /></template>
+"#;
+    assert!(
+        !emits_alias_is_mapped(setup_scoped),
+        "a setup-scope emits type must not map onto the authored macro"
+    );
+}
+
+fn emits_alias_is_mapped(source: &str) -> bool {
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Child.vue"), source).expect("transform");
+    let alias = result.text.find("export type Emits").expect("Emits alias");
+    let end = alias + result.text[alias..].find(";\n").expect("alias terminator");
+    result
+        .mappings
+        .iter()
+        .any(|mapping| mapping.0[0] >= alias && mapping.0[0] + mapping.0[1] <= end)
+}

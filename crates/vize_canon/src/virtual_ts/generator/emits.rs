@@ -2,6 +2,7 @@ use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
 use super::generics::module_alias_generic_suffix;
+use super::setup_scope::macro_type_requires_setup_scope;
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
     macro_type_mappings::MacroTypeMappings,
@@ -229,7 +230,14 @@ pub(super) fn emit_emits_type(
         }
     }
 
-    if summary.macros.emits().is_empty() {
+    // The `Emits` alias lives at module scope, so mapping it back onto the
+    // authored macro only makes sense when the authored type resolves from
+    // there. `defineEmits<Emits<typeof state>>` and friends read setup-scope
+    // names the alias cannot see, and mapping that region would report the
+    // synthetic "cannot find name" on valid SFC source (#4074).
+    let emits_type_is_module_scoped = define_emits_type_args
+        .is_some_and(|type_args| !macro_type_requires_setup_scope(summary, type_args));
+    if summary.macros.emits().is_empty() && emits_type_is_module_scoped {
         mappings.map_exported_type(ts, generated_start, summary.macros.define_emits(), "Emits");
     }
     if preserve_event_navigation && has_emits_for_props {

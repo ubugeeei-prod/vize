@@ -17,6 +17,7 @@ mod options_api_support;
 mod script_module;
 mod setup_helpers;
 mod setup_props;
+mod setup_scope;
 mod setup_type_exports;
 mod spans;
 mod template_refs;
