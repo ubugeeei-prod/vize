@@ -24,6 +24,35 @@ fn index_tracks_and_removes_open_sfc_imports() {
 }
 
 #[test]
+fn index_keeps_import_identity_across_dependency_creation_and_deletion() {
+    let dir = tempfile::tempdir().unwrap();
+    let child = dir.path().join("CreatedLater.vue");
+    let parent = dir.path().join("Parent.vue");
+    std::fs::write(&parent, "<template />").unwrap();
+    let child_uri = Url::from_file_path(&child).unwrap();
+    let parent_uri = Url::from_file_path(&parent).unwrap();
+    let state = ServerState::new();
+    let source = "<script setup lang=\"ts\">import Child from './CreatedLater.vue'</script>";
+
+    state.update_virtual_docs(&parent_uri, source);
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri.clone()]);
+
+    std::fs::write(&child, "<template />").unwrap();
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri.clone()]);
+
+    std::fs::remove_file(&child).unwrap();
+    assert_eq!(open_importers(&state, &child_uri), vec![parent_uri.clone()]);
+
+    #[cfg(unix)]
+    {
+        let target = dir.path().join("Actual.vue");
+        std::fs::write(&target, "<template />").unwrap();
+        std::os::unix::fs::symlink(&target, &child).unwrap();
+        assert_eq!(open_importers(&state, &child_uri), vec![parent_uri]);
+    }
+}
+
+#[test]
 fn index_tracks_script_module_specifier_forms() {
     let dir = tempfile::tempdir().unwrap();
     let child = dir.path().join("Child.vue");
