@@ -1,10 +1,18 @@
 import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 import { isAbsolute } from "node:path";
 
 const outputKeys = ["errorCount", "fileCount", "files", "warningCount"];
 const fileKeys = ["diagnostics", "file"];
+const typecheckSourcePattern = /\.(?:vue|ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
 
-export function validateTypecheckerOutput(project, output, exitCode, expectedFiles = null) {
+export function validateTypecheckerOutput(
+  project,
+  output,
+  exitCode,
+  expectedFiles = null,
+  authoredFiles = expectedFiles,
+) {
   requireRecord(output, "envelope");
   requireExactKeys(output, outputKeys, "envelope");
   for (const field of ["errorCount", "warningCount", "fileCount"]) {
@@ -22,11 +30,6 @@ export function validateTypecheckerOutput(project, output, exitCode, expectedFil
   if (project.expectedVueFileCount !== 0 && output.fileCount === 0) {
     invalid("non-empty fixture checked zero Vue files");
   }
-  if (expectedFiles != null && output.fileCount !== expectedFiles.length) {
-    invalid(
-      `checked file count ${output.fileCount} does not match ${expectedFiles.length} fixture inputs`,
-    );
-  }
 
   const seenFiles = new Set();
   let errorCount = 0;
@@ -40,8 +43,11 @@ export function validateTypecheckerOutput(project, output, exitCode, expectedFil
     if (!Array.isArray(file.diagnostics)) {
       invalid(`files[${index}].diagnostics must be an array`);
     }
-    if (index < output.fileCount && !file.file.endsWith(".vue")) {
+    if (index < output.fileCount && expectedFiles == null && !file.file.endsWith(".vue")) {
       invalid(`checked file is not a Vue SFC: ${file.file}`);
+    }
+    if (index < output.fileCount && !typecheckSourcePattern.test(file.file)) {
+      invalid(`checked file has an unsupported typecheck extension: ${file.file}`);
     }
     if (index >= output.fileCount && file.diagnostics.length === 0) {
       invalid(`project-level file entry has no diagnostics: ${file.file}`);
@@ -64,14 +70,32 @@ export function validateTypecheckerOutput(project, output, exitCode, expectedFil
   if (JSON.stringify(checkedFiles) !== JSON.stringify(sortedFiles)) {
     invalid("checked file entries are not sorted");
   }
-  if (expectedFiles != null && JSON.stringify(checkedFiles) !== JSON.stringify(expectedFiles)) {
+  let requestedFiles = checkedFiles;
+  let transitiveAuthoredFiles = [];
+  if (expectedFiles != null) {
+    validateManifestInput(expectedFiles, "requested fixture inputs", isVueSfc);
+    validateManifestInput(authoredFiles, "authored fixture sources", isTypecheckSource);
     const checkedSet = new Set(checkedFiles);
     const expectedSet = new Set(expectedFiles);
     const missing = expectedFiles.filter((file) => !checkedSet.has(file));
-    const unexpected = checkedFiles.filter((file) => !expectedSet.has(file));
-    invalid(
-      `checked files do not match fixture inputs: missing [${missing.join(", ")}], unexpected [${unexpected.join(", ")}]`,
-    );
+    if (missing.length > 0) {
+      invalid(`checked files are missing requested fixture inputs: [${missing.join(", ")}]`);
+    }
+    const authoredSet = new Set(authoredFiles);
+    const missingAuthoredInputs = expectedFiles.filter((file) => !authoredSet.has(file));
+    if (missingAuthoredInputs.length > 0) {
+      invalid(
+        `requested fixture inputs are not authored sources: [${missingAuthoredInputs.join(", ")}]`,
+      );
+    }
+    transitiveAuthoredFiles = checkedFiles.filter((file) => !expectedSet.has(file));
+    const unclassified = transitiveAuthoredFiles.filter((file) => !authoredSet.has(file));
+    if (unclassified.length > 0) {
+      invalid(
+        `checked transitive files are not authored fixture sources: [${unclassified.join(", ")}]`,
+      );
+    }
+    requestedFiles = expectedFiles;
   }
   if (output.errorCount !== errorCount) {
     invalid(`errorCount ${output.errorCount} does not match ${errorCount} diagnostics`);
@@ -83,6 +107,89 @@ export function validateTypecheckerOutput(project, output, exitCode, expectedFil
   if (exitCode !== expectedExitCode) {
     invalid(`exit code ${exitCode} does not match expected ${expectedExitCode}`);
   }
+
+  return {
+    schema: "vize.fixtureTypecheckerCoverage",
+    version: 1,
+    requested: createManifest(requestedFiles),
+    transitiveAuthored: createManifest(transitiveAuthoredFiles),
+    checked: createManifest(checkedFiles),
+  };
+}
+
+export function summarizeTypecheckerCoverage(coverage) {
+  requireRecord(coverage, "typechecker coverage");
+  requireExactKeys(
+    coverage,
+    ["checked", "requested", "schema", "transitiveAuthored", "version"],
+    "typechecker coverage",
+  );
+  if (coverage.schema !== "vize.fixtureTypecheckerCoverage" || coverage.version !== 1) {
+    invalid("typechecker coverage schema is unsupported");
+  }
+  for (const key of ["requested", "transitiveAuthored", "checked"]) {
+    validateManifest(
+      coverage[key],
+      `typechecker coverage.${key}`,
+      key === "requested" ? isVueSfc : isTypecheckSource,
+    );
+  }
+  const combined = [...coverage.requested.files, ...coverage.transitiveAuthored.files].sort(
+    byteSort,
+  );
+  if (JSON.stringify(combined) !== JSON.stringify(coverage.checked.files)) {
+    invalid("typechecker coverage classes do not partition checked files");
+  }
+  return {
+    requestedFileCount: coverage.requested.fileCount,
+    requestedSha256: coverage.requested.sha256,
+    transitiveAuthoredFileCount: coverage.transitiveAuthored.fileCount,
+    transitiveAuthoredSha256: coverage.transitiveAuthored.sha256,
+    checkedFileCount: coverage.checked.fileCount,
+    checkedSha256: coverage.checked.sha256,
+  };
+}
+
+function createManifest(files) {
+  const digest = createHash("sha256");
+  for (const file of files) digest.update(file).update("\0");
+  return { fileCount: files.length, files: [...files], sha256: digest.digest("hex") };
+}
+
+function validateManifestInput(files, label, acceptsFile) {
+  if (!Array.isArray(files)) invalid(`${label} must be an array`);
+  const seen = new Set();
+  for (const [index, file] of files.entries()) {
+    requireRelativePath(file, `${label}[${index}]`);
+    if (!acceptsFile(file)) invalid(`${label}[${index}] has an unsupported source extension`);
+    if (seen.has(file)) invalid(`${label} contains duplicate file: ${file}`);
+    seen.add(file);
+  }
+  if (JSON.stringify(files) !== JSON.stringify([...files].sort(byteSort))) {
+    invalid(`${label} are not sorted`);
+  }
+}
+
+function validateManifest(manifest, label, acceptsFile) {
+  requireRecord(manifest, label);
+  requireExactKeys(manifest, ["fileCount", "files", "sha256"], label);
+  validateManifestInput(manifest.files, `${label}.files`, acceptsFile);
+  if (manifest.fileCount !== manifest.files.length) invalid(`${label}.fileCount is inconsistent`);
+  if (manifest.sha256 !== createManifest(manifest.files).sha256) {
+    invalid(`${label}.sha256 is inconsistent`);
+  }
+}
+
+function byteSort(left, right) {
+  return Buffer.compare(Buffer.from(left), Buffer.from(right));
+}
+
+function isVueSfc(file) {
+  return file.endsWith(".vue");
+}
+
+function isTypecheckSource(file) {
+  return typecheckSourcePattern.test(file);
 }
 
 function requireRecord(value, label) {

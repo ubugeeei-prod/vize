@@ -4,6 +4,15 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  summarizeTypecheckerCoverage,
+  validateTypecheckerOutput,
+} from "../../../tools/fixtures/tool-matrix-typechecker.mjs";
+import {
+  collectTypecheckerAuthoredPaths,
+  collectVueInputPaths,
+} from "../../../tools/fixtures/tool-matrix-inputs.mjs";
+
 /**
  * Scaffolding shared by every `tools/fixtures/typecheck-divergence-report.mjs`
  * test. It lives here rather than in one test file so a second suite can drive
@@ -94,6 +103,13 @@ export function setup(options: FixtureOptions = {}) {
   // `vize check` exits 0 only when it found nothing, and the matrix summary
   // status is derived from that, so a fixture with no diagnostics has to agree.
   const exitCode = vizeDiagnostics.length === 0 ? 0 : 1;
+  const typecheckerCoverage = validateTypecheckerOutput(
+    project,
+    parsed,
+    exitCode,
+    ["src/App.vue"],
+    ["src/App.vue"],
+  );
   writeJson(outputPath, {
     schema: "vize.fixtureToolRun",
     version: 1,
@@ -103,10 +119,11 @@ export function setup(options: FixtureOptions = {}) {
     stdout: JSON.stringify(parsed),
     stderr: "",
     parsed,
+    typecheckerCoverage,
   });
   writeJson(path.join(reportDir, "summary.json"), {
     schema: "vize.fixtureToolMatrixReport",
-    version: 2,
+    version: 3,
     evidence: {
       commitSha,
       runtime: { name: "node", version: process.versions.node },
@@ -129,6 +146,7 @@ export function setup(options: FixtureOptions = {}) {
             exitCode,
             fileCount: 1,
             outputPath: path.relative(root, outputPath),
+            coverage: summarizeTypecheckerCoverage(typecheckerCoverage),
           },
         ],
       },
@@ -189,6 +207,30 @@ export function cleanup(fixture: ReturnType<typeof setup>) {
 
 export function readJson(pathname: string) {
   return JSON.parse(fs.readFileSync(pathname, "utf8"));
+}
+
+export function updateVizeOutput(
+  fixture: ReturnType<typeof setup>,
+  mutate: (parsed: Record<string, any>) => void,
+) {
+  const payload = readJson(fixture.outputPath);
+  mutate(payload.parsed);
+  payload.stdout = JSON.stringify(payload.parsed);
+  const project = readJson(fixture.registryPath).projects[0];
+  payload.typecheckerCoverage = validateTypecheckerOutput(
+    project,
+    payload.parsed,
+    payload.exitCode,
+    collectVueInputPaths(fixture.fixtureRoot, project.vueGlobs),
+    collectTypecheckerAuthoredPaths(fixture.fixtureRoot),
+  );
+  writeJson(fixture.outputPath, payload);
+
+  const summaryPath = path.join(fixture.reportDir, "summary.json");
+  const summary = readJson(summaryPath);
+  summary.projects[0].runs[0].fileCount = payload.parsed.fileCount;
+  summary.projects[0].runs[0].coverage = summarizeTypecheckerCoverage(payload.typecheckerCoverage);
+  writeJson(summaryPath, summary);
 }
 
 export function writeJson(pathname: string, value: unknown) {

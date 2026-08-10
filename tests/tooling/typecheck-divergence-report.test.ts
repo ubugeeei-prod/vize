@@ -214,6 +214,35 @@ test("typecheck divergence report rejects a mismatched matrix file count", () =>
   }
 });
 
+test("typecheck divergence report rejects mutated raw typechecker coverage", () => {
+  const fixture = setup();
+  try {
+    updateJson(fixture.outputPath, (payload) => {
+      payload.typecheckerCoverage.checked.sha256 = "0".repeat(64);
+    });
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /typechecker coverage is inconsistent/);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report rejects mutated summary coverage", () => {
+  const fixture = setup();
+  try {
+    const summaryPath = path.join(fixture.reportDir, "summary.json");
+    updateJson(summaryPath, (summary) => {
+      summary.projects[0].runs[0].coverage.requestedFileCount = 0;
+    });
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /summary coverage is inconsistent/);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence report rejects a mismatched matrix status", () => {
   const fixture = setup();
   try {

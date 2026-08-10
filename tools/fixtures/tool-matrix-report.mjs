@@ -43,7 +43,7 @@ function main() {
 
   const report = {
     schema,
-    version: 2,
+    version: 3,
     generatedAt: new Date().toISOString(),
     evidence: collectEvidence(),
     registryPath: relative(repoRoot, registryPath),
@@ -186,13 +186,13 @@ function renderMarkdown(report) {
     `Runtime: ${report.evidence.runtime.name} ${report.evidence.runtime.version}`,
     `Machine: ${report.evidence.machine.platform}/${report.evidence.machine.arch}, ${report.evidence.machine.logicalCpuCount} logical CPUs, ${report.evidence.machine.totalMemoryBytes} bytes memory`,
     "",
-    "| Project | Tool | Status | Exit | Files | Duration (ms) | Output |",
-    "| --- | --- | --- | ---: | ---: | ---: | --- |",
+    "| Project | Tool | Status | Exit | Files | Requested | Transitive | Duration (ms) | Output |",
+    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
   ];
   for (const project of report.projects) {
     for (const run of project.runs) {
       lines.push(
-        `| ${project.id} | ${run.tool} | ${run.status} | ${run.exitCode ?? "-"} | ${run.fileCount ?? "-"} | ${run.durationMs} | ${run.outputPath == null ? "-" : `\`${run.outputPath}\``} |`,
+        `| ${project.id} | ${run.tool} | ${run.status} | ${run.exitCode ?? "-"} | ${run.fileCount ?? "-"} | ${run.coverage?.requestedFileCount ?? "-"} | ${run.coverage?.transitiveAuthoredFileCount ?? "-"} | ${run.durationMs} | ${run.outputPath == null ? "-" : `\`${run.outputPath}\``} |`,
       );
     }
   }
