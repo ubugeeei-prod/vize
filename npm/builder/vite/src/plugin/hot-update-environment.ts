@@ -21,6 +21,7 @@ export async function handleHotUpdateEnvironmentHook(
 
   const server = {
     moduleGraph: environment.moduleGraph,
+    watcher: options.server.watcher,
     ws: {
       send: environment.hot.send.bind(environment.hot),
     },

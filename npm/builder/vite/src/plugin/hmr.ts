@@ -72,6 +72,10 @@ export async function handleHotUpdateHook(
   const clientDependencyOwners = new Set(ownersOfDependency(state.cache, path.resolve(file)));
   const dependencyOwners = getVueFilesDependingOn(state, file);
   if (dependencyOwners.length > 0) {
+    // Module graph invalidation can release plugin-added watch files before the
+    // browser has transformed the owner again. Keep authored `src` blocks under
+    // Vite's watcher for a repair that follows the first dependency update.
+    server.watcher?.add(file);
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
 
     for (const vueFile of dependencyOwners) {
