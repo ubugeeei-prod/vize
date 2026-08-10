@@ -1,7 +1,8 @@
 use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
 use crate::batch::runtime_deps::{
-    VUE_RUNTIME_DOM_STUB_TYPES, test_env_var_os, with_test_env_overrides,
+    VUE_FACADE_JSX_GLOBAL_TYPES, VUE_FACADE_JSX_RUNTIME_TYPES, VUE_RUNTIME_DOM_STUB_TYPES,
+    test_env_var_os, with_test_env_overrides,
 };
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
@@ -2289,6 +2290,13 @@ fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
         r#"export * from "@vue/runtime-dom";
 "#,
     )?;
+    // A real `vue` ships `vue/jsx-runtime`; `.tsx` cases compiled with
+    // `jsxImportSource: "vue"` resolve their JSX namespace through it.
+    std::fs::write(
+        vue_dir.join("jsx-runtime.d.ts"),
+        VUE_FACADE_JSX_RUNTIME_TYPES,
+    )?;
+    std::fs::write(vue_dir.join("jsx.d.ts"), VUE_FACADE_JSX_GLOBAL_TYPES)?;
     write_test_vue_runtime_dom_stub(target)?;
     Ok(())
 }

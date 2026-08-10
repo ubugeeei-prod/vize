@@ -101,6 +101,27 @@ const key = 'data-id'
 }
 
 #[test]
+fn duplicate_named_props_before_a_spread_share_one_singleton() {
+    let code = generated_props_literal(r#"<Child :count="1" :count="2" v-bind="bag" />"#);
+
+    // One singleton for the whole run keeps the authored duplicate inside a
+    // single object literal, so TypeScript still reports it (TS1117). One
+    // singleton per prop would split them apart and lose the diagnostic.
+    assert!(
+        code.contains("...{ \"count\": 1, \"count\": 2 }"),
+        "duplicates before a spread must stay in one literal: {code}"
+    );
+    assert_eq!(
+        code.matches("...{ \"count\"").count(),
+        1,
+        "the run must not be split into one singleton per prop: {code}"
+    );
+    let named = code.find("...{ \"count\": 1").expect("named run emitted");
+    let spread = code.find("...bag").expect("spread emitted");
+    assert!(named < spread, "the spread is authored last: {code}");
+}
+
+#[test]
 fn singleton_spread_keeps_exact_named_value_source_mapping() {
     let script = r#"import Child from "./Child.vue"
 const bag = { count: 1, label: 'ok' }
