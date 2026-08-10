@@ -54,6 +54,39 @@ impl MacroTracker {
         self.prop_declarations.get(name).copied()
     }
 
+    /// Add an event together with the range of its written name.
+    #[inline]
+    pub fn add_emit_with_declaration(&mut self, emit: super::EmitDefinition, start: u32, end: u32) {
+        self.emit_declarations
+            .insert(emit.name.clone(), (start, end));
+        self.emits.push(emit);
+    }
+
+    /// Get an event's written name range, relative to its script block.
+    #[inline]
+    pub fn emit_declaration(&self, name: &str) -> Option<(u32, u32)> {
+        self.emit_declarations.get(name).copied()
+    }
+
+    /// Add a model together with the range of its authored name or macro.
+    #[inline]
+    pub fn add_model_with_declaration(
+        &mut self,
+        model: super::ModelDefinition,
+        start: u32,
+        end: u32,
+    ) {
+        self.model_declarations
+            .insert(model.name.clone(), (start, end));
+        self.models.push(model);
+    }
+
+    /// Get a model's authored declaration range, relative to its script block.
+    #[inline]
+    pub fn model_declaration(&self, name: &str) -> Option<(u32, u32)> {
+        self.model_declarations.get(name).copied()
+    }
+
     /// Shift every stored script-relative source offset by `delta`.
     pub fn shift_offsets(&mut self, delta: u32) {
         for call in &mut self.calls {
@@ -61,6 +94,14 @@ impl MacroTracker {
             call.end = call.end.saturating_add(delta);
         }
         for range in self.prop_declarations.values_mut() {
+            range.0 = range.0.saturating_add(delta);
+            range.1 = range.1.saturating_add(delta);
+        }
+        for range in self.emit_declarations.values_mut() {
+            range.0 = range.0.saturating_add(delta);
+            range.1 = range.1.saturating_add(delta);
+        }
+        for range in self.model_declarations.values_mut() {
             range.0 = range.0.saturating_add(delta);
             range.1 = range.1.saturating_add(delta);
         }

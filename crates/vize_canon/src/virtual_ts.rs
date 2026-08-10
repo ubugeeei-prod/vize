@@ -24,6 +24,7 @@ pub mod incremental;
 mod interface_extends_tests;
 #[cfg(test)]
 mod legacy_vue2_vuetify_tests;
+mod macro_type_mappings;
 pub mod mapping;
 mod props;
 mod scope;
@@ -37,10 +38,25 @@ pub use generator::{
     generate_virtual_ts, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
-pub use helpers::{DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME};
+#[cfg(feature = "native")]
+pub(crate) use helpers::to_safe_identifier;
+pub use helpers::{
+    DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
+    VUE_TYPE_HELPERS,
+};
 #[cfg(feature = "native")]
 pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSubSpan};
+
+/// Shared type-only component contract for plain-TS JSX lowering in batch and
+/// editor paths. Keep one declaration source so the two consumers cannot drift.
+pub const JSX_COMPONENT_HELPER: &str = "type __VizeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${__VizeJsxKebabCase<T>}` : `-${Lowercase<H>}${__VizeJsxKebabCase<T>}` : S;\n\
+type __VizeJsxCamelCase<S extends string> = S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;\n\
+type __VizeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | __VizeJsxKebabCase<K> : K }[keyof R] : never;\n\
+type __VizeJsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? __VizeJsxCamelCase<K> : K]: R[K] } : never;\n\
+type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> : __VizeJsxCanonicalRawProps<P> : any : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxCanonicalRawProps<P> : any;\n\
+declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
+declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;\n";
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};
 

@@ -42,7 +42,16 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     );
   }
 
-  assert.match(workflowJobBody(e2eWorkflow, "app-readiness"), /timeout-minutes:\s*30\b/);
+  for (const [jobName, minutes] of [
+    ["app-readiness-plan", 10],
+    ["app-readiness-producer", 30],
+    ["app-readiness", 5],
+  ] as const) {
+    assert.match(
+      workflowJobBody(e2eWorkflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+    );
+  }
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],

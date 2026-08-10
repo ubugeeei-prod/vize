@@ -80,17 +80,7 @@ const requiredJobNames = new Map([
       "Fuzz template_compile",
     ],
   ],
-  [
-    "App E2E",
-    [
-      "app-e2e (dev)",
-      "app-e2e (vrt)",
-      "app-e2e (preview)",
-      "app-e2e (build)",
-      "app-e2e (check)",
-      "app-e2e (lint)",
-    ],
-  ],
+  ["App E2E", ["app-e2e"]],
   [
     "Native Smoke",
     [

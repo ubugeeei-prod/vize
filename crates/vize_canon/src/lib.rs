@@ -114,23 +114,25 @@ pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
-    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
-    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
-    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition, LspRange,
-    VIRTUAL_URI_SCHEME,
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDependency,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList,
+    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
+    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
+    LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
+    LspSignatureInformation, VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker
 #[cfg(feature = "native")]
 pub use batch::{
     BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic, ContentMapperSpan,
-    ContentMapperTransform, CorsaError, CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions,
-    DeclarationEmitResult, DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter,
-    ImportSourceMap, IncrementalCheckMetrics, PackageManager,
-    TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
-    VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
-    project_virtual_lock_paths, project_virtual_root,
+    ContentMapperTransform, ContentMapperTransformOptions, CorsaError, CorsaExecutor,
+    CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
+    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
+    PackageManager, TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
+    VirtualFile, VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options, project_virtual_lock_paths,
+    project_virtual_root,
 };
 
 #[cfg(feature = "native")]

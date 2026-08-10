@@ -6,6 +6,10 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - Script bindings used in style v-bind()
 
+#[cfg(feature = "native")]
+mod canonical;
+#[cfg(all(test, feature = "native"))]
+mod corsa_tests;
 mod script;
 mod template;
 
@@ -81,7 +85,14 @@ impl ReferencesService {
         include_declaration: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
-        let block_type = ctx.block_type?;
+        let canonical_locations =
+            canonical::references(ctx, include_declaration, corsa_bridge.as_deref()).await;
+        if canonical_locations.is_some() {
+            return canonical_locations;
+        }
+        let Some(block_type) = ctx.block_type else {
+            return canonical_locations;
+        };
 
         let corsa_locations = match block_type {
             BlockType::Template => {
@@ -113,7 +124,13 @@ impl ReferencesService {
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
-        corsa_locations.or_else(|| Self::references(ctx, include_declaration))
+        // Corsa only answers for the virtual document the request opened, so
+        // the authored hits carry the other blocks of this SFC.
+        corsa_support::merge_canonical_locations(
+            canonical_locations,
+            corsa_locations,
+            Self::references(ctx, include_declaration),
+        )
     }
 
     #[cfg(feature = "native")]
@@ -157,12 +174,7 @@ impl ReferencesService {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.art_template(info.variant_index)?;
-        let relative_offset = info.relative_offset as u32;
-        let vts_offset = template
-            .source_map
-            .to_generated(relative_offset)
-            .map(|offset| offset as usize)
-            .unwrap_or(relative_offset as usize);
+        let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
         let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
@@ -228,11 +240,6 @@ impl ReferencesService {
     #[inline]
     fn is_identifier_char(c: u8) -> bool {
         c.is_ascii_alphanumeric() || c == b'_' || c == b'$'
-    }
-
-    /// Convert offset to (line, character).
-    pub(crate) fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
-        crate::ide::offset_to_position(content, offset)
     }
 }
 

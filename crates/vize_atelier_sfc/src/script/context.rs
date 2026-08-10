@@ -13,7 +13,7 @@ pub use batch_epoch::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 use crate::types::{BindingMetadata, BindingType};
 use vize_carton::{CompactString, String, ToCompactString};
 use vize_croquis::croquis::Croquis;
-use vize_croquis::macros::{EmitDefinition, ModelDefinition, PropDefinition};
+use vize_croquis::macros::{EmitDefinition, PropDefinition};
 
 use super::ScriptSetupMacros;
 
@@ -167,17 +167,12 @@ impl ScriptCompileContext {
         // Convert models
         for model_call in &self.macros.define_models {
             if let Some(ref binding_name) = model_call.binding_name {
-                let name = CompactString::new(
-                    super::define_model_name(self.source.as_str(), model_call).as_str(),
+                super::add_model_to_croquis(
+                    &mut summary,
+                    self.source.as_str(),
+                    model_call,
+                    binding_name,
                 );
-
-                summary.macros.add_model(ModelDefinition {
-                    name: name.clone(),
-                    local_name: CompactString::new(binding_name),
-                    model_type: None,
-                    required: false,
-                    default_value: None,
-                });
             }
         }
 

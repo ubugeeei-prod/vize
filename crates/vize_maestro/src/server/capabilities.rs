@@ -9,10 +9,11 @@ use tower_lsp::lsp_types::{
     HoverProviderCapability, LinkedEditingRangeServerCapabilities, OneOf, RenameOptions,
     SaveOptions, SelectionRangeProviderCapability, SemanticTokenModifier, SemanticTokenType,
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
-    SemanticTokensServerCapabilities, ServerCapabilities, TextDocumentSyncCapability,
-    TextDocumentSyncKind, TextDocumentSyncOptions, TextDocumentSyncSaveOptions,
-    WorkDoneProgressOptions, WorkspaceFileOperationsServerCapabilities,
-    WorkspaceFoldersServerCapabilities, WorkspaceServerCapabilities,
+    SemanticTokensServerCapabilities, ServerCapabilities, SignatureHelpOptions,
+    TextDocumentSyncCapability, TextDocumentSyncKind, TextDocumentSyncOptions,
+    TextDocumentSyncSaveOptions, WorkDoneProgressOptions,
+    WorkspaceFileOperationsServerCapabilities, WorkspaceFoldersServerCapabilities,
+    WorkspaceServerCapabilities,
 };
 
 use super::state::LspFeatureConfig;
@@ -105,8 +106,14 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             }
         }),
 
-        // Signature help is not implemented yet.
-        signature_help_provider: None,
+        // TypeScript/tsgo signature help through the canonical virtual project.
+        signature_help_provider: (features.signature_help && cfg!(feature = "native")).then(|| {
+            SignatureHelpOptions {
+                trigger_characters: Some(vec!["(".to_string(), ",".to_string(), "<".to_string()]),
+                retrigger_characters: Some(vec![")".to_string()]),
+                work_done_progress_options: WorkDoneProgressOptions::default(),
+            }
+        }),
 
         // Code lens
         code_lens_provider: features.code_lens.then_some(CodeLensOptions {

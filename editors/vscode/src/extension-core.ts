@@ -28,6 +28,7 @@ export const FEATURE_SETTING_KEYS = [
   "optionsApi.enable",
   "legacyVue2.enable",
   "completion.enable",
+  "signatureHelp.enable",
   "hover.enable",
   "definition.enable",
   "references.enable",
@@ -55,6 +56,7 @@ export const LINT_ONLY_CONFIGURATION_UPDATES: Array<[string, boolean]> = [
   ["optionsApi.enable", false],
   ["legacyVue2.enable", false],
   ["completion.enable", false],
+  ["signatureHelp.enable", false],
   ["hover.enable", false],
   ["definition.enable", false],
   ["references.enable", false],
@@ -79,6 +81,7 @@ export const CAPABILITY_LABELS: Record<string, string> = {
   optionsApi: "Vue 3 Options API",
   legacyVue2: "Vue 2.7 / Nuxt 2",
   completion: "completion",
+  signatureHelp: "signature help",
   hover: "hover",
   definition: "definition",
   references: "references",
@@ -152,6 +155,7 @@ export function getInitializationOptions(
   setFeatureOption(options, config, "optionsApi.enable", "optionsApi", false);
   setFeatureOption(options, config, "legacyVue2.enable", "legacyVue2", false);
   setFeatureOption(options, config, "completion.enable", "completion", true);
+  setFeatureOption(options, config, "signatureHelp.enable", "signatureHelp", true);
   setFeatureOption(options, config, "hover.enable", "hover", true);
   setFeatureOption(options, config, "definition.enable", "definition", true);
   setFeatureOption(options, config, "references.enable", "references", true);

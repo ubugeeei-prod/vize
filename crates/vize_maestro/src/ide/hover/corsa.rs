@@ -17,6 +17,8 @@ use super::HoverService;
 use crate::ide::IdeContext;
 use crate::virtual_code::ArtVariantInfo;
 
+mod markdown;
+
 impl HoverService {
     /// Convert SFC offset to virtual TS template offset.
     pub(crate) fn sfc_to_virtual_ts_offset(
@@ -200,17 +202,15 @@ impl HoverService {
         }
 
         // Try to get type information from Corsa via virtual TypeScript.
+        // Typed art documents share absolute SFC offsets across script and template
+        // mappings, but a variant whose expression has no generated counterpart must
+        // still answer from the authored template rather than returning nothing.
         if let Some(bridge) = corsa_bridge
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(template) = virtual_docs.art_template(info.variant_index)
+            && let Some(vts_offset) = template.source_map.to_generated(ctx.offset as u32)
         {
-            // Convert the art variant relative offset through the template source map
-            let relative_offset = info.relative_offset as u32;
-            let vts_offset = template
-                .source_map
-                .to_generated(relative_offset)
-                .map(|o| o as usize)
-                .unwrap_or(relative_offset as usize);
+            let vts_offset = vts_offset as usize;
 
             let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
 
@@ -229,7 +229,25 @@ impl HoverService {
 
                 // Request hover from Corsa.
                 if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                    return Some(Self::convert_lsp_hover(hover));
+                    let mapped_range = hover.range.as_ref().and_then(|range| {
+                        crate::ide::corsa_support::map_virtual_range(
+                            ctx,
+                            template,
+                            &Range {
+                                start: tower_lsp::lsp_types::Position {
+                                    line: range.start.line,
+                                    character: range.start.character,
+                                },
+                                end: tower_lsp::lsp_types::Position {
+                                    line: range.end.line,
+                                    character: range.end.character,
+                                },
+                            },
+                        )
+                    });
+                    let mut converted = Self::convert_lsp_hover(hover);
+                    converted.range = mapped_range;
+                    return Some(converted);
                 }
             }
         }
@@ -285,49 +303,6 @@ impl HoverService {
         });
 
         Hover { contents, range }
-    }
-
-    /// Wrap TypeScript type information in a code block for proper markdown rendering.
-    pub(super) fn wrap_type_info_in_codeblock(text: &str) -> String {
-        let text = text.trim();
-        // If already wrapped in code block, return as-is
-        if text.starts_with("```") {
-            return text.to_string();
-        }
-        // Check if this looks like TypeScript type info
-        // Common patterns: (const), (let), (var), (function), (method), (property), type, interface, etc.
-        let looks_like_type_info = text.starts_with('(')
-            || text.starts_with("type ")
-            || text.starts_with("interface ")
-            || text.starts_with("class ")
-            || text.starts_with("enum ")
-            || text.starts_with("function ")
-            || text.starts_with("const ")
-            || text.starts_with("let ")
-            || text.starts_with("var ")
-            || text.starts_with("import ")
-            || text.contains(": ")
-            || text.contains("=>")
-            || text.contains(" | ")
-            || text.contains(" & ");
-
-        if looks_like_type_info {
-            #[allow(clippy::disallowed_macros)]
-            {
-                format!("```typescript\n{}\n```", text)
-            }
-        } else {
-            text.to_string()
-        }
-    }
-
-    /// The hover body is the signature itself. The former
-    /// `**TypeScript quick info**` / `_Resolved through Vize virtual
-    /// TypeScript_` preamble named an implementation detail no user acts on
-    /// and pushed the signature below the fold in small popups (#3894);
-    /// Volar and tsserver open with the code block.
-    fn decorate_corsa_hover_markdown(value: &str) -> String {
-        value.trim().to_string()
     }
 }
 

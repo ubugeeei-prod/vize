@@ -11,13 +11,20 @@ use crate::virtual_code::VirtualDocuments;
 
 use super::ServerState;
 
+mod art;
+
+use art::{
+    add_inline_art_template_virtual_docs, art_script_setup_isolated,
+    generate_art_script_setup_virtual_doc,
+};
+
 #[cfg(test)]
 mod tests;
 
 impl ServerState {
     /// Generate and cache virtual documents for a document.
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
-        self.open_vue_imports.update(uri, content);
+        self.open_imports.update(uri, content);
         if uri.path().ends_with(".art.vue") {
             self.update_art_virtual_docs(uri, content);
             return;
@@ -46,6 +53,11 @@ impl ServerState {
         let base_uri = uri.path();
         let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
+        super::art_template_context::attach(
+            &mut virtual_docs,
+            descriptor.script_setup.as_ref(),
+            false,
+        );
         self.virtual_docs_cache
             .insert(uri.clone(), Arc::new(virtual_docs));
     }
@@ -79,7 +91,7 @@ impl ServerState {
     fn update_jsx_virtual_docs(&self, uri: &Url, content: &str) {
         let styles = crate::ide::JsxScopedStyleService::virtual_css_documents(content, uri);
         if styles.is_empty() {
-            self.remove_virtual_docs(uri);
+            self.virtual_docs_cache.remove(uri);
             return;
         }
         let mut docs = VirtualDocuments::new();
@@ -160,6 +172,14 @@ impl ServerState {
                 script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
+            super::art_template_context::attach(
+                &mut docs,
+                descriptor.script_setup.as_ref(),
+                descriptor
+                    .script_setup
+                    .as_ref()
+                    .is_some_and(art_script_setup_isolated),
+            );
         }
 
         self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
@@ -188,13 +208,13 @@ impl ServerState {
 
     /// Remove cached virtual documents when a document is closed.
     pub fn remove_virtual_docs(&self, uri: &Url) {
-        self.open_vue_imports.remove(uri);
+        self.open_imports.remove(uri);
         self.virtual_docs_cache.remove(uri);
     }
 
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
-        self.open_vue_imports.clear();
+        self.open_imports.clear();
         self.virtual_docs_cache.clear();
     }
 
@@ -205,143 +225,5 @@ impl ServerState {
         &self,
     ) -> &DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata> {
         &self.component_metadata_cache
-    }
-}
-
-fn add_inline_art_template_virtual_docs(
-    docs: &mut VirtualDocuments,
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-    base_uri: &str,
-) {
-    use crate::virtual_code::TemplateCodeGenerator;
-
-    let source = descriptor.source.as_ref();
-    let mut variant_index = docs.art_templates.len();
-
-    for custom in &descriptor.custom_blocks {
-        if custom.block_type != "art" {
-            continue;
-        }
-
-        let variants =
-            crate::virtual_code::inline_art_variants(custom.content.as_ref(), custom.loc.start);
-        if variants.is_empty() {
-            continue;
-        }
-
-        docs.art_templates
-            .resize(docs.art_templates.len() + variants.len(), None);
-
-        for variant in variants {
-            let current_variant_index = variant_index;
-            variant_index += 1;
-
-            let Some(template_content) = source.get(variant.template_start..variant.template_end)
-            else {
-                continue;
-            };
-            if template_content.trim().is_empty() {
-                continue;
-            }
-
-            let template_allocator = vize_carton::Bump::new();
-            let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
-
-            let mut template_gen = TemplateCodeGenerator::new();
-            template_gen.set_block_offset(variant.template_start as u32);
-            let mut template_doc = template_gen.generate(&ast, template_content);
-            template_doc.uri =
-                vize_carton::cstr!("{base_uri}.art_variant_{current_variant_index}.template.ts")
-                    .to_string();
-
-            docs.art_templates[current_variant_index] = Some(template_doc);
-        }
-    }
-}
-
-fn art_script_setup_isolated(script_setup: &vize_atelier_sfc::SfcScriptBlock<'_>) -> bool {
-    !script_setup
-        .attrs
-        .get("isolate")
-        .is_some_and(|value| value.as_ref().eq_ignore_ascii_case("false"))
-}
-
-fn generate_art_script_setup_virtual_doc(
-    base_uri: &str,
-    script: &str,
-    source_start: usize,
-    variant_count: usize,
-    isolate: bool,
-) -> crate::virtual_code::VirtualDocument {
-    use crate::virtual_code::{
-        MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
-        analyze_art_script_setup,
-    };
-
-    let parts = analyze_art_script_setup(script, source_start, isolate);
-    let mut content = String::new();
-    let mut mappings = Vec::new();
-
-    content.push_str("// Virtual TypeScript for .art.vue <script setup>\n");
-    content.push_str("// Generated by vize_maestro\n\n");
-
-    for import in &parts.shared_imports {
-        let generated_start = content.len() as u32;
-        content.push_str(&import.text);
-        let generated_end = content.len() as u32;
-        mappings.push(SourceMapping::with_features(
-            SourceRange::new(import.source_start as u32, import.source_end as u32),
-            SourceRange::new(generated_start, generated_end),
-            MappingFeatures::all(),
-        ));
-        if !content.ends_with('\n') {
-            content.push('\n');
-        }
-    }
-    if !content.ends_with("\n\n") {
-        content.push('\n');
-    }
-
-    if parts.isolate {
-        let count = variant_count.max(1);
-        for index in 0..count {
-            vize_carton::append!(content, "function __VIZE_art_variant_{index}_setup() {{\n");
-            for chunk in &parts.isolated_body {
-                let generated_start = content.len() as u32;
-                content.push_str(&chunk.text);
-                let generated_end = content.len() as u32;
-                mappings.push(SourceMapping::with_features(
-                    SourceRange::new(chunk.source_start as u32, chunk.source_end as u32),
-                    SourceRange::new(generated_start, generated_end),
-                    MappingFeatures::all(),
-                ));
-                if !content.ends_with('\n') {
-                    content.push('\n');
-                }
-            }
-            content.push_str("}\n\n");
-        }
-    } else {
-        content.push_str("// Shared <script setup isolate=\"false\">\n");
-        for chunk in &parts.isolated_body {
-            let generated_start = content.len() as u32;
-            content.push_str(&chunk.text);
-            let generated_end = content.len() as u32;
-            mappings.push(SourceMapping::with_features(
-                SourceRange::new(chunk.source_start as u32, chunk.source_end as u32),
-                SourceRange::new(generated_start, generated_end),
-                MappingFeatures::all(),
-            ));
-            if !content.ends_with('\n') {
-                content.push('\n');
-            }
-        }
-    }
-
-    VirtualDocument {
-        uri: vize_carton::cstr!("{base_uri}.__script_setup.ts").to_string(),
-        content,
-        language: VirtualLanguage::ScriptSetup,
-        source_map: SourceMap::from_mappings(mappings),
     }
 }

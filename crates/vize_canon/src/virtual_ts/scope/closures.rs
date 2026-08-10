@@ -18,8 +18,9 @@ use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::children::generate_child_scopes;
+use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
-use super::component_props::generate_component_props;
+use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
 use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
@@ -28,9 +29,8 @@ use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
-/// Generate scope closures from Croquis scope chain.
-/// Uses recursive tree-based generation so nested v-for/v-slot scopes
-/// are properly contained within their parent closures.
+/// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
+/// scopes remain contained within their parent closures.
 pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -122,8 +122,23 @@ pub(crate) fn generate_scope_closures(
             generate_instance_global_refs(ts, mappings, summary, template_offset, &options)
         );
     }
-
-    // Process non-nested scopes at template level
+    let props_ctx = ComponentPropsContext {
+        summary,
+        template_source: options.template_ast.map(|root| root.source.as_str()),
+        children_map: &children_map,
+        vfor_enclosing_guards: &vfor_enclosing_guards,
+        template_prop_names,
+        template_offset,
+        options: virtual_ts_options,
+        preserve_event_navigation: options.preserve_event_navigation,
+        check_unresolved_global_components: options.check_unresolved_global_components,
+        legacy_vue2: options.legacy_vue2,
+    };
+    let check_props = check_options.check_props;
+    let usages = check_props.then(|| collect_checkable_usages(&props_ctx));
+    if let Some(usages) = &usages {
+        emit_event_references(ts, mappings, &props_ctx, usages);
+    }
     for scope in summary.scopes.iter() {
         let scope_id = scope.id.as_u32();
 
@@ -177,31 +192,16 @@ pub(crate) fn generate_scope_closures(
         );
     }
 
-    // Handle undefined references
     if check_options.check_template_bindings {
         profile!(
             "canon.virtual_ts.undefined_refs",
             generate_undefined_refs(ts, mappings, summary, template_offset, &options)
         );
     }
-    if check_options.check_props {
+    if let Some(usages) = &usages {
         profile!(
             "canon.virtual_ts.component_props",
-            generate_component_props(
-                ts,
-                mappings,
-                &ComponentPropsContext {
-                    summary,
-                    template_source: options.template_ast.map(|root| root.source.as_str()),
-                    children_map: &children_map,
-                    vfor_enclosing_guards: &vfor_enclosing_guards,
-                    template_prop_names,
-                    template_offset,
-                    options: virtual_ts_options,
-                    check_unresolved_global_components: options.check_unresolved_global_components,
-                    legacy_vue2: options.legacy_vue2,
-                },
-            )
+            generate_component_props(ts, mappings, &props_ctx, usages)
         );
     }
 }

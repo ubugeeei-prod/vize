@@ -3,177 +3,19 @@ use tower_lsp::{
     LspService,
     lsp_types::{
         CodeLensParams, DocumentLinkParams, FileRename, FoldingRangeParams, HoverParams,
-        InlayHintParams, SemanticTokensRangeParams, WorkspaceSymbolParams,
+        InlayHintParams, SemanticTokensRangeParams, SignatureHelpParams, WorkspaceSymbolParams,
     },
 };
 
 mod guards_extra;
+mod params;
 mod responses;
+
+use params::*;
 
 const SAMPLE: &str = "<template>\n  <div>{{ message }}</div>\n</template>\n\
                       <script setup lang=\"ts\">\nconst message = 'hi'\n</script>\n\
                       <style scoped>\n.box { color: red; }\n</style>\n";
-
-fn service_with_options(options: serde_json::Value) -> tower_lsp::LspService<MaestroServer> {
-    let (service, _socket) = LspService::new(MaestroServer::new);
-    service
-        .inner()
-        .state
-        .apply_lsp_initialization_options(Some(&options));
-    service
-}
-
-fn quiet_options(mut overrides: serde_json::Map<String, serde_json::Value>) -> serde_json::Value {
-    overrides.insert("lint".to_string(), false.into());
-    overrides.insert("typecheck".to_string(), false.into());
-    overrides.insert("ecosystem".to_string(), false.into());
-    serde_json::Value::Object(overrides)
-}
-
-fn options(pairs: &[(&str, bool)]) -> serde_json::Value {
-    let mut map = serde_json::Map::new();
-    for (key, value) in pairs {
-        map.insert((*key).to_string(), (*value).into());
-    }
-    quiet_options(map)
-}
-
-fn uri(path: &str) -> Url {
-    Url::parse(&format!("file:///{path}")).unwrap()
-}
-
-fn open_vue(server: &MaestroServer, uri: &Url, source: &str) {
-    server
-        .state
-        .documents
-        .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-    server.state.update_virtual_docs(uri, source);
-}
-
-fn text_doc(uri: &Url) -> TextDocumentIdentifier {
-    TextDocumentIdentifier { uri: uri.clone() }
-}
-
-fn text_pos(uri: &Url) -> TextDocumentPositionParams {
-    TextDocumentPositionParams {
-        text_document: text_doc(uri),
-        position: Position::new(0, 0),
-    }
-}
-
-fn range() -> Range {
-    Range::new(Position::new(0, 0), Position::new(0, 1))
-}
-
-fn hover_params(uri: &Url) -> HoverParams {
-    HoverParams {
-        text_document_position_params: text_pos(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-    }
-}
-
-fn completion_params(uri: &Url) -> CompletionParams {
-    CompletionParams {
-        text_document_position: text_pos(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-        context: None,
-    }
-}
-
-fn definition_params(uri: &Url) -> GotoDefinitionParams {
-    GotoDefinitionParams {
-        text_document_position_params: text_pos(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn references_params(uri: &Url) -> ReferenceParams {
-    ReferenceParams {
-        text_document_position: text_pos(uri),
-        context: ReferenceContext {
-            include_declaration: true,
-        },
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn document_symbol_params(uri: &Url) -> DocumentSymbolParams {
-    DocumentSymbolParams {
-        text_document: text_doc(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn code_action_params(uri: &Url) -> CodeActionParams {
-    CodeActionParams {
-        text_document: text_doc(uri),
-        range: range(),
-        context: CodeActionContext::default(),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn rename_params(uri: &Url) -> RenameParams {
-    RenameParams {
-        text_document_position: text_pos(uri),
-        new_name: "renamed".to_string(),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-    }
-}
-
-fn semantic_tokens_params(uri: &Url) -> SemanticTokensParams {
-    SemanticTokensParams {
-        text_document: text_doc(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn semantic_tokens_range_params(uri: &Url) -> SemanticTokensRangeParams {
-    SemanticTokensRangeParams {
-        text_document: text_doc(uri),
-        range: range(),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn code_lens_params(uri: &Url) -> CodeLensParams {
-    CodeLensParams {
-        text_document: text_doc(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn document_link_params(uri: &Url) -> DocumentLinkParams {
-    DocumentLinkParams {
-        text_document: text_doc(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
-
-fn inlay_hint_params(uri: &Url) -> InlayHintParams {
-    InlayHintParams {
-        text_document: text_doc(uri),
-        range: range(),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-    }
-}
-
-fn folding_range_params(uri: &Url) -> FoldingRangeParams {
-    FoldingRangeParams {
-        text_document: text_doc(uri),
-        work_done_progress_params: WorkDoneProgressParams::default(),
-        partial_result_params: PartialResultParams::default(),
-    }
-}
 
 macro_rules! disabled_open_doc_request_returns_none {
     ($name:ident, $opts:expr, |$server:ident, $uri:ident| $call:expr) => {
@@ -222,6 +64,85 @@ enabled_missing_doc_request_returns_none!(
     &[("completion", true)],
     |server, uri| server.completion(completion_params(&uri))
 );
+disabled_open_doc_request_returns_none!(
+    signature_help_disabled_returns_none,
+    &[("signatureHelp", false)],
+    |server, uri| server.signature_help(signature_help_params(&uri))
+);
+enabled_missing_doc_request_returns_none!(
+    signature_help_missing_document_returns_none,
+    &[("signatureHelp", true)],
+    |server, uri| server.signature_help(signature_help_params(&uri))
+);
+
+#[cfg(feature = "native")]
+#[test]
+fn signature_help_handler_routes_an_authored_vue_position() {
+    crate::runtime::block_on(async {
+        let Some(corsa_path) = resolve_tsgo_binary() else {
+            return;
+        };
+        let root = tempfile::tempdir().unwrap();
+        std::fs::write(
+            root.path().join("tsconfig.json"),
+            r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"bundler","noEmit":true},"include":["**/*"]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.path().join("vize.config.json"),
+            serde_json::json!({"typeChecker":{"corsaPath":corsa_path}}).to_string(),
+        )
+        .unwrap();
+
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server.state.load_workspace_config(root.path());
+        server.state.set_workspace_root(root.path().to_path_buf());
+
+        let uri = Url::from_file_path(root.path().join("Handler.vue")).unwrap();
+        let source = "<script setup lang=\"ts\">\nfunction format(value: string, precision: number): string { return value.repeat(precision) }\nformat('handler', )\n</script>\n";
+        std::fs::write(uri.to_file_path().unwrap(), source).unwrap();
+        open_vue(server, &uri, source);
+
+        let marker = "format('handler', ";
+        let offset = source.find(marker).unwrap() + marker.len();
+        let (line, character) = crate::ide::offset_to_position(source, offset);
+        let mut params = signature_help_params(&uri);
+        params.text_document_position_params.position = Position::new(line, character);
+
+        let help = server
+            .signature_help(params)
+            .await
+            .unwrap()
+            .expect("handler should return signature help");
+        assert_eq!(help.active_parameter, Some(1));
+        assert!(help.signatures[0].label.contains("precision: number"));
+
+        if let Some(bridge) = server.state.get_corsa_bridge().await {
+            bridge.shutdown().await.unwrap();
+        }
+    });
+}
+
+#[cfg(feature = "native")]
+fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return None;
+    }
+    let workspace_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(std::path::Path::parent)?;
+    [
+        workspace_root.parent()?.join("corsa-bind/.cache/tsgo"),
+        workspace_root
+            .parent()?
+            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
+        workspace_root.join("node_modules/.bin/tsgo"),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
+    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
+}
 disabled_open_doc_request_returns_none!(
     definition_disabled_returns_none,
     &[("definition", false)],

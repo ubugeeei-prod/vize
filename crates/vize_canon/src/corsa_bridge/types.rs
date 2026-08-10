@@ -13,6 +13,12 @@ use std::path::PathBuf;
 use vize_carton::String;
 use vize_carton::source_range::SourceMap;
 
+mod signature_help;
+
+pub use signature_help::{
+    LspParameterInformation, LspParameterLabel, LspSignatureHelp, LspSignatureInformation,
+};
+
 /// Virtual URI scheme for in-memory documents.
 pub const VIRTUAL_URI_SCHEME: &str = "vize-virtual";
 

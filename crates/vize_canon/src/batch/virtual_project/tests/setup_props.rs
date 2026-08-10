@@ -97,6 +97,7 @@ void props
         super::super::VueDocumentVirtualTsOptions {
             legacy_vue2: true,
             options_api: false,
+            ..Default::default()
         },
     )
     .unwrap()
@@ -108,6 +109,39 @@ void props
         ),
         "legacy Vue2 template scope must expose inline defineProps keys:\n{virtual_ts}"
     );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn document_generator_preserves_component_event_symbol_links_on_request() {
+    let case_dir = unique_case_dir("event-navigation");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&case_dir).unwrap();
+    let vue_path = case_dir.join("Parent.vue");
+    let vue_content = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child @save-item="() => undefined" /></template>
+"#;
+    let rewriter = super::super::super::import_rewriter::ImportRewriter::new();
+    let virtual_ts = super::super::generate_vue_document_virtual_ts_with_options(
+        &vue_path,
+        vue_content,
+        &VirtualTsOptions::default(),
+        &rewriter,
+        false,
+        super::super::VueDocumentVirtualTsOptions {
+            preserve_event_navigation: true,
+            ..Default::default()
+        },
+    )
+    .unwrap()
+    .pre_rewrite_code;
+
+    assert!(virtual_ts.contains("type __vize_events_resolver_0 = typeof Child"));
+    assert!(virtual_ts.contains("const __vize_kebab_events_nav_0 = __vize_events_resolved_0;"));
+    assert!(virtual_ts.contains("void __vize_kebab_events_nav_0.saveItem;"));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

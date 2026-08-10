@@ -35,7 +35,9 @@ mod tests;
 pub struct CorsaProjectClient {
     executable: String,
     cwd: PathBuf,
-    session: ProjectSession,
+    /// Optional custom project-session transport. Standard tsgo builds expose
+    /// the editor LSP without this API, so the client can run editor-only.
+    session: Option<ProjectSession>,
     capabilities: Arc<CapabilitiesResponse>,
     overlay_api_disabled: bool,
     materialized_project_session: bool,
@@ -55,6 +57,8 @@ pub struct CorsaProjectClient {
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
     /// project-session API rejects as unsupported (corsa-bind#409).
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// Whether the reusable editor LSP needs the latest virtual project mirror.
+    editor_lsp_documents_dirty: bool,
     closed: bool,
 }
 

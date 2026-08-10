@@ -1,0 +1,119 @@
+/// Musea gallery definitions used by the secondary JSON Schema compatibility output.
+module vize.jsonschema.MuseaSchemaDefinitions
+
+import "@json_schema/JsonSchema.pkl"
+
+viewportDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["width"] = new JsonSchema {
+      type = "integer"
+      description = "Viewport width"
+    }
+    ["height"] = new JsonSchema {
+      type = "integer"
+      description = "Viewport height"
+    }
+    ["name"] = new JsonSchema {
+      type = "string"
+      description = "Viewport name"
+    }
+  }
+  required = new Listing { "width"; "height" }
+  additionalProperties = false
+}
+
+museaVrtConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "VRT (Visual Regression Testing) configuration"
+  properties {
+    ["threshold"] = new JsonSchema {
+      type = "number"
+      description = "Threshold for pixel comparison (0-1)"
+      default = 0.1
+    }
+    ["outDir"] = new JsonSchema {
+      type = "string"
+      description = "Output directory for screenshots"
+      default = "__musea_snapshots__"
+    }
+    ["viewports"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { `$ref` = "#/definitions/MuseaViewport" }
+      description = "Viewport sizes"
+    }
+  }
+  additionalProperties = false
+}
+
+museaA11yConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "A11y configuration"
+  properties {
+    ["enabled"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable a11y checking"
+      default = false
+    }
+    ["rules"] = new JsonSchema {
+      type = "object"
+      description = "Axe-core rules to enable/disable"
+      additionalProperties = new JsonSchema { type = "boolean" }
+    }
+  }
+  additionalProperties = false
+}
+
+museaAutogenConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Autogen configuration"
+  properties {
+    ["enabled"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable auto-generation of variants"
+      default = false
+    }
+    ["maxVariants"] = new JsonSchema {
+      type = "integer"
+      description = "Max variants to generate per component"
+      default = 10
+    }
+  }
+  additionalProperties = false
+}
+
+museaConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Musea component gallery options"
+  properties {
+    ["include"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      description = "Glob patterns for art files"
+    }
+    ["exclude"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      description = "Glob patterns to exclude"
+    }
+    ["basePath"] = new JsonSchema {
+      type = "string"
+      description = "Base path for gallery"
+      default = "/__musea__"
+    }
+    ["storybookCompat"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Storybook compatibility"
+      default = false
+    }
+    ["inlineArt"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable inline art detection in .vue files"
+      default = false
+    }
+    ["vrt"] = new JsonSchema { `$ref` = "#/definitions/MuseaVrtConfig" }
+    ["a11y"] = new JsonSchema { `$ref` = "#/definitions/MuseaA11yConfig" }
+    ["autogen"] = new JsonSchema { `$ref` = "#/definitions/MuseaAutogenConfig" }
+  }
+  additionalProperties = false
+}

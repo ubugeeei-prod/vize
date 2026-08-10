@@ -12,6 +12,8 @@ use vize_carton::cstr;
 
 #[path = "collect_tests/allow_js.rs"]
 mod allow_js;
+#[path = "collect_tests/vue_files.rs"]
+mod vue_files;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -83,6 +85,40 @@ fn collect_check_files_includes_jsx_only_when_enabled() {
     assert_eq!(
         files,
         vec![case_dir.join("src/App.jsx"), case_dir.join("src/App.tsx")]
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn collect_check_files_includes_javascript_only_when_enabled() {
+    let case_dir = unique_case_dir("collect-check-javascript");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("src")).unwrap();
+    for file in ["main.js", "module.mjs", "module.cjs", "view.jsx"] {
+        fs::write(case_dir.join("src").join(file), "").unwrap();
+    }
+
+    let patterns = vec![case_dir.display().to_string()];
+    let excluded = collect_check_files_with_ignores(&patterns, CheckFileOptions::default(), None);
+    let included = collect_check_files_with_ignores(
+        &patterns,
+        CheckFileOptions {
+            include_js: true,
+            include_jsx: false,
+        },
+        None,
+    );
+
+    assert!(excluded.is_empty());
+    assert_eq!(
+        included,
+        vec![
+            case_dir.join("src/main.js"),
+            case_dir.join("src/module.cjs"),
+            case_dir.join("src/module.mjs"),
+            case_dir.join("src/view.jsx"),
+        ]
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -283,43 +319,4 @@ void rootOnly;
     );
 
     let _ = fs::remove_dir_all(&workspace);
-}
-
-#[test]
-fn collect_vue_files_stays_vue_only() {
-    let case_dir = unique_case_dir("collect-vue");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(case_dir.join("src")).unwrap();
-    fs::write(case_dir.join("src/App.vue"), "").unwrap();
-    fs::write(case_dir.join("src/main.ts"), "").unwrap();
-
-    let files = collect_vue_files(&vec![case_dir.display().to_string()]);
-
-    assert_eq!(files, vec![case_dir.join("src/App.vue")]);
-
-    let _ = fs::remove_dir_all(&case_dir);
-}
-
-#[test]
-fn collect_vue_files_filters_quoted_globs() {
-    let case_dir = unique_case_dir("collect-vue-glob");
-    let _ = fs::remove_dir_all(&case_dir);
-    fs::create_dir_all(case_dir.join("src/nested")).unwrap();
-    fs::write(case_dir.join("src/App.vue"), "").unwrap();
-    fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
-    fs::write(case_dir.join("src/nested/Skip.vue"), "").unwrap();
-
-    let files = collect_vue_files(&vec![
-        case_dir.join("src/nested/*.vue").display().to_string(),
-    ]);
-
-    assert_eq!(
-        files,
-        vec![
-            case_dir.join("src/nested/Skip.vue"),
-            case_dir.join("src/nested/View.vue"),
-        ]
-    );
-
-    let _ = fs::remove_dir_all(&case_dir);
 }

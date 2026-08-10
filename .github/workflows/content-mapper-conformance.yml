@@ -1,0 +1,161 @@
+name: Content Mapper Conformance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/content-mapper-conformance.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "crates/vize/Cargo.toml"
+      - "crates/vize/src/commands/content_mapper.rs"
+      - "crates/vize/src/commands/content_mapper/**"
+      - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/fixtures/content_mapper_project/**"
+      - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/batch.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
+      - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/lib.rs"
+      - "crates/vize_canon/src/lsp_client.rs"
+      - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/tests/lsp_import_resolution.rs"
+      - "crates/vize_canon/src/virtual_ts/**"
+      - "crates/vize_maestro/src/ide/**"
+      - "npm/cli/bin/vize"
+      - "npm/cli/package.json"
+      - "npm/cli/src/**"
+      - "npm/native/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tools/npm/prepare-publish-manifest.mjs"
+      - "tools/npm/smoke-release-install.mjs"
+      - "tools/npm/smoke-release-runtime.mjs"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/content-mapper-conformance.yml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "crates/vize/Cargo.toml"
+      - "crates/vize/src/commands/content_mapper.rs"
+      - "crates/vize/src/commands/content_mapper/**"
+      - "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/fixtures/content_mapper_project/**"
+      - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/batch.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
+      - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/lib.rs"
+      - "crates/vize_canon/src/lsp_client.rs"
+      - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/tests/lsp_import_resolution.rs"
+      - "crates/vize_canon/src/virtual_ts/**"
+      - "crates/vize_maestro/src/ide/**"
+      - "npm/cli/bin/vize"
+      - "npm/cli/package.json"
+      - "npm/cli/src/**"
+      - "npm/native/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tools/npm/prepare-publish-manifest.mjs"
+      - "tools/npm/smoke-release-install.mjs"
+      - "tools/npm/smoke-release-runtime.mjs"
+  workflow_dispatch:
+
+concurrency:
+  group: content-mapper-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CONTENT_MAPPER_TSGO_SHA: "bddd2162710e50281fa838456a875fd59ee7c91f"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  exact-tsgo-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Vize
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Checkout exact TypeScript Content Mapper revision
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          repository: microsoft/typescript-go
+          ref: ${{ env.CONTENT_MAPPER_TSGO_SHA }}
+          path: typescript-go-content-mapper
+          persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version-file: typescript-go-content-mapper/go.mod
+          cache-dependency-path: typescript-go-content-mapper/go.sum
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: content-mapper-conformance
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Setup Vite Plus
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - name: Install JavaScript dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build exact upstream tsgo
+        working-directory: typescript-go-content-mapper
+        run: |
+          go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo
+          cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+      - name: Build packed Content Mapper runtime
+        run: |
+          vp run --filter './npm/native' build:ci
+          (cd npm/cli && vp pack)
+      - name: Prepare native platform packages
+        working-directory: npm/native
+        run: |
+          vp exec napi create-npm-dirs
+          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+          for binary in vize-vitrine.*.node; do
+            [ -f "$binary" ] || continue
+            target="${binary#vize-vitrine.}"
+            target="${target%.node}"
+            if [ -d "npm/$target" ]; then
+              cp "$binary" "npm/$target/"
+            fi
+          done
+      - name: Run standard tsgo through fresh-installed package tarballs
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          node tools/npm/smoke-release-install.mjs --prepare-manifests --content-mapper-checks \
+            npm/native npm/native/npm/* \
+            npm/cli
+      - name: Run standard project and declaration conformance
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+          VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
+        run: |
+          cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
+      - name: Run exact editor backend conformance
+        env:
+          TSGO_PATH: ${{ runner.temp }}/tsgo
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture
+          cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
+          cargo test -p vize_maestro

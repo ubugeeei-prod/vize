@@ -33,39 +33,16 @@ pub(super) fn generate_component_props(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_>,
+    checkable_usages: &[(usize, &ComponentUsage)],
 ) {
     let summary = ctx.summary;
-    if summary.component_usages.is_empty() {
-        return;
-    }
-
-    let external_template_bindings: FxHashSet<&str> = ctx
-        .options
-        .external_template_bindings
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
-    let checkable_usages: Vec<(usize, &ComponentUsage)> = summary
-        .component_usages
-        .iter()
-        .enumerate()
-        .filter(|(_, usage)| {
-            component_usage_has_checkable_binding(
-                summary,
-                usage,
-                &external_template_bindings,
-                ctx.check_unresolved_global_components,
-                ctx.legacy_vue2,
-            )
-        })
-        .collect();
     if checkable_usages.is_empty() {
         return;
     }
 
     let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
         FxHashMap::default();
-    for &(idx, usage) in &checkable_usages {
+    for &(idx, usage) in checkable_usages {
         components_by_scope
             .entry(usage.scope_id.as_u32())
             .or_default()
@@ -76,9 +53,9 @@ pub(super) fn generate_component_props(
 
     // Generic children expose `__vizeCheck<T>(props)`; fallback contextual
     // typing is limited to inline function props to avoid duplicate errors.
-    append_prop_check_helpers(ts, &checkable_usages);
+    append_prop_check_helpers(ts, checkable_usages);
 
-    for &(idx, usage) in &checkable_usages {
+    for &(idx, usage) in checkable_usages {
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
@@ -101,7 +78,7 @@ pub(super) fn generate_component_props(
         );
     }
 
-    component_prop_navigation::emit_references(ts, mappings, ctx, &checkable_usages);
+    component_prop_navigation::emit_references(ts, mappings, ctx, checkable_usages);
 
     // Collect all closure scope IDs (v-for and v-slot)
     let closure_scope_ids: FxHashSet<u32> = summary
@@ -154,7 +131,7 @@ pub(super) fn generate_component_props(
         .collect();
 
     ts.push_str("\n  // Component props value checks (template scope)\n");
-    for &(idx, usage) in &checkable_usages {
+    for &(idx, usage) in checkable_usages {
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
             continue; // Will be emitted inside v-for/v-slot scope
         }
@@ -175,7 +152,7 @@ pub(super) fn generate_component_props(
         );
     }
 
-    generate_empty_root_checks(ts, mappings, ctx, &checkable_usages, &closure_scope_ids);
+    generate_empty_root_checks(ts, mappings, ctx, checkable_usages, &closure_scope_ids);
 
     for scope in summary.scopes.iter() {
         if !matches!(scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
@@ -193,12 +170,38 @@ pub(super) fn generate_component_props(
             vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             source_context: ctx.source_context(),
+            preserve_event_navigation: ctx.preserve_event_navigation,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
             generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ")
         );
     }
+}
+
+pub(super) fn collect_checkable_usages<'a>(
+    ctx: &ComponentPropsContext<'a>,
+) -> Vec<(usize, &'a ComponentUsage)> {
+    let external_template_bindings: FxHashSet<&str> = ctx
+        .options
+        .external_template_bindings
+        .iter()
+        .map(|name| name.as_str())
+        .collect();
+    ctx.summary
+        .component_usages
+        .iter()
+        .enumerate()
+        .filter(|(_, usage)| {
+            component_usage_has_checkable_binding(
+                ctx.summary,
+                usage,
+                &external_template_bindings,
+                ctx.check_unresolved_global_components,
+                ctx.legacy_vue2,
+            )
+        })
+        .collect()
 }
 
 pub(super) fn component_usage_has_checkable_binding(

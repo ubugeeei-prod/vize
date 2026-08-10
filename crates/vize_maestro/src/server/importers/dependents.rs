@@ -1,20 +1,27 @@
-use super::{ServerState, open_vue_importers};
+use super::{ServerState, open_importers};
 use tower_lsp::lsp_types::Url;
 
-/// Return open Vue documents whose diagnostics may change with `dependency`.
+/// Return open Vize-typechecked documents affected by `dependency`.
 ///
 /// Direct source imports use the reverse index. Declaration files can affect a
-/// Vue document through an arbitrary package/relative import chain, so refresh
-/// every open Vue document for `.d.ts`, `.d.mts`, and `.d.cts` edits. This is
-/// bounded by editor-visible documents and avoids a workspace-wide rescan.
-pub(in crate::server) fn open_vue_dependents(state: &ServerState, dependency: &Url) -> Vec<Url> {
-    let mut dependents = open_vue_importers(state, dependency);
+/// document through an arbitrary package/relative import chain, so refresh all
+/// open SFCs and opted-in JSX documents for declaration edits. The fan-out is
+/// bounded by editor-visible documents rather than the workspace.
+pub(in crate::server) fn open_typecheck_dependents(
+    state: &ServerState,
+    dependency: &Url,
+) -> Vec<Url> {
+    let mut dependents = open_importers(state, dependency);
     if is_declaration_uri(dependency) {
         dependents.extend(
             state
                 .documents
                 .iter()
-                .filter(|document| document.key().path().ends_with(".vue"))
+                .filter(|document| {
+                    document.key().path().ends_with(".vue")
+                        || (state.jsx_typecheck_enabled()
+                            && crate::utils::is_jsx_path(document.key().path()))
+                })
                 .map(|document| document.key().clone()),
         );
     }
@@ -32,26 +39,35 @@ fn is_declaration_uri(uri: &Url) -> bool {
 mod tests {
     #![allow(clippy::disallowed_methods)]
 
-    use super::{ServerState, Url, open_vue_dependents};
+    use super::{ServerState, Url, open_typecheck_dependents};
 
     #[test]
-    fn declaration_edits_refresh_all_open_vue_documents_only() {
+    fn declaration_edits_refresh_open_sfc_and_opted_in_jsx_documents() {
         let dir = tempfile::tempdir().unwrap();
         let src = dir.path().join("src");
         let declaration_dir = dir.path().join("node_modules/pkg");
         let direct_dependency = src.join("direct.ts");
         let parent = src.join("Parent.vue");
         let unrelated = src.join("Unrelated.vue");
+        let jsx = src.join("Consumer.tsx");
         std::fs::create_dir_all(&declaration_dir).unwrap();
         std::fs::create_dir_all(&src).unwrap();
         std::fs::write(&direct_dependency, "export const direct = true\n").unwrap();
         std::fs::write(&parent, "<template />\n").unwrap();
         std::fs::write(&unrelated, "<template />\n").unwrap();
+        std::fs::write(&jsx, "import './direct.ts'\n").unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "typeChecker": { "jsxTypecheck": true } }"#,
+        )
+        .unwrap();
 
         let direct_uri = Url::from_file_path(&direct_dependency).unwrap();
         let parent_uri = Url::from_file_path(&parent).unwrap();
         let unrelated_uri = Url::from_file_path(&unrelated).unwrap();
+        let jsx_uri = Url::from_file_path(&jsx).unwrap();
         let state = ServerState::new();
+        state.load_workspace_config(dir.path());
         let parent_source = "<script setup lang=\"ts\">import { direct } from './direct'</script>";
         state.documents.open(
             parent_uri.clone(),
@@ -65,20 +81,27 @@ mod tests {
             1,
             "vue".to_string(),
         );
+        state.documents.open(
+            jsx_uri.clone(),
+            "import './direct.ts'\n".to_string(),
+            1,
+            "typescriptreact".to_string(),
+        );
         state.update_virtual_docs(&parent_uri, parent_source);
         state.update_virtual_docs(&unrelated_uri, "<template />");
+        state.update_virtual_docs(&jsx_uri, "import './direct.ts'\n");
 
         assert_eq!(
-            open_vue_dependents(&state, &direct_uri),
-            vec![parent_uri.clone()],
+            open_typecheck_dependents(&state, &direct_uri),
+            vec![jsx_uri.clone(), parent_uri.clone()],
         );
         for declaration_name in ["theme.d.ts", "theme.d.mts", "theme.d.cts"] {
             let declaration = declaration_dir.join(declaration_name);
             std::fs::write(&declaration, "export interface Theme {}\n").unwrap();
             let declaration_uri = Url::from_file_path(&declaration).unwrap();
             assert_eq!(
-                open_vue_dependents(&state, &declaration_uri),
-                vec![parent_uri.clone(), unrelated_uri.clone()],
+                open_typecheck_dependents(&state, &declaration_uri),
+                vec![jsx_uri.clone(), parent_uri.clone(), unrelated_uri.clone()],
                 "{declaration_name}",
             );
         }

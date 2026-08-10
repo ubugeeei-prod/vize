@@ -6,6 +6,15 @@
 //! - CSS variables in v-bind()
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+#[cfg(feature = "native")]
+mod canonical;
+#[cfg(all(test, feature = "native"))]
+mod corsa_event_variants_tests;
+#[cfg(all(test, feature = "native"))]
+mod corsa_model_tests;
+#[cfg(all(test, feature = "native"))]
+mod corsa_tests;
+
 use std::collections::HashMap;
 
 #[cfg(feature = "native")]
@@ -90,6 +99,10 @@ impl RenameService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<PrepareRenameResponse> {
+        match canonical::prepare(ctx, corsa_bridge.as_deref()).await {
+            canonical::Answer::Available(response) => return response,
+            canonical::Answer::Unavailable => {}
+        }
         let corsa_result = match ctx.block_type? {
             BlockType::Template => {
                 Self::prepare_template_rename_with_corsa(ctx, corsa_bridge.as_deref()).await
@@ -119,10 +132,11 @@ impl RenameService {
         new_name: &str,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
-        if !Self::is_valid_identifier(new_name) {
-            return None;
+        if let canonical::Answer::Available(edit) =
+            canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await
+        {
+            return edit;
         }
-
         let corsa_result = match ctx.block_type? {
             BlockType::Template => {
                 Self::rename_template_with_corsa(ctx, new_name, corsa_bridge.as_deref()).await
@@ -143,7 +157,9 @@ impl RenameService {
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
-        corsa_result.or_else(|| Self::rename(ctx, new_name))
+        // Corsa only renames the virtual document the request opened, so the
+        // authored edits carry the other blocks of this SFC.
+        corsa_support::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
     }
 
     #[cfg(feature = "native")]
@@ -176,12 +192,7 @@ impl RenameService {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.art_template(info.variant_index)?;
-        let relative_offset = info.relative_offset as u32;
-        let vts_offset = template
-            .source_map
-            .to_generated(relative_offset)
-            .map(|offset| offset as usize)
-            .unwrap_or(relative_offset as usize);
+        let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
         let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
@@ -254,12 +265,7 @@ impl RenameService {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.art_template(info.variant_index)?;
-        let relative_offset = info.relative_offset as u32;
-        let vts_offset = template
-            .source_map
-            .to_generated(relative_offset)
-            .map(|offset| offset as usize)
-            .unwrap_or(relative_offset as usize);
+        let vts_offset = template.source_map.to_generated(ctx.offset as u32)? as usize;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
         let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
@@ -481,116 +487,4 @@ impl RenameService {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::RenameService;
-
-    /// Renaming a local binding must not rewrite a same-named prop
-    /// *attribute name* on a component usage — that token belongs to the
-    /// child's own prop symbol, and rewriting it silently breaks the call
-    /// site (#3892). Building rename from the references provider makes the
-    /// invariant structural: every edit is a reference (or the declaration).
-    #[test]
-    fn rename_leaves_same_named_prop_attribute_names_alone() {
-        let content = r#"<script setup lang="ts">
-import Child from './Child.vue'
-const count = 1
-</script>
-
-<template>
-  <Child :count="count" />
-</template>
-"#;
-        let uri = tower_lsp::lsp_types::Url::parse("file:///ws/Parent.vue").unwrap();
-        let state = crate::server::ServerState::new();
-        state
-            .documents
-            .open(uri.clone(), content.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, content);
-        let offset = content.find("const count").unwrap() + "const ".len();
-        let ctx = crate::ide::IdeContext::new(&state, &uri, offset).unwrap();
-
-        let edit = RenameService::rename(&ctx, "tally").unwrap();
-        let edits = &edit.changes.unwrap()[&uri];
-
-        let attr_name_line = content[..content.find(":count=").unwrap()]
-            .matches('\n')
-            .count() as u32;
-        for edit in edits {
-            let touches_attr_name = edit.range.start.line == attr_name_line
-                && edit.range.start.character
-                    == content
-                        .lines()
-                        .nth(attr_name_line as usize)
-                        .unwrap()
-                        .find(":count")
-                        .unwrap() as u32
-                        + 1;
-            assert!(
-                !touches_attr_name,
-                "the :count attribute name must not be renamed: {edits:?}"
-            );
-        }
-
-        // The invariant that pins the providers together: every rename edit is
-        // one of the reference locations.
-        let references = crate::ide::references::ReferencesService::references(&ctx, true).unwrap();
-        for edit in edits {
-            assert!(
-                references
-                    .iter()
-                    .any(|reference| reference.range == edit.range),
-                "rename edit {edit:?} is not a reference: {references:?}"
-            );
-        }
-        assert!(
-            edits.len() >= 2,
-            "the declaration and the binding value must still rename: {edits:?}"
-        );
-    }
-
-    #[test]
-    fn test_get_word_at_offset() {
-        let content = "const count = ref(0)";
-        assert_eq!(
-            RenameService::get_word_at_offset(content, 6),
-            Some("count".to_string())
-        );
-        assert_eq!(
-            RenameService::get_word_at_offset(content, 14),
-            Some("ref".to_string())
-        );
-        assert_eq!(
-            RenameService::get_word_at_offset(content, 11),
-            Some("count".to_string())
-        );
-        assert_eq!(RenameService::get_word_at_offset(content, 12), None);
-    }
-
-    #[test]
-    fn test_is_valid_identifier() {
-        assert!(RenameService::is_valid_identifier("count"));
-        assert!(RenameService::is_valid_identifier("_private"));
-        assert!(RenameService::is_valid_identifier("$refs"));
-        assert!(!RenameService::is_valid_identifier("123abc"));
-        assert!(!RenameService::is_valid_identifier(""));
-    }
-
-    #[test]
-    fn test_is_keyword() {
-        assert!(RenameService::is_keyword("const"));
-        assert!(RenameService::is_keyword("function"));
-        assert!(!RenameService::is_keyword("count"));
-    }
-
-    #[test]
-    fn test_offset_range_to_lsp_counts_utf16_code_units() {
-        let content = "const emoji = \"😀\"; const message = ref(emoji)";
-        let start = content.find("message").unwrap();
-        let end = start + "message".len();
-        let range = RenameService::offset_range_to_lsp(content, start, end);
-
-        assert_eq!(range.start.line, 0);
-        assert_eq!(range.start.character, 26);
-        assert_eq!(range.end.character, 33);
-    }
-}
+mod tests;

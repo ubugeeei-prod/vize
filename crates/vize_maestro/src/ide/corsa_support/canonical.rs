@@ -1,55 +1,38 @@
-use std::sync::Arc;
-
 use tower_lsp::lsp_types::{Location, Range, Url};
-use vize_canon::{CorsaBridge, CorsaVueVirtualDocumentOptions, LspLocation};
+use vize_canon::LspLocation;
 use vize_carton::{String, cstr};
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod open;
+mod project;
+pub(super) mod rename;
+mod semantic_links;
+
+pub(crate) use open::open_canonical_virtual_document;
+pub(crate) use project::open_canonical_virtual_project_document;
+pub(crate) use rename::{
+    map_canonical_corsa_workspace_edit, map_canonical_prepare_rename,
+    merge_canonical_workspace_edits,
+};
+pub(crate) use semantic_links::{CanonicalSemanticPosition, linked_semantic_position, tower_range};
+
 pub(crate) struct CanonicalVirtualDocument {
+    pub(crate) request_uri: String,
+    pub(crate) virtual_result: VirtualTsResult,
+    pub(crate) dependencies: Vec<CanonicalDependencyDocument>,
+}
+
+pub(crate) struct CanonicalDependencyDocument {
+    pub(crate) source_uri: Url,
+    pub(crate) source: String,
     pub(crate) request_uri: String,
     pub(crate) virtual_result: VirtualTsResult,
 }
 
 pub(crate) fn canonical_request_path(uri: &Url) -> String {
     cstr!("{}.ts", uri.path())
-}
-
-pub(crate) async fn open_canonical_virtual_document(
-    ctx: &IdeContext<'_>,
-    bridge: &Arc<CorsaBridge>,
-) -> Option<CanonicalVirtualDocument> {
-    if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
-        return None;
-    }
-
-    let source_path = ctx.uri.to_file_path().ok()?;
-    let opened = bridge
-        .open_vue_virtual_document(
-            &source_path,
-            &ctx.content,
-            CorsaVueVirtualDocumentOptions {
-                options_api: ctx.state.options_api_enabled(),
-                legacy_vue2: ctx.state.legacy_vue2_enabled(),
-            },
-        )
-        .await
-        .ok()?;
-
-    Some(CanonicalVirtualDocument {
-        request_uri: opened.request_uri,
-        virtual_result: VirtualTsResult {
-            code: opened.code.to_string(),
-            source_mappings: opened.mappings,
-            import_source_map: opened.import_source_map,
-            user_code_start_line: 0,
-            sfc_script_start_line: 0,
-            template_scope_start_line: 0,
-            line_mappings: Vec::new(),
-            skipped_import_lines: 0,
-        },
-    })
 }
 
 pub(crate) fn canonical_source_offset_to_position(
@@ -159,8 +142,20 @@ pub(crate) fn map_canonical_corsa_location(
         });
     }
 
-    if let Some(location) = super::virtual_mirror::map_location(ctx, location) {
-        return Some(location);
+    if let Some(dependency) = doc
+        .dependencies
+        .iter()
+        .find(|dependency| location_matches_uri(&location.uri, &dependency.request_uri))
+    {
+        let range = map_virtual_result_lsp_range_to_source(
+            &dependency.source,
+            &dependency.virtual_result,
+            &location.range,
+        )?;
+        return Some(Location {
+            uri: dependency.source_uri.clone(),
+            range,
+        });
     }
 
     let uri = super::accessible_external_uri(ctx, &location.uri)?;
@@ -179,6 +174,10 @@ pub(crate) fn map_canonical_corsa_location(
     })
 }
 
+fn is_canonical_vue_virtual_uri(uri: &Url) -> bool {
+    uri.path().ends_with(".vue.ts") || uri.path().ends_with(".vue.tsx")
+}
+
 pub(crate) fn map_canonical_lsp_range(
     ctx: &IdeContext<'_>,
     doc: &CanonicalVirtualDocument,
@@ -192,32 +191,35 @@ pub(super) fn map_lsp_range_to_source(
     doc: &CanonicalVirtualDocument,
     range: &vize_canon::LspRange,
 ) -> Option<Range> {
+    map_virtual_result_lsp_range_to_source(source, &doc.virtual_result, range)
+}
+
+fn map_virtual_result_lsp_range_to_source(
+    source: &str,
+    virtual_result: &VirtualTsResult,
+    range: &vize_canon::LspRange,
+) -> Option<Range> {
     let generated_start_post = crate::ide::position_to_offset(
-        &doc.virtual_result.code,
+        &virtual_result.code,
         range.start.line,
         range.start.character,
     )?;
-    let generated_end_post = crate::ide::position_to_offset(
-        &doc.virtual_result.code,
-        range.end.line,
-        range.end.character,
-    )
-    .unwrap_or(generated_start_post);
+    let generated_end_post =
+        crate::ide::position_to_offset(&virtual_result.code, range.end.line, range.end.character)
+            .unwrap_or(generated_start_post);
 
-    let generated_start_pre = doc
-        .virtual_result
+    let generated_start_pre = virtual_result
         .import_source_map
         .get_original_offset(generated_start_post as u32) as usize;
-    let generated_end_pre = doc
-        .virtual_result
+    let generated_end_pre = virtual_result
         .import_source_map
         .get_original_offset(generated_end_post as u32) as usize;
 
     let start_mapping =
-        mapping_for_generated_offset(&doc.virtual_result.source_mappings, generated_start_pre)?;
+        mapping_for_generated_offset(&virtual_result.source_mappings, generated_start_pre)?;
     let source_start = map_generated_offset_to_source(start_mapping, generated_start_pre, false);
     let source_end =
-        mapping_for_generated_offset(&doc.virtual_result.source_mappings, generated_end_pre)
+        mapping_for_generated_offset(&virtual_result.source_mappings, generated_end_pre)
             .map(|mapping| map_generated_offset_to_source(mapping, generated_end_pre, true))
             .unwrap_or_else(|| {
                 source_start

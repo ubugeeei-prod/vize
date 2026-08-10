@@ -3,25 +3,40 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
+#[cfg(test)]
+mod art_variant_fallback_tests;
 mod canonical;
+#[cfg(test)]
+mod canonical_dependency_tests;
+#[cfg(test)]
+mod canonical_rename_tests;
 #[cfg(test)]
 mod canonical_tests;
 mod html_attribute;
 #[cfg(test)]
 mod html_attribute_tests;
 mod html_tag;
+mod location_merge;
+mod rename_merge;
 mod svg_attribute;
-mod virtual_mirror;
+mod virtual_document;
 mod workspace_edit;
 
 pub(crate) use canonical::{
-    canonical_source_offset_to_position, map_canonical_corsa_locations, map_canonical_lsp_range,
-    open_canonical_virtual_document,
+    CanonicalSemanticPosition, CanonicalVirtualDocument, canonical_source_offset_to_position,
+    linked_semantic_position, map_canonical_corsa_locations, map_canonical_corsa_workspace_edit,
+    map_canonical_lsp_range, map_canonical_prepare_rename, merge_canonical_workspace_edits,
+    open_canonical_virtual_document, open_canonical_virtual_project_document, tower_range,
 };
 pub(crate) use html_attribute::{
     html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,
 };
 pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, native_dom_tag_info};
+pub(crate) use location_merge::merge_canonical_locations;
+pub(crate) use rename_merge::merge_authored_rename;
+use virtual_document::{
+    MatchedVirtualDocument, is_virtual_document_uri, match_virtual_document, virtual_document_path,
+};
 pub(crate) use workspace_edit::map_corsa_workspace_edit;
 
 use vize_canon::LspLocation;
@@ -29,20 +44,6 @@ use vize_carton::{String, cstr};
 
 use super::IdeContext;
 use crate::virtual_code::{SourceRange, VirtualDocument};
-
-enum CurrentVirtualDocument<'a> {
-    Template(&'a VirtualDocument),
-    Script(&'a VirtualDocument),
-    ScriptSetup(&'a VirtualDocument),
-}
-
-impl<'a> CurrentVirtualDocument<'a> {
-    fn document(&self) -> &'a VirtualDocument {
-        match self {
-            Self::Template(doc) | Self::Script(doc) | Self::ScriptSetup(doc) => doc,
-        }
-    }
-}
 
 pub(crate) fn template_request_path(uri: &Url) -> String {
     cstr!("{}.template.ts", uri.path())
@@ -58,6 +59,30 @@ pub(crate) fn script_request_path(uri: &Url, is_setup: bool) -> String {
     } else {
         cstr!("{}.script.ts", uri.path())
     }
+}
+
+/// Map a completion cursor, including the valid position immediately after a
+/// source expression such as `props.`. Other language features keep half-open
+/// source ranges so a cursor between tokens cannot attach to the previous one.
+pub(crate) fn completion_source_offset_to_generated(
+    document: &VirtualDocument,
+    source_offset: u32,
+) -> Option<usize> {
+    document
+        .source_map
+        .to_generated_for(source_offset, |features| features.completion)
+        .or_else(|| {
+            document
+                .source_map
+                .mappings()
+                .iter()
+                .filter(|mapping| {
+                    mapping.features.completion && mapping.source.end == source_offset
+                })
+                .min_by_key(|mapping| mapping.source.end.saturating_sub(mapping.source.start))
+                .map(|mapping| mapping.generated.end)
+        })
+        .map(|offset| offset as usize)
 }
 
 pub(crate) fn request_file_uri(path: &str) -> String {
@@ -81,10 +106,10 @@ pub(crate) fn map_corsa_locations(
 
 /// Map a single Corsa location back to either the Vue SFC or a real file URI.
 pub(crate) fn map_corsa_location(ctx: &IdeContext<'_>, location: &LspLocation) -> Option<Location> {
-    if let Some(current_doc) = match_current_virtual_document(ctx, &location.uri) {
-        let range = map_virtual_range(
-            ctx,
-            current_doc.document(),
+    if let Some(target) = match_virtual_document(ctx, &location.uri) {
+        let range = map_virtual_range_for_content(
+            target.content(),
+            target.document()?,
             &Range {
                 start: tower_lsp::lsp_types::Position {
                     line: location.range.start.line,
@@ -98,9 +123,12 @@ pub(crate) fn map_corsa_location(ctx: &IdeContext<'_>, location: &LspLocation) -
         )?;
 
         return Some(Location {
-            uri: ctx.uri.clone(),
+            uri: target.uri().clone(),
             range,
         });
+    }
+    if is_virtual_document_uri(&location.uri) {
+        return None;
     }
 
     let uri = accessible_external_uri(ctx, &location.uri)?;
@@ -139,15 +167,20 @@ pub(crate) fn map_corsa_prepare_rename(
     request_uri: &str,
     response: PrepareRenameResponse,
 ) -> Option<PrepareRenameResponse> {
-    let current_doc = match_current_virtual_document(ctx, request_uri)?;
+    let target = match_virtual_document(ctx, request_uri)?;
 
     match response {
         PrepareRenameResponse::Range(range) => {
-            map_virtual_range(ctx, current_doc.document(), &range).map(PrepareRenameResponse::Range)
+            map_virtual_range_for_content(target.content(), target.document()?, &range)
+                .map(PrepareRenameResponse::Range)
         }
-        PrepareRenameResponse::RangeWithPlaceholder { range, placeholder } => {
-            map_virtual_range(ctx, current_doc.document(), &range)
-                .map(|range| PrepareRenameResponse::RangeWithPlaceholder { range, placeholder })
+        // The placeholder Corsa reports is sliced out of the *generated*
+        // document, so it describes neither the authored span nor even a valid
+        // identifier once the range is mapped back. Answer with the authored
+        // range alone and let the client seed the rename from the SFC text.
+        PrepareRenameResponse::RangeWithPlaceholder { range, .. } => {
+            map_virtual_range_for_content(target.content(), target.document()?, &range)
+                .map(PrepareRenameResponse::Range)
         }
         PrepareRenameResponse::DefaultBehavior { default_behavior } => {
             Some(PrepareRenameResponse::DefaultBehavior { default_behavior })
@@ -155,8 +188,16 @@ pub(crate) fn map_corsa_prepare_rename(
     }
 }
 
-fn map_virtual_range(
+pub(crate) fn map_virtual_range(
     ctx: &IdeContext<'_>,
+    document: &VirtualDocument,
+    range: &Range,
+) -> Option<Range> {
+    map_virtual_range_for_content(&ctx.content, document, range)
+}
+
+fn map_virtual_range_for_content(
+    content: &str,
     document: &VirtualDocument,
     range: &Range,
 ) -> Option<Range> {
@@ -178,9 +219,8 @@ fn map_virtual_range(
     };
 
     let (start_line, start_character) =
-        super::offset_to_position(&ctx.content, source_range.start as usize);
-    let (end_line, end_character) =
-        super::offset_to_position(&ctx.content, source_range.end as usize);
+        super::offset_to_position(content, source_range.start as usize);
+    let (end_line, end_character) = super::offset_to_position(content, source_range.end as usize);
 
     Some(Range {
         start: tower_lsp::lsp_types::Position {
@@ -192,53 +232,4 @@ fn map_virtual_range(
             character: end_character,
         },
     })
-}
-
-fn match_current_virtual_document<'a>(
-    ctx: &'a IdeContext<'_>,
-    uri: &str,
-) -> Option<CurrentVirtualDocument<'a>> {
-    let path = virtual_document_path(uri)?;
-    let virtual_docs = ctx.virtual_docs.as_ref()?;
-
-    if path == template_request_path(ctx.uri).as_str() {
-        return virtual_docs
-            .template
-            .as_ref()
-            .map(CurrentVirtualDocument::Template);
-    }
-
-    for (variant_index, template) in virtual_docs.art_templates.iter().enumerate() {
-        if path == art_template_request_path(ctx.uri, variant_index).as_str() {
-            return template.as_ref().map(CurrentVirtualDocument::Template);
-        }
-    }
-
-    if path == script_request_path(ctx.uri, false).as_str() {
-        return virtual_docs
-            .script
-            .as_ref()
-            .map(CurrentVirtualDocument::Script);
-    }
-
-    if path == script_request_path(ctx.uri, true).as_str() {
-        return virtual_docs
-            .script_setup
-            .as_ref()
-            .map(CurrentVirtualDocument::ScriptSetup);
-    }
-
-    None
-}
-
-pub(super) fn virtual_document_path(uri: &str) -> Option<String> {
-    if let Ok(parsed) = Url::parse(uri) {
-        return Some(parsed.path().to_string().into());
-    }
-
-    if let Some(path) = uri.strip_prefix("vize-virtual://") {
-        return Some(path.to_string().into());
-    }
-
-    None
 }

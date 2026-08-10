@@ -6,7 +6,9 @@ use std::path::Path;
 use clap::Args;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use vize_canon::generate_vue_content_mapper_transform;
+use vize_canon::{
+    ContentMapperTransformOptions, generate_vue_content_mapper_transform_with_options,
+};
 use vize_carton::{String as CompactString, cstr};
 
 const PROTOCOL_VERSION: u8 = 1;
@@ -50,8 +52,36 @@ struct InitializeParams {
 struct TransformParams {
     file_name: CompactString,
     content: CompactString,
-    #[allow(dead_code)]
-    compiler_options: Value,
+    #[serde(default)]
+    options: Option<TransformOptions>,
+    #[serde(default)]
+    compiler_options: CompilerOptions,
+}
+
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CompilerOptions {
+    #[serde(default)]
+    no_unused_locals: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct TransformOptions {
+    #[serde(default = "default_options_api")]
+    options_api: bool,
+}
+
+impl Default for TransformOptions {
+    fn default() -> Self {
+        Self {
+            options_api: default_options_api(),
+        }
+    }
+}
+
+const fn default_options_api() -> bool {
+    true
 }
 
 fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()> {
@@ -122,9 +152,14 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
                         continue;
                     }
                 };
-                match generate_vue_content_mapper_transform(
+                let options = params.options.unwrap_or_default();
+                let transform_options = ContentMapperTransformOptions::default()
+                    .with_options_api(options.options_api)
+                    .with_preserve_unused_diagnostics(params.compiler_options.no_unused_locals);
+                match generate_vue_content_mapper_transform_with_options(
                     Path::new(params.file_name.as_str()),
                     params.content.as_str(),
+                    transform_options,
                 ) {
                     Ok(result) => write_result(writer, id, result)?,
                     Err(error) => {

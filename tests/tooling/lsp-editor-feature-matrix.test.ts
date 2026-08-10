@@ -137,6 +137,7 @@ test("lint-only profile explicitly disables every non-lint capability", () => {
     references: false,
     rename: false,
     semanticTokens: false,
+    signatureHelp: false,
     typecheck: false,
     workspaceSymbols: false,
   });

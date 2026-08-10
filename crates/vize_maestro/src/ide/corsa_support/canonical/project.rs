@@ -1,0 +1,73 @@
+use std::collections::VecDeque;
+
+use tower_lsp::lsp_types::Url;
+use vize_canon::CorsaBridge;
+use vize_carton::{FxHashSet, String};
+
+use super::{
+    CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri,
+    open::open_canonical_virtual_document_with_overlays,
+};
+use crate::ide::IdeContext;
+
+impl CanonicalVirtualDocument {
+    fn include_opened_document(&mut self, source_uri: Url, source: String, mut opened: Self) {
+        self.include_dependency(CanonicalDependencyDocument {
+            source_uri,
+            source,
+            request_uri: opened.request_uri,
+            virtual_result: opened.virtual_result,
+        });
+        for dependency in opened.dependencies.drain(..) {
+            self.include_dependency(dependency);
+        }
+    }
+
+    fn include_dependency(&mut self, dependency: CanonicalDependencyDocument) {
+        if location_matches_uri(&dependency.request_uri, &self.request_uri)
+            || self.dependencies.iter().any(|existing| {
+                location_matches_uri(&existing.request_uri, &dependency.request_uri)
+            })
+        {
+            return;
+        }
+        self.dependencies.push(dependency);
+    }
+}
+
+/// Open the query document and every currently-open reverse importer in one
+/// canonical project session. This is intentionally separate from the hot
+/// hover/definition path: project-wide operations need the fan-out, local
+/// operations should not pay for it.
+pub(crate) async fn open_canonical_virtual_project_document(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Option<CanonicalVirtualDocument> {
+    let cached_overlays = ctx.state.corsa_overlays();
+    let overlays = cached_overlays
+        .iter()
+        .map(|(path, content)| (path.clone(), &**content))
+        .collect::<Vec<_>>();
+    let mut document =
+        open_canonical_virtual_document_with_overlays(ctx, bridge, &overlays).await?;
+    let mut visited = FxHashSet::default();
+    visited.insert(ctx.uri.clone());
+    let mut queue = VecDeque::from(ctx.state.open_importers(ctx.uri));
+
+    while let Some(uri) = queue.pop_front() {
+        if !visited.insert(uri.clone()) {
+            continue;
+        }
+        queue.extend(ctx.state.open_importers(&uri));
+        let Some(importer_ctx) = IdeContext::new(ctx.state, &uri, 0) else {
+            continue;
+        };
+        if let Some(opened) =
+            open_canonical_virtual_document_with_overlays(&importer_ctx, bridge, &overlays).await
+        {
+            document.include_opened_document(uri.clone(), importer_ctx.content.into(), opened);
+        }
+    }
+
+    Some(document)
+}

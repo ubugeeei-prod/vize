@@ -4,7 +4,9 @@ use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
 
-use super::{JsxEmit, JsxExpr, collect_root_expressions, collect_style_expressions};
+use super::{
+    JsxEmit, collect_root_expressions, collect_style_expressions, component, push_mapped_expr,
+};
 
 const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
 
@@ -29,7 +31,7 @@ pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Op
     let mut roots: Vec<(u32, u32, Vec<JsxEmit>)> = Vec::with_capacity(lowered.roots.len());
     for root in &lowered.roots {
         let mut emits = Vec::new();
-        collect_root_expressions(&root.root, &mut emits);
+        collect_root_expressions(&root.root, &mut emits, true);
         collect_style_expressions(&root.scoped_style_exprs, &mut emits);
         roots.push((root.root.loc.start.offset, root.root.loc.end.offset, emits));
     }
@@ -47,6 +49,12 @@ fn render_plain_ts(source: &str, roots: &[(u32, u32, Vec<JsxEmit>)]) -> (String,
     out.push_str(JSX_EXPR_SINK);
     out.push_str("(...args: unknown[]): any;\n");
     out.push_str(CTX_HELPER);
+    if roots
+        .iter()
+        .any(|(_, _, emits)| emits.iter().any(emit_contains_component))
+    {
+        out.push_str(component::HELPER);
+    }
 
     let mut cursor = 0usize;
     for (start, end, emits) in roots {
@@ -86,6 +94,7 @@ fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit
             out.push_str(&expr.content);
             out.push(')');
         }
+        JsxEmit::Component(component) => component::render(out, mappings, component),
         JsxEmit::ForScope {
             source,
             value_alias,
@@ -111,15 +120,12 @@ fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit
     }
 }
 
-fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &JsxExpr) {
-    let gen_start = out.len();
-    out.push_str(&expr.content);
-    let gen_end = out.len();
-    mappings.push(VizeMapping {
-        gen_range: gen_start..gen_end,
-        src_range: expr.start as usize..expr.end as usize,
-        sub_spans: Vec::new(),
-    });
+fn emit_contains_component(emit: &JsxEmit) -> bool {
+    match emit {
+        JsxEmit::Component(_) => true,
+        JsxEmit::ForScope { body, .. } => body.iter().any(emit_contains_component),
+        JsxEmit::Expr(_) | JsxEmit::ModelTarget(_) => false,
+    }
 }
 
 fn push_verbatim(

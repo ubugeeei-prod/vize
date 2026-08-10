@@ -18,6 +18,7 @@ fn export(name: &str, kind: PlainScriptExportKind) -> PlainScriptExport {
     PlainScriptExport {
         name: CompactString::new(name),
         kind,
+        source_range: 0..name.len(),
         bridged_value: true,
     }
 }
@@ -89,6 +90,7 @@ fn captured_setup_bindings_become_ambient_aliases_of_the_setup_return() {
         vec![PlainScriptExport {
             name: CompactString::new("shared"),
             kind: PlainScriptExportKind::Value,
+            source_range: 0.."shared".len(),
             bridged_value: false,
         }]
     );

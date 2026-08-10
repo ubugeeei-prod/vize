@@ -4,8 +4,9 @@ use oxc_ast::ast::{
     Statement,
 };
 use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString};
+use oxc_span::{GetSpan, SourceType};
+use vize_carton::{CompactString, String, ToCompactString};
+use vize_croquis::{croquis::Croquis, macros::ModelDefinition};
 
 use super::MacroCall;
 
@@ -13,14 +14,36 @@ pub(crate) struct DefineModelMetadata {
     pub(crate) name: String,
     pub(crate) options: Option<String>,
     pub(crate) runtime_options: Option<String>,
+    pub(crate) declaration_span: Option<(u32, u32)>,
 }
 
 pub(crate) fn define_model_name(source: &str, call: &MacroCall) -> String {
     define_model_metadata(source, call).name
 }
 
-pub(crate) fn define_model_metadata(source: &str, call: &MacroCall) -> DefineModelMetadata {
-    let Some(source) = source.get(call.start..call.end) else {
+pub(crate) fn add_model_to_croquis(
+    summary: &mut Croquis,
+    source: &str,
+    model_call: &MacroCall,
+    binding_name: &str,
+) {
+    let metadata = define_model_metadata(source, model_call);
+    let model = ModelDefinition {
+        name: CompactString::new(metadata.name.as_str()),
+        local_name: CompactString::new(binding_name),
+        model_type: None,
+        required: false,
+        default_value: None,
+    };
+    if let Some((start, end)) = metadata.declaration_span {
+        summary.macros.add_model_with_declaration(model, start, end);
+    } else {
+        summary.macros.add_model(model);
+    }
+}
+
+pub(crate) fn define_model_metadata(source: &str, macro_call: &MacroCall) -> DefineModelMetadata {
+    let Some(source) = source.get(macro_call.start..macro_call.end) else {
         return default_metadata();
     };
     let allocator = Allocator::default();
@@ -35,11 +58,23 @@ pub(crate) fn define_model_metadata(source: &str, call: &MacroCall) -> DefineMod
         return default_metadata();
     };
 
-    extract_metadata_from_call(call, source)
+    let mut metadata = extract_metadata_from_call(call, source);
+    let Ok(call_start) = u32::try_from(macro_call.start) else {
+        metadata.declaration_span = None;
+        return metadata;
+    };
+    metadata.declaration_span = metadata.declaration_span.and_then(|(start, end)| {
+        Some((call_start.checked_add(start)?, call_start.checked_add(end)?))
+    });
+    metadata
 }
 
 fn extract_metadata_from_call(call: &CallExpression<'_>, source: &str) -> DefineModelMetadata {
     let name_arg = call.arguments.first().and_then(argument_string_literal);
+    let declaration_span = match call.arguments.first() {
+        Some(Argument::StringLiteral(literal)) => literal.span,
+        _ => call.callee.span(),
+    };
     let name = name_arg
         .map(|name| name.to_compact_string())
         .unwrap_or_else(|| "modelValue".to_compact_string());
@@ -54,6 +89,7 @@ fn extract_metadata_from_call(call: &CallExpression<'_>, source: &str) -> Define
         name,
         options,
         runtime_options,
+        declaration_span: Some((declaration_span.start, declaration_span.end)),
     }
 }
 
@@ -62,6 +98,7 @@ fn default_metadata() -> DefineModelMetadata {
         name: "modelValue".into(),
         options: None,
         runtime_options: None,
+        declaration_span: None,
     }
 }
 
@@ -219,5 +256,43 @@ fn static_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
         PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
         PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod declaration_tests {
+    use super::*;
+
+    #[test]
+    fn bridges_explicit_and_default_model_declarations_to_croquis() {
+        for (source, name, declaration) in [
+            (
+                "const title = defineModel<string>(\"title\")",
+                "title",
+                "\"title\"",
+            ),
+            (
+                "const model = defineModel<number>()",
+                "modelValue",
+                "defineModel",
+            ),
+        ] {
+            let start = source.find("defineModel").unwrap();
+            let call = MacroCall::new(
+                start,
+                source.len(),
+                String::default(),
+                None,
+                Some(String::from("model")),
+            );
+            let mut summary = Croquis::new();
+            add_model_to_croquis(&mut summary, source, &call, "model");
+            let (start, end) = summary
+                .macros
+                .model_declaration(name)
+                .expect("model declaration");
+
+            assert_eq!(&source[start as usize..end as usize], declaration);
+        }
     }
 }

@@ -1,6 +1,39 @@
 use std::path::Path;
 
-use crate::batch::generate_vue_content_mapper_transform;
+use super::ContentMapperSpanKind;
+use super::span_features::{
+    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
+    CONTENT_MAPPER_SPAN_FEATURES_COMPLETION, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
+    content_mapper_span_features,
+};
+use crate::batch::{
+    ContentMapperTransformOptions, generate_vue_content_mapper_transform,
+    generate_vue_content_mapper_transform_with_options,
+};
+
+#[path = "content_mapper_component_export_tests.rs"]
+mod component_exports;
+#[path = "content_mapper_model_tests.rs"]
+mod models;
+#[path = "content_mapper_navigation_tests.rs"]
+mod navigation;
+#[path = "content_mapper_scoped_event_navigation_tests.rs"]
+mod scoped_event_navigation;
+
+#[test]
+fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
+    let generated = "  const __vize_handler_1_2: unknown = handler;";
+    let start = generated.find("__vize_handler_").unwrap();
+
+    assert_eq!(
+        content_mapper_span_features(generated, start, ContentMapperSpanKind::Atom),
+        0
+    );
+    assert_eq!(
+        content_mapper_span_features(generated, start, ContentMapperSpanKind::Verbatim),
+        CONTENT_MAPPER_SPAN_FEATURES_ALL
+    );
+}
 
 #[test]
 fn emits_protocol_v1_spans_with_all_features_and_without_forbidden_overlaps() {
@@ -37,18 +70,14 @@ const message = "hello"
             );
         }
     }
-    // microsoft/typescript-go protocol v1 currently defines SpanMapFeature.All
-    // as every bit from Hover through CodeLens. Pin the negotiated contract
-    // independently from the implementation so a local regression cannot
-    // silently turn editor features off again.
-    const UPSTREAM_PROTOCOL_V1_ALL_FEATURES: usize = (1 << 21) - 1;
-    for mapping in &result.mappings {
-        assert_eq!(
-            mapping.0[5], UPSTREAM_PROTOCOL_V1_ALL_FEATURES,
-            "mapping must opt into every protocol v1 feature: {:?}",
-            mapping.0
-        );
-    }
+    assert!(result.mappings.iter().all(|mapping| {
+        mapping.0[5]
+            == if mapping.0[4] == ContentMapperSpanKind::Verbatim as usize {
+                CONTENT_MAPPER_SPAN_FEATURES_ALL
+            } else {
+                CONTENT_MAPPER_SPAN_FEATURES_ATOM
+            }
+    }));
 }
 
 #[test]
@@ -68,6 +97,58 @@ const emoji = "😀"
             .any(|mapping| mapping.0[2] == original),
         "expected a UTF-8 byte mapping at {original}: {:?}",
         result.mappings
+    );
+}
+
+#[test]
+fn maps_synthetic_prop_bindings_to_the_authored_declaration() {
+    let source = r#"<script setup lang="ts">
+defineProps<{ count: number }>();
+</script>
+<template>{{ count.toFixed(0) }}</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Props.vue"), source).expect("transform");
+    let original = source.find("count: number").unwrap();
+    let matching = result
+        .mappings
+        .iter()
+        .filter(|mapping| mapping.0[2] == original && mapping.0[3] == "count".len())
+        .collect::<Vec<_>>();
+    let exported = result.text.find("export type Props").unwrap();
+    let exported = exported + result.text[exported..].find("count").unwrap();
+
+    assert!(
+        matching.len() >= 3,
+        "expected exported, authored, and synthetic projections: {matching:?}"
+    );
+    assert!(matching.iter().any(|mapping| mapping.0[0] == exported));
+    assert!(matching.iter().all(|mapping| mapping.0[4] == 0));
+}
+
+#[test]
+fn maps_synthetic_props_after_a_plain_script_to_the_setup_block() {
+    let source = r#"<script lang="ts">
+export const marker = true;
+</script>
+<script setup lang="ts">
+defineProps<{ count: number }>();
+</script>
+<template>{{ count.toFixed(0) }}</template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("SplitProps.vue"), source)
+        .expect("transform");
+    let original = source.find("count: number").unwrap();
+
+    assert!(
+        result
+            .mappings
+            .iter()
+            .filter(|mapping| {
+                mapping.0[2] == original && mapping.0[3] == "count".len() && mapping.0[4] == 0
+            })
+            .count()
+            >= 2
     );
 }
 
@@ -191,4 +272,69 @@ fn jsx_scripts_report_tsx_script_kind() {
             .text
             .starts_with("/// <reference types=\"vue/jsx\" />")
     );
+}
+
+#[test]
+fn options_api_transform_setting_controls_instance_bindings() {
+    let source = r#"<script lang="ts">
+export default {
+  data() { return { count: 1 } }
+}
+</script>
+<template>{{ count }}</template>
+"#;
+
+    let enabled = generate_vue_content_mapper_transform_with_options(
+        Path::new("Options.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_options_api(true),
+    )
+    .expect("enabled transform");
+    let disabled = generate_vue_content_mapper_transform_with_options(
+        Path::new("Options.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_options_api(false),
+    )
+    .expect("disabled transform");
+
+    assert!(
+        enabled
+            .text
+            .contains("const count: __VizeOptionsBinding<typeof __default__, \"count\">")
+    );
+    assert!(!disabled.text.contains("__VizeOptionsBinding"));
+}
+
+#[test]
+fn unused_diagnostic_setting_only_anchors_template_references() {
+    let source = r#"<script setup lang="ts">
+const used = 1
+const unused = 2
+</script>
+<template>{{ used }}</template>
+"#;
+
+    let result = generate_vue_content_mapper_transform_with_options(
+        Path::new("Unused.vue"),
+        source,
+        ContentMapperTransformOptions::default().with_preserve_unused_diagnostics(true),
+    )
+    .expect("transform");
+
+    assert!(result.text.contains("void used;"), "{}", result.text);
+    assert!(!result.text.contains("void unused;"), "{}", result.text);
+}
+
+#[test]
+fn default_transform_matches_vize_options_api_default() {
+    let source = r#"<script lang="ts">
+export default { data() { return { count: 1 } } }
+</script>
+<template>{{ count }}</template>
+"#;
+
+    let result = generate_vue_content_mapper_transform(Path::new("DefaultOptions.vue"), source)
+        .expect("transform");
+
+    assert!(result.text.contains("__VizeOptionsBinding"));
 }

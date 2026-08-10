@@ -50,6 +50,7 @@ export function renderVizeConfig(features: VizeConfigFeatures): string {
     blocks.push(`  typeChecker: {
     enabled: true,
     strict: true,
+    jsxTypecheck: true,
   },`);
   }
   if (features.vite) {
@@ -63,6 +64,24 @@ export default defineConfig({
 ${blocks.join("\n")}
 });
 `;
+}
+
+/** Minimum project config written only when typechecking is selected and no config exists. */
+export function renderTypecheckTsconfig(typescript: boolean): string {
+  const compilerOptions: Record<string, boolean | string> = {
+    strict: true,
+    target: "ES2022",
+    module: "ESNext",
+    moduleResolution: "Bundler",
+    jsx: "preserve",
+  };
+  if (!typescript) {
+    compilerOptions.allowJs = true;
+    compilerOptions.checkJs = true;
+  }
+  compilerOptions.noEmit = true;
+  compilerOptions.skipLibCheck = true;
+  return `${JSON.stringify({ compilerOptions, include: ["src/**/*"] }, null, 2)}\n`;
 }
 
 /**

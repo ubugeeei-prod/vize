@@ -25,7 +25,7 @@ pub(super) fn spawn_project_session(
     executable: &str,
     cwd: &Path,
     config_path: &Path,
-) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), String> {
+) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
     let config_path_wire = config_path.to_string_lossy();
     let mode = api_mode_for_executable(executable);
     let session = match block_on(spawn_project_session_with_mode(
@@ -35,24 +35,52 @@ pub(super) fn spawn_project_session(
         mode,
     )) {
         Ok(session) => session,
-        Err(error) if should_retry_json_rpc(mode, &error) => block_on(
-            spawn_project_session_with_mode(
+        Err(error) if should_retry_json_rpc(mode, &error) => {
+            match block_on(spawn_project_session_with_mode(
                 executable,
                 cwd,
                 config_path_wire.as_ref(),
                 ApiMode::AsyncJsonRpcStdio,
-            ),
-        )
-        .map_err(|fallback| {
-            cstr!("Failed to start Corsa API session: {fallback} (after msgpack error: {error})")
-        })?,
-        Err(error) => {
-            return Err(cstr!("Failed to start Corsa API session: {error}"));
+            )) {
+                Ok(session) => session,
+                Err(fallback) => {
+                    return Err(classify_project_session_error(
+                        fallback,
+                        Some(cstr!("after msgpack error: {error}")),
+                    ));
+                }
+            }
         }
+        Err(error) => return Err(classify_project_session_error(error, None)),
     };
     let capabilities = block_on(session.describe_capabilities())
         .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
     Ok((session, capabilities))
+}
+
+#[derive(Debug)]
+pub(super) enum ProjectSessionSpawnError {
+    Unavailable(String),
+    Failed(String),
+}
+
+fn classify_project_session_error(
+    error: CorsaError,
+    context: Option<String>,
+) -> ProjectSessionSpawnError {
+    let message = context.map_or_else(
+        || cstr!("Failed to start Corsa API session: {error}"),
+        |context| cstr!("Failed to start Corsa API session: {error} ({context})"),
+    );
+    if matches!(
+        &error,
+        CorsaError::Protocol(detail)
+            if detail.contains("project session did not resolve a project")
+    ) {
+        ProjectSessionSpawnError::Unavailable(message)
+    } else {
+        ProjectSessionSpawnError::Failed(message)
+    }
 }
 
 async fn spawn_project_session_with_mode(
@@ -131,42 +159,68 @@ pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
 }
 
 impl CorsaProjectClient {
+    pub(super) fn has_project_session(&self) -> bool {
+        self.session.is_some()
+    }
+
+    pub(super) fn project_session(&self) -> Result<&ProjectSession, String> {
+        self.session
+            .as_ref()
+            .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
+    }
+
+    pub(super) fn project_session_mut(&mut self) -> Result<&mut ProjectSession, String> {
+        self.session
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
+    }
+
     fn trusts_capabilities(&self) -> bool {
         self.capabilities.runtime.capability_endpoint
     }
 
     pub(super) fn supports_overlay_api(&self) -> bool {
+        if !self.has_project_session() {
+            return true;
+        }
         !self.overlay_api_disabled
             && (!self.trusts_capabilities()
                 || self.capabilities.overlay.update_snapshot_overlay_changes)
     }
 
     pub(super) fn supports_project_diagnostics_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.diagnostics.project
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.diagnostics.project)
     }
 
     pub(super) fn supports_file_diagnostics_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.diagnostics.file
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.diagnostics.file)
     }
 
     pub(super) fn supports_hover_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.hover
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.hover)
     }
 
     pub(super) fn supports_definition_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.definition
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.definition)
     }
 
     pub(super) fn supports_references_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.references
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.references)
     }
 
     pub(super) fn supports_rename_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.rename
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.rename)
     }
 
     pub(super) fn supports_completion_api(&self) -> bool {
-        !self.trusts_capabilities() || self.capabilities.editor.completion
+        self.has_project_session()
+            && (!self.trusts_capabilities() || self.capabilities.editor.completion)
     }
 
     pub(super) fn can_use_api_for_uri(&self, uri: &str) -> bool {
@@ -175,9 +229,16 @@ impl CorsaProjectClient {
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
+        if previous.as_deref() != Some(content) {
+            self.editor_lsp_documents_dirty = true;
+        }
 
         if self.materialized_project_session {
             return self.sync_materialized_overlay_document(uri, content);
+        }
+
+        if !self.has_project_session() {
+            return Ok(());
         }
 
         let document_uri = self.session_document_uri(uri);
@@ -199,7 +260,7 @@ impl CorsaProjectClient {
                 )
             });
         let version = next_overlay_version(&mut self.overlay_versions, uri);
-        match block_on(self.session.refresh_with_overlay_changes(
+        match block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: vec![OverlayUpdate {
@@ -230,12 +291,17 @@ impl CorsaProjectClient {
             .materialized_session_document_uri(uri)
             .ok_or_else(|| cstr!("Failed to derive materialized Corsa overlay path for {uri}"))?;
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
-        block_on(self.session.refresh(file_changes))
+        if !self.has_project_session() {
+            return Ok(());
+        }
+        block_on(self.project_session_mut()?.refresh(file_changes))
             .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"))
     }
 
     pub(super) fn delete_overlay_document(&mut self, uri: &str) -> Result<(), String> {
-        self.document_texts.remove(uri);
+        if self.document_texts.remove(uri).is_some() {
+            self.editor_lsp_documents_dirty = true;
+        }
         self.overlay_versions.remove(uri);
         let document_uri = self
             .session_document_uris
@@ -245,8 +311,11 @@ impl CorsaProjectClient {
         let file_changes = remove_session_document(uri, document_uri.as_str()).or_else(|| {
             virtual_overlay::delete_file_changes(uri, document_uri.as_str(), &self.project_root)
         });
+        if !self.has_project_session() {
+            return Ok(());
+        }
         if document_uri != uri {
-            return block_on(self.session.refresh(file_changes))
+            return block_on(self.project_session_mut()?.refresh(file_changes))
                 .map_err(|error| cstr!("Failed to refresh Corsa snapshot: {error}"));
         }
 
@@ -254,7 +323,7 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        block_on(self.session.refresh_with_overlay_changes(
+        block_on(self.project_session_mut()?.refresh_with_overlay_changes(
             file_changes,
             Some(OverlayChanges {
                 upsert: Vec::new(),
@@ -403,126 +472,4 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        api_mode_for_executable, build_session_document_uri, line_character_to_utf16_offset,
-        overlay_changes_error_is_unsupported, should_retry_json_rpc, uri_document_identifier,
-    };
-    use crate::file_uri::path_to_file_uri;
-    use corsa::CorsaError;
-    use corsa::api::{ApiMode, DocumentIdentifier};
-
-    // Keep in-project virtual `.vue.ts` overlays at real paths so relative
-    // script imports resolve against the source tree.
-    #[test]
-    fn keeps_vue_virtual_overlay_at_real_path_inside_project() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let project = std::env::temp_dir().join(format!(
-            "vize-canon-session-uri-{}-{nonce}",
-            std::process::id()
-        ));
-        let components = project.join("src/components");
-        std::fs::create_dir_all(&components).unwrap();
-        let real = components.join("Button.vue");
-        std::fs::write(&real, "<template><div /></template>").unwrap();
-
-        let virtual_path = components.join("Button.vue.ts");
-        let uri = path_to_file_uri(&virtual_path);
-        let mapped = build_session_document_uri(&uri, &project, true);
-        assert_eq!(mapped, uri, "in-project .vue.ts overlay must keep its path");
-
-        let mapped_no_overlay = build_session_document_uri(&uri, &project, false);
-        assert_eq!(
-            mapped_no_overlay,
-            path_to_file_uri(
-                &project.join("node_modules/.vize/corsa-overlay/src/components/Button.vue.ts")
-            ),
-            "in-project overlays must preserve their project-relative path"
-        );
-
-        // A path outside the project is still remapped into the overlay tree.
-        let outside = std::env::temp_dir().join(format!("vize-outside-{nonce}/Other.vue.ts"));
-        let outside_uri = path_to_file_uri(&outside);
-        let mapped_outside = build_session_document_uri(&outside_uri, &project, true);
-        assert_ne!(mapped_outside, outside_uri);
-
-        let _ = std::fs::remove_dir_all(project);
-    }
-
-    #[test]
-    fn uses_async_json_rpc_for_node_modules_bin_wrappers() {
-        assert_eq!(
-            api_mode_for_executable("/tmp/project/node_modules/.bin/tsgo"),
-            ApiMode::AsyncJsonRpcStdio
-        );
-    }
-
-    #[test]
-    fn uses_async_json_rpc_for_native_preview_js_entrypoints() {
-        assert_eq!(
-            api_mode_for_executable(
-                "/tmp/project/node_modules/@typescript/native-preview/bin/tsgo.js"
-            ),
-            ApiMode::AsyncJsonRpcStdio
-        );
-    }
-
-    #[test]
-    fn keeps_native_binaries_on_sync_msgpack() {
-        assert_eq!(
-            api_mode_for_executable("/tmp/project/corsa-bind/.cache/tsgo"),
-            ApiMode::SyncMsgpackStdio
-        );
-    }
-
-    #[test]
-    fn retries_json_rpc_after_msgpack_shape_mismatch() {
-        let error = CorsaError::Protocol("expected tuple marker, got 61".into());
-
-        assert!(should_retry_json_rpc(ApiMode::SyncMsgpackStdio, &error));
-        assert!(!should_retry_json_rpc(ApiMode::AsyncJsonRpcStdio, &error));
-    }
-
-    // Regression: the materialized-overlay fallback must be gated on the typed
-    // `CorsaError::Unsupported` variant that corsa-bind raises when a runtime
-    // rejects `updateSnapshot.overlayChanges`, not on sniffing the rendered
-    // error message. A runtime that fails an overlay write for an unrelated
-    // reason (e.g. a transport/protocol fault) must surface as an error rather
-    // than silently degrading to the slower materialized path.
-    #[test]
-    fn overlay_unsupported_uses_typed_capability_error() {
-        assert!(overlay_changes_error_is_unsupported(
-            &CorsaError::Unsupported(
-                "updateSnapshot.overlayChanges is not supported by this runtime",
-            )
-        ));
-
-        // A look-alike message routed through a different (protocol) variant
-        // must NOT be treated as an overlay-capability gap.
-        assert!(!overlay_changes_error_is_unsupported(
-            &CorsaError::Protocol("overlayChanges write failed: connection unsupported".into())
-        ));
-    }
-
-    #[test]
-    fn utf16_offsets_clamp_to_line_boundaries() {
-        assert_eq!(line_character_to_utf16_offset("alpha\nbeta", 0, 99), 5);
-        assert_eq!(line_character_to_utf16_offset("a😀b", 0, 3), 3);
-        assert_eq!(line_character_to_utf16_offset("a\nb", 9, 0), 3);
-    }
-
-    #[test]
-    fn api_queries_use_uri_document_identifiers() {
-        assert!(matches!(
-            uri_document_identifier("file:///workspace/App.vue.ts"),
-            DocumentIdentifier::FileName(_)
-        ));
-        assert!(matches!(
-            uri_document_identifier("corsa://overlay/App.vue.ts"),
-            DocumentIdentifier::Uri { .. }
-        ));
-    }
-}
+mod tests;

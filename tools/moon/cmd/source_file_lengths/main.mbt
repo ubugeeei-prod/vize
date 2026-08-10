@@ -57,11 +57,12 @@ fn is_excluded_path(path : String) -> Bool {
   path.has_suffix("Cargo.lock") ||
   path.has_suffix("pnpm-lock.yaml") ||
   path.has_suffix(".lock") ||
-  // Generated benchmark/config artifacts cannot be split without breaking
-  // producer contracts or their public package paths.
+  // Generated artifacts and single-file package manifests cannot be split
+  // without breaking producer contracts or their public package paths.
   (path.has_prefix("bench/results/") ||
   path == "npm/cli/schemas/vize.config.schema.json" ||
-  path == "npm/cli/src/types/generated.ts") ||
+  path == "npm/cli/src/types/generated.ts" ||
+  path == "editors/vscode/package.json") ||
   path.has_prefix("docs/content/ja/") || path.has_prefix("docs/content/zh-CN/") ||
   path.has_prefix("docs/content/pt-BR/") || path.has_prefix("docs/content/fr/") ||
   path.contains(".min.") ||

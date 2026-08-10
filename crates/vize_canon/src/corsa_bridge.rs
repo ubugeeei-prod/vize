@@ -5,6 +5,9 @@
 //! behind the bridge surface.
 
 mod bridge;
+mod script_document;
+#[cfg(test)]
+mod script_document_tests;
 mod session;
 mod types;
 mod vue_dependencies;
@@ -16,16 +19,21 @@ mod vue_document;
 mod vue_document_alias_tests;
 #[cfg(test)]
 mod vue_document_tests;
+#[cfg(test)]
+mod vue_project_mapping_tests;
 mod worker;
 
 pub use bridge::{BatchTypeChecker, CorsaBridge};
 pub use types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
-    LspRange, TypeCheckResult, VIRTUAL_URI_SCHEME,
+    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
+    LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
+    LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
-pub use vue_document::{CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions};
+pub use vue_document::{
+    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+};
 pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project};
 
 #[cfg(test)]

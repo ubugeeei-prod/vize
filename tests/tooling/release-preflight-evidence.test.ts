@@ -119,11 +119,10 @@ test("matrix-sensitive release gates require every successful job", () => {
   );
   assert.throws(() => assertRequiredWorkflowJobs("Check", []), /test-scripts/);
 
-  const appJobs = ["dev", "vrt", "preview", "build", "check", "lint"].map((suite) =>
-    successfulReleaseJob(`app-e2e (${suite})`),
-  );
+  const appJobs = [successfulReleaseJob("app-e2e")];
   assert.doesNotThrow(() => assertRequiredWorkflowJobs("App E2E", appJobs));
-  assert.throws(() => assertRequiredWorkflowJobs("App E2E", appJobs.slice(1)), /app-e2e \(dev\)/);
+  assert.throws(() => assertRequiredWorkflowJobs("App E2E", []), /app-e2e/);
+  assert.throws(() => assertRequiredWorkflowJobs("App E2E", [...appJobs, ...appJobs]), /found 2/);
 
   const targets = [
     "linux-x64-gnu",

@@ -880,23 +880,20 @@ fn files_present_suppresses_the_implicit_wildcard_scan() {
 }
 
 #[test]
-fn files_entry_with_unsupported_extension_is_dropped() {
+fn files_entry_accepts_javascript_when_allow_js_is_enabled() {
     let case_dir = unique_case_dir("tsconfig-files-bad-ext");
     let _ = fs::remove_dir_all(&case_dir);
     fs::create_dir_all(case_dir.join("src")).unwrap();
     fs::write(case_dir.join("src/x.js"), "module.exports = {}").unwrap();
     fs::write(
         case_dir.join("tsconfig.json"),
-        r#"{ "files": ["src/x.js"] }"#,
+        r#"{ "compilerOptions": { "allowJs": true }, "files": ["src/x.js"] }"#,
     )
     .unwrap();
 
     let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
-    assert!(
-        files.is_empty(),
-        "unsupported files entry should drop: {files:?}"
-    );
+    assert_eq!(files, vec![case_dir.join("src/x.js")]);
 
     let _ = fs::remove_dir_all(&case_dir);
 }

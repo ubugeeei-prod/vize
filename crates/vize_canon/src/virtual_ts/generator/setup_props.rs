@@ -1,112 +1,41 @@
 use vize_carton::{String, append, cstr, profile};
 use vize_croquis::Croquis;
 
-use super::generics::{
-    generic_fallback_args, is_ident_byte, references_any_identifier, skip_ascii_ws,
-};
+use super::generics::generic_fallback_args;
+use super::setup_scope::define_props_type_requires_setup_scope;
+use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use crate::virtual_ts::props::{
-    OptionsApiPropsSource, PropsTypeEmission, add_generic_defaults, append_default_props,
-    extract_generic_names, generate_props_type, generate_props_variables,
-    generate_setup_scoped_props_artifact,
+    OptionsApiPropsSource, PropBindingMappings, PropsSource, PropsTypeEmission,
+    add_generic_defaults, append_default_props, extract_generic_names, generate_props_type,
+    generate_props_variables, generate_setup_scoped_props_artifact,
 };
 
-fn is_identifier_start_byte(b: u8) -> bool {
-    b == b'_' || b == b'$' || b.is_ascii_alphabetic()
-}
-
-fn collect_typeof_root_identifiers(source: &str) -> Vec<&str> {
-    let bytes = source.as_bytes();
-    let mut idents = Vec::new();
-    let mut from = 0usize;
-
-    while let Some(rel) = source[from..].find("typeof") {
-        let at = from + rel;
-        let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
-        let after_keyword = at + "typeof".len();
-        let after_ok = after_keyword >= bytes.len() || !is_ident_byte(bytes[after_keyword]);
-        if !before_ok || !after_ok {
-            from = after_keyword;
-            continue;
-        }
-
-        let ident_start = skip_ascii_ws(bytes, after_keyword);
-        if ident_start >= bytes.len() || !is_identifier_start_byte(bytes[ident_start]) {
-            from = after_keyword;
-            continue;
-        }
-
-        let mut ident_end = ident_start + 1;
-        while ident_end < bytes.len() && is_ident_byte(bytes[ident_end]) {
-            ident_end += 1;
-        }
-
-        let ident = &source[ident_start..ident_end];
-        if ident != "import" {
-            idents.push(ident);
-        }
-        from = ident_end;
-    }
-
-    idents
-}
-
-fn binding_is_import(summary: &Croquis, name: &str) -> bool {
-    summary.binding_spans.get(name).is_some_and(|(start, end)| {
-        summary
-            .import_statements
-            .iter()
-            .any(|imp| *start >= imp.start && *end <= imp.end)
-    })
-}
-
-fn is_setup_value_binding(summary: &Croquis, name: &str) -> bool {
-    summary.bindings.bindings.contains_key(name) && !binding_is_import(summary, name)
-}
-
-pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
-    let Some(type_args) = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref())
-    else {
-        return false;
-    };
-    let inner_type = type_args
-        .strip_prefix('<')
-        .and_then(|s| s.strip_suffix('>'))
-        .unwrap_or(type_args.as_str());
-
-    if collect_typeof_root_identifiers(inner_type)
-        .into_iter()
-        .any(|name| is_setup_value_binding(summary, name))
-    {
-        return true;
-    }
-
-    let non_hoisted_type_names: Vec<String> = summary
-        .type_exports
-        .iter()
-        .filter(|te| !te.hoisted)
-        .map(|te| te.name.as_str().into())
-        .collect();
-    !non_hoisted_type_names.is_empty()
-        && references_any_identifier(inner_type, &non_hoisted_type_names)
-}
+pub(super) use crate::virtual_ts::props::prop_source;
 
 /// Build the setup props plan and emit the module-level props type in one step.
 /// Keeps `generator.rs` from re-threading `options_api_props` through a second
 /// call site (and from growing past the source-length gate).
 pub(super) fn generate_setup_props(
     ts: &mut String,
-    summary: &Croquis,
+    source: PropsSource<'_>,
     generic_param: Option<&str>,
     options_api_props: Option<&OptionsApiPropsSource>,
     props_is_public_export: bool,
 ) -> SetupPropsPlan {
+    let summary = source.summary;
     let plan = SetupPropsPlan::new(summary, options_api_props, props_is_public_export);
+    let generated_start = ts.len();
     profile!("canon.virtual_ts.generate_props_type", {
         plan.generate_props_type(ts, summary, generic_param, options_api_props);
     });
+    let mut type_mappings = MacroTypeMappings::new(source.mappings, source.script, source.offset);
+    type_mappings.map_exported_type(ts, generated_start, summary.macros.define_props(), "Props");
+    type_mappings.map_model_props(
+        ts,
+        generated_start,
+        summary.macros.models(),
+        &summary.macros,
+    );
     plan
 }
 
@@ -115,6 +44,7 @@ pub(super) struct SetupPropsPlan {
     defer_options_api_props: bool,
     capture_options_api_default: bool,
     module_scope_declares_props: bool,
+    uses_resolved_props: bool,
 }
 
 impl SetupPropsPlan {
@@ -134,14 +64,17 @@ impl SetupPropsPlan {
                 .type_exports
                 .iter()
                 .any(|te| te.hoisted && te.name.as_str() == "Props");
+        let defer = define_props_type_requires_setup_scope(summary);
         Self {
-            defer: define_props_type_requires_setup_scope(summary),
+            defer,
             defer_options_api_props: !module_scope_declares_props
                 && options_api_props
                     .is_some_and(|source| source.deferred_object_source().is_some()),
             capture_options_api_default: options_api_props
                 .is_some_and(OptionsApiPropsSource::captures_default),
             module_scope_declares_props,
+            uses_resolved_props: module_scope_declares_props
+                && (defer || !summary.macros.models().is_empty()),
         }
     }
 
@@ -172,12 +105,16 @@ impl SetupPropsPlan {
     pub(super) fn generate_props_variables(
         &self,
         ts: &mut String,
-        summary: &Croquis,
+        source: PropsSource<'_>,
         generic_param: Option<&str>,
         check_props: bool,
     ) {
+        let summary = source.summary;
+        let mut binding_mappings =
+            PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
         generate_props_variables(
             ts,
+            &mut binding_mappings,
             summary,
             generic_param,
             self.template_props_type_ref(),
@@ -190,10 +127,9 @@ impl SetupPropsPlan {
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {
-        // Defer to `__VizeResolvedProps` only when a `Props` already lives at
-        // module scope; otherwise the public `Props` alias emitted from the
-        // setup return is the component prop source.
-        if self.defer && self.module_scope_declares_props {
+        // Resolve through the synthesized intersection when an authored
+        // module-level `Props` must absorb models or deferred setup props.
+        if self.uses_resolved_props {
             "__VizeResolvedProps"
         } else {
             "Props"
@@ -243,9 +179,16 @@ impl SetupPropsPlan {
         append!(ts, "  readonly __vizeRawProps?: {props_type_ref};\n");
     }
 
-    pub(super) fn emit_artifact(&self, ts: &mut String, summary: &Croquis) {
+    pub(super) fn emit_artifact(&self, ts: &mut String, source: PropsSource<'_>) {
         if self.defer {
-            generate_setup_scoped_props_artifact(ts, summary);
+            let generated_start = ts.len();
+            generate_setup_scoped_props_artifact(ts, source.summary);
+            MacroTypeMappings::new(source.mappings, source.script, source.offset).map_model_props(
+                ts,
+                generated_start,
+                source.summary.macros.models(),
+                &source.summary.macros,
+            );
         }
     }
 

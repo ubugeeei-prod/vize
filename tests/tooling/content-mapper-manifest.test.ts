@@ -21,8 +21,8 @@ test("vize package exposes an executable TypeScript content mapper", () => {
 
   assert.deepEqual(packageJson.tsContentMapper, {
     exec: ["node", "./bin/vize", "content-mapper"],
+    compilerOptions: ["noUnusedLocals"],
   });
-  assert.equal(packageJson.tsContentMapper?.compilerOptions, undefined);
   assert.equal(packageJson.bin?.vize, "bin/vize");
   assert.ok(packageJson.files?.includes("bin"));
   assert.notEqual(

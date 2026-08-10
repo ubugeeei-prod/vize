@@ -432,6 +432,10 @@ export interface LanguageServerConfig {
    */
   completion?: boolean;
   /**
+   * Enable TypeScript signature help
+   */
+  signatureHelp?: boolean;
+  /**
    * Enable hover information
    */
   hover?: boolean;

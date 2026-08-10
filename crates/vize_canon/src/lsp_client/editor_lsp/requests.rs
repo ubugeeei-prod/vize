@@ -1,0 +1,62 @@
+//! Raw JSON-RPC request shapes for the editor LSP transport.
+//!
+//! The pinned runtime answers editor requests over `--lsp --stdio` with
+//! untyped payloads, so every request keeps `Value` params and results.
+
+use serde_json::Value;
+
+pub(super) struct RawHoverRequest;
+
+impl lsp_types::request::Request for RawHoverRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/hover";
+}
+
+pub(super) struct RawCompletionRequest;
+
+impl lsp_types::request::Request for RawCompletionRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/completion";
+}
+
+pub(super) struct RawDefinitionRequest;
+
+impl lsp_types::request::Request for RawDefinitionRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/definition";
+}
+
+pub(super) struct RawReferencesRequest;
+
+impl lsp_types::request::Request for RawReferencesRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/references";
+}
+
+pub(super) struct RawPrepareRenameRequest;
+
+impl lsp_types::request::Request for RawPrepareRenameRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/prepareRename";
+}
+
+pub(super) struct RawRenameRequest;
+
+impl lsp_types::request::Request for RawRenameRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/rename";
+}
+
+pub(super) struct RawSignatureHelpRequest;
+
+impl lsp_types::request::Request for RawSignatureHelpRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/signatureHelp";
+}

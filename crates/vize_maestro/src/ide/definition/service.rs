@@ -93,17 +93,15 @@ impl super::DefinitionService {
             return None;
         }
 
-        // Try Corsa definition lookup first.
+        // Try Corsa definition lookup first. A variant expression without a generated
+        // counterpart still has an authored answer, so a missing mapping falls through
+        // to the synchronous lookup below instead of ending the request.
         if let Some(bridge) = corsa_bridge
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(tmpl) = virtual_docs.art_template(info.variant_index)
+            && let Some(vts_offset) = tmpl.source_map.to_generated(ctx.offset as u32)
         {
-            let relative_offset = info.relative_offset as u32;
-            let vts_offset = tmpl
-                .source_map
-                .to_generated(relative_offset)
-                .map(|o| o as usize)
-                .unwrap_or(relative_offset as usize);
+            let vts_offset = vts_offset as usize;
 
             let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
@@ -114,19 +112,29 @@ impl super::DefinitionService {
                     .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                     .await
                 else {
-                    return Self::definition_in_template_sync(ctx);
+                    let definition = Self::definition_in_template_sync(ctx)?;
+                    return Some(
+                        import_target::unwrap_bound_name_definition(ctx, &definition)
+                            .unwrap_or(definition),
+                    );
                 };
 
                 if let Ok(locations) = bridge.definition(&uri, line, character).await
                     && !locations.is_empty()
+                    && let Some(definition) = Self::convert_lsp_locations(locations, ctx)
                 {
-                    return Self::convert_lsp_locations(locations, ctx);
+                    return Some(
+                        import_target::unwrap_bound_name_definition(ctx, &definition)
+                            .unwrap_or(definition),
+                    );
                 }
             }
         }
 
-        // Fall back to synchronous definition
-        Self::definition_in_template_sync(ctx)
+        // Fall back to synchronous definition, unwrapping only an actual
+        // import-alias answer so template-local shadowing remains intact.
+        let definition = Self::definition_in_template_sync(ctx)?;
+        Some(import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition))
     }
 
     /// Find definition in template with Corsa and component jump support.
@@ -146,12 +154,6 @@ impl super::DefinitionService {
             && let Some(def) = template::find_component_definition(ctx, &tag_name)
         {
             return Some(def);
-        }
-
-        if let Some(definition) =
-            Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
-        {
-            return Some(definition);
         }
 
         if let Some(definition) =
@@ -175,6 +177,14 @@ impl super::DefinitionService {
 
         if let Some(def) = template::find_component_prop_definition(ctx) {
             return Some(def);
+        }
+
+        if let Some(definition) =
+            Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
+        {
+            return Some(
+                import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition),
+            );
         }
 
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
@@ -205,8 +215,10 @@ impl super::DefinitionService {
             }
         }
 
-        // Fall back to synchronous definition
-        Self::definition_in_template_sync(ctx)
+        // Fall back to synchronous definition, unwrapping only an actual
+        // import-alias answer so template-local shadowing remains intact.
+        let definition = Self::definition_in_template_sync(ctx)?;
+        Some(import_target::unwrap_bound_name_definition(ctx, &definition).unwrap_or(definition))
     }
 
     /// Find definition in script with Corsa support.

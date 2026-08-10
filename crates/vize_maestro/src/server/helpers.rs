@@ -18,7 +18,7 @@ use vize_carton::append;
 mod supersession_tests;
 
 impl MaestroServer {
-    /// Publish the changed document first, then refresh open Vue files that
+    /// Publish the changed document first, then refresh open typed files that
     /// directly import it. Corsa has already received the changed virtual
     /// document by this point, so importer diagnostics observe the new shape.
     pub(crate) async fn apply_document_changes(
@@ -55,14 +55,14 @@ impl MaestroServer {
         self.publish_importer_diagnostics(uri, version).await;
     }
 
-    /// Refresh the open Vue documents that import `uri`, abandoning the fan-out
+    /// Refresh open typed documents that import `uri`, abandoning the fan-out
     /// as soon as a newer version of `uri` lands. Returns the importers actually
     /// refreshed, in order, so the supersession rule is directly assertable.
     ///
     /// Supersession matters because this loop is the only unbounded work a
     /// single keystroke schedules: each importer costs a full Corsa diagnostics
-    /// pass, and a `.d.ts` edit fans out to *every* open Vue document
-    /// ([`super::importers::open_vue_dependents`]). Without the check, typing at
+    /// pass, and a `.d.ts` edit fans out to *every* open typed document
+    /// ([`super::importers::open_typecheck_dependents`]). Without the check, typing at
     /// editor speed queues one such fan-out per keystroke, each computed from
     /// text the user has already replaced and each republished over the last —
     /// the queue-depth growth behind #3315's silent stalls.
@@ -73,7 +73,7 @@ impl MaestroServer {
     /// because it stops *before* publishing rather than after computing.
     async fn publish_importer_diagnostics(&self, uri: &Url, version: i32) -> Vec<Url> {
         let mut refreshed = Vec::new();
-        for importer in super::importers::open_vue_dependents(&self.state, uri) {
+        for importer in super::importers::open_typecheck_dependents(&self.state, uri) {
             if self.state.documents.version(uri) != Some(version) {
                 tracing::debug!(
                     "abandoning superseded importer refresh for {}: pass version {}, current {:?}",

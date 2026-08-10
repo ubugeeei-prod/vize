@@ -10,6 +10,7 @@ mod discovery;
 mod experimental_tests;
 mod js;
 mod jsx;
+mod language_server;
 #[cfg(test)]
 mod legacy_dialect_tests;
 mod lint_features;
@@ -28,9 +29,8 @@ use super::model::{
     ConfigEntryFiles, ConfigEntryIgnore, ConfigFeatureFlags, LinterConfig, RawVizeConfig,
     VizeConfig,
 };
-
-pub use lint_features::*;
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
+pub use {language_server::*, lint_features::*};
 
 #[derive(Debug, Clone)]
 pub struct LoadedConfig {

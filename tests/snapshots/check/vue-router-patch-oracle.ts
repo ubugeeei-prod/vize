@@ -317,17 +317,24 @@ test("Vue Router package exports stay exact across clean, broken, and repaired e
         const usageDefinition = await definitionLocations(session, appUri, cleanSource, {
           offset: cleanSource.lastIndexOf("RouterLinkProps") + 1,
         });
-        const importStart = offsetToPosition(cleanSource, cleanSource.indexOf("RouterLinkProps"));
+        // The usage resolves through the local import alias to the exported
+        // declaration in the package types: stopping on the import specifier
+        // is the self-jump #3893 removed, so the package boundary is only
+        // "exact" when the answer lands on `RouterLinkProps` in the `.d.ts`.
+        const declarationStart = offsetToPosition(
+          routerDeclaration,
+          routerDeclaration.indexOf("RouterLinkProps"),
+        );
         assert.deepEqual(usageDefinition, [
           {
             range: {
-              start: importStart,
+              start: declarationStart,
               end: {
-                line: importStart.line,
-                character: importStart.character + "RouterLinkProps".length,
+                line: declarationStart.line,
+                character: declarationStart.character + "RouterLinkProps".length,
               },
             },
-            uri: appUri,
+            uri: pathToFileURL(fixture.resolve("packages/router/dist/vue-router.d.ts")).href,
           },
         ]);
 

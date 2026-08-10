@@ -28,7 +28,7 @@ pub use define_emits::{
     DefineEmitsResult, extract_runtime_emits, gen_runtime_emits, process_define_emits,
 };
 pub(crate) use define_model_metadata::{
-    define_model_metadata, define_model_name, define_model_prop_option_spans,
+    add_model_to_croquis, define_model_metadata, define_model_name, define_model_prop_option_spans,
 };
 pub use define_props_destructure::{
     PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,

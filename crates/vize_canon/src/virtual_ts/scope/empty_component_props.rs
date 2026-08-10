@@ -11,6 +11,7 @@ use crate::virtual_ts::expressions::ComponentPropSource;
 use crate::virtual_ts::expressions::generate_component_prop_checks;
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_event_navigation;
 use super::component_prop_checker::has_inference_props;
 use super::context::{ComponentPropsContext, VForPropsContext};
 
@@ -92,6 +93,7 @@ pub(super) fn generate_scope_checks(
     let Some(usages) = ctx.components_by_scope.get(&scope_id) else {
         return;
     };
+    component_event_navigation::emit_scoped_event_references(ts, mappings, ctx, usages, indent);
     for &(idx, usage) in usages {
         if is_empty_props_usage(usage) {
             continue;
