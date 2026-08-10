@@ -5,11 +5,10 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { once } from "node:events";
 import { test } from "node:test";
-import { pathToFileURL } from "node:url";
 
 import { installSourceRestores } from "../app/dev/source-restore.ts";
 
-const cleanupModule = pathToFileURL(path.resolve("tests/app/dev/source-restore.ts")).href;
+const cleanupModule = new URL("../app/dev/source-restore.ts", import.meta.url).href;
 
 async function verifyRestoreOnTermination(
   mode: "exit" | NodeJS.Signals,
@@ -57,6 +56,27 @@ test("HMR source cleanup rejects empty and duplicate restore plans", () => {
       ]),
     /paths must be unique/,
   );
+});
+
+test("HMR source cleanup honors detach and markRestored", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-hmr-source-restore-guard-"));
+  try {
+    const sourcePath = path.join(root, "App.vue");
+    fs.writeFileSync(sourcePath, "updated");
+
+    const guard = installSourceRestores([{ sourcePath, originalSource: "original" }]);
+    guard.markRestored();
+    guard.restore();
+    assert.equal(fs.readFileSync(sourcePath, "utf8"), "updated");
+    guard.detach();
+
+    const second = installSourceRestores([{ sourcePath, originalSource: "original" }]);
+    second.restore();
+    second.detach();
+    assert.equal(fs.readFileSync(sourcePath, "utf8"), "original");
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("HMR source cleanup restores on normal process exit", async () => {

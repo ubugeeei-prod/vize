@@ -178,6 +178,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
 
   const hmrRequests = new Map(targets.map((target) => [target.marker, [] as string[]]));
   const completedUpdates = new Map(targets.map((target) => [target.marker, [] as string[]]));
+  const leakedMarkerLogs: string[] = [];
   page.on("request", (request) => {
     for (const target of targets) {
       if (hmrUrlMatches(request.url(), target)) hmrRequests.get(target.marker)?.push(request.url());
@@ -189,9 +190,7 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
         message.text().includes("[vite] hot updated:") &&
         message.text().includes(target.marker)
       ) {
-        throw new Error(
-          `Vite HMR log leaked authored marker instead of a module id: ${message.text()}`,
-        );
+        leakedMarkerLogs.push(message.text());
       }
       if (
         message.text().includes("[vite] hot updated:") &&
@@ -254,5 +253,9 @@ export async function verifyMisskeyAuthoredSourceHmr(options: {
     ).toHaveLength(2);
   }
   expect(updateLogs).not.toMatch(/page reload/i);
+  expect(
+    leakedMarkerLogs,
+    "Vite HMR logs must reference module ids, not authored markers",
+  ).toHaveLength(0);
   expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
 }
