@@ -5,11 +5,14 @@ use tower_lsp::lsp_types::{
     WorkspaceEdit,
 };
 use vize_canon::CorsaBridge;
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashSet, String, cstr};
 
 use crate::ide::{IdeContext, ReferencesService, corsa_support};
 
 mod event_rename;
+mod failure;
+
+use failure::CanonicalFailure;
 
 pub(super) enum Answer<T> {
     Unavailable,
@@ -20,30 +23,47 @@ pub(super) async fn prepare(
     ctx: &IdeContext<'_>,
     bridge: Option<&CorsaBridge>,
 ) -> Answer<PrepareRenameResponse> {
+    match prepare_strict(ctx, bridge).await {
+        Ok(answer) => answer,
+        Err(error) => error.into_lenient_answer(),
+    }
+}
+
+pub(super) async fn prepare_strict(
+    ctx: &IdeContext<'_>,
+    bridge: Option<&CorsaBridge>,
+) -> Result<Answer<PrepareRenameResponse>, CanonicalFailure> {
     let Some(bridge) = initialized_bridge(bridge) else {
-        return Answer::Unavailable;
+        return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_document(ctx, bridge).await else {
-        return Answer::Unavailable;
+    let Some(document) = corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
+        .await
+        .map_err(CanonicalFailure::FallbackBridge)?
+    else {
+        return Ok(Answer::Unavailable);
     };
     let Some((line, character)) = event_rename::semantic_position(ctx, &document)
         .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
     else {
-        return Answer::Unavailable;
+        return Ok(Answer::Unavailable);
     };
-    let response = match bridge
+    let response = bridge
         .prepare_rename(&document.request_uri, line, character)
         .await
-    {
-        Ok(response) => response,
-        Err(_) => return Answer::Unavailable,
-    };
-    let response = response.and_then(|response| serde_json::from_value(response).ok());
-    Answer::Available(response.and_then(|response| {
+        .map_err(CanonicalFailure::FallbackBridge)?;
+    let response = response
+        .map(|response| {
+            serde_json::from_value(response).map_err(|error| CanonicalFailure::InvalidResponse {
+                operation: "prepareRename",
+                message: cstr!("{error}"),
+            })
+        })
+        .transpose()?;
+    Ok(Answer::Available(response.and_then(|response| {
         event_rename::prepare_range(ctx)
             .map(PrepareRenameResponse::Range)
             .or_else(|| corsa_support::map_canonical_prepare_rename(ctx, &document, response))
-    }))
+    })))
 }
 
 pub(super) async fn rename(
@@ -51,35 +71,48 @@ pub(super) async fn rename(
     new_name: &str,
     bridge: Option<&CorsaBridge>,
 ) -> Answer<WorkspaceEdit> {
+    match rename_strict(ctx, new_name, bridge).await {
+        Ok(answer) => answer,
+        Err(error) => error.into_lenient_answer(),
+    }
+}
+
+pub(super) async fn rename_strict(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    bridge: Option<&CorsaBridge>,
+) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
     let rename_kind = event_rename::query_kind(ctx);
     let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
-        return Answer::Available(None);
+        return Ok(Answer::Available(None));
     };
     let Some(bridge) = initialized_bridge(bridge) else {
-        return Answer::Unavailable;
+        return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_project_document(ctx, bridge).await
+    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+        .await
+        .map_err(CanonicalFailure::from_project_open)?
     else {
-        return Answer::Unavailable;
+        return Ok(Answer::Unavailable);
     };
     let Some((line, character)) = event_rename::semantic_position(ctx, &document)
         .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
     else {
-        return Answer::Unavailable;
+        return Ok(Answer::Unavailable);
     };
-    let response = match bridge
+    let response = bridge
         .rename(&document.request_uri, line, character, &semantic_name)
         .await
-    {
-        Ok(response) => response,
-        Err(_) => return Answer::Unavailable,
-    };
+        .map_err(CanonicalFailure::FallbackBridge)?;
     let Some(response) = response else {
-        return Answer::Available(None);
+        return Ok(Answer::Available(None));
     };
-    let Ok(response) = serde_json::from_value::<WorkspaceEdit>(response) else {
-        return Answer::Available(None);
-    };
+    let response = serde_json::from_value::<WorkspaceEdit>(response).map_err(|error| {
+        CanonicalFailure::InvalidResponse {
+            operation: "rename",
+            message: cstr!("{error}"),
+        }
+    })?;
     let mut linked = linked_positions(&document, &response);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model)) {
         linked.extend(event_rename::model_linked_positions(
@@ -91,7 +124,7 @@ pub(super) async fn rename(
         .collect::<Vec<_>>();
 
     for position in linked {
-        let Ok(Some(extra)) = bridge
+        let Some(extra) = bridge
             .rename(
                 &position.request_uri,
                 position.line,
@@ -99,15 +132,18 @@ pub(super) async fn rename(
                 &semantic_name,
             )
             .await
+            .map_err(CanonicalFailure::AuthoritativeBridge)?
         else {
-            return Answer::Available(None);
+            return Ok(Answer::Available(None));
         };
-        let Ok(extra) = serde_json::from_value(extra) else {
-            return Answer::Available(None);
-        };
+        let extra =
+            serde_json::from_value(extra).map_err(|error| CanonicalFailure::InvalidResponse {
+                operation: "linked rename",
+                message: cstr!("{error}"),
+            })?;
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
-            return Answer::Available(None);
+            return Err(CanonicalFailure::UnmappedResponse("linked rename"));
         };
         mapped.push(extra);
     }
@@ -121,7 +157,9 @@ pub(super) async fn rename(
         }
     }
 
-    Answer::Available(corsa_support::merge_canonical_workspace_edits(mapped))
+    Ok(Answer::Available(
+        corsa_support::merge_canonical_workspace_edits(mapped),
+    ))
 }
 
 fn style_workspace_edit(

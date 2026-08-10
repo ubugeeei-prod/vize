@@ -1,14 +1,17 @@
 use std::collections::VecDeque;
 
 use tower_lsp::lsp_types::Url;
-use vize_canon::CorsaBridge;
+use vize_canon::{CorsaBridge, CorsaBridgeError};
 use vize_carton::{FxHashSet, String};
 
-use super::{
-    CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri,
-    open::open_canonical_virtual_document_with_overlays,
-};
+use super::{CanonicalDependencyDocument, CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::IdeContext;
+
+#[derive(Debug)]
+pub(crate) enum CanonicalProjectOpenError {
+    Primary(CorsaBridgeError),
+    Importer(CorsaBridgeError),
+}
 
 impl CanonicalVirtualDocument {
     fn include_opened_document(&mut self, source_uri: Url, source: String, mut opened: Self) {
@@ -43,13 +46,30 @@ pub(crate) async fn open_canonical_virtual_project_document(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
 ) -> Option<CanonicalVirtualDocument> {
+    open_canonical_virtual_project_document_strict(ctx, bridge)
+        .await
+        .ok()
+        .flatten()
+}
+
+/// Open a project-wide canonical document while retaining the bridge error
+/// that lenient editor routes intentionally turn into synchronous fallback.
+pub(crate) async fn open_canonical_virtual_project_document_strict(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Result<Option<CanonicalVirtualDocument>, CanonicalProjectOpenError> {
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
         .map(|(path, content)| (path.clone(), &**content))
         .collect::<Vec<_>>();
-    let mut document =
-        open_canonical_virtual_document_with_overlays(ctx, bridge, &overlays).await?;
+    let Some(mut document) =
+        super::open::open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays)
+            .await
+            .map_err(CanonicalProjectOpenError::Primary)?
+    else {
+        return Ok(None);
+    };
     let mut visited = FxHashSet::default();
     visited.insert(ctx.uri.clone());
     let mut queue = VecDeque::from(ctx.state.open_importers(ctx.uri));
@@ -62,12 +82,17 @@ pub(crate) async fn open_canonical_virtual_project_document(
         let Some(importer_ctx) = IdeContext::new(ctx.state, &uri, 0) else {
             continue;
         };
-        if let Some(opened) =
-            open_canonical_virtual_document_with_overlays(&importer_ctx, bridge, &overlays).await
+        if let Some(opened) = super::open::open_canonical_virtual_document_with_overlays_strict(
+            &importer_ctx,
+            bridge,
+            &overlays,
+        )
+        .await
+        .map_err(CanonicalProjectOpenError::Importer)?
         {
             document.include_opened_document(uri.clone(), importer_ctx.content.into(), opened);
         }
     }
 
-    Some(document)
+    Ok(Some(document))
 }

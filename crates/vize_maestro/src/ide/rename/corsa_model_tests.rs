@@ -15,10 +15,14 @@ fn canonical_model_event_rename_preserves_update_prefix_and_authored_casing() {
             return;
         };
         let project = tempfile::TempDir::new().expect("temp project");
-        let src = project.path().join("src");
+        let project_root = project
+            .path()
+            .canonicalize()
+            .expect("canonical project root");
+        let src = project_root.join("src");
         fs::create_dir_all(&src).expect("src");
         fs::write(
-            project.path().join("tsconfig.json"),
+            project_root.join("tsconfig.json"),
             r#"{
   "compilerOptions": {
     "strict": true,
@@ -61,7 +65,7 @@ const handleUpdate = (value: string) => value;
         let other_uri = Url::from_file_path(&other_path).expect("other uri");
         let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
         let state = ServerState::new();
-        state.set_workspace_root(project.path().to_path_buf());
+        state.set_workspace_root(project_root.clone());
         for (uri, source) in [
             (&child_uri, child_source),
             (&other_uri, child_source),
@@ -74,7 +78,7 @@ const handleUpdate = (value: string) => value;
         }
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
-            working_dir: Some(project.path().to_path_buf()),
+            working_dir: Some(project_root),
             timeout_ms: 30_000,
             ..Default::default()
         }));

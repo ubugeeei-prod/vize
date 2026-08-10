@@ -12,14 +12,14 @@ mod canonical;
 mod corsa_event_variants_tests;
 #[cfg(all(test, feature = "native"))]
 mod corsa_model_tests;
+#[cfg(all(test, feature = "native", unix))]
+mod corsa_session_tests;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
 
 use std::collections::HashMap;
-
 #[cfg(feature = "native")]
 use std::sync::Arc;
-
 use tower_lsp::lsp_types::{Position, PrepareRenameResponse, Range, TextEdit, WorkspaceEdit};
 
 #[cfg(feature = "native")]

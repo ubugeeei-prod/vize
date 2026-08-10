@@ -23,8 +23,7 @@ impl CorsaProjectClient {
 
         self.clear_diagnostics_cache();
         if !self.has_project_session() {
-            self.retire_editor_lsp();
-            return Ok(());
+            return self.retire_editor_lsp();
         }
         block_on(self.project_session_mut()?.refresh(Some(file_changes)))
             .map_err(|error| cstr!("Failed to refresh materialized Corsa files: {error}"))

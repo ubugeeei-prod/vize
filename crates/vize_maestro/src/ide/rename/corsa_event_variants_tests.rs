@@ -15,10 +15,14 @@ fn canonical_event_rename_covers_static_declaration_variants_without_name_sweeps
             return;
         };
         let project = tempfile::TempDir::new().expect("temp project");
-        let src = project.path().join("src");
+        let project_root = project
+            .path()
+            .canonicalize()
+            .expect("canonical project root");
+        let src = project_root.join("src");
         fs::create_dir_all(&src).expect("src");
         fs::write(
-            project.path().join("tsconfig.json"),
+            project_root.join("tsconfig.json"),
             r#"{
   "compilerOptions": {
     "strict": true,
@@ -95,7 +99,7 @@ const handleSave = (id: string) => id;
         fs::write(&parent_path, parent_source).expect("parent");
         let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
         let state = ServerState::new();
-        state.set_workspace_root(project.path().to_path_buf());
+        state.set_workspace_root(project_root.clone());
         state.documents.open(
             parent_uri.clone(),
             parent_source.to_string(),
@@ -118,7 +122,7 @@ const handleSave = (id: string) => id;
 
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
-            working_dir: Some(project.path().to_path_buf()),
+            working_dir: Some(project_root),
             timeout_ms: 30_000,
             ..Default::default()
         }));

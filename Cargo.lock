@@ -431,6 +431,7 @@ dependencies = [
  "castaway",
  "cfg-if",
  "itoa",
+ "serde",
  "static_assertions",
  "zmij",
 ]
@@ -507,11 +508,11 @@ checksum = "adc9fca16c2d57cc07470efad6ffb1d95df8c56676cb826d17926326ab22dba1"
 dependencies = [
  "base64 0.22.1",
  "corsa_client",
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_lsp",
+ "corsa_core 0.52.0",
+ "corsa_jsonrpc 0.52.0",
+ "corsa_lsp 0.52.0",
  "corsa_orchestrator",
- "corsa_runtime",
+ "corsa_runtime 0.52.0",
  "lsp-types 0.97.0",
  "serde_json",
 ]
@@ -523,9 +524,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82d60a7340233d2b1055be3acf4b5ce369e40a522fe1c35d7b07bac715415f2d"
 dependencies = [
  "base64 0.22.1",
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_runtime",
+ "corsa_core 0.52.0",
+ "corsa_jsonrpc 0.52.0",
+ "corsa_runtime 0.52.0",
  "log",
  "lsp-types 0.97.0",
  "parking_lot",
@@ -552,13 +553,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "corsa_core"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97f1fa44cc19f165f172de8198deb16676ca25af12139bf67380dd1e96785d66"
+dependencies = [
+ "base64 0.23.0",
+ "bumpalo",
+ "compact_str 0.10.0",
+ "memchr",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "smallvec",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "corsa_jsonrpc"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71b4546e14180a3b9e9298daaca8609a069c2a39390d62aa69a649e523525340"
 dependencies = [
- "corsa_core",
- "corsa_runtime",
+ "corsa_core 0.52.0",
+ "corsa_runtime 0.52.0",
+ "log",
+ "parking_lot",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "corsa_jsonrpc"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa1c8563b9ec3ca64cfe7a460155be6193748664295c2bc1e7a5e2962e4197d8"
+dependencies = [
+ "corsa_core 1.7.0",
+ "corsa_runtime 1.7.0",
  "log",
  "parking_lot",
  "serde",
@@ -571,9 +603,24 @@ version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37b8d52b25f29c2b3660b28589f897f25a15c882ccf85e5dfbd3a49da0b1929e"
 dependencies = [
- "corsa_core",
- "corsa_jsonrpc",
- "corsa_runtime",
+ "corsa_core 0.52.0",
+ "corsa_jsonrpc 0.52.0",
+ "corsa_runtime 0.52.0",
+ "log",
+ "lsp-types 0.97.0",
+ "parking_lot",
+ "serde",
+]
+
+[[package]]
+name = "corsa_lsp"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d95799346bd2026c75b0f3f487af3fa2bb9a9c16500e180ae3e662e7a30981db"
+dependencies = [
+ "corsa_core 1.7.0",
+ "corsa_jsonrpc 1.7.0",
+ "corsa_runtime 1.7.0",
  "log",
  "lsp-types 0.97.0",
  "parking_lot",
@@ -587,9 +634,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d451fc73c829c839b75b21c83f43bf87747af7bcaa96c00e8aa19647e1a3e78"
 dependencies = [
  "corsa_client",
- "corsa_core",
- "corsa_lsp",
- "corsa_runtime",
+ "corsa_core 0.52.0",
+ "corsa_lsp 0.52.0",
+ "corsa_runtime 0.52.0",
  "log",
  "lsp-types 0.97.0",
  "parking_lot",
@@ -602,6 +649,15 @@ name = "corsa_runtime"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f71bfacd4eaafe2f1175d9cfcacb91abc97f31d042a08ea7c777d2f16316a8f"
+dependencies = [
+ "smallvec",
+]
+
+[[package]]
+name = "corsa_runtime"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db96c6b237b7fd4423ca99c73f14234074a9e84a8d441f81bea5ca464402d391"
 dependencies = [
  "smallvec",
 ]
@@ -3692,6 +3748,7 @@ name = "vize_canon"
 version = "0.346.0"
 dependencies = [
  "corsa",
+ "corsa_lsp 1.7.0",
  "dashmap 6.1.0",
  "dirs",
  "insta",

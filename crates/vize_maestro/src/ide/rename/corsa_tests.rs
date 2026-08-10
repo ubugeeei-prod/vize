@@ -15,10 +15,14 @@ fn canonical_rename_edits_authored_cross_vue_files() {
             return;
         };
         let project = tempfile::TempDir::new().expect("temp project");
-        let src = project.path().join("src");
+        let project_root = project
+            .path()
+            .canonicalize()
+            .expect("canonical project root");
+        let src = project_root.join("src");
         fs::create_dir_all(&src).expect("src");
         fs::write(
-            project.path().join("tsconfig.json"),
+            project_root.join("tsconfig.json"),
             r#"{
   "compilerOptions": {
     "strict": true,
@@ -32,7 +36,6 @@ fn canonical_rename_edits_authored_cross_vue_files() {
 }"#,
         )
         .expect("tsconfig");
-
         let child_source = r#"<script lang="ts">
 export const shared = 1
 export default {}
@@ -59,11 +62,10 @@ function unrelated() { const shared = 0; return shared }
 "#;
         let parent_path = src.join("Parent View.vue");
         fs::write(&parent_path, parent_source).expect("parent");
-
         let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
         let child_uri = Url::from_file_path(&child_path).expect("child uri");
         let state = ServerState::new();
-        state.set_workspace_root(project.path().to_path_buf());
+        state.set_workspace_root(project_root.clone());
         for (uri, source) in [(&parent_uri, parent_source), (&child_uri, child_source)] {
             state
                 .documents
@@ -72,12 +74,11 @@ function unrelated() { const shared = 0; return shared }
         }
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
-            working_dir: Some(project.path().to_path_buf()),
+            working_dir: Some(project_root),
             timeout_ms: 30_000,
             ..Default::default()
         }));
         bridge.spawn().await.expect("tsgo session");
-
         let query_offset = child_source.find("shared =").expect("declaration") + 1;
         let ctx = IdeContext::new(&state, &child_uri, query_offset).expect("context");
         let prepare = RenameService::prepare_rename_with_corsa(&ctx, Some(Arc::clone(&bridge)))
@@ -171,10 +172,14 @@ fn canonical_component_event_rename_preserves_camel_and_kebab_sites() {
             return;
         };
         let project = tempfile::TempDir::new().expect("temp project");
-        let src = project.path().join("src");
+        let project_root = project
+            .path()
+            .canonicalize()
+            .expect("canonical project root");
+        let src = project_root.join("src");
         fs::create_dir_all(&src).expect("src");
         fs::write(
-            project.path().join("tsconfig.json"),
+            project_root.join("tsconfig.json"),
             r#"{
   "compilerOptions": {
     "strict": true,
@@ -205,7 +210,7 @@ const handleSave = (id: string) => id;
         let child_uri = Url::from_file_path(&child_path).expect("child uri");
         let parent_uri = Url::from_file_path(&parent_path).expect("parent uri");
         let state = ServerState::new();
-        state.set_workspace_root(project.path().to_path_buf());
+        state.set_workspace_root(project_root.clone());
         for (uri, source) in [(&child_uri, child_source), (&parent_uri, parent_source)] {
             state
                 .documents
@@ -214,7 +219,7 @@ const handleSave = (id: string) => id;
         }
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
-            working_dir: Some(project.path().to_path_buf()),
+            working_dir: Some(project_root),
             timeout_ms: 30_000,
             ..Default::default()
         }));
@@ -328,7 +333,7 @@ fn authored_text(source: &str, range: Range) -> &str {
     &source[start..end]
 }
 
-fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
+pub(super) fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
         return None;
     }
