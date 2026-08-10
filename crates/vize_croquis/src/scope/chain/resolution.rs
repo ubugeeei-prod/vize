@@ -69,11 +69,9 @@ impl ScopeChain {
                 return;
             }
 
-            // Collect parents before continuing (to avoid borrow issues)
-            let parents: SmallVec<[ScopeId; 2]> = scope.parents.clone();
-            for parent_id in parents {
-                if !visited.contains(&parent_id) {
-                    queue.push(parent_id);
+            for parent_id in &scope.parents {
+                if !visited.contains(parent_id) {
+                    queue.push(*parent_id);
                 }
             }
         }
@@ -106,11 +104,9 @@ impl ScopeChain {
                 return;
             }
 
-            // Collect parents before continuing (to avoid borrow issues)
-            let parents: SmallVec<[ScopeId; 2]> = scope.parents.clone();
-            for parent_id in parents {
-                if !visited.contains(&parent_id) {
-                    queue.push(parent_id);
+            for parent_id in &scope.parents {
+                if !visited.contains(parent_id) {
+                    queue.push(*parent_id);
                 }
             }
         }

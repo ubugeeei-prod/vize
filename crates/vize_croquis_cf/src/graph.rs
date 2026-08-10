@@ -245,10 +245,7 @@ impl DependencyGraph {
         let mut path = Vec::new();
         let mut cycles = Vec::new();
 
-        // Collect all node IDs first to avoid borrow issues
-        let node_ids: Vec<_> = self.nodes.keys().copied().collect();
-
-        for start_id in node_ids {
+        for start_id in self.nodes.keys().copied() {
             if !visited.contains(&start_id) {
                 Self::dfs_cycle_static(
                     &self.nodes,

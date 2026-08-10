@@ -109,17 +109,15 @@ impl CorsaProjectClient {
             )?);
             self.editor_lsp_documents_dirty = true;
         }
+        let session = self
+            .editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
         if self.editor_lsp_documents_dirty {
-            let session = self
-                .editor_lsp
-                .as_mut()
-                .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
             session.synchronize(&self.document_texts)?;
             self.editor_lsp_documents_dirty = false;
         }
-        self.editor_lsp
-            .as_mut()
-            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))
+        Ok(session)
     }
 
     /// Drop the editor session so the next request respawns it after a project

@@ -51,46 +51,21 @@ impl CallGraph {
         }
 
         // Update vue_api_calls in_setup_context
-        // Collect updates first to avoid borrow conflict
-        let vue_updates: Vec<_> = self
-            .vue_api_calls
-            .iter()
-            .enumerate()
-            .map(|(i, call)| {
-                (
-                    i,
-                    self.setup_context_functions.contains(
-                        &call
-                            .containing_function
-                            .unwrap_or(FunctionId::new(u32::MAX)),
-                    ),
-                )
-            })
-            .collect();
-        for (i, in_setup) in vue_updates {
+        for i in 0..self.vue_api_calls.len() {
             // Top-level is always in setup context for script setup
             let containing = self.vue_api_calls[i].containing_function;
+            let in_setup = self
+                .setup_context_functions
+                .contains(&containing.unwrap_or(FunctionId::new(u32::MAX)));
             self.vue_api_calls[i].in_setup_context = containing.is_none() || in_setup;
         }
 
         // Update composable_calls in_setup_context
-        let composable_updates: Vec<_> = self
-            .composable_calls
-            .iter()
-            .enumerate()
-            .map(|(i, call)| {
-                (
-                    i,
-                    self.setup_context_functions.contains(
-                        &call
-                            .containing_function
-                            .unwrap_or(FunctionId::new(u32::MAX)),
-                    ),
-                )
-            })
-            .collect();
-        for (i, in_setup) in composable_updates {
+        for i in 0..self.composable_calls.len() {
             let containing = self.composable_calls[i].containing_function;
+            let in_setup = self
+                .setup_context_functions
+                .contains(&containing.unwrap_or(FunctionId::new(u32::MAX)));
             self.composable_calls[i].in_setup_context = containing.is_none() || in_setup;
         }
     }
