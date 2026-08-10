@@ -34,7 +34,7 @@ type CorpusProject = {
 
 type Violation = { project: string; file: string; detail: string };
 
-const pugIndentedBody = "\n    main\n      //- keep\n      | pipe  text\n      pre.\n        a  b\n";
+const indentedPug = "\n    main\n      //- keep\n      | pipe  text\n      pre.\n        a  b\n";
 const property = "idempotence";
 const projects = loadGlyphCorpusProjects() as CorpusProject[];
 const knownViolations = loadKnownViolations(property);
@@ -144,7 +144,7 @@ test("glyph corpus idempotence machinery accepts the real formatter", () => {
     ["src/Card.vue", "<script setup>\nconst x=1\n</script>\n"],
     ["src/Pug.vue", '<template lang="pug">\nmain\n  //- keep\n  | pipe  text\n</template>\n'],
     // A non-canonical outer indent must rebase to a fixed point, or pass two moves bytes.
-    ["src/PugIndented.vue", `<template lang="pug">${pugIndentedBody}</template>\n`],
+    ["src/PugIndented.vue", `<template lang="pug">${indentedPug}</template>\n`],
   ]);
   try {
     const launch = resolveGlyphLaunch();

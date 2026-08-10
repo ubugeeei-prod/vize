@@ -268,8 +268,7 @@ export function writeGlyphPugSemanticEvidence(
   // across runners regardless of the host's ICU locale data.
   const byCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
   const sortedFiles = [...files].sort(
-    (left, right) =>
-      byCodePoint(left.project, right.project) || byCodePoint(left.path, right.path),
+    (left, right) => byCodePoint(left.project, right.project) || byCodePoint(left.path, right.path),
   );
   const identities = new Set();
   for (const file of sortedFiles) {
