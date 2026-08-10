@@ -5,13 +5,13 @@ use std::time::Duration;
 
 use corsa::jsonrpc::InboundEvent;
 use corsa::lsp::{LspClient, LspSpawnConfig, VirtualDocument};
-use lsp_types::Uri;
+use lsp_types::{FileChangeType, Uri};
 use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    contains_location, copy_fixture, editor_capabilities, file_uri, install_packages, position,
-    workspace_root,
+    contains_location, copy_fixture, editor_capabilities, file_uri, install_packages,
+    notify_file_changes, position, pull_diagnostics, try_pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -28,7 +28,6 @@ struct RawInitialize;
 struct RawDiscoverContentMappers;
 struct RawCompletion;
 struct RawSignatureHelp;
-struct RawDocumentDiagnostic;
 struct RawHover;
 struct RawDefinition;
 struct RawReferences;
@@ -48,7 +47,6 @@ raw_request!(RawInitialize, "initialize");
 raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
 raw_request!(RawCompletion, "textDocument/completion");
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
-raw_request!(RawDocumentDiagnostic, "textDocument/diagnostic");
 raw_request!(RawHover, "textDocument/hover");
 raw_request!(RawDefinition, "textDocument/definition");
 raw_request!(RawReferences, "textDocument/references");
@@ -231,19 +229,12 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             );
             assert!(!rename_text.contains(".vue.ts"), "{rename:#}");
 
-            let diagnostic_params = json!({ "textDocument": { "uri": child_uri } });
-            let clean = client
-                .request::<RawDocumentDiagnostic>(diagnostic_params.clone())
-                .await
-                .unwrap();
+            let clean = pull_diagnostics(&client, &child_uri).await;
             assert_eq!(clean["items"], json!([]), "{clean:#}");
 
             let broken_source = source.replace("count.toFixed(0)", "count.missing()");
             overlay.replace(&uri, broken_source.as_str()).unwrap();
-            let broken = client
-                .request::<RawDocumentDiagnostic>(diagnostic_params.clone())
-                .await
-                .unwrap();
+            let broken = pull_diagnostics(&client, &child_uri).await;
             let broken_text = serde_json::to_string(&broken).unwrap();
             assert!(
                 broken_text.contains("2339") && broken_text.contains("missing"),
@@ -253,29 +244,75 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             assert_eq!(broken["items"][0]["range"]["start"], missing, "{broken:#}");
 
             overlay.replace(&uri, source.as_str()).unwrap();
-            let repaired = client
-                .request::<RawDocumentDiagnostic>(diagnostic_params)
-                .await
-                .unwrap();
+            let repaired = pull_diagnostics(&client, &child_uri).await;
             assert_eq!(repaired["items"], json!([]), "{repaired:#}");
 
             overlay.replace(&uri, broken_source.as_str()).unwrap();
-            let dirty = client
-                .request::<RawDocumentDiagnostic>(json!({
-                    "textDocument": { "uri": child_uri }
-                }))
-                .await
-                .unwrap();
+            let dirty = pull_diagnostics(&client, &child_uri).await;
             assert!(!dirty["items"].as_array().unwrap().is_empty(), "{dirty:#}");
 
             assert!(overlay.close(&uri).unwrap().is_some());
-            let closed = client
-                .request::<RawDocumentDiagnostic>(json!({
-                    "textDocument": { "uri": child_uri }
-                }))
-                .await
-                .unwrap();
+            let closed = pull_diagnostics(&client, &child_uri).await;
             assert_eq!(closed["items"], json!([]), "{closed:#}");
+
+            let created_path = project.path().join("src/Created.vue");
+            let created_source = r#"<script setup lang="ts">
+const value = 1;
+</script>
+<template>{{ value.missing() }}</template>
+"#;
+            std::fs::write(&created_path, created_source).unwrap();
+            let created_uri = file_uri(&created_path);
+            notify_file_changes(&client, &[(created_uri.as_str(), FileChangeType::CREATED)]);
+            let created_document_uri = Uri::from_str(&created_uri).unwrap();
+            overlay
+                .open(VirtualDocument::new(
+                    created_document_uri.clone(),
+                    "vue",
+                    created_source,
+                ))
+                .unwrap();
+            let created = pull_diagnostics(&client, &created_uri).await;
+            assert!(
+                serde_json::to_string(&created).unwrap().contains("2339"),
+                "{created:#}"
+            );
+            let missing = position(created_source, created_source.find("missing").unwrap());
+            assert_eq!(
+                created["items"][0]["range"]["start"], missing,
+                "{created:#}"
+            );
+
+            let renamed_path = project.path().join("src/Renamed.vue");
+            assert!(overlay.close(&created_document_uri).unwrap().is_some());
+            std::fs::rename(&created_path, &renamed_path).unwrap();
+            let renamed_uri = file_uri(&renamed_path);
+            notify_file_changes(
+                &client,
+                &[
+                    (created_uri.as_str(), FileChangeType::DELETED),
+                    (renamed_uri.as_str(), FileChangeType::CREATED),
+                ],
+            );
+            let renamed_document_uri = Uri::from_str(&renamed_uri).unwrap();
+            overlay
+                .open(VirtualDocument::new(
+                    renamed_document_uri.clone(),
+                    "vue",
+                    created_source,
+                ))
+                .unwrap();
+            let renamed = pull_diagnostics(&client, &renamed_uri).await;
+            assert!(
+                serde_json::to_string(&renamed).unwrap().contains("2339"),
+                "{renamed:#}"
+            );
+            assert!(try_pull_diagnostics(&client, &created_uri).await.is_err());
+
+            assert!(overlay.close(&renamed_document_uri).unwrap().is_some());
+            std::fs::remove_file(&renamed_path).unwrap();
+            notify_file_changes(&client, &[(renamed_uri.as_str(), FileChangeType::DELETED)]);
+            assert!(try_pull_diagnostics(&client, &renamed_uri).await.is_err());
             stop.store(true, Ordering::Relaxed);
             client.close().await.unwrap();
             responder.join().unwrap();
