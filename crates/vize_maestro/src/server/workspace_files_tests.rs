@@ -6,15 +6,19 @@ use super::{
 };
 
 #[test]
-fn declaration_watcher_tracks_create_change_and_delete_recursively() {
+fn typecheck_watcher_tracks_declarations_vue_sources_and_manifests() {
     let registration = typecheck_dependency_watcher_registration();
     assert_eq!(registration.method, "workspace/didChangeWatchedFiles");
     let options = registration.register_options.unwrap();
     assert_eq!(options["watchers"][0]["globPattern"], "**/*.d.{ts,mts,cts}");
-    assert!(
-        options["watchers"][0].get("kind").is_none(),
-        "omitted kind must request create, change, and delete events: {options}"
-    );
+    assert_eq!(options["watchers"][1]["globPattern"], "**/*.vue");
+    assert_eq!(options["watchers"][2]["globPattern"], "**/package.json");
+    for watcher in options["watchers"].as_array().unwrap() {
+        assert!(
+            watcher.get("kind").is_none(),
+            "omitted kind must request create, change, and delete events: {options}"
+        );
+    }
 }
 
 #[test]
