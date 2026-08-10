@@ -107,7 +107,7 @@ function compareBlocks(before: SfcDescriptor, after: SfcDescriptor, differences:
     if ((beforeBlock == null) !== (afterBlock == null)) {
       differences.push(`${kind} block ${beforeBlock == null ? "appeared" : "disappeared"}`);
     } else if (beforeBlock != null && afterBlock != null) {
-      compareAttrs(kind, beforeBlock.attrs, afterBlock.attrs, differences);
+      compareAttrs(kind, beforeBlock, afterBlock, differences);
     }
   }
   for (const kind of ["styles", "customBlocks"] as const) {
@@ -120,7 +120,7 @@ function compareBlocks(before: SfcDescriptor, after: SfcDescriptor, differences:
     const signature = (block: SfcBlock): string =>
       JSON.stringify([
         block.type,
-        sortedAttrEntries(block.attrs),
+        semanticAttrEntries(kind === "styles" ? "style" : "customBlock", block),
         kind === "customBlocks" ? condense(block.content) : null,
       ]);
     const beforeSignatures = beforeBlocks.map(signature).sort();
@@ -137,16 +137,47 @@ function compareBlocks(before: SfcDescriptor, after: SfcDescriptor, differences:
 }
 
 function compareAttrs(
-  label: string,
-  before: Record<string, string | true>,
-  after: Record<string, string | true>,
+  label: "template" | "script" | "scriptSetup",
+  before: SfcBlock,
+  after: SfcBlock,
   differences: string[],
 ): void {
-  const beforeEntries = JSON.stringify(sortedAttrEntries(before));
-  const afterEntries = JSON.stringify(sortedAttrEntries(after));
+  const beforeEntries = JSON.stringify(semanticAttrEntries(label, before));
+  const afterEntries = JSON.stringify(semanticAttrEntries(label, after));
   if (beforeEntries !== afterEntries) {
     differences.push(`${label} block attrs changed: ${beforeEntries} -> ${afterEntries}`);
   }
+}
+
+// These are the attributes compiler-sfc itself consumes by presence: each
+// parser branch coerces the raw value to truthiness or assigns a descriptor
+// slot/boolean. Keep this block-kind table closed so module, lang, src,
+// generic, and custom attributes remain value-sensitive.
+const compilerPresenceAttrs = {
+  template: ["functional", "vapor"],
+  script: [],
+  scriptSetup: ["setup", "vapor"],
+  style: ["scoped"],
+  customBlock: [],
+} as const;
+
+function semanticAttrEntries(
+  kind: keyof typeof compilerPresenceAttrs,
+  block: SfcBlock,
+): Array<[string, string | true]> {
+  const presenceAttrs = compilerPresenceAttrs[kind];
+  if (
+    !presenceAttrs.some(
+      (attribute) => Object.hasOwn(block.attrs, attribute) && block.attrs[attribute] !== true,
+    )
+  ) {
+    return sortedAttrEntries(block.attrs);
+  }
+  const attrs = { ...block.attrs };
+  for (const attribute of presenceAttrs) {
+    if (Object.hasOwn(attrs, attribute)) attrs[attribute] = true;
+  }
+  return sortedAttrEntries(attrs);
 }
 
 function sortedAttrEntries(attrs: Record<string, string | true>): Array<[string, string | true]> {
