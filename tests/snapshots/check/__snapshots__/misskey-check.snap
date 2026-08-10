@@ -412,7 +412,7 @@
     {
       "file": "src/components/MkImgPreviewDialog.vue",
       "diagnostics": [
-        "error:38:15 [TS2339] Property 'close' does not exist on type '__VizeComponentConstructor & __VizeVueComponentOptions & { __vizeEmitProps?: __VizeStaticEmitProps | undefined; }'."
+        "error:38:15 [TS2339] Property 'close' does not exist on type '{ __vizeEmitProps?: __VizeStaticEmitProps | undefined; readonly __vizeRawProps?: Props | undefined; } & __VizeComponentConstructor & __VizeVueComponentOptions'."
       ]
     },
     {
@@ -1355,10 +1355,7 @@
     },
     {
       "file": "src/os.ts",
-      "diagnostics": [
-        "error:272:3 [TS2322] Type '() => void' is not assignable to type 'undefined'.",
-        "error:630:8 [TS7006] Parameter 'x' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page.ts",
@@ -3200,7 +3197,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 32,
+  "errorCount": 30,
   "warningCount": 0,
   "fileCount": 788
 }

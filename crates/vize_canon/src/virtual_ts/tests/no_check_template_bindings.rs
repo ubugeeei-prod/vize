@@ -44,7 +44,11 @@ const isLoading = ref(false)
     assert!(output.code.contains("const scriptOnly: string = 1"));
     assert!(output.code.contains("__setup();"));
     assert!(!output.code.contains("Template Scope"));
-    assert!(!output.code.contains("ComponentPublicInstance"));
+    assert!(
+        !output
+            .code
+            .contains("type __Ctx = import('vue').ComponentPublicInstance;")
+    );
     assert!(!output.code.contains("type __R_isLoading"));
     assert!(!output.code.contains("var isLoading:"));
     assert!(!output.code.contains("void isLoading;"));
@@ -95,7 +99,11 @@ function confirmDialog() {}
     assert!(output.code.contains("const scriptOnly: string = 1"));
     assert!(output.code.contains("__setup();"));
     assert!(!output.code.contains("Template Scope"));
-    assert!(!output.code.contains("ComponentPublicInstance"));
+    assert!(
+        !output
+            .code
+            .contains("type __Ctx = import('vue').ComponentPublicInstance;")
+    );
     assert!(!output.code.contains("type __R_isLoading"));
     assert!(!output.code.contains("var isLoading:"));
     assert!(!output.code.contains("__vize_prop_check"));

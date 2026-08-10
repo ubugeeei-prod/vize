@@ -186,12 +186,17 @@ fn template_typecheck_uses_dom_libs_and_vue_plugin_augmentations() {
             (
                 "src/App.vue",
                 r#"<script setup lang="ts">
+import { ref } from "vue"
+
 const tone: "info" = "info"
 const target = document.createElement("button")
+const label = ref("ready")
 </script>
 
 <template>
-  <PluginCard :tone="tone" @click="$portal.open(target)" />
+  <PluginCard :tone="tone" @click="$portal.open(target)">
+    {{ label.toUpperCase() }}
+  </PluginCard>
 </template>
 "#,
             ),

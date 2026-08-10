@@ -100,7 +100,7 @@ export const view = <Counter count={1} data-id={1} />;
         r#"import Counter from './Counter.vue';
 export const view = <Counter count={1} is-opened />;
 "#,
-        "dataId",
+        "data-id",
     );
     assert_broken(
         &project,
@@ -123,6 +123,13 @@ export const view = <Counter {...props} />;
 export const view = <Counter count={1} is-opened data-id={1} onSelect={(value) => value.toUpperCase()} />;
 "#,
         "toUpperCase",
+    );
+    assert_broken(
+        &project,
+        r#"import Counter from './Counter.vue';
+export const view = <Counter count={1} is-opened data-id={1} onClick={(event: string) => event.toUpperCase()} />;
+"#,
+        "not assignable",
     );
     assert_broken(
         &project,
@@ -152,6 +159,9 @@ export const view = (
     {...props}
     class="counter"
     style="color: red"
+    data-role="counter"
+    aria-label="Counter"
+    onClick={(event) => event.preventDefault()}
     onSelect={(value) => value.toFixed(0)}
   />
 );

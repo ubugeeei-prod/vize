@@ -1,7 +1,7 @@
 use super::{BatchTypeChecker, DeclarationEmitOptions};
 use crate::batch::TypeChecker;
 use crate::batch::runtime_deps::{
-    VUE_RUNTIME_DOM_STUB_TYPES, test_env_var_os, with_test_env_overrides,
+    test_env_var_os, with_test_env_overrides, write_vue_facade, write_vue_runtime_dom_stub,
 };
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use corsa::{
@@ -2165,7 +2165,7 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
         if let Some(vue_namespace) = resolve_test_vue_runtime_namespace(workspace_node_modules) {
             symlink_path(&vue_namespace, &target.join("@vue"))?;
         } else {
-            write_test_vue_runtime_dom_stub(&target)?;
+            write_vue_runtime_dom_stub(&target)?;
         }
     } else {
         write_test_vue_stub(&target)?;
@@ -2275,39 +2275,8 @@ fn with_workspace_node_modules_override<T>(value: Option<&str>, run: impl FnOnce
 }
 
 fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
-    let vue_dir = target.join("vue");
-    std::fs::create_dir_all(&vue_dir)?;
-    std::fs::write(
-        vue_dir.join("package.json"),
-        r#"{
-  "name": "vue",
-  "types": "index.d.ts"
-}"#,
-    )?;
-    std::fs::write(
-        vue_dir.join("index.d.ts"),
-        r#"export * from "@vue/runtime-dom";
-"#,
-    )?;
-    write_test_vue_runtime_dom_stub(target)?;
-    Ok(())
-}
-
-fn write_test_vue_runtime_dom_stub(target: &Path) -> std::io::Result<()> {
-    let runtime_dom_dir = target.join("@vue").join("runtime-dom");
-    std::fs::create_dir_all(&runtime_dom_dir)?;
-    std::fs::write(
-        runtime_dom_dir.join("package.json"),
-        r#"{
-  "name": "@vue/runtime-dom",
-  "types": "index.d.ts"
-}"#,
-    )?;
-    std::fs::write(
-        runtime_dom_dir.join("index.d.ts"),
-        VUE_RUNTIME_DOM_STUB_TYPES,
-    )?;
-    Ok(())
+    write_vue_facade(target)?;
+    write_vue_runtime_dom_stub(target)
 }
 
 fn write_test_vite_stub(target: &Path) -> std::io::Result<()> {

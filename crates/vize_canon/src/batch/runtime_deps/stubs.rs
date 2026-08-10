@@ -7,13 +7,70 @@ pub(super) const VUE_FACADE_PACKAGE_JSON: &str = r#"{
 pub(super) const VUE_FACADE_TYPES: &str = r#"export * from "@vue/runtime-dom";
 "#;
 
+/// `vue/jsx-runtime` for projects that resolve no real `vue` package.
+///
+/// A `.tsx` consumer compiled with `jsxImportSource: "vue"` resolves its JSX
+/// namespace through this subpath. Without it the whole file falls back to the
+/// ambient `JSX` namespace, which drops `ElementAttributesProperty` and makes
+/// every component element report spurious prop errors instead of checking
+/// against the component's `$props`.
+pub(crate) const VUE_FACADE_JSX_RUNTIME_TYPES: &str = r#"import type { AllowedComponentProps, NativeElements, VNodeProps } from "./index";
+
+export declare function jsx(type: any, props: any, key?: any): any;
+export declare function jsxs(type: any, props: any, key?: any): any;
+export declare function jsxDEV(type: any, props: any, key?: any, isStatic?: boolean, source?: any, self?: any): any;
+export declare const Fragment: any;
+
+export namespace JSX {
+  interface Element {}
+  interface ElementClass {
+    $props: {};
+  }
+  interface ElementAttributesProperty {
+    $props: {};
+  }
+  interface IntrinsicElements extends NativeElements {
+    [name: string]: any;
+  }
+  interface IntrinsicAttributes extends VNodeProps, AllowedComponentProps {}
+}
+"#;
+
+/// `vue/jsx` for projects that resolve no real `vue` package.
+///
+/// The virtual project references this type package whenever the tsconfig
+/// selects Vue's JSX (`jsxImportSource: "vue"` or an explicit `vue/jsx` type
+/// entry), so a missing file is a hard `TS2688` on the shared helpers file.
+pub(crate) const VUE_FACADE_JSX_GLOBAL_TYPES: &str = r#"import type { AllowedComponentProps, NativeElements, VNodeProps } from "./index";
+
+declare global {
+  namespace JSX {
+    interface Element {}
+    interface ElementClass {
+      $props: {};
+    }
+    interface ElementAttributesProperty {
+      $props: {};
+    }
+    interface IntrinsicElements extends NativeElements {
+      [name: string]: any;
+    }
+    interface IntrinsicAttributes extends VNodeProps, AllowedComponentProps {}
+  }
+}
+
+export {};
+"#;
+
 pub(super) const VUE_RUNTIME_DOM_STUB_PACKAGE_JSON: &str = r#"{
   "name": "@vue/runtime-dom",
   "types": "index.d.ts"
 }
 "#;
 
-pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentPublicInstance<Props = {}> {
+pub(crate) const VUE_RUNTIME_DOM_STUB_TYPES: &str = r#"export interface ComponentCustomProperties {}
+
+export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
   $attrs: { [key: string]: unknown };
   $slots: { [key: string]: unknown };
@@ -119,8 +176,11 @@ export type ConcreteComponent<
   S = any
 > = ComponentOptions<Props, RawBindings, D, C, M> | FunctionalComponent<Props, E, S>;
 
+declare const RefSymbol: unique symbol;
+
 export interface Ref<T = unknown, _Raw = T> {
   value: T;
+  [RefSymbol]: true;
 }
 
 export interface ComputedRef<T = unknown> extends Ref<T> {

@@ -25,7 +25,9 @@ const bag = { count: 1 }
 fn a_spread_after_a_named_prop_is_emitted_after_it() {
     let code = generated_props_literal(r#"<Child :count="2" v-bind="bag" />"#);
 
-    let named = code.find("\"count\": 2").expect("named prop emitted");
+    let named = code
+        .find("...{ \"count\": 2 }")
+        .expect("named prefix emitted as a singleton spread");
     let spread = code.find("...bag").expect("spread emitted");
     assert!(
         named < spread,
@@ -42,6 +44,117 @@ fn a_spread_before_a_named_prop_is_emitted_before_it() {
     assert!(
         spread < named,
         "the named prop is authored last, so it must win the key: {code}"
+    );
+    assert!(
+        !code.contains("...{ \"count\": 2 }"),
+        "a trailing named prop must remain direct: {code}"
+    );
+}
+
+#[test]
+fn each_named_segment_before_a_later_spread_uses_a_singleton_spread() {
+    let script = r#"import Child from "./Child.vue"
+const first = { count: 1 }
+const second = { label: 'ok' }
+"#;
+    let template =
+        r#"<Child :count="2" v-bind="first" label="middle" v-bind="second" tone="info" />"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+
+    assert!(code.contains("...{ \"count\": 2 }"), "{code}");
+    assert!(code.contains("...{ \"label\": \"middle\" }"), "{code}");
+    assert!(code.contains("\"tone\": \"info\""), "{code}");
+    assert!(!code.contains("...{ \"tone\": \"info\" }"), "{code}");
+    let count = code.rfind("...{ \"count\": 2 }").unwrap();
+    let first = code.rfind("...first").unwrap();
+    let label = code.rfind("...{ \"label\": \"middle\" }").unwrap();
+    let second = code.rfind("...second").unwrap();
+    let tone = code.rfind("\"tone\": \"info\"").unwrap();
+    assert!(
+        count < first && first < label && label < second && second < tone,
+        "{code}"
+    );
+}
+
+#[test]
+fn dynamic_arguments_and_true_named_duplicates_are_not_disguised_as_spread_entries() {
+    let script = r#"import Child from "./Child.vue"
+const key = 'data-id'
+"#;
+    let template = r#"<Child :[key]="1" :count="1" :count="2" />"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let code = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+
+    assert!(!code.contains("...{ \"count\""), "{code}");
+    assert_eq!(code.matches("\"count\":").count(), 2, "{code}");
+}
+
+#[test]
+fn duplicate_named_props_before_a_spread_share_one_singleton() {
+    let code = generated_props_literal(r#"<Child :count="1" :count="2" v-bind="bag" />"#);
+
+    // One singleton for the whole run keeps the authored duplicate inside a
+    // single object literal, so TypeScript still reports it (TS1117). One
+    // singleton per prop would split them apart and lose the diagnostic.
+    assert!(
+        code.contains("...{ \"count\": 1, \"count\": 2 }"),
+        "duplicates before a spread must stay in one literal: {code}"
+    );
+    assert_eq!(
+        code.matches("...{ \"count\"").count(),
+        1,
+        "the run must not be split into one singleton per prop: {code}"
+    );
+    let named = code.find("...{ \"count\": 1").expect("named run emitted");
+    let spread = code.find("...bag").expect("spread emitted");
+    assert!(named < spread, "the spread is authored last: {code}");
+}
+
+#[test]
+fn singleton_spread_keeps_exact_named_value_source_mapping() {
+    let script = r#"import Child from "./Child.vue"
+const bag = { count: 1, label: 'ok' }
+const value = { missing: 'bad' }
+"#;
+    let template = r#"<Child :count="value.missing" v-bind="bag" />"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+    let generated_missing = output
+        .code
+        .rfind("missing")
+        .expect("named value emitted inside singleton spread");
+    let authored_missing = template.find("missing").unwrap();
+    let span = output
+        .mappings
+        .iter()
+        .flat_map(|mapping| &mapping.sub_spans)
+        .find(|span| span.gen_range.contains(&generated_missing))
+        .unwrap_or_else(|| panic!("singleton value lost its sub-span: {:?}", output.mappings));
+    assert_eq!(
+        generated_missing - span.gen_range.start,
+        authored_missing - span.src_range.start,
+    );
+    assert_eq!(
+        span.src_range,
+        template.find("value.missing").unwrap()
+            ..template.find("value.missing").unwrap() + "value.missing".len()
     );
 }
 

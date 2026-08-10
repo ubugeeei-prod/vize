@@ -105,10 +105,22 @@ defineModel<string>("title", { required: true });
         result.text,
         result.mappings
     );
+    // The normalized public instance keeps the resolved props alias exact
+    // (#4034): call-site camel/kebab aliasing is an input concern and no
+    // longer wraps `$props`.
     assert!(
         result
             .text
-            .contains("$props: __VizeComponentProps<__VizeResolvedProps> &")
+            .contains("$props: __VizeResolvedProps & __EmitProps<Emits>;"),
+        "text:\n{}",
+        result.text
+    );
+    assert!(
+        result.text.contains(
+            "__VizeComponentInput<__VizeResolvedProps, __EmitProps<Emits>, __VizeAuthoredProps>"
+        ),
+        "text:\n{}",
+        result.text
     );
 }
 

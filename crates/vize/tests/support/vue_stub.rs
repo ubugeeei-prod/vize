@@ -21,7 +21,9 @@ pub fn install_vue_jsx_type_stub(project_root: &Path) {
     .unwrap();
     std::fs::write(
         vue_dir.join("index.d.ts"),
-        r#"export interface ComponentPublicInstance<Props = {}> {
+        r#"export interface ComponentCustomProperties {}
+
+export interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {
   $props: Props;
   $attrs: Record<string, unknown>;
   $slots: Record<string, unknown>;
@@ -47,8 +49,11 @@ export type ConcreteComponent<Props = {}> =
   | ComponentOptions<Props>
   | FunctionalComponent<Props>;
 
+declare const RefSymbol: unique symbol;
+
 export interface Ref<T = unknown, _Raw = T> {
   value: T;
+  [RefSymbol]: true;
 }
 
 export interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {

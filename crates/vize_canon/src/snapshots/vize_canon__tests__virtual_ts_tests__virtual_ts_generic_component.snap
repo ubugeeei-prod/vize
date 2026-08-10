@@ -43,9 +43,19 @@ type __ShallowRef<T> = import('vue').ShallowRef<T>;
 type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
 type __VizeKebabCase<S extends string> = S extends `${infer Head}${infer Tail}` ? Head extends Lowercase<Head> ? `${Head}${__VizeKebabCase<Tail>}` : `-${Lowercase<Head>}${__VizeKebabCase<Tail>}` : S;
 type __VizeKebabProps<T> = { [K in keyof T & string as __VizeKebabCase<K>]: T[K] };
-type __VizeFallthroughAttrs = { class?: unknown; style?: unknown };
-type __VizeKebabOptionalKeys<T> = { [K in keyof T & string]: __VizeKebabCase<K> extends K ? never : K }[keyof T & string];
-type __VizeComponentProps<T> = T extends unknown ? Omit<T, __VizeKebabOptionalKeys<T>> & Partial<Pick<T, __VizeKebabOptionalKeys<T>>> & Partial<__VizeKebabProps<T>> & __VizeFallthroughAttrs : never;
+type __VizeRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type __VizeDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };
+type __VizeFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeDomListenerProps, keyof Owned>;
+type __VizeComponentInputProps<T, Declared = {}> = T extends unknown ? Partial<T> & Partial<__VizeKebabProps<T>> & Declared & __VizeFallthroughAttrs<T & Declared> : never;
+type __VizeMissingRequiredInputKeys<T, Authored, K extends __VizeRequiredKeys<T> & string = __VizeRequiredKeys<T> & string> = K extends unknown ? K extends keyof Authored ? never : __VizeKebabCase<K> extends keyof Authored ? never : K : never;
+type __VizeExtraInputKeys<Allowed, Authored> = Exclude<keyof Authored, keyof Allowed>;
+type __VizeComponentInputGuard<T, Declared, Authored> = T extends unknown ? [__VizeMissingRequiredInputKeys<T, Authored> | __VizeExtraInputKeys<__VizeComponentInputProps<T, Declared>, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: __VizeMissingRequiredInputKeys<T, Authored>; readonly extra: __VizeExtraInputKeys<__VizeComponentInputProps<T, Declared>, Authored>; } } : never;
+type __VizeComponentInput<T, Declared, Authored> = [Authored] extends [unknown] ? __VizeComponentInputProps<T, Declared> & __VizeComponentInputGuard<T, Declared, Authored> : never;
+type __VizeAuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
+type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
+type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
+type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type __VizeNativeElements = import('vue').NativeElements;
 type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
@@ -101,7 +111,7 @@ function __setup<T extends string | number>() {
   
   const activeItem = ref<T | null>(null)
   
-  // @vize-map: 7689:7883 -> 0:193
+  // @vize-map: 9426:9620 -> 0:193
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -168,17 +178,22 @@ type __VizeStaticEmitProps = __EmitProps<Emits>;
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: __VizeComponentProps<Props<string | number>> & __EmitProps<Emits>;
+  $props: Props<string | number> & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props<string | number>;
-  $emit: __EmitFn<Emits>;
+  $emit: __VizeStrictPublicEmit<Emits>;
   $slots: Slots;
+} & __VizeComponentPublicBase;
+type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props<string | number>, __EmitProps<Emits>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
+$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInput<Props<string | number>, __EmitProps<Emits>, __VizeAuthoredProps>;
 };
-type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
-type __VizeGenericComponentConstructor = new <T extends string | number = any>(...args: any[]) => {
-  $props: __VizeComponentProps<Props<T>> & __EmitProps<Emits<T>>;
+type __VizeGenericComponentInstance<T extends string | number = any> = {
+  $props: Props<T> & __EmitProps<Emits<T>>;
   readonly __vizeRawProps?: Props<T>;
-  $emit: __EmitFn<Emits<T>>;
+  $emit: __VizeStrictPublicEmit<Emits<T>>;
   $slots: Slots;
+} & __VizeComponentPublicBase;
+type __VizeGenericComponentConstructor = new <T extends string | number = any, __VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeGenericComponentInstance<T> : Omit<__VizeGenericComponentInstance<T>, '$props'> & {
+  $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInputProps<Props<T>, __EmitProps<Emits<T>>> & __VizeComponentInputGuard<Props<T>, __EmitProps<Emits<T>>, __VizeAuthoredProps>;
 };
 type __VizeVueComponentOptions = {
   name?: string;
@@ -204,5 +219,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => Props<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; };
+declare const __vize_component__: { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; __vizeResolveProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => Props<T>; __vizeEmitProps?: __VizeStaticEmitProps; __vizeResolveEmitProps?: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => __EmitProps<Emits<T>>; readonly __vizeRawProps?: Props<string | number>; } & __VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

@@ -857,10 +857,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("// Invoke setup to verify types\n");
     script_module::emit_exports(&mut ts, &mut mappings, &named_value_exports, script_offset);
     setup_type_exports.emit_module_exports(&mut ts);
-
     setup_props_plan.emit_module_export(&mut ts, options_api_props.as_ref());
     emit_authored_component_aliases(&mut ts, preserve_authored_component);
-
     let emits_info = emit_emits_type(
         &mut ts,
         summary,
@@ -869,16 +867,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         generic_param,
         define_emits_runtime_args.is_some(),
     );
-
     let slots_is_generic = emit_slots_type(&mut ts, summary, generic_injection.as_ref());
-
     let (has_exposed_type, exposed_is_generic) =
         emit_exposed_type(&mut ts, summary, generic_injection.as_ref());
     ts.push('\n');
 
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble);
 
-    // Default export
     let generic_component_params = setup_props_plan.generic_component_params(generic_param);
     emit_component_constructors(
         &mut ts,
@@ -895,6 +890,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         legacy_vue2,
         dialect,
     );
+    let static_raw_props_ref = (!legacy_vue2::needs_legacy_vue2_helpers(legacy_vue2, dialect))
+        .then(|| {
+            setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
+        });
     ts.push_str(self::component_export::VUE_COMPONENT_OPTIONS_TYPE);
     emit_default_export_declaration(
         &mut ts,
@@ -903,6 +902,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_ref()
             .map(|(decl, names)| (decl.as_str(), names.as_str())),
         preserve_authored_component,
+        static_raw_props_ref.as_deref(),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
 

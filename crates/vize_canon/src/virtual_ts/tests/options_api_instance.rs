@@ -75,8 +75,8 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     assert!(
         output
             .code
-            .contains("type __VizeComponentInstance = __VizeAuthoredInstance & {"),
-        "the public instance must retain Options API members:\n{}",
+            .contains("type __VizeComponentInstance = Omit<__VizeAuthoredInstance, '$props' | '$emit' | '$slots'> & {"),
+        "the public instance must retain Options API members without broadening normalized Vue members:\n{}",
         output.code
     );
 }

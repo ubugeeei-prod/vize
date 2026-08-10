@@ -644,7 +644,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     assert!(
         output
             .code
-            .contains("type __AutoCard_Props_0 = typeof AutoCard")
+            .contains("type __AutoCard_Props_0 = typeof AutoCard extends { __vizeCheck: any } ? Record<string, unknown> : (typeof AutoCard extends { readonly __vizeRawProps?: infer __P } ? __P")
     );
 }
 
@@ -796,7 +796,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type __VizeComponentInstance = {\n  $props: __VizeComponentProps<Props>;\n  readonly __vizeRawProps?: Props;\n  $emit: __EmitFn<Emits>;\n  $slots: Slots;\n} & import('vue').ComponentPublicInstance & __VizeShallowUnwrapRef<Exposed>;"),
+        output.code.contains("type __VizeComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: __VizeStrictPublicEmit<Emits>;\n  $slots: Slots;\n} & __VizeComponentPublicBase & __VizeShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );

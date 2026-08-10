@@ -88,11 +88,13 @@ pub(super) fn generate_generic_props_call(
     // `:count="1" v-bind="bag"`, a key the runtime takes from `bag` instead.
     // Both lists are already sorted, so walking them together is enough.
     let mut spreads = usage.spread_props.iter().peekable();
+    let mut open_named_group = false;
     for prop in &usage.props {
         if !is_checkable_prop(prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
+            close_named_group(ts, &mut open_named_group);
             append_spread_entry(
                 ts,
                 mappings,
@@ -146,8 +148,30 @@ pub(super) fn generate_generic_props_call(
                 )
             };
         let camel_prop_name = to_camel_case(prop.name.as_str());
+        // TypeScript reports TS2783 for `{ count: 1, ...bag }` when `bag` also
+        // has `count`, while Vue accepts the authored last-wins binding order
+        // and the pinned parity oracle excludes that synthetic warning.
+        // Express the named prefix as a singleton spread when
+        // an object `v-bind` still follows: `{ ...{ count: 1 }, ...bag }` has
+        // the same inferred result and runtime order without manufacturing a
+        // duplicate-property diagnostic. A trailing named prop stays direct,
+        // so real duplicate named attributes are not hidden.
+        //
+        // Keep each named run in one singleton so authored duplicate props stay
+        // in the same object literal and TypeScript still reports TS1117.
+        let wrap_for_following_spread = spreads.peek().is_some();
 
-        append!(*ts, "{expr_indent}  ");
+        if wrap_for_following_spread {
+            if open_named_group {
+                ts.push_str(", ");
+            } else {
+                append!(*ts, "{expr_indent}  ...{{ ");
+                open_named_group = true;
+            }
+        } else {
+            close_named_group(ts, &mut open_named_group);
+            append!(*ts, "{expr_indent}  ");
+        }
         // Map the whole `"prop": value` entry (key through value) back to the
         // source attribute. TypeScript reports an assignability error for an
         // object-literal property at the property key, not the value, so a
@@ -158,7 +182,9 @@ pub(super) fn generate_generic_props_call(
         ts.push_str(": ");
         let value_gen_range = append_prop_value(ts, generated_value.as_str());
         let entry_gen_end = ts.len();
-        ts.push_str(",\n");
+        if !wrap_for_following_spread {
+            ts.push_str(",\n");
+        }
         // Without sub-spans the whole entry maps proportionally onto the whole
         // attribute, and `"prop": ` is one byte longer than `:prop="` — so an
         // error inside the value (TypeScript anchors a nested object-literal
@@ -191,6 +217,7 @@ pub(super) fn generate_generic_props_call(
         });
     }
     for spread in spreads {
+        close_named_group(ts, &mut open_named_group);
         append_spread_entry(
             ts,
             mappings,
@@ -201,6 +228,7 @@ pub(super) fn generate_generic_props_call(
             expr_indent.as_str(),
         );
     }
+    close_named_group(ts, &mut open_named_group);
 
     append!(*ts, "{expr_indent}}}");
     let literal_gen_end = ts.len();
@@ -219,6 +247,13 @@ pub(super) fn generate_generic_props_call(
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");
+    }
+}
+
+fn close_named_group(ts: &mut String, open: &mut bool) {
+    if *open {
+        ts.push_str(" },\n");
+        *open = false;
     }
 }
 

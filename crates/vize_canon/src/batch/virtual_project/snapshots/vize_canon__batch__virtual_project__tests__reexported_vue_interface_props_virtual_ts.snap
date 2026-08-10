@@ -77,7 +77,7 @@ function __setup() {
   type __VizePropChecker<C, P> = __VizeIsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void) : (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void;
   type __VizePropValue<P, K extends PropertyKey, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? unknown : __V;
   // @vize-map: component -> 258:302
-  type __Child_Props_0 = typeof Child extends { __vizeCheck: any } ? Record<string, unknown> : (typeof Child extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof Child extends { new (): { $props: infer __P } } ? __P : (typeof Child extends (props: infer __P) => any ? __P : {})));
+  type __Child_Props_0 = typeof Child extends { __vizeCheck: any } ? Record<string, unknown> : (typeof Child extends { readonly __vizeRawProps?: infer __P } ? __P : (typeof Child extends { new (): { readonly __vizeRawProps?: infer __P } } ? __P : (typeof Child extends { new (): { $props: infer __P } } ? __P : (typeof Child extends (props: infer __P) => any ? __P : {}))));
   type __Child_0_prop_as = __VizePropValue<__Child_Props_0, 'as'>;
   type __Child_0_prop_as_child = __VizePropValue<__Child_Props_0, 'asChild'>;
   type __Child_CheckProps_0 = __Child_Props_0 & __VizeEmitListeners<typeof Child>;
@@ -117,12 +117,14 @@ export type Slots = {};
 
 // ========== Default Export ==========
 type __VizeComponentInstance = {
-  $props: __VizeComponentProps<Props>;
+  $props: Props;
   readonly __vizeRawProps?: Props;
-  $emit: __EmitFn<Emits>;
+  $emit: __VizeStrictPublicEmit<Emits>;
   $slots: Slots;
+} & __VizeComponentPublicBase;
+type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __VizeAuthoredProps & __VizeComponentInput<Props, {}, __VizeAuthoredProps>, ...args: any[]) => __VizeUsePublicInstance<__VizeAuthoredProps> extends true ? __VizeComponentInstance : Omit<__VizeComponentInstance, '$props'> & {
+$props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInput<Props, {}, __VizeAuthoredProps>;
 };
-type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeVueComponentOptions = {
   name?: string;
   __name?: string;
@@ -147,5 +149,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeRawProps?: Props; } & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

@@ -1,4 +1,4 @@
-use vize_carton::{String, append};
+use vize_carton::{String, append, cstr};
 
 use super::emits::EmitsInfo;
 
@@ -50,6 +50,7 @@ pub(super) fn emit_default_export_declaration(
     emits_info: &EmitsInfo,
     generic_component_params: Option<(&str, &str)>,
     has_authored_default: bool,
+    static_raw_props_ref: Option<&str>,
 ) {
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
@@ -58,6 +59,22 @@ pub(super) fn emit_default_export_declaration(
     } else {
         ""
     };
+    // Keep canonical props on the component value itself. The normalized
+    // generic constructor selects a return type from authored input, so a raw
+    // identity buried only in that return does not invalidate parent template
+    // checks after an editor changes a child's props. This optional static
+    // marker creates the dependency edge without changing InstanceType or the
+    // authored call-site contract (#4034).
+    //
+    // Keep the metadata intersection first. Non-generic components defer their
+    // input contract behind `__VizeComponentInput`; putting that constructor
+    // before the raw-props member lets TypeScript's incremental relation cache
+    // settle only the first of multiple consumers of the same changed SFC.
+    // Leading with the direct `Props` identity makes every dependent program
+    // observe the edit while the last construct signature remains unchanged.
+    let static_raw_props_field = static_raw_props_ref
+        .map(|props_ref| cstr!("readonly __vizeRawProps?: {props_ref};"))
+        .unwrap_or_default();
     if let Some((generic_decl, generic_names)) = generic_component_params {
         let emit_resolvers = emits_info.generic_emit_resolver_fields(generic_decl, generic_names);
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
@@ -68,13 +85,18 @@ pub(super) fn emit_default_export_declaration(
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions & {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} }};\n",
+            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {static_raw_props_field} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
         append!(
             *ts,
-            "declare const __vize_component__: {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions & {{ {emit_props_static}{event_map_separator}{event_map_static} }};\n",
+            "declare const __vize_component__: {{ {emit_props_static}{event_map_separator}{event_map_static} {static_raw_props_field} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
+        );
+    } else if !static_raw_props_field.is_empty() {
+        append!(
+            *ts,
+            "declare const __vize_component__: {{ {static_raw_props_field} }} & {authored_component}__VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else {
         append!(

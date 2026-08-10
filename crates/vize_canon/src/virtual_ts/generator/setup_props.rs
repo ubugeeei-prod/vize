@@ -150,26 +150,41 @@ impl SetupPropsPlan {
         }
     }
 
+    pub(super) fn component_value_props_type_ref(
+        &self,
+        generic_component_params: Option<&(String, String)>,
+    ) -> String {
+        generic_component_params
+            .map(|(decl, _)| self.generic_fallback_component_props_type_ref(decl.as_str()))
+            .unwrap_or_else(|| self.component_props_type_ref().into())
+    }
+
     pub(super) fn emit_component_props_field(
         &self,
         mut ts: &mut String,
         has_emits_for_props: bool,
         generic_decl: Option<&str>,
+        legacy_input_aliases: bool,
     ) {
         let props_type_ref = generic_decl
             .map(|decl| self.generic_fallback_component_props_type_ref(decl))
             .unwrap_or_else(|| self.component_props_type_ref().into());
+        let public_props_type_ref = if legacy_input_aliases {
+            cstr!("__VizeComponentProps<{props_type_ref}>")
+        } else {
+            props_type_ref.clone()
+        };
         if has_emits_for_props {
             append!(
                 ts,
-                "  $props: __VizeComponentProps<{props_type_ref}> & __EmitProps<Emits>;\n"
+                "  $props: {public_props_type_ref} & __EmitProps<Emits>;\n"
             );
         } else {
-            append!(ts, "  $props: __VizeComponentProps<{props_type_ref}>;\n");
+            append!(ts, "  $props: {public_props_type_ref};\n");
         }
-        // The public `$props` type relaxes camel-case keys so kebab aliases are
-        // accepted. Preserve the unmodified declaration for Vize's generated
-        // whole-object template check, whose keys are already camelized.
+        // Vize's generated whole-object template check extracts this marker
+        // instead of the JSX input constructor. Both stay canonical: call-site
+        // camel/kebab aliases are an input concern, not a public-instance type.
         append!(ts, "  readonly __vizeRawProps?: {props_type_ref};\n");
     }
 

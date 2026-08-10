@@ -85,9 +85,7 @@ defineProps<Props & { items: typeof someDefinition }>();
         output.code
     );
     assert!(
-        output
-            .code
-            .contains("  $props: __VizeComponentProps<__VizeResolvedProps>;"),
+        output.code.contains("  $props: __VizeResolvedProps;"),
         "component instance should use the full deferred props type:\n{}",
         output.code
     );

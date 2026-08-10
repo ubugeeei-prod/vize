@@ -145,6 +145,12 @@ const onSave = (_value: string) => {}
   <!-- A declared binding beside fallthrough attrs or a spread. -->
   <Child :count="1" class="edge" data-id="1" />
   <Child :count="1" v-bind="goodBag" />
+
+  <!-- Spread order and synthetic singleton spreads preserve Vue last-wins. -->
+  <Child v-bind="goodBag" :count="1" />
+  <Child :count="1" v-bind="missingBag" label="middle" v-bind="goodBag" />
+  <Child :[propName]="1" v-bind="goodBag" />
+  <Child :count="1" :count="2" label="ok" />
 </template>
 "#,
             ),
@@ -174,6 +180,7 @@ const onSave = (_value: string) => {}
     assert_eq!(
         actual,
         [
+            ("src/Parent.vue", Some(1117), "64:22".to_string()),
             ("src/Parent.vue", Some(2322), "19:11".to_string()),
             ("src/Parent.vue", Some(2322), "45:26".to_string()),
             ("src/Parent.vue", Some(2322), "50:15".to_string()),
@@ -264,6 +271,10 @@ const onSave = (_value: string) => {}
     assert!(
         diagnostic_at(50).2.contains("not assignable") && !diagnostic_at(50).2.contains("missing"),
         "an invalid discriminant must remain the sole value diagnostic: {snapshot:#?}"
+    );
+    assert!(
+        diagnostic_at(64).1 == Some(1117),
+        "a genuine duplicate named attribute must not be hidden by singleton spread codegen: {snapshot:#?}"
     );
     // Multibyte text before the tag must not shift the column: `🎉` is two UTF-16
     // code units and `✅` is one, so the `Child` tag name sits at UTF-16 column 24
