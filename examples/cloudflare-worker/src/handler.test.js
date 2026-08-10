@@ -12,7 +12,7 @@ function binding(calls) {
   };
 }
 
-test("GET compiles the built-in Vue SFC", async () => {
+void test("GET compiles the built-in Vue SFC", async () => {
   const calls = [];
   const response = await handleRequest(new Request("https://example.test/"), async () =>
     binding(calls),
@@ -27,7 +27,7 @@ test("GET compiles the built-in Vue SFC", async () => {
   assert.deepEqual(calls[0].options, { filename: "Counter.vue" });
 });
 
-test("POST forwards the source and compiler options", async () => {
+void test("POST forwards the source and compiler options", async () => {
   const calls = [];
   const response = await handleRequest(
     new Request("https://example.test/", {
@@ -50,7 +50,7 @@ test("POST forwards the source and compiler options", async () => {
   ]);
 });
 
-test("invalid requests are rejected before WASM initialization", async () => {
+void test("invalid requests are rejected before WASM initialization", async () => {
   let initialized = false;
   const getBinding = async () => {
     initialized = true;
@@ -69,7 +69,7 @@ test("invalid requests are rejected before WASM initialization", async () => {
   });
 });
 
-test("unsupported methods return 405 without initializing WASM", async () => {
+void test("unsupported methods return 405 without initializing WASM", async () => {
   let initialized = false;
   const response = await handleRequest(
     new Request("https://example.test/", { method: "DELETE" }),
