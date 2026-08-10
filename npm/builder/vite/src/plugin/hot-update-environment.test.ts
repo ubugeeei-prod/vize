@@ -3,6 +3,7 @@ import type { DevEnvironment, EnvironmentModuleNode, HotUpdateOptions } from "vi
 
 import { compileFile } from "../compiler.ts";
 import { toPluginVisibleVirtualId } from "../virtual.ts";
+import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { handleHotUpdateEnvironmentHook } from "./hot-update-environment.ts";
 import type { VizePluginState } from "./state.ts";
 
@@ -69,6 +70,116 @@ function createOptions(modules: EnvironmentModuleNode[], file = vueFile): HotUpd
     [clientModule],
     "client dependency HMR should exclude the raw owner module",
   );
+}
+
+{
+  const state = createState();
+  const dependencyFile = "/src/template.html";
+  const compiled = state.cache.get(vueFile)!;
+  compiled.dependencies = [dependencyFile];
+  const indexedCache = new CompiledModuleCache();
+  indexedCache.set(vueFile, compiled);
+  state.cache = indexedCache;
+
+  const rawModule = { url: vueFile } as EnvironmentModuleNode;
+  const firstClientModule = {
+    id: toPluginVisibleVirtualId(vueFile),
+    url: toPluginVisibleVirtualId(vueFile),
+  } as EnvironmentModuleNode;
+  const restoredClientModule = {
+    id: toPluginVisibleVirtualId(vueFile),
+    url: toPluginVisibleVirtualId(vueFile),
+  } as EnvironmentModuleNode;
+  let graphModule: EnvironmentModuleNode | undefined = firstClientModule;
+  let ensureCount = 0;
+  const environment = {
+    name: "client",
+    moduleGraph: {
+      getModuleById(id: string) {
+        return id === toPluginVisibleVirtualId(vueFile) ? graphModule : undefined;
+      },
+      async getModuleByUrl() {
+        throw new Error("unresolved speculative candidate");
+      },
+      getModulesByFile() {},
+      async ensureEntryFromUrl(url: string, setIsSelfAccepting: boolean) {
+        assert.equal(url, toPluginVisibleVirtualId(vueFile));
+        assert.equal(setIsSelfAccepting, false);
+        ensureCount += 1;
+        graphModule = restoredClientModule;
+        return restoredClientModule;
+      },
+      invalidateModule() {},
+    },
+    hot: { send() {} },
+  } as unknown as DevEnvironment;
+
+  assert.deepEqual(
+    await handleHotUpdateEnvironmentHook(
+      state,
+      environment,
+      createOptions([rawModule], dependencyFile),
+    ),
+    [firstClientModule],
+  );
+
+  graphModule = undefined;
+  assert.deepEqual(
+    await handleHotUpdateEnvironmentHook(
+      state,
+      environment,
+      createOptions([rawModule], dependencyFile),
+    ),
+    [restoredClientModule],
+    "a repeated dependency update should restore the owner removed from Vite's graph",
+  );
+  assert.equal(ensureCount, 1, "only the missing second owner should be restored");
+
+  environment.moduleGraph.ensureEntryFromUrl = async () => {
+    throw new Error("client module restoration failed");
+  };
+  graphModule = undefined;
+  assert.equal(
+    await handleHotUpdateEnvironmentHook(
+      state,
+      environment,
+      createOptions([rawModule], dependencyFile),
+    ),
+    undefined,
+    "a failed owner restoration should keep Vite's default HMR handling",
+  );
+}
+
+{
+  const state = createState();
+  const dependencyFile = "/src/server-template.html";
+  const compiled = state.cache.get(vueFile)!;
+  compiled.dependencies = [dependencyFile];
+  const ssrCache = new CompiledModuleCache();
+  ssrCache.set(vueFile, compiled);
+  state.cache.get(vueFile)!.dependencies = [];
+  state.ssrCache = ssrCache;
+  let ensureCount = 0;
+  const environment = createEnvironment("client") as DevEnvironment & {
+    moduleGraph: DevEnvironment["moduleGraph"] & {
+      ensureEntryFromUrl: DevEnvironment["moduleGraph"]["ensureEntryFromUrl"];
+    };
+  };
+  environment.moduleGraph.ensureEntryFromUrl = async () => {
+    ensureCount += 1;
+    throw new Error("SSR-only owners must not create a client module");
+  };
+
+  assert.deepEqual(
+    await handleHotUpdateEnvironmentHook(
+      state,
+      environment,
+      createOptions([{ url: vueFile } as EnvironmentModuleNode], dependencyFile),
+    ),
+    [],
+    "an SSR-only dependency owner should remain absent from the client graph",
+  );
+  assert.equal(ensureCount, 0);
 }
 
 function createEnvironment(name: string, clientModule?: EnvironmentModuleNode): DevEnvironment {

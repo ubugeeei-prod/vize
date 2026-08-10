@@ -8,7 +8,7 @@ import {
   isFatalError,
 } from "../../_helpers/assertions";
 import { getProcessLogs } from "../../_helpers/server";
-import { installSourceRestore } from "./nuxt-ui-hmr-cleanup";
+import { installSourceRestore } from "./source-restore";
 
 const OPTIMIZE_RELOAD = /optimized dependencies changed\. reloading/i;
 const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;

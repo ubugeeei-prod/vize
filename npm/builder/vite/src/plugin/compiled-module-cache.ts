@@ -26,6 +26,7 @@ import type { CompiledModule } from "../types.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
   readonly #ownersByDependency = new Map<string, Set<string>>();
+  readonly #dependenciesByOwner = new Map<string, Set<string>>();
 
   /**
    * Deliberately takes no entries: `Map`'s constructor would call the
@@ -38,8 +39,10 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   override set(file: string, compiled: CompiledModule): this {
     this.#unindex(file);
     super.set(file, compiled);
+    const dependencies = new Set<string>();
     for (const dependency of compiled.dependencies ?? []) {
       const key = path.resolve(dependency);
+      dependencies.add(key);
       const owners = this.#ownersByDependency.get(key);
       if (owners) {
         owners.add(file);
@@ -47,6 +50,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
         this.#ownersByDependency.set(key, new Set([file]));
       }
     }
+    this.#dependenciesByOwner.set(file, dependencies);
     return this;
   }
 
@@ -57,7 +61,17 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
 
   override clear(): void {
     this.#ownersByDependency.clear();
+    this.#dependenciesByOwner.clear();
     super.clear();
+  }
+
+  /**
+   * Evict a compiled value while retaining the dependency ownership that is
+   * required to route another hot update before Vite reloads the owner module.
+   * The next `set` reconciles that retained snapshot with the new compilation.
+   */
+  evict(file: string): boolean {
+    return super.delete(file);
   }
 
   /** The cached SFCs that `src`-import `resolvedDependency`. */
@@ -67,14 +81,22 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   }
 
   #unindex(file: string): void {
-    for (const dependency of super.get(file)?.dependencies ?? []) {
-      const key = path.resolve(dependency);
-      const owners = this.#ownersByDependency.get(key);
+    for (const dependency of this.#dependenciesByOwner.get(file) ?? []) {
+      const owners = this.#ownersByDependency.get(dependency);
       if (!owners) continue;
       owners.delete(file);
-      if (owners.size === 0) this.#ownersByDependency.delete(key);
+      if (owners.size === 0) this.#ownersByDependency.delete(dependency);
     }
+    this.#dependenciesByOwner.delete(file);
   }
+}
+
+/**
+ * Invalidate a compiled module without dropping its HMR dependency routing.
+ * Hand-built plain Maps retain their historical delete behaviour.
+ */
+export function evictCompiledModule(cache: Map<string, CompiledModule>, file: string): boolean {
+  return cache instanceof CompiledModuleCache ? cache.evict(file) : cache.delete(file);
 }
 
 /**

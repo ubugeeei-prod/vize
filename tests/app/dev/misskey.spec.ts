@@ -16,13 +16,18 @@ import {
   verifyScopedCssAttributes,
 } from "../../_helpers/assertions";
 import { setupMisskeyMocks } from "../../_helpers/mocking";
+import {
+  prepareMisskeyHmrFixture,
+  verifyMisskeyAuthoredSourceHmr,
+  type MisskeyHmrFixture,
+} from "./misskey-hmr";
 
 const app = misskeyApp;
 
-async function gotoMisskey(page: Page) {
+async function gotoMisskey(page: Page, pathname = "") {
   await setupMisskeyMocks(page);
 
-  return page.goto(app.url, {
+  return page.goto(new URL(pathname, app.url).toString(), {
     waitUntil: app.waitUntil ?? "networkidle",
     timeout: 30_000,
   });
@@ -74,9 +79,11 @@ async function hasCssModuleClass(page: Page): Promise<boolean> {
 
 test.describe("misskey dev", () => {
   let devServer: ChildProcess;
+  let hmrFixture: MisskeyHmrFixture | undefined;
 
   test.beforeAll(async () => {
     if (app.setup) app.setup();
+    hmrFixture = prepareMisskeyHmrFixture(app.cwd);
     await ensurePortFree(app.port);
 
     console.log(`Starting dev server for ${app.name}...`);
@@ -99,8 +106,12 @@ test.describe("misskey dev", () => {
 
   test.afterAll(async () => {
     console.log(`Stopping dev server for ${app.name}...`);
-    killProcess(devServer);
-    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      killProcess(devServer);
+      await new Promise((r) => setTimeout(r, 2000));
+    } finally {
+      hmrFixture?.restore();
+    }
   });
 
   test("page renders with #misskey_app attached", async ({ page }) => {
@@ -155,6 +166,18 @@ test.describe("misskey dev", () => {
       console.log(`Fatal errors in ${app.name}:`, fatalErrors);
     }
     expect(fatalErrors).toHaveLength(0);
+  });
+
+  test("authored SFCs hot-update through pure Vite without reloading", async ({ page }) => {
+    test.setTimeout(180_000);
+    await verifyMisskeyAuthoredSourceHmr({
+      page,
+      devServer,
+      cwd: app.cwd,
+      mountSelector: app.mountSelector,
+      appName: app.name,
+      goto: (pathname) => gotoMisskey(page, pathname),
+    });
   });
 
   test("screenshot", async ({ page }) => {

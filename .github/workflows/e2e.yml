@@ -85,6 +85,7 @@ jobs:
               - 'tests/_fixtures/_projects/compiler-macros/**'
               - 'tests/_helpers/**'
               - 'tests/app/dev/{misskey,nuxt-ui}.spec.ts'
+              - 'tests/app/dev/{misskey-hmr,nuxt-ui-hmr,source-restore}.ts'
               - 'tests/app/playwright.config.ts'
               - 'tests/snapshots/check/compiler-macros.ts'
               - 'tests/snapshots/check/__snapshots__/compiler-macros-check.snap'

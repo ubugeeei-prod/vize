@@ -18,6 +18,7 @@ import "./plugin/css-modules.test.ts";
 import "./plugin/dev-middleware.test.ts";
 import "./plugin/inspector-lint-plan.test.ts";
 import "./plugin/external-sfc-hmr.test.ts";
+import "./plugin/repeated-external-sfc-hmr.test.ts";
 import "./plugin/hot-update-environment.test.ts";
 import "./plugin/hmr.test.ts";
 import "./plugin/index.test.ts";

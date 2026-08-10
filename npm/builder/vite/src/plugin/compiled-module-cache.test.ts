@@ -42,6 +42,33 @@ function scanOwners(
 }
 
 {
+  // A dependency save can arrive again before Vite reloads the owner module.
+  // Eviction must discard stale compiled code without losing that routing.
+  const cache = new CompiledModuleCache();
+  cache.set("/src/App.vue", compiled(["/src/old.css"]));
+
+  assert.equal(cache.evict("/src/App.vue"), true);
+  assert.equal(cache.has("/src/App.vue"), false);
+  assert.deepEqual(cache.ownersOf("/src/old.css"), ["/src/App.vue"]);
+
+  cache.set("/src/App.vue", compiled(["/src/new.css"]));
+  assert.deepEqual(cache.ownersOf("/src/old.css"), []);
+  assert.deepEqual(cache.ownersOf("/src/new.css"), ["/src/App.vue"]);
+
+  assert.equal(cache.delete("/src/App.vue"), true);
+  assert.deepEqual(cache.ownersOf("/src/new.css"), []);
+
+  cache.set("/src/App.vue", compiled(["/src/final.css"]));
+  assert.equal(cache.evict("/src/App.vue"), true);
+  assert.equal(cache.delete("/src/App.vue"), false);
+  assert.deepEqual(
+    cache.ownersOf("/src/final.css"),
+    [],
+    "an explicit delete after eviction must remove retained HMR ownership",
+  );
+}
+
+{
   const cache = new CompiledModuleCache();
   cache.set("/src/App.vue", compiled(["/src/shared.css"]));
   cache.set("/src/Page.vue", compiled(["/src/shared.css"]));

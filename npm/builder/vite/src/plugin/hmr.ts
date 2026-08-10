@@ -1,22 +1,21 @@
-import type { HmrContext, ModuleNode, ViteDevServer } from "vite";
+import type { HmrContext, ModuleNode } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
-import { ownersOfDependency } from "./compiled-module-cache.ts";
+import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
 import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
-import {
-  fromPluginVisibleVirtualId,
-  isPluginVisibleSsrVirtualId,
-  isVizeSsrVirtual,
-  isVizeVirtual,
-  toPluginVisibleVirtualId,
-  toVirtualId,
-} from "../virtual.ts";
 import { resolveCssImports } from "../utils/css.ts";
+import {
+  collectModulesByFile,
+  getStyleModuleFileCandidates,
+  getVueModuleFileCandidates,
+  invalidateModules,
+  preferAcceptingClientModules,
+} from "./hmr-module-graph.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
@@ -59,97 +58,18 @@ function getVueFilesDependingOn(state: VizePluginState, dependencyFile: string):
   return [...owners];
 }
 
-function unique(values: string[]): string[] {
-  return [...new Set(values)];
-}
-
-function toViteFsFileId(fileId: string): string | null {
-  if (!path.isAbsolute(fileId)) {
-    return null;
-  }
-
-  const normalized = fileId.replace(/\\/g, "/");
-  return normalized.startsWith("/") ? `/@fs${normalized}` : `/@fs/${normalized}`;
-}
-
-function getVueModuleFileCandidates(vueFile: string): string[] {
-  const candidates = [
-    toVirtualId(vueFile),
-    toPluginVisibleVirtualId(vueFile),
-    toVirtualId(vueFile, true),
-    toPluginVisibleVirtualId(vueFile, true),
-    toPluginVisibleVirtualId(vueFile).split("?")[0],
-    vueFile,
-  ];
-  const viteFsCandidates = candidates.flatMap((candidate) => {
-    const viteFsId = toViteFsFileId(candidate);
-    return viteFsId ? [viteFsId] : [];
-  });
-
-  return unique([...candidates, ...viteFsCandidates]);
-}
-
-function getStyleModuleFileCandidates(styleId: string): string[] {
-  return unique([styleId, `${styleId}.css`]);
-}
-
-async function collectModulesByFile(
-  server: ViteDevServer,
-  fileIds: readonly string[],
-): Promise<Set<ModuleNode>> {
-  const modules = new Set<ModuleNode>();
-  const graph = server.moduleGraph;
-  for (const fileId of fileIds) {
-    const add = (module: ModuleNode | undefined) => {
-      if (module) modules.add(module);
-    };
-    add(graph.getModuleById?.(fileId));
-    if (!fileId.startsWith("\0")) {
-      // Speculative candidates are resolved through the plugin container, so an
-      // ID that no plugin claims can reject. One bad candidate must not abort
-      // the rest of the hot update.
-      try {
-        add(await graph.getModuleByUrl?.(fileId));
-      } catch {
-        // Not a module in this graph.
-      }
-    }
-    for (const module of graph.getModulesByFile(fileId) ?? []) add(module);
-  }
-
-  return modules;
-}
-
-function preferAcceptingClientModules(
-  modules: Set<ModuleNode>,
-  requireAcceptingClientModule = false,
-): Set<ModuleNode> {
-  const accepting = [...modules].filter((module) => {
-    if (isVizeVirtual(module.url)) return !isVizeSsrVirtual(module.url);
-    return (
-      fromPluginVisibleVirtualId(module.url) !== null && !isPluginVisibleSsrVirtualId(module.url)
-    );
-  });
-  if (accepting.length > 0) return new Set(accepting);
-  return requireAcceptingClientModule ? new Set() : modules;
-}
-
-function invalidateModules(server: ViteDevServer, modules: Iterable<ModuleNode>): void {
-  for (const module of modules) {
-    server.moduleGraph.invalidateModule(module);
-  }
-}
-
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
   options: {
+    ensureAcceptingClientModule?: (vueFile: string) => Promise<ModuleNode>;
     requireAcceptingClientModule?: boolean;
     onRecompileError?: (error: unknown) => void;
   } = {},
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
+  const clientDependencyOwners = new Set(ownersOfDependency(state.cache, path.resolve(file)));
   const dependencyOwners = getVueFilesDependingOn(state, file);
   if (dependencyOwners.length > 0) {
     const affectedModules: Set<import("vite").ModuleNode> = new Set();
@@ -162,10 +82,20 @@ export async function handleHotUpdateHook(
       const modules = options.requireAcceptingClientModule
         ? preferAcceptingClientModules(collectedModules, true)
         : collectedModules;
-      if (options.requireAcceptingClientModule && modules.size === 0) continue;
+      if (options.requireAcceptingClientModule && modules.size === 0) {
+        if (!options.ensureAcceptingClientModule || !clientDependencyOwners.has(vueFile)) continue;
+        try {
+          const ensured = await options.ensureAcceptingClientModule(vueFile);
+          modules.add(ensured);
+        } catch (error) {
+          state.logger.error(`Failed to restore the client HMR owner for ${vueFile}:`, error);
+          options.onRecompileError?.(error);
+          return;
+        }
+      }
 
-      state.cache.delete(vueFile);
-      state.ssrCache.delete(vueFile);
+      evictCompiledModule(state.cache, vueFile);
+      evictCompiledModule(state.ssrCache, vueFile);
       state.collectedCss.delete(vueFile);
       state.precompileMetadata.delete(vueFile);
       state.pendingHmrUpdateTypes.set(vueFile, "full-reload");
