@@ -111,6 +111,17 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             false,
         ),
         (
+            "DynamicGenericChild.vue",
+            "@choose",
+            "choose: [value",
+            "choose",
+            "\\\"top-level\\\"",
+            "renamedChoose",
+            0,
+            "choose".len(),
+            true,
+        ),
+        (
             "GenericChild.vue",
             "@pick",
             "pick: [value",
@@ -131,6 +142,17 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             0,
             "\"title\"".len(),
             false,
+        ),
+        (
+            "NestedGenericChild.vue",
+            "@select",
+            "select: [value",
+            "select",
+            "\\\"nested\\\"",
+            "renamedSelect",
+            0,
+            "select".len(),
+            true,
         ),
         (
             "RuntimeChild.vue",
@@ -308,17 +330,40 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 assert_eq!(clean["items"], json!([]), "{clean:#}");
             }
 
+            let broken_handler =
+                app_source.replace("@select=\"handleSelect\"", "@select=\"handleSubmit\"");
+            overlay
+                .replace(&app_document_uri, broken_handler.as_str())
+                .unwrap();
+            let broken = pull_diagnostics(&client, &app_uri).await;
+            let broken_text = serde_json::to_string(&broken).unwrap();
+            assert!(broken_text.contains("2322"), "{broken:#}");
+            let event_start =
+                position(&broken_handler, broken_handler.find("@select").unwrap() + 1);
+            assert!(
+                broken["items"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|diagnostic| { diagnostic["range"]["start"] == event_start }),
+                "{broken:#}"
+            );
+
             let partial = app_source
+                .replace("@choose", "@cho")
                 .replace("@submit", "@sub")
                 .replace("@cancel", "@can")
+                .replace("@select", "@sel")
                 .replace("@update:modelValue", "@update:m")
                 .replace("@update:title", "@update:t");
             overlay
                 .replace(&app_document_uri, partial.as_str())
                 .unwrap();
             for (usage, label, payload) in [
+                ("@cho", "choose", "\\\"top-level\\\""),
                 ("@sub", "submit", "boolean"),
                 ("@can", "cancel", "string"),
+                ("@sel", "select", "\\\"nested\\\""),
                 ("@update:m", "update:modelValue", "number"),
                 ("@update:t", "update:title", "string"),
             ] {

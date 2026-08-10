@@ -82,9 +82,16 @@ pub(super) fn content_mapper_span_features(
     start: usize,
     kind: ContentMapperSpanKind,
 ) -> usize {
+    if is_diagnostic_handler_anchor(generated, start, kind) {
+        return 0;
+    }
     let prefix = projection_prefix(generated, start);
     match (kind, prefix) {
-        (_, Some(prefix)) if prefix.starts_with("  void __vize_model_events_completion_") => {
+        (_, Some(prefix))
+            if prefix
+                .trim_start()
+                .starts_with("void __vize_model_events_completion_") =>
+        {
             CONTENT_MAPPER_SPAN_FEATURES_COMPLETION
         }
         (_, Some(prefix)) if is_whole_symbol_projection(prefix) => {
@@ -93,6 +100,22 @@ pub(super) fn content_mapper_span_features(
         (ContentMapperSpanKind::Verbatim, _) => CONTENT_MAPPER_SPAN_FEATURES_ALL,
         (ContentMapperSpanKind::Atom, _) => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
     }
+}
+
+fn is_diagnostic_handler_anchor(
+    generated: &str,
+    start: usize,
+    kind: ContentMapperSpanKind,
+) -> bool {
+    if kind != ContentMapperSpanKind::Atom
+        || !generated
+            .get(start..)
+            .is_some_and(|suffix| suffix.starts_with("__vize_handler_"))
+    {
+        return false;
+    }
+    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
+    generated[line_start..start].trim_start() == "const "
 }
 
 fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
@@ -108,7 +131,8 @@ fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
 }
 
 fn is_whole_symbol_projection(prefix: &str) -> bool {
-    prefix.starts_with("  void __vize_kebab_events_nav_")
-        || prefix.starts_with("  void __vize_model_events_nav_")
-        || prefix.starts_with("  /* __vize_model_event */ ")
+    let prefix = prefix.trim_start();
+    prefix.starts_with("void __vize_kebab_events_nav_")
+        || prefix.starts_with("void __vize_model_events_nav_")
+        || prefix.starts_with("/* __vize_model_event */ ")
 }

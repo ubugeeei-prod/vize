@@ -18,8 +18,8 @@ use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::children::generate_child_scopes;
+use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
-use super::component_prop_navigation::emit_event_references;
 use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
 use super::emit::{

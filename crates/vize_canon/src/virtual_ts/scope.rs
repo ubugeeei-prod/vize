@@ -6,7 +6,9 @@
 
 mod children;
 mod closures;
+mod component_event_navigation;
 mod component_events;
+mod component_navigation;
 mod component_prop_checker;
 mod component_prop_expressions;
 mod component_prop_navigation;

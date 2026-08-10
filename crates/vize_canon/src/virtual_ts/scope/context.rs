@@ -79,6 +79,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) source_context: ComponentPropSource<'a>,
+    pub(crate) preserve_event_navigation: bool,
 }
 
 pub(super) struct EventHandlerExprContext<'a> {

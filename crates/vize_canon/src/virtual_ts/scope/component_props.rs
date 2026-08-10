@@ -170,6 +170,7 @@ pub(super) fn generate_component_props(
             vfor_enclosing_guards: &vfor_enclosing_guards,
             template_prop_names: ctx.template_prop_names,
             source_context: ctx.source_context(),
+            preserve_event_navigation: ctx.preserve_event_navigation,
         };
         profile!(
             "canon.virtual_ts.closure_component_props",
