@@ -6,6 +6,7 @@ use vize_croquis::croquis::{ComponentUsage, EventListener, PassedProp};
 use crate::virtual_ts::helpers::{to_camel_case, to_safe_identifier, to_safe_identifier_fragment};
 use crate::virtual_ts::types::VizeMapping;
 
+use super::component_events::generated_prop_value;
 use super::context::ComponentPropsContext;
 use super::event_handler::event_name_source_range;
 
@@ -57,10 +58,12 @@ fn emit_usage_event_references(
     usage: &ComponentUsage,
     component_ref: &str,
 ) {
+    let resolved_events = cstr!("__vize_events_resolved_{idx}");
     let direct_events_ref = cstr!("__vize_events_nav_{idx}");
     let kebab_events_ref = cstr!("__vize_kebab_events_nav_{idx}");
     let mut emitted_direct_ref = false;
     let mut emitted_kebab_ref = false;
+    let mut emitted_resolved_events = false;
     for event in &usage.events {
         let camel_event_name = to_camel_case(event.name.as_str());
         let is_complete_kebab = camel_event_name != event.name && !event.name.ends_with('-');
@@ -72,11 +75,19 @@ fn emit_usage_event_references(
         } else {
             (&direct_events_ref, &mut emitted_direct_ref)
         };
+        if !emitted_resolved_events && ctx.preserve_event_navigation {
+            emit_resolved_events(ts, ctx, usage, component_ref, idx, resolved_events.as_str());
+            emitted_resolved_events = true;
+        }
         if !*emitted_ref {
-            append!(
-                *ts,
-                "  const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
-            );
+            if ctx.preserve_event_navigation {
+                append!(*ts, "  const {events_ref} = {resolved_events};\n");
+            } else {
+                append!(
+                    *ts,
+                    "  const {events_ref} = undefined as unknown as __VizeComponentEvents<typeof {component_ref}> & Record<string, unknown>;\n"
+                );
+            }
             *emitted_ref = true;
         }
 
@@ -111,6 +122,35 @@ fn emit_usage_event_references(
             sub_spans: Vec::new(),
         });
     }
+}
+
+fn emit_resolved_events(
+    ts: &mut String,
+    ctx: &ComponentPropsContext<'_>,
+    usage: &ComponentUsage,
+    component_ref: &str,
+    idx: usize,
+    resolved_events: &str,
+) {
+    append!(
+        *ts,
+        "  type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeComponentEvents<typeof {component_ref}>) : (props: any) => __VizeComponentEvents<typeof {component_ref}>;\n  // @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n  const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})({{\n"
+    );
+    for prop in &usage.props {
+        if prop.name_is_dynamic
+            || prop.is_dynamic
+            || prop.name.as_str() == "key"
+            || prop.name.as_str() == "ref"
+        {
+            continue;
+        }
+        let Some(value) = generated_prop_value(prop, ctx.template_prop_names) else {
+            continue;
+        };
+        let name = to_camel_case(prop.name.as_str());
+        append!(*ts, "    \"{name}\": {value},\n");
+    }
+    ts.push_str("  });\n");
 }
 
 fn event_navigation_source_range(

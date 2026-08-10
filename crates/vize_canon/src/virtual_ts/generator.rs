@@ -79,9 +79,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let check_props = check_options.check_props;
     let script_source_offset =
         |offset| generation_options.script_source_offset(script_offset, offset);
-    // Configured Vue dialect, used to emit dialect-aware template instance typing
-    // (e.g. a Vue 2 `this`/template shape with `$listeners`,
-    // `$children`, `$on`, ... that Vue 3's `ComponentPublicInstance` lacks).
+    // Configured Vue dialect drives the Vue 2/3 template instance shape.
     let dialect = generation_options.dialect;
     let legacy_vue2 =
         generation_options.legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
@@ -728,6 +726,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             check_unresolved_global_components: global_components.component_check(),
                             legacy_vue2,
                             options_api,
+                            preserve_event_navigation: generation_options.component_name.is_some(),
                             has_default_alias: declared_default_alias,
                             script_content,
                         },

@@ -12,8 +12,9 @@ use vize_carton::FxHashSet;
 #[allow(dead_code)]
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_completion, assert_prop_navigation, contains_location, copy_fixture,
-    editor_capabilities, file_uri, install_packages, position, pull_diagnostics, workspace_root,
+    assert_completion, assert_prop_navigation, contains_location, contains_location_range,
+    contains_text_edit, copy_fixture, editor_capabilities, file_uri, install_packages, position,
+    pull_diagnostics, references, rename, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -26,8 +27,6 @@ impl Drop for StopOnDrop<'_> {
 }
 struct RawInitialize;
 struct RawDiscoverContentMappers;
-struct RawReferences;
-struct RawRename;
 struct RawInitialized;
 impl lsp_types::request::Request for RawInitialize {
     type Params = Value;
@@ -41,60 +40,9 @@ impl lsp_types::request::Request for RawDiscoverContentMappers {
     const METHOD: &'static str = "custom/discoverContentMappers";
 }
 
-impl lsp_types::request::Request for RawReferences {
-    type Params = Value;
-    type Result = Value;
-    const METHOD: &'static str = "textDocument/references";
-}
-
-impl lsp_types::request::Request for RawRename {
-    type Params = Value;
-    type Result = Value;
-    const METHOD: &'static str = "textDocument/rename";
-}
-
 impl lsp_types::notification::Notification for RawInitialized {
     type Params = Value;
     const METHOD: &'static str = "initialized";
-}
-
-fn contains_location_range(value: &Value, uri: &str, start: &Value, end: &Value) -> bool {
-    match value {
-        Value::Array(values) => values
-            .iter()
-            .any(|value| contains_location_range(value, uri, start, end)),
-        Value::Object(object) => {
-            object.get("uri") == Some(&Value::String(uri.to_owned()))
-                && object.get("range").and_then(|range| range.get("start")) == Some(start)
-                && object.get("range").and_then(|range| range.get("end")) == Some(end)
-        }
-        _ => false,
-    }
-}
-
-fn contains_text_edit(
-    value: &Value,
-    uri: &str,
-    start: &Value,
-    end: &Value,
-    new_name: &str,
-) -> bool {
-    let matches = |edit: &Value| {
-        edit["range"]["start"] == *start
-            && edit["range"]["end"] == *end
-            && edit["newText"].as_str() == Some(new_name)
-    };
-    value["changes"][uri]
-        .as_array()
-        .is_some_and(|edits| edits.iter().any(matches))
-        || value["documentChanges"].as_array().is_some_and(|changes| {
-            changes.iter().any(|change| {
-                change["textDocument"]["uri"] == uri
-                    && change["edits"]
-                        .as_array()
-                        .is_some_and(|edits| edits.iter().any(matches))
-            })
-        })
 }
 
 #[test]
@@ -146,6 +94,16 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             "boolean",
             "renamedSubmit",
             1,
+            true,
+        ),
+        (
+            "GenericChild.vue",
+            "@pick",
+            "pick: [value",
+            "pick",
+            "\\\"chosen\\\"",
+            "renamedPick",
+            0,
             true,
         ),
         (
@@ -279,14 +237,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                         .unwrap();
                 }
                 assert_prop_navigation(&client, &app_uri, usage, name, ty, uri, declaration).await;
-                let references = client
-                    .request::<RawReferences>(json!({
-                        "textDocument": { "uri": app_uri },
-                        "position": usage,
-                        "context": { "includeDeclaration": true }
-                    }))
-                    .await
-                    .unwrap();
+                let references = references(&client, &app_uri, usage).await;
                 assert!(
                     contains_location_range(&references, &app_uri, usage, usage_end),
                     "{references:#}"
@@ -299,14 +250,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                     !contains_location(&references, uri, &zero),
                     "references must not retain a generated fallback: {references:#}"
                 );
-                let rename = client
-                    .request::<RawRename>(json!({
-                        "textDocument": { "uri": app_uri },
-                        "position": usage,
-                        "newName": renamed
-                    }))
-                    .await
-                    .unwrap();
+                let rename = rename(&client, &app_uri, usage, renamed).await;
                 if *rename_supported {
                     assert!(
                         contains_text_edit(&rename, &app_uri, usage, usage_end, renamed),

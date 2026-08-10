@@ -154,3 +154,38 @@ fn emits_alias_is_mapped(source: &str) -> bool {
         .iter()
         .any(|mapping| mapping.0[0] >= alias && mapping.0[0] + mapping.0[1] <= end)
 }
+
+#[test]
+fn preserves_generic_event_maps_and_static_parent_prop_inference() {
+    let child = r#"<script setup lang="ts" generic="T extends string = string">
+defineProps<{ value: T }>();
+defineEmits<{ pick: [value: T] }>();
+</script>
+"#;
+    let child =
+        generate_vue_content_mapper_transform(Path::new("GenericChild.vue"), child).expect("child");
+    for expected in [
+        "type __VizeAuthoredEventMap<T extends string = string>",
+        "type __VizeStaticEventMap<T extends string = string> = __EmitOptions<Emits<T>>",
+        "__vizeResolveEvents?: <T extends string = string>",
+        "=> __VizeAuthoredEventMap<T>",
+    ] {
+        assert!(child.text.contains(expected), "{}", child.text);
+    }
+
+    let parent = r#"<script setup lang="ts">
+import GenericChild from "./GenericChild.vue";
+const handlePick = (value: string) => value;
+</script>
+<template><GenericChild value="chosen" @pick="handlePick" /></template>
+"#;
+    let parent =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), parent).expect("parent");
+    for expected in [
+        "__vizeResolveEvents?: infer __F",
+        "\"value\": \"chosen\"",
+        "void __vize_events_nav_0.pick",
+    ] {
+        assert!(parent.text.contains(expected), "{}", parent.text);
+    }
+}

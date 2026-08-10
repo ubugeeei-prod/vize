@@ -6,8 +6,12 @@ use super::setup_scope::macro_type_requires_setup_scope;
 use crate::virtual_ts::{
     helpers::{EMIT_OVERLOAD_HELPERS, EMIT_PROPS_HELPER},
     macro_type_mappings::MacroTypeMappings,
-    props::{add_generic_defaults, strip_const_modifiers},
+    props::{add_generic_defaults, extract_generic_names, strip_const_modifiers},
 };
+
+#[path = "authored_events.rs"]
+mod authored_events;
+use authored_events::emit_authored_event_map;
 
 /// Inner type of a macro's `<...>` type-argument text.
 fn inner_type_of(type_args: &str) -> &str {
@@ -80,6 +84,8 @@ pub(super) struct EmitsInfo {
     pub(super) has_emits_for_props: bool,
     has_runtime_emits: bool,
     has_generic_emits: bool,
+    generic_event_map_decl: String,
+    generic_event_map_names: String,
     preserve_event_navigation: bool,
 }
 
@@ -106,7 +112,7 @@ impl EmitsInfo {
         }
     }
 
-    pub(super) fn generic_emit_props_resolver_field(
+    pub(super) fn generic_emit_resolver_fields(
         &self,
         generic_decl: &str,
         generic_names: &str,
@@ -116,6 +122,15 @@ impl EmitsInfo {
             append!(
                 field,
                 "__vizeResolveEmitProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => __EmitProps<Emits<{generic_names}>>;"
+            );
+        }
+        if !self.generic_event_map_decl.is_empty() {
+            if !field.is_empty() {
+                field.push(' ');
+            }
+            append!(
+                field,
+                "__vizeResolveEvents?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => __VizeAuthoredEventMap<{generic_names}>;"
             );
         }
         field
@@ -172,6 +187,15 @@ pub(super) fn emit_emits_type(
     let emits_generic_suffix = emits_generic_decl
         .as_ref()
         .map(|generic| cstr!("<{generic}>"))
+        .unwrap_or_default();
+    let generic_event_map_decl = if preserve_event_navigation && !has_runtime_emits {
+        emits_generic_decl.clone().unwrap_or_default()
+    } else {
+        String::default()
+    };
+    let generic_event_map_names = generic_param
+        .filter(|_| !generic_event_map_decl.is_empty())
+        .map(extract_generic_names)
         .unwrap_or_default();
 
     if !emits_already_defined {
@@ -246,61 +270,18 @@ pub(super) fn emit_emits_type(
             summary,
             &mut mappings,
             !emits_already_defined && !has_model_emits,
+            emits_generic_decl.as_deref().filter(|_| !has_runtime_emits),
+            generic_event_map_names.as_str(),
         );
     }
     EmitsInfo {
         has_emits_for_props,
         has_runtime_emits,
         has_generic_emits: emits_generic_decl.is_some(),
+        generic_event_map_decl,
+        generic_event_map_names,
         preserve_event_navigation,
     }
-}
-
-fn emit_authored_event_map(
-    ts: &mut String,
-    summary: &Croquis,
-    mappings: &mut MacroTypeMappings<'_>,
-    can_replace_emits: bool,
-) {
-    let events = summary.macros.emits();
-    let all_events_authored = can_replace_emits
-        && !events.is_empty()
-        && events.iter().all(|emit| {
-            summary
-                .macros
-                .emit_declaration(emit.name.as_str())
-                .is_some()
-        });
-    ts.push_str(if all_events_authored {
-        "type __VizeAuthoredEventMap = {\n"
-    } else {
-        "type __VizeAuthoredEventMap = Emits & {\n"
-    });
-    let mut emitted_names = FxHashSet::default();
-    for emit in events {
-        if !emitted_names.insert(emit.name.as_str()) {
-            continue;
-        }
-        let Some(authored_range) = summary.macros.emit_declaration(emit.name.as_str()) else {
-            continue;
-        };
-        let Some(authored_name) = mappings.authored_text(authored_range).map(String::from) else {
-            continue;
-        };
-        ts.push_str("  ");
-        let generated_start = ts.len();
-        ts.push_str(authored_name.as_str());
-        let generated_end = ts.len();
-        ts.push_str(": __VizeStaticEventMap[");
-        ts.push_str(
-            serde_json::to_string(emit.name.as_str())
-                .expect("event names serialize as JSON strings")
-                .as_str(),
-        );
-        ts.push_str("];\n");
-        mappings.map_exact(generated_start..generated_end, authored_range);
-    }
-    ts.push_str("};\n");
 }
 
 pub(super) fn emit_emit_props_helper(
@@ -323,7 +304,16 @@ pub(super) fn emit_emit_props_helper(
         ts.push_str("type __VizeStaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emit_options\"]>;\n\n");
     } else {
         if info.preserve_event_navigation {
-            ts.push_str("type __VizeStaticEventMap = __EmitOptions<Emits>;\n");
+            if info.generic_event_map_decl.is_empty() {
+                ts.push_str("type __VizeStaticEventMap = __EmitOptions<Emits>;\n");
+            } else {
+                append!(
+                    *ts,
+                    "type __VizeStaticEventMap<{}> = __EmitOptions<Emits<{}>>;\n",
+                    info.generic_event_map_decl,
+                    info.generic_event_map_names
+                );
+            }
         }
         ts.push_str("type __VizeStaticEmitProps = __EmitProps<Emits>;\n\n");
     }

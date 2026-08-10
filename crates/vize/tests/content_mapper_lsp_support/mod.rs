@@ -6,6 +6,11 @@ use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
 use vize_carton::String as CompactString;
 
+#[allow(dead_code)]
+mod navigation;
+#[allow(unused_imports)]
+pub use navigation::{contains_location_range, contains_text_edit, references, rename};
+
 struct RawDocumentDiagnostic;
 struct RawHover;
 struct RawDefinition;
