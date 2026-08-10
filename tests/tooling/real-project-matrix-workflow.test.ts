@@ -258,6 +258,13 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(summary?.run ?? "", /divergence_reports\[@\]/);
   assert.match(summary?.run ?? "", /glyph-waiver-issues\.json/);
   assert.match(summary?.run ?? "", /surface-verdict\.json/);
+  const jqPrograms = summary?.run?.match(/jq -r '[^']*'/g) ?? [];
+  assert.equal(jqPrograms.length, 4);
+  for (const program of jqPrograms) {
+    // A single-quoted shell argument reaches jq verbatim, so an escaped double
+    // quote is a jq compile error rather than a nested string delimiter.
+    assert.doesNotMatch(program, /\\"/, `jq program escapes a double quote: ${program}`);
+  }
   assert.equal(upload?.if, "${{ always() }}");
   assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload?.with, {

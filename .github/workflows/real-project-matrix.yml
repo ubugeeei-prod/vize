@@ -253,7 +253,7 @@ jobs:
           fi
           surface_verdict="$FIXTURE_REPORT_DIR/surface-verdict.json"
           if [[ -s "$surface_verdict" ]]; then
-            jq -r '"Surface verdict: \(.status); failed: \(.failedSurfaceNames | join(\", \"))"' \
+            jq -r '"Surface verdict: \(.status); failed: \(.failedSurfaceNames | join(", "))"' \
               "$surface_verdict" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No real-project surface verdict was produced." >> "$GITHUB_STEP_SUMMARY"
