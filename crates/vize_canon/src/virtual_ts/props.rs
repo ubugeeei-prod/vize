@@ -196,7 +196,11 @@ pub(crate) fn generate_props_type(
 
     if emission == PropsTypeEmission::DeferredToSetup && define_props_type_args.is_some() {
     } else if props_already_defined {
-        // User defined Props, no need to re-export
+        if has_models {
+            ts.push_str("type __VizeResolvedProps = Props & ");
+            append_model_props_type_literal(ts, models);
+            ts.push_str(";\n");
+        }
     } else if let Some(type_args) = define_props_type_args {
         let inner_type = type_args
             .strip_prefix('<')

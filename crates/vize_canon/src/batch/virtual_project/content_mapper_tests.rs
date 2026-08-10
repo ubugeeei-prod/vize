@@ -13,6 +13,8 @@ use crate::batch::{
 
 #[path = "content_mapper_component_export_tests.rs"]
 mod component_exports;
+#[path = "content_mapper_model_tests.rs"]
+mod models;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
 #[path = "content_mapper_scoped_event_navigation_tests.rs"]

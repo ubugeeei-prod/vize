@@ -385,15 +385,13 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             None
         };
     let source_offset = &script_source_offset;
-    let src = prop_source(&mut mappings, summary, script_content, source_offset);
     let setup_props_plan = generate_setup_props(
         &mut ts,
-        src,
+        prop_source(&mut mappings, summary, script_content, source_offset),
         generic_param,
         options_api_props.as_ref(),
         setup_type_exports.exports_public_type("Props"),
     );
-
     // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
@@ -653,8 +651,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             }
         });
     }
-
-    setup_props_plan.emit_artifact(&mut ts, summary);
+    setup_props_plan.emit_artifact(
+        &mut ts,
+        prop_source(&mut mappings, summary, script_content, source_offset),
+    );
     // Template scope (nested inside setup)
     if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
