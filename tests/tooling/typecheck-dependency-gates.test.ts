@@ -192,7 +192,7 @@ test("template and TSX Rust CLI gates use the fail-closed Corsa helper", () => {
 
 test("module import Rust CLI gates use the fail-closed Corsa helper", () => {
   const files = [
-    ["check_allowjs_imports_cli.rs", 2],
+    ["check_allowjs_imports_cli.rs", 1],
     ["check_ambient_export_assignment_cli.rs", 1],
     ["check_ambient_imports_cli.rs", 1],
     ["check_directory_self_imports_cli.rs", 1],
