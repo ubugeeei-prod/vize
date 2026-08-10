@@ -6,6 +6,7 @@ import type {
   ViteDevServer,
 } from "vite";
 
+import { toPluginVisibleVirtualId } from "../virtual.ts";
 import { handleHotUpdateHook } from "./hmr.ts";
 import type { VizePluginState } from "./state.ts";
 
@@ -29,6 +30,8 @@ export async function handleHotUpdateEnvironmentHook(
     state,
     { ...options, server } as unknown as HmrContext,
     {
+      ensureAcceptingClientModule: (vueFile) =>
+        environment.moduleGraph.ensureEntryFromUrl(toPluginVisibleVirtualId(vueFile), false),
       requireAcceptingClientModule: true,
       onRecompileError: () => {
         recompileFailed = true;

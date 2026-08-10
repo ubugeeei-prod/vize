@@ -802,7 +802,7 @@ function setupMisskeyWorktree(opts?: {
   );
 
   addPnpmOverrides(path.join(misskeyDir, "package.json"), {
-    vite: "^8.0.0",
+    vite: "8.2.0",
   });
 
   installPnpmDependencies(misskeyDir, {
