@@ -6,6 +6,7 @@
 
 pub(in crate::ide) mod collect;
 mod collect_virtual;
+pub(in crate::ide) use collect_virtual::corsa_diagnostic_code;
 mod mapping;
 mod message;
 mod virtual_ts;
