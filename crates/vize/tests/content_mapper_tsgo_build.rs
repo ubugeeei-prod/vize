@@ -166,3 +166,83 @@ fn standard_tsgo_builds_vue_project_references_incrementally() {
     let repaired = run_build(&tsgo, project.path());
     assert!(repaired.status.success(), "{}", output_text(&repaired));
 }
+
+#[test]
+#[ignore = "blocked by microsoft/typescript-go#4860"]
+fn standard_tsgo_emits_authored_vue_declaration_maps() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping exact Content Mapper declaration-map oracle: {TSGO_ENV} is not set");
+        return;
+    };
+    let fixture =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/content_mapper_project");
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content mapper declaration maps ")
+        .tempdir_in(cases_root)
+        .unwrap();
+    copy_fixture(&fixture, project.path());
+    install_packages(project.path());
+
+    let app = project.path().join("src/App.vue");
+    let source = std::fs::read_to_string(&app).unwrap().replace('\n', "\r\n");
+    std::fs::write(&app, cstr!("<!-- 💥 -->\r\n{source}")).unwrap();
+    let emit = Command::new(&tsgo)
+        .current_dir(project.path())
+        .args([
+            "--loadExternalPlugins",
+            "-p",
+            "tsconfig.emit.json",
+            "--pretty",
+            "false",
+        ])
+        .output()
+        .unwrap();
+    assert!(emit.status.success(), "{}", output_text(&emit));
+    assert!(project.path().join("dist/main.d.ts.map").is_file());
+
+    let declarations = std::fs::read_dir(project.path().join("dist"))
+        .unwrap()
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            let name = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("");
+            name.ends_with(".d.vue.ts") || name.ends_with(".vue.d.ts")
+        })
+        .collect::<Vec<_>>();
+    assert!(!declarations.is_empty());
+
+    for declaration in declarations {
+        let name = declaration.file_name().unwrap().to_string_lossy();
+        let component = name
+            .strip_suffix(".d.vue.ts")
+            .or_else(|| name.strip_suffix(".vue.d.ts"))
+            .unwrap();
+        let mut map_name = declaration.as_os_str().to_os_string();
+        map_name.push(".map");
+        let map_path = PathBuf::from(map_name);
+        assert!(
+            map_path.is_file(),
+            "missing map for {}",
+            declaration.display()
+        );
+        let declaration_text = std::fs::read_to_string(&declaration).unwrap();
+        assert!(declaration_text.contains("sourceMappingURL="));
+        let map: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&map_path).unwrap()).unwrap();
+        let sources = map["sources"].as_array().expect("map sources");
+        let expected = cstr!("{component}.vue");
+        assert!(
+            sources
+                .iter()
+                .filter_map(serde_json::Value::as_str)
+                .any(|source| source.ends_with(expected.as_str())),
+            "{} did not map to {expected}: {map}",
+            map_path.display()
+        );
+    }
+}
