@@ -49,8 +49,11 @@ export type ConcreteComponent<Props = {}> =
   | ComponentOptions<Props>
   | FunctionalComponent<Props>;
 
+declare const RefSymbol: unique symbol;
+
 export interface Ref<T = unknown, _Raw = T> {
   value: T;
+  [RefSymbol]: true;
 }
 
 export interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {

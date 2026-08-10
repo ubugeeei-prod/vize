@@ -6,7 +6,7 @@
 
 use super::super::{
     BatchTypeChecker, DeclarationEmitOptions, create_project_case, relative_path,
-    resolve_test_tsgo_binary, snapshot_project_diagnostics,
+    resolve_test_tsgo_binary, snapshot_project_diagnostics, with_workspace_node_modules_override,
 };
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -235,21 +235,41 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let Some(tsgo) = resolve_test_tsgo_binary() else {
         return;
     };
-    let project_root = create_project_case(
-        "public-instance-contract",
-        &[
-            ("src/Public.vue", PUBLIC),
-            ("src/Callable.vue", CALLABLE),
-            ("src/RuntimeObject.vue", RUNTIME_OBJECT),
-            ("src/RuntimeArray.vue", RUNTIME_ARRAY),
-            ("src/Generic.vue", GENERIC),
-            ("src/Union.vue", UNION),
-            ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
-            ("src/NoEmits.vue", NO_EMITS),
-            ("src/vue.d.ts", AUGMENTATION),
-            ("src/Consumer.tsx", SOURCE_CONSUMER),
-            ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
-        ],
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist");
+    let test_node_modules = workspace_root.join("tests").join("node_modules");
+    assert!(
+        test_node_modules
+            .join("vue/jsx-runtime/index.d.ts")
+            .is_file(),
+        "the strict JSX oracle requires the installed real Vue runtime"
+    );
+    let project_root = with_workspace_node_modules_override(
+        Some(
+            test_node_modules
+                .to_str()
+                .expect("test node_modules path should be UTF-8"),
+        ),
+        || {
+            create_project_case(
+                "public-instance-contract",
+                &[
+                    ("src/Public.vue", PUBLIC),
+                    ("src/Callable.vue", CALLABLE),
+                    ("src/RuntimeObject.vue", RUNTIME_OBJECT),
+                    ("src/RuntimeArray.vue", RUNTIME_ARRAY),
+                    ("src/Generic.vue", GENERIC),
+                    ("src/Union.vue", UNION),
+                    ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
+                    ("src/NoEmits.vue", NO_EMITS),
+                    ("src/vue.d.ts", AUGMENTATION),
+                    ("src/Consumer.tsx", SOURCE_CONSUMER),
+                    ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
+                ],
+            )
+        },
     );
     write_tsconfig(&project_root);
 

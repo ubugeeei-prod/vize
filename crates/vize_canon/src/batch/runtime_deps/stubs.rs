@@ -121,8 +121,11 @@ export type ConcreteComponent<
   S = any
 > = ComponentOptions<Props, RawBindings, D, C, M> | FunctionalComponent<Props, E, S>;
 
+declare const RefSymbol: unique symbol;
+
 export interface Ref<T = unknown, _Raw = T> {
   value: T;
+  [RefSymbol]: true;
 }
 
 export interface ComputedRef<T = unknown> extends Ref<T> {
