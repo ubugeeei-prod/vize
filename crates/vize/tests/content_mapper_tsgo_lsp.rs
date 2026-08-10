@@ -21,6 +21,8 @@ impl Drop for StopOnDrop<'_> {
 
 struct RawInitialize;
 struct RawDiscoverContentMappers;
+struct RawCompletion;
+struct RawSignatureHelp;
 struct RawHover;
 struct RawDefinition;
 struct RawReferences;
@@ -38,6 +40,8 @@ macro_rules! raw_request {
 
 raw_request!(RawInitialize, "initialize");
 raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
+raw_request!(RawCompletion, "textDocument/completion");
+raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
 raw_request!(RawHover, "textDocument/hover");
 raw_request!(RawDefinition, "textDocument/definition");
 raw_request!(RawReferences, "textDocument/references");
@@ -157,6 +161,8 @@ fn editor_capabilities() -> Value {
         "textDocument": {
             "synchronization": { "dynamicRegistration": true },
             "diagnostic": { "dynamicRegistration": true },
+            "completion": { "dynamicRegistration": true },
+            "signatureHelp": { "dynamicRegistration": true },
             "hover": { "dynamicRegistration": true },
             "definition": { "dynamicRegistration": true },
             "references": { "dynamicRegistration": true },
@@ -188,6 +194,8 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
     let root_uri = file_uri(project.path());
     let symbol_offset = source.rfind("count.toFixed").unwrap();
     let symbol_position = position(&source, symbol_offset + 1);
+    let completion_position = position(&source, symbol_offset + "count.".len());
+    let signature_position = position(&source, symbol_offset + "count.toFixed(".len());
     let declaration_offset = source.find("count: number").unwrap();
     let declaration_position = position(&source, declaration_offset);
 
@@ -252,6 +260,33 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 .unwrap();
             let params =
                 json!({ "textDocument": { "uri": child_uri }, "position": symbol_position });
+
+            let completion = client
+                .request::<RawCompletion>(json!({
+                    "textDocument": { "uri": child_uri },
+                    "position": completion_position
+                }))
+                .await
+                .unwrap();
+            assert!(
+                serde_json::to_string(&completion)
+                    .unwrap()
+                    .contains("toFixed"),
+                "{completion:#}"
+            );
+
+            let signature = client
+                .request::<RawSignatureHelp>(json!({
+                    "textDocument": { "uri": child_uri },
+                    "position": signature_position
+                }))
+                .await
+                .unwrap();
+            let signature_text = serde_json::to_string(&signature).unwrap();
+            assert!(
+                signature_text.contains("fractionDigits") && signature_text.contains("number"),
+                "{signature:#}"
+            );
 
             let hover = client.request::<RawHover>(params.clone()).await.unwrap();
             let hover_text = serde_json::to_string(&hover).unwrap();
