@@ -47,6 +47,7 @@ pub use document::{
 pub(crate) use document::generate_vue_document_virtual_ts_with_options_and_alias_resolver;
 mod diagnostics;
 mod external_mirror;
+pub use external_mirror::external_mirror_original_path;
 mod identity;
 pub use identity::{project_virtual_lock_paths, project_virtual_root};
 mod javascript_sfc;

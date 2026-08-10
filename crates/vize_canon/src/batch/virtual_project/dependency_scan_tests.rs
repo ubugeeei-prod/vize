@@ -42,7 +42,8 @@ fn a_published_package_alias_does_not_force_a_parse() {
     ));
     assert!(!may_resolve_a_dependency(
         "import { ref } from 'vue'\n",
-        &[]
+        &[],
+        false,
     ));
     let _ = fs::remove_dir_all(&root);
 }

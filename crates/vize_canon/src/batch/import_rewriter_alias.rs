@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 
 use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue_specifier};
 
-/// Resolver consulted for non-relative specifiers.
+/// Resolver consulted before the generic relative/package rewrite.
 #[allow(clippy::disallowed_types)]
 pub type AliasSpecifierResolver<'a> = &'a dyn Fn(&str) -> Option<std::string::String>;
 
@@ -28,9 +28,12 @@ impl ImportRewriter {
     ) -> RewriteResult {
         self.rewrite_with(source, source_type, |path| {
             if path.starts_with("./") || path.starts_with("../") {
-                return self.rewrite_module_specifier(path, source_dir).or_else(|| {
-                    source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir))
-                });
+                return alias_resolver(path)
+                    .map(Into::into)
+                    .or_else(|| self.rewrite_module_specifier(path, source_dir))
+                    .or_else(|| {
+                        source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir))
+                    });
             }
             // A resolvable alias wins over the generic `.vue` → `.vue.ts`
             // rewrite: `is_rewritable_vue_specifier` also matches `@/Foo.vue`

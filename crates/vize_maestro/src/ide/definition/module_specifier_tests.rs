@@ -114,6 +114,25 @@ fn resolves_scoped_wildcard_declaration_subpath() {
 }
 
 #[test]
+fn resolves_symlinked_workspace_package_vue_export_to_authored_source() {
+    let workspace = tempdir().unwrap();
+    let app = workspace.path().join("app");
+    let source = app.join("src/App.vue");
+    write(&source, "<script setup lang=\"ts\"></script>");
+    let package = workspace.path().join("packages/ui");
+    write(
+        &package.join("package.json"),
+        r#"{"name":"@scope/ui","exports":{"./widget":"./src/Widget.vue"}}"#,
+    );
+    let component = package.join("src/Widget.vue");
+    write(&component, "<template />\n");
+    link_package(&package, &app.join("node_modules/@scope/ui"));
+
+    let resolved = resolve_specifier(&file_url(&source), "@scope/ui/widget").unwrap();
+    assert_eq!(resolved, component.canonicalize().unwrap());
+}
+
+#[test]
 fn component_definition_rejects_deleted_target_but_keeps_open_unsaved_target() {
     let dir = tempdir().unwrap();
     let component_path = dir.path().join("Deleted.vue");
@@ -188,4 +207,12 @@ fn write(path: &Path, content: &str) {
 
 fn file_url(path: &Path) -> Url {
     Url::from_file_path(path).unwrap()
+}
+
+fn link_package(source: &Path, target: &Path) {
+    fs::create_dir_all(target.parent().unwrap()).unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(source, target).unwrap();
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(source, target).unwrap();
 }

@@ -6,6 +6,7 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::imports_aliases::PathAliasResolver;
@@ -14,9 +15,6 @@ use super::path_cache::CanonicalPathCache;
 #[path = "imports_registration.rs"]
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
-#[path = "imports_packages.rs"]
-mod packages;
-use packages::PackageImportResolver;
 #[path = "imports_specifiers.rs"]
 mod specifiers;
 use specifiers::{extract_import_specifiers, is_relative_specifier};
@@ -46,7 +44,7 @@ pub(super) fn collect_transitive_local_imports(
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
-    let mut packages = PackageImportResolver::default();
+    let mut packages = PackageRouteResolver::default();
     let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -88,7 +86,14 @@ pub(super) fn collect_transitive_local_imports(
                 match aliased {
                     Some(resolved) => Some(resolved),
                     None => {
-                        let resolved = packages.resolve(dir, &specifier, canonical_paths, options);
+                        let resolved = packages
+                            .resolve(
+                                dir,
+                                &specifier,
+                                PackageSourceOptions::new(options.include_js, options.include_jsx),
+                            )
+                            .filter(|route| route.workspace_source)
+                            .map(|route| route.source_path);
                         package_resolution = resolved.is_some();
                         resolved
                     }

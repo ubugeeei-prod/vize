@@ -18,6 +18,8 @@ mod vue_document;
 #[cfg(test)]
 mod vue_document_alias_tests;
 #[cfg(test)]
+mod vue_document_package_tests;
+#[cfg(test)]
 mod vue_document_tests;
 #[cfg(test)]
 mod vue_project_mapping_tests;

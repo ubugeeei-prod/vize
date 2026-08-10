@@ -15,6 +15,34 @@ use crate::batch::error::CorsaError;
 
 pub(super) const EXTERNAL_MIRROR_DIR: &str = "__vize_external__";
 
+/// Recover the authored absolute path replayed below the external mirror.
+pub fn external_mirror_original_path(path: &Path) -> Option<PathBuf> {
+    let mut components = path.components();
+    for component in components.by_ref() {
+        if matches!(component, Component::Normal(part) if part == EXTERNAL_MIRROR_DIR) {
+            break;
+        }
+    }
+    let replayed = components.collect::<Vec<_>>();
+    if replayed.is_empty() {
+        return None;
+    }
+
+    #[cfg(windows)]
+    let mut original = {
+        let first = replayed.first()?.as_os_str().to_string_lossy();
+        let drive = first.strip_suffix("%3A")?;
+        PathBuf::from(format!("{drive}:\\"))
+    };
+    #[cfg(not(windows))]
+    let mut original = PathBuf::from("/");
+
+    for component in replayed.iter().skip(usize::from(cfg!(windows))) {
+        original.push(component.as_os_str());
+    }
+    Some(original)
+}
+
 /// The escape-subtree location for an out-of-root `path`.
 ///
 /// A canonicalized absolute path has no `..`; refuse one rather than mint a
@@ -76,6 +104,17 @@ mod tests {
                 Path::new("/ws/../outside/App.vue"),
             )
             .is_err()
+        );
+    }
+
+    #[test]
+    #[cfg(not(windows))]
+    fn external_mirror_path_round_trips_to_the_authored_path() {
+        let original = Path::new("/ws/packages/ui/src/UiButton.vue");
+        let mirrored = super::external_mirror_path(Path::new("/project/.vize"), original).unwrap();
+        assert_eq!(
+            super::external_mirror_original_path(&mirrored),
+            Some(original.into())
         );
     }
 }

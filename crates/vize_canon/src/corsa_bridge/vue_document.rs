@@ -247,7 +247,6 @@ fn build_vue_virtual_project_with_overlays_and_options(
         &alias_context,
         &overlays,
     );
-
     let generated = host.generated;
     Ok(CorsaVueVirtualProject {
         host: CorsaVueVirtualDocument {
