@@ -236,9 +236,7 @@ mod tests {
 
         assert_eq!(
             result.as_str(),
-            r#"<span>
-  {{ i < items.length - 1 ? "," : "" }}
-</span>"#
+            r#"<span>{{ i < items.length - 1 ? "," : "" }}</span>"#
         );
     }
 
@@ -250,9 +248,7 @@ mod tests {
 
         assert_eq!(
             result.as_str(),
-            r#"<span v-for="(item, index) in list" :key="item">
-  {{ item }}{{ index < list.length - 1 ? "," : "" }}
-</span>"#
+            r#"<span v-for="(item, index) in list" :key="item">{{ item }}{{ index < list.length - 1 ? "," : "" }}</span>"#
         );
     }
 
@@ -280,9 +276,9 @@ mod tests {
         let class_pos = result.find(":class").unwrap();
         let click_pos = result.find("@click").unwrap();
 
-        assert!(vfor_pos < vif_pos, "v-for should come before v-if");
-        assert!(vif_pos < class_pos, "v-if should come before :class");
-        assert!(class_pos < click_pos, ":class should come before @click");
+        assert!(class_pos < vif_pos, "bound attributes stay as authored");
+        assert!(vif_pos < vfor_pos, "directives stay as authored");
+        assert!(vfor_pos < click_pos, "events stay as authored");
     }
 
     #[test]
@@ -401,25 +397,13 @@ mod tests {
 
     #[test]
     fn test_merge_bind_and_non_bind_false() {
-        // Default: non-bind attrs first, then bind attrs, each sorted alphabetically
+        // Dynamic bindings are evaluation-order barriers; static attributes
+        // cannot move across them even when grouping is enabled.
         let source = r#"<div :class="cls" class="base" :style="s" style="color:red"></div>"#;
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        let class_pos = result.find("class=").unwrap();
-        let style_pos = result.find("style=").unwrap();
-        let bind_class_pos = result.find(":class=").unwrap();
-        let bind_style_pos = result.find(":style=").unwrap();
-
-        // Non-bind first: class, style, :class, :style
-        assert!(
-            class_pos < bind_class_pos,
-            "class should come before :class"
-        );
-        assert!(
-            style_pos < bind_style_pos,
-            "style should come before :style"
-        );
+        assert_eq!(result.as_str(), source);
     }
 
     #[test]
@@ -430,21 +414,7 @@ mod tests {
         options.merge_bind_and_non_bind_attrs = true;
         let result = format_template_content(source, &options).unwrap();
 
-        // With merging: class and :class sort together by base name "class",
-        // style and :style sort together by base name "style"
-        // Expected order: class, :class, style, :style (or :class, class, :style, style)
-        // Since both have the same base, stable sort by original_index applies
-        let class_pos = result.find("class=").unwrap();
-        let bind_class_pos = result.find(":class=").unwrap();
-        let style_pos = result.find("style=").unwrap();
-        let bind_style_pos = result.find(":style=").unwrap();
-
-        // "class" and ":class" should be adjacent, "style" and ":style" should be adjacent
-        // All "class*" come before "style*" alphabetically
-        assert!(
-            class_pos.min(bind_class_pos) < style_pos.min(bind_style_pos),
-            "class group should come before style group"
-        );
+        assert_eq!(result.as_str(), source);
     }
 
     #[test]
@@ -508,14 +478,17 @@ mod tests {
         let click_pos = result.find("@click=").unwrap();
         let title_pos = result.find("title=").unwrap();
 
-        assert!(id_pos < class_pos, "id should come first (group 0)");
         assert!(
-            class_pos < click_pos,
-            "class (group 1) before @click (group 2)"
+            click_pos < id_pos,
+            "dynamic event remains the first barrier"
         );
         assert!(
-            click_pos < title_pos,
-            "@click (group 2) before title (group 3)"
+            id_pos < class_pos,
+            "safe static attrs still use custom groups"
+        );
+        assert!(
+            class_pos < title_pos,
+            "class (group 1) before title (group 3)"
         );
     }
 

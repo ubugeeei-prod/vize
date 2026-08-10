@@ -53,16 +53,23 @@ impl TemplateFormatter<'_> {
 }
 
 /// Returns true if the element's content must be preserved byte-for-byte:
-/// `<pre>`, `<textarea>`, or any element with the `v-pre` directive.
+/// `<pre>`, `<textarea>`, `<listing>`, or any element with the `v-pre`
+/// directive.
 /// Whitespace and interpolations inside these regions are rendered as-is
 /// at runtime, so the formatter must not touch them. (#963)
 pub(super) fn is_whitespace_significant_element(tag_name: &str, attrs: &[ParsedAttribute]) -> bool {
-    if tag_name.eq_ignore_ascii_case("pre") || tag_name.eq_ignore_ascii_case("textarea") {
+    if matches_ignore_ascii_case(tag_name, &["pre", "textarea", "listing"]) {
         return true;
     }
     attrs
         .iter()
         .any(|attr| attr.name.eq_ignore_ascii_case("v-pre"))
+}
+
+fn matches_ignore_ascii_case(value: &str, candidates: &[&str]) -> bool {
+    candidates
+        .iter()
+        .any(|candidate| value.eq_ignore_ascii_case(candidate))
 }
 
 /// Find the start of the matching `</tag_name>` for a content region that

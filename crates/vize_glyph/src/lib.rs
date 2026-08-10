@@ -447,10 +447,10 @@ const x = ;
             code.contains("@@@ not valid typescript"),
             "unparseable script body should be left unchanged"
         );
-        // Template still got formatted/indented (the interpolation expands
-        // onto its own indented line instead of being left untouched).
+        // Template still gets its interpolation formatted while adjacent text
+        // boundaries remain adjacent.
         assert!(
-            code.contains("  <div>\n    {{ x }}\n  </div>"),
+            code.contains("  <div>{{ x }}</div>"),
             "template should still be formatted when script fails to parse, got:\n{code}"
         );
     }

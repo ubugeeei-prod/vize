@@ -31,7 +31,7 @@ fn shorthand_object_on_is_an_event_sorting_barrier() {
 
     assert_template_fixed_point(
         r#"<button @keyup="up" @click="click" @="listeners" @mouseup="up" @mousedown="down"></button>"#,
-        r#"<button @click="click" @keyup="up" @="listeners" @mousedown="down" @mouseup="up"></button>"#,
+        r#"<button @keyup="up" @click="click" @="listeners" @mouseup="up" @mousedown="down"></button>"#,
         &options,
     );
 }
@@ -43,7 +43,7 @@ fn every_longhand_and_shorthand_object_spread_pins_its_segment() {
         ..FormatOptions::default()
     };
     let source = r#"<Comp z="z" :="first" b="b" a="a" v-bind="second" d="d" c="c" @="listeners" @keyup="up" @click="click" />"#;
-    let expected = r#"<Comp z="z" :="first" a="a" b="b" v-bind="second" c="c" d="d" @="listeners" @click="click" @keyup="up" />"#;
+    let expected = r#"<Comp z="z" :="first" a="a" b="b" v-bind="second" c="c" d="d" @="listeners" @keyup="up" @click="click" />"#;
 
     assert_template_fixed_point(source, expected, &options);
 }

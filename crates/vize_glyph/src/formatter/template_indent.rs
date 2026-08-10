@@ -79,7 +79,11 @@ fn earliest(left: Option<usize>, right: Option<usize>) -> Option<usize> {
 }
 
 fn starts_raw_tag(tail: &[u8]) -> bool {
-    for name in [b"pre".as_slice(), b"textarea".as_slice()] {
+    for name in [
+        b"pre".as_slice(),
+        b"textarea".as_slice(),
+        b"listing".as_slice(),
+    ] {
         let Some(head) = tail.get(1..1 + name.len()) else {
             continue;
         };
@@ -240,6 +244,7 @@ mod tests {
         let raw = [
             "<pre>\nraw\n</pre>",
             "<TEXTAREA>\nraw\n</TEXTAREA>",
+            "<listing>\nraw\n</listing>",
             "<code V-PRE>\n  {{ raw }}\n</code>",
             "<!--\nraw\n-->",
             "<div title=\"first\nsecond\">x</div>",

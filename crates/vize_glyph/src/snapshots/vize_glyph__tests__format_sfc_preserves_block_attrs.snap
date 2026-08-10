@@ -7,9 +7,7 @@ const msg = "hello";
 </script>
 
 <template functional>
-  <div>
-    {{ msg }}
-  </div>
+  <div>{{ msg }}</div>
 </template>
 
 <style scoped lang="scss" module>

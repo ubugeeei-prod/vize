@@ -22,10 +22,15 @@ pub(crate) struct ParsedAttribute {
 
 /// Sort attributes based on the configured options.
 pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
-    // `split_mut` yields the segments between order-sensitive spreads while
-    // leaving each `v-bind`/`v-on` object directive fixed in place, so merge
-    // precedence cannot change.
-    for segment in attrs.split_mut(|attr| is_order_sensitive_spread(&attr.name)) {
+    // Bindings and directives can execute Vue instance getters, calls,
+    // assignments, or updates while the render data object is constructed.
+    // Keep them fixed and sort only unique, literal HTML attributes between
+    // those barriers. This also subsumes the no-argument v-bind/v-on spread
+    // boundary: no dynamic attribute may cross another one.
+    for segment in attrs.split_mut(is_order_sensitive_attribute) {
+        if has_duplicate_static_names(segment) {
+            continue;
+        }
         sort_attribute_segment(segment, options);
     }
 }
@@ -64,12 +69,22 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
     }
 }
 
-fn is_order_sensitive_spread(name: &str) -> bool {
-    // `:` and `@` are the normalized names of no-argument object shorthand
-    // directives (`:="props"` / `@="listeners"`), not named bindings.
-    matches!(name, ":" | "@" | "v-bind" | "v-on")
-        || name.starts_with("v-bind.")
-        || name.starts_with("v-on.")
+fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
+    let name = attr.name.as_str();
+    name.starts_with([':', '@', '#', '.'])
+        || name.starts_with("v-")
+        || attr
+            .value
+            .as_deref()
+            .is_some_and(|value| value.contains("{{"))
+}
+
+fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {
+    attrs.iter().enumerate().any(|(index, attr)| {
+        attrs[..index]
+            .iter()
+            .any(|previous| previous.name.eq_ignore_ascii_case(&attr.name))
+    })
 }
 
 /// Generate a sort key for alphabetical ordering within a group.

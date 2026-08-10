@@ -78,28 +78,29 @@ fn joined_chunks_reuse_the_source_spacing() {
 }
 
 #[test]
-fn unsuppressed_lines_still_split() {
-    // Regression guard: splitting is the formatter's normal behaviour and only a
-    // line-scoped suppression comment turns it off.
+fn ordinary_same_line_spacing_is_preserved_without_a_suppression() {
+    // Same-line whitespace is a Vue text node even without a suppression.
+    // Formatting may canonicalize its width but must not turn it into an
+    // inter-tag newline that the compiler drops.
     assert_formatted(
         "<div>\n  space: <input type=\"text\" />\n</div>",
-        "<div>\n  space:\n  <input type=\"text\" />\n</div>",
+        "<div>\n  space: <input type=\"text\" />\n</div>",
     );
     // An unrelated comment pins nothing.
     assert_formatted(
         "<div>\n  <!-- a note -->\n  space: <input />\n</div>",
-        "<div>\n  <!-- a note -->\n  space:\n  <input />\n</div>",
+        "<div>\n  <!-- a note -->\n  space: <input />\n</div>",
     );
     // Neither does a block `eslint-disable`: it is not line scoped, so it
     // survives reflow on its own and needs no pinning.
     assert_formatted(
         "<div>\n  <!-- eslint-disable -->\n  space: <input />\n</div>",
-        "<div>\n  <!-- eslint-disable -->\n  space:\n  <input />\n</div>",
+        "<div>\n  <!-- eslint-disable -->\n  space: <input />\n</div>",
     );
     // A pragma two lines up covers neither the blank line nor the code below it.
     assert_formatted(
         "<div>\n  <!-- eslint-disable-next-line -->\n\n  space: <input />\n</div>",
-        "<div>\n  <!-- eslint-disable-next-line -->\n  space:\n  <input />\n</div>",
+        "<div>\n  <!-- eslint-disable-next-line -->\n  space: <input />\n</div>",
     );
 }
 
@@ -113,8 +114,8 @@ fn same_line_pragma_keeps_its_own_line_intact() {
 
 #[test]
 fn pinned_line_does_not_leak_into_neighbours() {
-    // Only the covered line is pinned: the lines around it keep splitting, and
-    // nesting opened on the pinned line still indents its children.
+    // Only the covered line is pinned; ordinary same-line text spacing remains
+    // intact independently, and nesting still indents its children.
     assert_formatted(
         concat!(
             "<div>\n",
@@ -128,15 +129,12 @@ fn pinned_line_does_not_leak_into_neighbours() {
         ),
         concat!(
             "<div>\n",
-            "  before:\n",
-            "  <input />\n",
+            "  before: <input />\n",
             "  <!-- eslint-disable-next-line -->\n",
             "  pinned: <input /><span>\n",
-            "    inner:\n",
-            "    <input />\n",
+            "    inner: <input />\n",
             "  </span>\n",
-            "  after:\n",
-            "  <input />\n",
+            "  after: <input />\n",
             "</div>",
         ),
     );

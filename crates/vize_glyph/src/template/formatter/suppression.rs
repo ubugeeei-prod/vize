@@ -43,6 +43,10 @@ pub(super) struct LineJoiner<'s> {
     /// Index into `locked` of the range the previously emitted chunk belonged
     /// to, or `None` when that chunk was free to end its line.
     current: Option<usize>,
+    /// End of the last emitted source chunk. Adjacent authored chunks must
+    /// remain adjacent; inserting formatter layout whitespace would create a
+    /// runtime Vue text node.
+    previous_end: Option<usize>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -51,6 +55,7 @@ impl<'s> LineJoiner<'s> {
             source,
             locked: locked_line_ranges(source),
             current: None,
+            previous_end: None,
         }
     }
 
@@ -59,22 +64,32 @@ impl<'s> LineJoiner<'s> {
     /// `None` starts a fresh line at the caller's indent — the ordinary case.
     /// `Some(spaced)` continues the line the previous chunk opened, inserting a
     /// single separating space when the source separated the two chunks with
-    /// whitespace. The gap between two chunks is whitespace by construction (the
-    /// scanner trims text runs and steps over inter-tag whitespace), so the byte
-    /// just before `start` decides it.
+    /// whitespace. The gap between two chunks is whitespace by construction:
+    /// an empty gap stays adjacent, horizontal whitespace becomes one space,
+    /// and any authored line break keeps a fresh output line.
     pub(super) fn open(&mut self, start: usize) -> Option<bool> {
         let previous = self.current;
         self.current = self.locked_index(start);
+        if let Some(end) = self.previous_end.filter(|end| *end <= start) {
+            let gap = &self.source[end..start];
+            if gap.is_empty() {
+                return Some(false);
+            }
+            if !gap.iter().any(|byte| matches!(byte, b'\n' | b'\r'))
+                && gap.iter().copied().all(is_whitespace)
+            {
+                return Some(true);
+            }
+        }
         if self.current.is_none() || self.current != previous {
             return None;
         }
         Some(start > 0 && is_whitespace(self.source[start - 1]))
     }
 
-    /// Forget the line in progress so the next chunk starts a fresh one. Used by
-    /// emitters that deliberately span several lines.
-    pub(super) fn reset(&mut self) {
-        self.current = None;
+    /// Record the source end of the chunk just emitted.
+    pub(super) fn finish(&mut self, end: usize) {
+        self.previous_end = Some(end);
     }
 
     fn locked_index(&self, pos: usize) -> Option<usize> {
@@ -120,6 +135,7 @@ impl TemplateFormatter<'_> {
 pub(super) struct TextRun {
     bytes: Vec<u8>,
     start: usize,
+    end: usize,
 }
 
 impl TextRun {
@@ -127,6 +143,7 @@ impl TextRun {
         Self {
             bytes: Vec::with_capacity(256),
             start: 0,
+            end: 0,
         }
     }
 
@@ -137,6 +154,11 @@ impl TextRun {
     /// Source offset the buffered text begins at.
     pub(super) fn start(&self) -> usize {
         self.start
+    }
+
+    /// One-past-the-last source byte retained by the buffered run.
+    pub(super) fn end(&self) -> usize {
+        self.end
     }
 
     pub(super) fn as_str(&self) -> &str {
@@ -156,6 +178,7 @@ impl TextRun {
             self.bytes.push(b' ');
         }
         self.bytes.extend_from_slice(&source[start..end]);
+        self.end = end;
     }
 
     /// Append a single byte the tag scanner rejected as markup.
@@ -164,6 +187,7 @@ impl TextRun {
             self.start = at;
         }
         self.bytes.push(byte);
+        self.end = at + 1;
     }
 }
 

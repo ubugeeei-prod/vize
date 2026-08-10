@@ -1,0 +1,150 @@
+use vize_glyph::{EndOfLine, FormatOptions, format_template};
+
+fn format(source: &str) -> String {
+    format_template(source, &FormatOptions::default())
+        .unwrap()
+        .to_string()
+}
+
+fn assert_fixed_point(source: &str, expected: &str) {
+    let first = format(source);
+    assert_eq!(first.as_str(), expected);
+    assert_eq!(
+        format(&first),
+        first,
+        "fmt(fmt(source)) must equal fmt(source)"
+    );
+}
+
+#[test]
+fn text_and_interpolation_boundaries_do_not_gain_runtime_whitespace() {
+    assert_fixed_point("<p>Hello</p>", "<p>Hello</p>");
+    assert_fixed_point(
+        "<p>Hello {{name}} world</p>",
+        "<p>Hello {{ name }} world</p>",
+    );
+    assert_fixed_point(
+        "<p> Hello {{name}} world </p>",
+        "<p> Hello {{ name }} world </p>",
+    );
+    assert_fixed_point(
+        "<div><span>Hello</span><strong>{{name}}</strong></div>",
+        "<div><span>Hello</span><strong>{{ name }}</strong></div>",
+    );
+
+    assert_ne!(format("<p>Hello</p>"), format("<p> Hello </p>"));
+    assert_ne!(
+        format("<p>Hello {{name}}</p>"),
+        format("<p>Hello{{name}}</p>")
+    );
+}
+
+#[test]
+fn order_sensitive_bindings_remain_as_authored() {
+    let source = concat!(
+        r#"<Widget :z="first()" :a="second()" "#,
+        r#":getter="observed" :assigned="value = next" :updated="count++" "#,
+        r#"v-model="model" @z="onZ()" @a="onA()" />"#,
+    );
+    let formatted = format(source);
+    assert_eq!(format(&formatted), formatted);
+    let names = [
+        ":z=",
+        ":a=",
+        ":getter=",
+        ":assigned=",
+        ":updated=",
+        "v-model=",
+        "@z=",
+        "@a=",
+    ];
+    let positions = names.map(|name| formatted.find(name).unwrap());
+    assert!(positions.windows(2).all(|pair| pair[0] < pair[1]));
+}
+
+#[test]
+fn literal_attributes_sort_only_inside_safe_unique_runs() {
+    assert_fixed_point(
+        r#"<Widget :value="read()" class="box" id="root" :next="write()" />"#,
+        r#"<Widget :value="read()" id="root" class="box" :next="write()" />"#,
+    );
+    assert_fixed_point(
+        r#"<Widget class="first" class="second" :value="read()" />"#,
+        r#"<Widget class="first" class="second" :value="read()" />"#,
+    );
+    assert_fixed_point(
+        r#"<Widget title="{{ first() }}" id="root" />"#,
+        r#"<Widget title="{{ first() }}" id="root" />"#,
+    );
+}
+
+#[test]
+fn comments_and_inline_sibling_whitespace_keep_their_boundaries() {
+    assert_fixed_point(
+        "<p>Hello<!-- keep -->{{name}}</p>",
+        "<p>Hello<!-- keep -->{{ name }}</p>",
+    );
+    let adjacent = format("<div><i>A</i><i>B</i></div>");
+    let separated = format("<div><i>A</i> <i>B</i></div>");
+    assert_eq!(adjacent, "<div><i>A</i><i>B</i></div>");
+    assert_eq!(separated, "<div><i>A</i> <i>B</i></div>");
+    assert_ne!(adjacent, separated);
+    assert_eq!(format(&separated), separated);
+    for horizontal in ["\t", "   "] {
+        assert_fixed_point(
+            &format!("<div><i>A</i>{horizontal}<i>B</i></div>"),
+            "<div><i>A</i> <i>B</i></div>",
+        );
+    }
+    assert_fixed_point(
+        "<p><span>A</span> <!-- keep --> <span>B</span></p>",
+        "<p><span>A</span> <!-- keep --> <span>B</span></p>",
+    );
+    assert_fixed_point(
+        "<div><i>A</i>\r<i>B</i></div>",
+        "<div><i>A</i>\n  <i>B</i></div>",
+    );
+}
+
+#[test]
+fn configured_crlf_and_tabs_do_not_leak_into_adjacent_text() {
+    let options = FormatOptions {
+        end_of_line: EndOfLine::Crlf,
+        use_tabs: true,
+        ..FormatOptions::default()
+    };
+    let source = "<div>\r\n\t<span>Hello</span>\r\n</div>";
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(first.contains("<span>Hello</span>"));
+    assert!(!first.contains("<span>\r\n"));
+}
+
+#[test]
+fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
+    let options = FormatOptions {
+        print_width: 30,
+        ..FormatOptions::default()
+    };
+    let source = "<p>{{ veryLongFunctionName(firstArgument, secondArgument) }}</p>";
+    let first = format_template(source, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(first.starts_with("<p>{{\n"), "{first}");
+    assert!(first.ends_with("}}</p>"), "{first}");
+
+    let compact = "<p>A{{ veryLongFunctionName(firstArgument, secondArgument) }}B</p>";
+    let first = format_template(compact, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(first.starts_with("<p>A{{\n"), "{first}");
+    assert!(first.ends_with("}}B</p>"), "{first}");
+
+    let spaced = "<p>A {{ veryLongFunctionName(firstArgument, secondArgument) }} B</p>";
+    let first = format_template(spaced, &options).unwrap();
+    let second = format_template(&first, &options).unwrap();
+    assert_eq!(first, second);
+    assert!(first.starts_with("<p>A {{\n"), "{first}");
+    assert!(first.ends_with("}} B</p>"), "{first}");
+}

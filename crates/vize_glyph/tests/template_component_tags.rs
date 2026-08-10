@@ -19,9 +19,7 @@ fn dotted_component_tags_are_preserved() {
   :is-opened="routeLeaveConfirm.alertCtx.isOpened.value"
   @click:cancel="routeLeaveConfirm.alertCtx.close"
 >
-  <p>
-    Unsaved changes
-  </p>
+  <p>Unsaved changes</p>
 </routeLeaveConfirm.ModalAlert>"#
     );
     assert_eq!(first, second);

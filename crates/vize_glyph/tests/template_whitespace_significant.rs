@@ -1,4 +1,4 @@
-use vize_glyph::{FormatOptions, format_template};
+use vize_glyph::{FormatOptions, format_sfc, format_template};
 
 #[test]
 fn textarea_whitespace_only_content_preserved() {
@@ -46,6 +46,35 @@ fn textarea_whitespace_only_content_preserved() {
         v_pre_result,
         "v-pre preservation must be idempotent"
     );
+}
+
+#[test]
+fn listing_content_is_preserved_byte_for_byte() {
+    let options = FormatOptions::default();
+    let source = "<listing>\r\n\t a\r\n b</listing>";
+    let result = format_template(source, &options).unwrap();
+    assert_eq!(result.as_str(), source);
+    assert_eq!(format_template(result.as_str(), &options).unwrap(), result);
+
+    let sfc = "<template>\n  <listing>\r\n\t a\r\n b</listing>\n</template>\n";
+    let formatted = format_sfc(sfc, &options).unwrap();
+    assert_eq!(formatted.code.as_str(), sfc);
+    assert_eq!(
+        format_sfc(&formatted.code, &options).unwrap().code,
+        formatted.code
+    );
+}
+
+#[test]
+fn self_closing_raw_tags_do_not_capture_following_sfc_lines() {
+    let options = FormatOptions::default();
+    for tag in ["pre", "textarea", "listing"] {
+        let source =
+            format!("<template>\n  <{tag} />\n  <div>\n    value\n  </div>\n</template>\n");
+        let formatted = format_sfc(&source, &options).unwrap();
+        assert_eq!(formatted.code, source, "{tag}");
+        assert_eq!(format_sfc(&formatted.code, &options).unwrap().code, source);
+    }
 }
 
 #[test]

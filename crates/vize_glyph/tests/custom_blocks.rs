@@ -20,14 +20,10 @@ fn art_block_indents_variants_consistently() {
         first.code.as_str(),
         r#"<art>
   <variant default name="Primary">
-    <DemoButton color="primary">
-      Primary
-    </DemoButton>
+    <DemoButton color="primary">Primary</DemoButton>
   </variant>
   <variant name="Secondary">
-    <DemoButton color="secondary">
-      Secondary
-    </DemoButton>
+    <DemoButton color="secondary">Secondary</DemoButton>
   </variant>
 </art>
 "#
@@ -56,15 +52,11 @@ fn art_block_preserves_blank_lines_between_variants() {
         first.code.as_str(),
         r#"<art>
   <variant default name="Primary">
-    <DemoButton>
-      Primary
-    </DemoButton>
+    <DemoButton>Primary</DemoButton>
   </variant>
 
   <variant name="Secondary">
-    <DemoButton color="secondary">
-      Secondary
-    </DemoButton>
+    <DemoButton color="secondary">Secondary</DemoButton>
   </variant>
 </art>
 "#

@@ -21,6 +21,7 @@ use super::{
 
 mod interpolation;
 mod suppression;
+mod text;
 mod whitespace_significant;
 
 use suppression::{LineJoiner, TextRun};
@@ -77,7 +78,9 @@ impl<'a> TemplateFormatter<'a> {
             {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr = std::str::from_utf8(&source[expr_start..expr_end]).unwrap_or("");
+                self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
+                joiner.finish(end_pos);
                 pos = end_pos;
                 continue;
             }
@@ -92,12 +95,14 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(&source[comment_start..comment_end]);
                     output.extend_from_slice(self.newline);
+                    joiner.finish(comment_end);
                     pos = comment_end;
                 } else {
                     // Unclosed comment - write remainder
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(&source[comment_start..]);
                     output.extend_from_slice(self.newline);
+                    joiner.finish(len);
                     pos = len;
                 }
                 continue;
@@ -117,6 +122,7 @@ impl<'a> TemplateFormatter<'a> {
                     output.extend_from_slice(tag_name.as_bytes());
                     output.push(b'>');
                     output.extend_from_slice(self.newline);
+                    joiner.finish(end_pos);
                     pos = end_pos;
                     continue;
                 }
@@ -201,6 +207,7 @@ impl<'a> TemplateFormatter<'a> {
                         output.extend_from_slice(tag_name.as_bytes());
                         output.push(b'>');
                         output.extend_from_slice(self.newline);
+                        joiner.finish(closing_end_pos);
                         pos = closing_end_pos;
                         continue;
                     } else if is_whitespace_significant_element(&tag_name, &sorted_attrs) {
@@ -214,6 +221,7 @@ impl<'a> TemplateFormatter<'a> {
                             len,
                             &mut output,
                         );
+                        joiner.finish(pos);
                         continue;
                     } else {
                         output.push(b'>');
@@ -222,6 +230,7 @@ impl<'a> TemplateFormatter<'a> {
                         }
                     }
                     output.extend_from_slice(self.newline);
+                    joiner.finish(end_pos);
                     pos = end_pos;
                     continue;
                 }
@@ -287,178 +296,6 @@ impl<'a> TemplateFormatter<'a> {
         // invalid byte sequence. Skipping validation preserves formatter
         // throughput for large templates.
         Ok(unsafe { String::from_utf8_unchecked(output) })
-    }
-
-    /// Flush accumulated text content with interpolation formatting.
-    #[inline]
-    fn flush_text_buffer(
-        &self,
-        output: &mut Vec<u8>,
-        text: &mut TextRun,
-        depth: usize,
-        joiner: &mut LineJoiner<'_>,
-    ) {
-        if text.is_empty() {
-            return;
-        }
-        let formatted = format_interpolations(text.as_str(), self.options);
-        let start = text.start();
-        text.clear();
-        // If the formatted expression wraps onto multiple lines, single-line
-        // `{{ expr }}` emission would leave the wrapped lines indented
-        // relative to column 0 instead of the interpolation's depth — so a
-        // second `vize fmt` pass would re-emit them under the canonical
-        // multi-line `{{\n  expr\n}}` shape. Detect that case here and emit
-        // the multi-line form on the first pass to keep `vize fmt`
-        // idempotent. (#957)
-        if formatted.contains('\n')
-            && let Some(rewrapped) =
-                self.rewrap_text_with_multiline_interpolation(&formatted, depth)
-        {
-            output.extend_from_slice(rewrapped.as_bytes());
-            // This shape spans lines by design, so nothing may join onto it.
-            joiner.reset();
-            return;
-        }
-        self.open_chunk(output, depth, joiner.open(start));
-        output.extend_from_slice(formatted.as_bytes());
-        output.extend_from_slice(self.newline);
-    }
-
-    /// Rewrap a `format_interpolations` result into multi-line shape if any
-    /// of its interpolations span multiple lines. Surrounding text is
-    /// preserved on its own line (matching the existing flush pattern).
-    /// Returns `None` if there is nothing to rewrap. (#957)
-    fn rewrap_text_with_multiline_interpolation(&self, text: &str, depth: usize) -> Option<String> {
-        // Quick scan: look for `{{ ... \n ... }}` segments.
-        let bytes = text.as_bytes();
-        let mut has_multiline_interp = false;
-        let mut i = 0;
-        while i + 1 < bytes.len() {
-            if bytes[i] == b'{' && bytes[i + 1] == b'{' {
-                let mut j = i + 2;
-                let mut depth_in = 1;
-                let mut saw_newline = false;
-                while j + 1 < bytes.len() {
-                    if bytes[j] == b'\n' {
-                        saw_newline = true;
-                    }
-                    if bytes[j] == b'{' && bytes[j + 1] == b'{' {
-                        depth_in += 1;
-                        j += 2;
-                    } else if bytes[j] == b'}' && bytes[j + 1] == b'}' {
-                        depth_in -= 1;
-                        if depth_in == 0 {
-                            if saw_newline {
-                                has_multiline_interp = true;
-                            }
-                            j += 2;
-                            break;
-                        }
-                        j += 2;
-                    } else {
-                        j += 1;
-                    }
-                }
-                i = j;
-                if has_multiline_interp {
-                    break;
-                }
-                continue;
-            }
-            i += 1;
-        }
-        if !has_multiline_interp {
-            return None;
-        }
-
-        let mut out = String::default();
-        let mut cursor = 0;
-        let bytes = text.as_bytes();
-        while cursor < bytes.len() {
-            // Find next `{{`.
-            let mut next = cursor;
-            while next + 1 < bytes.len() && !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
-                next += 1;
-            }
-            // No further interpolation: everything left is trailing text.
-            // (`next` stops at `len - 1` when the scan runs off the end, so
-            // checking `next >= len` alone would misread trailing text as
-            // another interpolation and bail out of the rewrap.)
-            if next + 1 >= bytes.len() || !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
-                let trailing = text[cursor..].trim();
-                if !trailing.is_empty() {
-                    self.write_indent_string(&mut out, depth);
-                    out.push_str(trailing);
-                    out.push_str(self.newline_str());
-                }
-                break;
-            }
-            // Emit any text before the interpolation as its own line. Trim
-            // both ends: the segment carries the spacing that separated it
-            // from the surrounding `}}`/`{{`, and keeping a leading space
-            // would shift the line one column off its indent on every pass.
-            if next > cursor {
-                let leading = text[cursor..next].trim();
-                if !leading.is_empty() {
-                    self.write_indent_string(&mut out, depth);
-                    out.push_str(leading);
-                    out.push_str(self.newline_str());
-                }
-            }
-            // Locate the matching `}}` to extract the expression.
-            let mut k = next + 2;
-            let mut d = 1;
-            while k + 1 < bytes.len() {
-                if bytes[k] == b'{' && bytes[k + 1] == b'{' {
-                    d += 1;
-                    k += 2;
-                } else if bytes[k] == b'}' && bytes[k + 1] == b'}' {
-                    d -= 1;
-                    if d == 0 {
-                        break;
-                    }
-                    k += 2;
-                } else {
-                    k += 1;
-                }
-            }
-            if d != 0 {
-                // Malformed — bail to caller's single-line path.
-                return None;
-            }
-            let expr = &text[next + 2..k];
-            self.write_indent_string(&mut out, depth);
-            out.push_str("{{");
-            out.push_str(self.newline_str());
-            out.push_str(self.render_interpolation_expr_lines(expr, depth).as_str());
-            self.write_indent_string(&mut out, depth);
-            out.push_str("}}");
-            out.push_str(self.newline_str());
-            cursor = k + 2;
-        }
-        Some(out)
-    }
-
-    fn write_indent_string(&self, out: &mut String, depth: usize) {
-        let indent = std::str::from_utf8(self.indent).unwrap_or("  ");
-        for _ in 0..depth {
-            out.push_str(indent);
-        }
-    }
-
-    fn newline_str(&self) -> &str {
-        std::str::from_utf8(self.newline).unwrap_or("\n")
-    }
-
-    fn write_multiline_interpolation(&self, output: &mut Vec<u8>, expr: &str, depth: usize) {
-        self.write_indented_line(output, b"{{", depth);
-
-        let formatted_expr = format_interpolation_expression(expr, self.options);
-        let rendered = self.render_interpolation_expr_lines(&formatted_expr, depth);
-        output.extend_from_slice(rendered.as_bytes());
-
-        self.write_indented_line(output, b"}}", depth);
     }
 
     #[inline]
