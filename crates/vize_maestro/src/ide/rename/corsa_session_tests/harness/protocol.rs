@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-mod publication;
+mod executable;
 
 const SHUTDOWN_OBSERVATION_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -103,7 +103,7 @@ pub(super) fn traced_corsa_executable(
     let actual = root.join("actual-tsgo");
     std::os::unix::fs::symlink(corsa_path, &actual).map_err(|error| error.to_string())?;
     let wrapper = root.join("traced-tsgo");
-    let (wrapper_source, shutdown_gate) = if observe_shutdown {
+    let shutdown_gate = if observe_shutdown {
         assert_shutdown_gate_runtime()?;
         let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|error| error.to_string())?;
         let gate_port = listener
@@ -113,27 +113,17 @@ pub(super) fn traced_corsa_executable(
         let gate_sentinel = trace_dir.join("shutdown-gate.enabled");
         fs::write(root.join("trace-client.pl"), TRACE_CLIENT_PROXY)
             .map_err(|error| error.to_string())?;
-        let source = format!(
-            r#"#!/bin/sh
-wrapper_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-perl "$wrapper_dir/trace-client.pl" "$wrapper_dir/protocol-traces/client-$$.raw" "$wrapper_dir/protocol-traces/shutdown-gate.enabled" {gate_port} | "$wrapper_dir/actual-tsgo" "$@" 2>"$wrapper_dir/protocol-traces/server-$$.stderr"
-status=$?
-printf '%s\n' "$status" >"$wrapper_dir/protocol-traces/process-$$.reaped"
-exit "$status"
-"#
-        );
-        (
-            source,
-            Some(ShutdownGate {
-                listener: Some(listener),
-                stream: None,
-                sentinel: gate_sentinel,
-            }),
-        )
+        fs::write(trace_dir.join("shutdown-gate.port"), gate_port.to_string())
+            .map_err(|error| error.to_string())?;
+        Some(ShutdownGate {
+            listener: Some(listener),
+            stream: None,
+            sentinel: gate_sentinel,
+        })
     } else {
-        (TRACE_CLIENT_TEE.to_owned(), None)
+        None
     };
-    publication::write_executable(&wrapper, &wrapper_source)?;
+    executable::link_session_wrapper(&wrapper)?;
     Ok((wrapper, trace_dir, shutdown_gate))
 }
 
@@ -155,14 +145,6 @@ fn assert_shutdown_gate_runtime() -> Result<(), String> {
     }
     Ok(())
 }
-
-const TRACE_CLIENT_TEE: &str = r#"#!/bin/sh
-wrapper_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-tee "$wrapper_dir/protocol-traces/client-$$.raw" | "$wrapper_dir/actual-tsgo" "$@" 2>"$wrapper_dir/protocol-traces/server-$$.stderr"
-status=$?
-printf '%s\n' "$status" >"$wrapper_dir/protocol-traces/process-$$.reaped"
-exit "$status"
-"#;
 
 const TRACE_CLIENT_PROXY: &str = r#"use strict;
 use warnings;
