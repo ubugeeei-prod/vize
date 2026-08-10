@@ -68,7 +68,7 @@ export function compareBlocks(
       JSON.stringify([
         block.type,
         semanticAttrEntries(kind === "styles" ? "style" : "customBlock", block),
-        kind === "customBlocks" ? block.content : null,
+        kind === "customBlocks" ? semanticCustomBlockContent(block.content) : null,
       ]);
     const beforeSignatures = beforeBlocks.map(signature);
     const afterSignatures = afterBlocks.map(signature);
@@ -93,7 +93,7 @@ export function sfcEnvelopeSemanticSignature(descriptor: SfcDescriptor): unknown
     descriptor[kind].map((block) => [
       block.type,
       semanticAttrEntries(kind === "styles" ? "style" : "customBlock", block),
-      kind === "customBlocks" ? block.content : null,
+      kind === "customBlocks" ? semanticCustomBlockContent(block.content) : null,
     ]);
   return [
     single("template"),
@@ -150,4 +150,11 @@ function semanticAttrEntries(
 
 function sortedAttrEntries(attrs: Record<string, string | true>): Array<[string, string | true]> {
   return Object.entries(attrs).sort(([left], [right]) => codePointCompare(left, right));
+}
+
+// The custom-block formatter owns only the whitespace at the two body edges:
+// it emits `content.trim()` and otherwise preserves the opaque payload. Match
+// that closed contract without dedenting or normalizing internal whitespace.
+function semanticCustomBlockContent(content: string): string {
+  return content.trim();
 }

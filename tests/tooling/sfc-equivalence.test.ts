@@ -157,6 +157,22 @@ test("glyph SFC comparator flags structural corruption", () => {
     ).join("\n"),
     /customBlocks changed/,
   );
+  assert.deepEqual(
+    compareSfcEquivalence(
+      "<template><p /></template>\n<markdown>\n  # Heading\n\n  body\n  </markdown>\n",
+      "<template><p /></template>\n<markdown>\n# Heading\n\n  body\n</markdown>\n",
+      "App.vue",
+    ),
+    [],
+  );
+  assert.match(
+    compareSfcEquivalence(
+      "<template><p /></template>\n<markdown>\n# Heading\n\n  body\n</markdown>\n",
+      "<template><p /></template>\n<markdown>\n# Heading\n\nbody\n</markdown>\n",
+      "App.vue",
+    ).join("\n"),
+    /customBlocks changed/,
+  );
 });
 
 test("glyph SFC comparator normalizes only compiler-defined presence attributes", () => {
