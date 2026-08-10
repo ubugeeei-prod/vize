@@ -35,7 +35,7 @@ export type TemplateProp = {
   modifiers?: Array<{ content: string }>;
 };
 
-function codePointCompare(left: string, right: string): number {
+export function codePointCompare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 

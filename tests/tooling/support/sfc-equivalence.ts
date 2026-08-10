@@ -11,6 +11,7 @@ import {
   sfcEnvelopeSemanticSignature,
 } from "./sfc-equivalence/blocks.ts";
 import type { SfcDescriptor, TemplateNode, TemplateProp } from "./sfc-equivalence/blocks.ts";
+import { findSfcOpeningTagEnd } from "./sfc-opening-tag.ts";
 
 export type { TemplateNode } from "./sfc-equivalence/blocks.ts";
 
@@ -246,6 +247,8 @@ function preservesAuthoredWhitespace(node: TemplateNode): boolean {
   }
   const source = node.loc?.source;
   if (source == null) return false;
-  const openingTag = source.slice(0, source.indexOf(">") + 1);
+  const end = findSfcOpeningTagEnd(source, 1);
+  if (end < 0) return false;
+  const openingTag = source.slice(0, end + 1);
   return /(?:^|\s)v-pre(?:\s|=|\/?>)/u.test(openingTag);
 }

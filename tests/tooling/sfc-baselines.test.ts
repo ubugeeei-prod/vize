@@ -1,7 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { compareSfcWithDialectBaseline } from "./support/sfc-baselines.ts";
+import { compareCorpusFile } from "./support/glyph-corpus-sweep.ts";
+import {
+  assertNoCompilerErrors,
+  blockSignature,
+  normalizeCompilerMessages,
+} from "./support/sfc-baseline-signatures.ts";
+import { compareSfcWithDialectBaseline, compileLegacySide } from "./support/sfc-baselines.ts";
+import type { SfcBaselineComparison } from "./support/sfc-baselines.ts";
+
+function assertSemanticDiff(result: SfcBaselineComparison): void {
+  assert.equal(result.verdict, "semantic-diff", result.differences.join("\n"));
+  assert.equal(result.reasonCode, "semantic-signature-changed");
+  assert.equal(result.failure, null);
+}
 
 const legacySource = [
   "<template functional>",
@@ -20,9 +33,7 @@ const legacySource = [
 ].join("\n");
 
 test("Vue 2 and 2.7 official compilers compare the same legacy SFC contract", () => {
-  const formatted = legacySource
-    .replace('v-on="$listeners"', '\n    v-on="$listeners"')
-    .replace("{{ value | first(1) | second }}", "{{ value | first(1) | second }}");
+  const formatted = legacySource.replace('v-on="$listeners"', '\n    v-on="$listeners"');
   const vue2 = compareSfcWithDialectBaseline(legacySource, formatted, "Legacy.vue", "2");
   const vue27 = compareSfcWithDialectBaseline(legacySource, formatted, "Legacy.vue", "2.7");
 
@@ -50,17 +61,15 @@ test("legacy compiler signatures reject semantic mutations", () => {
     ),
   ];
   for (const mutation of mutations) {
-    const result = compareSfcWithDialectBaseline(legacySource, mutation, "Legacy.vue", "2");
-    assert.equal(result.verdict, "semantic-diff", result.differences.join("\n"));
+    assertSemanticDiff(compareSfcWithDialectBaseline(legacySource, mutation, "Legacy.vue", "2"));
   }
-  assert.equal(
+  assertSemanticDiff(
     compareSfcWithDialectBaseline(
       '<template><Widget :a="first()" :b="second()" /></template>\n',
       '<template><Widget :b="second()" :a="first()" /></template>\n',
       "Legacy.vue",
       "2",
-    ).verdict,
-    "semantic-diff",
+    ),
   );
 });
 
@@ -68,19 +77,15 @@ test("legacy baselines preserve native raw-text and v-pre bytes", () => {
   for (const tag of ["pre", "textarea", "listing"]) {
     const before = `<template><${tag}>  keep   me  </${tag}></template>\n`;
     const after = `<template><${tag}> keep me </${tag}></template>\n`;
-    assert.equal(
-      compareSfcWithDialectBaseline(before, after, "Raw.vue", "2").verdict,
-      "semantic-diff",
-    );
+    assertSemanticDiff(compareSfcWithDialectBaseline(before, after, "Raw.vue", "2"));
   }
-  assert.equal(
+  assertSemanticDiff(
     compareSfcWithDialectBaseline(
       "<template><div v-pre>{{  raw   text  }}</div></template>\n",
       "<template><div v-pre>{{ raw text }}</div></template>\n",
       "Raw.vue",
       "2",
-    ).verdict,
-    "semantic-diff",
+    ),
   );
 });
 
@@ -94,14 +99,13 @@ test("Options and Class API fixtures retain their SFC block contract", () => {
       compareSfcWithDialectBaseline(source, source, "Api.vue", "2").verdict,
       "equivalent",
     );
-    assert.equal(
+    assertSemanticDiff(
       compareSfcWithDialectBaseline(
         source,
         source.replace('<script lang="ts">', '<script lang="js">'),
         "Api.vue",
         "2",
-      ).verdict,
-      "semantic-diff",
+      ),
     );
   }
 });
@@ -120,6 +124,91 @@ test("baseline crashes retain pristine versus formatter ownership", () => {
   assert.equal(formattedFailure.verdict, "semantic-diff");
   assert.equal(formattedFailure.reasonCode, "formatted-baseline-unusable");
   assert.equal(formattedFailure.failure?.side, "formatted");
+});
+
+test("comparison harness failures retain the selected route and compiler provenance", () => {
+  const project = {
+    id: "synthetic",
+    fixtureDir: "/fixture",
+    hydrated: true,
+    revision: "a".repeat(40),
+    vueGlobs: ["src/**/*.vue"],
+  };
+  const result = compareCorpusFile(
+    "<template><p /></template>\n",
+    "<template><p /></template>\n",
+    project,
+    "src/App.vue",
+    { routeId: "vue2", dialect: "2" },
+    () => {
+      throw new Error("synthetic harness crash");
+    },
+  );
+  assert.equal(result.category, "baseline-unusable");
+  assert.equal(result.dialect?.verdict, "baseline-unusable");
+  assert.equal(result.dialect?.reasonCode, "comparison-harness-unusable");
+  assert.equal(result.dialect?.failure?.side, "harness");
+  assert.equal(result.dialect?.baseline.id, "vue2.6");
+  assert.match(result.differences.join("\n"), /synthetic harness crash/);
+});
+
+test("compiler messages canonicalize nested object key order", () => {
+  assert.deepEqual(
+    normalizeCompilerMessages([
+      { message: "bad", context: { z: 1, a: ["x", { second: 2, first: 1 }] } },
+      "  spaced   message  ",
+    ]),
+    ['{"context":{"a":["x",{"first":1,"second":2}],"z":1},"message":"bad"}', "spaced message"],
+  );
+  assert.throws(() => assertNoCompilerErrors(undefined), /omitted its errors array/);
+  assert.deepEqual(blockSignature({ template: { attrs: { ä: "last", z: "first" } } }), {
+    template: [
+      null,
+      null,
+      [
+        ["z", "first"],
+        ["ä", "last"],
+      ],
+      null,
+    ],
+    script: null,
+    scriptSetup: null,
+    styles: [],
+    customBlocks: [],
+  });
+});
+
+test("legacy comparison separates compiler failures from harness normalization failures", () => {
+  const parse = () => ({ template: { content: "<p />" } });
+  const compilerFailure = compileLegacySide(
+    "<template><p /></template>",
+    "App.vue",
+    parse,
+    () => {
+      throw new Error("compiler crashed");
+    },
+    () => null,
+  );
+  assert.deepEqual(compilerFailure, {
+    ok: false,
+    stage: "template-compile",
+    message: "compiler crashed",
+  });
+
+  const harnessFailure = compileLegacySide(
+    "<template><p /></template>",
+    "App.vue",
+    parse,
+    () => ({ render: "ok" }),
+    () => {
+      throw new Error("normalizer crashed");
+    },
+  );
+  assert.deepEqual(harnessFailure, {
+    ok: false,
+    stage: "semantic-normalize",
+    message: "normalizer crashed",
+  });
 });
 
 test("Vue 0 and 1 dialect hooks fail before selecting a Vue 3 baseline", () => {
@@ -141,13 +230,12 @@ test("Vue 0 and 1 dialect hooks fail before selecting a Vue 3 baseline", () => {
 test("Vue 3 keeps the existing structural comparator", () => {
   const source = '<template><button :title="label">{{ label }}</button></template>\n';
   assert.equal(compareSfcWithDialectBaseline(source, source, "App.vue", "3").verdict, "equivalent");
-  assert.equal(
+  assertSemanticDiff(
     compareSfcWithDialectBaseline(
       source,
       '<template><button :title="other">{{ label }}</button></template>\n',
       "App.vue",
       "3",
-    ).verdict,
-    "semantic-diff",
+    ),
   );
 });

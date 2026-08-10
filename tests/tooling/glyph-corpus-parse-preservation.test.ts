@@ -18,6 +18,7 @@ import {
   writeGlyphPugSemanticEvidence,
 } from "../../tools/fixtures/glyph-corpus.mjs";
 import {
+  evidenceSourceCommit,
   formatterEvidence,
   writeGlyphSfcEquivalenceEvidence,
 } from "../../tools/fixtures/glyph-sfc-evidence.mjs";
@@ -97,11 +98,11 @@ test("glyph corpus parse-preservation holds for every hydrated fixture", () => {
   const version = reportEnabled ? runVize(launch, process.cwd(), ["--version"], 30_000) : null;
   if (version != null) assert.equal(version.status, 0, version.stderr);
   writeGlyphSfcEquivalenceEvidence({
-    sourceCommit: process.env.GITHUB_SHA ?? null,
+    sourceCommit: evidenceSourceCommit(),
     formatter:
       version == null
         ? null
-        : formatterEvidence(launch.command, `${version.stdout}\n${version.stderr}`.trim()),
+        : formatterEvidence(launch.evidenceCommand, `${version.stdout}\n${version.stderr}`.trim()),
     files: sfcDialectEvidence,
     availableBaselines: sfcDialects.map(getSfcBaselineProvenance),
     expectedFiles: expectedEvidenceFiles,

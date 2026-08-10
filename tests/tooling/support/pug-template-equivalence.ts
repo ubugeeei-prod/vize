@@ -33,6 +33,7 @@ import {
   templateAstSemanticSignature,
 } from "./sfc-equivalence.ts";
 import type { TemplateNode } from "./sfc-equivalence.ts";
+import { findSfcOpeningTagEnd } from "./sfc-opening-tag.ts";
 
 export { PUG_ORACLE_BASELINE } from "./pug/oracle-runtime.ts";
 export type { PugOracleContext } from "./pug/oracle-runtime.ts";
@@ -89,7 +90,7 @@ function findTopLevelTemplateOpeningTag(source: string): string | null {
       offset = start + 1;
       continue;
     }
-    const end = findTagEnd(source, start + nameMatch[0].length);
+    const end = findSfcOpeningTagEnd(source, start + nameMatch[0].length);
     if (end < 0) return null;
     const name = nameMatch[1].toLowerCase();
     const openingTag = source.slice(start, end + 1);
@@ -104,21 +105,6 @@ function findTopLevelTemplateOpeningTag(source: string): string | null {
     }
   }
   return null;
-}
-
-function findTagEnd(source: string, offset: number): number {
-  let quote: '"' | "'" | null = null;
-  for (let index = offset; index < source.length; index += 1) {
-    const character = source[index];
-    if (quote != null) {
-      if (character === quote) quote = null;
-    } else if (character === '"' || character === "'") {
-      quote = character;
-    } else if (character === ">") {
-      return index;
-    }
-  }
-  return -1;
 }
 
 export function comparePugTemplateEquivalence(

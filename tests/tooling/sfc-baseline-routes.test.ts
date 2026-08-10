@@ -55,6 +55,23 @@ test("dialect routes reject missing, overlapping, and out-of-scope files", () =>
       vueGlobs: ["src/**/*.vue"],
     };
     const files = collectVueInputPaths(fixtureDir, base.vueGlobs);
+    assert.equal(
+      resolveSfcDialectPartition(
+        {
+          ...base,
+          sfcDialectRoutes: [
+            {
+              id: "source",
+              dialect: "2",
+              globs: ["src/**/*.vue", "src/vue2/**/*.vue"],
+            },
+          ],
+        },
+        files,
+      ).size,
+      2,
+      "overlapping globs inside one route must not look like two dialect routes",
+    );
     assert.throws(
       () =>
         resolveSfcDialectPartition(
@@ -114,19 +131,30 @@ test("dialect routes reject missing, overlapping, and out-of-scope files", () =>
 test("dialect route schema is closed and fail-closed", () => {
   const valid: SfcDialectRoute[] = [{ id: "legacy", dialect: "0.10", globs: ["src/**/*.vue"] }];
   assert.doesNotThrow(() => validateRouteShapes(valid));
-  for (const routes of [
-    [],
-    [{ id: "legacy", dialect: "4", globs: ["src/**/*.vue"] }],
-    [{ id: "Legacy", dialect: "2", globs: ["src/**/*.vue"] }],
-    [{ id: "legacy", dialect: "2", globs: [] }],
-    [{ id: "legacy", dialect: "2", globs: ["../src/**/*.vue"] }],
-    [{ id: "legacy", dialect: "2", globs: ["src\\**\\*.vue"] }],
+  for (const [routes, expected] of [
+    [[], /sfcDialectRoutes must be a non-empty array/],
+    [[null], /dialect routes must be objects/],
+    [[{ id: "legacy", dialect: "4", globs: ["src/**/*.vue"] }], /invalid SFC dialect: 4/],
+    [[{ id: "Legacy", dialect: "2", globs: ["src/**/*.vue"] }], /invalid dialect route id/],
+    [[{ id: "legacy", dialect: "2", globs: [] }], /must declare globs/],
+    [[{ id: "legacy", dialect: "2", globs: ["../src/**/*.vue"] }], /invalid SFC dialect glob/],
+    [[{ id: "legacy", dialect: "2", globs: ["/src/**/*.vue"] }], /invalid SFC dialect glob/],
+    [[{ id: "legacy", dialect: "2", globs: ["C:/src/**/*.vue"] }], /invalid SFC dialect glob/],
+    [[{ id: "legacy", dialect: "2", globs: ["src/**/*.ts"] }], /invalid SFC dialect glob/],
+    [[{ id: "legacy", dialect: "2", globs: ["src\\**\\*.vue"] }], /invalid SFC dialect glob/],
     [
-      { id: "legacy", dialect: "2", globs: ["src/**/*.vue"] },
-      { id: "legacy", dialect: "3", globs: ["next/**/*.vue"] },
+      [{ id: "legacy", dialect: "2", globs: ["src/**/*.vue", "src/**/*.vue"] }],
+      /duplicate SFC dialect glob/,
     ],
-  ]) {
-    assert.throws(() => validateRouteShapes(routes as SfcDialectRoute[]));
+    [
+      [
+        { id: "legacy", dialect: "2", globs: ["src/**/*.vue"] },
+        { id: "legacy", dialect: "3", globs: ["next/**/*.vue"] },
+      ],
+      /duplicate dialect route id: legacy/,
+    ],
+  ] as const) {
+    assert.throws(() => validateRouteShapes(routes as unknown as SfcDialectRoute[]), expected);
   }
 });
 

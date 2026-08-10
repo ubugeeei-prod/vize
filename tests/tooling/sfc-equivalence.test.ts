@@ -3,9 +3,10 @@ import { test } from "node:test";
 
 import { compareSfcEquivalence } from "./support/sfc-equivalence.ts";
 
-test("glyph SFC comparator flags structural corruption", () => {
-  const original =
-    '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{n+1}}</div>\n</template>\n';
+const original =
+  '<template>\n  <div title="x" :class="foo" v-bind="rest">a {{n+1}}</div>\n</template>\n';
+
+test("glyph SFC comparator accepts layout-only formatting", () => {
   assert.deepEqual(
     compareSfcEquivalence(
       original,
@@ -14,6 +15,9 @@ test("glyph SFC comparator flags structural corruption", () => {
     ),
     [],
   );
+});
+
+test("glyph SFC comparator preserves attribute and spread order", () => {
   assert.deepEqual(
     compareSfcEquivalence(
       '<template>\n  <Widget\n    v-model:pos="\n      buttonPosition\n    "\n  />\n</template>\n',
@@ -48,8 +52,11 @@ test("glyph SFC comparator flags structural corruption", () => {
       '<template><button @="listeners" @click="before" @focus="after" /></template>\n',
     ],
   ]) {
-    assert.match(compareSfcEquivalence(before, after, "App.vue").join("\n"), /\[0\]/);
+    assert.match(compareSfcEquivalence(before, after, "App.vue").join("\n"), /<(div|button)>\[0\]/);
   }
+});
+
+test("glyph SFC comparator preserves text, interpolation, and effect order", () => {
   assert.match(
     compareSfcEquivalence(
       original,
@@ -74,6 +81,9 @@ test("glyph SFC comparator flags structural corruption", () => {
     ).join("\n"),
     /<Widget>/,
   );
+});
+
+test("glyph SFC comparator preserves native raw text and v-pre", () => {
   assert.match(
     compareSfcEquivalence(
       "<template><pre>  a  b</pre></template>\n",
@@ -100,6 +110,14 @@ test("glyph SFC comparator flags structural corruption", () => {
     ).join("\n"),
     /#text/,
   );
+  assert.match(
+    compareSfcEquivalence(
+      '<template><div :title="a > b" v-pre>{{  raw   text  }}</div></template>\n',
+      '<template><div :title="a > b" v-pre>{{ raw text }}</div></template>\n',
+      "App.vue",
+    ).join("\n"),
+    /#text/,
+  );
   // PascalCase component names are not native whitespace-preserving elements.
   assert.deepEqual(
     compareSfcEquivalence(
@@ -109,6 +127,9 @@ test("glyph SFC comparator flags structural corruption", () => {
     ),
     [],
   );
+});
+
+test("glyph SFC comparator preserves parse state and SFC block contracts", () => {
   assert.match(
     compareSfcEquivalence(
       original,

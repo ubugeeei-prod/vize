@@ -2,7 +2,7 @@ use vize_glyph::{FormatOptions, format_sfc};
 
 #[test]
 fn preserves_authored_style_cascade_order() {
-    let source = r#"<style>
+    let plain_first = r#"<style>
 .shared { color: red; }
 </style>
 
@@ -12,21 +12,39 @@ fn preserves_authored_style_cascade_order() {
 .shared { color: blue; }
 </style>
 "#;
-    let options = FormatOptions::default();
-    let first = format_sfc(source, &options).unwrap();
-    let plain = first.code.find("<style>").expect("plain style block");
-    let scoped = first
-        .code
-        .find("<style scoped>")
-        .expect("scoped style block");
-    assert!(
-        plain < scoped,
-        "formatter reversed the authored CSS cascade"
-    );
+    let scoped_first = r#"<style scoped>
+.shared { color: blue; }
+</style>
 
-    let second = format_sfc(&first.code, &options).unwrap();
-    assert_eq!(
-        first.code, second.code,
-        "style order must remain a fixed point"
-    );
+<template><p class="shared">cascade</p></template>
+
+<style>
+.shared { color: red; }
+</style>
+"#;
+    let options = FormatOptions::default();
+    for (source, first_style, second_style) in [
+        (plain_first, "<style>", "<style scoped>"),
+        (scoped_first, "<style scoped>", "<style>"),
+    ] {
+        let first = format_sfc(source, &options).unwrap();
+        let first_position = first
+            .code
+            .find(first_style)
+            .expect("first authored style block");
+        let second_position = first
+            .code
+            .find(second_style)
+            .expect("second authored style block");
+        assert!(
+            first_position < second_position,
+            "formatter reversed the authored CSS cascade"
+        );
+
+        let second = format_sfc(&first.code, &options).unwrap();
+        assert_eq!(
+            first.code, second.code,
+            "style order must remain a fixed point"
+        );
+    }
 }

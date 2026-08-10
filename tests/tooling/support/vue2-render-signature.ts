@@ -91,8 +91,10 @@ function normalizeCreateElementCall(record: AstRecord, preserveWhitespace: boole
     preserveWhitespace ||
     (tag != null && whitespacePreservingTags.has(tag)) ||
     hasVPreDataArgument(args[1]);
-  const hasDataArgument =
-    args.length >= 3 || isObjectExpression(args[1]) || isDataHelperCall(args[1]);
+  // Vue 2 may emit `_c(tag, children, normalizationType)` with no data object.
+  // Argument count therefore cannot identify the data slot; only the compiler
+  // data shapes can do so without treating children as ordinary expressions.
+  const hasDataArgument = isObjectExpression(args[1]) || isDataHelperCall(args[1]);
   const childIndex = hasDataArgument ? 2 : 1;
 
   return normalizeCall(record, (argument, index) => {

@@ -10,41 +10,22 @@ import {
   semanticSha256,
 } from "./sfc-baseline-signatures.ts";
 import type { SfcDescriptor } from "./sfc-baseline-signatures.ts";
+import type {
+  BaselineFailure,
+  BaselineFailureStage,
+  SfcBaselineComparison,
+  SfcBaselineProvenance,
+} from "./sfc-baseline-types.ts";
 import { vue2RenderSignature, vue27RenderCodeSignature } from "./vue2-render-signature.ts";
 
 const require = createRequire(import.meta.url);
 
-export type BaselineFailureStage =
-  | "adapter-load"
-  | "sfc-parse"
-  | "template-compile"
-  | "semantic-normalize";
-
-export type BaselineFailure = {
-  side: "original" | "formatted";
-  stage: BaselineFailureStage;
-  message: string;
-};
-
-export type SfcBaselineProvenance = {
-  id: string;
-  dialect: SfcDialect;
-  package: string | null;
-  version: string | null;
-  entrySha256: string | null;
-  normalization: string;
-  options: Record<string, unknown>;
-};
-
-export type SfcBaselineComparison = {
-  verdict: "equivalent" | "semantic-diff" | "baseline-unusable";
-  reasonCode: string | null;
-  differences: string[];
-  failure: BaselineFailure | null;
-  beforeSemanticSha256: string | null;
-  afterSemanticSha256: string | null;
-  baseline: SfcBaselineProvenance;
-};
+export type {
+  BaselineFailure,
+  BaselineFailureStage,
+  SfcBaselineComparison,
+  SfcBaselineProvenance,
+} from "./sfc-baseline-types.ts";
 
 type SideResult =
   | { ok: true; signature: string }
@@ -100,6 +81,28 @@ export function getSfcBaselineProvenance(dialect: SfcDialect): SfcBaselineProven
   return loadBaseline(dialect).provenance;
 }
 
+/** Preserve the selected route and compiler provenance when the comparison harness itself fails. */
+export function comparisonHarnessFailure(
+  dialect: SfcDialect,
+  error: unknown,
+): SfcBaselineComparison {
+  const baseline = loadBaseline(dialect).provenance;
+  const failure: BaselineFailure = {
+    side: "harness",
+    stage: "comparison-harness",
+    message: error instanceof Error ? error.message : String(error),
+  };
+  return {
+    verdict: "baseline-unusable",
+    reasonCode: "comparison-harness-unusable",
+    differences: [`${failure.stage}: ${failure.message}`],
+    failure,
+    beforeSemanticSha256: null,
+    afterSemanticSha256: null,
+    baseline,
+  };
+}
+
 function loadBaseline(dialect: SfcDialect): LoadedBaseline {
   const cached = baselineCache.get(dialect);
   if (cached != null) return cached;
@@ -107,7 +110,7 @@ function loadBaseline(dialect: SfcDialect): LoadedBaseline {
   try {
     loaded = selectBaseline(dialect);
   } catch (error) {
-    loaded = unsupportedBaseline(dialect, error);
+    loaded = failedAdapterBaseline(dialect, error);
   }
   baselineCache.set(dialect, loaded);
   return loaded;
@@ -152,14 +155,23 @@ function loadVue26Baseline() {
   return {
     provenance,
     compile: (source: string, filename: string): SideResult =>
-      compileLegacySide(source, filename, compiler.parseComponent, (template) => {
-        const result = compiler.compile(template, compileOptions);
-        assertNoCompilerErrors(result.errors);
-        return {
-          render: vue2RenderSignature(result.render, result.staticRenderFns),
-          tips: normalizeCompilerMessages(result.tips),
-        };
-      }),
+      compileLegacySide(
+        source,
+        filename,
+        compiler.parseComponent,
+        (template) => {
+          const result = compiler.compile(template, compileOptions);
+          assertNoCompilerErrors(result.errors);
+          return result;
+        },
+        (compiled) => {
+          const result = compiled as ReturnType<typeof compiler.compile>;
+          return {
+            render: vue2RenderSignature(result.render, result.staticRenderFns),
+            tips: normalizeCompilerMessages(result.tips),
+          };
+        },
+      ),
   };
 }
 
@@ -188,14 +200,23 @@ function loadVue27Baseline() {
   return {
     provenance,
     compile: (source: string, filename: string): SideResult =>
-      compileLegacySide(source, filename, compiler.parseComponent, (template) => {
-        const result = compiler.compileTemplate({ source: template, filename, ...options });
-        assertNoCompilerErrors(result.errors);
-        return {
-          render: vue27RenderCodeSignature(result.code),
-          tips: normalizeCompilerMessages(result.tips),
-        };
-      }),
+      compileLegacySide(
+        source,
+        filename,
+        compiler.parseComponent,
+        (template) => {
+          const result = compiler.compileTemplate({ source: template, filename, ...options });
+          assertNoCompilerErrors(result.errors);
+          return result;
+        },
+        (compiled) => {
+          const result = compiled as ReturnType<typeof compiler.compileTemplate>;
+          return {
+            render: vue27RenderCodeSignature(result.code),
+            tips: normalizeCompilerMessages(result.tips),
+          };
+        },
+      ),
   };
 }
 
@@ -229,11 +250,12 @@ function loadVue3Baseline() {
   };
 }
 
-function compileLegacySide(
+export function compileLegacySide(
   source: string,
   filename: string,
   parse: (source: string, options: object) => SfcDescriptor,
   compile: (template: string) => unknown,
+  normalize: (compiled: unknown) => unknown,
 ): SideResult {
   let descriptor: SfcDescriptor;
   try {
@@ -241,16 +263,23 @@ function compileLegacySide(
   } catch (error) {
     return failure("sfc-parse", error);
   }
+  let compiled: unknown = null;
+  if (descriptor.template?.content != null) {
+    try {
+      compiled = compile(descriptor.template.content);
+    } catch (error) {
+      return failure("template-compile", error);
+    }
+  }
   try {
-    const render =
-      descriptor.template?.content == null ? null : compile(descriptor.template.content);
+    const render = compiled == null ? null : normalize(compiled);
     return { ok: true, signature: JSON.stringify([blockSignature(descriptor), render]) };
   } catch (error) {
-    return failure("template-compile", error);
+    return failure("semantic-normalize", error);
   }
 }
 
-function unsupportedBaseline(dialect: SfcDialect, error?: unknown) {
+function unsupportedBaseline(dialect: SfcDialect) {
   const provenance: SfcBaselineProvenance = {
     id: `unsupported-vue-${dialect}`,
     dialect,
@@ -264,12 +293,29 @@ function unsupportedBaseline(dialect: SfcDialect, error?: unknown) {
     provenance,
     failure: {
       stage: "adapter-load" as const,
+      message: `no official formatter baseline adapter is registered for Vue ${dialect}`,
+    },
+  };
+}
+
+function failedAdapterBaseline(dialect: SfcDialect, error: unknown) {
+  const provenance: SfcBaselineProvenance = {
+    id: `adapter-load-failed-vue-${dialect}`,
+    dialect,
+    package: null,
+    version: null,
+    entrySha256: null,
+    normalization: "unavailable",
+    options: { cause: "adapter-load-failed" },
+  };
+  return {
+    provenance,
+    failure: {
+      stage: "adapter-load" as const,
       message:
-        error == null
-          ? `no official formatter baseline adapter is registered for Vue ${dialect}`
-          : error instanceof Error
-            ? error.message
-            : (JSON.stringify(error) ?? "unknown adapter load failure"),
+        error instanceof Error
+          ? error.message
+          : (JSON.stringify(error) ?? "unknown adapter load failure"),
     },
   };
 }

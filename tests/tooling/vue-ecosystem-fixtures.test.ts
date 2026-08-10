@@ -5,6 +5,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import type { SfcDialect } from "./support/sfc-baseline-routes.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
 type FixtureKind = "application" | "component-library" | "library" | "tooling";
@@ -20,7 +22,7 @@ interface FixtureProject {
   vueGlobs: string[];
   sfcDialectRoutes?: Array<{
     id: string;
-    dialect: "0.10" | "0.11" | "1" | "2" | "2.7" | "3";
+    dialect: SfcDialect;
     globs: string[];
   }>;
   expectedVueFileCount?: number;

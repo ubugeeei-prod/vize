@@ -44,6 +44,19 @@ function temporaryPugContext() {
 
 test("Pug routing reads only the top-level template start tag", () => {
   assert.equal(isPugSfc('<template LANG="PUG">\nmain\n</template>\n', "App.vue"), true);
+  assert.equal(isPugSfc("<template lang='pug'>\nmain\n</template>\n", "App.vue"), true);
+  assert.equal(isPugSfc("<template lang=pug>\nmain\n</template>\n", "App.vue"), true);
+  assert.equal(
+    isPugSfc('<template data-label="a > b" lang="pug">\nmain\n</template>\n', "App.vue"),
+    true,
+  );
+  assert.equal(
+    isPugSfc(
+      '<script setup>const ready = true</script>\n<template lang="pug">\nmain\n</template>\n',
+      "App.vue",
+    ),
+    true,
+  );
   assert.equal(
     isPugSfc(
       '<script>const decoy = `<template lang="pug">`</script>\n<template><p /></template>\n',

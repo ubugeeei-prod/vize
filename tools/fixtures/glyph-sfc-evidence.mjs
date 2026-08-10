@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,13 @@ const hashPattern = /^[0-9a-f]{64}$/;
 const commitPattern = /^[0-9a-f]{40}$/;
 const verdicts = new Set(["equivalent", "semantic-diff", "baseline-unusable"]);
 const dialects = new Set(["0.10", "0.11", "1", "2", "2.7", "3"]);
+const failureStages = new Set([
+  "adapter-load",
+  "comparison-harness",
+  "sfc-parse",
+  "template-compile",
+  "semantic-normalize",
+]);
 const baselineContracts = new Map([
   [
     "unsupported-vue-0.10",
@@ -135,6 +143,8 @@ export function validateGlyphSfcEquivalenceEvidence(artifact, expectedFiles = nu
       requireHash(file[field], `${identity} ${field}`);
     }
     if (!verdicts.has(file.verdict)) throw new Error(`invalid verdict for ${identity}`);
+    if (file.waiver != null)
+      throw new Error(`glyph SFC dialect evidence cannot be waived: ${identity}`);
     validateVerdict(file, identity);
   }
   if (expectedFiles != null) {
@@ -176,6 +186,19 @@ export function formatterEvidence(command, version) {
     throw new Error("formatter evidence version must be non-empty");
   }
   return { version: version.trim(), binarySha256: sha256(readFileSync(command)) };
+}
+
+export function evidenceSourceCommit(environment = process.env, runGit = spawnSync) {
+  const environmentSha = environment.GITHUB_SHA;
+  if (environmentSha != null) return requireCommit(environmentSha, "GITHUB_SHA");
+  const result = runGit("git", ["rev-parse", "HEAD"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  if (result.status !== 0) {
+    throw new Error(`git rev-parse HEAD failed: ${result.stderr.trim()}`);
+  }
+  return requireCommit(result.stdout.trim(), "git rev-parse HEAD");
 }
 
 function validateBaselines(records) {
@@ -230,7 +253,13 @@ function validateBaselines(records) {
 }
 
 function validateVerdict(file, identity) {
-  const differences = file.differences ?? [];
+  if (
+    !Array.isArray(file.differences) ||
+    file.differences.some((value) => typeof value !== "string")
+  ) {
+    throw new Error(`glyph SFC evidence differences must be strings: ${identity}`);
+  }
+  const differences = file.differences;
   if (file.verdict === "equivalent") {
     if (
       file.reasonCode != null ||
@@ -244,14 +273,48 @@ function validateVerdict(file, identity) {
     requireHash(file.beforeSemanticSha256, `${identity} semantic sha256`);
     return;
   }
-  if (typeof file.reasonCode !== "string" || file.reasonCode.length === 0) {
-    throw new Error(`non-equivalent glyph SFC evidence needs a reason: ${identity}`);
+  if (differences.length === 0) {
+    throw new Error(`non-equivalent glyph SFC evidence needs differences: ${identity}`);
   }
-  if (file.verdict === "baseline-unusable" && file.failure?.side !== "original") {
-    throw new Error(`baseline-unusable must originate from pristine input: ${identity}`);
+  if (file.reasonCode === "semantic-signature-changed") {
+    if (file.verdict !== "semantic-diff" || file.failure != null) {
+      throw new Error(`semantic signature change ownership is invalid: ${identity}`);
+    }
+    requireHash(file.beforeSemanticSha256, `${identity} before semantic sha256`);
+    requireHash(file.afterSemanticSha256, `${identity} after semantic sha256`);
+    return;
   }
-  if (file.reasonCode === "formatted-baseline-unusable" && file.failure?.side !== "formatted") {
-    throw new Error(`formatted baseline failure side is invalid: ${identity}`);
+  const failureContracts = new Map([
+    ["original-baseline-unusable", { verdict: "baseline-unusable", side: "original" }],
+    ["formatted-baseline-unusable", { verdict: "semantic-diff", side: "formatted" }],
+    ["comparison-harness-unusable", { verdict: "baseline-unusable", side: "harness" }],
+  ]);
+  const contract = failureContracts.get(file.reasonCode);
+  if (contract == null) {
+    throw new Error(`non-equivalent glyph SFC evidence reason is invalid: ${identity}`);
+  }
+  if (file.verdict !== contract.verdict || file.failure?.side !== contract.side) {
+    throw new Error(`${file.reasonCode} ownership is invalid: ${identity}`);
+  }
+  if (
+    typeof file.failure.stage !== "string" ||
+    !failureStages.has(file.failure.stage) ||
+    typeof file.failure.message !== "string" ||
+    file.failure.message.length === 0
+  ) {
+    throw new Error(`glyph SFC baseline failure is incomplete: ${identity}`);
+  }
+  if (
+    (file.reasonCode === "comparison-harness-unusable") !==
+    (file.failure.stage === "comparison-harness")
+  ) {
+    throw new Error(`glyph SFC baseline failure stage ownership is invalid: ${identity}`);
+  }
+  if (!differences.includes(`${file.failure.stage}: ${file.failure.message}`)) {
+    throw new Error(`glyph SFC baseline failure detail is missing: ${identity}`);
+  }
+  if (file.beforeSemanticSha256 != null || file.afterSemanticSha256 != null) {
+    throw new Error(`baseline failure cannot claim semantic hashes: ${identity}`);
   }
 }
 
@@ -265,7 +328,7 @@ function dedupeBaselines(baselineInputs) {
     }
     records.set(baseline.id, baseline);
   }
-  return [...records.values()].sort((left, right) => left.id.localeCompare(right.id));
+  return [...records.values()].sort((left, right) => codePointCompare(left.id, right.id));
 }
 
 function summarize(files, waiverValidationError) {
@@ -284,7 +347,11 @@ function summarize(files, waiverValidationError) {
 }
 
 function compareFiles(left, right) {
-  return left.project.localeCompare(right.project) || left.path.localeCompare(right.path);
+  return codePointCompare(left.project, right.project) || codePointCompare(left.path, right.path);
+}
+
+function codePointCompare(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function canonicalJson(value) {
@@ -300,6 +367,11 @@ function canonicalJson(value) {
 
 function requireHash(value, label) {
   if (!hashPattern.test(value ?? "")) throw new Error(`${label} must be a sha256`);
+}
+
+function requireCommit(value, label) {
+  if (!commitPattern.test(value ?? "")) throw new Error(`${label} must be an exact commit`);
+  return value;
 }
 
 function sha256(value) {

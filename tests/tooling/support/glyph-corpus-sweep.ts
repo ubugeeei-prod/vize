@@ -18,7 +18,7 @@ import { comparePugTemplateEquivalence, isPugSfc } from "./pug-template-equivale
 import type { PugOracleComparison, PugOracleEvidence } from "./pug-template-equivalence.ts";
 import { resolveSfcDialectPartition } from "./sfc-baseline-routes.ts";
 import type { ResolvedSfcDialect, SfcDialectRoute } from "./sfc-baseline-routes.ts";
-import { compareSfcWithDialectBaseline } from "./sfc-baselines.ts";
+import { compareSfcWithDialectBaseline, comparisonHarnessFailure } from "./sfc-baselines.ts";
 import type { SfcBaselineComparison } from "./sfc-baselines.ts";
 import { compareSfcEquivalence } from "./sfc-equivalence.ts";
 
@@ -109,12 +109,13 @@ export function pugContext(project: CorpusProject, file: string) {
   };
 }
 
-function compareCorpusFile(
+export function compareCorpusFile(
   original: string,
   formatted: string,
   project: CorpusProject,
   file: string,
   route: ResolvedSfcDialect | null,
+  compareDialect = compareSfcWithDialectBaseline,
 ): {
   differences: string[];
   category: "semantic-diff" | "baseline-unusable";
@@ -133,7 +134,7 @@ function compareCorpusFile(
       };
     }
     if (route != null) {
-      const dialect = compareSfcWithDialectBaseline(original, formatted, filename, route.dialect);
+      const dialect = compareDialect(original, formatted, filename, route.dialect);
       return {
         differences: dialect.differences,
         category: dialect.verdict === "baseline-unusable" ? "baseline-unusable" : "semantic-diff",
@@ -144,11 +145,14 @@ function compareCorpusFile(
     const differences = compareSfcEquivalence(original, formatted, path.basename(file));
     return { differences, category: "semantic-diff", pug: null, dialect: null };
   } catch (error) {
+    const dialect = route == null ? null : comparisonHarnessFailure(route.dialect, error);
     return {
-      differences: [`comparison failed: ${error instanceof Error ? error.message : String(error)}`],
+      differences: dialect?.differences ?? [
+        `comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+      ],
       category: "baseline-unusable",
       pug: null,
-      dialect: null,
+      dialect,
     };
   }
 }
@@ -176,7 +180,8 @@ export function sweepProject(
       >;
       workspace.reformat();
       for (const file of files) {
-        const original = fs.readFileSync(path.join(project.fixtureDir, file), "utf8");
+        const originalBuffer = fs.readFileSync(path.join(project.fixtureDir, file));
+        const original = originalBuffer.toString("utf8");
         const formattedBuffer = firstPass.get(file);
         assert.ok(formattedBuffer, `formatter snapshot omitted ${project.id}/${file}`);
         const formatted = formattedBuffer.toString("utf8");
@@ -235,8 +240,8 @@ export function sweepProject(
             routeId: route.routeId,
             dialect: route.dialect,
             baselineId: result.dialect.baseline.id,
-            originalSha256: sha256(original),
-            formattedSha256: sha256(formatted),
+            originalSha256: sha256(originalBuffer),
+            formattedSha256: sha256(formattedBuffer),
             beforeSemanticSha256: result.dialect.beforeSemanticSha256,
             afterSemanticSha256: result.dialect.afterSemanticSha256,
             verdict: result.dialect.verdict,

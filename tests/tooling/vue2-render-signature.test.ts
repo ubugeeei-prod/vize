@@ -7,9 +7,11 @@ import { fileURLToPath } from "node:url";
 
 import {
   collectProjectVueFiles,
+  loadGlyphCorpusProjects,
   resolveGlyphLaunch,
   withFormattedWorkspace,
 } from "../../tools/fixtures/glyph-corpus.mjs";
+import type { SfcDialectRoute } from "./support/sfc-baseline-routes.ts";
 import {
   vue27RenderCodeSignature,
   vue2RenderFunctionSignature,
@@ -20,13 +22,12 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const gogocodeRoot = path.join(root, "tests/_fixtures/_git/gogocode");
 const require = createRequire(import.meta.url);
 
-const vue2Globs = [
-  "packages/gogocode-element-playground/packages/vue2/**/*.vue",
-  "packages/gogocode-vue-playground/packages/vue2/**/*.vue",
-  "packages/gogocode-plugin-vue/test/**/*.vue",
-  "packages/transform-project/vue-hackernews-2.0/**/*.vue",
-  "packages/gogocode-plugin-sample/test/**/*.vue",
-];
+const gogocodeProject = (
+  loadGlyphCorpusProjects() as Array<{ id: string; sfcDialectRoutes?: SfcDialectRoute[] }>
+).find((project) => project.id === "gogocode");
+const vue2Route = gogocodeProject?.sfcDialectRoutes?.find((route) => route.id === "vue2");
+assert.ok(vue2Route, "the GoGoCode fixture must declare its Vue 2 route");
+const vue2Globs = vue2Route.globs;
 
 test("Vue 2 render signatures normalize only pure attribute layout", () => {
   const before = `with(this){return _c('p',{attrs:{"name":"slide","appear":""},on:{"focus":function(){return focus()},"click":function(){return click()}}},[_v("Vue版本："+_s(version))])}`;
@@ -119,6 +120,13 @@ test("Vue 2 render signatures preserve text inside pre-like ancestors", () => {
     ),
     vue2RenderFunctionSignature(`with(this){return _c('div',{pre:true},[_v("{{ raw text }}")])}`),
   );
+  assert.notDeepEqual(
+    vue2RenderFunctionSignature(
+      `with(this){return _c('pre',[_c('span',[_v("  keep   me  ")])],2)}`,
+    ),
+    vue2RenderFunctionSignature(`with(this){return _c('pre',[_c('span',[_v(" keep me ")])],2)}`),
+    "a data-less createElement call must not mistake normalization type 2 for children",
+  );
 });
 
 test("Vue 2 render signatures preserve interpolation boundary whitespace", () => {
@@ -158,8 +166,11 @@ test("Vue 2 render signatures retain semantic handler and static-render changes"
   );
 });
 
-test("the hydrated GoGoCode Vue 2 partition has stable render signatures for all 97 SFCs", () => {
-  if (!fs.existsSync(gogocodeRoot) || fs.readdirSync(gogocodeRoot).length === 0) return;
+test("the hydrated GoGoCode Vue 2 partition has stable render signatures for all 97 SFCs", (t) => {
+  if (!fs.existsSync(gogocodeRoot) || fs.readdirSync(gogocodeRoot).length === 0) {
+    t.skip("the GoGoCode fixture submodule is not hydrated");
+    return;
+  }
 
   const compiler = require("vue-sfc-compiler-2-6/build.js") as {
     compile(

@@ -44,22 +44,21 @@ export function resolveSfcDialectPartition(
   const matches = new Map<string, ResolvedSfcDialect[]>();
 
   for (const route of routes) {
-    let routeMatchCount = 0;
     for (const pattern of route.globs) {
       const files = collectRouteFiles(project.fixtureDir, pattern);
       if (files.length === 0)
         throw new Error(`${project.id}:${route.id} glob matched no files: ${pattern}`);
-      routeMatchCount += files.length;
       for (const file of files) {
         if (!registered.has(file)) {
           throw new Error(`${project.id}:${route.id} routed file is outside vueGlobs: ${file}`);
         }
         const selected = matches.get(file) ?? [];
-        selected.push({ routeId: route.id, dialect: route.dialect });
+        if (!selected.some((candidate) => candidate.routeId === route.id)) {
+          selected.push({ routeId: route.id, dialect: route.dialect });
+        }
         matches.set(file, selected);
       }
     }
-    if (routeMatchCount === 0) throw new Error(`${project.id}:${route.id} route is empty`);
   }
 
   const result = new Map<string, ResolvedSfcDialect>();
@@ -106,7 +105,11 @@ function collectRouteFiles(fixtureDir: string, pattern: string): string[] {
   return globSync(pattern, { cwd: fixtureDir, exclude: [".yarn/**", "**/node_modules/**"] })
     .filter((entry) => statSync(path.resolve(fixtureDir, entry)).isFile())
     .map((entry) => entry.replaceAll("\\", "/"))
-    .sort((left, right) => left.localeCompare(right));
+    .sort(codePointCompare);
+}
+
+function codePointCompare(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function isSafeVueGlob(pattern: string): boolean {

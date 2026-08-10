@@ -1,3 +1,5 @@
+import { codePointCompare } from "./sfc-equivalence/blocks.ts";
+
 type AstRecord = Record<string, unknown> & { type?: string };
 
 /** Sort only consecutive compiler-map properties proven reorder-safe. */
@@ -20,7 +22,7 @@ export function sortPurePropertyRuns(properties: unknown[], normalized: unknown[
         end - start,
         ...result
           .slice(start, end)
-          .sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
+          .sort((left, right) => codePointCompare(JSON.stringify(left), JSON.stringify(right))),
       );
     }
     start = end;

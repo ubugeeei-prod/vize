@@ -176,6 +176,10 @@ jobs:
             echo "::error title=Missing formatter evidence::Pug semantic oracle produced no artifact"
             glyph_exit_code=1
           fi
+          if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-sfc-dialect-equivalence.json" ]]; then
+            echo "::error title=Missing formatter evidence::SFC dialect oracle produced no artifact"
+            glyph_exit_code=1
+          fi
           exit "$glyph_exit_code"
 
       - name: Enforce typechecker baseline divergence

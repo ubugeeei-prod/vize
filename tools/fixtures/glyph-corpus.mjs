@@ -89,9 +89,30 @@ export function resolveGlyphLaunch() {
   for (const candidate of candidates) {
     if (!existsSync(candidate)) continue;
     const probe = spawnSync(candidate, ["--version"], { encoding: "utf8", timeout: 30_000 });
-    if (probe.status === 0) return { command: candidate, prefix: [] };
+    if (probe.status === 0) return { command: candidate, prefix: [], evidenceCommand: candidate };
   }
-  return { command: "cargo", prefix: ["run", "-q", "-p", "vize", "--"] };
+  const metadata = spawnSync("cargo", ["metadata", "--format-version", "1", "--no-deps"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  if (metadata.status !== 0) {
+    throw new Error(`cargo metadata failed while resolving formatter evidence: ${metadata.stderr}`);
+  }
+  const evidenceCommand = cargoEvidenceCommand(metadata.stdout);
+  return {
+    command: "cargo",
+    prefix: ["run", "-q", "-p", "vize", "--"],
+    evidenceCommand,
+  };
+}
+
+export function cargoEvidenceCommand(metadataJson, platform = process.platform) {
+  const targetDirectory = JSON.parse(metadataJson).target_directory;
+  if (typeof targetDirectory !== "string" || targetDirectory === "") {
+    throw new Error("cargo metadata omitted target_directory for formatter evidence");
+  }
+  return join(targetDirectory, "debug", platform === "win32" ? "vize.exe" : "vize");
 }
 
 /** Run a vize subcommand from `cwd`, returning the raw process result. */
