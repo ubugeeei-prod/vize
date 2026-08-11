@@ -248,6 +248,9 @@ impl FrameRenderer {
     }
 
     /// Compute layout, paint, flush, and measure one complete frame.
+    ///
+    /// Paint time includes clearing a frame retained after failed output. The
+    /// successful-frame path performs only a blank-state check before painting.
     pub fn render<W: Write>(
         &mut self,
         tree: &mut RenderTree,
@@ -260,6 +263,7 @@ impl FrameRenderer {
         let layout_time_ns = elapsed_ns(layout_started);
 
         let paint_started = Instant::now();
+        backend.prepare_retained_frame();
         let mut painter = Painter::with_wrap_scratch(
             backend.buffer_mut(),
             std::mem::take(&mut self.wrap_scratch),

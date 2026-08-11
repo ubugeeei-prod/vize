@@ -55,12 +55,14 @@ impl<W: Write> Backend<W> {
                 self.style_baseline_unknown = false;
                 std::mem::swap(&mut self.current, &mut self.previous);
                 self.current.clear();
+                self.current_frame_blank = true;
                 Ok(telemetry)
             }
             Err(error) => {
                 // A partially written frame may have left an arbitrary style
                 // applied, so the next frame must reestablish the baseline.
                 self.style_baseline_unknown = true;
+                self.current_frame_blank = false;
                 Err(error)
             }
         }

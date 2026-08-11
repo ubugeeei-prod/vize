@@ -120,6 +120,75 @@ fn output_failure_preserves_partial_timing_activity_and_retry_buffer() {
 }
 
 #[test]
+fn changed_tree_after_output_failure_erases_shortened_wide_content() {
+    let mut tree = text_tree("AB🙂");
+    let mut backend = Backend::with_writer(6, 1, FailOnceWriter::armed());
+    let mut renderer = FrameRenderer::new();
+
+    renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap_err();
+    set_root_text(&mut tree, "Z");
+
+    let recovered = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(recovered.changed_cells(), 1);
+
+    let unchanged = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(unchanged.changed_cells(), 0);
+}
+
+#[test]
+fn unchanged_tree_after_output_failure_repaints_the_complete_frame() {
+    let mut tree = text_tree("same");
+    let mut backend = Backend::with_writer(4, 1, FailOnceWriter::armed());
+    let mut renderer = FrameRenderer::new();
+
+    renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap_err();
+    let recovered = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+
+    assert_eq!(recovered.changed_cells(), 4);
+    assert!(!backend.writer().output.is_empty());
+}
+
+#[test]
+fn removed_styled_child_after_output_failure_leaves_no_stale_cells() {
+    let mut tree = RenderTree::new();
+    let root = tree.next_id();
+    tree.insert_root(RenderNode::box_node(root));
+    let child = tree.next_id();
+    let mut node = RenderNode::text_node(child, "stale");
+    node.style.width = Dimension::Points(5.0);
+    node.style.height = Dimension::Points(1.0);
+    node.appearance.fg = Some(crate::terminal::Color::Red);
+    node.appearance.bg = Some(crate::terminal::Color::Blue);
+    node.appearance.inverse = true;
+    node.appearance.underline = true;
+    tree.insert(node);
+    tree.add_child(root, child);
+    let mut backend = Backend::with_writer(8, 1, FailOnceWriter::armed());
+    let mut renderer = FrameRenderer::new();
+
+    renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap_err();
+    tree.remove_child(root, child);
+    tree.remove(child);
+
+    let recovered = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(recovered.changed_cells(), 0);
+}
+
+#[test]
 fn telemetry_serialization_is_versioned_and_uses_portable_units() {
     let mut tree = text_tree("A");
     let mut backend = Backend::with_writer(4, 1, io::sink());
@@ -152,4 +221,42 @@ impl Write for AlwaysFailWriter {
     fn flush(&mut self) -> io::Result<()> {
         Err(io::Error::other("injected frame failure"))
     }
+}
+
+#[derive(Debug, Default)]
+struct FailOnceWriter {
+    armed: bool,
+    output: Vec<u8>,
+}
+
+impl FailOnceWriter {
+    fn armed() -> Self {
+        Self {
+            armed: true,
+            output: Vec::new(),
+        }
+    }
+}
+
+impl Write for FailOnceWriter {
+    fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+        if std::mem::take(&mut self.armed) {
+            return Err(io::Error::other("injected first-frame failure"));
+        }
+        self.output.extend_from_slice(buffer);
+        Ok(buffer.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+fn set_root_text(tree: &mut RenderTree, text: &str) {
+    let root = tree.root().unwrap();
+    let node = tree.get_mut(root).unwrap();
+    let super::NodeKind::Text(content) = &mut node.kind else {
+        panic!("test tree root must be text");
+    };
+    content.text = text.into();
 }

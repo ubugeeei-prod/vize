@@ -62,6 +62,12 @@ pub struct Backend<W: Write = io::Stdout> {
     pub(super) current: Buffer,
     pub(super) previous: Buffer,
     pub(super) cursor: Cursor,
+    /// Whether `current` is known to contain only default empty cells.
+    ///
+    /// Successful flushes and resizes establish this invariant. Mutable buffer
+    /// access and failed output conservatively invalidate it, allowing retained
+    /// tree rendering to recover without scanning the viewport on normal frames.
+    current_frame_blank: bool,
     alternate_screen: bool,
     cursor_hidden: bool,
     raw_mode: bool,
@@ -96,6 +102,7 @@ impl<W: Write> Backend<W> {
             current: Buffer::new(width, height),
             previous: Buffer::new(width, height),
             cursor: Cursor::new(),
+            current_frame_blank: true,
             alternate_screen: false,
             cursor_hidden: false,
             raw_mode: false,
@@ -126,6 +133,7 @@ impl<W: Write> Backend<W> {
     /// Return the current frame buffer for modification.
     #[inline]
     pub fn buffer_mut(&mut self) -> &mut Buffer {
+        self.current_frame_blank = false;
         &mut self.current
     }
 
@@ -174,6 +182,7 @@ impl<W: Write> Backend<W> {
         self.height = height;
         self.current.resize(width, height);
         self.previous.resize(width, height);
+        self.current_frame_blank = true;
         true
     }
 
@@ -182,7 +191,23 @@ impl<W: Write> Backend<W> {
         execute!(&mut self.writer, Clear(ClearType::All))?;
         self.current.clear();
         self.previous.clear();
+        self.current_frame_blank = true;
         Ok(())
+    }
+
+    /// Establish a blank current buffer before painting a new retained tree.
+    ///
+    /// The current buffer is already blank after every successful frame, so the
+    /// normal path is one state check. A failed output retains its painted frame
+    /// for direct [`flush`](Self::flush) retries; [`FrameRenderer`] calls this
+    /// method before repainting because its tree may have changed meanwhile.
+    ///
+    /// [`FrameRenderer`]: crate::render::FrameRenderer
+    pub(crate) fn prepare_retained_frame(&mut self) {
+        if !self.current_frame_blank {
+            self.current.clear();
+            self.current_frame_blank = true;
+        }
     }
 }
 
