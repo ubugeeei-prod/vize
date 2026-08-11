@@ -46,6 +46,12 @@ mod terminal;
     clippy::disallowed_methods,
     clippy::disallowed_macros
 )]
+mod terminal_types;
+#[allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 mod types;
 
 pub use frame_output::FrameOutputTelemetryNapi;
@@ -66,7 +72,8 @@ pub use terminal::{
     clear_screen, flush_terminal, flush_terminal_measured, get_terminal_info, init_terminal,
     init_terminal_with_mouse, init_terminal_with_options, restore_terminal, sync_terminal_size,
 };
+pub use terminal_types::{TerminalInfoNapi, TerminalOptionsNapi};
 pub use types::{
     FlexStyleNapi, ImeStateNapi, InputEventNapi, LayoutResultNapi, ModifiersNapi, RenderNodeNapi,
-    StyleNapi, TerminalInfoNapi, TerminalOptionsNapi,
+    StyleNapi,
 };

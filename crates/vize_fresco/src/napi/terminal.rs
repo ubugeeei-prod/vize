@@ -11,7 +11,7 @@ use crate::terminal::{Backend, TerminalCapabilities, TerminalOptions};
 
 use super::{
     frame_output::FrameOutputTelemetryNapi,
-    types::{TerminalInfoNapi, TerminalOptionsNapi},
+    terminal_types::{TerminalInfoNapi, TerminalOptionsNapi},
 };
 
 // Global terminal backend (lazy initialized)
