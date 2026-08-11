@@ -14,6 +14,7 @@ const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
 const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
 
 interface WorkflowStep {
+  env?: Record<string, string>;
   run?: string;
   "working-directory"?: string;
 }
@@ -99,13 +100,35 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     job,
     /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
   );
-  assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture/);
-  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture/);
-  assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
+  const editorCommands = [
+    "cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture",
+    "cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture",
+    "cargo test -p vize_canon --test lsp_import_resolution -- --nocapture",
+  ];
+  const editorSteps = steps.filter((step) =>
+    editorCommands.every((command) => step.run?.includes(command)),
+  );
+  assert.equal(editorSteps.length, 1, "expected one exact editor backend step");
+  assert.equal(editorSteps[0].env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
+  assert.equal(editorSteps[0].env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
   const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
   const stressRun = steps[stressSteps[0]].run ?? "";
+  assert.equal(
+    [...stressRun.matchAll(/^\s*cargo test -p vize_maestro -- --quiet\s*$/gm)].length,
+    1,
+    "expected one direct Maestro command in the iteration loop",
+  );
+  assert.equal(
+    [...stressRun.matchAll(/^\s*(?:for|while|until)\b/gm)].length,
+    1,
+    "retry loops are forbidden in the lifecycle stress step",
+  );
+  assert.doesNotMatch(
+    stressRun,
+    /\bsleep\b|--test-threads(?:=|\s+)1|RUST_TEST_THREADS\s*=\s*1|\|\|\s*true|\bset\s+\+e\b|\b(?:retry|attempt)\b|(?:grep|rg).*\b(?:panic|fail)/i,
+    "stress step must not serialize, retry, sleep, ignore failures, or filter panics",
+  );
   const loopStart = stressRun.indexOf(MAESTRO_LOOP);
   assert.ok(loopStart >= 0, "Maestro stress step must run a 20-iteration loop");
   const maestroRun = stressRun.indexOf(MAESTRO_COMMAND);
