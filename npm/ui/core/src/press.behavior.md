@@ -44,7 +44,9 @@ exercised by `src/press*.test.ts`; compile-only API assertions live in
   activation intact without double invocation.
 - Native buttons, relevant input types, links with `href`, and summaries retain
   browser keyboard timing and default actions. Custom button-like hosts receive
-  Enter and Space behavior; custom link-like hosts receive Enter only.
+  Enter and Space behavior; custom link-like hosts receive Enter only. An `<a>`
+  or `<area>` without `href` has no native activation, so it follows
+  `keyboardBehavior` like any other custom host.
 - Space scrolling is canceled only for custom button semantics. The primitive
   does not cancel native key events whose default action creates the click.
 - Disabled state is evaluated at every phase. If it changes during an active
@@ -63,7 +65,11 @@ exercised by `src/press*.test.ts`; compile-only API assertions live in
   `shouldCancelOnPointerExit` to make the first exit terminal.
 - Window blur, hidden documents, pointer cancellation, drag start, manual
   cancellation, scope disposal, and disabled transitions all release document
-  listeners and restore transient text-selection state.
+  listeners and restore transient text-selection state. Only a blur of the window
+  itself cancels; focus moving between elements during a press does not.
+- `preventFocusOnPress` suppresses the `mousedown` focus default only for an
+  enabled host and a primary button, including in Pointer Events engines where
+  `mousedown` still owns that default.
 
 ## SSR, Vapor, styling, and tree shaking
 
