@@ -1,5 +1,10 @@
 #!/bin/sh
 wrapper_dir=$(pwd -P)
+for argument in "$@"; do
+  if [ "$argument" = "--api" ]; then
+    exec "$wrapper_dir/actual-tsgo" "$@"
+  fi
+done
 trace_dir="$wrapper_dir/protocol-traces"
 gate_port=0
 if [ -f "$trace_dir/shutdown-gate.port" ]; then

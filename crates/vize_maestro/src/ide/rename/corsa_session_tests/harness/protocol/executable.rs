@@ -75,6 +75,18 @@ mod tests {
             .output()
             .expect("execute wrapper");
         assert!(output.status.success(), "wrapper stderr: {output:?}");
+        let trace_count = fs::read_dir(&traces).expect("trace files").count();
+        let api = Command::new(&wrapper)
+            .arg("--api")
+            .current_dir(root.path())
+            .output()
+            .expect("execute API bypass");
+        assert!(api.status.success(), "API bypass stderr: {api:?}");
+        assert_eq!(
+            fs::read_dir(&traces).expect("trace files").count(),
+            trace_count,
+            "the editor byte proxy must not alter the MsgPack API transport"
+        );
         drop(dynamic_file);
     }
 
