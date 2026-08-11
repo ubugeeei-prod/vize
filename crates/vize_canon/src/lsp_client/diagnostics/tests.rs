@@ -1,7 +1,5 @@
-use super::{
-    CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported,
-    lsp_diagnostics_error_is_transient,
-};
+use super::{CorsaError, corsa_diagnostics_error_is_unsupported, diagnostics_api_is_unsupported};
+use crate::lsp_client::lsp_transport_error_is_transient;
 
 // Regression: a missing diagnostics scope on the corsa `ProjectSession`
 // must be detected through the typed `CorsaError::Unsupported` variant
@@ -35,14 +33,14 @@ fn recognizes_unsupported_diagnostics_api_errors() {
 
 #[test]
 fn recognizes_transient_lsp_transport_errors() {
-    assert!(lsp_diagnostics_error_is_transient(
+    assert!(lsp_transport_error_is_transient(
         "protocol error: EOF while parsing a string at line 1 column 150"
     ));
-    assert!(lsp_diagnostics_error_is_transient(
+    assert!(lsp_transport_error_is_transient(
         "Failed to request LSP diagnostics for file:///src/App.vue.ts: process is closed: jsonrpc reader"
     ));
-    assert!(lsp_diagnostics_error_is_transient("Broken pipe"));
-    assert!(!lsp_diagnostics_error_is_transient(
+    assert!(lsp_transport_error_is_transient("Broken pipe"));
+    assert!(!lsp_transport_error_is_transient(
         "TypeScript semantic diagnostics are unavailable"
     ));
 }
