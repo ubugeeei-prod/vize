@@ -15,10 +15,13 @@ mod output;
 #[cfg(test)]
 mod grapheme_tests;
 #[cfg(test)]
+mod lifecycle_failure_tests;
+#[cfg(test)]
 mod lifecycle_tests;
 #[cfg(test)]
 mod tests;
 
+pub use lifecycle::{TerminalCleanupFailure, TerminalMode, TerminalRestorationError};
 pub use output::FrameOutputTelemetry;
 
 /// Terminal mode switches used during backend initialization.

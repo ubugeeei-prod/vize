@@ -87,7 +87,7 @@ pub use render::{
 pub use terminal::{
     Backend, Buffer, CapabilityDecision, CapabilityReason, Cell, ColorPreference, ColorSupport,
     Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,
-    TerminalProfileOptions,
+    TerminalCleanupFailure, TerminalMode, TerminalProfileOptions, TerminalRestorationError,
 };
 pub use text::{TextSegment, TextWidth, TextWrap};
 

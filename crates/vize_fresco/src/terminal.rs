@@ -12,7 +12,10 @@ mod capabilities;
 mod cell;
 mod cursor;
 
-pub use backend::{Backend, FrameOutputTelemetry, TerminalOptions};
+pub use backend::{
+    Backend, FrameOutputTelemetry, TerminalCleanupFailure, TerminalMode, TerminalOptions,
+    TerminalRestorationError,
+};
 pub use buffer::Buffer;
 pub use capabilities::{
     CapabilityDecision, CapabilityReason, ColorPreference, ColorSupport, FeaturePreference,
