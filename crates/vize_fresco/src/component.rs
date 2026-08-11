@@ -16,7 +16,9 @@ mod virtual_list_tests;
 
 pub use box_node::BoxNode;
 pub use diagnostic_workspace::{
-    DiagnosticWorkspaceFocus, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
+    DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError, DiagnosticWorkspaceAction,
+    DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome, DiagnosticWorkspaceFocus,
+    DiagnosticWorkspaceKeymap, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
     DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState,
 };
 pub use input_node::InputNode;

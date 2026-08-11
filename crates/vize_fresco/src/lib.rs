@@ -66,15 +66,18 @@ pub mod napi;
 
 // Re-exports for convenience
 pub use component::{
-    BoxNode, DiagnosticWorkspaceFocus, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
-    DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState, InputNode,
-    TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+    BoxNode, DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError,
+    DiagnosticWorkspaceAction, DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome,
+    DiagnosticWorkspaceFocus, DiagnosticWorkspaceKeymap, DiagnosticWorkspaceLayout,
+    DiagnosticWorkspaceMode, DiagnosticWorkspaceOptions, DiagnosticWorkspacePane,
+    DiagnosticWorkspaceState, InputNode, TextNode, VirtualListNavigation, VirtualListState,
+    VirtualWindow,
 };
 pub use headless::{
     AnnouncementPoliteness, HeadlessAnnouncement, HeadlessPresentation, HeadlessRenderError,
     HeadlessRenderer, HeadlessSemanticNode, HeadlessSnapshot, SemanticRole, SemanticState,
 };
-pub use input::{Event, ImeState, KeyEvent, MouseEvent};
+pub use input::{Event, ImeState, Key, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
 pub use render::{RenderNode, RenderTree};
 pub use terminal::{Backend, Buffer, Cell, Cursor, FrameOutputTelemetry};

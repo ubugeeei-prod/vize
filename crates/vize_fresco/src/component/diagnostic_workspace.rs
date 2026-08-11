@@ -1,12 +1,22 @@
 //! Semantic state for large master-detail diagnostic workspaces.
 
+mod command;
+mod keymap;
 mod layout;
 
+#[cfg(test)]
+mod command_tests;
 #[cfg(test)]
 mod tests;
 
 use super::{VirtualListNavigation, VirtualListState, VirtualWindow};
 
+pub use command::{
+    DiagnosticWorkspaceAction, DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome,
+};
+pub use keymap::{
+    DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError, DiagnosticWorkspaceKeymap,
+};
 pub use layout::{
     DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode, DiagnosticWorkspaceOptions,
     DiagnosticWorkspacePane,

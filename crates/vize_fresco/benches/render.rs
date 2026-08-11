@@ -6,11 +6,13 @@ use std::io;
 use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
 use vize_fresco::component::{
-    BoxNode, DiagnosticWorkspaceState, TextNode, VirtualListNavigation, VirtualListState,
+    BoxNode, DiagnosticWorkspaceKeymap, DiagnosticWorkspaceState, TextNode, VirtualListNavigation,
+    VirtualListState,
 };
 use vize_fresco::headless::{
     HeadlessPresentation, HeadlessRenderer, HeadlessSemanticNode, SemanticRole,
 };
+use vize_fresco::input::{Key, KeyEvent};
 use vize_fresco::layout::{Dimension, FlexStyle, LayoutEngine};
 use vize_fresco::render::RenderTree;
 use vize_fresco::terminal::{Backend, Buffer, Style};
@@ -247,6 +249,22 @@ fn benchmark_headless_snapshot(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_diagnostic_keymap(c: &mut Criterion) {
+    let keymap = DiagnosticWorkspaceKeymap::default();
+    let navigation = KeyEvent::key(Key::Down);
+    let action = KeyEvent::char('/');
+    let mut group = c.benchmark_group("diagnostic_keymap");
+
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("resolve_navigation", |b| {
+        b.iter(|| black_box(keymap.resolve(black_box(&navigation))));
+    });
+    group.bench_function("resolve_action", |b| {
+        b.iter(|| black_box(keymap.resolve(black_box(&action))));
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -258,5 +276,6 @@ criterion_group!(
     benchmark_injected_backend_output,
     benchmark_diagnostic_workspace,
     benchmark_headless_snapshot,
+    benchmark_diagnostic_keymap,
 );
 criterion_main!(benches);
