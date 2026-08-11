@@ -31,6 +31,9 @@ Options:
       --exit-zero
           Return success even when the report contains blocking findings. Defaults to false
 
+      --tui
+          Explore the report in the interactive Fresco terminal workspace. Disabled by default
+
       --public-sfc
           Enforce the canonical public component SFC contract. Defaults to false
 

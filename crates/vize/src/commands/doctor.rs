@@ -5,6 +5,11 @@ mod canonical_sfc;
 mod discovery;
 mod filters;
 mod output;
+mod tui;
+
+#[cfg(feature = "profiling")]
+#[doc(hidden)]
+pub use tui::DoctorTuiBenchmark;
 
 #[cfg(test)]
 mod tests;
@@ -53,6 +58,10 @@ pub struct DoctorArgs {
     /// Return success even when the report contains blocking findings. Defaults to false.
     #[arg(long)]
     pub exit_zero: bool,
+
+    /// Explore the report in the interactive Fresco terminal workspace. Disabled by default.
+    #[arg(long)]
+    pub tui: bool,
 
     /// Enforce the canonical public component SFC contract. Defaults to false.
     #[arg(long)]
@@ -135,6 +144,7 @@ enum DoctorError {
     SarifSource(SarifSourceError),
     Filter(DoctorFilterError),
     Report(ReporterFailure),
+    Tui(tui::DoctorTuiError),
     Write(io::Error),
 }
 
@@ -197,6 +207,7 @@ impl fmt::Display for DoctorError {
             Self::SarifSource(error) => write!(formatter, "cannot prepare SARIF source: {error}"),
             Self::Filter(error) => write!(formatter, "cannot apply finding filters: {error}"),
             Self::Report(error) => write!(formatter, "cannot render health report: {error}"),
+            Self::Tui(error) => write!(formatter, "cannot run interactive health report: {error}"),
             Self::Write(error) => write!(formatter, "cannot write health report: {error}"),
         }
     }
@@ -211,15 +222,38 @@ impl From<ApplicationAnalysisError> for DoctorError {
 struct DoctorOutcome {
     report: DoctorReport,
     sources: Vec<DoctorSource>,
+    root: PathBuf,
     format: DoctorFormat,
     exit_zero: bool,
 }
 
 pub fn run(args: DoctorArgs) {
+    let capabilities = if args.tui {
+        match tui::validate_request(args.format) {
+            Ok(capabilities) => Some(capabilities),
+            Err(error) => {
+                eprintln!("vize doctor: {}", DoctorError::Tui(error));
+                std::process::exit(2);
+            }
+        }
+    } else {
+        None
+    };
     match execute(args) {
         Ok(outcome) => {
             let blocking = outcome.report.summary().has_blocking_errors;
-            if let Err(error) = write_report(&outcome.report, outcome.format, &outcome.sources) {
+            let result = if let Some(capabilities) = capabilities {
+                tui::run(
+                    &outcome.report,
+                    &outcome.sources,
+                    &outcome.root,
+                    capabilities,
+                )
+                .map_err(DoctorError::Tui)
+            } else {
+                write_report(&outcome.report, outcome.format, &outcome.sources)
+            };
+            if let Err(error) = result {
                 eprintln!("vize doctor: {error}");
                 std::process::exit(2);
             }
@@ -253,6 +287,7 @@ fn execute(args: DoctorArgs) -> Result<DoctorOutcome, DoctorError> {
     Ok(DoctorOutcome {
         report,
         sources,
+        root,
         format: args.format,
         exit_zero: args.exit_zero,
     })

@@ -1,0 +1,249 @@
+//! Interactive Fresco presentation for normalized Doctor reports.
+
+#[cfg(feature = "profiling")]
+mod benchmark;
+mod model;
+mod render;
+
+#[cfg(test)]
+mod tests;
+
+use std::{
+    env, fmt,
+    io::{self, IsTerminal},
+    path::Path,
+    process::Command,
+};
+
+use vize_carton::{String, ToCompactString, cstr};
+use vize_doctor::DoctorReport;
+use vize_fresco::{
+    Backend, Event, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
+    input::read_event, terminal::TerminalOptions,
+};
+
+use super::{DoctorFormat, DoctorSource};
+use model::{DoctorTuiModel, InteractionOutcome};
+use render::render_frame;
+
+const TERMINAL_OPTIONS: TerminalOptions = TerminalOptions {
+    raw_mode: true,
+    alternate_screen: true,
+    mouse_capture: false,
+    bracketed_paste: true,
+    hide_cursor: true,
+};
+
+#[cfg(feature = "profiling")]
+pub use benchmark::DoctorTuiBenchmark;
+
+/// Failure to enter, drive, or restore the interactive Doctor workspace.
+#[derive(Debug)]
+pub(super) enum DoctorTuiError {
+    InvalidFormat,
+    NonInteractive(&'static str),
+    Io(io::Error),
+    Presentation(vize_fresco::DiagnosticPresentationError),
+}
+
+impl fmt::Display for DoctorTuiError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidFormat => {
+                formatter.write_str("--tui cannot be combined with --format json or sarif")
+            }
+            Self::NonInteractive(reason) => write!(
+                formatter,
+                "--tui requires an interactive stdin and stdout ({reason})"
+            ),
+            Self::Io(error) => write!(formatter, "terminal operation failed: {error}"),
+            Self::Presentation(error) => write!(formatter, "invalid diagnostic view: {error}"),
+        }
+    }
+}
+
+impl std::error::Error for DoctorTuiError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Io(error) => Some(error),
+            Self::Presentation(error) => Some(error),
+            Self::InvalidFormat | Self::NonInteractive(_) => None,
+        }
+    }
+}
+
+impl From<io::Error> for DoctorTuiError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
+impl From<vize_fresco::DiagnosticPresentationError> for DoctorTuiError {
+    fn from(error: vize_fresco::DiagnosticPresentationError) -> Self {
+        Self::Presentation(error)
+    }
+}
+
+pub(super) fn validate_request(
+    format: DoctorFormat,
+) -> Result<TerminalCapabilities, DoctorTuiError> {
+    if format != DoctorFormat::Text {
+        return Err(DoctorTuiError::InvalidFormat);
+    }
+    let capabilities = TerminalCapabilities::detect_stdout();
+    if !io::stdin().is_terminal() {
+        return Err(DoctorTuiError::NonInteractive("stdin is redirected"));
+    }
+    if !capabilities.interactive().value() {
+        return Err(DoctorTuiError::NonInteractive(
+            capabilities.interactive().reason().as_str(),
+        ));
+    }
+    Ok(capabilities)
+}
+
+pub(super) fn run(
+    report: &DoctorReport,
+    sources: &[DoctorSource],
+    root: &Path,
+    mut capabilities: TerminalCapabilities,
+) -> Result<(), DoctorTuiError> {
+    let mut backend = Backend::new()?;
+    backend.init_with_options(TERMINAL_OPTIONS)?;
+    backend.clear()?;
+    backend.cursor_mut().hide();
+    let mut model = DoctorTuiModel::new(report, backend.width(), backend.height());
+
+    let session = run_loop(&mut backend, &mut model, sources, root, &mut capabilities);
+    let restoration = backend.restore();
+    match (session, restoration) {
+        (Err(error), _) => Err(error),
+        (Ok(()), Err(error)) => Err(error.into()),
+        (Ok(()), Ok(())) => Ok(()),
+    }
+}
+
+fn run_loop(
+    backend: &mut Backend,
+    model: &mut DoctorTuiModel<'_>,
+    sources: &[DoctorSource],
+    root: &Path,
+    capabilities: &mut TerminalCapabilities,
+) -> Result<(), DoctorTuiError> {
+    loop {
+        render_frame(backend.buffer_mut(), model, sources, *capabilities)?;
+        model.place_cursor(backend.cursor_mut());
+        backend.flush_measured()?;
+
+        let outcome = match read_event()? {
+            Event::Resize(width, height) => {
+                backend.resize(width, height);
+                model.resize(width, height);
+                *capabilities = capabilities_for(width, height);
+                InteractionOutcome::Changed
+            }
+            Event::Paste(text) => model.handle_paste(&text),
+            Event::Key(event) => model.handle_key(&event),
+            _ => InteractionOutcome::Boundary,
+        };
+        match outcome {
+            InteractionOutcome::Exit => return Ok(()),
+            InteractionOutcome::OpenSource => {
+                open_selected_source(backend, model, sources, root)?;
+            }
+            InteractionOutcome::Changed | InteractionOutcome::Boundary => {}
+        }
+    }
+}
+
+fn capabilities_for(width: u16, height: u16) -> TerminalCapabilities {
+    TerminalCapabilities::resolve(
+        &TerminalCapabilityProbe::from_process(width, height, io::stdout().is_terminal()),
+        TerminalProfileOptions::default(),
+    )
+}
+
+fn open_selected_source(
+    backend: &mut Backend,
+    model: &mut DoctorTuiModel<'_>,
+    sources: &[DoctorSource],
+    root: &Path,
+) -> Result<(), DoctorTuiError> {
+    backend.restore()?;
+    let result = launch_editor(model, sources, root);
+    backend.init_with_options(TERMINAL_OPTIONS)?;
+    backend.clear()?;
+    match result {
+        Ok(status) | Err(status) => model.set_status(status),
+    }
+    Ok(())
+}
+
+fn launch_editor(
+    model: &DoctorTuiModel<'_>,
+    sources: &[DoctorSource],
+    root: &Path,
+) -> Result<&'static str, &'static str> {
+    let Some(finding) = model.selected_finding() else {
+        return Err("No finding is selected");
+    };
+    let editor = env::var("VISUAL")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| {
+            env::var("EDITOR")
+                .ok()
+                .filter(|value| !value.trim().is_empty())
+        })
+        .ok_or("Set VISUAL or EDITOR to open source")?;
+    let (line, column) = model.source_position(sources);
+    let path = root.join(finding.primary.path.as_str());
+    let mut command = editor_command(&editor, &path, line, column)?;
+    let status = command
+        .status()
+        .map_err(|_| "Editor could not be started")?;
+    if status.success() {
+        Ok("Returned from editor")
+    } else {
+        Err("Editor exited unsuccessfully")
+    }
+}
+
+fn editor_command(
+    editor: &str,
+    path: &Path,
+    line: u64,
+    column: u64,
+) -> Result<Command, &'static str> {
+    let mut parts = editor.split_whitespace();
+    let executable = parts.next().ok_or("VISUAL or EDITOR is empty")?;
+    let program = Path::new(executable)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or(executable);
+    let mut command = Command::new(executable);
+    command.args(parts);
+    match program {
+        "code" | "code-insiders" | "codium" => {
+            let target = path_with_position(path, line, column);
+            command.arg("--goto").arg(target.as_str());
+        }
+        "idea" | "idea64" => {
+            let line = line.to_compact_string();
+            command.arg("--line").arg(line.as_str()).arg(path);
+        }
+        _ => {
+            let line = line_argument(line);
+            command.arg(line.as_str()).arg(path);
+        }
+    }
+    Ok(command)
+}
+
+fn line_argument(line: u64) -> String {
+    cstr!("+{line}")
+}
+
+fn path_with_position(path: &Path, line: u64, column: u64) -> String {
+    cstr!("{}:{line}:{column}", path.display())
+}

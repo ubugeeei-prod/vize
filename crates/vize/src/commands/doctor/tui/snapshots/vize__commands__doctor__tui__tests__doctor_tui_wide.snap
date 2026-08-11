@@ -1,0 +1,22 @@
+---
+source: crates/vize/src/commands/doctor/tui/tests.rs
+expression: screen
+---
+VIZE DOCTOR  ✓ Score: 95 / 100
+category=all  severity=all  visible=2/2  2 matching finding(s)
+─j/k navigate  Tab focus  c/C category  s/S severity  / search  ? help  q quit──────────────────────
+› ✕ error VIZE_TEST_ERROR — Mutable s...│VIZE_TEST_ERROR — Mutable state crosses a contract
+  ▲ warning VIZE_TEST_A11Y — Accessib...│✕ Severity: error
+                                        │✓ Confidence: high
+                                        │✕ Impact: high
+                                        │• Location: src/Parent.vue:2:10
+                                        │Category: correctness  Penalty: -15
+                                        │A detailed explanation with a concrete next action.
+                                        │— Evidence —
+                                        │ℹ Evidence: reactivity: Child destructures the reactive
+                                        │prop
+                                        │ℹ Evidence: component: Parent passes mutable state
+                                        │— Fix —
+                                        │• Fix safety: unavailable
+                                        │No automatic fix is available for this finding.
+                                        │— Analysis —

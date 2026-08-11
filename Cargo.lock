@@ -3595,6 +3595,7 @@ dependencies = [
  "vize_croquis_cf",
  "vize_curator",
  "vize_doctor",
+ "vize_fresco",
  "vize_glyph",
  "vize_maestro",
  "vize_musea",
@@ -3743,6 +3744,16 @@ dependencies = [
  "vize_atelier_dom",
  "vize_carton",
  "vize_croquis",
+]
+
+[[package]]
+name = "vize_benchmarks"
+version = "0.347.7"
+dependencies = [
+ "criterion",
+ "vize",
+ "vize_doctor",
+ "vize_fresco",
 ]
 
 [[package]]

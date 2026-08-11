@@ -1,0 +1,9 @@
+---
+source: crates/vize/src/commands/doctor/tui/tests.rs
+expression: screen_text(&buffer)
+---
+VIZE DOCTOR  ✓ Score: 95 / 100
+category=all  severity=all  visible=2/2  2 matc...
+─j/k navigate  Tab focus  c/C category  s/S se...─
+› ✕ error VIZE_TEST_ERROR — Mutable state cross...
+  ▲ warning VIZE_TEST_A11Y — Accessibility name...
