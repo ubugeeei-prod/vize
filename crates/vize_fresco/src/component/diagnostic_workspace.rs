@@ -3,9 +3,14 @@
 mod command;
 mod keymap;
 mod layout;
+mod presentation;
 
 #[cfg(test)]
 mod command_tests;
+#[cfg(test)]
+mod presentation_tests;
+#[cfg(test)]
+mod presentation_wire_tests;
 #[cfg(test)]
 mod tests;
 
@@ -20,6 +25,10 @@ pub use keymap::{
 pub use layout::{
     DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode, DiagnosticWorkspaceOptions,
     DiagnosticWorkspacePane,
+};
+pub use presentation::{
+    DiagnosticPresentation, DiagnosticPresentationError, DiagnosticPresentationKind,
+    DiagnosticPresentationProfile, DiagnosticTone,
 };
 
 /// Semantic keyboard focus within a diagnostic master-detail workspace.

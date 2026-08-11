@@ -67,11 +67,12 @@ pub mod napi;
 // Re-exports for convenience
 pub use component::{
     BoxNode, DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError,
-    DiagnosticWorkspaceAction, DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome,
-    DiagnosticWorkspaceFocus, DiagnosticWorkspaceKeymap, DiagnosticWorkspaceLayout,
-    DiagnosticWorkspaceMode, DiagnosticWorkspaceOptions, DiagnosticWorkspacePane,
-    DiagnosticWorkspaceState, InputNode, TextNode, VirtualListNavigation, VirtualListState,
-    VirtualWindow,
+    DiagnosticPresentation, DiagnosticPresentationError, DiagnosticPresentationKind,
+    DiagnosticPresentationProfile, DiagnosticTone, DiagnosticWorkspaceAction,
+    DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome, DiagnosticWorkspaceFocus,
+    DiagnosticWorkspaceKeymap, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
+    DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState, InputNode,
+    TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
 };
 pub use headless::{
     AnnouncementPoliteness, HeadlessAnnouncement, HeadlessPresentation, HeadlessRenderError,

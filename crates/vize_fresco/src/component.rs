@@ -16,10 +16,12 @@ mod virtual_list_tests;
 
 pub use box_node::BoxNode;
 pub use diagnostic_workspace::{
-    DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError, DiagnosticWorkspaceAction,
-    DiagnosticWorkspaceCommand, DiagnosticWorkspaceCommandOutcome, DiagnosticWorkspaceFocus,
-    DiagnosticWorkspaceKeymap, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
-    DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState,
+    DiagnosticKeyBinding, DiagnosticKeyChord, DiagnosticKeymapError, DiagnosticPresentation,
+    DiagnosticPresentationError, DiagnosticPresentationKind, DiagnosticPresentationProfile,
+    DiagnosticTone, DiagnosticWorkspaceAction, DiagnosticWorkspaceCommand,
+    DiagnosticWorkspaceCommandOutcome, DiagnosticWorkspaceFocus, DiagnosticWorkspaceKeymap,
+    DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode, DiagnosticWorkspaceOptions,
+    DiagnosticWorkspacePane, DiagnosticWorkspaceState,
 };
 pub use input_node::InputNode;
 pub use text_node::TextNode;

@@ -6,8 +6,9 @@ use std::io;
 use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
 use vize_fresco::component::{
-    BoxNode, DiagnosticWorkspaceKeymap, DiagnosticWorkspaceState, TextNode, VirtualListNavigation,
-    VirtualListState,
+    BoxNode, DiagnosticPresentation, DiagnosticPresentationKind, DiagnosticPresentationProfile,
+    DiagnosticTone, DiagnosticWorkspaceKeymap, DiagnosticWorkspaceState, TextNode,
+    VirtualListNavigation, VirtualListState,
 };
 use vize_fresco::headless::{
     HeadlessPresentation, HeadlessRenderer, HeadlessSemanticNode, SemanticRole,
@@ -265,6 +266,30 @@ fn benchmark_diagnostic_keymap(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_diagnostic_presentation(c: &mut Criterion) {
+    let presentation = DiagnosticPresentation::new(
+        DiagnosticPresentationKind::Severity,
+        "Critical",
+        DiagnosticTone::Negative,
+    )
+    .unwrap();
+    let wide = DiagnosticPresentationProfile::unicode();
+    let narrow = DiagnosticPresentationProfile::ascii().with_compact(true);
+    let mut group = c.benchmark_group("diagnostic_presentation");
+
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("semantic_node", |b| {
+        b.iter(|| black_box(presentation.semantic_node(black_box(42))));
+    });
+    group.bench_function("wide_text", |b| {
+        b.iter(|| black_box(presentation.text(black_box(wide))));
+    });
+    group.bench_function("narrow_ascii_text", |b| {
+        b.iter(|| black_box(presentation.text(black_box(narrow))));
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -277,5 +302,6 @@ criterion_group!(
     benchmark_diagnostic_workspace,
     benchmark_headless_snapshot,
     benchmark_diagnostic_keymap,
+    benchmark_diagnostic_presentation,
 );
 criterion_main!(benches);
