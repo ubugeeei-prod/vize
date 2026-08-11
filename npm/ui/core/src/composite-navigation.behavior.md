@@ -16,7 +16,7 @@ activation, and styling remain consumer-owned.
 | Arrow keys           | Orientation gates horizontal and vertical arrows. Horizontal movement reverses under reactive RTL direction.            |
 | Boundaries           | `loop` affects arrows only; Home, End, PageUp, and PageDown remain deterministic.                                       |
 | Paging               | `pageSize` counts navigable items, never disabled records, and clamps at collection boundaries.                         |
-| Editable descendants | Keyboard events originating in inputs, selects, textareas, or contenteditable descendants are not consumed.             |
+| Editable descendants | Keyboard events from text-entry inputs, selects, textareas, or contenteditable descendants are not consumed.            |
 | Modified input       | Composition and Alt, Control, or Meta shortcuts are not interpreted as navigation.                                      |
 | Typeahead            | Optional Unicode-aware typeahead commits into the same registry state and synchronizes the configured focus strategy.   |
 | Pointer and focus    | Item-owned pointerdown and focus handlers update logical state without duplicating an unchanged transition.             |
@@ -26,6 +26,6 @@ activation, and styling remain consumer-owned.
 | Callback timing      | Logical state and DOM representation commit before `onNavigate`; snapshots are immutable and retain the native event.   |
 | Failure atomicity    | Focus, reveal, and callback failures are surfaced together after committed state remains observable.                    |
 | Reactivity           | Orientation, direction, loop, page size, disablement, and typeahead controls are read at event time.                    |
-| Disposal             | Disposal is idempotent, releases typeahead timers and handler caches, and does not dispose the caller-owned registry.   |
+| Disposal             | Disposal is idempotent, releases timers and handler caches, makes container handlers inert, and spares the registry.    |
 | Styling              | The module emits no CSS. Consumers freely apply classes, data attributes, CSS, or design-token presets.                 |
 | Tree shaking         | Root and subpath consumers produce identical JavaScript, retain no unrelated family signatures, and emit zero CSS.      |

@@ -52,8 +52,8 @@ function tokenIncludes(value: string | null, token: string): boolean {
 
 function relatedElement(host: Element, id: string): Element | null {
   const root = host.getRootNode() as { getElementById?: (value: string) => Element | null };
-  const fromRoot = typeof root.getElementById === "function" ? root.getElementById(id) : null;
-  return fromRoot ?? host.ownerDocument.getElementById(id);
+  if (typeof root.getElementById === "function") return root.getElementById(id);
+  return host.ownerDocument.getElementById(id);
 }
 
 export function validateActiveDescendant<Key extends CollectionKey, Value>(

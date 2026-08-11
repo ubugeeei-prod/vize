@@ -152,18 +152,19 @@ export function validateOptions<Key extends CollectionKey, Value>(
   return strategy;
 }
 
+const nonTextInputType = /^(?:button|checkbox|color|file|image|radio|range|reset|submit)$/iu;
+
 export function isEditableDescendant(event: KeyboardEvent): boolean {
   const path = typeof event.composedPath === "function" ? event.composedPath() : [event.target];
   for (const candidate of path) {
     if (candidate === event.currentTarget) break;
-    const target = candidate as Partial<HTMLElement> | null;
+    const target = candidate as Partial<HTMLInputElement> | null;
     const name = target?.localName;
-    if (
-      name === "input" ||
-      name === "select" ||
-      name === "textarea" ||
-      target?.isContentEditable === true
-    ) {
+    if (name === "input") {
+      if (!nonTextInputType.test(target?.type ?? "text")) return true;
+      continue;
+    }
+    if (name === "select" || name === "textarea" || target?.isContentEditable === true) {
       return true;
     }
   }

@@ -104,12 +104,45 @@ test("item handlers are stable, become inert after disposal, and leave registry 
   const second = harness.controller.getItemProps("alpha");
   assert.equal(first.onFocus, second.onFocus);
   assert.equal(first.onPointerdown, second.onPointerdown);
+  const containerProps = harness.controller.getContainerProps();
   harness.controller.dispose();
   first.onFocus(new FocusEvent("focus"));
+  assert.equal(harness.registry.activeKey.value, null);
+  assert.doesNotThrow(() => containerProps.onFocus(new FocusEvent("focus")));
+  assert.doesNotThrow(() =>
+    containerProps.onKeydown(new KeyboardEvent("keydown", { key: "Home" })),
+  );
   assert.equal(harness.registry.activeKey.value, null);
   assert.doesNotThrow(() => harness.registry.setActiveKey("alpha"));
   harness.registry.dispose();
   harness.container.remove();
+});
+
+test("handler caching drops entries for keys the registry no longer holds", () => {
+  const harness = mountComposite();
+  const element = document.createElement("button");
+  harness.container.append(element);
+  const delta = harness.registry.register({ key: "delta", value: { label: "Delta" }, element });
+  const cached = harness.controller.getItemProps("delta");
+  delta.unregister();
+  const other = document.createElement("button");
+  harness.container.append(other);
+  harness.registry.register({ key: "echo", value: { label: "Echo" }, element: other });
+  harness.controller.getItemProps("echo");
+  harness.registry.register({ key: "delta", value: { label: "Delta" }, element });
+  assert.notEqual(harness.controller.getItemProps("delta").onFocus, cached.onFocus);
+  harness.unmount();
+});
+
+test("non-text input descendants keep composite keyboard navigation", () => {
+  const harness = mountComposite();
+  harness.registry.setActiveKey("alpha");
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  harness.container.append(checkbox);
+  assert.equal(keyboard("ArrowDown", {}, checkbox).defaultPrevented, true);
+  assert.equal(harness.controller.activeKey.value, "bravo");
+  harness.unmount();
 });
 
 test("error aggregation retains every failure without native AggregateError", () => {

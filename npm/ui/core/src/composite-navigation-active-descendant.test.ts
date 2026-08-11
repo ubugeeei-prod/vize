@@ -178,3 +178,28 @@ test("controlled popup relationships resolve inside the host shadow root", () =>
   harness.unmount();
   shell.remove();
 });
+
+test("controlled popup relationships never resolve across the shadow boundary", () => {
+  const harness = mountComposite({
+    focusStrategy: "active-descendant",
+    getItemId: ({ key }) => `item-${key}`,
+  });
+  const shell = document.createElement("div");
+  const shadow = shell.attachShadow({ mode: "open" });
+  const popup = document.createElement("div");
+  popup.id = "document-popup";
+  for (const element of harness.elements.values()) popup.append(element);
+  shadow.append(harness.container);
+  document.body.append(shell, popup);
+  harness.container.setAttribute("role", "combobox");
+  harness.container.setAttribute("aria-controls", popup.id);
+  setDynamicProps(harness);
+  keyboard("Shift", {}, harness.container);
+  assert.throws(
+    () => harness.controller.navigate("next"),
+    /VIZE_UI_COMPOSITE_NAVIGATION_RELATIONSHIP/,
+  );
+  harness.unmount();
+  shell.remove();
+  popup.remove();
+});

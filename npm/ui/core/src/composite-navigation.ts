@@ -210,6 +210,9 @@ export function createCompositeNavigation<Key extends CollectionKey, Value>(
   const handlersFor = (key: Key): ItemHandlers => {
     const cached = itemHandlers.get(key);
     if (cached) return cached;
+    for (const cachedKey of itemHandlers.keys()) {
+      if (!registry.getItem(cachedKey)) itemHandlers.delete(cachedKey);
+    }
     const handlers = Object.freeze({
       onFocus: (event: FocusEvent) => activateItem(key, event),
       onPointerdown: (event: PointerEvent) => activateItem(key, event),
@@ -219,6 +222,7 @@ export function createCompositeNavigation<Key extends CollectionKey, Value>(
   };
 
   const onFocus = (event: FocusEvent): void => {
+    if (disposed) return;
     container = eventElement(event.currentTarget);
     if (
       strategy !== "active-descendant" ||
@@ -240,6 +244,7 @@ export function createCompositeNavigation<Key extends CollectionKey, Value>(
     }
   };
   const onKeydown = (event: KeyboardEvent): void => {
+    if (disposed) return;
     container = eventElement(event.currentTarget);
     if (
       event.defaultPrevented ||

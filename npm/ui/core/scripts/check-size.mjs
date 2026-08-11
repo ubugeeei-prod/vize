@@ -9,7 +9,7 @@ const budgets = new Map([
   ["button.mjs", 1_600],
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
-  ["composite-navigation.mjs", 5_225],
+  ["composite-navigation.mjs", 5_355],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
   ["id.mjs", 2_300],

@@ -117,7 +117,7 @@ const componentCases = [
   {
     family: "composite-navigation",
     exportName: "createCompositeNavigation",
-    maximumJavaScriptGzipBytes: 3_800,
+    maximumJavaScriptGzipBytes: 3_900,
     maximumCssGzipBytes: 0,
   },
   {
