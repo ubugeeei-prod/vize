@@ -1,4 +1,5 @@
 use super::*;
+use vize_carton::cstr;
 
 #[test]
 fn package_shadow_references_identity_map_an_authored_typescript_barrel() {
@@ -85,15 +86,13 @@ void value
         let mut raw_identity_references = Vec::new();
         for identity in &identities {
             raw_identity_references.extend(
-                bridge
-                    .references(
-                        &identity.request_uri,
-                        identity.line,
-                        identity.character,
-                        true,
-                    )
-                    .await
-                    .unwrap(),
+                references_tolerating_transient_eof(
+                    &bridge,
+                    &identity.request_uri,
+                    identity.line,
+                    identity.character,
+                )
+                .await,
             );
         }
         assert!(
@@ -148,6 +147,47 @@ void value
             assert_eq!(authored_text(source, location), "shared");
         }
     });
+}
+
+/// Retries allowed for a raw native probe before the transport error is real.
+const TRANSIENT_REFERENCE_RETRIES: usize = 3;
+
+/// The editor LSP transport can drop a response mid-frame when many bridge
+/// sessions churn concurrently, surfacing as `protocol error: EOF while
+/// parsing`. `vize_canon` already treats that signature as transient and
+/// retries it on the diagnostics path, and the production reference fan-out
+/// degrades through `.ok()?` rather than failing. This raw probe asserts on
+/// native shadow behavior, not on transport reliability, so it retries too
+/// instead of turning one dropped frame into a conformance failure (#4137).
+async fn references_tolerating_transient_eof(
+    bridge: &CorsaBridge,
+    request_uri: &str,
+    line: u32,
+    character: u32,
+) -> Vec<vize_canon::LspLocation> {
+    let mut attempts = 0;
+    loop {
+        match bridge.references(request_uri, line, character, true).await {
+            Ok(locations) => return locations,
+            Err(error)
+                if attempts < TRANSIENT_REFERENCE_RETRIES
+                    && reference_error_is_transient(&error) =>
+            {
+                attempts += 1;
+                std::thread::sleep(std::time::Duration::from_millis(25));
+            }
+            Err(error) => panic!("native shadow references failed: {error}"),
+        }
+    }
+}
+
+fn reference_error_is_transient(error: &impl std::fmt::Display) -> bool {
+    let rendered = cstr!("{error}");
+    rendered.contains("protocol error: EOF")
+        || rendered.contains("EOF while parsing")
+        || rendered.contains("process is closed: jsonrpc reader")
+        || rendered.contains("Broken pipe")
+        || rendered.contains("broken pipe")
 }
 
 fn same_file(left: &Url, right: &Url) -> bool {
