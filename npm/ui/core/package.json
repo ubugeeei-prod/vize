@@ -69,6 +69,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./focus": {
+      "types": "./dist/focus.d.mts",
+      "import": "./dist/focus.mjs",
+      "default": "./dist/focus.mjs"
+    },
     "./hover": {
       "types": "./dist/hover.d.mts",
       "import": "./dist/hover.mjs",

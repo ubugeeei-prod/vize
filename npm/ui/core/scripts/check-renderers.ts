@@ -19,6 +19,30 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "FocusConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { useFocusRing } from "./focus.ts";
+
+const focus = useFocusRing({
+  onFocus(event) {
+    void event.isFocusVisible;
+  },
+});
+</script>
+
+<template>
+  <button
+    v-bind="focus.focusProps"
+    type="button"
+    :data-focus-visible="focus.isFocusVisible.value || undefined"
+    :data-focused="focus.isFocused.value || undefined"
+  >
+    Focus target
+  </button>
+</template>
+`,
+  },
+  {
     filename: "MoveConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { useMove } from "./move.ts";

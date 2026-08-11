@@ -73,6 +73,7 @@ const familySignatures = Object.freeze({
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
+  focus: /VIZE_UI_FOCUS_DISPOSED/,
   hover: /VIZE_UI_HOVER_DISPOSED/,
   "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
   move: /VIZE_UI_MOVE_DISPOSED/,
@@ -82,6 +83,7 @@ const familySignatures = Object.freeze({
 });
 
 const retainedFamilies = Object.freeze({
+  focus: new Set(["focus", "interaction-modality"]),
   "long-press": new Set(["long-press", "press"]),
 });
 
@@ -114,6 +116,12 @@ const componentCases = [
     family: "interaction-modality",
     exportName: "createInteractionModalityTracker",
     maximumJavaScriptGzipBytes: 1_650,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "focus",
+    exportName: "createFocus",
+    maximumJavaScriptGzipBytes: 3_300,
     maximumCssGzipBytes: 0,
   },
   {
