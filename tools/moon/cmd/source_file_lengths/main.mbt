@@ -72,7 +72,7 @@ fn is_excluded_path(path : String) -> Bool {
   has_path_segment(path, "target") || has_path_segment(path, "node_modules") ||
   has_path_segment(path, "vendor") || has_path_segment(path, "generated") ||
   has_path_segment(path, "__generated__") || has_path_segment(path, "i18n") ||
-  has_path_segment(path, "playwright-report") || has_path_segment(path, "coverage") || path == "npm/native/index.js" || path == "npm/native/index.d.ts"
+  has_path_segment(path, "playwright-report") || has_path_segment(path, "coverage") || path == "npm/native/index.js" || path == "npm/native/index.d.ts" || path == "npm/fresco-native/index.js" || path == "npm/fresco-native/index.d.ts"
 }
 fn compare_source_files(a : SourceFile, b : SourceFile) -> Int {
   if a.lines == b.lines {
