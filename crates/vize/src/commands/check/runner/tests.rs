@@ -2,9 +2,7 @@ use super::{
     collect_project_global_component_stubs, dialect_from_features, find_nearest_tsconfig_dir,
     is_suppressed_false_positive, resolve_declaration_dir, resolve_declaration_emit_options,
     resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
-    write_nuxt_fallback_tsconfig,
 };
-use crate::commands::check::nuxt::NuxtPathAlias;
 use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
 use std::{
     path::{Path, PathBuf},
@@ -294,65 +292,6 @@ fn resolve_declaration_emit_options_uses_tsconfig_declaration_map() {
 
     assert_eq!(options.out_dir, project_root.join("types"));
     assert!(options.declaration_map);
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn writes_nuxt_fallback_tsconfig_without_overwriting_existing_paths() {
-    let project_root = unique_case_dir("nuxt-fallback-tsconfig");
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(&project_root).unwrap();
-    let base_tsconfig = project_root.join("tsconfig.base.json");
-    let tsconfig = project_root.join("tsconfig.json");
-    std::fs::write(
-        &base_tsconfig,
-        r##"{
-  "compilerOptions": {
-    "paths": {
-      "#base/*": ["types/*"]
-    }
-  }
-}"##,
-    )
-    .unwrap();
-    std::fs::write(
-        &tsconfig,
-        r##"{
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "paths": {
-      "~/*": ["custom/*"]
-    }
-  }
-}"##,
-    )
-    .unwrap();
-
-    let wrapper = write_nuxt_fallback_tsconfig(
-        Some(&tsconfig),
-        &project_root,
-        &project_root,
-        &[
-            NuxtPathAlias {
-                pattern: "~/*".into(),
-                targets: vec!["app/*".into()],
-            },
-            NuxtPathAlias {
-                pattern: "#shared/*".into(),
-                targets: vec!["shared/*".into()],
-            },
-        ],
-    )
-    .unwrap();
-
-    let value: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(wrapper).unwrap()).unwrap();
-    let paths = value["compilerOptions"]["paths"].as_object().unwrap();
-    assert_eq!(value["extends"], tsconfig.to_string_lossy().as_ref());
-    assert_eq!(paths["#base/*"], serde_json::json!(["../../../types/*"]));
-    assert_eq!(paths["~/*"], serde_json::json!(["../../../custom/*"]));
-    assert_eq!(paths["#shared/*"], serde_json::json!(["../../../shared/*"]));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

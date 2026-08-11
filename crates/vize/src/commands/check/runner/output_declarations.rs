@@ -1,4 +1,5 @@
 use std::{collections::BTreeSet, time::Instant};
+use vize_carton::{String, cstr};
 
 use super::{
     super::resolve_declaration_emit_options, CheckArgs, DeclarationSummary, ProgramExecution,
@@ -8,15 +9,15 @@ pub(super) fn emit_declarations(
     args: &CheckArgs,
     executions: &[ProgramExecution],
     total_errors: usize,
-) -> Option<DeclarationSummary> {
+) -> Result<Option<DeclarationSummary>, String> {
     if !args.declaration {
-        return None;
+        return Ok(None);
     }
     if total_errors > 0 {
         if !args.quiet {
             eprintln!("Skipping declaration emit because type errors were reported.");
         }
-        return None;
+        return Ok(None);
     }
 
     let start = Instant::now();
@@ -32,15 +33,12 @@ pub(super) fn emit_declarations(
         let result = execution
             .checker
             .emit_declarations(&options)
-            .unwrap_or_else(|error| {
-                eprintln!("\x1b[31mError:\x1b[0m {}", error);
-                std::process::exit(1);
-            });
+            .map_err(|error| cstr!("{}", error))?;
         files.extend(result.files.into_iter().map(|file| file.path));
     }
-    Some(DeclarationSummary {
+    Ok(Some(DeclarationSummary {
         files,
         directories,
         elapsed: start.elapsed(),
-    })
+    }))
 }

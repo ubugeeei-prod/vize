@@ -148,14 +148,15 @@ fn is_declaration_file(path: &Path) -> bool {
         })
 }
 
-pub(super) fn exit_if_inputs_outside_root(root: &Path, files: &[PathBuf], enabled: bool) {
+pub(super) fn validate_inputs_in_root(
+    root: &Path,
+    files: &[PathBuf],
+    enabled: bool,
+) -> Result<(), String> {
     if !enabled {
-        return;
+        return Ok(());
     }
-    if let Err(error) = validate_explicit_inputs_in_root(root, files) {
-        eprintln!("\x1b[31mError:\x1b[0m {error}");
-        std::process::exit(1);
-    }
+    validate_explicit_inputs_in_root(root, files)
 }
 
 fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {

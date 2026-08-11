@@ -24,20 +24,34 @@ pub(super) fn onto_project_root(
     base_dir: &Path,
     project_root: &Path,
 ) {
-    let relative_root_dir = compiler_options
-        .get("rootDir")
-        .and_then(Value::as_str)
-        .filter(|root_dir| !Path::new(root_dir).is_absolute())
-        .map(|root_dir| normalize_tsconfig_path_target(base_dir, project_root, root_dir));
-    if let Some(root_dir) = relative_root_dir {
-        compiler_options.insert("rootDir".into(), Value::String(root_dir.into()));
+    for name in [
+        "rootDir",
+        "outDir",
+        "declarationDir",
+        "tsBuildInfoFile",
+        "mapRoot",
+        "sourceRoot",
+        "outFile",
+    ] {
+        let Some(raw) = compiler_options
+            .get(name)
+            .and_then(Value::as_str)
+            .filter(|raw| !Path::new(raw).is_absolute())
+            .filter(|raw| !matches!(name, "mapRoot" | "sourceRoot") || !is_url(raw))
+        else {
+            continue;
+        };
+        compiler_options.insert(
+            name.into(),
+            Value::String(normalize_tsconfig_path_target(base_dir, project_root, raw).into()),
+        );
     }
 
-    if let Some(type_roots) = compiler_options
-        .get_mut("typeRoots")
-        .and_then(Value::as_array_mut)
-    {
-        for entry in type_roots {
+    for name in ["rootDirs", "typeRoots"] {
+        let Some(entries) = compiler_options.get_mut(name).and_then(Value::as_array_mut) else {
+            continue;
+        };
+        for entry in entries {
             let Some(raw_entry) = entry.as_str() else {
                 continue;
             };
@@ -54,6 +68,17 @@ pub(super) fn onto_project_root(
     // effective `baseUrl` when one is declared anywhere in the chain, which is
     // only known after the whole chain merges. `paths_onto_project_root` runs
     // as a post-pass with the resolved anchor (#3886).
+}
+
+pub(super) fn is_url(value: &str) -> bool {
+    let Some((scheme, _)) = value.split_once(':') else {
+        return false;
+    };
+    scheme.len() > 1
+        && scheme.bytes().enumerate().all(|(index, byte)| {
+            byte.is_ascii_alphabetic()
+                || (index > 0 && (byte.is_ascii_digit() || matches!(byte, b'+' | b'-' | b'.')))
+        })
 }
 
 /// Rebase relative `paths` targets from `anchor_dir` — the effective `baseUrl`

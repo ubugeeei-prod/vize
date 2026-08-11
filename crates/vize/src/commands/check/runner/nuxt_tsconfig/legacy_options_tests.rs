@@ -44,7 +44,7 @@ fn inherited_config_uses_the_typescript_compatibility_floor() {
     )
     .unwrap();
     let wrapper: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(wrapper).unwrap()).unwrap();
+        serde_json::from_str(&std::fs::read_to_string(wrapper.path().unwrap()).unwrap()).unwrap();
 
     assert_eq!(
         wrapper["compilerOptions"]["ignoreDeprecations"],
@@ -71,7 +71,7 @@ fn wrapper_without_an_inherited_config_adds_no_compatibility_option() {
     )
     .unwrap();
     let wrapper: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(wrapper).unwrap()).unwrap();
+        serde_json::from_str(&std::fs::read_to_string(wrapper.path().unwrap()).unwrap()).unwrap();
 
     assert!(
         wrapper["compilerOptions"]

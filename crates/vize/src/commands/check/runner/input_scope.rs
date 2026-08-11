@@ -166,6 +166,10 @@ pub(super) fn report_no_inputs(args: &CheckArgs) {
             warning_count: 0,
             file_count: 0,
             declarations: None,
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("Failed to report empty check result: {error}");
+            std::process::exit(1);
         });
         return;
     }

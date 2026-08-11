@@ -20,7 +20,7 @@ pub(super) fn emit_json(
     total_warnings: usize,
     emitted: Option<&DeclarationSummary>,
     canonical_paths: &mut CanonicalPathCache,
-) {
+) -> Result<(), vize_carton::String> {
     let mut files_json = executions
         .iter()
         .flat_map(|execution| {
@@ -88,5 +88,5 @@ pub(super) fn emit_json(
                 .map(|path| display_path(cwd, path).into())
                 .collect()
         }),
-    });
+    })
 }

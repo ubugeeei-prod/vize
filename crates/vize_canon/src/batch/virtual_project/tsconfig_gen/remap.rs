@@ -28,13 +28,36 @@ impl VirtualProject {
                 remapped.insert(alias.clone(), targets.clone());
                 continue;
             };
+            let targets = targets
+                .iter()
+                .map(|target| self.path_target_onto_project_root(target))
+                .collect::<Vec<_>>();
             remapped.insert(
                 alias.clone(),
-                Value::Array(remap_path_targets(targets, &up)),
+                Value::Array(remap_path_targets(&targets, &up)),
             );
         }
         protect_control_file_aliases(paths, &mut remapped, &up);
         remapped
+    }
+
+    /// A self-contained config may spell an in-project target absolutely so it
+    /// can live outside the source tree. Translate that target back onto the
+    /// project root before mirror expansion; only genuinely escaped paths
+    /// belong in `__vize_external__`.
+    fn path_target_onto_project_root(&self, target: &Value) -> Value {
+        let Some(raw) = target.as_str() else {
+            return target.clone();
+        };
+        let path = Path::new(raw);
+        if !path.is_absolute() {
+            return target.clone();
+        }
+        let normalized = super::super::tsconfig_paths::normalize_path_lexically(path);
+        let Ok(relative) = normalized.strip_prefix(&self.project_root) else {
+            return target.clone();
+        };
+        Value::String(relative.to_string_lossy().replace('\\', "/"))
     }
 
     /// Add exact bare-specifier routes for workspace package sources whose
@@ -149,7 +172,8 @@ fn path_components(path: &Path) -> Vec<std::ffi::OsString> {
 
 #[cfg(test)]
 mod tests {
-    use super::relative_path_from;
+    use super::{VirtualProject, relative_path_from};
+    use serde_json::{Value, json};
     use std::path::{Path, PathBuf};
 
     #[test]
@@ -160,6 +184,24 @@ mod tests {
                 Path::new("/workspace/apps/first"),
             ),
             PathBuf::from("../../../../../apps/first")
+        );
+    }
+
+    #[test]
+    fn absolute_in_project_targets_return_to_the_local_mirror() {
+        let case = tempfile::tempdir().unwrap();
+        let project = VirtualProject::new(case.path()).unwrap();
+        let target = project.project_root().join("src/*");
+
+        assert_eq!(
+            project.path_target_onto_project_root(&Value::String(
+                target.to_string_lossy().into_owned()
+            )),
+            json!("src/*")
+        );
+        assert_eq!(
+            project.path_target_onto_project_root(&json!("/outside/src/*")),
+            json!("/outside/src/*")
         );
     }
 

@@ -1,5 +1,7 @@
 mod base_url;
-mod compiler_options;
+pub(super) mod compiler_options;
+mod compiler_options_snapshot;
+pub use compiler_options_snapshot::snapshot_tsconfig_compiler_options;
 mod control_alias;
 mod native_options;
 mod path_rebase;

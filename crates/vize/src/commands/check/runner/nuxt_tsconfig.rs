@@ -1,8 +1,9 @@
 //! Nuxt path-alias fallback `tsconfig` synthesis for the `check` runner.
 //!
-//! When Nuxt auto-imports contribute path aliases, the runner writes a wrapper
-//! `tsconfig` under `node_modules/.vize/cli` that extends the project config and
-//! rebases inherited `paths` targets relative to the wrapper directory.
+//! When Nuxt auto-imports contribute path aliases, the runner publishes an
+//! immutable wrapper `tsconfig` in Vize's cache. Canon flattens the authored
+//! config chain into the wrapper, so its meaning never depends on a live
+//! `extends` target, shared dependency tree, or cache spelling.
 
 use std::{
     fs,
@@ -10,24 +11,53 @@ use std::{
 };
 
 use serde_json::{Map, Value};
-use vize_carton::{FxHashSet, String};
+use sha2::{Digest, Sha256};
+use vize_carton::String;
 
-use super::JsonObject;
-use crate::commands::check::tsconfig_inputs::{
-    parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig,
+mod cache;
+use cache::{
+    ConfigLease, acquire_config_lease, collect_cache_projects, collect_project_cache,
+    config_cache_root, encode_digest, publish_config_atomically, update_digest_path,
 };
+#[cfg(test)]
+use cache::{publish_config_atomically_with_hook, validate_config_cache_root};
 
+#[cfg(all(test, unix))]
+mod isolation_tests;
 #[cfg(test)]
 mod legacy_options_tests;
+#[cfg(test)]
+mod path_options_tests;
+
+const CONFIG_IDENTITY_SCHEMA: &[u8] = b"vize-nuxt-fallback-config:v2\0";
+
+/// The immutable config selected for one Corsa program.
+pub(super) struct PreparedCheckerTsconfig {
+    path: Option<PathBuf>,
+    _lease: Option<ConfigLease>,
+}
+
+impl PreparedCheckerTsconfig {
+    pub(super) fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
+    }
+
+    fn is_generated(&self) -> bool {
+        self._lease.is_some()
+    }
+}
 
 pub(super) fn resolve_checker_tsconfig_path(
     program_tsconfig_path: Option<&Path>,
     project_root: &Path,
     nuxt_alias_base_dir: &Path,
     nuxt_path_aliases: &[super::super::nuxt::NuxtPathAlias],
-) -> Result<Option<PathBuf>, std::io::Error> {
+) -> Result<PreparedCheckerTsconfig, std::io::Error> {
     if nuxt_path_aliases.is_empty() {
-        return Ok(program_tsconfig_path.map(Path::to_path_buf));
+        return Ok(PreparedCheckerTsconfig {
+            path: program_tsconfig_path.map(Path::to_path_buf),
+            _lease: None,
+        });
     }
 
     write_nuxt_fallback_tsconfig(
@@ -36,7 +66,85 @@ pub(super) fn resolve_checker_tsconfig_path(
         nuxt_alias_base_dir,
         nuxt_path_aliases,
     )
-    .map(Some)
+}
+
+/// Test-only process barrier at the exact publication-to-consumption boundary.
+/// Normal invocations never set these environment variables and take the
+/// zero-cost early return.
+pub(super) fn wait_for_prepared_config_test_barrier(
+    prepared: &PreparedCheckerTsconfig,
+) -> Result<(), std::io::Error> {
+    wait_for_config_test_barrier(
+        prepared,
+        "VIZE_TEST_NUXT_CONFIG_PREPARED_BARRIER",
+        "prepared-config",
+    )
+    .map(|_| ())
+}
+
+pub(super) fn wait_for_active_config_test_barrier(
+    prepared: &PreparedCheckerTsconfig,
+) -> Result<bool, std::io::Error> {
+    wait_for_config_test_barrier(
+        prepared,
+        "VIZE_TEST_NUXT_CONFIG_ACTIVE_BARRIER",
+        "active-config",
+    )
+}
+
+fn wait_for_config_test_barrier(
+    prepared: &PreparedCheckerTsconfig,
+    variable: &str,
+    phase: &str,
+) -> Result<bool, std::io::Error> {
+    if !cfg!(debug_assertions) {
+        return Ok(false);
+    }
+    let Some(barrier) = std::env::var_os(variable) else {
+        return Ok(false);
+    };
+    if !prepared.is_generated() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("{phase} barrier requires a generated Nuxt checker config"),
+        ));
+    }
+    let participant = std::env::var_os("VIZE_TEST_NUXT_CONFIG_PARTICIPANT").ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "VIZE_TEST_NUXT_CONFIG_PARTICIPANT is required with the prepared-config barrier",
+        )
+    })?;
+    #[cfg(unix)]
+    {
+        use std::io::{Read as _, Write as _};
+
+        let barrier = PathBuf::from(barrier);
+        fs::OpenOptions::new()
+            .write(true)
+            .open(barrier.join("ready"))?
+            .write_all(b"x")?;
+        let mut release = [0_u8; 3];
+        fs::OpenOptions::new()
+            .read(true)
+            .open(barrier.join(format!("release-{}", participant.to_string_lossy())))?
+            .read_exact(&mut release)?;
+        if release != *b"go\n" {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "prepared-config barrier received an invalid release token",
+            ));
+        }
+        Ok(true)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (barrier, participant);
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            format!("the {phase} test barrier requires Unix FIFOs"),
+        ))
+    }
 }
 
 pub(super) fn write_nuxt_fallback_tsconfig(
@@ -44,40 +152,58 @@ pub(super) fn write_nuxt_fallback_tsconfig(
     project_root: &Path,
     nuxt_alias_base_dir: &Path,
     nuxt_path_aliases: &[super::super::nuxt::NuxtPathAlias],
-) -> Result<PathBuf, std::io::Error> {
-    let wrapper_dir = project_root.join("node_modules/.vize/cli");
-    fs::create_dir_all(&wrapper_dir)?;
+) -> Result<PreparedCheckerTsconfig, std::io::Error> {
+    let cache_root = config_cache_root(project_root)?;
+    write_nuxt_fallback_tsconfig_in_cache(
+        program_tsconfig_path,
+        project_root,
+        nuxt_alias_base_dir,
+        nuxt_path_aliases,
+        &cache_root,
+    )
+}
 
-    let mut paths = if let Some(tsconfig_path) = program_tsconfig_path {
-        load_tsconfig_paths_for_wrapper(tsconfig_path, &wrapper_dir)?
+fn write_nuxt_fallback_tsconfig_in_cache(
+    program_tsconfig_path: Option<&Path>,
+    project_root: &Path,
+    nuxt_alias_base_dir: &Path,
+    nuxt_path_aliases: &[super::super::nuxt::NuxtPathAlias],
+    cache_root: &Path,
+) -> Result<PreparedCheckerTsconfig, std::io::Error> {
+    fs::create_dir_all(cache_root)?;
+    let mut compiler_options = if let Some(tsconfig_path) = program_tsconfig_path {
+        vize_canon::snapshot_tsconfig_compiler_options(project_root, tsconfig_path)
+            .map_err(std::io::Error::other)?
     } else {
         Map::new()
     };
-    for alias in nuxt_path_aliases {
-        paths
-            .entry(alias.pattern.as_str().to_owned())
-            .or_insert_with(|| {
-                Value::Array(
-                    alias
-                        .targets
-                        .iter()
-                        .map(|target| {
-                            Value::String(
-                                rebase_tsconfig_path_target(
-                                    &wrapper_dir,
-                                    nuxt_alias_base_dir,
-                                    target.as_str(),
+    let paths = compiler_options
+        .entry("paths")
+        .or_insert_with(|| Value::Object(Map::new()));
+    if let Some(paths) = paths.as_object_mut() {
+        for alias in nuxt_path_aliases {
+            paths
+                .entry(alias.pattern.as_str().to_owned())
+                .or_insert_with(|| {
+                    Value::Array(
+                        alias
+                            .targets
+                            .iter()
+                            .map(|target| {
+                                Value::String(
+                                    absolute_tsconfig_path_target(
+                                        nuxt_alias_base_dir,
+                                        target.as_str(),
+                                    )
+                                    .into(),
                                 )
-                                .into(),
-                            )
-                        })
-                        .collect(),
-                )
-            });
+                            })
+                            .collect(),
+                    )
+                });
+        }
     }
 
-    let mut compiler_options = Map::new();
-    compiler_options.insert("paths".into(), Value::Object(paths));
     if program_tsconfig_path.is_some() {
         // Nuxt 2 and Bridge projects commonly remain on TypeScript 5 configs
         // that require `baseUrl` and legacy Node resolution. This wrapper is
@@ -85,109 +211,51 @@ pub(super) fn write_nuxt_fallback_tsconfig(
         // here instead of letting the native TypeScript 7 option probe turn
         // them into errors on this generated file. Unrelated config errors are
         // still reported by the probe.
-        compiler_options.insert("ignoreDeprecations".into(), Value::String("6.0".into()));
+        compiler_options
+            .entry("ignoreDeprecations")
+            .or_insert_with(|| Value::String("6.0".into()));
     }
 
     let mut config = Map::new();
-    if let Some(tsconfig_path) = program_tsconfig_path {
-        config.insert(
-            "extends".into(),
-            Value::String(tsconfig_path.to_string_lossy().into_owned()),
-        );
-    }
     config.insert("compilerOptions".into(), Value::Object(compiler_options));
 
-    let wrapper_path = wrapper_dir.join("tsconfig.nuxt-fallback.json");
     let content =
         serde_json::to_vec_pretty(&Value::Object(config)).map_err(std::io::Error::other)?;
-    fs::write(&wrapper_path, content)?;
-    Ok(wrapper_path)
+    let mut project_identity = Sha256::new();
+    project_identity.update(CONFIG_IDENTITY_SCHEMA);
+    update_digest_path(&mut project_identity, project_root);
+    let project_identity = encode_digest(project_identity.finalize());
+    let mut config_identity = Sha256::new();
+    config_identity.update(CONFIG_IDENTITY_SCHEMA);
+    config_identity.update(&content);
+    let config_identity = encode_digest(config_identity.finalize());
+    let (project_cache, entry, lease) = acquire_config_lease(
+        cache_root,
+        project_identity.as_str(),
+        config_identity.as_str(),
+    )?;
+    let wrapper_path = entry.join("tsconfig.nuxt-fallback.json");
+    publish_config_atomically(&wrapper_path, &content)?;
+    collect_project_cache(&project_cache, &entry)?;
+    collect_cache_projects(cache_root, &project_cache)?;
+    Ok(PreparedCheckerTsconfig {
+        path: Some(wrapper_path),
+        _lease: Some(lease),
+    })
 }
 
-fn load_tsconfig_paths_for_wrapper(
-    tsconfig_path: &Path,
-    wrapper_dir: &Path,
-) -> Result<JsonObject, std::io::Error> {
-    let mut seen = FxHashSet::default();
-    load_tsconfig_paths_for_wrapper_inner(tsconfig_path, wrapper_dir, &mut seen)
+fn absolute_tsconfig_path_target(source_base_dir: &Path, target: &str) -> String {
+    path_to_tsconfig_target(&absolute_tsconfig_path(source_base_dir, target))
 }
 
-fn load_tsconfig_paths_for_wrapper_inner(
-    tsconfig_path: &Path,
-    wrapper_dir: &Path,
-    seen: &mut FxHashSet<PathBuf>,
-) -> Result<JsonObject, std::io::Error> {
-    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
-    if !seen.insert(resolved.clone()) {
-        return Ok(Map::new());
-    }
-
-    let content = fs::read_to_string(&resolved)?;
-    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
-    let mut merged = Map::new();
-
-    for extends in read_extends_entries(&value) {
-        let Some(extended_path) = resolve_extended_tsconfig(&resolved, &extends) else {
-            continue;
-        };
-        let extended = load_tsconfig_paths_for_wrapper_inner(&extended_path, wrapper_dir, seen)?;
-        merged.extend(extended);
-    }
-
-    let Some(paths) = value
-        .get("compilerOptions")
-        .and_then(Value::as_object)
-        .and_then(|compiler_options| compiler_options.get("paths"))
-        .and_then(Value::as_object)
-    else {
-        return Ok(merged);
-    };
-
-    let base_dir = resolved.parent().unwrap_or(Path::new("."));
-    for (alias, targets) in paths {
-        merged.insert(
-            alias.clone(),
-            rebase_tsconfig_paths_value(wrapper_dir, base_dir, targets),
-        );
-    }
-
-    Ok(merged)
-}
-
-fn rebase_tsconfig_paths_value(wrapper_dir: &Path, source_base_dir: &Path, value: &Value) -> Value {
-    let Some(targets) = value.as_array() else {
-        return value.clone();
-    };
-
-    Value::Array(
-        targets
-            .iter()
-            .map(|target| {
-                target.as_str().map_or_else(
-                    || target.clone(),
-                    |target| {
-                        Value::String(
-                            rebase_tsconfig_path_target(wrapper_dir, source_base_dir, target)
-                                .into(),
-                        )
-                    },
-                )
-            })
-            .collect(),
-    )
-}
-
-fn rebase_tsconfig_path_target(wrapper_dir: &Path, source_base_dir: &Path, target: &str) -> String {
+fn absolute_tsconfig_path(source_base_dir: &Path, target: &str) -> PathBuf {
     let target_path = Path::new(target);
     let target_path = if target_path.is_absolute() {
         target_path.to_path_buf()
     } else {
-        source_base_dir.join(target_path)
+        vize_carton::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
     };
-    let target_path = normalize_path_lexically(&target_path);
-    let wrapper_dir = normalize_path_lexically(wrapper_dir);
-    let rebased = diff_paths(&target_path, &wrapper_dir).unwrap_or(target_path);
-    path_to_tsconfig_target(&rebased)
+    normalize_path_lexically(&target_path)
 }
 
 fn path_to_tsconfig_target(path: &Path) -> String {
@@ -208,55 +276,4 @@ fn normalize_path_lexically(path: &Path) -> PathBuf {
         }
     }
     normalized
-}
-
-fn diff_paths(target: &Path, base: &Path) -> Option<PathBuf> {
-    use std::path::Component;
-
-    if target.is_absolute() != base.is_absolute() {
-        if target.is_absolute() {
-            return Some(target.to_path_buf());
-        }
-        return None;
-    }
-
-    let target_components = target.components().collect::<Vec<_>>();
-    let base_components = base.components().collect::<Vec<_>>();
-    let mut common = 0;
-    while common < target_components.len()
-        && common < base_components.len()
-        && target_components[common] == base_components[common]
-    {
-        common += 1;
-    }
-
-    if matches!(
-        (target_components.first(), base_components.first()),
-        (Some(Component::Prefix(_)), Some(Component::Prefix(_)))
-    ) && common == 0
-    {
-        return None;
-    }
-
-    let mut relative = PathBuf::new();
-    for component in &base_components[common..] {
-        match component {
-            Component::Normal(_) | Component::CurDir | Component::ParentDir => {
-                relative.push("..");
-            }
-            Component::RootDir | Component::Prefix(_) => return None,
-        }
-    }
-    for component in &target_components[common..] {
-        match component {
-            Component::Normal(value) => relative.push(value),
-            Component::ParentDir => relative.push(".."),
-            Component::CurDir => {}
-            Component::RootDir | Component::Prefix(_) => return None,
-        }
-    }
-    if relative.as_os_str().is_empty() {
-        relative.push(".");
-    }
-    Some(relative)
 }

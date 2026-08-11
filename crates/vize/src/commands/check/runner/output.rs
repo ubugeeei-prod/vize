@@ -2,7 +2,7 @@
 
 use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
 
-use vize_carton::cstr;
+use vize_carton::{String, cstr};
 
 use super::{
     CheckArgs, JsonOutput, ProgramExecution,
@@ -27,20 +27,61 @@ use profile::print_profile;
 type RenderedDiagnostics =
     std::collections::BTreeMap<std::string::String, Vec<std::string::String>>;
 
+pub(super) fn save_virtual_ts_targets_or_exit<'a, C>(
+    requested_paths: &[std::path::PathBuf],
+    cwd: &Path,
+    candidates: impl Fn() -> C,
+    quiet: bool,
+) where
+    C: IntoIterator<Item = (&'a Path, &'a str)>,
+{
+    save_virtual_ts_targets(requested_paths, cwd, candidates, quiet).unwrap_or_else(|error| {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(1);
+    });
+}
+
 struct DeclarationSummary {
     files: BTreeSet<std::path::PathBuf>,
     directories: BTreeSet<std::path::PathBuf>,
     elapsed: Duration,
 }
 
-pub(super) fn report_executions(
+pub(super) fn finish_executions(
     args: &CheckArgs,
     cwd: &Path,
     start: Instant,
     collect_time: Duration,
-    executions: &[ProgramExecution],
+    executions: Vec<ProgramExecution>,
     canonical_paths: &mut CanonicalPathCache,
 ) {
+    let exit_code = report_executions(args, cwd, start, collect_time, executions, canonical_paths)
+        .unwrap_or_else(|error| {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            1
+        });
+    if exit_code != 0 {
+        std::process::exit(exit_code);
+    }
+}
+
+pub(super) fn exit_after_execution_error(
+    executions: Vec<ProgramExecution>,
+    error: vize_carton::String,
+) -> ! {
+    eprintln!("\x1b[31mError:\x1b[0m {error}");
+    drop(executions);
+    std::process::exit(1);
+}
+
+fn report_executions(
+    args: &CheckArgs,
+    cwd: &Path,
+    start: Instant,
+    collect_time: Duration,
+    executions: Vec<ProgramExecution>,
+    canonical_paths: &mut CanonicalPathCache,
+) -> Result<i32, String> {
     let virtual_files = executions
         .iter()
         .flat_map(|execution| execution.checker.virtual_files())
@@ -53,11 +94,11 @@ pub(super) fn report_executions(
                 warning_count: 0,
                 file_count: 0,
                 declarations: None,
-            });
+            })?;
         } else {
             eprintln!("No files were registered for type checking");
         }
-        return;
+        return Ok(0);
     }
 
     if args.show_virtual_ts {
@@ -87,7 +128,7 @@ pub(super) fn report_executions(
                     .map(|file| (file.original_path.as_path(), file.content.as_str()))
             },
             args.quiet,
-        );
+        )?;
     }
 
     let profile_artifact_start = Instant::now();
@@ -98,7 +139,7 @@ pub(super) fn report_executions(
 
     let diagnostics_render_start = Instant::now();
     let mut reported_raw = Vec::new();
-    for execution in executions {
+    for execution in &executions {
         for diagnostic in &execution.result.diagnostics {
             if is_reported(&execution.reported_files, &diagnostic.file, canonical_paths)
                 && !is_suppressed_false_positive(diagnostic)
@@ -117,7 +158,7 @@ pub(super) fn report_executions(
         .iter()
         .filter(|diagnostic| diagnostic.severity == 2)
         .count();
-    let emitted = emit_declarations(args, executions, total_errors);
+    let emitted = emit_declarations(args, &executions, total_errors)?;
     let total_time = start.elapsed();
     let gen_time = executions.iter().map(|execution| execution.gen_time).sum();
     let check_time = executions
@@ -127,7 +168,7 @@ pub(super) fn report_executions(
 
     if args.profile {
         print_profile(
-            executions,
+            &executions,
             &virtual_files,
             total_errors,
             total_time,
@@ -144,20 +185,20 @@ pub(super) fn report_executions(
         emit_json(
             args,
             cwd,
-            executions,
+            &executions,
             &diagnostics,
             total_errors,
             total_warnings,
             emitted.as_ref(),
             canonical_paths,
-        );
+        )?;
         if total_errors > 0 {
-            std::process::exit(1);
+            return Ok(1);
         }
-        return;
+        return Ok(0);
     }
 
-    print_text(
+    Ok(print_text(
         args,
         &virtual_files,
         &diagnostics,
@@ -168,7 +209,7 @@ pub(super) fn report_executions(
         gen_time,
         check_time,
         emitted.as_ref(),
-    );
+    ))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -183,7 +224,7 @@ fn print_text(
     gen_time: Duration,
     check_time: Duration,
     emitted: Option<&DeclarationSummary>,
-) {
+) -> i32 {
     if !args.quiet {
         for (key, file_diagnostics) in diagnostics {
             if file_diagnostics.is_empty() {
@@ -251,12 +292,13 @@ fn print_text(
     }
 
     if total_errors > 0 {
-        std::process::exit(1);
+        return 1;
     }
     if let Some(max_warnings) = args.max_warnings
         && total_warnings > max_warnings
     {
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
-        std::process::exit(1);
+        return 1;
     }
+    0
 }

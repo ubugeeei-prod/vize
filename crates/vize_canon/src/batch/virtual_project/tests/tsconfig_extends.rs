@@ -7,6 +7,7 @@
 use std::fs;
 
 use super::{VirtualProject, unique_case_dir};
+use crate::batch::snapshot_tsconfig_compiler_options;
 
 #[test]
 fn materialized_tsconfig_inlines_extends_chain_without_extending_original() {
@@ -152,6 +153,69 @@ fn a_shared_ancestor_is_inherited_by_every_sibling_extends_entry() {
     assert_eq!(
         compiler_options["noUnusedParameters"],
         serde_json::Value::Bool(true)
+    );
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn external_snapshot_is_flattened_and_cache_location_independent() {
+    let case_dir = unique_case_dir("tsconfig-external-snapshot");
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(case_dir.join("node_modules/example-config")).unwrap();
+    fs::create_dir_all(case_dir.join("src/types")).unwrap();
+    fs::write(
+        case_dir.join("node_modules/example-config/base.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": "../../src",
+    "rootDirs": ["./generated", "../../src"],
+    "outDir": "./dist",
+    "mapRoot": "./maps",
+    "sourceRoot": "https://cdn.example.test/sources/"
+  }
+}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r##"{
+  "extends": "example-config/base.json",
+  "compilerOptions": { "paths": { "~/*": ["types/*"] } }
+}"##,
+    )
+    .unwrap();
+
+    let options =
+        snapshot_tsconfig_compiler_options(&case_dir, &case_dir.join("tsconfig.json")).unwrap();
+    assert_eq!(options["strict"], serde_json::json!(true));
+    assert_eq!(
+        options["baseUrl"],
+        serde_json::json!(case_dir.join("src").to_string_lossy())
+    );
+    assert_eq!(
+        options["paths"]["~/*"],
+        serde_json::json!([case_dir.join("src/types/*").to_string_lossy()])
+    );
+    assert_eq!(
+        options["rootDirs"],
+        serde_json::json!([
+            case_dir.join("node_modules/example-config/generated"),
+            case_dir.join("src")
+        ])
+    );
+    assert_eq!(
+        options["outDir"],
+        serde_json::json!(case_dir.join("node_modules/example-config/dist"))
+    );
+    assert_eq!(
+        options["mapRoot"],
+        serde_json::json!(case_dir.join("node_modules/example-config/maps"))
+    );
+    assert_eq!(
+        options["sourceRoot"],
+        serde_json::json!("https://cdn.example.test/sources/")
     );
 
     let _ = fs::remove_dir_all(&case_dir);

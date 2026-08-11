@@ -6,8 +6,12 @@ use vize_canon::{
     BatchTypeCheckResult, BatchTypeChecker, BatchTypeCheckerOptions,
     batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_carton::{FxHashSet, config::VueVersion};
+use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
 
+use super::nuxt_tsconfig::{
+    PreparedCheckerTsconfig, wait_for_active_config_test_barrier,
+    wait_for_prepared_config_test_barrier,
+};
 use super::{collect_project_global_component_stubs, resolve_checker_tsconfig_path};
 use crate::commands::check::nuxt;
 
@@ -36,6 +40,7 @@ pub(super) struct ProgramExecution {
     pub(super) program_root: PathBuf,
     pub(super) gen_time: Duration,
     pub(super) check_time: Duration,
+    _checker_tsconfig: PreparedCheckerTsconfig,
 }
 
 pub(super) struct ProgramExecutionInput<'a> {
@@ -51,7 +56,7 @@ pub(super) struct ProgramExecutionInput<'a> {
 pub(super) fn execute_program(
     input: ProgramExecutionInput<'_>,
     settings: &CheckerSettings,
-) -> ProgramExecution {
+) -> Result<ProgramExecution, String> {
     let mut virtual_ts_options = settings.virtual_ts_options.clone();
     let nuxt_path_aliases = nuxt::detect(
         &mut virtual_ts_options,
@@ -66,20 +71,19 @@ pub(super) fn execute_program(
         input.project_root,
         input.tsconfig_path.as_deref(),
     );
-    let checker_tsconfig_path = resolve_checker_tsconfig_path(
+    let checker_tsconfig = resolve_checker_tsconfig_path(
         input.tsconfig_path.as_deref(),
         input.project_root,
         input.nuxt_project_root,
         &nuxt_path_aliases,
     )
-    .unwrap_or_else(|error| {
-        eprintln!(
-            "\x1b[31mError:\x1b[0m Failed to prepare type checker tsconfig: {}",
+    .map_err(|error| cstr!("Failed to prepare type checker tsconfig: {}", error))?;
+    wait_for_prepared_config_test_barrier(&checker_tsconfig).map_err(|error| {
+        cstr!(
+            "Failed to synchronize prepared type checker config: {}",
             error
-        );
-        std::process::exit(1);
-    });
-
+        )
+    })?;
     if !settings.quiet {
         eprintln!(
             "Building Corsa virtual project for {} files under {}...",
@@ -92,15 +96,12 @@ pub(super) fn execute_program(
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         input.project_root,
         BatchTypeCheckerOptions {
-            tsconfig_path: checker_tsconfig_path,
+            tsconfig_path: checker_tsconfig.path().map(PathBuf::from),
             virtual_ts_options,
         },
         settings.corsa_path.as_deref(),
     )
-    .unwrap_or_else(|error| {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(1);
-    });
+    .map_err(|error| cstr!("{}", error))?;
     checker.set_server_count(settings.servers);
     if settings.options_api {
         checker.enable_options_api();
@@ -121,10 +122,9 @@ pub(super) fn execute_program(
         settings.check_emits,
     );
     checker.set_virtual_module_aliases(input.virtual_module_aliases.iter().cloned());
-    checker.scan_paths(input.files).unwrap_or_else(|error| {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(1);
-    });
+    checker
+        .scan_paths(input.files)
+        .map_err(|error| cstr!("{}", error))?;
     checker.set_diagnostic_paths(input.reported_files.iter().map(PathBuf::as_path));
     let gen_time = gen_start.elapsed();
 
@@ -135,12 +135,31 @@ pub(super) fn execute_program(
         );
     }
     let check_start = Instant::now();
-    let result = checker.check_project().unwrap_or_else(|error| {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(1);
-    });
+    let mut result = checker
+        .check_project()
+        .map_err(|error| cstr!("{}", error))?;
+    if wait_for_active_config_test_barrier(&checker_tsconfig).map_err(|error| {
+        cstr!(
+            "Failed to synchronize active type checker config: {}",
+            error
+        )
+    })? {
+        result = checker
+            .check_project()
+            .map_err(|error| cstr!("{}", error))?;
+    }
+    if let (Some(authored), Some(prepared)) =
+        (input.tsconfig_path.as_ref(), checker_tsconfig.path())
+    {
+        let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
+        for diagnostic in &mut result.diagnostics {
+            if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+                diagnostic.file = authored.clone();
+            }
+        }
+    }
 
-    ProgramExecution {
+    Ok(ProgramExecution {
         checker,
         result,
         reported_files: input.reported_files,
@@ -148,5 +167,6 @@ pub(super) fn execute_program(
         program_root: input.program_root,
         gen_time,
         check_time: check_start.elapsed(),
-    }
+        _checker_tsconfig: checker_tsconfig,
+    })
 }

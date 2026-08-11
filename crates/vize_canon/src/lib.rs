@@ -136,7 +136,7 @@ pub use batch::{
     PackageManager, TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
     VirtualFile, VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options, project_virtual_lock_paths,
-    project_virtual_root,
+    project_virtual_root, snapshot_tsconfig_compiler_options,
 };
 
 #[cfg(feature = "native")]

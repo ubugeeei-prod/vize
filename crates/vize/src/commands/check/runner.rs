@@ -9,7 +9,6 @@ use std::{
     time::Instant,
 };
 
-use serde_json::{Map, Value};
 use vize_carton::{FxHashSet, profiler::global_profiler};
 
 use super::{
@@ -55,22 +54,17 @@ use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
 use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;
-#[cfg(test)]
-use nuxt_tsconfig::write_nuxt_fallback_tsconfig;
-use output::report_executions;
+use output::{exit_after_execution_error, finish_executions};
 use program_inputs::{ProgramInputContext, filter_for_program, project_graph_allows_js};
 use resolve::{
-    display_path, exit_if_inputs_outside_root, explicit_input_root,
-    resolve_declaration_emit_options, resolve_from_config_dir, resolve_project_root,
-    resolve_tsconfig_path, validate_corsa_server_count,
+    display_path, explicit_input_root, resolve_declaration_emit_options, resolve_from_config_dir,
+    resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
+    validate_inputs_in_root,
 };
 #[cfg(test)]
 use resolve::{find_nearest_tsconfig_dir, resolve_declaration_dir};
 #[cfg(unix)]
 pub(crate) use socket::run_with_socket;
-
-#[allow(clippy::disallowed_types)]
-type JsonObject = Map<std::string::String, Value>;
 
 struct ProgramCandidate {
     files: Vec<PathBuf>,
@@ -202,7 +196,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
     let mut executions = Vec::new();
     for candidate in candidates {
-        if let Some(execution) = prepare_and_execute(
+        let execution = match prepare_and_execute(
             args,
             candidate,
             &cwd,
@@ -215,6 +209,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &mut tsconfig_input_cache,
             &mut canonical_paths,
         ) {
+            Ok(execution) => execution,
+            Err(error) => exit_after_execution_error(executions, error),
+        };
+        if let Some(execution) = execution {
             executions.push(execution);
         }
     }
@@ -222,12 +220,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         report_no_inputs(args);
         return;
     }
-    report_executions(
+    finish_executions(
         args,
         &cwd,
         start,
         collect_time,
-        &executions,
+        executions,
         &mut canonical_paths,
     );
 }
@@ -350,7 +348,7 @@ fn prepare_and_execute(
     settings: &CheckerSettings,
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
-) -> Option<ProgramExecution> {
+) -> Result<Option<ProgramExecution>, vize_carton::String> {
     let initial_root = candidate
         .tsconfig_path
         .as_deref()
@@ -403,7 +401,7 @@ fn prepare_and_execute(
         );
         virtual_module_aliases.extend(discovered.virtual_module_aliases);
     }
-    exit_if_inputs_outside_root(explicit_input_root, &candidate.files, validate_inputs);
+    validate_inputs_in_root(explicit_input_root, &candidate.files, validate_inputs)?;
 
     let project_root =
         resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
@@ -422,7 +420,7 @@ fn prepare_and_execute(
         canonical_paths,
     });
     if !args.patterns.is_empty() && candidate.inputs.is_empty() {
-        return None;
+        return Ok(None);
     }
     candidate.reported.extend(
         authored_imports
@@ -450,12 +448,12 @@ fn prepare_and_execute(
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
     resolve::retain_project_files(&mut candidate.files, &project_root);
     if candidate.files.is_empty() {
-        return None;
+        return Ok(None);
     }
 
     virtual_module_aliases.sort();
     virtual_module_aliases.dedup();
-    Some(execute_program(
+    execute_program(
         ProgramExecutionInput {
             files: &candidate.files,
             reported_files: candidate.reported,
@@ -466,7 +464,8 @@ fn prepare_and_execute(
             nuxt_project_root,
         },
         settings,
-    ))
+    )
+    .map(Some)
 }
 
 fn validate_config_arg(args: &CheckArgs) {

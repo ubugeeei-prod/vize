@@ -1,10 +1,10 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_nuxt_tsconfig_paths_cli/support.rs"]
+mod support;
 
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::process::Command;
+use support::*;
 
 #[test]
 fn check_nuxt_sfc_virtual_ts_prefers_explicit_tsconfig_paths_over_fallback_modules() {
@@ -239,88 +239,32 @@ export default defineComponent({
 "##,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .env("CORSA_PATH", corsa_path)
-        .args([
-            "check",
-            "src/app/purposes/Keyboards.vue",
-            "--tsconfig",
-            "tsconfig.json",
-            "--format",
-            "json",
-            "--no-config",
-        ])
-        .output()
-        .unwrap();
+    for iteration in 0..required_iterations() {
+        let output = run_nuxt2_alias_check(&project_root, &corsa_path);
+        let stdout = String::from_utf8(output.stdout).unwrap();
+        let stderr = String::from_utf8(output.stderr).unwrap();
+        assert!(
+            output.status.success(),
+            "Nuxt2 alias iteration {iteration} failed\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        );
+        let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(json["errorCount"], 0, "{stdout}");
+    }
 
+    let source = project_root.join("src/app/purposes/Keyboards.vue");
+    let broken = std::fs::read_to_string(&source)
+        .unwrap()
+        .replace("EnglishKeyboard.vue", "MissingKeyboard.vue");
+    std::fs::write(source, broken).unwrap();
+    let output = run_nuxt2_alias_check(&project_root, &corsa_path);
     let stdout = String::from_utf8(output.stdout).unwrap();
-    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success(), "{stdout}");
     assert!(
-        output.status.success(),
-        "Nuxt2 alias component emits should type-check\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        stdout.contains(
+            "error:4:8 [TS2307] Cannot find module \
+             '~/src/shared/components/keyboards/MissingKeyboard.vue'"
+        ),
+        "{stdout}"
     );
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    assert_eq!(json["errorCount"], 0, "{stdout}");
-
     let _ = std::fs::remove_dir_all(&project_root);
-}
-
-fn create_project(name: &str) -> PathBuf {
-    let project_root = workspace_root()
-        .join("target")
-        .join("vize-tests")
-        .join(format!("{name}-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&project_root);
-    std::fs::create_dir_all(&project_root).unwrap();
-    link_workspace_node_modules(&project_root);
-    project_root
-}
-
-fn write_file(root: &Path, path: &str, content: &str) {
-    let file_path = root.join(path);
-    if let Some(parent) = file_path.parent() {
-        std::fs::create_dir_all(parent).unwrap();
-    }
-    std::fs::write(file_path, content).unwrap();
-}
-
-fn workspace_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .expect("workspace root should exist")
-        .to_path_buf()
-}
-
-fn link_workspace_node_modules(project_root: &Path) {
-    let source = workspace_root().join("node_modules");
-    if source.exists() {
-        symlink_path(&source, &project_root.join("node_modules")).unwrap();
-    }
-}
-
-fn resolve_test_corsa_path() -> Option<String> {
-    if let Some(path) = std::env::var_os("CORSA_PATH") {
-        let path = PathBuf::from(path);
-        if path.exists() {
-            return Some(path.display().to_string());
-        }
-    }
-    let workspace_root = workspace_root();
-    [workspace_root.join("node_modules/.bin/tsgo")]
-        .into_iter()
-        .find(|candidate| candidate.exists())
-        .map(|candidate| candidate.display().to_string())
-}
-
-fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(source, target)
-    }
-    #[cfg(windows)]
-    {
-        std::os::windows::fs::symlink_dir(source, target)
-    }
 }

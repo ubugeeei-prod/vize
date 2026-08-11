@@ -53,6 +53,7 @@ ignore.workspace = true
 # Glob pattern matching
 glob.workspace = true
 globset.workspace = true
+libc.workspace = true
 
 # Multithreading
 rayon.workspace = true
@@ -83,6 +84,7 @@ mimalloc.workspace = true
 
 # Exclusive same-directory temporary files for atomic source replacement
 tempfile.workspace = true
+sha2.workspace = true
 
 [dev-dependencies]
 corsa.workspace = true

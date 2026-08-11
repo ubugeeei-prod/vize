@@ -12,14 +12,11 @@ mod suppressions;
 
 pub(super) use suppressions::is_suppressed_false_positive;
 
-pub(super) fn emit_json_output(json_output: JsonOutput) {
-    match serde_json::to_string_pretty(&json_output) {
-        Ok(output) => println!("{output}"),
-        Err(error) => {
-            eprintln!("Failed to serialize check output: {error}");
-            std::process::exit(1);
-        }
-    }
+pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactString> {
+    let output = serde_json::to_string_pretty(&json_output)
+        .map_err(|error| cstr!("Failed to serialize check output: {error}"))?;
+    println!("{output}");
+    Ok(())
 }
 
 /// Whether a registered file's diagnostics should be reported. Configured or
@@ -156,22 +153,17 @@ pub(super) fn save_virtual_ts_targets<'a, C>(
     cwd: &Path,
     candidates: impl Fn() -> C,
     quiet: bool,
-) where
+) -> Result<(), CompactString>
+where
     C: IntoIterator<Item = (&'a Path, &'a str)>,
 {
     for requested_path in requested_paths {
-        match save_virtual_ts_for_path(requested_path, cwd, candidates()) {
-            Ok(target) => {
-                if !quiet {
-                    eprintln!("Saved Virtual TS to {}", target.display());
-                }
-            }
-            Err(error) => {
-                eprintln!("\x1b[31mError:\x1b[0m {}", error);
-                std::process::exit(1);
-            }
+        let target = save_virtual_ts_for_path(requested_path, cwd, candidates())?;
+        if !quiet {
+            eprintln!("Saved Virtual TS to {}", target.display());
         }
     }
+    Ok(())
 }
 
 /// Write the shared ambient helpers preamble to the requested location.

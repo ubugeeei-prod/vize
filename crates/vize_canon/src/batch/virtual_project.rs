@@ -63,6 +63,7 @@ mod paths;
 mod project;
 mod setup_props;
 mod tsconfig_gen;
+pub use tsconfig_gen::snapshot_tsconfig_compiler_options;
 mod tsconfig_paths;
 mod vue_codegen;
 
