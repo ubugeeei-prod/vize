@@ -4,20 +4,19 @@
 //! sources. This module separates authored files that TypeScript can resolve
 //! in place from files that must enter Vize's mirror for Vue import rewriting.
 
-use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-use vize_canon::{
-    PackageResolutionContext, PackageResolutionMode, PackageRouteBinding, PackageRouteLookup,
-    PackageRouteResolver, PackageSourceOptions,
-};
+use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
 #[cfg(test)]
 use vize_carton::cstr;
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashSet, String};
 
 use super::imports_aliases::PathAliasResolver;
 use super::path_cache::CanonicalPathCache;
 
+#[path = "imports_cache.rs"]
+mod cache;
+use cache::{PackageLookupCache, ResolutionContextCache};
 #[path = "imports_registration.rs"]
 mod registration;
 use registration::VirtualRegistrationCache;
@@ -74,19 +73,8 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registration_cache = VirtualRegistrationCache::default();
-    let mut resolution_contexts: FxHashMap<
-        (PathBuf, Option<OsString>, PackageResolutionMode),
-        (PackageResolutionContext, Vec<PathBuf>),
-    > = FxHashMap::default();
-    let mut package_lookups: FxHashMap<
-        (
-            PathBuf,
-            String,
-            PackageSourceOptions,
-            PackageResolutionContext,
-        ),
-        PackageRouteLookup,
-    > = FxHashMap::default();
+    let mut resolution_contexts = ResolutionContextCache::default();
+    let mut package_lookups = PackageLookupCache::default();
     let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -131,7 +119,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                     None => {
                         let context_key = (
                             dir.to_path_buf(),
-                            file.extension().map(OsString::from),
+                            file.extension().map(std::ffi::OsString::from),
                             occurrence.mode,
                         );
                         let (context, context_inputs) = resolution_contexts
