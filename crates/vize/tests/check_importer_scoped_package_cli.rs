@@ -8,6 +8,8 @@
 
 use std::{path::Path, process::Command};
 
+#[path = "support/corsa_path.rs"]
+mod corsa_path;
 #[path = "check_importer_scoped_package_cli/project_references.rs"]
 mod project_references;
 
@@ -27,18 +29,7 @@ fn write_file(root: &Path, path: &str, content: &str) {
 }
 
 fn resolve_test_corsa_path() -> Option<String> {
-    if let Some(path) = std::env::var_os("CORSA_PATH")
-        && Path::new(&path).is_file()
-    {
-        return Some(path.to_string_lossy().into_owned());
-    }
-    let root = workspace_root();
-    let sibling = root.parent()?.join("corsa-bind/.cache/tsgo");
-    if sibling.exists() {
-        return Some(sibling.display().to_string());
-    }
-    let workspace = root.join("node_modules/.bin/tsgo");
-    workspace.exists().then(|| workspace.display().to_string())
+    corsa_path::resolve(workspace_root())
 }
 
 fn run_check(project: &Path, corsa: &str, declaration: bool) -> std::process::Output {

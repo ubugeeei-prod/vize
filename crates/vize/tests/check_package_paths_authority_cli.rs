@@ -6,6 +6,8 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_path.rs"]
+mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
@@ -19,19 +21,7 @@ fn workspace_root() -> &'static Path {
 }
 
 fn resolve_test_corsa_path() -> Option<String> {
-    if let Some(path) = std::env::var_os("CORSA_PATH")
-        && Path::new(&path).is_file()
-    {
-        return Some(path.to_string_lossy().into_owned());
-    }
-    let root = workspace_root();
-    [
-        root.parent()?.join("corsa-bind/.cache/tsgo"),
-        root.join("node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|path| path.is_file())
-    .map(|path| path.display().to_string())
+    corsa_path::resolve(workspace_root())
 }
 
 fn write_file(root: &Path, path: &str, content: &str) {

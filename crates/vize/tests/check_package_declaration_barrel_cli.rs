@@ -218,10 +218,7 @@ fn workspace_root() -> &'static Path {
 }
 
 fn resolve_test_corsa_path() -> Option<String> {
-    std::env::var_os("CORSA_PATH")
-        .filter(|path| Path::new(path).is_file())
-        .map(|path| path.to_string_lossy().into_owned())
-        .or_else(|| corsa_path::resolve(workspace_root()))
+    corsa_path::resolve(workspace_root())
 }
 
 fn write(path: &Path, content: &str) {
