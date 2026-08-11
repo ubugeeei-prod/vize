@@ -19,10 +19,7 @@ import {
   uniqueAnchorOffset,
   type OracleSession,
 } from "./real-project-lsp-authored-utils.ts";
-import type {
-  AuthoredFileLifecycleEvidence,
-  LspAuthoredOracle,
-} from "./real-project-lsp-report.ts";
+import type { AuthoredFileLifecycleEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 
 type OracleDocument = { source: string; uri: string };
 type SymbolInformation = { location?: { range?: LspRange; uri?: string }; name?: string };
