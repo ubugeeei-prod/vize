@@ -1,5 +1,6 @@
 export * from "./async-resource.ts";
 export * from "./capability.ts";
+export * from "./disposal-scope.ts";
 export * from "./event-listener.ts";
 export * from "./locale.ts";
 export * from "./media-query.ts";

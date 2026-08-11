@@ -13,6 +13,7 @@ import {
   type UnavailableCapability,
 } from "./capability.js";
 import { type TextDirection, useLocale } from "./locale.js";
+import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
 
 type Equal<Left, Right> =
   (<Value>() => Value extends Left ? 1 : 2) extends <Value>() => Value extends Right ? 1 : 2
@@ -111,3 +112,19 @@ if (isCapabilityUnavailable(capabilityResult)) {
   // @ts-expect-error the unavailable branch has no capability value.
   void capabilityResult.value;
 }
+
+const disposalOwner = createDisposalScope({ scope: false });
+const cleanupRegistration = disposalOwner.add(() => undefined);
+const disposalChild = disposalOwner.child();
+
+disposalOwner.disposed satisfies boolean;
+disposalOwner.size satisfies number;
+cleanupRegistration.active satisfies boolean;
+cleanupRegistration.unregister() satisfies boolean;
+disposalChild.dispose();
+
+// @ts-expect-error cleanup registration accepts synchronous cleanup only.
+disposalOwner.add(async () => undefined);
+
+declare const disposalFailure: DisposalError;
+disposalFailure.code satisfies "VIZE_COMPOSE_DISPOSAL_FAILED";
