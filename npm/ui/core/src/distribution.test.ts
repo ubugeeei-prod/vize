@@ -10,6 +10,7 @@ const publicEntries = [
   "./button",
   "./checkbox",
   "./collection",
+  "./composite-navigation",
   "./controllable-state",
   "./id",
   "./interaction-modality",

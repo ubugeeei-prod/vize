@@ -19,6 +19,37 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "CompositeNavigationConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { createCollectionRegistry } from "./collection.ts";
+import { useCompositeNavigation } from "./composite-navigation.ts";
+
+const registry = createCollectionRegistry<string, string>();
+registry.register({ key: "alpha", value: "Alpha", textValue: "Alpha", order: 0 });
+registry.register({ key: "bravo", value: "Bravo", textValue: "Bravo", order: 1 });
+const navigation = useCompositeNavigation({
+  registry,
+  focusStrategy: "active-descendant",
+  getItemId: ({ key }) => "option-" + key,
+});
+</script>
+
+<template>
+  <div v-bind="navigation.getContainerProps()" role="listbox">
+    <div
+      v-for="key in ['alpha', 'bravo']"
+      :key="key"
+      v-bind="navigation.getItemProps(key)"
+      role="option"
+      :aria-selected="navigation.activeKey.value === key"
+    >
+      {{ key }}
+    </div>
+  </div>
+</template>
+`,
+  },
+  {
     filename: "TypeaheadConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { createCollectionRegistry } from "./collection.ts";

@@ -49,6 +49,11 @@
       "import": "./dist/collection.mjs",
       "default": "./dist/collection.mjs"
     },
+    "./composite-navigation": {
+      "types": "./dist/composite-navigation.d.mts",
+      "import": "./dist/composite-navigation.mjs",
+      "default": "./dist/composite-navigation.mjs"
+    },
     "./context": {
       "types": "./dist/context.d.mts",
       "import": "./dist/context.mjs",

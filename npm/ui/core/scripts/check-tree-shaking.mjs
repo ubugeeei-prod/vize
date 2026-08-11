@@ -71,6 +71,7 @@ const familySignatures = Object.freeze({
   button: /aria-busy/,
   checkbox: /aria-checked/,
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
+  "composite-navigation": /VIZE_UI_COMPOSITE_NAVIGATION_DISPOSED/,
   id: /DeterministicIdProvider/,
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
   focus: /VIZE_UI_FOCUS_DISPOSED/,
@@ -84,6 +85,7 @@ const familySignatures = Object.freeze({
 });
 
 const retainedFamilies = Object.freeze({
+  "composite-navigation": new Set(["composite-navigation", "typeahead"]),
   focus: new Set(["focus", "interaction-modality"]),
   "long-press": new Set(["long-press", "press"]),
 });
@@ -105,6 +107,12 @@ const componentCases = [
     family: "collection",
     exportName: "createCollectionRegistry",
     maximumJavaScriptGzipBytes: 3_150,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "composite-navigation",
+    exportName: "createCompositeNavigation",
+    maximumJavaScriptGzipBytes: 3_800,
     maximumCssGzipBytes: 0,
   },
   {

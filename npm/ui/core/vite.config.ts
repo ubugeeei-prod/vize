@@ -18,6 +18,7 @@ export default defineConfig({
       button: "src/button.ts",
       checkbox: "src/checkbox.ts",
       collection: "src/collection.ts",
+      "composite-navigation": "src/composite-navigation.ts",
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       id: "src/id.ts",
