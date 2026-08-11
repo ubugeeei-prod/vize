@@ -148,6 +148,13 @@ pub(crate) fn map_canonical_corsa_location(
 /// without interpreting coordinates from a synthetic forwarder. This is only
 /// valid for module-specifier definitions, where the destination is the module
 /// itself rather than a symbol range inside the generated file.
+///
+/// Every materialized identity, including a synthetic declaration shadow such
+/// as the `.d.vue.ts` forwarder TypeScript selects for a conditional package
+/// entry, still stands for exactly one authored file. Because this mapping
+/// keeps only that file identity and pins the range to the file origin, it
+/// stays correct for synthetic sources whose interiors are not position
+/// mappable.
 pub(crate) fn map_canonical_materialized_module_location(
     doc: &CanonicalVirtualDocument,
     location: &LspLocation,
@@ -156,9 +163,6 @@ pub(crate) fn map_canonical_materialized_module_location(
         .materialized_sources
         .iter()
         .find(|source| location_matches_uri(&location.uri, &source.request_uri))?;
-    if !materialized.mapping_kind.is_mappable() {
-        return None;
-    }
     let origin = tower_lsp::lsp_types::Position::new(0, 0);
     Some(Location {
         uri: materialized.source_uri.clone(),
