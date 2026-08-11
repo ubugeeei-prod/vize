@@ -12,12 +12,10 @@
  * The script is dependency-free (besides `cargo`, `critcmp`, and a checkout of
  * each side) so GitHub Actions can run it after checking out both commits.
  *
- * Cadence note: criterion is noisy on shared CI runners, so this is a reporting
- * gate by default — it prints the critcmp delta table and only fails when
- * `--threshold <pct>` is passed and a benchmark regresses past it. The workflow
- * runs it in report-only mode so micro-benchmark jitter never blocks a PR; the
- * threshold knob is wired so the gate can be tightened later without a code
- * change.
+ * Cadence note: relative Criterion deltas are noisy on shared CI runners, so
+ * the global percentage comparison is report-only by default. Suites can also
+ * declare conservative absolute median budgets for the reference runner; those
+ * remain hard gates even when no global `--threshold <pct>` is supplied.
  *
  * Documented JSX regression threshold (#1501): the four JSX cost dimensions —
  * parser/lowering (`jsx_lower`), Croquis semantic analysis
@@ -42,14 +40,15 @@ import {
   criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
+  evaluateAbsoluteBudgets,
   parseCritcmpExport,
   validateComparisonTable,
 } from "./criterion-baselines.mjs";
 
-// Criterion benches that exist under crates/*/benches and represent the hot
-// compiler/analysis/codegen paths. Each entry maps a cargo package to the
-// `[[bench]]` targets it owns; the `bench filter` narrows criterion to the
-// specific group so a full sweep stays inside the job timeout.
+// Criterion benches that exist in workspace benchmark targets and represent
+// hot compiler, analysis, codegen, and presentation paths. Each entry maps a
+// cargo package to the `[[bench]]` targets it owns; the `bench filter` narrows
+// Criterion to the specific group so a full sweep stays inside the job timeout.
 export const CRITERION_SUITES = [
   {
     package: "vize_atelier_sfc",
@@ -64,6 +63,16 @@ export const CRITERION_SUITES = [
   { package: "vize_atelier_jsx", benches: ["jsx_compile"], label: "JSX compile" },
   { package: "vize_croquis_cf", benches: ["cross_file"], label: "Cross-file analysis" },
   { package: "vize_doctor", benches: ["reporter"], label: "Doctor reporters" },
+  {
+    package: "vize_benchmarks",
+    benches: ["doctor_tui"],
+    label: "Doctor TUI",
+    absoluteBudgets: [
+      { name: "doctor_tui_10k/first_frame_120x40", maxMedianNs: 20_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/selection", maxMedianNs: 1_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/search", maxMedianNs: 1_000_000 },
+    ],
+  },
   { package: "vize_glyph", benches: ["formatter"], label: "Formatter" },
   { package: "vize_patina", benches: ["lint_bench", "markup_ir_bench"], label: "Lint" },
 ];
@@ -199,7 +208,13 @@ export function resolveSuiteSelection(selection) {
   };
 }
 
-export function renderSummary({ table, threshold, regressions, selection }) {
+export function renderSummary({
+  table,
+  threshold,
+  regressions,
+  selection,
+  absoluteBudgetResults = [],
+}) {
   const lines = [];
   lines.push("## Criterion A/B");
   lines.push("");
@@ -215,7 +230,7 @@ export function renderSummary({ table, threshold, regressions, selection }) {
   }
   lines.push(
     threshold == null
-      ? "Report-only: micro-benchmark mean estimates for base vs head (no gate)."
+      ? "Relative comparison: micro-benchmark estimates for base vs head (report-only)."
       : `Regression threshold: ${threshold}% (median).`,
   );
   lines.push("");
@@ -229,8 +244,30 @@ export function renderSummary({ table, threshold, regressions, selection }) {
       lines.push(`- ${regression.name}: +${regression.changePercent.toFixed(2)}%`);
     }
   }
+  if (absoluteBudgetResults.length > 0) {
+    lines.push("");
+    lines.push("### Absolute median budgets");
+    lines.push("");
+    lines.push("| Benchmark | Median | Budget | Result |");
+    lines.push("| --- | ---: | ---: | :---: |");
+    for (const result of absoluteBudgetResults) {
+      lines.push(
+        `| ${result.name} | ${formatDuration(result.medianNs)} | ${formatDuration(result.maxMedianNs)} | ${result.exceeded ? "FAIL" : "PASS"} |`,
+      );
+    }
+  }
   lines.push("");
   return `${lines.join("\n")}\n`;
+}
+
+function formatDuration(nanoseconds) {
+  if (nanoseconds >= 1_000_000) {
+    return `${(nanoseconds / 1_000_000).toFixed(2)} ms`;
+  }
+  if (nanoseconds >= 1_000) {
+    return `${(nanoseconds / 1_000).toFixed(2)} µs`;
+  }
+  return `${nanoseconds.toFixed(2)} ns`;
 }
 
 export function main(argv = process.argv.slice(2)) {
@@ -282,7 +319,18 @@ export function main(argv = process.argv.slice(2)) {
   }
   const regressions =
     baseExport && headExport ? compareBaselineExports(baseExport, headExport, threshold) : [];
-  const summary = renderSummary({ table, threshold, regressions, selection });
+  const absoluteBudgets = suites.flatMap((suite) => suite.absoluteBudgets ?? []);
+  const absoluteBudgetResults =
+    headExport && absoluteBudgets.length > 0
+      ? evaluateAbsoluteBudgets(headExport, absoluteBudgets)
+      : [];
+  const summary = renderSummary({
+    table,
+    threshold,
+    regressions,
+    selection,
+    absoluteBudgetResults,
+  });
 
   if (args.out) {
     writeFileSync(resolve(args.out), summary);
@@ -296,6 +344,13 @@ export function main(argv = process.argv.slice(2)) {
   if (threshold != null && regressions.length > 0) {
     console.error(
       `Criterion budget failed: ${regressions.length} benchmark(s) regressed past ${threshold}%.`,
+    );
+    process.exitCode = 1;
+  }
+  const exceededBudgets = absoluteBudgetResults.filter((result) => result.exceeded);
+  if (exceededBudgets.length > 0) {
+    console.error(
+      `Criterion absolute budget failed: ${exceededBudgets.length} benchmark(s) exceeded their median limit.`,
     );
     process.exitCode = 1;
   }

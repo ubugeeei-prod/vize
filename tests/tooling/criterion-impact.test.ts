@@ -16,6 +16,7 @@ import {
   criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
+  evaluateAbsoluteBudgets,
   parseCritcmpExport,
   validateComparisonTable,
 } from "../../bench/criterion-baselines.mjs";
@@ -45,15 +46,19 @@ function metadata(dependencies: Record<string, string[]> = {}) {
   const packages = names.map((name) => ({
     id: `${name}@0.1.0`,
     name,
-    manifest_path: `${repoDir}/crates/${name}/Cargo.toml`,
+    manifest_path:
+      name === "vize_benchmarks"
+        ? `${repoDir}/benchmarks/vize/Cargo.toml`
+        : `${repoDir}/crates/${name}/Cargo.toml`,
   }));
+  const effectiveDependencies = { vize_benchmarks: ["vize"], ...dependencies };
   return {
     packages,
     workspace_members: packages.map((pkg) => pkg.id),
     resolve: {
       nodes: packages.map((pkg) => ({
         id: pkg.id,
-        dependencies: (dependencies[pkg.name] ?? []).map((name) => `${name}@0.1.0`),
+        dependencies: (effectiveDependencies[pkg.name] ?? []).map((name) => `${name}@0.1.0`),
       })),
     },
   };
@@ -115,6 +120,36 @@ test("Doctor reporter benchmarks are enrolled in scoped Criterion A/B runs", () 
   assert.deepEqual(result.selected, ["vize_doctor"]);
 });
 
+test("Doctor TUI benchmarks carry explicit reference-runner latency budgets", () => {
+  const suite = CRITERION_SUITES.find(
+    ({ package: packageName }) => packageName === "vize_benchmarks",
+  );
+  assert.deepEqual(suite, {
+    package: "vize_benchmarks",
+    benches: ["doctor_tui"],
+    label: "Doctor TUI",
+    absoluteBudgets: [
+      { name: "doctor_tui_10k/first_frame_120x40", maxMedianNs: 20_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/selection", maxMedianNs: 1_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/search", maxMedianNs: 1_000_000 },
+    ],
+  });
+
+  const direct = selectCriterionSuites({
+    changedPaths: ["benchmarks/vize/doctor_tui.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(direct.selected, ["vize_benchmarks"]);
+
+  const dependency = selectCriterionSuites({
+    changedPaths: ["crates/vize/src/commands/doctor/tui.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(dependency.selected, ["vize_benchmarks"]);
+});
+
 test("reverse dependency impact selects every suite that consumes a changed package", () => {
   const dependencies = Object.fromEntries(suiteNames.map((name) => [name, ["vize_atelier_core"]]));
   const result = selectCriterionSuites({
@@ -127,9 +162,9 @@ test("reverse dependency impact selects every suite that consumes a changed pack
   assert.deepEqual(result.skipped, []);
 });
 
-test("CLI-only changes skip unrelated Criterion suites", () => {
+test("non-Rust CLI fixture changes skip unrelated Criterion suites", () => {
   const result = selectCriterionSuites({
-    changedPaths: ["crates/vize/src/build/input.rs"],
+    changedPaths: ["docs/cli.md"],
     metadata: metadata(),
     repoDir,
   });
@@ -137,11 +172,15 @@ test("CLI-only changes skip unrelated Criterion suites", () => {
   assert.equal(result.mode, "scoped");
   assert.deepEqual(result.selected, []);
   assert.deepEqual(result.skipped, suiteNames);
-  assert.match(result.reason, /vize/);
+  assert.match(result.reason, /none/);
 });
 
 test("lockfiles and shared benchmark infrastructure select the full inventory", () => {
-  for (const changedPath of ["Cargo.lock", "bench/criterion-ab.mjs"]) {
+  for (const changedPath of [
+    "Cargo.lock",
+    "bench/criterion-ab.mjs",
+    "bench/criterion-baselines.mjs",
+  ]) {
     const result = selectCriterionSuites({
       changedPaths: [changedPath],
       metadata: metadata(),
@@ -242,6 +281,39 @@ test("Criterion baseline comparison fails closed and uses exported medians", () 
   );
 });
 
+test("Criterion absolute budgets pass, fail, and reject missing measurements", () => {
+  const head = parseCritcmpExport(
+    baselineExport("head", { first: 4_500_000, selection: 150_000 }),
+    "head",
+  );
+  assert.deepEqual(
+    evaluateAbsoluteBudgets(head, [
+      { name: "first", maxMedianNs: 20_000_000 },
+      { name: "selection", maxMedianNs: 100_000 },
+    ]),
+    [
+      { name: "first", medianNs: 4_500_000, maxMedianNs: 20_000_000, exceeded: false },
+      { name: "selection", medianNs: 150_000, maxMedianNs: 100_000, exceeded: true },
+    ],
+  );
+  assert.throws(
+    () => evaluateAbsoluteBudgets(head, [{ name: "missing", maxMedianNs: 1_000_000 }]),
+    /benchmark is missing/,
+  );
+  assert.throws(
+    () => evaluateAbsoluteBudgets(head, [{ name: "first", maxMedianNs: 0 }]),
+    /Invalid Criterion absolute budget/,
+  );
+  assert.throws(
+    () =>
+      evaluateAbsoluteBudgets(head, [
+        { name: "first", maxMedianNs: 1 },
+        { name: "first", maxMedianNs: 2 },
+      ]),
+    /Duplicate/,
+  );
+});
+
 test("Criterion comparison table requires both base and head columns", () => {
   assert.doesNotThrow(() =>
     validateComparisonTable("group  base  head\n-----  ----  ----\nshared  1.00  1.12\n"),
@@ -260,6 +332,27 @@ test("Criterion driver reports a useful summary when no suite is affected", () =
   assert.match(summary, /Ran: none/);
   assert.match(summary, /Skipped: vize_atelier_sfc, vize_atelier_jsx/);
   assert.match(summary, /timing execution was skipped/);
+});
+
+test("Criterion summary makes hard absolute budget results reviewable", () => {
+  const selection = resolveSuiteSelection({
+    selected: ["vize_benchmarks"],
+    reason: "Doctor TUI changed.",
+  });
+  const summary = renderSummary({
+    table: "group  base  head\n-----  ----  ----\nfirst  1.00  1.10\n",
+    threshold: undefined,
+    regressions: [],
+    selection,
+    absoluteBudgetResults: [
+      { name: "first", medianNs: 4_500_000, maxMedianNs: 20_000_000, exceeded: false },
+      { name: "selection", medianNs: 1_250_000, maxMedianNs: 1_000_000, exceeded: true },
+    ],
+  });
+
+  assert.match(summary, /Absolute median budgets/);
+  assert.match(summary, /first \| 4\.50 ms \| 20\.00 ms \| PASS/);
+  assert.match(summary, /selection \| 1\.25 ms \| 1\.00 ms \| FAIL/);
 });
 
 function baselineExport(name: string, medians: Record<string, number>): string {

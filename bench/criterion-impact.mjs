@@ -12,6 +12,7 @@ const FULL_SWEEP_PATHS = new Set([
   "Cargo.lock",
   "Cargo.toml",
   "bench/criterion-ab.mjs",
+  "bench/criterion-baselines.mjs",
   "bench/criterion-impact.mjs",
   "bench/dialect-guard.mjs",
   "bench/generate.mjs",
@@ -148,7 +149,9 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir }) {
     );
   }
 
-  const rustPaths = normalizedPaths.filter((path) => path.startsWith("crates/"));
+  const rustPaths = normalizedPaths.filter(
+    (path) => path.startsWith("crates/") || path.startsWith("benchmarks/"),
+  );
   const unknownPaths = rustPaths.filter((path) => ownerForPath(path, packages) == null);
   if (unknownPaths.length > 0) {
     return {

@@ -42,6 +42,44 @@ export function compareBaselineExports(base, head, thresholdPercent) {
   return regressions;
 }
 
+/**
+ * Evaluate exact Criterion benchmark medians against conservative hard limits.
+ *
+ * Criterion exports point estimates in nanoseconds. Missing, duplicate, or
+ * invalid budget declarations fail closed instead of silently weakening CI.
+ */
+export function evaluateAbsoluteBudgets(head, budgets) {
+  if (!isRecord(head) || !isRecord(head.benchmarks)) {
+    throw new Error("Criterion absolute budgets require a parsed head export");
+  }
+  if (!Array.isArray(budgets)) {
+    throw new Error("Criterion absolute budgets must be an array");
+  }
+  const names = new Set();
+  return budgets.map((budget) => {
+    if (!isRecord(budget) || typeof budget.name !== "string" || budget.name.length === 0) {
+      throw new Error("Criterion absolute budget requires a benchmark name");
+    }
+    if (names.has(budget.name)) {
+      throw new Error(`Duplicate Criterion absolute budget: ${budget.name}`);
+    }
+    names.add(budget.name);
+    if (!Number.isFinite(budget.maxMedianNs) || budget.maxMedianNs <= 0) {
+      throw new Error(`Invalid Criterion absolute budget for ${budget.name}`);
+    }
+    if (!(budget.name in head.benchmarks)) {
+      throw new Error(`Criterion absolute budget benchmark is missing: ${budget.name}`);
+    }
+    const medianNs = medianPointEstimate(head.benchmarks[budget.name], `head/${budget.name}`);
+    return {
+      name: budget.name,
+      medianNs,
+      maxMedianNs: budget.maxMedianNs,
+      exceeded: medianNs > budget.maxMedianNs,
+    };
+  });
+}
+
 export function validateComparisonTable(table) {
   const lines = table.split("\n").filter((line) => line.trim().length > 0);
   const columns = lines[0]?.trim().split(/\s+/);
