@@ -29,12 +29,14 @@ pub(super) fn resolve_relative_import(
     resolve_import_base(&dir.join(specifier), canonical_paths, options)
 }
 
+/// Resolution on the authored import walk is the hot path, so consulted
+/// candidates are only materialized when a caller needs them for invalidation.
 pub(crate) fn resolve_import_base(
     base: &Path,
     canonical_paths: &mut CanonicalPathCache,
     options: ImportFileOptions,
 ) -> Option<PathBuf> {
-    resolve_import_base_with_inputs(base, canonical_paths, options).0
+    probe_import_base(base, canonical_paths, options, None)
 }
 
 pub(crate) fn resolve_import_base_with_inputs(
@@ -43,39 +45,58 @@ pub(crate) fn resolve_import_base_with_inputs(
     options: ImportFileOptions,
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
     let mut inputs = vec![base.to_path_buf()];
+    let resolved = probe_import_base(base, canonical_paths, options, Some(&mut inputs));
+    (resolved, inputs)
+}
+
+fn probe_import_base(
+    base: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+    options: ImportFileOptions,
+    mut inputs: Option<&mut Vec<PathBuf>>,
+) -> Option<PathBuf> {
     if ImportFileOptions::path_has_typescript_source_extension(base) && base.is_file() {
-        return (Some(canonical_paths.canonicalize(base)), inputs);
+        return Some(canonical_paths.canonicalize(base));
     }
-    if let Some(rewritten) =
-        rewrite_js_to_ts(base, canonical_paths, options.include_jsx, &mut inputs)
-    {
-        return (Some(rewritten), inputs);
+    if let Some(rewritten) = rewrite_js_to_ts(
+        base,
+        canonical_paths,
+        options.include_jsx,
+        inputs.as_deref_mut(),
+    ) {
+        return Some(rewritten);
     }
     if options.javascript_extension_is_enabled(base) && base.is_file() {
-        return (Some(canonical_paths.canonicalize(base)), inputs);
+        return Some(canonical_paths.canonicalize(base));
     }
     for ext in options.resolve_extensions() {
         let candidate = append_extension(base, ext);
-        inputs.push(candidate.clone());
+        record_consulted(inputs.as_deref_mut(), &candidate);
         if candidate.is_file() {
-            return (Some(canonical_paths.canonicalize(&candidate)), inputs);
+            return Some(canonical_paths.canonicalize(&candidate));
         }
     }
     for ext in options.resolve_extensions() {
         let candidate = base.join(cstr_index(ext));
-        inputs.push(candidate.clone());
+        record_consulted(inputs.as_deref_mut(), &candidate);
         if candidate.is_file() {
-            return (Some(canonical_paths.canonicalize(&candidate)), inputs);
+            return Some(canonical_paths.canonicalize(&candidate));
         }
     }
-    (None, inputs)
+    None
+}
+
+fn record_consulted(inputs: Option<&mut Vec<PathBuf>>, candidate: &Path) {
+    if let Some(inputs) = inputs {
+        inputs.push(candidate.to_path_buf());
+    }
 }
 
 fn rewrite_js_to_ts(
     base: &Path,
     canonical_paths: &mut CanonicalPathCache,
     include_jsx: bool,
-    inputs: &mut Vec<PathBuf>,
+    mut inputs: Option<&mut Vec<PathBuf>>,
 ) -> Option<PathBuf> {
     let name = base.file_name()?.to_str()?;
     let (stem, extensions): (&str, &[&str]) = if let Some(stem) = name.strip_suffix(".mjs") {
@@ -98,7 +119,7 @@ fn rewrite_js_to_ts(
     };
     for ext in extensions {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
-        inputs.push(candidate.clone());
+        record_consulted(inputs.as_deref_mut(), &candidate);
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
         }

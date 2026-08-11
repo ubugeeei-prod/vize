@@ -76,12 +76,72 @@ fn package_aware_registration_walks_a_package_closure_once_per_source() {
         "memoized answers must replay the walked answer: {answers:?}"
     );
     assert_eq!(
-        cache.len(),
+        cache.registration_entries(),
         1,
         "one package closure keeps one memo entry, however many importers reach it"
     );
 
     let _ = std::fs::remove_dir_all(&root);
+}
+
+/// The bounded reachability scan reads and parses a package's dependency
+/// closure, so repeating it for every authored importer of that package
+/// reintroduces exactly the per-importer cost the registration memo removes
+/// (#4137). Distinct importers keep distinct memo entries, so the scan itself
+/// must be memoized against the route it inspects.
+#[test]
+fn package_route_reachability_is_scanned_once_per_route() {
+    let root = tempfile::tempdir().unwrap();
+    let first = write(
+        root.path(),
+        "src/first.ts",
+        "import { widget } from 'widgets';\nvoid widget;\n",
+    );
+    let second = write(
+        root.path(),
+        "src/second.ts",
+        "import { widget } from 'widgets';\nvoid widget;\n",
+    );
+    write(
+        root.path(),
+        "node_modules/widgets/package.json",
+        r#"{"name":"widgets","types":"index.d.ts"}"#,
+    );
+    write(
+        root.path(),
+        "node_modules/widgets/index.d.ts",
+        "export declare const widget: number;\n",
+    );
+
+    let mut canonical_paths = CanonicalPathCache::default();
+    let first = canonical_paths.canonicalize(&first);
+    let second = canonical_paths.canonicalize(&second);
+    let mut packages = PackageRouteResolver::default();
+    let mut cache = registration::VirtualRegistrationCache::default();
+
+    for entry in [&first, &second] {
+        let mut discovery = registration::VirtualRegistrationDiscovery::default();
+        registration::non_relative_import_needs_virtual_registration(
+            entry,
+            &mut canonical_paths,
+            ImportFileOptions::from(false),
+            None,
+            Some(&mut packages),
+            &mut cache,
+            &mut discovery,
+        );
+    }
+
+    assert_eq!(
+        cache.registration_entries(),
+        2,
+        "each authored source keeps its own memo entry"
+    );
+    assert_eq!(
+        packages.metrics().reachability_checks,
+        1,
+        "one package route is scanned once, however many importers reach it"
+    );
 }
 
 #[test]
