@@ -35,8 +35,8 @@
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       },
       "lspIncrementalBudget": {
         "suite": "vben-lsp-incremental",
@@ -99,8 +99,8 @@
         "packageManagerVersion": "10.33.4",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -132,8 +132,8 @@
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -252,8 +252,8 @@
         "packageManagerVersion": "10.13.1",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -291,8 +291,8 @@
         "packageManagerVersion": "9.6.0",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -324,8 +324,8 @@
         "packageManagerVersion": "10.26.1",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -380,8 +380,8 @@
         "packageManagerVersion": "10.28.2",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.02,
-        "maxFalseNegativeRatio": 0.02,
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0,
         "largeProjectRegressionTarget": true
       }
     },
@@ -481,8 +481,8 @@
           "prepare": ["pnpm", "exec", "nuxt", "prepare"]
         },
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.02,
-        "maxFalseNegativeRatio": 0.02,
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0,
         "largeProjectRegressionTarget": true
       }
     },
@@ -585,8 +585,8 @@
         "packageManagerVersion": "10.30.1",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.02,
-        "maxFalseNegativeRatio": 0.02,
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0,
         "largeProjectRegressionTarget": true
       },
       "lspIncrementalBudget": {
@@ -735,7 +735,17 @@
       "vueGlobs": ["template/**/*.vue"],
       "tsconfig": "tsconfig.json",
       "coverage": ["compiler", "linter", "typechecker", "formatter", "syntax-highlighter", "lsp"],
-      "diff": "curator-compare"
+      "diff": "curator-compare",
+      "typecheckPerformance": {
+        "enabled": true,
+        "compareTo": "vue-tsc",
+        "packageManager": "pnpm",
+        "packageManagerVersion": "11.10.0",
+        "lockfile": "pnpm-lock.yaml",
+        "hangTimeoutMs": 300000,
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
+      }
     },
     {
       "id": "vue-router",
@@ -839,8 +849,8 @@
         "packageManagerVersion": "11.9.0",
         "lockfile": "package-lock.json",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {
@@ -1173,8 +1183,8 @@
         "packageManagerVersion": "4.9.2",
         "lockfile": "yarn.lock",
         "hangTimeoutMs": 300000,
-        "maxFalsePositiveRatio": 0.05,
-        "maxFalseNegativeRatio": 0.05
+        "maxFalsePositiveRatio": 0,
+        "maxFalseNegativeRatio": 0
       }
     },
     {

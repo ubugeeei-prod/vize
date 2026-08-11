@@ -22,6 +22,13 @@ export function renderMarkdown(artifact) {
     `## ${artifact.project} typecheck divergence`,
     "",
     `Commit: ${artifact.evidence.commitSha}`,
+    `Vize version: ${artifact.source.version}`,
+    `Vize peak RSS: ${artifact.source.peakRssBytes} bytes`,
+    `Vize seeded peak RSS: ${maxSeededRss(artifact, "vize")} bytes`,
+    `vue-tsc version: ${artifact.baseline.version}`,
+    `vue-tsc peak RSS: ${artifact.baseline.peakRssBytes} bytes`,
+    `vue-tsc seeded peak RSS: ${maxSeededRss(artifact, "baseline")} bytes`,
+    `Seeded mutation: ${artifact.seededMutation.tier} clean/broken/repaired passed`,
     `Vize diagnostics: ${summary.vizeDiagnosticCount}`,
     `vue-tsc diagnostics: ${summary.baselineDiagnosticCount}`,
     `Shared: ${summary.sharedCount}`,
@@ -34,6 +41,8 @@ export function renderMarkdown(artifact) {
     `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
     `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
     `vue-tsc configuration errors: ${artifact.baseline.configuration.errorCount}`,
+    `vue-tsc blocking configuration errors: ${artifact.baseline.configuration.blockingErrorCount}`,
+    `vue-tsc ignored deprecation errors: ${artifact.baseline.configuration.ignoredDeprecationErrorCount}`,
     `Vize Vue files: ${coverage.vizeVueFileCount}`,
     `vue-tsc Vue files: ${coverage.baselineVueFileCount}`,
     `Shared Vue files: ${coverage.sharedVueFileCount}`,
@@ -50,4 +59,8 @@ export function renderMarkdown(artifact) {
 
 function describeVerdict(budget) {
   return budget.unusableReason == null ? budget.verdict : `unusable (${budget.unusableReason})`;
+}
+
+function maxSeededRss(artifact, tool) {
+  return Math.max(...artifact.seededMutation.states.map((state) => state[tool].peakRssBytes));
 }

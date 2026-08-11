@@ -18,9 +18,13 @@ import {
   assertBudgetPassed,
   evaluateBudget,
   parseBudgetMode,
+  validateExactParityPerformance,
 } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
+import { readTypecheckPreparationEvidence } from "./typecheck-preparation-evidence.mjs";
+import { runMeasured } from "./typecheck-process-run.mjs";
+import { runSeededTypecheckMutation } from "./typecheck-seeded-mutation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -38,19 +42,34 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const selected = registry.projects
     .filter((_, index) => index % args.shardCount === args.shardIndex)
     .filter((project) => project.typecheckPerformance?.enabled === true);
-  if (selected.length !== 1) {
+  if (selected.length === 0) {
     throw new Error(
-      `Expected exactly one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found ${selected.length}`,
+      `Expected at least one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found 0`,
     );
   }
+  const vueTsc = resolveVueTsc(args.vueTscBin);
+  const vize = resolveExecutable(args.vizeBin, "Vize");
+  return selected.map((project) => runProject(args, project, vueTsc, vize));
+}
 
-  const project = selected[0];
-  validatePerformanceConfig(project.typecheckPerformance);
+function runProject(args, project, vueTsc, vize) {
+  validateExactParityPerformance(project.typecheckPerformance);
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   const summary = readAndValidateSummary(args.reportDir, project);
-  const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
-  const vueTsc = resolveVueTsc(args.vueTscBin);
+  const preparation = readTypecheckPreparationEvidence(
+    args.reportDir,
+    project,
+    summary.evidence,
+    fixtureRoot,
+  );
+  const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary, vize.path);
+  const seededMutation = runSeededTypecheckMutation({
+    fixtureRoot,
+    project,
+    vizeBin: vize.path,
+    vueTscBin: vueTsc.path,
+  });
   const baselineProject = materializeBaselineProject(
     fixtureRoot,
     args.reportDir,
@@ -58,15 +77,13 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     vizeRun.payload.parsed,
   );
   const baselineArgs = ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject.path];
-  const startedAt = Date.now();
-  const baseline = spawnSync(vueTsc.path, baselineArgs, {
+  const baseline = runMeasured(vueTsc.path, baselineArgs, {
     cwd: fixtureRoot,
     encoding: "utf8",
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
     maxBuffer: 1024 * 1024 * 1024,
     timeout: project.typecheckPerformance.hangTimeoutMs,
   });
-  const durationMs = Date.now() - startedAt;
   if (baseline.error != null)
     throw new Error(`vue-tsc failed to run: ${errorMessage(baseline.error)}`);
   if (baseline.status !== 0 && baseline.status !== 2) {
@@ -95,18 +112,21 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   );
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 3,
+    version: 4,
     project: project.id,
     revision: project.revision,
     tsconfig: baselineProject.sourceProject,
     evidence: summary.evidence,
-    source: vizeRun.source,
+    preparation,
+    seededMutation,
+    source: { ...vizeRun.source, version: vize.version },
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
       configSha256: sha256(baselineProject.source),
       sourceConfigSha256: sha256(readFileSync(resolve(fixtureRoot, baselineProject.sourceProject))),
       version: vueTsc.version,
-      durationMs,
+      durationMs: baseline.durationMs,
+      peakRssBytes: baseline.peakRssBytes,
       exitCode: baseline.status,
       configuration,
       coverage,
@@ -157,7 +177,7 @@ function readAndValidateSummary(reportDir, project) {
   return summary;
 }
 
-function readAndValidateVizeRun(reportDir, project, summary) {
+function readAndValidateVizeRun(reportDir, project, summary, vizeBin) {
   const projectSummary = summary.projects.find((entry) => entry.id === project.id);
   const runs = projectSummary.runs.filter((run) => run.tool === "typechecker");
   if (runs.length !== 1 || !["ok", "findings"].includes(runs[0].status)) {
@@ -229,6 +249,18 @@ function readAndValidateVizeRun(reportDir, project, summary) {
   if (runs[0].fileCount !== payload.parsed.fileCount) {
     throw new Error(`Fixture matrix typechecker file count is inconsistent for ${project.id}`);
   }
+  const expectedArgs = ["check", ...project.vueGlobs, "--format", "json", "--no-config"];
+  if (project.tsconfig != null) expectedArgs.push("--tsconfig", project.tsconfig);
+  if (
+    runs[0].command !== displayCommand(vizeBin, expectedArgs) ||
+    runs[0].cwd !== project.fixturePath ||
+    !Number.isSafeInteger(runs[0].durationMs) ||
+    runs[0].durationMs < 0 ||
+    !Number.isSafeInteger(runs[0].peakRssBytes) ||
+    runs[0].peakRssBytes <= 0
+  ) {
+    throw new Error(`Fixture matrix typechecker execution evidence is invalid for ${project.id}`);
+  }
   if (
     canonicalJson(runs[0].coverage) !==
     canonicalJson(summarizeTypecheckerCoverage(payload.typecheckerCoverage))
@@ -242,16 +274,12 @@ function readAndValidateVizeRun(reportDir, project, summary) {
     source: {
       payloadSha256: sha256(rawPayload),
       fileCount: payload.parsed.fileCount,
+      command: runs[0].command,
+      cwd: runs[0].cwd,
+      durationMs: runs[0].durationMs,
+      peakRssBytes: runs[0].peakRssBytes,
     },
   };
-}
-
-function validatePerformanceConfig(performance) {
-  if (!Number.isSafeInteger(performance.hangTimeoutMs) || performance.hangTimeoutMs <= 0) {
-    throw new Error("typecheckPerformance.hangTimeoutMs must be a positive safe integer");
-  }
-  ratio(performance.maxFalsePositiveRatio, "maxFalsePositiveRatio");
-  ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
 }
 
 function resolveVueTsc(value) {
@@ -263,6 +291,16 @@ function resolveVueTsc(value) {
   return { path: candidate, version };
 }
 
+function resolveExecutable(value, label) {
+  const candidate = isAbsolute(value) ? value : resolve(repoRoot, value);
+  const probe = spawnSync(candidate, ["--version"], { encoding: "utf8", timeout: 10_000 });
+  const version = (probe.stdout ?? "").trim();
+  if (probe.error != null || probe.status !== 0 || version === "") {
+    throw new Error(`${label} is not runnable: ${value}`);
+  }
+  return { path: candidate, version };
+}
+
 function parseArgs(argv) {
   const args = {
     budgetMode: "enforce",
@@ -270,6 +308,7 @@ function parseArgs(argv) {
     reportDir: null,
     shardCount: 1,
     shardIndex: 0,
+    vizeBin: null,
     vueTscBin: null,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -283,10 +322,12 @@ function parseArgs(argv) {
     else if (arg === "--report-dir") args.reportDir = resolve(repoRoot, value());
     else if (arg === "--shard-count") args.shardCount = integer(value(), arg, 1);
     else if (arg === "--shard-index") args.shardIndex = integer(value(), arg, 0);
+    else if (arg === "--vize-bin") args.vizeBin = value();
     else if (arg === "--vue-tsc-bin") args.vueTscBin = value();
     else throw new Error(`Unknown argument: ${arg}`);
   }
   if (args.reportDir == null) throw new Error("--report-dir is required");
+  if (args.vizeBin == null) throw new Error("--vize-bin is required");
   if (args.vueTscBin == null) throw new Error("--vue-tsc-bin is required");
   if (args.shardIndex >= args.shardCount) {
     throw new Error("--shard-index must be less than --shard-count");
@@ -315,12 +356,6 @@ function canonicalJson(value) {
       .join(",")}}`;
   }
   return JSON.stringify(value);
-}
-
-function ratio(value, name) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
-    throw new Error(`typecheckPerformance.${name} must be a finite number between 0 and 1`);
-  }
 }
 
 function sha256(value) {

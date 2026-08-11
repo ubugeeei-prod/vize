@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 /**
@@ -37,7 +37,10 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * inside the first and adds nothing.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
-  const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
+  const outputDir = join(reportDir, `${project.id}-vue-tsc`);
+  mkdirSync(outputDir, { recursive: true });
+  mirrorDependencyRoot(fixtureRoot, outputDir);
+  const outputPath = join(outputDir, "tsconfig.json");
   const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
   const sourcePath = resolve(fixtureRoot, sourceProject);
@@ -48,6 +51,12 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   ];
   const config = {
     extends: configRelativePath(configDir, sourcePath),
+    // The comparison project is an ephemeral no-emit root list, never a build
+    // reference. Fixtures such as element-plus set `composite: true` in the
+    // authored config and invoke vue-tsc with `--composite false`; inheriting it
+    // here makes TypeScript reject transitive sources with TS6307 instead of
+    // checking them. These two build-cache options do not affect type semantics.
+    compilerOptions: { composite: false, incremental: false },
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
@@ -58,6 +67,19 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   const source = `${JSON.stringify(config, null, 2)}\n`;
   writeFileSync(outputPath, source);
   return { path: outputPath, source, sourceProject };
+}
+
+function mirrorDependencyRoot(fixtureRoot, outputDir) {
+  const fixtureDependencies = join(fixtureRoot, "node_modules");
+  if (!existsSync(fixtureDependencies)) return;
+  const mirror = join(outputDir, "node_modules");
+  if (existsSync(mirror)) {
+    if (realpathSync(mirror) !== realpathSync(fixtureDependencies)) {
+      throw new Error(`Baseline dependency mirror is stale: ${mirror}`);
+    }
+    return;
+  }
+  symlinkSync(fixtureDependencies, mirror, process.platform === "win32" ? "junction" : "dir");
 }
 
 function configRelativePath(from, to) {

@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -69,6 +70,9 @@ export function setup(options: FixtureOptions = {}) {
   );
   const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-divergence-report-"));
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-divergence-vue-tsc-"));
+  const vueTsc = path.join(fakeDir, "vue-tsc.mjs");
+  const vize = path.join(fakeDir, "vize.mjs");
+  const invocationPath = path.join(fakeDir, "invocation.json");
   const fixturePath = path.relative(root, fixtureRoot);
   const project = {
     id: "fixture",
@@ -83,8 +87,8 @@ export function setup(options: FixtureOptions = {}) {
       packageManagerVersion: "10.0.0",
       lockfile: "pnpm-lock.yaml",
       hangTimeoutMs: 5_000,
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
     },
   };
   fs.mkdirSync(path.join(fixtureRoot, "src"));
@@ -142,6 +146,10 @@ export function setup(options: FixtureOptions = {}) {
         runs: [
           {
             tool: "typechecker",
+            command: `${vize} check src/**/*.vue --format json --no-config --tsconfig tsconfig.json`,
+            cwd: fixturePath,
+            durationMs: 1,
+            peakRssBytes: 1,
             status: exitCode === 0 ? "ok" : "findings",
             exitCode,
             fileCount: 1,
@@ -152,8 +160,37 @@ export function setup(options: FixtureOptions = {}) {
       },
     ],
   });
-  const vueTsc = path.join(fakeDir, "vue-tsc.mjs");
-  const invocationPath = path.join(fakeDir, "invocation.json");
+  const lockfile = fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"));
+  const baselineConfig = fs.readFileSync(path.join(fixtureRoot, "tsconfig.json"));
+  writeJson(path.join(reportDir, "fixture-typecheck-dependencies.json"), {
+    schema: "vize.fixtureTypecheckDependencyInstall",
+    version: 3,
+    project: "fixture",
+    revision: project.revision,
+    evidence: {
+      commitSha,
+      runtime: { name: "node", version: process.versions.node },
+    },
+    packageManager: { name: "pnpm", version: "10.0.0" },
+    lockfile: {
+      path: "pnpm-lock.yaml",
+      sizeBytes: lockfile.byteLength,
+      sha256: sha256(lockfile),
+    },
+    install: {
+      command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+      durationMs: 1,
+      exitCode: 0,
+      stdoutSha256: sha256(""),
+      stderrSha256: sha256(""),
+    },
+    baselinePrepare: null,
+    baselineConfig: {
+      path: "tsconfig.json",
+      sizeBytes: baselineConfig.byteLength,
+      sha256: sha256(baselineConfig),
+    },
+  });
   writeVueTsc(
     vueTsc,
     `process.stdout.write(${JSON.stringify(
@@ -163,7 +200,17 @@ export function setup(options: FixtureOptions = {}) {
     )}); process.exit(2);`,
     invocationPath,
   );
-  return { fixtureRoot, reportDir, fakeDir, registryPath, outputPath, vueTsc, invocationPath };
+  writeFakeVize(vize);
+  return {
+    fixtureRoot,
+    reportDir,
+    fakeDir,
+    registryPath,
+    outputPath,
+    vueTsc,
+    vize,
+    invocationPath,
+  };
 }
 
 export function writeVueTsc(pathname: string, runBody: string, invocationPath?: string) {
@@ -173,7 +220,7 @@ export function writeVueTsc(pathname: string, runBody: string, invocationPath?: 
       : `fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }));`;
   fs.writeFileSync(
     pathname,
-    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }\n${recordInvocation}\n${runBody}\n`,
+    `#!/usr/bin/env node\nimport fs from "node:fs";\nimport path from "node:path";\nif (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }\n${seededVueTscBody()}\n${recordInvocation}\n${runBody}\n`,
   );
   fs.chmodSync(pathname, 0o755);
 }
@@ -191,6 +238,8 @@ export function run(
       fixture.registryPath,
       "--report-dir",
       fixture.reportDir,
+      "--vize-bin",
+      fixture.vize,
       "--vue-tsc-bin",
       fixture.vueTsc,
       ...extraArgs,
@@ -235,6 +284,22 @@ export function updateVizeOutput(
 
 export function writeJson(pathname: string, value: unknown) {
   fs.writeFileSync(pathname, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function sha256(value: string | Buffer) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function writeFakeVize(pathname: string) {
+  fs.writeFileSync(
+    pathname,
+    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("vize 0.0.0"); process.exit(0); }\nconst probe = ".vize-typecheck-parity-seed.vue";\nconst source = fs.readFileSync(probe, "utf8");\nconst broken = source.includes("= 42;");\nconst report = { errorCount: broken ? 1 : 0, warningCount: 0, fileCount: 1, files: [{ file: probe, diagnostics: broken ? ["error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."] : [] }] };\nprocess.stdout.write(JSON.stringify(report));\nprocess.exit(broken ? 1 : 0);\n`,
+  );
+  fs.chmodSync(pathname, 0o755);
+}
+
+function seededVueTscBody() {
+  return `const config = process.argv.at(-1);\nif (config?.endsWith(".vize-typecheck-parity-seed.tsconfig.json")) {\n  const probe = path.join(process.cwd(), ".vize-typecheck-parity-seed.vue");\n  const broken = fs.readFileSync(probe, "utf8").includes("= 42;");\n  if (broken) process.stdout.write(probe + "(2,7): error TS2322: Type 'number' is not assignable to type 'string'.\\n");\n  process.stdout.write(probe + "\\n");\n  process.exit(broken ? 2 : 0);\n}`;
 }
 
 export function updateJson(pathname: string, update: (value: any) => void) {

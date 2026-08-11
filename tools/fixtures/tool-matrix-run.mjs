@@ -20,6 +20,7 @@ import { snapshotFormatterInputs, validateFormatterOutput } from "./tool-matrix-
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
 import { validateLinterOutput } from "./tool-matrix-linter.mjs";
 import { validatedFileCount } from "./tool-matrix-metrics.mjs";
+import { runMeasured } from "./typecheck-process-run.mjs";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
@@ -42,6 +43,7 @@ export function runTool(project, tool, args, launch, outputDir) {
     command: displayCommand(launch.command, commandArgs),
     cwd: relative(repoRoot, cwd),
     durationMs: 0,
+    peakRssBytes: null,
     fileCount: null,
     exitCode: null,
     outputPath: null,
@@ -57,17 +59,22 @@ export function runTool(project, tool, args, launch, outputDir) {
       : null;
   try {
     const startedAt = Date.now();
-    const result = spawnSync(launch.command, commandArgs, {
+    const processOptions = {
       cwd,
       encoding: "utf8",
       env: { ...process.env, LANG: "C", LC_ALL: "C" },
       maxBuffer: 1024 * 1024 * 1024,
       timeout: args.timeoutMs,
-    });
+    };
+    const result =
+      tool === "typechecker" && ["darwin", "linux"].includes(process.platform)
+        ? runMeasured(launch.command, commandArgs, processOptions)
+        : spawnSync(launch.command, commandArgs, processOptions);
     const rawPath = join(outputDir, `${project.id}-${tool}.json`);
     const completed = {
       ...base,
       durationMs: Date.now() - startedAt,
+      peakRssBytes: result.peakRssBytes ?? null,
       exitCode: result.status,
       outputPath: relative(repoRoot, rawPath),
     };

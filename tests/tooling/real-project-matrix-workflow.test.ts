@@ -126,6 +126,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       waiverAuditIndex < runIndex,
   );
   assert.match(dependency.run ?? "", /tools\/fixtures\/typecheck-dependency-prepare\.mjs/);
+  assert.match(dependency.run ?? "", /tools\/fixtures\/typecheck-parity-exclusions\.mjs/);
   assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
@@ -228,6 +229,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(divergence?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence?.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
+  assert.match(divergence?.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
   assert.equal(divergence?.env?.BUDGET_MODE, "enforce");
   assert.equal(verdict.if, "${{ always() }}");

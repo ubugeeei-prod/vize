@@ -6,6 +6,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
+import { installArguments } from "./typecheck-dependency-contract.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -17,17 +18,19 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const selected = registry.projects
     .filter((_, index) => index % args.shardCount === args.shardIndex)
     .filter((project) => project.typecheckPerformance?.enabled === true);
-  if (selected.length !== 1) {
+  if (selected.length === 0) {
     throw new Error(
-      `Expected exactly one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found ${selected.length}`,
+      `Expected at least one typecheck performance project in shard ${args.shardIndex}/${args.shardCount}, found 0`,
     );
   }
-
-  const project = selected[0];
-  const fixtureRoot = resolve(repoRoot, project.fixturePath);
-  validateTypecheckPerformanceTarget(project, fixtureRoot);
   requireDirectory(args.outputDir);
   const commitSha = requireCommitSha(process.env.GITHUB_SHA);
+  return selected.map((project) => prepareProject(project, args, commitSha));
+}
+
+function prepareProject(project, args, commitSha) {
+  const fixtureRoot = resolve(repoRoot, project.fixturePath);
+  validateTypecheckPerformanceTarget(project, fixtureRoot);
   const performance = project.typecheckPerformance;
   const lockfilePath = resolve(fixtureRoot, performance.lockfile);
   const lockfileBefore = readFileSync(lockfilePath);
@@ -79,9 +82,11 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   requireCleanFixture(fixtureRoot, "after baseline preparation");
+  const baselineConfigPath = project.typecheckPerformance.baseline?.tsconfig ?? project.tsconfig;
+  const baselineConfig = readFileSync(resolve(fixtureRoot, baselineConfigPath));
   const artifact = {
     schema: "vize.fixtureTypecheckDependencyInstall",
-    version: 2,
+    version: 3,
     project: project.id,
     revision: project.revision,
     evidence: {
@@ -102,6 +107,11 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
       stderrSha256: sha256(install.stderr ?? ""),
     },
     baselinePrepare,
+    baselineConfig: {
+      path: baselineConfigPath,
+      sizeBytes: baselineConfig.byteLength,
+      sha256: sha256(baselineConfig),
+    },
   };
   const artifactPath = join(args.outputDir, `${project.id}-typecheck-dependencies.json`);
   writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -134,14 +144,6 @@ function runBaselinePrepare(project, fixtureRoot, timeoutMs) {
     stdoutSha256: sha256(prepared.stdout ?? ""),
     stderrSha256: sha256(prepared.stderr ?? ""),
   };
-}
-
-function installArguments(manager) {
-  return {
-    npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
-    pnpm: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
-    yarn: ["install", "--immutable", "--mode=skip-build"],
-  }[manager];
 }
 
 function requireCleanFixture(fixtureRoot, phase) {

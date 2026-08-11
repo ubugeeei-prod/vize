@@ -9,7 +9,6 @@ import {
   commitSha,
   instrumentClassification,
   readJson,
-  root,
   run,
   setup,
   sharedVizeDiagnostic,
@@ -45,8 +44,9 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
     assert.equal(result.stderr, `${unusableFailure(emptyBaselineReason)}\n`);
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: false,
       falseNegativePassed: true,
       unusableReason: emptyBaselineReason,
@@ -59,6 +59,17 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "## fixture typecheck divergence",
         "",
         `Commit: ${commitSha}`,
+        "Vize version: vize 0.0.0",
+        `Vize peak RSS: ${artifact.source.peakRssBytes} bytes`,
+        `Vize seeded peak RSS: ${Math.max(
+          ...artifact.seededMutation.states.map((state) => state.vize.peakRssBytes),
+        )} bytes`,
+        "vue-tsc version: 3.3.4",
+        `vue-tsc peak RSS: ${artifact.baseline.peakRssBytes} bytes`,
+        `vue-tsc seeded peak RSS: ${Math.max(
+          ...artifact.seededMutation.states.map((state) => state.baseline.peakRssBytes),
+        )} bytes`,
+        "Seeded mutation: sfc-script-ts2322 clean/broken/repaired passed",
         "Vize diagnostics: 2",
         "vue-tsc diagnostics: 0",
         "Shared: 0",
@@ -71,6 +82,8 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
+        "vue-tsc blocking configuration errors: 0",
+        "vue-tsc ignored deprecation errors: 0",
         "Vize Vue files: 1",
         "vue-tsc Vue files: 0",
         "Shared Vue files: 0",
@@ -106,8 +119,9 @@ test("two sides that never meet are unusable, not a breach of both budgets", () 
       )}\n`,
     );
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: false,
       falseNegativePassed: false,
       unusableReason: "vize reported 1 and vue-tsc reported 1 diagnostics with none in common",
@@ -125,38 +139,15 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: true,
       falseNegativePassed: true,
       unusableReason: null,
       verdict: "passed",
       passed: true,
     });
-  } finally {
-    cleanup(fixture);
-  }
-});
-
-test("--budget-mode record-only reports an unusable baseline as a warning", () => {
-  // The release path still has to say so out loud: a green shard that measured
-  // nothing is exactly what this verdict exists to make visible.
-  const fixture = setup({ vizeDiagnostics: [], baselineOutput: "", baselineFiles: [] });
-  try {
-    const result = run(fixture, {}, ["--budget-mode", "record-only"]);
-    assert.equal(result.status, 0);
-    assert.equal(result.stderr, "");
-    assert.equal(
-      result.stdout,
-      [
-        `Wrote ${path.relative(root, artifactPath(fixture, "json"))}`,
-        `Wrote ${path.relative(root, artifactPath(fixture, "md"))}`,
-        "::warning title=Typecheck divergence budget not enforced::" +
-          unusableFailure(emptyBaselineReason),
-        "",
-      ].join("\n"),
-    );
-    assert.equal(readJson(artifactPath(fixture, "json")).budget.passed, false);
   } finally {
     cleanup(fixture);
   }
@@ -172,7 +163,7 @@ test("a diagnostic-free baseline is a real breach when it covered every Vue file
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      `${breachFailure(1, "2 false positives (ratio 1) exceed maxFalsePositiveRatio 0.05")}\n`,
+      `${breachFailure(1, "2 false positives (ratio 1) exceed maxFalsePositiveRatio 0")}\n`,
     );
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.equal(artifact.baseline.coverage.verdict, "usable");

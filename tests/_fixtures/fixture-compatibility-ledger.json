@@ -753,6 +753,7 @@
           "tests/_fixtures/_git/reka-ui",
           "tests/_fixtures/_git/primevue",
           "tests/_fixtures/_git/vuetify",
+          "tests/_fixtures/_git/create-vue",
           "tests/_fixtures/_git/voicevox",
           "tests/_fixtures/_git/elk",
           "tests/_fixtures/_git/misskey",

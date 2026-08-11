@@ -10,20 +10,28 @@
  *    fixture's project configuration, when `vue-tsc --listFiles` proves the two
  *    tools checked different Vue corpora, or when two non-empty diagnostic
  *    streams have no mapped position in common.
- * 2. `assertBudgetPassed` enforces on the weekly sweep and records everywhere
- *    else — see `parseBudgetMode`.
+ * 2. `assertBudgetPassed` enforces the same verdict on every entry path.
  */
 
 /**
- * `enforce` fails the run on anything that is not a clean pass. `record-only`
- * writes the same verdict into the artifact and annotates the run, but exits 0.
- *
- * `enforce` is the default so that a caller which forgets the flag fails closed;
- * only `.github/workflows/real-project-matrix.yml` opts out, and only on the
- * release-evidence dispatch. An unrecognised value is rejected rather than
- * treated as "do not enforce", so a typo cannot silently disarm the gate.
+ * `enforce` fails the run on anything that is not a clean pass. It is the only
+ * accepted mode: an old caller cannot recover the removed release escape hatch
+ * by passing `record-only`, and a typo cannot silently disarm the gate.
  */
-const budgetModes = ["enforce", "record-only"];
+const budgetModes = ["enforce"];
+
+export function validateExactParityPerformance(performance) {
+  if (!Number.isSafeInteger(performance.hangTimeoutMs) || performance.hangTimeoutMs <= 0) {
+    throw new Error("typecheckPerformance.hangTimeoutMs must be a positive safe integer");
+  }
+  ratio(performance.maxFalsePositiveRatio, "maxFalsePositiveRatio");
+  ratio(performance.maxFalseNegativeRatio, "maxFalseNegativeRatio");
+  if (performance.maxFalsePositiveRatio !== 0 || performance.maxFalseNegativeRatio !== 0) {
+    throw new Error(
+      "typecheckPerformance FP/FN ratios must both be 0; unexplained diagnostics are release-blocking",
+    );
+  }
+}
 
 export function parseBudgetMode(value) {
   if (!budgetModes.includes(value)) {
@@ -33,8 +41,9 @@ export function parseBudgetMode(value) {
 }
 
 export function evaluateBudget(performance, summary, coverage, configuration) {
-  const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
-  const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
+  const messageMismatchPassed = summary.messageMismatchCount === 0;
+  const falsePositivePassed = summary.falsePositiveCount === 0;
+  const falseNegativePassed = summary.falseNegativeCount === 0;
   // Configuration first: it is the *cause* a coverage or mapping failure would
   // only be a symptom of, and it is the one reason that survives a run where
   // both other checks look clean.
@@ -45,18 +54,32 @@ export function evaluateBudget(performance, summary, coverage, configuration) {
   const verdict =
     unusableReason != null
       ? "unusable"
-      : falsePositivePassed && falseNegativePassed
+      : hasExactUnexplainedParity(summary)
         ? "passed"
         : "breached";
   return {
     maxFalsePositiveRatio: performance.maxFalsePositiveRatio,
     maxFalseNegativeRatio: performance.maxFalseNegativeRatio,
+    messageMismatchPassed,
     falsePositivePassed,
     falseNegativePassed,
     unusableReason,
     verdict,
     passed: verdict === "passed",
   };
+}
+
+/**
+ * The per-PR probes and the release corpus share this exact acceptance rule.
+ * Documented differences have already been removed by the shared comparator;
+ * anything left in these three buckets is unexplained and must fail.
+ */
+export function hasExactUnexplainedParity(summary) {
+  return (
+    summary.messageMismatchCount === 0 &&
+    summary.falsePositiveCount === 0 &&
+    summary.falseNegativeCount === 0
+  );
 }
 
 /**
@@ -84,20 +107,14 @@ function diagnosticMappingUnusableReason(summary) {
  * it, so a matrix-wide breach reported `Budget passed: false` and the weekly job
  * still went green.
  *
- * It is the *weekly* gate. `real-project-matrix.yml` is also dispatched as a
- * required release gate, and while the ecosystem baseline is unusable on most of
- * the corpus (#3513) a breach there would block every release on a broken
- * instrument, so the release dispatch passes `--budget-mode record-only`: the
- * verdict is still computed, written to both artifacts and raised as a workflow
- * warning, it just does not fail the job.
- *
- * Either way this runs after both artifacts are written, so a breach is uploaded
- * and reviewable — the run fails with the evidence attached, not instead of it.
+ * This runs after both artifacts are written, so a breach is uploaded and
+ * reviewable — every entry path fails with the evidence attached, not instead
+ * of it.
  */
 export function assertBudgetPassed(artifact, budgetMode = "enforce") {
   // Validated before the passed-verdict return, so an unrecognised mode is
   // rejected on every run rather than only on the runs that breach.
-  const mode = parseBudgetMode(budgetMode);
+  parseBudgetMode(budgetMode);
   const budget = artifact.budget;
   if (budget.verdict === "passed") return;
   const detail = `${
@@ -107,10 +124,7 @@ export function assertBudgetPassed(artifact, budgetMode = "enforce") {
   } — ${describeClassification(artifact)}: ${
     budget.verdict === "unusable" ? budget.unusableReason : describeBreaches(artifact).join("; ")
   }`;
-  if (mode === "enforce") throw new Error(detail);
-  // A GitHub workflow command, so a release run that records an unusable
-  // baseline still shows a warning on the run instead of a silent green tick.
-  process.stdout.write(`::warning title=Typecheck divergence budget not enforced::${detail}\n`);
+  throw new Error(detail);
 }
 
 /**
@@ -141,6 +155,11 @@ function describeBreaches(artifact) {
   const budget = artifact.budget;
   const summary = artifact.divergence.summary;
   const breaches = [];
+  if (!budget.messageMismatchPassed) {
+    breaches.push(
+      `${summary.messageMismatchCount} message mismatches require an explicit documented-difference entry`,
+    );
+  }
   if (!budget.falsePositivePassed) {
     breaches.push(
       `${summary.falsePositiveCount} false positives (ratio ${summary.falsePositiveRatio}) exceed maxFalsePositiveRatio ${budget.maxFalsePositiveRatio}`,
@@ -152,4 +171,10 @@ function describeBreaches(artifact) {
     );
   }
   return breaches;
+}
+
+function ratio(value, name) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 1) {
+    throw new Error(`typecheckPerformance.${name} must be a finite number between 0 and 1`);
+  }
 }

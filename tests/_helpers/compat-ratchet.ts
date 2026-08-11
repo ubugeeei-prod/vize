@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { compareTypecheckDiagnostics } from "../../tools/fixtures/typecheck-divergence.mjs";
+import { hasExactUnexplainedParity } from "../../tools/fixtures/typecheck-divergence-budget.mjs";
 import { repoRoot, symlinkDirectory, withPinnedFixtureWorkspace } from "./realworld-patch.ts";
 import {
   resolveTsgoBinary,
@@ -332,13 +333,7 @@ function isAcceptedByRegistryBudget(fixtureId: string, summary: CompatSummary): 
 
 export function isAcceptedByTypecheckBudget(
   summary: CompatSummary,
-  performance: TypecheckPerformanceBudget | undefined,
+  _performance: TypecheckPerformanceBudget | undefined,
 ): boolean {
-  if (performance?.enabled !== true) {
-    return summary.falsePositiveCount === 0 && summary.falseNegativeCount === 0;
-  }
-  return (
-    summary.falsePositiveRatio <= (performance.maxFalsePositiveRatio ?? 1) &&
-    summary.falseNegativeRatio <= (performance.maxFalseNegativeRatio ?? 1)
-  );
+  return hasExactUnexplainedParity(summary);
 }

@@ -9,7 +9,6 @@ import {
   commitSha,
   divergenceClassification,
   readJson,
-  root,
   run,
   setup,
   sharedBaselineOutput,
@@ -23,35 +22,14 @@ import {
  * Project Matrix job still went green. These tests execute the failure path the
  * gate had never taken.
  *
- * #3513: the same gate then had to learn two more things. It is the *weekly*
- * gate, so `--budget-mode record-only` records a verdict on the release-evidence
- * dispatch without failing it; and a comparison whose two sides never met is a
- * measurement failure that may never render as a pass.
+ * #3513: a comparison whose two sides never met is a measurement failure that
+ * may never render as a pass.
  */
 
 const vizeOnly = "error:2:1 [TS2345] vize only";
 const baselineOnly = "src/App.vue(3,1): error TS2345: baseline only\n";
-const passingBudget = {
-  maxFalsePositiveRatio: 0.05,
-  maxFalseNegativeRatio: 0.05,
-  falsePositivePassed: true,
-  falseNegativePassed: true,
-  unusableReason: null,
-  verdict: "passed",
-  passed: true,
-};
-
 function artifactPath(fixture: ReturnType<typeof setup>, extension: string) {
   return path.join(fixture.reportDir, `fixture-typecheck-divergence.${extension}`);
-}
-
-/** Everything the script prints on the happy path, before any verdict line. */
-function wroteLines(fixture: ReturnType<typeof setup>) {
-  return [
-    `Wrote ${path.relative(root, artifactPath(fixture, "json"))}`,
-    `Wrote ${path.relative(root, artifactPath(fixture, "md"))}`,
-    "",
-  ].join("\n");
 }
 
 test("a false-positive budget breach fails the divergence report", () => {
@@ -61,12 +39,13 @@ test("a false-positive budget breach fails the divergence report", () => {
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      `${breachFailure(1, "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05")}\n`,
+      `${breachFailure(1, "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0")}\n`,
     );
     const artifact = readJson(artifactPath(fixture, "json"));
     assert.deepEqual(artifact.budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: false,
       falseNegativePassed: true,
       unusableReason: null,
@@ -80,6 +59,17 @@ test("a false-positive budget breach fails the divergence report", () => {
         "## fixture typecheck divergence",
         "",
         `Commit: ${commitSha}`,
+        "Vize version: vize 0.0.0",
+        `Vize peak RSS: ${artifact.source.peakRssBytes} bytes`,
+        `Vize seeded peak RSS: ${Math.max(
+          ...artifact.seededMutation.states.map((state) => state.vize.peakRssBytes),
+        )} bytes`,
+        "vue-tsc version: 3.3.4",
+        `vue-tsc peak RSS: ${artifact.baseline.peakRssBytes} bytes`,
+        `vue-tsc seeded peak RSS: ${Math.max(
+          ...artifact.seededMutation.states.map((state) => state.baseline.peakRssBytes),
+        )} bytes`,
+        "Seeded mutation: sfc-script-ts2322 clean/broken/repaired passed",
         "Vize diagnostics: 2",
         "vue-tsc diagnostics: 1",
         "Shared: 1",
@@ -92,6 +82,8 @@ test("a false-positive budget breach fails the divergence report", () => {
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",
+        "vue-tsc blocking configuration errors: 0",
+        "vue-tsc ignored deprecation errors: 0",
         "Vize Vue files: 1",
         "vue-tsc Vue files: 1",
         "Shared Vue files: 1",
@@ -117,11 +109,12 @@ test("a false-negative budget breach fails the divergence report", () => {
     assert.equal(result.status, 1);
     assert.equal(
       result.stderr,
-      `${breachFailure(1, "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05")}\n`,
+      `${breachFailure(1, "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0")}\n`,
     );
     assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: true,
       falseNegativePassed: false,
       unusableReason: null,
@@ -145,8 +138,8 @@ test("a breach of both budgets reports both sides", () => {
       result.stderr,
       `${breachFailure(
         1,
-        "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05; " +
-          "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0.05",
+        "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0; " +
+          "1 false negatives (ratio 0.5) exceed maxFalseNegativeRatio 0",
       )}\n`,
     );
   } finally {
@@ -154,9 +147,31 @@ test("a breach of both budgets reports both sides", () => {
   }
 });
 
-test("a ratio exactly at the budget still passes", () => {
-  // 1 false positive in 20 vize diagnostics is exactly maxFalsePositiveRatio,
-  // so this pins the comparison as `<=` and proves the gate is not always-fail.
+test("an undocumented message mismatch is release-blocking", () => {
+  const fixture = setup({ baselineOutput: "src/App.vue(1,1): error TS2322: different\n" });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.equal(
+      result.stderr,
+      `${breachFailure(
+        1,
+        "1 message mismatches require an explicit documented-difference entry",
+      )}\n`,
+    );
+    const budget = readJson(artifactPath(fixture, "json")).budget;
+    assert.equal(budget.messageMismatchPassed, false);
+    assert.equal(budget.falsePositivePassed, true);
+    assert.equal(budget.falseNegativePassed, true);
+    assert.equal(budget.verdict, "breached");
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("one unexplained diagnostic fails even at the old ratio threshold", () => {
+  // One false positive in 20 diagnostics used to fit the 5% allowance. Exact
+  // parity is now monotonic: corpus size can never dilute an unexplained result.
   const shared = Array.from(
     { length: 19 },
     (_unused, index) => `error:${index + 1}:1 [TS2322] shared`,
@@ -169,40 +184,14 @@ test("a ratio exactly at the budget still passes", () => {
   });
   try {
     const result = run(fixture);
-    assert.equal(result.stderr, "");
-    assert.equal(result.status, 0);
-    const artifact = readJson(artifactPath(fixture, "json"));
-    assert.deepEqual(artifact.budget, passingBudget);
-    assert.equal(artifact.divergence.summary.falsePositiveRatio, 0.05);
-  } finally {
-    cleanup(fixture);
-  }
-});
-
-test("--budget-mode record-only records a breach without failing the job", () => {
-  // The release path. `real-project-matrix.yml` is dispatched as a required
-  // release gate as well as run weekly, so a breach has to stay visible without
-  // blocking a release: the artifacts and the warning land, the exit code is 0.
-  const fixture = setup({ vizeDiagnostics: [sharedVizeDiagnostic, vizeOnly] });
-  try {
-    const result = run(fixture, {}, ["--budget-mode", "record-only"]);
-    assert.equal(result.status, 0);
-    assert.equal(result.stderr, "");
+    assert.equal(result.status, 1);
     assert.equal(
-      result.stdout,
-      `${wroteLines(fixture)}::warning title=Typecheck divergence budget not enforced::` +
-        `${breachFailure(1, "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05")}\n`,
+      result.stderr,
+      `${breachFailure(1, "1 false positives (ratio 0.05) exceed maxFalsePositiveRatio 0")}\n`,
     );
-    // Recording is not forgiving: the artifact still carries the failing verdict.
-    assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
-      falsePositivePassed: false,
-      falseNegativePassed: true,
-      unusableReason: null,
-      verdict: "breached",
-      passed: false,
-    });
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.equal(artifact.budget.verdict, "breached");
+    assert.equal(artifact.divergence.summary.falsePositiveRatio, 0.05);
   } finally {
     cleanup(fixture);
   }
@@ -213,7 +202,7 @@ test("--budget-mode enforce is the default and fails the job", () => {
   try {
     const expected = `${breachFailure(
       1,
-      "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0.05",
+      "1 false positives (ratio 0.5) exceed maxFalsePositiveRatio 0",
     )}\n`;
     const explicit = run(fixture, {}, ["--budget-mode", "enforce"]);
     assert.equal(explicit.status, 1);
@@ -231,7 +220,19 @@ test("an unrecognised budget mode is rejected instead of disarming the gate", ()
   try {
     const result = run(fixture, {}, ["--budget-mode", "off"]);
     assert.equal(result.status, 1);
-    assert.equal(result.stderr, "--budget-mode must be one of: enforce, record-only\n");
+    assert.equal(result.stderr, "--budget-mode must be one of: enforce\n");
+    assert.equal(fs.existsSync(artifactPath(fixture, "json")), false);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("the removed record-only escape hatch is rejected", () => {
+  const fixture = setup({ vizeDiagnostics: [sharedVizeDiagnostic, vizeOnly] });
+  try {
+    const result = run(fixture, {}, ["--budget-mode", "record-only"]);
+    assert.equal(result.status, 1);
+    assert.equal(result.stderr, "--budget-mode must be one of: enforce\n");
     assert.equal(fs.existsSync(artifactPath(fixture, "json")), false);
   } finally {
     cleanup(fixture);

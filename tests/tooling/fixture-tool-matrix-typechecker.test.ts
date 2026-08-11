@@ -258,6 +258,7 @@ process.stdout.write(JSON.stringify({ files: [], errorCount: 0, warningCount: 0,
       reportDir,
     );
     assert.equal(run.status, "failed");
+    if (["darwin", "linux"].includes(process.platform)) assert.ok(run.peakRssBytes > 0);
     assert.match(run.failure, /non-empty fixture checked zero Vue files/);
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
     assert.match(raw.validationError, /non-empty fixture checked zero Vue files/);

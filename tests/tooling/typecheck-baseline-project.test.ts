@@ -81,7 +81,19 @@ test("materialized baseline extends an explicit generated project", () => {
       { fileCount: 1, files: [{ file: "src/App.vue" }] },
     );
     assert.equal(project.sourceProject, ".generated/tsconfig.json");
-    assert.equal(JSON.parse(project.source).extends, "../fixture/.generated/tsconfig.json");
+    assert.deepEqual(JSON.parse(project.source), {
+      extends: "../../fixture/.generated/tsconfig.json",
+      compilerOptions: { composite: false, incremental: false },
+      files: ["../../fixture/src/App.vue"],
+      include: ["../../fixture/**/*.d.ts", "../../fixture/.generated/**/*.d.ts"],
+      exclude: [
+        "../../fixture/**/node_modules/**",
+        "../../fixture/**/dist/**",
+        "../../fixture/.generated/**/node_modules/**",
+        "../../fixture/.generated/**/dist/**",
+      ],
+      references: [],
+    });
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }
@@ -140,6 +152,40 @@ test(
       const program = result.stdout.split("\n").map((line) => line.trimEnd());
       assert.equal(program.includes(path.join(fixtureRoot, "src/globals.d.ts")), true);
       assert.equal(program.includes(path.join(fixtureRoot, ".generated/imports.d.ts")), true);
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  "materialized baseline resolves inherited type directives from fixture dependencies",
+  vueTscOptions,
+  () => {
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-baseline-types-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
+    fs.mkdirSync(reportDir);
+    fs.symlinkSync(dependencyRoot, path.join(fixtureRoot, "node_modules"), "junction");
+    fs.writeFileSync(
+      path.join(fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({ compilerOptions: { noEmit: true, types: ["node"] } })}\n`,
+    );
+    fs.writeFileSync(path.join(fixtureRoot, "src/App.vue"), "<template />\n");
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        { id: "fixture", tsconfig: "tsconfig.json" },
+        { fileCount: 1, files: [{ file: "src/App.vue" }] },
+      );
+      assert.equal(
+        fs.realpathSync(path.join(path.dirname(project.path), "node_modules")),
+        fs.realpathSync(dependencyRoot),
+      );
+      const result = runVueTsc(project.path, fixtureRoot);
+      assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /TS2688/u);
     } finally {
       fs.rmSync(temp, { recursive: true, force: true });
     }

@@ -7,33 +7,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { typecheckDependencyManagers as packageManagers } from "./support/typecheck-dependency-managers.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(root, "tools", "fixtures", "typecheck-dependency-prepare.mjs");
 const commitSha = "a".repeat(40);
-const packageManagers = [
-  {
-    name: "npm",
-    version: "11.9.0",
-    lockfile: "package-lock.json",
-    lockfileContents: '{"lockfileVersion":3}\n',
-    installArgs: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
-  },
-  {
-    name: "pnpm",
-    version: "10.0.0",
-    lockfile: "pnpm-lock.yaml",
-    lockfileContents: "lockfileVersion: '9.0'\n",
-    installArgs: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
-  },
-  {
-    name: "yarn",
-    version: "4.9.2",
-    lockfile: "yarn.lock",
-    lockfileContents: "__metadata:\n  version: 8\n",
-    installArgs: ["install", "--immutable", "--mode=skip-build"],
-  },
-] as const;
-
 function setup(packageManager: (typeof packageManagers)[number] = packageManagers[1]) {
   const fixtureRoot = fs.mkdtempSync(
     path.join(root, "tests", "_fixtures", "typecheck-dependencies-"),
@@ -54,8 +32,8 @@ function setup(packageManager: (typeof packageManagers)[number] = packageManager
       packageManagerVersion: packageManager.version,
       lockfile: packageManager.lockfile,
       hangTimeoutMs: 5_000,
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
     },
   };
   fs.mkdirSync(path.join(fixtureRoot, "src"));
@@ -158,6 +136,7 @@ test("dependency prepare uses each pinned manager's immutable install command", 
       assert.equal(result.status, 0, result.stderr);
       const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
       assert.deepEqual(Object.keys(artifact).sort(), [
+        "baselineConfig",
         "baselinePrepare",
         "evidence",
         "install",
@@ -169,7 +148,7 @@ test("dependency prepare uses each pinned manager's immutable install command", 
         "version",
       ]);
       assert.equal(artifact.schema, "vize.fixtureTypecheckDependencyInstall");
-      assert.equal(artifact.version, 2);
+      assert.equal(artifact.version, 3);
       assert.equal(artifact.baselinePrepare, null);
       assert.equal(artifact.evidence.commitSha, commitSha);
       assert.deepEqual(artifact.packageManager, {
@@ -180,6 +159,12 @@ test("dependency prepare uses each pinned manager's immutable install command", 
         path: packageManager.lockfile,
         sizeBytes: lockfile.byteLength,
         sha256: createHash("sha256").update(lockfile).digest("hex"),
+      });
+      const baselineConfig = fs.readFileSync(path.join(fixture.fixtureRoot, "tsconfig.json"));
+      assert.deepEqual(artifact.baselineConfig, {
+        path: "tsconfig.json",
+        sizeBytes: baselineConfig.byteLength,
+        sha256: createHash("sha256").update(baselineConfig).digest("hex"),
       });
       assert.deepEqual(artifact.install.command, [
         packageManager.name,
@@ -323,19 +308,28 @@ test("dependency prepare rejects failed and timed-out installs", () => {
   }
 });
 
-test("dependency prepare requires one performance project and exact SHA evidence", () => {
+test("dependency prepare requires at least one project and prepares every selected project", () => {
   const fixture = setup();
   try {
     writeJson(fixture.registryPath, { projects: [] });
     const missing = run(fixture);
     assert.equal(missing.status, 1);
-    assert.match(missing.stderr, /Expected exactly one.*found 0/);
+    assert.match(missing.stderr, /Expected at least one.*found 0/);
     writeJson(fixture.registryPath, {
       projects: [fixture.project, { ...fixture.project, id: "duplicate" }],
     });
+    git(fixture.fixtureRoot, ["add", "registry.json"]);
+    commit(fixture.fixtureRoot, "select two projects");
     const duplicate = run(fixture);
-    assert.equal(duplicate.status, 1);
-    assert.match(duplicate.stderr, /Expected exactly one.*found 2/);
+    assert.equal(duplicate.status, 0, duplicate.stderr);
+    assert.equal(
+      fs.existsSync(path.join(fixture.outputDir, "fixture-typecheck-dependencies.json")),
+      true,
+    );
+    assert.equal(
+      fs.existsSync(path.join(fixture.outputDir, "duplicate-typecheck-dependencies.json")),
+      true,
+    );
     writeJson(fixture.registryPath, { projects: [fixture.project] });
     const malformedSha = spawnSync(
       process.execPath,

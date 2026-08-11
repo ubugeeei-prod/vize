@@ -69,6 +69,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         run: |
+          node tools/fixtures/typecheck-parity-exclusions.mjs
           node tools/fixtures/typecheck-dependency-prepare.mjs \
             --output-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
@@ -196,6 +197,7 @@ jobs:
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --budget-mode "$BUDGET_MODE" \
+            --vize-bin target/ci/vize \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
 
       - name: Enforce all real-project surface verdicts

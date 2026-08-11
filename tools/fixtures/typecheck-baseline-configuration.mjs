@@ -45,6 +45,10 @@ const projectPattern = /^(error|warning) TS(\d+): (.+)$/u;
 const configurationFilePattern = /[jt]sconfig[^/]*\.json$/u;
 /** TS6307: not listed within the file list of project. TS6059: not under 'rootDir'. */
 const programConstructionCodes = new Set([6059, 6307]);
+// TS5101 reports a valid option that TypeScript 6 still applies and promises to
+// remove in TypeScript 7. It does not prevent the fixture project from loading,
+// so it remains evidence but cannot classify the baseline as unusable.
+const nonBlockingDeprecationCodes = new Set([5101]);
 
 export function evaluateBaselineConfiguration(vueTscOutput) {
   if (typeof vueTscOutput !== "string") throw new Error("vue-tsc output must be a string");
@@ -77,16 +81,24 @@ export function evaluateBaselineConfiguration(vueTscOutput) {
     });
   }
   const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+  const ignoredDeprecationErrors = errors.filter((diagnostic) =>
+    nonBlockingDeprecationCodes.has(diagnostic.code),
+  );
+  const blockingErrors = errors.filter(
+    (diagnostic) => !nonBlockingDeprecationCodes.has(diagnostic.code),
+  );
   // Warnings are recorded but do not gate: they did not change which files the
   // baseline checked, and a gate that fires on them is a gate nobody can keep green.
   const unusableReason =
-    errors.length === 0
+    blockingErrors.length === 0
       ? null
-      : `vue-tsc could not load the fixture project configuration (${errors.length} ` +
-        `error${errors.length === 1 ? "" : "s"}): ${render(errors[0])}`;
+      : `vue-tsc could not load the fixture project configuration (${blockingErrors.length} ` +
+        `error${blockingErrors.length === 1 ? "" : "s"}): ${render(blockingErrors[0])}`;
   return {
     diagnostics,
     errorCount: errors.length,
+    blockingErrorCount: blockingErrors.length,
+    ignoredDeprecationErrorCount: ignoredDeprecationErrors.length,
     unusableReason,
     verdict: unusableReason == null ? "usable" : "unusable",
   };

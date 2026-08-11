@@ -175,7 +175,7 @@ for (const probe of compatProbes) {
   );
 }
 
-test("compat probes without a configured budget accept only exact parity", () => {
+test("compat probes use the release tier's exact parity rule", () => {
   assert.equal(isAcceptedByTypecheckBudget(exactParity, undefined), true);
   assert.equal(isAcceptedByTypecheckBudget(exactParity, { enabled: false }), true);
   assert.equal(
@@ -193,7 +193,7 @@ test("compat probes without a configured budget accept only exact parity", () =>
   assert.equal(
     isAcceptedByTypecheckBudget(
       { ...exactParity, vizeDiagnosticCount: 1, falsePositiveCount: 1, falsePositiveRatio: 1 },
-      undefined,
+      { enabled: true, maxFalsePositiveRatio: 1, maxFalseNegativeRatio: 1 },
     ),
     false,
   );
@@ -202,6 +202,10 @@ test("compat probes without a configured budget accept only exact parity", () =>
       { ...exactParity, baselineDiagnosticCount: 1, falseNegativeCount: 1, falseNegativeRatio: 1 },
       undefined,
     ),
+    false,
+  );
+  assert.equal(
+    isAcceptedByTypecheckBudget({ ...exactParity, messageMismatchCount: 1 }, { enabled: true }),
     false,
   );
 });

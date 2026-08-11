@@ -182,6 +182,14 @@ test("Vue ecosystem registry covers the requested projects", () => {
   for (const id of requiredTypecheckProjects) {
     assert.ok(ids.has(id), `${id} should be registered for typechecker performance`);
   }
+  const parityProjects = registry.projects.filter(
+    (project) => project.typecheckPerformance?.enabled === true,
+  );
+  assert.equal(parityProjects.length, 12);
+  for (const project of parityProjects) {
+    assert.equal(project.typecheckPerformance?.maxFalsePositiveRatio, 0, project.id);
+    assert.equal(project.typecheckPerformance?.maxFalseNegativeRatio, 0, project.id);
+  }
 });
 
 test("fixtures with exact Vue SFC expectations stay explicit", () => {

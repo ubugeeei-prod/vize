@@ -68,12 +68,15 @@ test("a baseline that could not read its extended config is unusable, not a pass
         },
       ],
       errorCount: 1,
+      blockingErrorCount: 1,
+      ignoredDeprecationErrorCount: 0,
       unusableReason: configuredBaselineReason(detail),
       verdict: "unusable",
     });
     assert.deepEqual(artifact.budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: true,
       falseNegativePassed: true,
       unusableReason: configuredBaselineReason(detail),
@@ -121,6 +124,8 @@ test("a config error reported against the fixture tsconfig is unusable", () => {
         },
       ],
       errorCount: 1,
+      blockingErrorCount: 1,
+      ignoredDeprecationErrorCount: 0,
       unusableReason: configuredBaselineReason(detail),
       verdict: "unusable",
     });
@@ -163,6 +168,8 @@ test("a config error against the materialized baseline project is unusable", () 
         },
       ],
       errorCount: 1,
+      blockingErrorCount: 1,
+      ignoredDeprecationErrorCount: 0,
       unusableReason: configuredBaselineReason(detail),
       verdict: "unusable",
     });
@@ -199,12 +206,15 @@ test("an ordinary non-Vue diagnostic is not a configuration failure", () => {
         },
       ],
       errorCount: 0,
+      blockingErrorCount: 0,
+      ignoredDeprecationErrorCount: 0,
       unusableReason: null,
       verdict: "usable",
     });
     assert.deepEqual(artifact.budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: true,
       falseNegativePassed: true,
       unusableReason: null,
@@ -213,6 +223,41 @@ test("an ordinary non-Vue diagnostic is not a configuration failure", () => {
     });
     assert.equal(artifact.divergence.summary.baselineExcludedNonVueCount, 1);
     assert.equal(artifact.divergence.summary.sharedCount, 1);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("a TypeScript 6 deprecation diagnostic is evidence, not a load failure", () => {
+  const detail =
+    "error TS5101: Option 'baseUrl' is deprecated and will stop functioning in TypeScript " +
+    '7.0. Specify compilerOption \'"ignoreDeprecations": "6.0"\' to silence this error.';
+  const fixture = setup({ baselineOutput: `${detail}\n${sharedBaselineOutput}` });
+  try {
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.deepEqual(artifact.baseline.configuration, {
+      diagnostics: [
+        {
+          code: 5101,
+          column: null,
+          file: null,
+          line: null,
+          message:
+            "Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0. " +
+            'Specify compilerOption \'"ignoreDeprecations": "6.0"\' to silence this error.',
+          severity: "error",
+        },
+      ],
+      errorCount: 1,
+      blockingErrorCount: 0,
+      ignoredDeprecationErrorCount: 1,
+      unusableReason: null,
+      verdict: "usable",
+    });
+    assert.equal(artifact.budget.verdict, "passed");
+    assert.equal(artifact.divergence.summary.baselineExcludedProjectCount, 1);
   } finally {
     cleanup(fixture);
   }
@@ -251,12 +296,15 @@ test("a file-list error against a Vue file is unusable, not a false negative", (
         },
       ],
       errorCount: 1,
+      blockingErrorCount: 1,
+      ignoredDeprecationErrorCount: 0,
       unusableReason: configuredBaselineReason(detail),
       verdict: "unusable",
     });
     assert.deepEqual(artifact.budget, {
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
+      maxFalsePositiveRatio: 0,
+      maxFalseNegativeRatio: 0,
+      messageMismatchPassed: true,
       falsePositivePassed: true,
       falseNegativePassed: false,
       unusableReason: configuredBaselineReason(detail),
