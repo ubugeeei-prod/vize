@@ -48,6 +48,9 @@ impl<'a> RouteDiscovery<'a> {
         specifier: &str,
         mode: crate::PackageResolutionMode,
     ) -> bool {
+        if crate::batch::virtual_project::is_generated_runtime_support_specifier(specifier) {
+            return false;
+        }
         let importer_dir = importer.parent().unwrap_or(importer);
         let (context, context_inputs) = self.settings.context(self.resolver, importer, mode);
         let lookup = self.resolver.lookup_with_context(
@@ -138,5 +141,90 @@ pub(super) fn logical_absolute(path: &Path) -> PathBuf {
         std::env::current_dir()
             .map(|cwd| cwd.join(path))
             .unwrap_or_else(|_| path.to_path_buf())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RouteDiscovery;
+    use crate::corsa_bridge::vue_dependencies_alias::AliasContext;
+    use vize_carton::FxHashMap;
+
+    const HOST_SOURCE: &str = "<template><div /></template>\n";
+
+    #[test]
+    fn generated_runtime_support_never_creates_editor_route_state() {
+        let fixture = runtime_package_fixture();
+        let settings =
+            crate::batch::virtual_project::package_resolution::PackageResolutionSettings::default();
+        let mut resolver = crate::PackageRouteResolver::default();
+        let mut routes = FxHashMap::default();
+        let mut reachability = FxHashMap::default();
+        let mut bindings = Vec::new();
+        let mut inputs = Vec::new();
+        let aliases = Vec::new();
+        let mut discovery = RouteDiscovery::new(
+            &settings,
+            &mut resolver,
+            &mut routes,
+            &mut reachability,
+            &mut bindings,
+            &mut inputs,
+            &aliases,
+        );
+
+        for specifier in ["vue", "@vue/runtime-dom", "vite/client"] {
+            assert!(!discovery.resolve(
+                &fixture.host,
+                specifier,
+                crate::PackageResolutionMode::Import,
+            ));
+        }
+        assert!(routes.is_empty());
+        assert!(reachability.is_empty());
+        assert!(bindings.is_empty());
+        assert!(inputs.is_empty());
+    }
+
+    #[test]
+    fn generated_vue_helpers_do_not_create_an_editor_mirror() {
+        let fixture = runtime_package_fixture();
+        let context = AliasContext::for_host(&fixture.host, HOST_SOURCE, &FxHashMap::default());
+
+        assert!(context.aliases.is_empty());
+        assert!(context.package_routes.is_empty());
+        assert!(context.route_inputs.is_empty());
+        assert!(context.mirror.is_none());
+    }
+
+    struct RuntimePackageFixture {
+        _root: tempfile::TempDir,
+        host: std::path::PathBuf,
+    }
+
+    fn runtime_package_fixture() -> RuntimePackageFixture {
+        let root = tempfile::tempdir().unwrap();
+        let host = root.path().join("src/App.vue");
+        let vue = root.path().join("node_modules/vue");
+        write(&host, HOST_SOURCE);
+        write(
+            &root.path().join("tsconfig.json"),
+            r#"{"compilerOptions":{"moduleResolution":"bundler"}}"#,
+        );
+        write(
+            &vue.join("package.json"),
+            r#"{"name":"vue","exports":"./index.ts"}"#,
+        );
+        write(
+            &vue.join("index.ts"),
+            "export { default as RuntimeOnly } from './RuntimeOnly.vue';\n",
+        );
+        write(&vue.join("RuntimeOnly.vue"), "<template />\n");
+        RuntimePackageFixture { _root: root, host }
+    }
+
+    fn write(path: &std::path::Path, content: &str) {
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, content).unwrap();
     }
 }

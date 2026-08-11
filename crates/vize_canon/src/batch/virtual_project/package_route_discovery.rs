@@ -72,15 +72,7 @@ impl VirtualProject {
                 .rewriter
                 .collect_all_specifier_occurrences(&content, source_type)
             {
-                // Canon's generated Vue modules reference these runtime types;
-                // they are supplied by the virtual project itself and are not
-                // authored importer-local package routes. Treating their
-                // absence beside an external workspace source as a watchable
-                // cold package would grow one persistent route per SFC.
-                if specifier == "vue"
-                    || specifier.starts_with("@vue/")
-                    || specifier == "vite/client"
-                {
+                if is_generated_runtime_support_specifier(&specifier) {
                     continue;
                 }
                 if specifier.starts_with('.')
@@ -140,6 +132,41 @@ impl VirtualProject {
             && let Ok(mut resolver) = self.package_route_resolver.lock()
         {
             resolver.record_refresh_scope(self.package_routes.len(), reconciled, reconciled);
+        }
+    }
+}
+
+/// Whether a module specifier is emitted by Canon's shared Vue runtime helpers.
+///
+/// These types are supplied by the virtual project and are not authored,
+/// importer-local package routes. Looking them up as routes grows persistent
+/// batch projects and editor mirrors from generated implementation details.
+pub(crate) fn is_generated_runtime_support_specifier(specifier: &str) -> bool {
+    specifier == "vue" || specifier.starts_with("@vue/") || specifier == "vite/client"
+}
+
+#[cfg(test)]
+mod runtime_support_tests {
+    use super::is_generated_runtime_support_specifier as is_support;
+
+    #[test]
+    fn generated_runtime_support_filter_is_exact() {
+        for specifier in [
+            "vue",
+            "@vue/runtime-core",
+            "@vue/runtime-dom",
+            "vite/client",
+        ] {
+            assert!(is_support(specifier), "{specifier}");
+        }
+        for specifier in [
+            "vue-router",
+            "@vueuse/core",
+            "@vue",
+            "vite",
+            "vite/plugin-vue",
+        ] {
+            assert!(!is_support(specifier), "{specifier}");
         }
     }
 }

@@ -68,7 +68,9 @@ mod package_link_owners;
 mod package_node_modules;
 pub(crate) mod package_resolution;
 mod package_route_discovery;
-pub(crate) use package_route_discovery::package_route_reaches_vue;
+pub(crate) use package_route_discovery::{
+    is_generated_runtime_support_specifier, package_route_reaches_vue,
+};
 mod package_shadow;
 mod package_shadow_owners;
 mod package_shadow_runtime;
