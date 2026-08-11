@@ -9,9 +9,13 @@ pub(super) fn assert_generation_order(
     expected_generations: usize,
 ) -> Result<(), String> {
     let ready = find_all_bytes(trace, b"textDocument/diagnostic");
-    if ready.len() != expected_generations {
+    // The initial generation opens both Parent and Child. Every later
+    // generation in this fixture changes only Child, so each adds one exact
+    // readiness request.
+    let expected_requests = expected_generations + 1;
+    if ready.len() != expected_requests {
         return Err(format!(
-            "expected {expected_generations} readiness requests, found {} in {}",
+            "expected {expected_requests} readiness requests for {expected_generations} generations, found {} in {}",
             ready.len(),
             path.display()
         ));
@@ -27,8 +31,10 @@ pub(super) fn assert_generation_order(
         .first()
         .copied()
         .ok_or_else(|| format!("missing rename request in {}", path.display()))?;
+    let first_generation_ready = ready[1];
     if !(did_open < first_ready
-        && first_ready < first_rename
+        && first_ready < first_generation_ready
+        && first_generation_ready < first_rename
         && renames.iter().all(|rename| *rename < shutdown)
         && shutdown < exit)
     {
@@ -52,16 +58,24 @@ fn assert_cross_document_generation(
 ) -> Result<(), String> {
     let did_change = super::find_bytes(trace, b"textDocument/didChange")
         .ok_or_else(|| format!("missing cross-document didChange in {}", path.display()))?;
+    let first_generation_ready = ready[1];
+    let second_generation_ready = ready[2];
     let first_generation = renames
         .iter()
-        .filter(|rename| ready[0] < **rename && **rename < did_change)
+        .filter(|rename| first_generation_ready < **rename && **rename < did_change)
         .count();
     let second_generation = renames
         .iter()
-        .filter(|rename| ready[1] < **rename && **rename < shutdown)
+        .filter(|rename| second_generation_ready < **rename && **rename < shutdown)
         .count();
-    if ready[0] < did_change
-        && did_change < ready[1]
+    let first_rename_after_change = renames
+        .iter()
+        .find(|rename| did_change < **rename)
+        .copied()
+        .ok_or_else(|| format!("missing rename after didChange in {}", path.display()))?;
+    if first_generation_ready < did_change
+        && did_change < second_generation_ready
+        && second_generation_ready < first_rename_after_change
         && first_generation >= 2
         && second_generation >= 2
     {

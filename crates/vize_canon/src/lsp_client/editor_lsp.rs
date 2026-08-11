@@ -27,7 +27,7 @@ use std::{
     },
     time::Duration,
 };
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 mod client;
 mod readiness;
@@ -53,6 +53,11 @@ pub(super) struct EditorLspSession {
     document_generation: u64,
     /// Generation acknowledged by a response-backed semantic request.
     ready_generation: Option<u64>,
+    /// Documents opened or changed since the acknowledged generation.
+    dirty_documents: FxHashSet<String>,
+    /// A close cannot be diagnosed directly, so the next query must act as
+    /// the response-backed barrier for that topology change.
+    query_barrier_required: bool,
 }
 
 impl EditorLspSession {
@@ -80,6 +85,8 @@ impl EditorLspSession {
             documents: Default::default(),
             document_generation: 0,
             ready_generation: None,
+            dirty_documents: Default::default(),
+            query_barrier_required: false,
         })
     }
 
@@ -107,6 +114,7 @@ impl EditorLspSession {
             }
         }
         self.documents.insert(document_uri.into(), text.into());
+        self.dirty_documents.insert(document_uri.into());
         self.advance_document_generation();
         Ok(uri)
     }
@@ -127,6 +135,8 @@ impl EditorLspSession {
                 cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
             })?;
             self.documents.remove(document_uri.as_str());
+            self.dirty_documents.remove(document_uri.as_str());
+            self.query_barrier_required = true;
             self.advance_document_generation();
         }
         for (document_uri, text) in documents {
