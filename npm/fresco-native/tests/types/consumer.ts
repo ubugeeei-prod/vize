@@ -2,12 +2,14 @@ import {
   createLayoutNode,
   flushTerminalMeasured,
   getLayout,
+  getTerminalInfo,
   pollEvent,
   setImeMode,
   type FrameOutputTelemetryNapi,
   type InputEventNapi,
   type LayoutResultNapi,
   type RenderNodeNapi,
+  type TerminalInfoNapi,
 } from "@vizejs/fresco-native";
 
 export const nullableStyleNode: number = createLayoutNode(null);
@@ -19,6 +21,13 @@ export const imeModeResult: void = setImeMode("hiragana");
 export const frameOutput: FrameOutputTelemetryNapi = flushTerminalMeasured();
 export const changedCells: bigint = frameOutput.changedCells;
 export const bytesWritten: bigint = frameOutput.bytesWritten;
+export const terminalInfo: TerminalInfoNapi = getTerminalInfo();
+export const colorDepth: string = terminalInfo.colorDepth;
+export const unicodePresentation: boolean = terminalInfo.unicode;
+export const interactivePresentation: boolean = terminalInfo.interactive;
+export const redirectedOutput: boolean = terminalInfo.redirected;
+export const narrowLayout: boolean = terminalInfo.narrow;
+export const capabilityReason: string = terminalInfo.interactiveReason;
 
 export const nativeKeyPhaseIsRustDefined: InputEventNapi = {
   eventType: "key",

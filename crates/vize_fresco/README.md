@@ -11,6 +11,7 @@ Support and deprecation guarantees are defined in the
 ## Highlights
 
 - Cross-platform terminal primitives
+- Deterministic color, Unicode, redirected-output, interactive, and narrow-layout profiles
 - Flexbox-style layout via `taffy`
 - Render tree, buffer, and text measurement utilities
 - Stable-keyed, virtualized diagnostic master-detail workspace state
@@ -25,6 +26,7 @@ Support and deprecation guarantees are defined in the
 - `RenderTree`, `RenderNode`
 - `HeadlessRenderer`, `HeadlessPresentation`, `HeadlessSnapshot`
 - `Backend`, `Buffer`, `Cursor`
+- `TerminalCapabilities`, `TerminalCapabilityProbe`, `TerminalProfileOptions`
 
 ## Related Crates
 

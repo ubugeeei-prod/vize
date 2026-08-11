@@ -77,7 +77,11 @@ pub use headless::{
 pub use input::{Event, ImeState, KeyEvent, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
 pub use render::{RenderNode, RenderTree};
-pub use terminal::{Backend, Buffer, Cell, Cursor, FrameOutputTelemetry};
+pub use terminal::{
+    Backend, Buffer, CapabilityDecision, CapabilityReason, Cell, ColorPreference, ColorSupport,
+    Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,
+    TerminalProfileOptions,
+};
 pub use text::{TextSegment, TextWidth, TextWrap};
 
 /// Fresco version

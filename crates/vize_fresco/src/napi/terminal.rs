@@ -7,7 +7,7 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::sync::Mutex;
 
-use crate::terminal::{Backend, TerminalOptions};
+use crate::terminal::{Backend, TerminalCapabilities, TerminalOptions};
 
 use super::{
     frame_output::FrameOutputTelemetryNapi,
@@ -125,21 +125,35 @@ pub fn restore_terminal() -> Result<()> {
     Ok(())
 }
 
-/// Get terminal info.
+/// Resolve the complete standard-output capability profile.
+///
+/// Size discovery falls back to positive `COLUMNS` and `LINES` values, then
+/// 80x24. The result therefore remains available for redirected output.
 #[napi(js_name = "getTerminalInfo")]
 #[allow(clippy::disallowed_macros)]
 pub fn get_terminal_info() -> Result<TerminalInfoNapi> {
-    let (width, height) = crossterm::terminal::size()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to get size: {}", e)))?;
+    Ok(terminal_info_from(TerminalCapabilities::detect_stdout()))
+}
 
-    Ok(TerminalInfoNapi {
-        width: width as i32,
-        height: height as i32,
-        colors: true, // Assume colors are supported
-        true_color: std::env::var("COLORTERM")
-            .map(|v| v == "truecolor" || v == "24bit")
-            .unwrap_or(false),
-    })
+fn terminal_info_from(capabilities: TerminalCapabilities) -> TerminalInfoNapi {
+    let color = capabilities.color();
+    let unicode = capabilities.unicode();
+    let interactive = capabilities.interactive();
+    TerminalInfoNapi {
+        width: i32::from(capabilities.width()),
+        height: i32::from(capabilities.height()),
+        colors: color.value().is_color(),
+        true_color: color.value().is_true_color(),
+        color_depth: color.value().as_str().to_owned(),
+        color_reason: color.reason().as_str().to_owned(),
+        unicode: unicode.value(),
+        unicode_reason: unicode.reason().as_str().to_owned(),
+        interactive: interactive.value(),
+        interactive_reason: interactive.reason().as_str().to_owned(),
+        redirected: capabilities.is_redirected(),
+        narrow: capabilities.is_narrow(),
+        narrow_width: i32::from(capabilities.narrow_width()),
+    }
 }
 
 /// Clear the screen.
@@ -228,5 +242,36 @@ pub(crate) fn with_backend<T, F: FnOnce(&mut Backend) -> T>(f: F) -> Result<T> {
             Status::GenericFailure,
             "Terminal not initialized",
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::terminal::{TerminalCapabilityProbe, TerminalProfileOptions};
+
+    use super::*;
+
+    #[test]
+    fn terminal_info_exposes_the_complete_resolved_profile() {
+        let capabilities = TerminalCapabilities::resolve(
+            &TerminalCapabilityProbe::new(42, 18, false)
+                .with_no_color(true)
+                .with_locale("C"),
+            TerminalProfileOptions::default(),
+        );
+        let info = terminal_info_from(capabilities);
+
+        assert_eq!((info.width, info.height), (42, 18));
+        assert!(!info.colors);
+        assert!(!info.true_color);
+        assert_eq!(info.color_depth, "monochrome");
+        assert_eq!(info.color_reason, "no-color-environment");
+        assert!(!info.unicode);
+        assert_eq!(info.unicode_reason, "non-utf8-locale");
+        assert!(!info.interactive);
+        assert_eq!(info.interactive_reason, "redirected-output");
+        assert!(info.redirected);
+        assert!(info.narrow);
+        assert_eq!(info.narrow_width, 60);
     }
 }

@@ -8,10 +8,15 @@
 
 mod backend;
 mod buffer;
+mod capabilities;
 mod cell;
 mod cursor;
 
 pub use backend::{Backend, FrameOutputTelemetry, TerminalOptions};
 pub use buffer::Buffer;
+pub use capabilities::{
+    CapabilityDecision, CapabilityReason, ColorPreference, ColorSupport, FeaturePreference,
+    TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
+};
 pub use cell::{Cell, Color, Style};
 pub use cursor::{Cursor, CursorShape};

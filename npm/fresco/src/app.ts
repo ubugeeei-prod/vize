@@ -13,7 +13,7 @@ import {
   type Ref,
   type VNode,
 } from "@vue/runtime-core";
-import type { InputEventNapi, ModifiersNapi } from "@vizejs/fresco-native";
+import type { InputEventNapi, ModifiersNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,
   isScreenReaderEnabledByDefault,
@@ -145,7 +145,7 @@ export interface App {
   /** Clear the screen */
   clear(): void;
   /** Get terminal info */
-  getTerminalInfo(): Promise<{ width: number; height: number }>;
+  getTerminalInfo(): Promise<TerminalInfoNapi>;
 }
 
 export interface RenderInstance {
@@ -732,8 +732,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
   async function getTerminalInfo() {
     const n = await loadNative();
-    const info = n.getTerminalInfo();
-    return { width: info.width, height: info.height };
+    return n.getTerminalInfo();
   }
 
   function dispatchEvent(event: InputEventNapi) {
