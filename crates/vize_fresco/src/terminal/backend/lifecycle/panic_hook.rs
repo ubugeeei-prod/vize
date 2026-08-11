@@ -36,7 +36,7 @@ const RESET_CURSOR_SHAPE: &[u8] = b"\x1b[0 q";
 const SHOW_CURSOR: &[u8] = b"\x1b[?25h";
 
 #[cfg(any(unix, test))]
-const PRESENTATION_RESETS: [(TerminalMode, &[u8]); 5] = [
+pub(super) const PRESENTATION_RESETS: [(TerminalMode, &[u8]); 5] = [
     (TerminalMode::MouseCapture, DISABLE_MOUSE_CAPTURE),
     (TerminalMode::BracketedPaste, DISABLE_BRACKETED_PASTE),
     (TerminalMode::AlternateScreen, LEAVE_ALTERNATE_SCREEN),
@@ -141,7 +141,10 @@ pub fn install_terminal_panic_hook() -> Result<TerminalPanicHookInstallation, Te
 
 #[inline]
 #[cfg(any(unix, test))]
-fn restore_owned_presentation_modes(owned_modes: u8, mut write: impl FnMut(&[u8]) -> bool) {
+pub(super) fn restore_owned_presentation_modes(
+    owned_modes: u8,
+    mut write: impl FnMut(&[u8]) -> bool,
+) {
     for (mode, reset) in PRESENTATION_RESETS {
         if owned_modes & mode.bit() != 0 {
             // Cleanup is best-effort: one rejected mode must not prevent the
@@ -152,7 +155,7 @@ fn restore_owned_presentation_modes(owned_modes: u8, mut write: impl FnMut(&[u8]
 }
 
 #[cfg(unix)]
-fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
+pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
     while !bytes.is_empty() {
         // SAFETY: `bytes` remains valid for the duration of the call, its exact
         // length is supplied, and `STDOUT_FILENO` is not borrowed or closed.

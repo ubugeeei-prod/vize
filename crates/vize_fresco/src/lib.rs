@@ -89,7 +89,9 @@ pub use terminal::{
     Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,
     TerminalCleanupFailure, TerminalMode, TerminalPanicHookError, TerminalPanicHookInstallation,
     TerminalProfileOptions, TerminalRestorationError, TerminalSessionAcquireError,
-    TerminalSessionPhase, TerminalSessionState, install_terminal_panic_hook,
+    TerminalSessionPhase, TerminalSessionState, TerminalSignalHookError,
+    TerminalSignalHookInstallation, TerminalSignalRollbackFailure, install_terminal_panic_hook,
+    install_terminal_signal_hook,
 };
 pub use text::{TextSegment, TextWidth, TextWrap};
 

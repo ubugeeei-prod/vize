@@ -26,7 +26,8 @@ mod tests;
 pub use lifecycle::{
     TerminalCleanupFailure, TerminalMode, TerminalPanicHookError, TerminalPanicHookInstallation,
     TerminalRestorationError, TerminalSessionAcquireError, TerminalSessionPhase,
-    TerminalSessionState, install_terminal_panic_hook,
+    TerminalSessionState, TerminalSignalHookError, TerminalSignalHookInstallation,
+    TerminalSignalRollbackFailure, install_terminal_panic_hook, install_terminal_signal_hook,
 };
 pub use output::FrameOutputTelemetry;
 

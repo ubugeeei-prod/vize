@@ -16,7 +16,8 @@ pub use backend::{
     Backend, FrameOutputTelemetry, TerminalCleanupFailure, TerminalMode, TerminalOptions,
     TerminalPanicHookError, TerminalPanicHookInstallation, TerminalRestorationError,
     TerminalSessionAcquireError, TerminalSessionPhase, TerminalSessionState,
-    install_terminal_panic_hook,
+    TerminalSignalHookError, TerminalSignalHookInstallation, TerminalSignalRollbackFailure,
+    install_terminal_panic_hook, install_terminal_signal_hook,
 };
 pub use buffer::Buffer;
 pub use capabilities::{

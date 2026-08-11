@@ -18,6 +18,7 @@ use super::{Backend, TerminalOptions};
 mod lease;
 mod panic_hook;
 mod raw_mode;
+mod signal_hook;
 mod state;
 
 #[cfg(all(test, unix))]
@@ -28,6 +29,10 @@ use raw_mode::{disable_raw_mode, enable_raw_mode, raw_mode_requires_restoration}
 pub use lease::TerminalSessionAcquireError;
 pub use panic_hook::{
     TerminalPanicHookError, TerminalPanicHookInstallation, install_terminal_panic_hook,
+};
+pub use signal_hook::{
+    TerminalSignalHookError, TerminalSignalHookInstallation, TerminalSignalRollbackFailure,
+    install_terminal_signal_hook,
 };
 pub use state::{TerminalMode, TerminalSessionPhase, TerminalSessionState};
 
