@@ -156,9 +156,6 @@ pub(crate) fn map_canonical_materialized_module_location(
         .materialized_sources
         .iter()
         .find(|source| location_matches_uri(&location.uri, &source.request_uri))?;
-    if !materialized.mapping_kind.is_mappable() {
-        return None;
-    }
     let origin = tower_lsp::lsp_types::Position::new(0, 0);
     Some(Location {
         uri: materialized.source_uri.clone(),
