@@ -15,8 +15,10 @@ use crossterm::{
 
 use super::{Backend, TerminalOptions};
 
+mod lease;
 mod state;
 
+pub use lease::TerminalSessionAcquireError;
 pub use state::{TerminalMode, TerminalSessionPhase, TerminalSessionState};
 
 /// One terminal mode that could not be restored.
@@ -111,12 +113,15 @@ impl<W: Write> Backend<W> {
     /// modes are conservatively marked active before writing because an I/O
     /// error may occur after a terminal accepted a partial command.
     pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
+        self.prepare_session(options)?;
         let previous = self.session;
         if let Err(initialization) = self.enable_modes(options) {
-            return match self.restore_to(previous) {
+            let result = match self.restore_to(previous) {
                 Ok(()) => Err(initialization),
                 Err(rollback) => Err(combine_errors(initialization, rollback)),
             };
+            self.release_process_lease_if_inactive();
+            return result;
         }
         Ok(())
     }
@@ -137,7 +142,9 @@ impl<W: Write> Backend<W> {
     /// later explicit call or [`Drop`] retry. Every failure is retained in a
     /// [`TerminalRestorationError`] after all actions have been attempted.
     pub fn restore(&mut self) -> io::Result<()> {
-        self.restore_to(TerminalSessionState::new())
+        let result = self.restore_to(TerminalSessionState::new());
+        self.release_process_lease_if_inactive();
+        result
     }
 
     fn enable_modes(&mut self, options: TerminalOptions) -> io::Result<()> {

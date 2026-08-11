@@ -14,7 +14,8 @@ mod cursor;
 
 pub use backend::{
     Backend, FrameOutputTelemetry, TerminalCleanupFailure, TerminalMode, TerminalOptions,
-    TerminalRestorationError, TerminalSessionPhase, TerminalSessionState,
+    TerminalRestorationError, TerminalSessionAcquireError, TerminalSessionPhase,
+    TerminalSessionState,
 };
 pub use buffer::Buffer;
 pub use capabilities::{

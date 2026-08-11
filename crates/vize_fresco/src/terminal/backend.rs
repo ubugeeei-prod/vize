@@ -15,6 +15,8 @@ mod output;
 #[cfg(test)]
 mod grapheme_tests;
 #[cfg(test)]
+mod lease_tests;
+#[cfg(test)]
 mod lifecycle_failure_tests;
 #[cfg(test)]
 mod lifecycle_tests;
@@ -22,8 +24,8 @@ mod lifecycle_tests;
 mod tests;
 
 pub use lifecycle::{
-    TerminalCleanupFailure, TerminalMode, TerminalRestorationError, TerminalSessionPhase,
-    TerminalSessionState,
+    TerminalCleanupFailure, TerminalMode, TerminalRestorationError, TerminalSessionAcquireError,
+    TerminalSessionPhase, TerminalSessionState,
 };
 pub use output::FrameOutputTelemetry;
 
@@ -54,6 +56,16 @@ impl Default for TerminalOptions {
     }
 }
 
+impl TerminalOptions {
+    const fn requests_terminal_control(self) -> bool {
+        self.raw_mode
+            || self.alternate_screen
+            || self.mouse_capture
+            || self.bracketed_paste
+            || self.hide_cursor
+    }
+}
+
 /// Double-buffered terminal renderer with an owned presentation writer.
 ///
 /// [`Backend::new`] preserves the standard-output behavior used by existing
@@ -73,6 +85,11 @@ pub struct Backend<W: Write = io::Stdout> {
     current_frame_blank: bool,
     /// Single source of truth for terminal presentation owned by this backend.
     session: TerminalSessionState,
+    /// Whether this backend writes to the process terminal rather than an
+    /// isolated injected sink.
+    process_terminal: bool,
+    /// Whether this backend currently holds the process-terminal lease.
+    process_lease: bool,
     /// Set while the terminal style may not match [`Style::new`], either
     /// because no frame has been written yet or because a frame failed
     /// mid-write, requiring an explicit reset before the next frame.
@@ -88,7 +105,9 @@ impl Backend<io::Stdout> {
     /// Create a standard-output backend with the current terminal size.
     pub fn new() -> io::Result<Self> {
         let (width, height) = crossterm::terminal::size()?;
-        Ok(Self::with_writer(width, height, io::stdout()))
+        let mut backend = Self::with_writer(width, height, io::stdout());
+        backend.process_terminal = true;
+        Ok(backend)
     }
 }
 
@@ -96,7 +115,8 @@ impl<W: Write> Backend<W> {
     /// Create a backend with an explicit viewport and presentation writer.
     ///
     /// This constructor does not inspect or mutate terminal process state.
-    /// Set `raw_mode` to `false` when initializing a memory-backed test writer.
+    /// Raw mode is rejected during initialization because it is process-global;
+    /// escape-sequence modes remain isolated to the injected writer.
     pub fn with_writer(width: u16, height: u16, writer: W) -> Self {
         Self {
             current: Buffer::new(width, height),
@@ -104,6 +124,8 @@ impl<W: Write> Backend<W> {
             cursor: Cursor::new(),
             current_frame_blank: true,
             session: TerminalSessionState::new(),
+            process_terminal: false,
+            process_lease: false,
             // An injected writer can point at a terminal whose inherited style
             // is unknown. The first frame establishes the same baseline used
             // after a partial-write failure.
@@ -184,6 +206,7 @@ impl<W: Write> Backend<W> {
 
     /// Clear both frame buffers and the presentation screen.
     pub fn clear(&mut self) -> io::Result<()> {
+        self.acquire_process_lease()?;
         execute!(&mut self.writer, Clear(ClearType::All))?;
         self.current.clear();
         self.previous.clear();
@@ -204,6 +227,13 @@ impl<W: Write> Backend<W> {
             self.current.clear();
             self.current_frame_blank = true;
         }
+    }
+
+    #[cfg(test)]
+    fn with_process_writer(width: u16, height: u16, writer: W) -> Self {
+        let mut backend = Self::with_writer(width, height, writer);
+        backend.process_terminal = true;
+        backend
     }
 }
 

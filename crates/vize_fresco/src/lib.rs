@@ -88,7 +88,7 @@ pub use terminal::{
     Backend, Buffer, CapabilityDecision, CapabilityReason, Cell, ColorPreference, ColorSupport,
     Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,
     TerminalCleanupFailure, TerminalMode, TerminalProfileOptions, TerminalRestorationError,
-    TerminalSessionPhase, TerminalSessionState,
+    TerminalSessionAcquireError, TerminalSessionPhase, TerminalSessionState,
 };
 pub use text::{TextSegment, TextWidth, TextWrap};
 

@@ -69,6 +69,8 @@ impl<W: Write> Backend<W> {
     }
 
     fn write_frame(&mut self) -> io::Result<FrameOutputTelemetry> {
+        self.acquire_process_lease()?;
+
         // Cursor commands are part of every frame. Acquire ownership before
         // writing so a partial command is restored conservatively after an
         // I/O failure. The state update is one branchless bitwise operation.
