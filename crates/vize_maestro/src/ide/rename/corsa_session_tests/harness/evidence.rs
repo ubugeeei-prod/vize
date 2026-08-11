@@ -5,7 +5,11 @@ use super::RealCorsaRenameSession;
 pub(in crate::ide::rename::corsa_session_tests) fn describe_server_frames(
     session: &RealCorsaRenameSession,
 ) -> String {
-    let mut paths = match fs::read_dir(&session.protocol_trace_dir) {
+    describe_server_frames_in(&session.protocol_trace_dir)
+}
+
+pub(in crate::ide) fn describe_server_frames_in(trace_dir: &std::path::Path) -> String {
+    let mut paths = match fs::read_dir(trace_dir) {
         Ok(entries) => entries
             .filter_map(Result::ok)
             .map(|entry| entry.path())

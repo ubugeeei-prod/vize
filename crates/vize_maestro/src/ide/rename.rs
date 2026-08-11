@@ -13,7 +13,7 @@ mod corsa_event_variants_tests;
 #[cfg(all(test, feature = "native"))]
 mod corsa_model_tests;
 #[cfg(all(test, feature = "native", unix))]
-mod corsa_session_tests;
+pub(in crate::ide) mod corsa_session_tests;
 #[cfg(all(test, feature = "native"))]
 mod corsa_tests;
 

@@ -13,7 +13,7 @@ mod readiness;
 
 const SHUTDOWN_OBSERVATION_TIMEOUT: Duration = Duration::from_secs(30);
 
-pub(in crate::ide::rename::corsa_session_tests) struct ShutdownGate {
+pub(in crate::ide) struct ShutdownGate {
     listener: Option<TcpListener>,
     stream: Option<TcpStream>,
     sentinel: PathBuf,
@@ -95,7 +95,7 @@ impl Drop for ShutdownGate {
     }
 }
 
-pub(super) fn traced_corsa_executable(
+pub(in crate::ide) fn traced_corsa_executable(
     root: &Path,
     corsa_path: &Path,
     observe_shutdown: bool,

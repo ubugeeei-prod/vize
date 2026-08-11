@@ -3,7 +3,7 @@ use std::sync::{Arc, Barrier};
 use harness::RealCorsaRenameSession;
 
 mod direct_first;
-mod harness;
+pub(in crate::ide) mod harness;
 
 #[test]
 fn concurrent_real_corsa_rename_sessions_are_isolated() {
