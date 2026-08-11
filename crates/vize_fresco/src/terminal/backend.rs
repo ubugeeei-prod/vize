@@ -98,6 +98,9 @@ impl<W: Write> Backend<W> {
             raw_mode: false,
             mouse_capture: false,
             bracketed_paste: false,
+            // An injected writer can point at a terminal whose inherited style
+            // is unknown. The first frame establishes the same baseline used
+            // after a partial-write failure.
             style_baseline_unknown: true,
             width,
             height,
@@ -117,20 +120,20 @@ impl<W: Write> Backend<W> {
             self.raw_mode = true;
         }
         if options.alternate_screen {
-            self.alternate_screen = true;
             execute!(&mut self.writer, EnterAlternateScreen)?;
+            self.alternate_screen = true;
         }
         if options.bracketed_paste {
-            self.bracketed_paste = true;
             execute!(&mut self.writer, EnableBracketedPaste)?;
+            self.bracketed_paste = true;
         }
         if options.mouse_capture {
-            self.mouse_capture = true;
             execute!(&mut self.writer, EnableMouseCapture)?;
+            self.mouse_capture = true;
         }
         if options.hide_cursor {
-            self.cursor_hidden = true;
             execute!(&mut self.writer, Hide)?;
+            self.cursor_hidden = true;
         }
         Ok(())
     }

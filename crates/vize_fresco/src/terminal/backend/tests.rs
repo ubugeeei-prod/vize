@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
 use crossterm::{
-    cursor::Show,
+    cursor::{MoveTo, Show},
     queue,
     style::{Attribute, SetAttribute, SetBackgroundColor, SetForegroundColor},
 };
@@ -51,6 +51,38 @@ fn injected_writer_owns_lifecycle_output_and_restoration_is_idempotent() {
 }
 
 #[test]
+fn failed_mode_enable_commands_are_never_recorded_as_active() {
+    assert_failed_init_does_not_mark_active(
+        TerminalOptions {
+            alternate_screen: true,
+            ..disabled_terminal_options()
+        },
+        |backend| backend.alternate_screen,
+    );
+    assert_failed_init_does_not_mark_active(
+        TerminalOptions {
+            bracketed_paste: true,
+            ..disabled_terminal_options()
+        },
+        |backend| backend.bracketed_paste,
+    );
+    assert_failed_init_does_not_mark_active(
+        TerminalOptions {
+            mouse_capture: true,
+            ..disabled_terminal_options()
+        },
+        |backend| backend.mouse_capture,
+    );
+    assert_failed_init_does_not_mark_active(
+        TerminalOptions {
+            hide_cursor: true,
+            ..disabled_terminal_options()
+        },
+        |backend| backend.cursor_hidden,
+    );
+}
+
+#[test]
 fn measured_flush_reports_exact_writer_bytes_and_changed_cells() {
     let mut backend = Backend::with_writer(4, 1, Vec::new());
     backend.buffer_mut().set_string(0, 0, "A", Style::new());
@@ -58,6 +90,7 @@ fn measured_flush_reports_exact_writer_bytes_and_changed_cells() {
     let first = backend.flush_measured().unwrap();
     assert_eq!(first.changed_cells(), 1);
     assert_eq!(first.bytes_written(), backend.writer().len() as u64);
+    assert!(backend.writer().starts_with(&style_reset_bytes()));
 
     let first_total = backend.writer().len();
     backend.buffer_mut().set_string(0, 0, "A", Style::new());
@@ -163,17 +196,30 @@ fn retry_after_a_partially_written_frame_reestablishes_the_style_baseline() {
     let mut backend = Backend::with_writer(
         2,
         1,
-        BudgetedWriter {
-            remaining_writes: 5,
+        ByteBudgetWriter {
+            remaining_bytes: usize::MAX,
             data: Vec::new(),
         },
     );
+    backend.buffer_mut().set_string(0, 0, "A", Style::new());
+    backend.flush_measured().unwrap();
+    backend.writer_mut().data.clear();
+    let mut colored_prefix = Vec::new();
+    queue!(
+        colored_prefix,
+        MoveTo(0, 0),
+        SetForegroundColor(crossterm::style::Color::DarkRed)
+    )
+    .unwrap();
+    backend.writer_mut().remaining_bytes = colored_prefix.len();
     backend
         .buffer_mut()
         .set_string(0, 0, "A", Style::new().fg(Color::Red));
     assert!(backend.flush_measured().is_err());
 
-    backend.writer_mut().remaining_writes = usize::MAX;
+    assert_eq!(backend.writer().data, colored_prefix);
+
+    backend.writer_mut().remaining_bytes = usize::MAX;
     backend.writer_mut().data.clear();
     backend.buffer_mut().set_string(0, 0, "B", Style::new());
     backend.flush_measured().unwrap();
@@ -206,6 +252,26 @@ impl Write for AlwaysFailWriter {
     }
 }
 
+fn disabled_terminal_options() -> TerminalOptions {
+    TerminalOptions {
+        raw_mode: false,
+        alternate_screen: false,
+        mouse_capture: false,
+        bracketed_paste: false,
+        hide_cursor: false,
+    }
+}
+
+fn assert_failed_init_does_not_mark_active(
+    options: TerminalOptions,
+    active: impl FnOnce(&Backend<AlwaysFailWriter>) -> bool,
+) {
+    let mut backend = Backend::with_writer(80, 24, AlwaysFailWriter);
+
+    assert!(backend.init_with_options(options).is_err());
+    assert!(!active(&backend));
+}
+
 /// Writer that rejects exactly one armed write and then accepts output.
 #[derive(Debug, Default)]
 struct ArmedFailureWriter {
@@ -228,25 +294,26 @@ impl Write for ArmedFailureWriter {
     }
 }
 
-/// Writer that accepts a bounded number of writes before failing.
+/// Writer that accepts a byte budget, including partial writes, before failing.
 #[derive(Debug)]
-struct BudgetedWriter {
-    remaining_writes: usize,
+struct ByteBudgetWriter {
+    remaining_bytes: usize,
     data: Vec<u8>,
 }
 
-impl Write for BudgetedWriter {
+impl Write for ByteBudgetWriter {
     fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
-        if self.remaining_writes == 0 {
+        if self.remaining_bytes == 0 {
             return Err(io::Error::other("injected writer failure"));
         }
-        self.remaining_writes -= 1;
-        self.data.extend_from_slice(buffer);
-        Ok(buffer.len())
+        let accepted = buffer.len().min(self.remaining_bytes);
+        self.remaining_bytes -= accepted;
+        self.data.extend_from_slice(&buffer[..accepted]);
+        Ok(accepted)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        if self.remaining_writes == 0 {
+        if self.remaining_bytes == 0 {
             return Err(io::Error::other("injected writer failure"));
         }
         Ok(())
