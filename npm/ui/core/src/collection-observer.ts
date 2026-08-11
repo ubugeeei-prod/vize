@@ -3,9 +3,9 @@ import type { CollectionItem, CollectionKey } from "./collection-types.ts";
 /**
  * Observe DOM ordering and accessible text mutations for registered items.
  *
- * One observer is created per owning document, scoped to the closest common
- * ancestor when every item is connected, so the registry can re-resolve
- * snapshots without polling.
+ * One observer is created per owning document. Connected items use their
+ * closest common ancestor and disconnected items are observed directly, so a
+ * partial mount never expands observation to the whole document.
  */
 export function observeCollectionMutations<Key extends CollectionKey, Value>(
   items: readonly CollectionItem<Key, Value>[],
@@ -25,14 +25,19 @@ export function observeCollectionMutations<Key extends CollectionKey, Value>(
     if (MutationObserverConstructor === undefined) continue;
 
     const observer = new MutationObserverConstructor(onMutation);
-    const commonAncestor = elements.every((element) => element.isConnected)
-      ? findCollectionObservationRoot(elements)
-      : null;
+    const connectedElements = elements.filter((element) => element.isConnected);
+    const disconnectedElements = elements.filter((element) => !element.isConnected);
+    const commonAncestor =
+      connectedElements.length === elements.length
+        ? findCollectionObservationRoot(connectedElements)
+        : null;
+    const connectedRoot =
+      commonAncestor === null ? findCollectionObservationRoot(connectedElements) : commonAncestor;
     const targets =
       commonAncestor === null
         ? new Set<Node>([
-            ...elements.map((element) => element.getRootNode()),
-            ownerDocument.documentElement,
+            ...(connectedRoot === null ? connectedElements : [connectedRoot]),
+            ...disconnectedElements,
           ])
         : new Set<Node>([commonAncestor]);
     for (const target of targets) {

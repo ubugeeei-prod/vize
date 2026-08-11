@@ -43,6 +43,7 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
   let sequence = 0;
   let disposed = false;
   let mutationObservers: MutationObserver[] = [];
+  let observedElements: readonly (Element | null)[] | undefined;
 
   const items = computed<readonly CollectionItem<Key, Value>[]>(() => {
     void revision.value;
@@ -80,10 +81,19 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
   const stopObservation = watch(
     items,
     (nextItems) => {
+      const nextElements = nextItems.map(({ element }) => element);
+      if (
+        observedElements !== undefined &&
+        observedElements.length === nextElements.length &&
+        observedElements.every((element, index) => element === nextElements[index])
+      ) {
+        return;
+      }
       for (const observer of mutationObservers) observer.disconnect();
       mutationObservers = observeCollectionMutations(nextItems, () => {
         if (!disposed) revision.value += 1;
       });
+      observedElements = nextElements;
     },
     { flush: "sync", immediate: true },
   );

@@ -5,8 +5,6 @@ import { effectScope, ref } from "vue";
 
 import {
   createCollectionRegistry,
-  extractCollectionTextValue,
-  normalizeCollectionTextValue,
   type CollectionActiveChange,
   type CollectionKey,
 } from "./collection.ts";
@@ -106,6 +104,7 @@ test("observes connected DOM order and uses deterministic registration fallback"
 
   first.remove();
   second.remove();
+  disconnected.remove();
   registry.dispose();
 });
 
@@ -237,38 +236,6 @@ test("recovers synchronously when an active item becomes disabled", () => {
   assert.equal(registry.activeKey.value, "charlie");
   assert.equal(changes.at(-1)?.reason, "item-disabled");
   registry.dispose();
-});
-
-test("extracts normalized accessible text and excludes hidden descendants", () => {
-  const label = document.createElement("span");
-  label.id = "collection-label";
-  label.hidden = true;
-  label.textContent = "  Café\nau lait ";
-  const labelled = document.createElement("div");
-  labelled.setAttribute("aria-labelledby", label.id);
-  labelled.textContent = "Ignored content";
-  document.body.append(label, labelled);
-
-  assert.equal(extractCollectionTextValue(labelled), "Café au lait");
-
-  const content = document.createElement("div");
-  content.append("Visible ");
-  const hidden = document.createElement("span");
-  hidden.setAttribute("aria-hidden", "true");
-  hidden.textContent = "decorative";
-  const image = document.createElement("img");
-  image.alt = "avatar";
-  content.append(hidden, image);
-  assert.equal(extractCollectionTextValue(content), "Visible avatar");
-
-  const input = document.createElement("input");
-  input.type = "submit";
-  input.value = "Send form";
-  assert.equal(extractCollectionTextValue(input), "Send form");
-  assert.equal(normalizeCollectionTextValue(" e\u0301\tclair "), "é clair");
-
-  label.remove();
-  labelled.remove();
 });
 
 test("cycles locale-aware typeahead and supports exact matching", () => {

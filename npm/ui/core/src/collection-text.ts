@@ -43,11 +43,13 @@ function readElementText(element: Element, visited: Set<Element>, referenced: bo
 
   const labelledBy = element.getAttribute("aria-labelledby");
   if (labelledBy !== null) {
+    const root = element.getRootNode();
+    const referenceRoot = hasGetElementById(root) ? root : element.ownerDocument;
     const labelledText = labelledBy
       .split(/\s+/u)
       .filter((id) => id.length > 0)
-      .map((id) => element.ownerDocument.getElementById(id))
-      .filter((label): label is HTMLElement => label !== null)
+      .map((id) => referenceRoot.getElementById(id))
+      .filter((label): label is Element => label !== null)
       .map((label) => readElementText(label, visited, true))
       .join(" ");
     if (normalizeCollectionTextValue(labelledText).length > 0) return labelledText;
@@ -78,11 +80,19 @@ function readElementText(element: Element, visited: Set<Element>, referenced: bo
         fragments.push(readElementText(child as Element, visited, referenced));
       }
     }
-    const content = fragments.join(" ");
+    const content = fragments.join("");
     if (normalizeCollectionTextValue(content).length > 0) return content;
   }
 
   return element.getAttribute("title") ?? "";
+}
+
+interface CollectionIdReferenceRoot extends Node {
+  getElementById(id: string): Element | null;
+}
+
+function hasGetElementById(node: Node): node is CollectionIdReferenceRoot {
+  return "getElementById" in node && typeof node.getElementById === "function";
 }
 
 function isCollectionTextHidden(element: Element): boolean {

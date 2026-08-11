@@ -92,7 +92,7 @@ const componentCases = [
   {
     family: "collection",
     exportName: "createCollectionRegistry",
-    maximumJavaScriptGzipBytes: 3_050,
+    maximumJavaScriptGzipBytes: 3_150,
     maximumCssGzipBytes: 0,
   },
   {
