@@ -114,7 +114,7 @@ fn parse_args(
   args : Array[String],
 ) -> (String, String, Array[Threshold])? {
   let mut json_path = ""
-  let mut markdown_path = match @sys.get_env_var("GITHUB_STEP_SUMMARY") {
+  let mut markdown_path = match @env.get_env_var("GITHUB_STEP_SUMMARY") {
     Some(value) => value
     None => ""
   }

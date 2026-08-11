@@ -54,7 +54,7 @@ pub fn read_file_to_string(path : String) -> String? {
 
 /// Resolves a binary name from the environment, falling back to a default.
 pub fn tool_bin(env_name : String, fallback : String) -> String {
-  match @sys.get_env_var(env_name) {
+  match @env.get_env_var(env_name) {
     Some(value) if value != "" => value
     _ => fallback
   }

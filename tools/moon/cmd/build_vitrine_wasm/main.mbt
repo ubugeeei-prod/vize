@@ -22,7 +22,7 @@ fn workspace_root() -> String {
 }
 
 fn wasm_pack_cache(root : String) -> String {
-  match @sys.get_env_var("WASM_PACK_CACHE") {
+  match @env.get_env_var("WASM_PACK_CACHE") {
     Some(value) => @tool.resolve_path(value)
     None => @tool.join_path(root, ".cache/wasm-pack")
   }
@@ -41,7 +41,7 @@ fn wasm_artifact(root : String) -> String {
 }
 
 async fn resolve_macos_sdk_root(root : String) -> String? {
-  match @sys.get_env_var("SDKROOT") {
+  match @env.get_env_var("SDKROOT") {
     Some(value) if value.trim() != "" => return Some(@tool.resolve_path(value))
     _ => ()
   }
@@ -70,7 +70,7 @@ async fn resolve_macos_sdk_root(root : String) -> String? {
 
 fn macos_library_path(sdk_root : String) -> String {
   let sdk_library_path = @tool.join_path(sdk_root, "usr/lib")
-  match @sys.get_env_var("LIBRARY_PATH") {
+  match @env.get_env_var("LIBRARY_PATH") {
     Some(value) if value != "" => sdk_library_path + ":" + value
     _ => sdk_library_path
   }
@@ -78,7 +78,7 @@ fn macos_library_path(sdk_root : String) -> String {
 
 fn wasm_rustflags() -> String {
   let flag = "--cfg getrandom_backend=\"wasm_js\""
-  match @sys.get_env_var("RUSTFLAGS") {
+  match @env.get_env_var("RUSTFLAGS") {
     Some(value) if value.trim() != "" => value + " " + flag
     _ => flag
   }

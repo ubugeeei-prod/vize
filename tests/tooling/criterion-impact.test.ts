@@ -97,6 +97,24 @@ test("direct Criterion package changes select only their suite", () => {
   assert.deepEqual(result.selected, ["vize_glyph"]);
 });
 
+test("Doctor reporter benchmarks are enrolled in scoped Criterion A/B runs", () => {
+  const suite = CRITERION_SUITES.find(({ package: packageName }) => packageName === "vize_doctor");
+  assert.deepEqual(suite, {
+    package: "vize_doctor",
+    benches: ["reporter"],
+    label: "Doctor reporters",
+  });
+
+  const result = selectCriterionSuites({
+    changedPaths: ["crates/vize_doctor/src/reporter/json.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+
+  assert.equal(result.mode, "scoped");
+  assert.deepEqual(result.selected, ["vize_doctor"]);
+});
+
 test("reverse dependency impact selects every suite that consumes a changed package", () => {
   const dependencies = Object.fromEntries(suiteNames.map((name) => [name, ["vize_atelier_core"]]));
   const result = selectCriterionSuites({

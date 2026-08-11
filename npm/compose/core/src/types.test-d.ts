@@ -2,7 +2,7 @@
 
 import type { ShallowRef } from "vue";
 
-import { anyAbortSignal } from "./abort-signal.js";
+import { anyAbortSignal, deadlineAbortSignal, timeoutAbortSignal } from "./abort-signal.js";
 import { type AsyncResourceExecution, useAsyncResource } from "./async-resource.js";
 import {
   availableCapability,
@@ -29,6 +29,17 @@ type _AbortCompositionReturnsThePlatformSignal = Expect<
 
 // @ts-expect-error cancellation composition accepts AbortSignal inputs only.
 anyAbortSignal([new AbortController()]);
+
+timeoutAbortSignal(100, {
+  signal: combinedAbortSignal,
+  reason: { code: "timed-out" } as const,
+});
+deadlineAbortSignal(new Date(), { now: () => 0 });
+
+// @ts-expect-error timeout delays are numeric milliseconds.
+timeoutAbortSignal(100n);
+// @ts-expect-error deadlines are Date objects or numeric Unix milliseconds.
+deadlineAbortSignal("tomorrow");
 
 const resource = useAsyncResource(async (_context, id: 1 | 2) => ({ id }) as const);
 

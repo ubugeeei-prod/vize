@@ -11,6 +11,7 @@ type WorkflowStep = {
   id?: string;
   name?: string;
   run?: string;
+  shell?: string;
   uses?: string;
   with?: Record<string, unknown>;
 };
@@ -40,9 +41,16 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
-  assert.deepEqual(Object.keys(dispatch.inputs ?? {}), ["budget_mode"]);
+  assert.deepEqual(Object.keys(dispatch.inputs ?? {}), ["budget_mode", "lsp_mode"]);
   assert.deepEqual(dispatch.inputs?.budget_mode, {
     description: "Typecheck divergence budget handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.lsp_mode, {
+    description: "LSP lifecycle gate handling",
     required: false,
     default: "enforce",
     type: "choice",
@@ -238,7 +246,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
   assert.equal(divergence?.env?.BUDGET_MODE, "${{ inputs.budget_mode || 'enforce' }}");
   assert.equal(verdict.if, "${{ always() }}");
+  assert.equal(verdict.shell, "bash");
   assert.deepEqual(verdict.env, {
+    LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
     VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
     VIZE_CORE_TOOLS_OUTCOME: "${{ steps.core_tools.outcome }}",
@@ -249,17 +259,19 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   });
   assert.match(verdict.run ?? "", /real-project-surface-verdict\.mjs/);
   assert.match(verdict.run ?? "", /surface-verdict\.json/);
+  assert.match(verdict.run ?? "", /lsp_verdict="\$VIZE_LSP_OUTCOME"/);
+  assert.match(verdict.run ?? "", /\[\[ "\$LSP_MODE" == "record-only"/);
   for (const [surface, variable] of [
     ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
     ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
     ["core-tools", "VIZE_CORE_TOOLS_OUTCOME"],
-    ["lsp", "VIZE_LSP_OUTCOME"],
     ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
     ["glyph", "VIZE_GLYPH_OUTCOME"],
     ["typecheck-divergence", "VIZE_TYPECHECK_DIVERGENCE_OUTCOME"],
   ]) {
     assert.match(verdict.run ?? "", new RegExp(`--surface "${surface}=\\$${variable}"`));
   }
+  assert.match(verdict.run ?? "", /--surface "lsp=\$lsp_verdict"/);
   assert.equal(summary?.if, "${{ always() }}");
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /lsp-lifecycle-summary\.json/);

@@ -69,6 +69,24 @@ function withoutNativeAny<Value>(callback: () => Value): Value {
   }
 }
 
+function withNativeAny<Value>(
+  replacement: (signals: AbortSignal[]) => AbortSignal,
+  callback: () => Value,
+): Value {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal, "any");
+  Object.defineProperty(AbortSignal, "any", {
+    configurable: true,
+    value: replacement,
+    writable: true,
+  });
+  try {
+    return callback();
+  } finally {
+    if (descriptor === undefined) delete (AbortSignal as { any?: unknown }).any;
+    else Object.defineProperty(AbortSignal, "any", descriptor);
+  }
+}
+
 void test("returns a distinct, pending signal for empty input", () => {
   const signal = anyAbortSignal([]);
 
@@ -87,6 +105,92 @@ void test("forwards the first abort reason and ignores later inputs", () => {
 
   assert.equal(signal.aborted, true);
   assert.equal(signal.reason, firstReason);
+});
+
+void test("falls back when a lazy native implementation changes the winning reason", () => {
+  let nativeCalls = 0;
+  withNativeAny(
+    (signals) => {
+      nativeCalls += 1;
+      return {
+        get aborted() {
+          return signals.some((signal) => signal.aborted);
+        },
+        get reason() {
+          return signals.find((signal) => signal.aborted)?.reason;
+        },
+      } as AbortSignal;
+    },
+    () => {
+      const late = new AbortController();
+      const winner = new AbortController();
+      const expected = { code: "winner" };
+      const signal = anyAbortSignal([late.signal, winner.signal]);
+
+      winner.abort(expected);
+      late.abort(new Error("too late"));
+
+      assert.equal(signal.reason, expected);
+      assert.equal(nativeCalls, 1, "a rejected native candidate is used only for its probe");
+    },
+  );
+});
+
+void test("caches and delegates a conformant native implementation by identity", () => {
+  let nativeCalls = 0;
+  withNativeAny(
+    (signals) => {
+      nativeCalls += 1;
+      const controller = new AbortController();
+      for (const signal of signals) {
+        const forward = () => controller.abort(signal.reason);
+        if (signal.aborted) {
+          forward();
+          break;
+        }
+        signal.addEventListener("abort", forward, { once: true });
+      }
+      return controller.signal;
+    },
+    () => {
+      const first = new AbortController();
+      const expected = { code: "native" };
+      const firstCombined = anyAbortSignal([first.signal]);
+      first.abort(expected);
+      assert.equal(firstCombined.reason, expected);
+      assert.equal(nativeCalls, 2, "the first call performs one probe and one delegation");
+
+      const second = new AbortController();
+      const secondCombined = anyAbortSignal([second.signal]);
+      second.abort(expected);
+      assert.equal(secondCombined.reason, expected);
+      assert.equal(nativeCalls, 3, "the same function identity is not probed twice");
+    },
+  );
+});
+
+void test("falls back when a native accessor cannot be read", () => {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal, "any");
+  let reads = 0;
+  Object.defineProperty(AbortSignal, "any", {
+    configurable: true,
+    get() {
+      reads += 1;
+      throw new Error("native accessor unavailable");
+    },
+  });
+  try {
+    const controller = new AbortController();
+    const expected = { code: "fallback" };
+    const signal = anyAbortSignal([controller.signal]);
+    controller.abort(expected);
+
+    assert.equal(signal.reason, expected);
+    assert.equal(reads, 1);
+  } finally {
+    if (descriptor === undefined) delete (AbortSignal as { any?: unknown }).any;
+    else Object.defineProperty(AbortSignal, "any", descriptor);
+  }
 });
 
 void test("uses iteration order when multiple inputs are already aborted", () => {

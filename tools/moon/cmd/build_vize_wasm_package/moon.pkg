@@ -1,4 +1,5 @@
 import {
+  "moonbitlang/core/env",
   "moonbitlang/async",
   "moonbitlang/async/process",
   "moonbitlang/x/fs",

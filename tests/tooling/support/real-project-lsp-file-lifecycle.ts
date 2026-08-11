@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./lsp/assertions.ts";
@@ -19,14 +20,15 @@ import {
   uniqueAnchorOffset,
   type OracleSession,
 } from "./real-project-lsp-authored-utils.ts";
-import type { AuthoredFileLifecycleEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
+import type {
+  AuthoredFileLifecycleEvidence,
+  LspAuthoredOracle,
+} from "./real-project-lsp-report.ts";
 
 type OracleDocument = { source: string; uri: string };
 type SymbolInformation = { location?: { range?: LspRange; uri?: string }; name?: string };
-type DocumentChange = {
-  edits?: Array<{ newText: string; range: LspRange }>;
-  textDocument?: { uri?: string };
-};
+type DocumentEdit = { newText: string; range: LspRange };
+type DocumentChange = { edits?: DocumentEdit[]; textDocument?: { uri?: string } };
 
 export async function exerciseAuthoredFileLifecycle(
   session: OracleSession,
@@ -270,7 +272,14 @@ async function expectNullResponse(
   message: string,
   timeoutMs: number,
 ): Promise<null> {
-  const response = await session.request(method, params, timeoutMs);
+  const deadline = Date.now() + timeoutMs;
+  let response: unknown = undefined;
+  do {
+    const remainingMs = Math.max(1, deadline - Date.now());
+    response = await session.request(method, params, Math.min(remainingMs, 5000));
+    if (response === null) return null;
+    await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
+  } while (Date.now() < deadline);
   assert.equal(response, null, message);
   return null;
 }

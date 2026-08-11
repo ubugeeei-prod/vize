@@ -21,7 +21,9 @@ const entries = {
  * another module or in the retained external `vue` import specifiers.
  */
 const sentinels = {
-  "abort-signal": ["anyAbortSignal"],
+  "abort-signal-any": ["anyAbortSignal"],
+  "abort-signal-timeout": ["timeoutAbortSignal", "VIZE_COMPOSE_ABORT_TIMEOUT_INVALID_DELAY"],
+  "abort-signal-deadline": ["deadlineAbortSignal", "VIZE_COMPOSE_ABORT_DEADLINE_INVALID"],
   scope: ["tryOnScopeDispose"],
   "capability-available": ['status: "available"'],
   "capability-unavailable": ['status: "unavailable"'],
@@ -52,7 +54,19 @@ interface UtilityCase {
 }
 
 const utilities: readonly UtilityCase[] = [
-  { binding: "anyAbortSignal", entry: "index", module: "abort-signal", shared: [] },
+  { binding: "anyAbortSignal", entry: "index", module: "abort-signal-any", shared: [] },
+  {
+    binding: "timeoutAbortSignal",
+    entry: "index",
+    module: "abort-signal-timeout",
+    shared: ["abort-signal-any"],
+  },
+  {
+    binding: "deadlineAbortSignal",
+    entry: "index",
+    module: "abort-signal-deadline",
+    shared: ["abort-signal-timeout", "abort-signal-any"],
+  },
   { binding: "tryOnScopeDispose", entry: "index", module: "scope", shared: [] },
   {
     binding: "availableCapability",

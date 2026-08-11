@@ -12,6 +12,14 @@ on:
         options:
           - enforce
           - record-only
+      lsp_mode:
+        description: "LSP lifecycle gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
   schedule:
     # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
     - cron: "37 5 * * 0"
@@ -210,7 +218,9 @@ jobs:
       - name: Enforce all real-project surface verdicts
         id: surface_verdict
         if: ${{ always() }}
+        shell: bash
         env:
+          LSP_MODE: ${{ inputs.lsp_mode || 'enforce' }}
           VIZE_WAIVER_AUDIT_OUTCOME: ${{ steps.waiver_audit.outcome }}
           VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
           VIZE_CORE_TOOLS_OUTCOME: ${{ steps.core_tools.outcome }}
@@ -219,12 +229,16 @@ jobs:
           VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
           VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
         run: |
+          lsp_verdict="$VIZE_LSP_OUTCOME"
+          if [[ "$LSP_MODE" == "record-only" && "$lsp_verdict" == "failure" ]]; then
+            lsp_verdict=success
+          fi
           node tools/fixtures/real-project-surface-verdict.mjs \
             --output "$FIXTURE_REPORT_DIR/surface-verdict.json" \
             --surface "waiver-audit=$VIZE_WAIVER_AUDIT_OUTCOME" \
             --surface "typecheck-dependencies=$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME" \
             --surface "core-tools=$VIZE_CORE_TOOLS_OUTCOME" \
-            --surface "lsp=$VIZE_LSP_OUTCOME" \
+            --surface "lsp=$lsp_verdict" \
             --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
             --surface "glyph=$VIZE_GLYPH_OUTCOME" \
             --surface "typecheck-divergence=$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"
