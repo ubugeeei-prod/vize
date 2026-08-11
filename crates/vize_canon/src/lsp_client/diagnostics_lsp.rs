@@ -2,6 +2,7 @@ use crate::file_uri::path_to_file_uri;
 use corsa::runtime::block_on;
 use corsa_lsp::LspClient;
 use lsp_types::{DocumentDiagnosticReportResult, Uri};
+use serde_json::Value;
 use std::path::Path;
 use vize_carton::{String, cstr};
 
@@ -75,5 +76,33 @@ pub(super) fn request_lsp_document_diagnostics(
             }
         })),
     )
+    .map_err(|error| cstr!("{error}"))
+}
+
+/// Wait for a document diagnostic response without interpreting its payload.
+///
+/// Editor readiness only needs the response-backed transport ordering. The
+/// native server's diagnostic payload can contain protocol extensions that are
+/// irrelevant to that ordering and must not make a semantic query fail.
+pub(super) fn request_lsp_document_diagnostic_ack(
+    client: &LspClient,
+    uri: &Uri,
+) -> Result<(), String> {
+    struct RawDocumentDiagnosticAckRequest;
+
+    impl lsp_types::request::Request for RawDocumentDiagnosticAckRequest {
+        type Params = serde_json::Value;
+        type Result = Value;
+        const METHOD: &'static str = "textDocument/diagnostic";
+    }
+
+    block_on(
+        client.request::<RawDocumentDiagnosticAckRequest>(serde_json::json!({
+            "textDocument": {
+                "uri": uri,
+            }
+        })),
+    )
+    .map(|_| ())
     .map_err(|error| cstr!("{error}"))
 }

@@ -1,9 +1,6 @@
 //! Transport-generation readiness barrier for editor LSP documents.
 
-use corsa::runtime::block_on;
-use corsa_lsp::LspClient;
-use lsp_types::{Uri, request::Request};
-use serde_json::Value;
+use lsp_types::Uri;
 use std::str::FromStr;
 use vize_carton::{FxHashSet, String, cstr};
 
@@ -32,7 +29,11 @@ impl EditorLspSession {
             let readiness_uri = Uri::from_str(readiness_document).map_err(|error| {
                 cstr!("Invalid LSP readiness document URI {readiness_document}: {error}")
             })?;
-            request_lsp_document_semantic_ack(&self.client, &readiness_uri).map_err(|error| {
+            super::super::diagnostics_lsp::request_lsp_document_diagnostic_ack(
+                &self.client,
+                &readiness_uri,
+            )
+            .map_err(|error| {
                 cstr!("Failed to establish editor LSP readiness for {readiness_document}: {error}")
             })?;
         }
@@ -56,32 +57,6 @@ impl EditorLspSession {
         Uri::from_str(document_uri)
             .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))
     }
-}
-
-/// Establish response-backed semantic ordering without pulling diagnostics.
-///
-/// The pinned Content Mapper runtime produced a trailing-JSON transport error
-/// for `textDocument/diagnostic` under full parallel load (#4157). A raw hover
-/// at the start of the same document still waits for the semantic project while
-/// avoiding that diagnostic-only response surface. Its payload is deliberately
-/// ignored; only the successfully decoded response acknowledges readiness.
-fn request_lsp_document_semantic_ack(client: &LspClient, uri: &Uri) -> Result<(), String> {
-    struct RawReadinessHoverRequest;
-
-    impl Request for RawReadinessHoverRequest {
-        type Params = Value;
-        type Result = Value;
-        const METHOD: &'static str = "textDocument/hover";
-    }
-
-    block_on(
-        client.request::<RawReadinessHoverRequest>(serde_json::json!({
-            "textDocument": { "uri": uri },
-            "position": { "line": 0, "character": 0 },
-        })),
-    )
-    .map(|_| ())
-    .map_err(|error| cstr!("{error}"))
 }
 
 fn readiness_documents(
