@@ -27,7 +27,7 @@ export function createFocusScopeManager({
     if (position === "first") target = candidates[0];
     else if (position === "last") target = candidates.at(-1);
     else {
-      const from = options.from ?? deepActiveElement(scopeRoot.ownerDocument);
+      const from = "from" in options ? options.from : deepActiveElement(scopeRoot.ownerDocument);
       const index = from ? candidates.indexOf(from as HTMLElement) : -1;
       if (position === "next") {
         target = candidates[index + 1] ?? (options.wrap ? candidates[0] : undefined);

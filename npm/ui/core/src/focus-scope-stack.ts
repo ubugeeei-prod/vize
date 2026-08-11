@@ -42,7 +42,12 @@ export function containmentOwner(document: Document): FocusScopeToken | null {
   const scopes = scopesFor(document);
   for (let index = scopes.length - 1; index >= 0; index--) {
     const token = scopes[index];
-    if (token?.readContain()) return token;
+    try {
+      if (token?.readContain()) return token;
+    } catch {
+      // A scope with an unreadable contain option cannot own containment, and must not
+      // hide the scopes below it from the shared document listeners.
+    }
   }
   return null;
 }

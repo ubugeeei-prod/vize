@@ -192,6 +192,7 @@ export function createFocusScope(options: FocusScopeOptions): FocusScopeControll
     if (restorationCaptured) return;
     restorationCaptured = true;
     capturedTarget = deepActiveElement(scopeRoot.ownerDocument);
+    if (!readBoolean(options.restoreFocus, "restoreFocus")) return;
     const body = scopeRoot.ownerDocument.body;
     restoreCandidates = body ? focusableElements(body) : [];
     restoreIndex = capturedTarget ? restoreCandidates.indexOf(capturedTarget) : -1;

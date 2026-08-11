@@ -104,16 +104,21 @@ export function resolveMoveOptions(value: FocusScopeMoveOptions | undefined): Re
   };
 }
 
+/** Order positive tabindex values first and ascending, leaving ties to the caller. */
+export function comparePositiveTabindex(left: HTMLElement, right: HTMLElement): number {
+  const leftPositive = left.tabIndex > 0;
+  const rightPositive = right.tabIndex > 0;
+  if (leftPositive && rightPositive) return left.tabIndex - right.tabIndex;
+  if (leftPositive !== rightPositive) return leftPositive ? -1 : 1;
+  return 0;
+}
+
 export function documentOrder(elements: readonly HTMLElement[]): HTMLElement[] {
   const unique = [...new Set(elements)];
   const order = new Map(unique.map((element, index) => [element, index]));
   return unique.sort((left, right) => {
-    const leftPositive = left.tabIndex > 0;
-    const rightPositive = right.tabIndex > 0;
-    if (leftPositive && rightPositive && left.tabIndex !== right.tabIndex) {
-      return left.tabIndex - right.tabIndex;
-    }
-    if (leftPositive !== rightPositive) return leftPositive ? -1 : 1;
+    const precedence = comparePositiveTabindex(left, right);
+    if (precedence !== 0) return precedence;
     const position = left.compareDocumentPosition(right);
     if (position & 1) return (order.get(left) ?? 0) - (order.get(right) ?? 0);
     return position & 4 ? -1 : 1;

@@ -43,8 +43,9 @@ test("hydrates in place, activates after mount, and restores on unmount", async 
   const originalError = console.error;
   console.warn = (...values: unknown[]) => diagnostics.push(values.map(String).join(" "));
   console.error = (...values: unknown[]) => diagnostics.push(values.map(String).join(" "));
-  const app = createSSRApp(FocusScopeSsrProbe);
+  let app: ReturnType<typeof createSSRApp> | undefined;
   try {
+    app = createSSRApp(FocusScopeSsrProbe);
     app.mount(host);
     await nextTick();
     assert.equal(host.firstElementChild, serverRoot);
@@ -54,7 +55,7 @@ test("hydrates in place, activates after mount, and restores on unmount", async 
     app.unmount();
     assert.equal(document.activeElement, trigger);
   } finally {
-    if ((app as { _container?: Element | null })._container) app.unmount();
+    if (app && (app as { _container?: Element | null })._container) app.unmount();
     trigger.remove();
     host.remove();
     console.warn = originalWarn;

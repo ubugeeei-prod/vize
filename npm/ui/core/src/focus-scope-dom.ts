@@ -1,3 +1,4 @@
+import { comparePositiveTabindex } from "./focus-scope-internal.ts";
 import type { FocusScopeAutoFocusEvent, FocusScopeMoveOptions } from "./focus-scope-types.ts";
 
 const focusableSelector = [
@@ -85,6 +86,16 @@ function isHidden(
     current = composedParent(current);
   }
   return false;
+}
+
+function hasStyleSheets(element: Element): boolean {
+  const scopes: Partial<DocumentOrShadowRoot>[] = [
+    element.ownerDocument,
+    element.getRootNode() as Partial<DocumentOrShadowRoot>,
+  ];
+  return scopes.some(
+    (scope) => (scope.styleSheets?.length ?? 0) + (scope.adoptedStyleSheets?.length ?? 0) > 0,
+  );
 }
 
 function isDisabled(element: HTMLElement): boolean {
@@ -204,7 +215,7 @@ export function focusableElements(
   options: Pick<FocusScopeMoveOptions, "accept" | "includeProgrammatic"> = {},
 ): HTMLElement[] {
   const document = root.ownerDocument;
-  const checkComputedStyle = document.styleSheets.length > 0;
+  const checkComputedStyle = hasStyleSheets(root);
   const visibilityBoundary = document.documentElement ?? root;
   const computedHidden = new Map<Element, boolean>();
   const candidates = collectElements(root).filter((element) => {
@@ -227,16 +238,11 @@ export function focusableElements(
     options.includeProgrammatic ? true : isRadioTabbable(element, candidates),
   );
   return radioFiltered
-    .map((element, order) => ({ element, order, tabindex: element.tabIndex }))
-    .sort((left, right) => {
-      const leftPositive = left.tabindex > 0;
-      const rightPositive = right.tabindex > 0;
-      if (leftPositive && rightPositive)
-        return left.tabindex - right.tabindex || left.order - right.order;
-      if (leftPositive) return -1;
-      if (rightPositive) return 1;
-      return left.order - right.order;
-    })
+    .map((element, order) => ({ element, order }))
+    .sort(
+      (left, right) =>
+        comparePositiveTabindex(left.element, right.element) || left.order - right.order,
+    )
     .map(({ element }) => element);
 }
 
@@ -259,7 +265,7 @@ export function isUsableTarget(element: HTMLElement | null): element is HTMLElem
     return false;
   }
   const boundary = element.ownerDocument.documentElement;
-  return !boundary || !isHidden(element, boundary, element.ownerDocument.styleSheets.length > 0);
+  return !boundary || !isHidden(element, boundary, hasStyleSheets(element));
 }
 
 export function createAutoFocusEvent(
