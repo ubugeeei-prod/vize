@@ -22,6 +22,10 @@ const entries = {
  */
 const sentinels = {
   scope: ["tryOnScopeDispose"],
+  "capability-available": ['status: "available"'],
+  "capability-unavailable": ['status: "unavailable"'],
+  "capability-is-available": ["isCapabilityAvailable"],
+  "capability-is-unavailable": ["isCapabilityUnavailable"],
   "event-listener": ["useEventListener", "isListening"],
   "media-query": ["useMediaQuery", "matchMedia"],
   locale: ["useLocale", "getTextInfo"],
@@ -47,6 +51,30 @@ interface UtilityCase {
 
 const utilities: readonly UtilityCase[] = [
   { binding: "tryOnScopeDispose", entry: "index", module: "scope", shared: [] },
+  {
+    binding: "availableCapability",
+    entry: "index",
+    module: "capability-available",
+    shared: [],
+  },
+  {
+    binding: "unavailableCapability",
+    entry: "index",
+    module: "capability-unavailable",
+    shared: [],
+  },
+  {
+    binding: "isCapabilityAvailable",
+    entry: "index",
+    module: "capability-is-available",
+    shared: [],
+  },
+  {
+    binding: "isCapabilityUnavailable",
+    entry: "index",
+    module: "capability-is-unavailable",
+    shared: [],
+  },
   { binding: "useEventListener", entry: "index", module: "event-listener", shared: ["scope"] },
   { binding: "useMediaQuery", entry: "index", module: "media-query", shared: [] },
   { binding: "useReducedMotion", entry: "index", module: "media-query", shared: [] },
