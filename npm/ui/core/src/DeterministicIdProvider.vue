@@ -42,11 +42,14 @@ const scope =
 
 provideDeterministicIdScope(scope);
 
-defineExpose({ namespace: scope.namespace, prefix: scope.prefix });
+const namespace: string = scope.namespace;
+const resolvedPrefix: string = scope.prefix;
+
+defineExpose({ namespace, prefix: resolvedPrefix });
 </script>
 
 <template>
-  <slot :namespace="scope.namespace" :prefix="scope.prefix" />
+  <slot :namespace="namespace" :prefix="resolvedPrefix" />
 </template>
 
 <style scoped>
