@@ -6,6 +6,8 @@ use corsa::{
 use std::path::PathBuf;
 use vize_carton::{String, cstr};
 
+use crate::file_uri::path_to_file_uri;
+
 impl CorsaProjectClient {
     /// Refresh an on-disk project session after materialized files change.
     ///
@@ -17,6 +19,7 @@ impl CorsaProjectClient {
         created: &[PathBuf],
         deleted: &[PathBuf],
     ) -> Result<(), String> {
+        self.purge_deleted_materialized_overlays(deleted)?;
         let Some(file_changes) = materialized_file_changes(changed, created, deleted)? else {
             return Ok(());
         };
@@ -27,6 +30,26 @@ impl CorsaProjectClient {
         }
         block_on(self.project_session_mut()?.refresh(Some(file_changes)))
             .map_err(|error| cstr!("Failed to refresh materialized Corsa files: {error}"))
+    }
+
+    fn purge_deleted_materialized_overlays(&mut self, deleted: &[PathBuf]) -> Result<(), String> {
+        let mut deleted = deleted.to_vec();
+        deleted.sort();
+        deleted.dedup();
+        for path in deleted {
+            let uri = path_to_file_uri(&path);
+            if self.document_texts.contains_key(uri.as_str()) {
+                self.delete_overlay_document(uri.as_str())?;
+                continue;
+            }
+            self.overlay_versions.remove(uri.as_str());
+            if let Some(mapped) = self.session_document_uris.remove(uri.as_str()) {
+                self.external_document_uris.remove(mapped.as_str());
+            }
+            self.external_document_uris.remove(uri.as_str());
+            self.diagnostics.remove(uri.as_str());
+        }
+        Ok(())
     }
 }
 
@@ -66,7 +89,7 @@ fn document_identifiers(paths: &[PathBuf]) -> Result<Vec<DocumentIdentifier>, St
 
 #[cfg(test)]
 mod tests {
-    use super::materialized_file_changes;
+    use super::{CorsaProjectClient, materialized_file_changes};
     use corsa::api::{DocumentIdentifier, FileChanges};
     use std::path::PathBuf;
 
@@ -128,5 +151,33 @@ mod tests {
         let error = materialized_file_changes(&[first, second], &[], &[])
             .expect_err("lossy paths must not collapse into one refresh entry");
         assert!(error.contains("cannot represent non-UTF-8 materialized path"));
+    }
+
+    #[test]
+    fn deleted_materialized_files_are_removed_from_every_overlay_identity_map() {
+        let root = tempfile::tempdir().unwrap();
+        let deleted = root.path().join("mirror/Deleted.vue.ts");
+        let uri = crate::file_uri::path_to_file_uri(&deleted);
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client
+            .document_texts
+            .insert(uri.clone(), "export const stale = true;".into());
+        client.overlay_versions.insert(uri.clone(), 9);
+        client
+            .session_document_uris
+            .insert(uri.clone(), uri.clone());
+        client
+            .external_document_uris
+            .insert(uri.clone(), uri.clone());
+
+        client
+            .refresh_materialized_files(&[], &[], std::slice::from_ref(&deleted))
+            .unwrap();
+
+        assert!(!client.document_texts.contains_key(uri.as_str()));
+        assert!(!client.overlay_versions.contains_key(uri.as_str()));
+        assert!(!client.session_document_uris.contains_key(uri.as_str()));
+        assert!(!client.external_document_uris.contains_key(uri.as_str()));
+        assert!(client.editor_lsp_documents_dirty);
     }
 }

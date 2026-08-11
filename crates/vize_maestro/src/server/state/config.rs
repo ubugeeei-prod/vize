@@ -98,6 +98,7 @@ impl ServerState {
         // (`ConfigFeatureFlags::from`), so the LSP and `vize check` agree on
         // slot-scope and filter lowering for `vue.version: "2.7"` alone (#3297).
         *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
+        *self.type_checker_vue_version.write() = features.vue_version.unwrap_or_default();
         *self.type_checker_jsx_typecheck.write() = features.type_checker_jsx_typecheck;
 
         let mut lsp_features = self.lsp_features.write();
@@ -106,6 +107,12 @@ impl ServerState {
             lsp_features.legacy_vue2 = enabled;
         }
         lsp_features.apply_effective_compatibility();
+    }
+
+    /// Effective Vue language version used by every native type-check surface.
+    #[cfg(feature = "native")]
+    pub(crate) fn type_checker_vue_version(&self) -> vize_carton::config::VueVersion {
+        *self.type_checker_vue_version.read()
     }
 
     /// Build the config-file LSP section, folding in the `languageServer`

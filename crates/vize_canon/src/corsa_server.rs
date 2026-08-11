@@ -23,13 +23,14 @@
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
-use std::path::{Path, PathBuf};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{FxHashMap, String};
 
 mod diagnostics;
+mod request;
+mod sfc_semantics;
 
 /// JSON-RPC Request
 #[derive(Debug, Deserialize)]
@@ -108,6 +109,10 @@ pub struct CorsaServer {
     cache: FxHashMap<String, String>,
     /// Project-session client for Corsa (lazy initialized).
     corsa_client: Option<crate::corsa_client::CorsaProjectClient>,
+    /// Shared importer-scoped package topology for the full server lifetime.
+    package_route_resolver: crate::PackageRouteResolver,
+    /// Private editor mirror/cache for this check-server process.
+    editor_session: crate::corsa_bridge::EditorMirrorSession,
 }
 
 impl CorsaServer {
@@ -124,6 +129,8 @@ impl CorsaServer {
             running: Arc::new(AtomicBool::new(false)),
             cache: FxHashMap::default(),
             corsa_client: None,
+            package_route_resolver: crate::PackageRouteResolver::default(),
+            editor_session: crate::corsa_bridge::EditorMirrorSession::new(),
         }
     }
 
@@ -229,138 +236,6 @@ impl CorsaServer {
         }
     }
 
-    /// Handle a single JSON-RPC request.
-    fn handle_request(&mut self, input: &str) -> JsonRpcResponse {
-        let request: JsonRpcRequest = match serde_json::from_str(input) {
-            Ok(r) => r,
-            Err(e) => {
-                return JsonRpcResponse {
-                    jsonrpc: "2.0",
-                    id: None,
-                    result: None,
-                    error: Some(JsonRpcError {
-                        code: -32700,
-                        message: cstr!("Parse error: {e}"),
-                        data: None,
-                    }),
-                };
-            }
-        };
-
-        match request.method.as_str() {
-            "check" => self.handle_check(request.id, request.params),
-            "shutdown" => {
-                self.running.store(false, Ordering::SeqCst);
-                JsonRpcResponse {
-                    jsonrpc: "2.0",
-                    id: request.id,
-                    result: Some(serde_json::json!({"status": "shutdown"})),
-                    error: None,
-                }
-            }
-            _ => JsonRpcResponse {
-                jsonrpc: "2.0",
-                id: request.id,
-                result: None,
-                error: Some(JsonRpcError {
-                    code: -32601,
-                    message: cstr!("Method not found: {}", request.method),
-                    data: None,
-                }),
-            },
-        }
-    }
-
-    /// Handle the "check" method.
-    fn handle_check(&mut self, id: Option<u64>, params: serde_json::Value) -> JsonRpcResponse {
-        let params: CheckParams = match serde_json::from_value(params) {
-            Ok(p) => p,
-            Err(e) => {
-                return JsonRpcResponse {
-                    jsonrpc: "2.0",
-                    id,
-                    result: None,
-                    error: Some(JsonRpcError {
-                        code: -32602,
-                        message: cstr!("Invalid params: {e}"),
-                        data: None,
-                    }),
-                };
-            }
-        };
-
-        match self.check_vue_sfc(&params.uri, &params.content) {
-            Ok(result) => JsonRpcResponse {
-                jsonrpc: "2.0",
-                id,
-                result: Some(serde_json::to_value(result).unwrap_or(serde_json::Value::Null)),
-                error: None,
-            },
-            Err(e) => JsonRpcResponse {
-                jsonrpc: "2.0",
-                id,
-                result: None,
-                error: Some(JsonRpcError {
-                    code: -32000,
-                    message: e,
-                    data: None,
-                }),
-            },
-        }
-    }
-
-    /// Check a Vue SFC and return diagnostics.
-    fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
-        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-
-        let source_path =
-            uri_to_path(uri, &self.working_dir()).unwrap_or_else(|| PathBuf::from(uri));
-        let project = crate::corsa_bridge::build_vue_virtual_project(
-            &source_path,
-            content,
-            Default::default(),
-        )
-        .map_err(|e| cstr!("Failed to generate virtual TS: {e}"))?;
-        let virtual_ts = project.host.code.clone();
-        self.cache.insert(uri.into(), virtual_ts.clone());
-
-        // The SFC compile diagnostic still needs the descriptor; parse it once
-        // here for that merge below.
-        let descriptor = parse_sfc(
-            content,
-            SfcParseOptions {
-                filename: uri.into(),
-                ..Default::default()
-            },
-        )
-        .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
-
-        // Run Corsa on the virtual TypeScript through the project-session API.
-        let mut diagnostics = self.run_corsa(&project, content)?;
-
-        // Merge in Vue-specific compile errors (e.g. props destructure default type
-        // mismatch) so the socket-mode check matches the direct `vize check` runner.
-        diagnostics.extend(collect_sfc_compile_diagnostic(uri, content, &descriptor));
-        diagnostics::dedup_diagnostics(&mut diagnostics);
-
-        let error_count = diagnostics.iter().filter(|d| d.severity == "error").count();
-
-        Ok(CheckResult {
-            diagnostics,
-            virtual_ts,
-            error_count,
-        })
-    }
-
-    fn working_dir(&self) -> PathBuf {
-        self.config
-            .working_dir
-            .as_deref()
-            .map(PathBuf::from)
-            .or_else(|| std::env::current_dir().ok())
-            .unwrap_or_else(|| PathBuf::from("."))
-    }
-
     /// Stop the server.
     pub fn stop(&self) {
         self.running.store(false, Ordering::SeqCst);
@@ -373,87 +248,9 @@ impl Default for CorsaServer {
     }
 }
 
-/// Surface Vue-specific script-setup semantic errors (e.g.
-/// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
-/// entry point so the socket-mode check stays as fast as the Virtual TS path.
-/// Resolve a URI (file:// or plain path) to an absolute filesystem path.
-/// Returns None when the URI is a non-`file` scheme, the path cannot be
-/// extracted, or percent-decoding yields invalid UTF-8. `file://` URIs go
-/// through the shared converter in `crate::file_uri` so percent-escapes are
-/// decoded as UTF-8 byte sequences.
-fn uri_to_path(uri: &str, working_dir: &Path) -> Option<PathBuf> {
-    if uri.starts_with("file://") {
-        return crate::file_uri::file_uri_to_path(uri);
-    }
-    if uri.contains("://") {
-        return None;
-    }
-    let path = Path::new(uri);
-    if path.is_absolute() {
-        Some(path.to_path_buf())
-    } else {
-        Some(working_dir.join(path))
-    }
-}
-
-fn collect_sfc_compile_diagnostic(
-    _uri: &str,
-    source: &str,
-    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-) -> Option<Diagnostic> {
-    let script_setup = descriptor.script_setup.as_ref()?;
-    if !vize_atelier_sfc::script_setup_has_semantic_validator_candidates(&script_setup.content) {
-        return None;
-    }
-
-    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics_located(
-        &script_setup.content,
-        script_setup.loc.start,
-        source,
-    ) else {
-        return None;
-    };
-
-    let (line, column) = if let Some(loc) = error.loc.as_ref() {
-        (
-            (loc.start_line as u32).saturating_sub(1),
-            (loc.start_column as u32).saturating_sub(1),
-        )
-    } else {
-        let offset = sfc_block_fallback_offset(descriptor);
-        offset_to_line_column(source, offset)
-    };
-
-    let message = match error.code.as_deref() {
-        Some(code) => cstr!("[{}] {}", code, error.message),
-        None => error.message.clone(),
-    };
-
-    Some(Diagnostic {
-        message,
-        severity: "error".into(),
-        line,
-        column,
-        code: error.code.clone(),
-    })
-}
-
-fn sfc_block_fallback_offset(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> usize {
-    // Shared block-selection logic lives in `crate::batch` (#1389).
-    crate::batch::sfc_block_fallback_offset(descriptor).map_or(0, |(offset, _block)| offset)
-}
-
-fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
-    // LSP `Position.character` is in UTF-16 code units. Shared, UTF-16-correct
-    // implementation lives in `vize_carton::line_index` (#1389).
-    vize_carton::line_index::offset_to_line_col(source, offset)
-}
-
 #[cfg(test)]
 mod tests {
-    use std::path::{Path, PathBuf};
-
-    use super::{JsonRpcRequest, uri_to_path};
+    use super::JsonRpcRequest;
 
     #[test]
     fn test_json_rpc_request_parse() {
@@ -461,47 +258,5 @@ mod tests {
         let request: JsonRpcRequest = serde_json::from_str(json).unwrap();
         assert_eq!(request.method, "check");
         assert_eq!(request.id, Some(1));
-    }
-
-    #[test]
-    fn uri_to_path_decodes_multi_byte_utf8_escapes() {
-        // %E3%83%86%E3%82%B9%E3%83%88 is "テスト"; per-byte char pushes
-        // would turn it into mojibake instead of the original segment.
-        assert_eq!(
-            uri_to_path(
-                "file:///Users/foo/%E3%83%86%E3%82%B9%E3%83%88/App.vue",
-                Path::new("/wd")
-            ),
-            Some(PathBuf::from("/Users/foo/テスト/App.vue"))
-        );
-    }
-
-    #[test]
-    fn uri_to_path_decodes_spaces() {
-        assert_eq!(
-            uri_to_path("file:///work/my%20app/App.vue", Path::new("/wd")),
-            Some(PathBuf::from("/work/my app/App.vue"))
-        );
-    }
-
-    #[test]
-    fn uri_to_path_rejects_invalid_utf8_escapes() {
-        assert_eq!(
-            uri_to_path("file:///work/%FF%FE/App.vue", Path::new("/wd")),
-            None
-        );
-    }
-
-    #[test]
-    fn uri_to_path_resolves_relative_paths_against_working_dir() {
-        assert_eq!(
-            uri_to_path("src/App.vue", Path::new("/workspace/project")),
-            Some(PathBuf::from("/workspace/project/src/App.vue"))
-        );
-    }
-
-    #[test]
-    fn uri_to_path_rejects_non_file_schemes() {
-        assert_eq!(uri_to_path("untitled://buffer-1", Path::new("/wd")), None);
     }
 }

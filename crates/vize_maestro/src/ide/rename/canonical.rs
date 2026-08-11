@@ -104,24 +104,51 @@ pub(super) async fn rename_strict(
         .rename(&document.request_uri, line, character, &semantic_name)
         .await
         .map_err(CanonicalFailure::FallbackBridge)?;
-    let Some(response) = response else {
-        return Ok(Answer::Available(None));
-    };
-    let response = serde_json::from_value::<WorkspaceEdit>(response).map_err(|error| {
-        CanonicalFailure::InvalidResponse {
-            operation: "rename",
-            message: cstr!("{error}"),
-        }
-    })?;
-    let mut linked = linked_positions(&document, &response);
-    if matches!(rename_kind, Some(event_rename::RenameKind::Model)) {
+    // A null answer from the query identity is not the end of the rename. When
+    // the project session materializes importer-scoped package shadows, the
+    // authored source is duplicated under distinct native module identities and
+    // the identity this document was opened under can stop being the one the
+    // session still knows. The materialized identities below answer for the same
+    // authored position, so only the absence of every identity means the rename
+    // is unavailable.
+    let response = response
+        .map(|response| {
+            serde_json::from_value::<WorkspaceEdit>(response).map_err(|error| {
+                CanonicalFailure::InvalidResponse {
+                    operation: "rename",
+                    message: cstr!("{error}"),
+                }
+            })
+        })
+        .transpose()?;
+    let mut linked = response
+        .as_ref()
+        .map(|response| linked_positions(&document, response))
+        .unwrap_or_default();
+    linked.extend(corsa_support::materialized_semantic_positions(
+        &document, ctx.uri, ctx.offset,
+    ));
+    linked.retain(|position| {
+        position.request_uri != document.request_uri
+            || position.line != line
+            || position.character != character
+    });
+    if matches!(rename_kind, Some(event_rename::RenameKind::Model))
+        && let Some(response) = response.as_ref()
+    {
         linked.extend(event_rename::model_linked_positions(
-            ctx, &document, &response,
+            ctx, &document, response,
         ));
     }
-    let mut mapped = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
+    let mut mapped = response
+        .and_then(|response| {
+            corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
+        })
         .into_iter()
         .collect::<Vec<_>>();
+    if mapped.is_empty() && linked.is_empty() {
+        return Ok(Answer::Available(None));
+    }
 
     for position in linked {
         let Some(extra) = bridge

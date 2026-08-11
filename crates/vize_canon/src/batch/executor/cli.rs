@@ -180,7 +180,6 @@ fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPla
     let alias_prefixes = project.path_alias_prefixes();
     let mut components = UnionFind::new(partitioned.len());
     let mut coupling_keys: FxHashMap<String, usize> = FxHashMap::default();
-    let mut workspace_packages: FxHashMap<String, bool> = FxHashMap::default();
     for (index, file) in partitioned.iter().enumerate() {
         for specifier in import_specifiers(&file.content) {
             if specifier.starts_with("./") || specifier.starts_with("../") {
@@ -212,9 +211,9 @@ fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPla
                     }
                 }
             } else if let Some(package) =
-                workspace_source_package(project.project_root(), specifier, &mut workspace_packages)
+                project.workspace_package_route_identity(&file.original_path, specifier)
             {
-                let key = cstr!("workspace:{package}");
+                let key = cstr!("workspace:{}", package.display());
                 match coupling_keys.get(key.as_str()) {
                     Some(&first) => components.union(index, first),
                     None => {
@@ -304,50 +303,6 @@ fn import_specifiers(content: &str) -> Vec<&str> {
         }
     }
     specifiers
-}
-
-/// Whether a bare specifier resolves to a workspace package whose source is
-/// symlinked into `node_modules` (pnpm/yarn workspaces): importing it drags
-/// real project source into the program, so its importers are cost-coupled.
-/// Regular npm packages resolve inside `node_modules` and are ambient cost
-/// every program pays anyway. Results are cached per package root.
-fn workspace_source_package<'spec>(
-    project_root: &Path,
-    specifier: &'spec str,
-    cache: &mut FxHashMap<String, bool>,
-) -> Option<&'spec str> {
-    let mut segments = specifier.splitn(3, '/');
-    let first = segments.next()?;
-    let package_end = if first.starts_with('@') {
-        first.len() + 1 + segments.next()?.len()
-    } else {
-        first.len()
-    };
-    let package = &specifier[..package_end];
-
-    if let Some(&is_workspace) = cache.get(package) {
-        return is_workspace.then_some(package);
-    }
-
-    let mut is_workspace = false;
-    let mut dir = Some(project_root);
-    while let Some(current) = dir {
-        let candidate = current.join("node_modules").join(package);
-        if let Ok(metadata) = std::fs::symlink_metadata(&candidate) {
-            if metadata.file_type().is_symlink()
-                && let Ok(target) = std::fs::canonicalize(&candidate)
-            {
-                is_workspace = !target
-                    .components()
-                    .any(|component| component.as_os_str() == "node_modules");
-            }
-            break;
-        }
-        dir = current.parent();
-    }
-
-    cache.insert(String::from(package), is_workspace);
-    is_workspace.then_some(package)
 }
 
 fn normalize_join(base: &Path, specifier: &str) -> PathBuf {

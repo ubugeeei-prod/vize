@@ -119,7 +119,9 @@ pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
         Some(_) => return None,
         None => base.to_path_buf(),
     };
-    for extension in ["ts", "tsx", "mts", "cts", "vue", "js", "jsx", "mjs", "cjs"] {
+    for extension in [
+        "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs", "cjs",
+    ] {
         let candidate = PathBuf::from(cstr!("{}.{extension}", probe_base.display()).as_str());
         if candidate.is_file() {
             return Some(candidate);
@@ -131,8 +133,11 @@ pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
     for index in [
         "index.ts",
         "index.tsx",
+        "index.d.ts",
         "index.mts",
+        "index.d.mts",
         "index.cts",
+        "index.d.cts",
         "index.vue",
         "index.js",
         "index.jsx",

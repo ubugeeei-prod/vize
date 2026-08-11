@@ -8,7 +8,44 @@ use crate::batch::SfcBlockType;
 
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
+#[path = "mapping/materialized_sources.rs"]
+mod materialized_sources;
+pub(crate) use materialized_sources::MaterializedSourceMappingKind;
+
 impl VirtualProject {
+    pub(crate) fn preferred_materialized_path_for_original(
+        &self,
+        original_path: &Path,
+    ) -> Option<PathBuf> {
+        let canonical_original = vize_carton::path::canonicalize_non_verbatim(original_path);
+        let canonical_virtual = self
+            .find_by_original(&canonical_original)
+            .or_else(|| self.find_by_original(original_path))?
+            .virtual_path
+            .clone();
+        let mut shadows = self
+            .package_shadow_files
+            .iter()
+            .filter_map(|(materialized, canonical)| {
+                (canonical == &canonical_virtual).then_some(materialized.clone())
+            })
+            .collect::<Vec<_>>();
+        shadows.sort_by(|left, right| {
+            let left_forwarder = left
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(".d.vue.ts"));
+            let right_forwarder = right
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(".d.vue.ts"));
+            left_forwarder
+                .cmp(&right_forwarder)
+                .then_with(|| left.cmp(right))
+        });
+        shadows.into_iter().next().or(Some(canonical_virtual))
+    }
+
     pub(crate) fn set_diagnostic_paths<'a>(&mut self, paths: impl IntoIterator<Item = &'a Path>) {
         self.diagnostic_paths = paths
             .into_iter()
@@ -50,7 +87,24 @@ impl VirtualProject {
 
     /// Find a virtual file by its materialized path.
     pub fn find_by_virtual(&self, virtual_path: &Path) -> Option<&VirtualFile> {
-        self.virtual_files.get(virtual_path)
+        let canonical = self
+            .package_shadow_files
+            .get(virtual_path)
+            .map_or(virtual_path, PathBuf::as_path);
+        self.virtual_files.get(canonical)
+    }
+
+    /// Find a materialized file only when its bytes use the canonical source
+    /// map. Synthetic package selectors and `.d.vue.ts` forwarding companions
+    /// deliberately have different content and must not reinterpret their
+    /// diagnostic coordinates through the canonical generated SFC map.
+    pub(crate) fn find_by_diagnostic_virtual(&self, virtual_path: &Path) -> Option<&VirtualFile> {
+        let Some(canonical) = self.package_shadow_files.get(virtual_path) else {
+            return self.virtual_files.get(virtual_path);
+        };
+        let file = self.virtual_files.get(canonical)?;
+        let shadow_content = self.package_shadow_content(virtual_path, canonical).ok()?;
+        (shadow_content == file.content).then_some(file)
     }
 
     /// Return virtual files sorted by original path for deterministic output.
@@ -73,7 +127,25 @@ impl VirtualProject {
     /// a package-export rename can enter the next snapshot).
     pub(crate) fn known_source_paths(&self) -> Vec<PathBuf> {
         let mut paths = self.registered_original_paths_sorted();
-        paths.extend(self.virtual_module_aliases.values().flatten().cloned());
+        paths.extend(
+            self.package_routes
+                .values()
+                .filter_map(|binding| binding.route.as_ref())
+                .flat_map(|route| route.all_source_paths().into_iter().cloned()),
+        );
+        paths.extend(
+            self.package_routes
+                .values()
+                .flat_map(|binding| binding.invalidation_paths.iter().cloned()),
+        );
+        paths.extend(self.package_routes.values().flat_map(|binding| {
+            binding.route.iter().flat_map(|route| {
+                route
+                    .all_routes()
+                    .into_iter()
+                    .map(|route| route.package_root.clone())
+            })
+        }));
         paths.sort();
         paths.dedup();
         paths

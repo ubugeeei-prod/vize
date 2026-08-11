@@ -7,9 +7,32 @@ use vize_carton::{FxHashMap, String as CompactString};
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 
+#[path = "context/build.rs"]
+mod build;
 #[path = "context/cache.rs"]
 mod cache;
-use cache::{ContextFingerprint, lock_session_cache};
+pub(in crate::corsa_bridge) use cache::SessionCache;
+pub(in crate::corsa_bridge) use cache::recover_lock;
+use cache::{ContextFingerprint, ProjectMember};
+#[path = "context/routes.rs"]
+mod routes;
+
+// Project snapshots are shared by independent semantic requests in the
+// process-wide bounded cache; a scoped borrow cannot represent that lifetime.
+#[allow(clippy::disallowed_types)]
+pub(in crate::corsa_bridge) struct PreparedAliasContext {
+    context: std::sync::Arc<AliasContext>,
+    pub(in crate::corsa_bridge) materialized_changes:
+        crate::batch::virtual_project::MaterializedFileDelta,
+}
+
+impl std::ops::Deref for PreparedAliasContext {
+    type Target = AliasContext;
+
+    fn deref(&self) -> &Self::Target {
+        &self.context
+    }
+}
 
 /// The alias map for the host document's package, resolved once per open,
 /// plus the materialized mirror the resolutions point into.
@@ -26,6 +49,7 @@ pub(in crate::corsa_bridge) struct AliasContext {
         FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
     route_inputs: Vec<PathBuf>,
     mirror: Option<VirtualProject>,
+    virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
 }
 
 impl AliasContext {
@@ -35,124 +59,118 @@ impl AliasContext {
         source_path: &Path,
         content: &str,
         overlays: &FxHashMap<PathBuf, &str>,
-    ) -> std::sync::Arc<Self> {
-        let fingerprint = ContextFingerprint::capture(source_path, content, overlays);
-        if let Some(context) = lock_session_cache().get(source_path, &fingerprint) {
-            return context;
+        options: super::super::vue_document::CorsaVueVirtualDocumentOptions,
+        environment: super::super::vue_document::CorsaProjectEnvironment<'_>,
+    ) -> Result<PreparedAliasContext, super::super::types::CorsaBridgeError> {
+        let fingerprint = ContextFingerprint::capture(
+            source_path,
+            content,
+            overlays,
+            options,
+            environment.virtual_ts_options,
+            environment.project_root,
+            environment.tsconfig_path,
+        );
+        if let Some(context) = environment
+            .editor_session
+            .cache()
+            .get(source_path, &fingerprint)
+        {
+            return Ok(PreparedAliasContext {
+                context,
+                materialized_changes: Default::default(),
+            });
         }
-        let context = std::sync::Arc::new(Self::for_host(source_path, content, overlays));
+        let mut resolver = environment.package_routes.clone();
+        let context = build::build(
+            source_path,
+            content,
+            overlays,
+            &mut resolver,
+            options,
+            environment,
+        )?;
         let mut fingerprint = fingerprint;
-        fingerprint.stamp(context.as_ref());
-        lock_session_cache().insert(
+        fingerprint.stamp(&context);
+        let mut cache = environment.editor_session.cache();
+        if let Some(context) = cache.get(source_path, &fingerprint) {
+            return Ok(PreparedAliasContext {
+                context,
+                materialized_changes: Default::default(),
+            });
+        }
+        let mut materialized_changes = Default::default();
+        if let Some(mirror) = context.mirror.as_ref() {
+            let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
+            let expected_files = mirror.expected_materialized_files();
+            let package_links = mirror.desired_package_links();
+            let query_path = mirror.preferred_materialized_path_for_original(&source_path);
+            let (preserved_files, preserved_package_links, mut query_paths) = cache
+                .project_union_snapshot(
+                    mirror.virtual_root(),
+                    &source_path,
+                    fingerprint.overlay_identity(),
+                );
+            if let Some(query_path) = query_path.as_ref() {
+                query_paths.push(query_path.clone());
+            }
+            query_paths.sort();
+            query_paths.dedup();
+            let previous = cache.materialized_snapshot(mirror.virtual_root());
+            let current = mirror
+                .materialize_editor_union(&preserved_files, &preserved_package_links, &query_paths)
+                .map_err(|error| {
+                    super::super::types::CorsaBridgeError::CommunicationError(vize_carton::cstr!(
+                        "Failed to materialize Canon project union: {error}"
+                    ))
+                })?;
+            materialized_changes = current.diff(&previous);
+            cache.set_materialized_snapshot(mirror.virtual_root().to_path_buf(), current);
+            cache.record_project_member(
+                mirror.virtual_root().to_path_buf(),
+                source_path,
+                ProjectMember {
+                    expected_files,
+                    package_links,
+                    query_path,
+                    stamps: fingerprint.input_stamps(),
+                    overlay_identity: fingerprint.overlay_identity(),
+                },
+            );
+        }
+        let context = std::sync::Arc::new(context);
+        cache.insert(
             source_path.to_path_buf(),
             fingerprint,
             std::sync::Arc::clone(&context),
         );
-        context
+        Ok(PreparedAliasContext {
+            context,
+            materialized_changes,
+        })
     }
 
+    #[cfg(test)]
     pub(in crate::corsa_bridge) fn for_host(
         source_path: &Path,
         content: &str,
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> Self {
-        let root = source_path
-            .ancestors()
-            .skip(1)
-            .find(|dir| dir.join("tsconfig.json").is_file())
-            .map(Path::to_path_buf);
-        let (project_root, aliases, package_routes, route_inputs, mirror) = match root {
-            Some(root) => match VirtualProject::new(&root) {
-                Ok(mut project) => {
-                    project.set_session_script_registration(true);
-                    let aliases = project.dependency_alias_map();
-                    let mut resolver = crate::PackageRouteResolver::default();
-                    let mut package_routes = FxHashMap::default();
-                    let mut route_inputs = Vec::new();
-                    let host_registered = project
-                        .register_path_with_content(source_path, content)
-                        .is_ok();
-                    let host_specifiers = host_registered
-                        .then(|| {
-                            let virtual_file = project.find_by_original(source_path)?;
-                            let source_type = if virtual_file
-                                .virtual_path
-                                .extension()
-                                .is_some_and(|extension| extension == "tsx")
-                            {
-                                oxc_span::SourceType::tsx()
-                            } else {
-                                oxc_span::SourceType::ts()
-                            };
-                            Some(
-                                crate::batch::ImportRewriter::new()
-                                    .collect_all_specifiers(&virtual_file.content, source_type),
-                            )
-                        })
-                        .flatten()
-                        .unwrap_or_default();
-                    let importer_dir = source_path.parent().unwrap_or(source_path);
-                    let registered = {
-                        let mut resolve_package = |importer_dir: &Path, specifier: &str| {
-                            let lookup = resolver.lookup(
-                                importer_dir,
-                                specifier,
-                                crate::PackageSourceOptions::new(true, true),
-                            );
-                            let (route, inputs) = lookup.into_parts();
-                            route_inputs.extend(inputs);
-                            let route = route?;
-                            if !route.workspace_source {
-                                return None;
-                            }
-                            let source_path = route.source_path.clone();
-                            package_routes
-                                .insert((logical_absolute(importer_dir), specifier.into()), route);
-                            Some(source_path)
-                        };
-                        let mut workspace_package_specifiers = host_specifiers
-                            .iter()
-                            .filter(|specifier| {
-                                resolve_package(importer_dir, specifier.as_str()).is_some()
-                            })
-                            .cloned()
-                            .collect::<Vec<_>>();
-                        workspace_package_specifiers.sort();
-                        workspace_package_specifiers.dedup();
-                        host_registered
-                            && project
-                                .register_reachable_dependencies_with_package_resolver(
-                                    overlays,
-                                    &workspace_package_specifiers,
-                                    &mut resolve_package,
-                                )
-                                .is_ok()
-                    };
-                    route_inputs.sort();
-                    route_inputs.dedup();
-                    let mirror = (registered
-                        && (!aliases.is_empty() || !package_routes.is_empty())
-                        && project.materialize().is_ok())
-                    .then_some(project);
-                    (root, aliases, package_routes, route_inputs, mirror)
-                }
-                Err(_) => (root, Vec::new(), FxHashMap::default(), Vec::new(), None),
+        build::build(
+            source_path,
+            content,
+            overlays,
+            &mut crate::PackageRouteResolver::default(),
+            Default::default(),
+            super::super::vue_document::CorsaProjectEnvironment {
+                virtual_ts_options: &Default::default(),
+                package_routes: &crate::PackageRouteResolver::default(),
+                project_root: None,
+                tsconfig_path: None,
+                editor_session: crate::corsa_bridge::editor_session::fallback_editor_session(),
             },
-            None => (
-                source_path.parent().unwrap_or(source_path).to_path_buf(),
-                Vec::new(),
-                FxHashMap::default(),
-                Vec::new(),
-                None,
-            ),
-        };
-        Self {
-            project_root,
-            aliases,
-            package_routes,
-            route_inputs,
-            mirror,
-        }
+        )
+        .expect("test alias context")
     }
 
     /// Resolve a Vue route to the materialized companion used by Corsa.
@@ -161,18 +179,22 @@ impl AliasContext {
         &self,
         specifier: &str,
         importer_dir: &Path,
+        occurrence_mode: crate::PackageResolutionMode,
     ) -> Option<std::string::String> {
-        let package_source = self
-            .package_route(specifier, importer_dir)
-            .map(|route| route.source_path.clone());
-        let path = package_source.or_else(|| {
+        if let Some(path) =
             resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)
-        })?;
-        let key = std::fs::canonicalize(&path).unwrap_or(path);
-        if super::inside_node_modules(&key) || super::is_declaration(&key) {
-            return None;
+        {
+            let key = std::fs::canonicalize(&path).unwrap_or(path);
+            if super::inside_node_modules(&key) || super::is_declaration(&key) {
+                return None;
+            }
+            return self.mirror_specifier_for_source(&key);
         }
-        self.mirror_specifier_for_source(&key)
+        // Bare/package-private spellings stay authored. The importer itself is
+        // queried inside the Canon mirror, where native TypeScript sees its
+        // importer-local node_modules and the byte-identical raw manifest.
+        let _ = occurrence_mode;
+        None
     }
 
     #[allow(clippy::disallowed_types)]
@@ -212,16 +234,68 @@ impl AliasContext {
         )
     }
 
+    pub(in crate::corsa_bridge) fn mirror_virtual_path(&self, source: &Path) -> Option<PathBuf> {
+        self.mirror
+            .as_ref()?
+            .preferred_materialized_path_for_original(source)
+    }
+
+    pub(in crate::corsa_bridge) fn virtual_ts_options(
+        &self,
+    ) -> &crate::virtual_ts::VirtualTsOptions {
+        &self.virtual_ts_options
+    }
+
+    pub(in crate::corsa_bridge) fn mirror_project_root_for_source(
+        &self,
+        source: &Path,
+    ) -> Option<PathBuf> {
+        let mirror = self.mirror.as_ref()?;
+        mirror.preferred_materialized_path_for_original(source)?;
+        Some(mirror.virtual_root().to_path_buf())
+    }
+
+    pub(in crate::corsa_bridge) fn materialized_sources(
+        &self,
+    ) -> Vec<super::super::vue_document::CorsaMaterializedSource> {
+        self.mirror
+            .as_ref()
+            .map(|mirror| {
+                mirror
+                    .materialized_source_documents()
+                    .into_iter()
+                    .map(
+                        |document| super::super::vue_document::CorsaMaterializedSource {
+                            materialized_path: document.materialized_path,
+                            source_path: document.source_path,
+                            source: document.source,
+                            code: document.code,
+                            mappings: document.mappings,
+                            import_source_map: document.import_source_map,
+                            mapping_kind: match document.mapping_kind {
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::Generated
+                                }
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::AuthoredIdentity => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::AuthoredIdentity
+                                }
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::Synthetic => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::Synthetic
+                                }
+                            },
+                        },
+                    )
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     pub(in crate::corsa_bridge) fn resolve_first_party_source(
         &self,
         specifier: &str,
         importer_dir: &Path,
     ) -> Option<PathBuf> {
-        self.package_route(specifier, importer_dir)
-            .map(|route| route.source_path.clone())
-            .or_else(|| {
-                resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)
-            })
+        resolve_dependency(specifier, importer_dir, &self.project_root, &self.aliases)
     }
 
     pub(in crate::corsa_bridge) fn package_route(
@@ -230,19 +304,16 @@ impl AliasContext {
         importer_dir: &Path,
     ) -> Option<&crate::PackageRoute> {
         let package_key = (
-            logical_absolute(importer_dir),
+            vize_carton::path::canonicalize_non_verbatim(importer_dir),
             CompactString::from(specifier),
         );
         self.package_routes.get(&package_key)
     }
-}
 
-fn logical_absolute(path: &Path) -> PathBuf {
-    if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        std::env::current_dir()
-            .map(|cwd| cwd.join(path))
-            .unwrap_or_else(|_| path.to_path_buf())
+    pub(in crate::corsa_bridge) fn forget_cached_sources(
+        session: &crate::corsa_bridge::EditorMirrorSession,
+        source_paths: &[PathBuf],
+    ) {
+        session.cache().forget_sources(source_paths);
     }
 }

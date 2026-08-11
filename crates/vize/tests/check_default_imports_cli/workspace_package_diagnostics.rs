@@ -149,12 +149,19 @@ fn assert_workspace_source_is_reported(kind: PackageKind, explicit: bool) {
         _ => package_root.join(exported_file),
     };
     let invalid_source = if allow_js {
-        "/** @type {string} */\nconst invalid = 42\nvoid invalid\n"
+        "import './support'\n/** @type {string} */\nconst invalid = 42\nvoid invalid\n"
     } else {
         "const invalid: string = 42\nvoid invalid\n"
     };
     std::fs::create_dir_all(invalid_path.parent().unwrap()).unwrap();
     std::fs::write(&invalid_path, invalid_source).unwrap();
+    if allow_js {
+        std::fs::write(
+            package_root.join("src/support.d.ts"),
+            "export declare const supportingType: string\n",
+        )
+        .unwrap();
+    }
     link_workspace_package(
         &package_root,
         &app_root.join("node_modules/@scope/workspace-source"),
@@ -205,6 +212,10 @@ fn assert_workspace_source_is_reported(kind: PackageKind, explicit: bool) {
                 .as_str()
                 .is_some_and(|diagnostic| diagnostic.contains("TS2322")))),
         "{stdout}\n{stderr}"
+    );
+    assert!(
+        !stdout.contains("support.d.ts"),
+        "declaration support loaded by TypeScript must not become a reported root:\n{stdout}\n{stderr}"
     );
 
     let _ = std::fs::remove_dir_all(case_root);

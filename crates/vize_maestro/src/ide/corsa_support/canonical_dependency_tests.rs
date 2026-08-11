@@ -21,10 +21,13 @@ pub(super) fn mapped_document(uri: &Url, source: &str) -> CanonicalDependencyDoc
 
 pub(super) fn host_document(uri: &Url, source: &str) -> CanonicalVirtualDocument {
     CanonicalVirtualDocument {
+        source_uri: uri.clone(),
         request_uri: request_file_uri(canonical_request_path(uri).as_str()),
         virtual_result: DiagnosticService::generate_virtual_ts(uri, source, false, false)
             .expect("virtual ts"),
         dependencies: Vec::new(),
+        materialized_sources: Vec::new(),
+        session_project_roots: Vec::new(),
     }
 }
 

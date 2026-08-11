@@ -16,6 +16,12 @@ pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::St
         Some(resolution) if resolution == "node" || resolution == "node10"
     );
     if legacy_node_resolution {
+        // tsgo/TypeScript 7 removed the `node10` spelling. Preserve its native
+        // package semantics with the supported package-map switches: this is
+        // still TypeScript's resolver, with exports/imports explicitly out of
+        // scope exactly as they were under Node10.
+        options.insert("resolvePackageJsonExports".into(), Value::Bool(false));
+        options.insert("resolvePackageJsonImports".into(), Value::Bool(false));
         if module_supports_bundler_resolution(options) {
             // Native TypeScript no longer accepts legacy `node10`, but plain
             // `bundler` would start respecting package `exports`. Keep the
@@ -23,8 +29,6 @@ pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::St
             // package resolution only for configs that explicitly asked for
             // legacy Node resolution.
             options.insert("moduleResolution".into(), Value::String("bundler".into()));
-            options.insert("resolvePackageJsonExports".into(), Value::Bool(false));
-            options.insert("resolvePackageJsonImports".into(), Value::Bool(false));
         } else {
             options.remove("moduleResolution");
         }

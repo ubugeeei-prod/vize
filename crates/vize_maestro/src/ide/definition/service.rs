@@ -227,8 +227,14 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
-        if let Some(definition) = module_specifier::definition(ctx) {
-            return Some(definition);
+        if module_specifier::specifier_at_offset(&ctx.content, ctx.offset).is_some() {
+            if let Some(bridge) = corsa_bridge.as_ref()
+                && bridge.is_initialized()
+                && let Some(definition) = module_specifier::definition_with_corsa(ctx, bridge).await
+            {
+                return Some(definition);
+            }
+            return module_specifier::definition(ctx);
         }
 
         // An imported name unwraps to the exported declaration before any

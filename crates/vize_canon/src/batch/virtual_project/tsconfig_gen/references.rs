@@ -1,101 +1,47 @@
-//! Solution-style tsconfig handling (#3915).
+//! Shared TypeScript project-reference ownership.
 //!
-//! The create-vue default layout ships a references-only shell —
-//! `{ "files": [], "references": [{ "path": "./tsconfig.app.json" }, …] }` —
-//! with every compiler option, including `paths`, living in the referenced
-//! project configs. An anchor that reads only the shell resolves no aliases,
-//! so consumers that found no `paths` in the anchored chain retry through the
-//! configs the shell references.
+//! Editor project selection and CLI program partitioning must use the same
+//! effective `files` / `include` / `exclude` interpretation. Keeping that
+//! authority here also lets the editor use a referenced config's inherited
+//! compiler options without teaching either consumer its own tsconfig dialect.
 
 use std::path::{Path, PathBuf};
 
-use serde_json::Value;
+mod graph;
+mod implicit_exclude;
+mod ownership;
+mod spec;
 
-use super::super::tsconfig_paths::{normalize_path_lexically, parse_jsonc_value};
+pub use ownership::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
 
-/// The project configs referenced by `tsconfig_path`, in declaration order.
-///
-/// A reference `path` may name a config file or a directory (TypeScript
-/// resolves a directory to its `tsconfig.json`); entries that do not resolve
-/// to an existing file are dropped. A config without references — or one that
-/// cannot be read — yields an empty list.
+use super::super::tsconfig_paths::{
+    normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,
+};
+
+/// The transitive project configs referenced by `tsconfig_path`, in stable
+/// declaration order. The solution shell itself is omitted.
 pub(in super::super) fn referenced_project_configs(tsconfig_path: &Path) -> Vec<PathBuf> {
-    let Ok(content) = std::fs::read_to_string(tsconfig_path) else {
-        return Vec::new();
-    };
-    let Ok(config) = parse_jsonc_value(&content) else {
-        return Vec::new();
-    };
-    let Some(references) = config.get("references").and_then(Value::as_array) else {
-        return Vec::new();
-    };
-    let base = tsconfig_path.parent().unwrap_or(Path::new("."));
-    references
-        .iter()
-        .filter_map(|reference| reference.get("path").and_then(Value::as_str))
-        .filter_map(|path| {
-            let joined = normalize_path_lexically(&base.join(path));
-            if joined.is_file() {
-                return Some(joined);
-            }
-            let as_directory = joined.join("tsconfig.json");
-            as_directory.is_file().then_some(as_directory)
-        })
+    let mut cache = TsconfigOwnershipCache::default();
+    cache
+        .project_paths(tsconfig_path)
+        .into_iter()
+        .skip(1)
         .collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use std::path::Path;
-
-    fn write(root: &Path, name: &str, content: &str) {
-        std::fs::write(root.join(name), content).unwrap();
-    }
-
-    #[test]
-    fn file_and_directory_references_resolve_missing_ones_drop() {
-        let root = std::env::temp_dir().join(format!("vize-refs-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        std::fs::create_dir_all(root.join("sub")).unwrap();
-        write(
-            &root,
-            "tsconfig.json",
-            r#"{
-  // create-vue style shell
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./sub" },
-    { "path": "./missing.json" }
-  ]
-}"#,
-        );
-        write(&root, "tsconfig.app.json", "{}");
-        write(&root.join("sub"), "tsconfig.json", "{}");
-
-        let configs = super::referenced_project_configs(&root.join("tsconfig.json"));
-        let names: Vec<_> = configs
-            .iter()
-            .map(|config| {
-                config
-                    .strip_prefix(&root)
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect();
-        assert_eq!(names, ["tsconfig.app.json", "sub/tsconfig.json"]);
-
-        let _ = std::fs::remove_dir_all(&root);
-    }
-
-    #[test]
-    fn a_config_without_references_yields_nothing() {
-        let root = std::env::temp_dir().join(format!("vize-norefs-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&root);
-        std::fs::create_dir_all(&root).unwrap();
-        write(&root, "tsconfig.json", r#"{ "compilerOptions": {} }"#);
-        assert!(super::referenced_project_configs(&root.join("tsconfig.json")).is_empty());
-        let _ = std::fs::remove_dir_all(&root);
-    }
+/// Select the unique effective project that owns an authored source. Missing
+/// or ambiguous ownership fails closed to the solution shell.
+pub(in super::super) fn effective_config_for_source(
+    tsconfig_path: &Path,
+    source_path: &Path,
+) -> PathBuf {
+    TsconfigOwnershipCache::default().effective_config_for_source(
+        tsconfig_path,
+        source_path,
+        TsconfigSourceKind::Typed,
+    )
 }
+
+#[cfg(test)]
+#[path = "references/tests.rs"]
+mod tests;

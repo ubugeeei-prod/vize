@@ -7,6 +7,7 @@ use crate::{ide::IdeContext, server::ServerState};
 
 mod component_props;
 mod imported_symbols;
+mod package_specifiers;
 mod template_bindings;
 
 fn scalar_location(response: GotoDefinitionResponse) -> Location {

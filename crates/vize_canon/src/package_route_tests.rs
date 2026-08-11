@@ -13,6 +13,8 @@ use super::{
 mod lifecycle;
 #[path = "package_route_tests/source.rs"]
 mod source;
+#[path = "package_route_tests/topology.rs"]
+mod topology;
 
 #[test]
 fn parses_scoped_and_unscoped_package_subpaths() {
@@ -48,7 +50,7 @@ fn rejects_alias_and_absolute_spellings_as_package_requests() {
 }
 
 #[test]
-fn prefers_the_most_specific_export_pattern() {
+fn retains_all_matching_export_patterns_for_native_selection() {
     let mappings = json!({
         "./*": "./fallback/*.ts",
         "./features/*": "./specific/*.ts"
@@ -60,7 +62,13 @@ fn prefers_the_most_specific_export_pattern() {
         Path::new("/pkg"),
         &mut candidates,
     );
-    assert_eq!(candidates, vec![Path::new("/pkg/specific/alpha.ts")]);
+    assert_eq!(
+        candidates,
+        vec![
+            Path::new("/pkg/fallback/features/alpha.ts"),
+            Path::new("/pkg/specific/alpha.ts"),
+        ]
+    );
 }
 
 #[test]
@@ -94,73 +102,6 @@ fn exports_are_authoritative_for_hidden_subpaths() {
 }
 
 #[test]
-fn self_reference_and_private_imports_share_manifest_routing() {
-    let root = tempfile::tempdir().unwrap();
-    let package = root.path();
-    let source = package.join("src");
-    std::fs::create_dir_all(source.join("features")).unwrap();
-    std::fs::write(
-        package.join("package.json"),
-        r##"{
-  "name": "@scope/pkg",
-  "exports": { "./features/*": { "types": "./src/features/*.vue" } },
-  "imports": { "#widget": { "types": "./src/Widget.vue" } }
-}"##,
-    )
-    .unwrap();
-    let feature = source.join("features/alpha.vue");
-    let widget = source.join("Widget.vue");
-    std::fs::write(&feature, "<template />\n").unwrap();
-    std::fs::write(&widget, "<template />\n").unwrap();
-    let mut resolver = PackageRouteResolver::default();
-
-    let export = resolver
-        .resolve(
-            &source,
-            "@scope/pkg/features/alpha",
-            PackageSourceOptions::default(),
-        )
-        .unwrap();
-    let private = resolver
-        .resolve(&source, "#widget", PackageSourceOptions::default())
-        .unwrap();
-
-    assert_eq!(export.source_path, feature.canonicalize().unwrap());
-    assert_eq!(private.source_path, widget.canonicalize().unwrap());
-    assert!(export.workspace_source && private.workspace_source);
-}
-
-#[test]
-fn self_reference_wins_over_a_nested_install_with_the_same_name() {
-    let root = tempfile::tempdir().unwrap();
-    let package = root.path();
-    let source = package.join("src");
-    let nested = source.join("node_modules/@scope/pkg");
-    std::fs::create_dir_all(&source).unwrap();
-    std::fs::create_dir_all(&nested).unwrap();
-    std::fs::write(
-        package.join("package.json"),
-        r#"{"name":"@scope/pkg","exports":"./src/self.ts"}"#,
-    )
-    .unwrap();
-    std::fs::write(source.join("self.ts"), "export {};\n").unwrap();
-    std::fs::write(
-        nested.join("package.json"),
-        r#"{"name":"@scope/pkg","exports":"./nested.ts"}"#,
-    )
-    .unwrap();
-    std::fs::write(nested.join("nested.ts"), "export {};\n").unwrap();
-
-    let route = PackageRouteResolver::default()
-        .resolve(&source, "@scope/pkg", PackageSourceOptions::default())
-        .unwrap();
-    assert_eq!(
-        route.source_path,
-        source.join("self.ts").canonicalize().unwrap()
-    );
-}
-
-#[test]
 fn installed_dependencies_remain_native_package_sources() {
     let root = tempfile::tempdir().unwrap();
     let source = root.path().join("src");
@@ -178,7 +119,7 @@ fn installed_dependencies_remain_native_package_sources() {
         .unwrap();
     assert!(!route.workspace_source);
     assert_eq!(
-        route.source_path,
+        route.unambiguous_source_path().unwrap().clone(),
         package.join("index.ts").canonicalize().unwrap()
     );
 }
@@ -202,7 +143,10 @@ fn runtime_export_prefers_its_declaration_sidecar() {
     let route = PackageRouteResolver::default()
         .resolve(&source, "runtime-package", PackageSourceOptions::default())
         .unwrap();
-    assert_eq!(route.source_path, declaration.canonicalize().unwrap());
+    assert_eq!(
+        route.unambiguous_source_path().unwrap().clone(),
+        declaration.canonicalize().unwrap()
+    );
 }
 
 #[test]
@@ -223,7 +167,10 @@ fn runtime_export_resolves_a_declaration_when_the_runtime_file_is_absent() {
     let route = PackageRouteResolver::default()
         .resolve(&source, "runtime-package", PackageSourceOptions::default())
         .unwrap();
-    assert_eq!(route.source_path, declaration.canonicalize().unwrap());
+    assert_eq!(
+        route.unambiguous_source_path().unwrap().clone(),
+        declaration.canonicalize().unwrap()
+    );
 }
 
 #[test]
@@ -250,7 +197,7 @@ fn export_arrays_fall_back_but_cannot_escape_the_package() {
         .resolve(&source, "fallback-package", PackageSourceOptions::default())
         .unwrap();
     assert_eq!(
-        route.source_path,
+        route.unambiguous_source_path().unwrap().clone(),
         package.join("dist/valid.d.ts").canonicalize().unwrap()
     );
     assert!(
@@ -265,7 +212,7 @@ fn export_arrays_fall_back_but_cannot_escape_the_package() {
 }
 
 #[test]
-fn null_and_unknown_export_conditions_do_not_fall_through() {
+fn conditional_candidates_are_retained_without_vize_owned_priority() {
     let root = tempfile::tempdir().unwrap();
     let source = root.path().join("src");
     let package = root.path().join("node_modules/conditional-package");
@@ -285,24 +232,29 @@ fn null_and_unknown_export_conditions_do_not_fall_through() {
     .unwrap();
     let mut resolver = PackageRouteResolver::default();
 
-    assert!(
-        resolver
-            .resolve(
-                &source,
-                "conditional-package",
-                PackageSourceOptions::new(true, true),
-            )
-            .is_none()
+    let root = resolver
+        .resolve(
+            &source,
+            "conditional-package",
+            PackageSourceOptions::new(true, true),
+        )
+        .unwrap();
+    assert_eq!(
+        root.source_paths,
+        vec![package.join("dist/runtime.mjs").canonicalize().unwrap()]
     );
-    assert!(
-        resolver
-            .resolve(
-                &source,
-                "conditional-package/browser",
-                PackageSourceOptions::default(),
-            )
-            .is_none()
+    let browser = resolver
+        .resolve(
+            &source,
+            "conditional-package/browser",
+            PackageSourceOptions::default(),
+        )
+        .unwrap();
+    assert_eq!(
+        browser.source_paths,
+        vec![package.join("dist/browser.d.ts").canonicalize().unwrap()]
     );
+    assert_eq!(root.unambiguous_source_path(), root.source_paths.first());
 }
 
 #[test]
@@ -319,6 +271,9 @@ fn missing_explicit_vue_target_is_retained_for_create_invalidation() {
     let route = PackageRouteResolver::default()
         .resolve(&source, "pkg", PackageSourceOptions::default())
         .unwrap();
-    assert_eq!(route.source_path, route.package_root.join("src/Future.vue"));
+    assert_eq!(
+        route.unambiguous_source_path().unwrap().clone(),
+        route.package_root.join("src/Future.vue")
+    );
     assert!(route.invalidation_paths().contains(&route.manifest_path));
 }

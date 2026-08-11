@@ -1,12 +1,9 @@
 //! Corsa project-session execution, including persistent incremental snapshots.
 
-use std::{
-    hash::{Hash, Hasher},
-    path::{Path, PathBuf},
-};
+use std::path::Path;
 
 use crate::{corsa_client::CorsaProjectClient, file_uri::path_to_file_uri};
-use vize_carton::{FxHashMap, String, hash::hash_bytes, profile};
+use vize_carton::{String, profile};
 
 use super::{
     CorsaExecutor, FallbackStep, MaterializeLock, TypeCheckResult, VirtualProject, check_with_cli,
@@ -16,13 +13,18 @@ use crate::batch::error::CorsaResult;
 use crate::batch::executor::diagnostics::map_batch_diagnostics;
 use crate::batch::source_policy::SourceFilePolicy;
 use crate::batch::type_checker::IncrementalCheckMetrics;
+use crate::batch::virtual_project::IncrementalMaterialization;
 use crate::batch::virtual_project::{
     AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE,
 };
 
 mod diagnostic_paths;
+mod snapshot;
 
-use diagnostic_paths::{extend_diagnostic_path_uris, is_authored_diagnostic_input};
+use diagnostic_paths::extend_diagnostic_path_uris;
+#[cfg(test)]
+use snapshot::MaterializedDelta;
+use snapshot::MaterializedSnapshot;
 
 #[derive(Default)]
 pub(super) struct IncrementalSessionState {
@@ -33,19 +35,6 @@ pub(super) struct IncrementalSessionState {
 struct IncrementalSession {
     client: CorsaProjectClient,
     snapshot: MaterializedSnapshot,
-}
-
-#[derive(Default)]
-struct MaterializedSnapshot {
-    revisions: FxHashMap<PathBuf, u64>,
-    uris: Vec<String>,
-}
-
-#[derive(Debug, Default, PartialEq, Eq)]
-struct MaterializedDelta {
-    changed: Vec<PathBuf>,
-    created: Vec<PathBuf>,
-    deleted: Vec<PathBuf>,
 }
 
 impl CorsaExecutor {
@@ -84,25 +73,48 @@ impl CorsaExecutor {
 
     pub(crate) fn check_incremental_session(
         &self,
-        project: &VirtualProject,
+        project: &mut VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
         let session_result = {
             let _materialize_lock = MaterializeLock::acquire(project.virtual_root())?;
-            profile!(
-                "canon.executor.materialize_incremental",
-                project.materialize()
-            )?;
-            let mut snapshot = profile!(
-                "canon.corsa.incremental.snapshot",
-                MaterializedSnapshot::capture(project.virtual_root(), project.source_file_policy())
-            )?;
-            snapshot.extend_diagnostic_paths(project)?;
+            let has_session = self
+                .incremental_session
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .session
+                .is_some();
+            let prepared = if has_session {
+                Some(profile!(
+                    "canon.executor.materialize_incremental_delta",
+                    project.materialize_incremental_delta()
+                )?)
+            } else {
+                profile!(
+                    "canon.executor.materialize_incremental",
+                    project.materialize()
+                )?;
+                project.capture_materialized_package_links();
+                project.discard_incremental_materialization();
+                None
+            };
             let mut state = self
                 .incremental_session
                 .lock()
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
-            let result = state.check(&self.corsa_path, project, snapshot);
+            let result = if let Some(prepared) = prepared {
+                state.check_delta(project, prepared)
+            } else {
+                let mut snapshot = profile!(
+                    "canon.corsa.incremental.snapshot",
+                    MaterializedSnapshot::capture(
+                        project.virtual_root(),
+                        project.source_file_policy()
+                    )
+                )?;
+                snapshot.extend_diagnostic_paths(project)?;
+                state.check(&self.corsa_path, project, snapshot)
+            };
             if result.is_err() {
                 state.session = None;
                 state.metrics.session_to_cli_fallbacks += 1;
@@ -137,6 +149,12 @@ impl IncrementalSessionState {
         self.metrics.last_changed_files = 0;
         self.metrics.last_created_files = 0;
         self.metrics.last_deleted_files = 0;
+        self.metrics.last_materialized_entries_considered = snapshot.revisions.len();
+        self.metrics.last_tree_entries_scanned = snapshot.revisions.len();
+        self.metrics.last_full_rebuild = self.session.is_none();
+        self.metrics.last_source_nodes_rebuilt = 0;
+        self.metrics.last_dependency_nodes_reconciled = 0;
+        self.metrics.last_shadow_bindings_rebuilt = 0;
         if let Some(session) = &mut self.session {
             self.metrics.last_session_reused = true;
             let delta = snapshot.diff(&session.snapshot);
@@ -177,100 +195,49 @@ impl IncrementalSessionState {
         let session = self.session.as_mut().expect("session initialized above");
         check_session_client(&mut session.client, project, &session.snapshot.uris)
     }
-}
 
-impl MaterializedSnapshot {
-    fn capture(virtual_root: &Path, source_policy: SourceFilePolicy) -> CorsaResult<Self> {
-        let mut snapshot = Self::default();
-        for entry in walkdir::WalkDir::new(virtual_root) {
-            let entry = entry?;
-            let path = entry.path();
-            if entry.file_type().is_symlink() {
-                let target = std::fs::read_link(path)?;
-                let resolves_to_file = path.is_file();
-                let revision = if resolves_to_file {
-                    hash_bytes(&std::fs::read(path)?)
-                } else {
-                    hash_path(&target)
-                };
-                snapshot.revisions.insert(path.to_path_buf(), revision);
-                if resolves_to_file
-                    && source_policy.accepts_diagnostic_input(path)
-                    && !is_under_virtual_node_modules(virtual_root, path)
-                    && !is_internal_virtual_project_stub(path)
-                {
-                    snapshot.uris.push(path_to_file_uri(path));
-                }
-                continue;
-            }
-            if !entry.file_type().is_file() {
-                continue;
-            }
-
-            let content = std::fs::read(path)?;
-            snapshot
-                .revisions
-                .insert(path.to_path_buf(), hash_bytes(&content));
-            if source_policy.accepts_diagnostic_input(path)
-                && !is_under_virtual_node_modules(virtual_root, path)
-                && !is_internal_virtual_project_stub(path)
-            {
-                snapshot.uris.push(path_to_file_uri(path));
-            }
+    fn check_delta(
+        &mut self,
+        project: &VirtualProject,
+        prepared: IncrementalMaterialization,
+    ) -> CorsaResult<TypeCheckResult> {
+        let session = self
+            .session
+            .as_mut()
+            .ok_or(crate::batch::error::CorsaError::NotInitialized)?;
+        self.metrics.checks += 1;
+        self.metrics.last_session_started = false;
+        self.metrics.last_session_reused = true;
+        self.metrics.last_session_to_cli_fallback = false;
+        self.metrics.last_changed_files = prepared.delta.changed.len();
+        self.metrics.last_created_files = prepared.delta.created.len();
+        self.metrics.last_deleted_files = prepared.delta.deleted.len();
+        self.metrics.last_materialized_entries_considered = prepared.considered;
+        self.metrics.last_tree_entries_scanned = 0;
+        self.metrics.last_full_rebuild = false;
+        self.metrics.last_full_rebuild = prepared.full_topology_rebuild;
+        self.metrics.last_source_nodes_rebuilt = prepared.source_nodes_rebuilt;
+        self.metrics.last_dependency_nodes_reconciled = prepared.dependency_nodes_reconciled;
+        self.metrics.last_shadow_bindings_rebuilt = prepared.shadow_bindings_rebuilt;
+        let refreshed = !prepared.delta.is_empty();
+        self.metrics.last_session_refreshed = refreshed;
+        if refreshed {
+            profile!(
+                "canon.corsa.incremental.refresh",
+                session.client.refresh_materialized_files(
+                    &prepared.delta.changed,
+                    &prepared.delta.created,
+                    &prepared.delta.deleted
+                )
+            )
+            .map_err(map_corsa_error)?;
         }
-        snapshot.uris.sort();
-        Ok(snapshot)
+        session.snapshot.apply_delta(project, &prepared.delta)?;
+        self.metrics.last_requested_files = session.snapshot.uris.len();
+        self.metrics.session_reuses += 1;
+        self.metrics.session_refreshes += usize::from(refreshed);
+        check_session_client(&mut session.client, project, &session.snapshot.uris)
     }
-
-    fn diff(&self, previous: &Self) -> MaterializedDelta {
-        let mut delta = MaterializedDelta::default();
-        for (path, revision) in &self.revisions {
-            match previous.revisions.get(path) {
-                None => delta.created.push(path.clone()),
-                Some(previous) if previous != revision => delta.changed.push(path.clone()),
-                Some(_) => {}
-            }
-        }
-        for path in previous.revisions.keys() {
-            if !self.revisions.contains_key(path) {
-                delta.deleted.push(path.clone());
-            }
-        }
-        delta.sort();
-        delta
-    }
-
-    fn extend_diagnostic_paths(&mut self, project: &VirtualProject) -> CorsaResult<()> {
-        for path in project.diagnostic_paths_sorted() {
-            if !path.is_file() || !is_authored_diagnostic_input(&path) {
-                continue;
-            }
-            let content = std::fs::read(&path)?;
-            self.revisions.insert(path.clone(), hash_bytes(&content));
-            self.uris.push(path_to_file_uri(&path));
-        }
-        self.uris.sort();
-        self.uris.dedup();
-        Ok(())
-    }
-}
-
-impl MaterializedDelta {
-    fn is_empty(&self) -> bool {
-        self.changed.is_empty() && self.created.is_empty() && self.deleted.is_empty()
-    }
-
-    fn sort(&mut self) {
-        self.changed.sort();
-        self.created.sort();
-        self.deleted.sort();
-    }
-}
-
-fn hash_path(path: &Path) -> u64 {
-    let mut hasher = std::hash::DefaultHasher::new();
-    path.hash(&mut hasher);
-    hasher.finish()
 }
 
 fn check_session_client(

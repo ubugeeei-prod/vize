@@ -46,11 +46,12 @@ pub(super) struct ProgramExecution {
 pub(super) struct ProgramExecutionInput<'a> {
     pub(super) files: &'a [PathBuf],
     pub(super) reported_files: FxHashSet<PathBuf>,
-    pub(super) virtual_module_aliases: &'a [(vize_carton::String, PathBuf)],
+    pub(super) package_routes: &'a [vize_canon::PackageRouteBinding],
     pub(super) project_root: &'a std::path::Path,
     pub(super) program_root: PathBuf,
     pub(super) tsconfig_path: Option<PathBuf>,
     pub(super) nuxt_project_root: &'a std::path::Path,
+    pub(super) package_route_resolver: vize_canon::PackageRouteResolver,
 }
 
 pub(super) fn execute_program(
@@ -121,7 +122,8 @@ pub(super) fn execute_program(
         settings.check_template_bindings,
         settings.check_emits,
     );
-    checker.set_virtual_module_aliases(input.virtual_module_aliases.iter().cloned());
+    checker.set_package_route_resolver(input.package_route_resolver);
+    checker.set_package_routes(input.package_routes.iter().cloned());
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;

@@ -1,12 +1,12 @@
-use std::fs;
-use std::sync::Arc;
+use std::{fs, sync::Arc};
 
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, TextEdit, Url};
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 
 use super::RenameService;
-use crate::ide::IdeContext;
-use crate::server::ServerState;
+use crate::{ide::IdeContext, server::ServerState};
+
+mod package_routes;
 
 #[test]
 fn canonical_rename_edits_authored_cross_vue_files() {

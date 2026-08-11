@@ -8,7 +8,9 @@ use super::{
     ignores::{CheckIgnoreSet, retain_unignored},
 };
 use crate::commands::check::{
-    imports::{ImportFileOptions, TransitiveLocalImports, collect_transitive_local_imports},
+    imports::{
+        ImportFileOptions, TransitiveLocalImports, collect_transitive_local_imports_with_resolver,
+    },
     imports_aliases::PathAliasResolver,
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
@@ -27,7 +29,25 @@ pub(super) struct ExplicitAmbientImportContext<'a> {
 
 pub(super) struct RegisteredLocalImports {
     pub(super) authored: Vec<PathBuf>,
-    pub(super) virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
+    pub(super) package_routes: Vec<vize_canon::PackageRouteBinding>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct DefaultRunFileContext<'a> {
+    pub(super) project_root: &'a Path,
+    pub(super) cwd: &'a Path,
+    pub(super) tsconfig_path: Option<&'a Path>,
+    pub(super) import_options: ImportFileOptions,
+    pub(super) check_ignore_set: Option<&'a CheckIgnoreSet>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct LocalImportContext<'a> {
+    pub(super) cwd: &'a Path,
+    pub(super) tsconfig_path: Option<&'a Path>,
+    pub(super) import_options: ImportFileOptions,
+    pub(super) explicit_input_root: Option<&'a Path>,
+    pub(super) validate_inputs: bool,
 }
 
 impl<'a> ExplicitAmbientImportContext<'a> {
@@ -49,60 +69,69 @@ impl<'a> ExplicitAmbientImportContext<'a> {
 }
 
 pub(super) fn collect_default_run_files(
-    project_root: &Path,
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    import_options: ImportFileOptions,
+    context: DefaultRunFileContext<'_>,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
-    check_ignore_set: Option<&CheckIgnoreSet>,
+    resolver: &mut vize_canon::PackageRouteResolver,
 ) -> CollectedRoots {
     let mut files = collect_default_check_files(
-        project_root,
-        tsconfig_path,
-        import_options.include_jsx,
+        context.project_root,
+        context.tsconfig_path,
+        context.import_options.include_jsx,
         tsconfig_input_cache,
     );
-    retain_unignored(&mut files, check_ignore_set);
+    retain_unignored(&mut files, context.check_ignore_set);
     let inputs = files.clone();
     let mut reported_files = canonical_file_set(&files, canonical_paths);
     let discovered = register_transitive_local_imports(
         &mut files,
-        cwd,
-        tsconfig_path,
-        import_options,
+        LocalImportContext {
+            cwd: context.cwd,
+            tsconfig_path: context.tsconfig_path,
+            import_options: context.import_options,
+            explicit_input_root: None,
+            validate_inputs: false,
+        },
         canonical_paths,
-        None,
-        false,
+        resolver,
     );
     reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
-    let mut virtual_module_aliases = discovered.virtual_module_aliases;
+    let mut package_routes = discovered.package_routes;
     register_ambient_declaration_files(
         &mut files,
-        project_root,
-        tsconfig_path,
+        context.project_root,
+        context.tsconfig_path,
         tsconfig_input_cache,
     );
     // Imports reached only through hidden ambient declarations provide type
     // context, but are not authored members of the checked program.
     let hidden_discovered = register_transitive_local_imports(
         &mut files,
-        cwd,
-        tsconfig_path,
-        import_options,
+        LocalImportContext {
+            cwd: context.cwd,
+            tsconfig_path: context.tsconfig_path,
+            import_options: context.import_options,
+            explicit_input_root: None,
+            validate_inputs: false,
+        },
         canonical_paths,
-        None,
-        false,
+        resolver,
     );
-    virtual_module_aliases.extend(hidden_discovered.virtual_module_aliases);
-    virtual_module_aliases.sort();
-    virtual_module_aliases.dedup();
+    package_routes.extend(hidden_discovered.package_routes);
+    package_routes.sort_by(|left, right| {
+        (&left.importer_path, &left.specifier, left.occurrence_mode).cmp(&(
+            &right.importer_path,
+            &right.specifier,
+            right.occurrence_mode,
+        ))
+    });
+    package_routes.dedup_by(|left, right| left == right);
 
     CollectedRoots {
         files,
         inputs,
         reported: reported_files,
-        virtual_module_aliases,
+        package_routes,
     }
 }
 
@@ -126,7 +155,8 @@ pub(super) fn register_explicit_ambient_imports(
     context: ExplicitAmbientImportContext<'_>,
     tsconfig_input_cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
-) {
+    package_routes: &mut vize_canon::PackageRouteResolver,
+) -> Vec<vize_canon::PackageRouteBinding> {
     let keep_package_local =
         super::resolve::project_root_has_package_boundary(context.project_root);
     let ambient_declarations = collect_ambient_declaration_files(
@@ -137,18 +167,23 @@ pub(super) fn register_explicit_ambient_imports(
     .into_iter()
     .filter(|path| !keep_package_local || path.starts_with(context.project_root))
     .collect::<Vec<_>>();
-    files.extend(collect_transitive_local_imports_from(
+    let discovered = collect_transitive_local_imports_from(
         &ambient_declarations,
-        context.cwd,
-        Some(context.tsconfig_path),
-        context.import_options,
+        LocalImportContext {
+            cwd: context.cwd,
+            tsconfig_path: Some(context.tsconfig_path),
+            import_options: context.import_options,
+            explicit_input_root: Some(context.explicit_input_root),
+            validate_inputs: true,
+        },
         canonical_paths,
-        Some(context.explicit_input_root),
-        true,
-    ));
+        package_routes,
+    );
+    files.extend(discovered.registrations);
     files.extend(ambient_declarations);
     files.sort();
     files.dedup();
+    discovered.package_routes
 }
 
 pub(super) fn canonical_file_set(
@@ -163,44 +198,56 @@ pub(super) fn canonical_file_set(
 
 pub(super) fn register_transitive_local_imports(
     files: &mut Vec<PathBuf>,
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    import_options: ImportFileOptions,
+    context: LocalImportContext<'_>,
     canonical_paths: &mut CanonicalPathCache,
-    explicit_input_root: Option<&Path>,
-    validate_inputs: bool,
+    package_routes: &mut vize_canon::PackageRouteResolver,
 ) -> RegisteredLocalImports {
-    let discovered =
-        collect_local_imports(files, cwd, tsconfig_path, import_options, canonical_paths);
+    let discovered = collect_local_imports(
+        files,
+        context.cwd,
+        context.tsconfig_path,
+        context.import_options,
+        canonical_paths,
+        package_routes,
+    );
     // The explicit-root boundary constrains user-selected roots and files that
     // enter Vize's mirror. It must not hide authored modules that TypeScript
     // legitimately resolves in place outside that boundary.
     let TransitiveLocalImports {
         registrations,
         authored,
-        virtual_module_aliases,
+        package_routes,
     } = discovered;
-    append_local_imports(files, registrations, explicit_input_root, validate_inputs);
+    append_local_imports(
+        files,
+        registrations,
+        context.explicit_input_root,
+        context.validate_inputs,
+    );
     RegisteredLocalImports {
         authored,
-        virtual_module_aliases,
+        package_routes,
     }
 }
 
 pub(super) fn collect_transitive_local_imports_from(
     roots: &[PathBuf],
-    cwd: &Path,
-    tsconfig_path: Option<&Path>,
-    import_options: ImportFileOptions,
+    context: LocalImportContext<'_>,
     canonical_paths: &mut CanonicalPathCache,
-    explicit_input_root: Option<&Path>,
-    validate_inputs: bool,
-) -> Vec<PathBuf> {
-    collect_local_imports(roots, cwd, tsconfig_path, import_options, canonical_paths)
-        .registrations
-        .into_iter()
-        .filter(|path| local_import_is_allowed(path, explicit_input_root, validate_inputs))
-        .collect()
+    package_routes: &mut vize_canon::PackageRouteResolver,
+) -> TransitiveLocalImports {
+    let mut discovered = collect_local_imports(
+        roots,
+        context.cwd,
+        context.tsconfig_path,
+        context.import_options,
+        canonical_paths,
+        package_routes,
+    );
+    discovered.registrations.retain(|path| {
+        local_import_is_allowed(path, context.explicit_input_root, context.validate_inputs)
+    });
+    discovered
 }
 
 fn collect_local_imports(
@@ -209,9 +256,17 @@ fn collect_local_imports(
     tsconfig_path: Option<&Path>,
     import_options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
+    package_routes: &mut vize_canon::PackageRouteResolver,
 ) -> TransitiveLocalImports {
     let aliases = PathAliasResolver::from_tsconfig(tsconfig_path);
-    collect_transitive_local_imports(roots, cwd, canonical_paths, import_options, Some(&aliases))
+    collect_transitive_local_imports_with_resolver(
+        roots,
+        cwd,
+        canonical_paths,
+        import_options,
+        Some(&aliases),
+        package_routes,
+    )
 }
 
 fn append_local_imports(

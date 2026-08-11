@@ -7,44 +7,50 @@ use vize_carton::cstr;
 
 use super::module_specifier;
 
-pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
-    if let Some(path) = module_specifier::resolve_specifier(uri, specifier) {
-        return Some(path);
-    }
+#[cfg(test)]
+#[path = "import_resolver_tests.rs"]
+mod tests;
 
+pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
     let file = uri.to_file_path().ok()?;
     if specifier.starts_with("./") || specifier.starts_with("../") {
-        return Some(normalize_absolute_path(
-            file.parent()?.join(specifier).as_path(),
-        ));
+        return module_specifier::resolve_specifier(uri, specifier).or_else(|| {
+            Some(normalize_absolute_path(
+                file.parent()?.join(specifier).as_path(),
+            ))
+        });
     }
 
-    let paths = crate::ide::tsconfig_paths::project_paths(&file)?;
-    let mut best: Option<(usize, PathBuf)> = None;
-    for (pattern, target) in &paths.entries {
-        let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
-            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
-                (Some(rest), Some(target_prefix)) => {
-                    Some(cstr!("{target_prefix}{rest}").to_string())
+    if let Some(paths) = crate::ide::tsconfig_paths::project_paths(&file) {
+        let mut best: Option<(usize, PathBuf)> = None;
+        for (pattern, target) in &paths.entries {
+            let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
+                match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
+                    (Some(rest), Some(target_prefix)) => {
+                        Some(cstr!("{target_prefix}{rest}").to_string())
+                    }
+                    _ => None,
                 }
-                _ => None,
+            } else if specifier == pattern {
+                Some(target.clone())
+            } else {
+                None
+            };
+            let Some(substituted) = substituted else {
+                continue;
+            };
+            let base = paths.anchor.join(substituted);
+            if let Some(resolved) = probe(&base)
+                && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
+            {
+                best = Some((pattern.len(), resolved));
             }
-        } else if specifier == pattern {
-            Some(target.clone())
-        } else {
-            None
-        };
-        let Some(substituted) = substituted else {
-            continue;
-        };
-        let base = paths.anchor.join(substituted);
-        if let Some(resolved) = probe(&base)
-            && best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
-        {
-            best = Some((pattern.len(), resolved));
+        }
+        if let Some((_, path)) = best {
+            return Some(path);
         }
     }
-    best.map(|(_, path)| path)
+    module_specifier::resolve_specifier(uri, specifier)
 }
 
 fn probe(base: &Path) -> Option<PathBuf> {

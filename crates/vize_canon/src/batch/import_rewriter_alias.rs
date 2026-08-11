@@ -14,7 +14,8 @@ use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue
 
 /// Resolver consulted before the generic relative/package rewrite.
 #[allow(clippy::disallowed_types)]
-pub type AliasSpecifierResolver<'a> = &'a dyn Fn(&str) -> Option<std::string::String>;
+pub type AliasSpecifierResolver<'a> =
+    &'a dyn Fn(&str, crate::PackageResolutionMode) -> Option<std::string::String>;
 
 impl ImportRewriter {
     /// Like [`ImportRewriter::rewrite`], additionally consulting
@@ -26,9 +27,9 @@ impl ImportRewriter {
         source_dir: Option<&Path>,
         alias_resolver: AliasSpecifierResolver<'_>,
     ) -> RewriteResult {
-        self.rewrite_with(source, source_type, |path| {
+        self.rewrite_with(source, source_type, |path, mode| {
             if path.starts_with("./") || path.starts_with("../") {
-                return alias_resolver(path)
+                return alias_resolver(path, mode)
                     .map(Into::into)
                     .or_else(|| self.rewrite_module_specifier(path, source_dir))
                     .or_else(|| {
@@ -39,7 +40,7 @@ impl ImportRewriter {
             // rewrite: `is_rewritable_vue_specifier` also matches `@/Foo.vue`
             // and `~/Foo.vue`, so rewriting first would emit `@/Foo.vue.ts` and
             // leave the alias prefix unresolved in the generated module.
-            alias_resolver(path)
+            alias_resolver(path, mode)
                 .map(Into::into)
                 .or_else(|| self.rewrite_module_specifier(path, source_dir))
                 .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))

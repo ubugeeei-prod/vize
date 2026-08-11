@@ -28,6 +28,8 @@ mod hidden_include_tests;
 #[cfg(test)]
 mod nuxt_manifest_tests;
 #[cfg(test)]
+mod ownership_shared_tests;
+#[cfg(test)]
 mod package_folder_tests;
 #[cfg(test)]
 mod tests;
@@ -69,10 +71,7 @@ pub(crate) fn collect_default_check_files(
 }
 
 pub(crate) fn tsconfig_allows_js(tsconfig_path: &Path, cache: &mut TsconfigInputCache) -> bool {
-    cache
-        .load(tsconfig_path)
-        .and_then(|spec| spec.allow_js)
-        .unwrap_or(false)
+    cache.project_allows_js(tsconfig_path)
 }
 
 /// Whether the root project or any transitively referenced project accepts

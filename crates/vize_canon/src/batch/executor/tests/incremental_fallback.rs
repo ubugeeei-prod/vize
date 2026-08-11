@@ -31,7 +31,7 @@ fn incremental_session_fallback_is_counted_per_check() {
     project.register_path(&source).unwrap();
     let executor = CorsaExecutor::new(&case_dir).unwrap();
     let result = executor
-        .check_incremental_session(&project, Some(1))
+        .check_incremental_session(&mut project, Some(1))
         .expect("the CLI fallback should keep the check successful");
 
     assert!(result.success);
@@ -43,6 +43,9 @@ fn incremental_session_fallback_is_counted_per_check() {
             session_to_cli_fallbacks: 1,
             last_session_to_cli_fallback: true,
             last_requested_files: 1,
+            last_materialized_entries_considered: 12,
+            last_tree_entries_scanned: 12,
+            last_full_rebuild: true,
             ..Default::default()
         }
     );

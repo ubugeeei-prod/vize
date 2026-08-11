@@ -67,11 +67,25 @@ impl<T: Send + 'static> BoundedWorker<T> {
     /// it is running and then drops `state`. A worker still draining an
     /// abandoned job therefore outlives its owner until that job returns —
     /// the price of never tearing down a transport mid-request.
-    pub(super) fn new(name: &str, mut state: T) -> Self {
+    #[cfg(test)]
+    pub(super) fn new(name: &str, state: T) -> Self {
+        Self::new_with_keepalive(name, state, ())
+    }
+
+    /// Move `state` and a lifetime owner onto the same worker thread. The
+    /// keepalive is dropped only after every abandoned job finishes and the
+    /// closed channel drains, so external resources used by `T` cannot vanish
+    /// when the [`BoundedWorker`] handle itself is dropped.
+    pub(super) fn new_with_keepalive<K: Send + 'static>(
+        name: &str,
+        mut state: T,
+        keepalive: K,
+    ) -> Self {
         let (sender, receiver) = mpsc::channel::<Job<T>>();
         let spawned = thread::Builder::new()
             .name(std::string::String::from(name))
             .spawn(move || {
+                let _keepalive = keepalive;
                 while let Ok(job) = receiver.recv() {
                     job(&mut state);
                 }
@@ -237,6 +251,38 @@ mod tests {
         }
 
         assert_eq!(recovered, Ok(7));
+    }
+
+    #[test]
+    fn worker_keeps_external_state_alive_until_an_abandoned_job_finishes() {
+        struct DropSignal(mpsc::Sender<()>);
+        impl Drop for DropSignal {
+            fn drop(&mut self) {
+                let _ = self.0.send(());
+            }
+        }
+
+        let (release, hold) = mpsc::channel::<()>();
+        let (entered_tx, entered) = mpsc::channel::<()>();
+        let (dropped_tx, dropped) = mpsc::channel::<()>();
+        let worker =
+            BoundedWorker::new_with_keepalive("vize-test-worker", (), DropSignal(dropped_tx));
+        let outcome = worker.submit(DEADLINE, move |_| {
+            let _ = entered_tx.send(());
+            let _ = hold.recv();
+        });
+        assert_eq!(outcome, Err(WorkerError::TimedOut));
+        entered.recv_timeout(SETTLE).expect("job must have run");
+
+        drop(worker);
+        assert!(
+            dropped.try_recv().is_err(),
+            "keepalive dropped while abandoned work still owned it"
+        );
+        let _ = release.send(());
+        dropped
+            .recv_timeout(SETTLE)
+            .expect("worker must release keepalive after draining");
     }
 
     #[test]

@@ -4,7 +4,9 @@
 //! virtual document syncing, and the msgpack project-session details hidden
 //! behind the bridge surface.
 
+mod batch_checker;
 mod bridge;
+mod editor_session;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;
@@ -20,14 +22,29 @@ mod vue_document_alias_tests;
 // Every case links a workspace package through a directory symlink, which
 // Windows refuses without Developer Mode or elevation.
 #[cfg(all(test, unix))]
+mod vue_document_package_compat_tests;
+#[cfg(all(test, unix))]
+mod vue_document_package_config_tests;
+#[cfg(all(test, unix))]
+mod vue_document_package_fixpoint_tests;
+#[cfg(all(test, unix))]
+mod vue_document_package_negative_tests;
+#[cfg(all(test, unix))]
+mod vue_document_package_paths_tests;
+#[cfg(all(test, unix))]
 mod vue_document_package_tests;
+#[cfg(all(test, unix))]
+mod vue_document_package_typed_tests;
 #[cfg(test)]
 mod vue_document_tests;
 #[cfg(test)]
 mod vue_project_mapping_tests;
 mod worker;
 
-pub use bridge::{BatchTypeChecker, CorsaBridge};
+pub use batch_checker::BatchTypeChecker;
+pub use bridge::CorsaBridge;
+pub(crate) use editor_session::EditorMirrorSession;
+pub use script_document::CorsaScriptVirtualDocumentRequest;
 pub use types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
     LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
@@ -36,9 +53,13 @@ pub use types::{
     LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 pub use vue_document::{
-    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+    CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
-pub(crate) use vue_document::{CorsaVueVirtualProject, build_vue_virtual_project};
+pub(crate) use vue_document::{
+    CorsaProjectEnvironment, CorsaVueVirtualProject,
+    build_vue_virtual_project_with_overlays_and_options_and_package_routes,
+};
 
 #[cfg(test)]
 mod tests {

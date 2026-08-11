@@ -14,21 +14,15 @@ use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::ImportRewriter;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 
+mod artifacts;
 mod config;
+mod package_routes;
 
 use super::build::{
     RegisteredFile, VirtualBuildContext, build_registered_file, build_script_registered_file,
     build_vue_registered_file, source_type_for_path,
 };
 use super::{VirtualProject, project_virtual_root};
-
-const MUSEA_DEFINE_ART_STUB: &str =
-    "declare function defineArt(source: string, options?: Record<string, any>): void;";
-fn is_musea_art_vue_path(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.ends_with(".art.vue"))
-}
 
 impl VirtualProject {
     /// Create a new virtual project.
@@ -46,7 +40,38 @@ impl VirtualProject {
             diagnostic_paths: FxHashSet::default(),
             declaration_roots: None,
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
-            virtual_module_aliases: FxHashMap::default(),
+            package_routes: FxHashMap::default(),
+            package_route_reverse: FxHashMap::default(),
+            package_route_importers: FxHashMap::default(),
+            package_route_source_owners: FxHashMap::default(),
+            package_route_manifests: FxHashMap::default(),
+            package_route_roots: FxHashMap::default(),
+            package_source_index: FxHashMap::default(),
+            dependency_edges: FxHashMap::default(),
+            dependency_inbound: FxHashMap::default(),
+            package_route_resolver: Default::default(),
+            package_routes_need_refresh: false,
+            package_route_refresh_keys: FxHashSet::default(),
+            package_shadow_files: FxHashMap::default(),
+            package_shadow_manifests: FxHashMap::default(),
+            package_shadow_artifacts: FxHashMap::default(),
+            package_shadow_file_owners: FxHashMap::default(),
+            package_shadow_manifest_owners: FxHashMap::default(),
+            package_shadow_source_paths: FxHashMap::default(),
+            package_shadow_dirty_keys: FxHashSet::default(),
+            package_shadows_initialized: false,
+            incremental_materialized_candidates: FxHashSet::default(),
+            incremental_source_nodes_rebuilt: 0,
+            incremental_dependency_nodes_reconciled: 0,
+            incremental_shadow_bindings_rebuilt: 0,
+            materialized_package_links: FxHashMap::default(),
+            materialized_package_link_scopes: FxHashMap::default(),
+            materialized_package_link_owners: FxHashMap::default(),
+            package_link_scope_files: FxHashMap::default(),
+            package_link_scope_targets: FxHashMap::default(),
+            package_shadow_link_scopes: FxHashMap::default(),
+            incremental_package_link_scopes: FxHashSet::default(),
+            incremental_link_topology_dirty: false,
             options_api: false,
             session_scripts: false,
             legacy_vue2: false,
@@ -55,6 +80,7 @@ impl VirtualProject {
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
             virtual_files: FxHashMap::default(),
+            source_artifacts: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
             original_contents: FxHashMap::default(),
@@ -65,26 +91,6 @@ impl VirtualProject {
         project.preserve_unused_diagnostics =
             project.resolve_tsconfig_preserves_unused_diagnostics();
         project.source_policy = project.resolve_source_file_policy();
-        Ok(project)
-    }
-
-    /// Create an empty project snapshot with the same generation settings:
-    /// correctness-safe refreshes register source files again from disk while
-    /// every caller-configured dialect and virtual TS option stays identical.
-    pub(crate) fn empty_with_same_options(&self) -> CorsaResult<Self> {
-        let mut project = Self::new(&self.project_root)?;
-        project.set_tsconfig_path(self.tsconfig_path.clone());
-        project.virtual_ts_options = self.virtual_ts_options.clone();
-        project.diagnostic_paths = self.diagnostic_paths.clone();
-        project.declaration_roots = self.declaration_roots.clone();
-        project.virtual_ts_check_options = self.virtual_ts_check_options;
-        project.virtual_module_aliases = self.virtual_module_aliases.clone();
-        project.options_api = self.options_api;
-        project.legacy_vue2 = self.legacy_vue2;
-        project.jsx_typecheck = self.jsx_typecheck;
-        project.dialect = self.dialect;
-        project.template_syntax = self.template_syntax;
-        project.experimental_in_tag_comments = self.experimental_in_tag_comments;
         Ok(project)
     }
 
@@ -100,6 +106,7 @@ impl VirtualProject {
 
     /// Register a supported file path with already-loaded content.
     pub fn register_path_with_content(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
+        let package_route_path = self.is_package_route_path(path);
         let registered = build_registered_file(
             path,
             content,
@@ -115,6 +122,9 @@ impl VirtualProject {
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
+                hoist_shared_preamble: true,
+                preserve_relative_declarations: package_route_path,
+                preserve_declaration_spelling: self.session_scripts,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -163,14 +173,25 @@ impl VirtualProject {
             dialect: self.dialect,
             template_syntax: self.template_syntax,
             experimental_in_tag_comments: self.experimental_in_tag_comments,
+            hoist_shared_preamble: true,
+            preserve_relative_declarations: false,
+            preserve_declaration_spelling: self.session_scripts,
             rewriter: &self.rewriter,
         };
+        let package_paths = self
+            .package_routes
+            .values()
+            .filter_map(|binding| binding.route.as_ref())
+            .flat_map(|route| route.all_source_paths().into_iter().cloned())
+            .collect::<FxHashSet<_>>();
 
         let registered: Result<Vec<RegisteredFile>, CorsaError> = valid_paths
             .par_iter()
             .map(|&path| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
-                build_registered_file(path, &content, build_context)
+                let mut context = build_context;
+                context.preserve_relative_declarations = package_paths.contains(path);
+                build_registered_file(path, &content, context)
             })
             .collect();
 
@@ -198,6 +219,9 @@ impl VirtualProject {
                 dialect: self.dialect,
                 template_syntax: self.template_syntax,
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
+                hoist_shared_preamble: true,
+                preserve_relative_declarations: self.is_package_route_path(path),
+                preserve_declaration_spelling: self.session_scripts,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -232,52 +256,10 @@ impl VirtualProject {
             source_type,
             (&self.project_root, &self.virtual_root),
             &self.rewriter,
+            self.is_package_route_path(path),
+            self.session_scripts,
         )?;
         self.absorb_registered_file(registered);
         Ok(())
-    }
-
-    fn absorb_registered_file(&mut self, registered: RegisteredFile) {
-        if is_musea_art_vue_path(&registered.file.original_path)
-            && !self
-                .virtual_ts_options
-                .auto_import_stubs
-                .iter()
-                .any(|stub| stub.contains("defineArt"))
-        {
-            self.virtual_ts_options
-                .auto_import_stubs
-                .push(MUSEA_DEFINE_ART_STUB.into());
-        }
-        self.diagnostics.extend(registered.diagnostics);
-        self.original_index.insert(
-            registered.file.original_path.clone(),
-            registered.file.virtual_path.clone(),
-        );
-        self.original_contents.insert(
-            registered.file.virtual_path.clone(),
-            registered.original_content,
-        );
-        // Re-registration must refresh the classification, not accumulate it: a
-        // script block converted to TypeScript (or opted in with `// @ts-check`)
-        // would otherwise stay gated behind a stale entry.
-        self.unchecked_javascript_files
-            .remove(&registered.file.virtual_path);
-        if registered.unchecked_javascript {
-            self.unchecked_javascript_files
-                .insert(registered.file.virtual_path.clone());
-        }
-        for (virtual_path, original_path) in registered.passthrough_files {
-            if !self.virtual_files.contains_key(&virtual_path) {
-                self.passthrough_files.insert(virtual_path, original_path);
-            }
-        }
-        for file in registered.extra_virtual_files {
-            self.passthrough_files.remove(&file.virtual_path);
-            self.virtual_files.insert(file.virtual_path.clone(), file);
-        }
-        self.passthrough_files.remove(&registered.file.virtual_path);
-        self.virtual_files
-            .insert(registered.file.virtual_path.clone(), registered.file);
     }
 }

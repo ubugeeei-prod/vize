@@ -135,6 +135,7 @@ impl DiagnosticService {
                     options_api,
                     legacy_vue2,
                     preserve_event_navigation: false,
+                    dialect: state.type_checker_vue_version(),
                 },
             )
             .await;
@@ -170,6 +171,7 @@ impl DiagnosticService {
                         options_api,
                         legacy_vue2,
                         preserve_event_navigation: false,
+                        dialect: state.type_checker_vue_version(),
                     },
                     &overlays,
                     &virtual_ts_options,

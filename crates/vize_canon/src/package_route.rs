@@ -8,21 +8,42 @@
 use std::path::{Component, Path, PathBuf};
 
 use serde_json::Value;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::cstr;
 
+#[path = "package_route/cache.rs"]
+mod cache;
+#[path = "package_route/candidates.rs"]
+mod candidates;
+#[path = "package_route/graph_inputs.rs"]
+mod graph_inputs;
+#[path = "package_route/model.rs"]
+mod model;
 #[path = "package_route/search.rs"]
 mod search;
+#[path = "package_route/shadow_mapping.rs"]
+mod shadow_mapping;
 #[path = "package_route/source.rs"]
 mod source;
 #[path = "package_route/stamp.rs"]
-mod stamp;
+pub(crate) mod stamp;
+#[cfg(test)]
+use candidates::collect_targets;
+use candidates::{
+    collect_external_import_targets, collect_legacy_candidates, collect_request_targets,
+    collect_types_version_candidates,
+};
 use search::{
     PackageRequest, PackageSearchCache, find_package_root, nearest_package_manifest, read_manifest,
 };
-use source::resolve_source;
-use stamp::{InputStamp, stamp_paths, stamps_are_current};
+use source::resolve_sources;
 
-type ResolutionKey = (PathBuf, String, PackageSourceOptions);
+pub use cache::{PackageRouteLookup, PackageRouteResolver};
+#[cfg(feature = "native")]
+pub(crate) use model::PackageRouteKey;
+pub use model::{
+    PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
+    PackageRouteMetrics, PackageRouteSource,
+};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct PackageSourceOptions {
@@ -39,100 +60,6 @@ impl PackageSourceOptions {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PackageRoute {
-    pub source_path: PathBuf,
-    pub package_root: PathBuf,
-    pub package_link_root: PathBuf,
-    pub manifest_path: PathBuf,
-    pub workspace_source: bool,
-}
-
-impl PackageRoute {
-    pub fn invalidation_paths(&self) -> Vec<PathBuf> {
-        let mut paths = vec![
-            self.source_path.clone(),
-            self.manifest_path.clone(),
-            self.package_link_root.clone(),
-            self.package_link_root.join("package.json"),
-        ];
-        paths.sort();
-        paths.dedup();
-        paths
-    }
-}
-
-#[derive(Default)]
-pub struct PackageRouteResolver {
-    resolutions: FxHashMap<ResolutionKey, CachedPackageRouteLookup>,
-    search: PackageSearchCache,
-}
-
-struct CachedPackageRouteLookup {
-    lookup: PackageRouteLookup,
-    stamps: Vec<InputStamp>,
-}
-
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct PackageRouteLookup {
-    route: Option<PackageRoute>,
-    invalidation_paths: Vec<PathBuf>,
-}
-
-impl PackageRouteLookup {
-    pub fn into_parts(self) -> (Option<PackageRoute>, Vec<PathBuf>) {
-        (self.route, self.invalidation_paths)
-    }
-}
-
-impl PackageRouteResolver {
-    pub fn resolve(
-        &mut self,
-        importer_dir: &Path,
-        specifier: &str,
-        options: PackageSourceOptions,
-    ) -> Option<PackageRoute> {
-        self.lookup(importer_dir, specifier, options).route
-    }
-
-    /// Resolve a route while retaining every positive or negative filesystem
-    /// input consulted. Editor caches and reverse indexes use these paths to
-    /// observe a package link or manifest created after an unresolved open.
-    pub fn lookup(
-        &mut self,
-        importer_dir: &Path,
-        specifier: &str,
-        options: PackageSourceOptions,
-    ) -> PackageRouteLookup {
-        // Key on the logical importer directory: resolution walks the logical
-        // ancestors, so two importer directories that share a canonical path
-        // through a package symlink still see different `node_modules` chains.
-        let logical_importer_dir = logical_absolute(importer_dir);
-        let key = (logical_importer_dir.clone(), specifier.into(), options);
-        if let Some(cached) = self.resolutions.get(&key)
-            && stamps_are_current(&cached.stamps)
-        {
-            return cached.lookup.clone();
-        }
-        self.resolutions.remove(&key);
-        let lookup = lookup_uncached(&logical_importer_dir, specifier, options, &mut self.search);
-        let stamps = stamp_paths(&lookup.invalidation_paths);
-        self.resolutions.insert(
-            key,
-            CachedPackageRouteLookup {
-                lookup: lookup.clone(),
-                stamps,
-            },
-        );
-        lookup
-    }
-
-    pub fn clear(&mut self) {
-        self.resolutions.clear();
-        self.search.clear();
-    }
-}
-
 fn lookup_uncached(
     importer_dir: &Path,
     specifier: &str,
@@ -140,21 +67,26 @@ fn lookup_uncached(
     search: &mut PackageSearchCache,
 ) -> PackageRouteLookup {
     let mut invalidation_paths = Vec::new();
+    let mut watchable_negative = false;
     let route = resolve_uncached(
         importer_dir,
         specifier,
         options,
         &mut invalidation_paths,
         search,
+        &mut watchable_negative,
     );
     if let Some(route) = route.as_ref() {
         invalidation_paths.extend(route.invalidation_paths());
+        graph_inputs::collect(&route.package_link_root, &mut invalidation_paths);
     }
+    graph_inputs::collect(importer_dir, &mut invalidation_paths);
     invalidation_paths.sort();
     invalidation_paths.dedup();
-    PackageRouteLookup {
+    cache::PackageRouteLookup {
         route,
         invalidation_paths,
+        watchable_negative,
     }
 }
 
@@ -164,18 +96,32 @@ fn resolve_uncached(
     options: PackageSourceOptions,
     invalidation_paths: &mut Vec<PathBuf>,
     search: &mut PackageSearchCache,
+    watchable_negative: &mut bool,
 ) -> Option<PackageRoute> {
-    let (package_link_root, manifest, request) = if specifier.starts_with('#') {
+    let (package_link_root, manifest, request, package_name) = if specifier.starts_with('#') {
         let (root, manifest) = nearest_package_manifest(importer_dir, invalidation_paths, search)?;
-        (root, manifest, specifier.to_owned())
+        let package_name = manifest.get("name").and_then(Value::as_str).map(Into::into);
+        (root, manifest, specifier.to_owned(), package_name)
     } else {
+        if specifier.starts_with("node:") {
+            return None;
+        }
         let request = PackageRequest::parse(specifier)?;
-        let root = find_package_root(importer_dir, request.package, invalidation_paths, search)?;
-        let manifest = read_manifest(&root, search)?;
+        let package_name = request.package.into();
+        let Some(root) =
+            find_package_root(importer_dir, request.package, invalidation_paths, search)
+        else {
+            *watchable_negative = true;
+            return None;
+        };
+        let Some(manifest) = read_manifest(&root, search) else {
+            *watchable_negative = true;
+            return None;
+        };
         let request = request
             .subpath
             .map_or_else(|| ".".to_owned(), |subpath| cstr!("./{subpath}").into());
-        (root, manifest, request)
+        (root, manifest, request, Some(package_name))
     };
     let package_root = canonical_path(&package_link_root);
     let manifest_path = canonical_path(&package_root.join("package.json"));
@@ -184,109 +130,86 @@ fn resolve_uncached(
     } else {
         manifest.get("exports")
     };
-    let exports_declared = !specifier.starts_with('#') && mappings.is_some();
     let mut candidates = Vec::new();
     if let Some(mappings) = mappings {
         collect_request_targets(mappings, &request, &package_root, &mut candidates);
     }
-    if candidates.is_empty() && !specifier.starts_with('#') && !exports_declared {
-        collect_legacy_candidates(&manifest, &request, &package_root, &mut candidates);
+    let mut nested_routes = Vec::new();
+    if specifier.starts_with('#')
+        && let Some(mappings) = mappings
+    {
+        let mut external_targets = Vec::new();
+        collect_external_import_targets(mappings, &request, &mut external_targets);
+        external_targets.sort();
+        external_targets.dedup();
+        for target in external_targets {
+            if let Some(route) = resolve_uncached(
+                &package_root,
+                &target,
+                options,
+                invalidation_paths,
+                search,
+                watchable_negative,
+            ) {
+                nested_routes.push(route);
+            }
+        }
     }
-    let source_path = candidates
+    if !specifier.starts_with('#') {
+        // Keep legacy/type-version topology alongside exports. Native
+        // TypeScript decides which family is active for Node10/Classic versus
+        // Node16/NodeNext/Bundler; extra shadow candidates do not select one.
+        collect_legacy_candidates(&manifest, &request, &package_root, &mut candidates);
+        collect_types_version_candidates(&manifest, &request, &package_root, &mut candidates);
+    }
+    let mut source_targets = Vec::new();
+    for candidate in &candidates {
+        invalidation_paths.push(candidate.clone());
+        let mut resolved = resolve_sources(candidate, options, invalidation_paths);
+        if resolved.is_empty() && candidate.extension().is_some_and(|ext| ext == "vue") {
+            resolved.push(source::ResolvedPackageSource {
+                source_path: canonical_path(candidate),
+                native_probe_path: canonical_path(&candidate.with_extension("d.vue.ts")),
+            });
+        }
+        for source in resolved {
+            let route_source = PackageRouteSource {
+                target_path: canonical_path(candidate),
+                source_path: source.source_path,
+                native_probe_path: source.native_probe_path,
+            };
+            if !source_targets.contains(&route_source) {
+                source_targets.push(route_source);
+            }
+        }
+    }
+    let mut source_paths = source_targets
         .iter()
-        .find_map(|candidate| resolve_source(candidate, options))
-        .or_else(|| {
-            candidates
-                .iter()
-                .find(|candidate| candidate.extension().is_some_and(|ext| ext == "vue"))
-                .map(|candidate| canonical_path(candidate))
-        })?;
+        .map(|source| source.source_path.clone())
+        .collect::<Vec<_>>();
+    source_paths.sort();
+    source_paths.dedup();
+    if source_paths.is_empty() && nested_routes.is_empty() {
+        *watchable_negative |= specifier.starts_with('#')
+            || !inside_node_modules(&package_root)
+            || candidates.iter().any(|candidate| {
+                candidate
+                    .extension()
+                    .is_some_and(|extension| extension == "vue")
+            });
+        return None;
+    }
     Some(PackageRoute {
-        source_path,
+        source_paths,
+        dependency_paths: Vec::new(),
+        source_targets,
         package_root: package_root.clone(),
         package_link_root: logical_absolute(&package_link_root),
         manifest_path,
+        package_name,
         workspace_source: !inside_node_modules(&package_root),
+        nested_routes,
     })
-}
-
-fn collect_legacy_candidates(
-    manifest: &Value,
-    request: &str,
-    root: &Path,
-    candidates: &mut Vec<PathBuf>,
-) {
-    if request != "." {
-        candidates.push(root.join(request.trim_start_matches("./")));
-        return;
-    }
-    for field in ["types", "typings", "module", "main"] {
-        if let Some(target) = manifest.get(field).and_then(Value::as_str) {
-            candidates.push(root.join(target.trim_start_matches("./")));
-        }
-    }
-    candidates.push(root.join("index"));
-}
-
-fn collect_request_targets(value: &Value, request: &str, root: &Path, out: &mut Vec<PathBuf>) {
-    if let Some(mappings) = value.as_object()
-        && mappings.keys().any(|key| key.starts_with(['.', '#']))
-    {
-        if let Some(target) = mappings.get(request) {
-            collect_targets(target, root, None, out);
-            return;
-        }
-        let best = mappings
-            .iter()
-            .filter_map(|(pattern, value)| {
-                let (prefix, suffix) = pattern.split_once('*')?;
-                let capture = request.strip_prefix(prefix)?.strip_suffix(suffix)?;
-                Some(((prefix.len(), suffix.len()), capture, value))
-            })
-            .max_by_key(|(specificity, _, _)| *specificity);
-        if let Some((_, capture, target)) = best {
-            collect_targets(target, root, Some(capture), out);
-        }
-        return;
-    }
-    if request == "." {
-        collect_targets(value, root, None, out);
-    }
-}
-
-fn collect_targets(value: &Value, root: &Path, wildcard: Option<&str>, out: &mut Vec<PathBuf>) {
-    match value {
-        Value::String(target) => {
-            let target =
-                wildcard.map_or_else(|| target.clone(), |value| target.replace('*', value));
-            let Some(relative) = target.strip_prefix("./") else {
-                return;
-            };
-            let relative = Path::new(relative);
-            if !relative.components().any(|component| {
-                matches!(
-                    component,
-                    Component::ParentDir | Component::RootDir | Component::Prefix(_)
-                )
-            }) {
-                out.push(root.join(relative));
-            }
-        }
-        Value::Array(values) => {
-            for value in values {
-                collect_targets(value, root, wildcard, out);
-            }
-        }
-        Value::Object(conditions) => {
-            for condition in ["types", "import", "module", "default", "require"] {
-                if let Some(value) = conditions.get(condition) {
-                    collect_targets(value, root, wildcard, out);
-                    break;
-                }
-            }
-        }
-        _ => {}
-    }
 }
 
 fn inside_node_modules(path: &Path) -> bool {

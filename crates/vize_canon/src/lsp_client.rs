@@ -27,6 +27,7 @@ mod session;
 mod session_paths;
 mod utils;
 mod virtual_overlay;
+mod workspace_project;
 
 #[cfg(test)]
 mod tests;
@@ -60,6 +61,30 @@ pub struct CorsaProjectClient {
     /// Whether the reusable editor LSP needs the latest virtual project mirror.
     editor_lsp_documents_dirty: bool,
     closed: bool,
+}
+
+#[cfg(test)]
+impl CorsaProjectClient {
+    fn empty_for_test(project_root: PathBuf) -> Self {
+        Self {
+            executable: String::new(""),
+            cwd: project_root.clone(),
+            session: None,
+            capabilities: Arc::new(Default::default()),
+            overlay_api_disabled: false,
+            materialized_project_session: false,
+            project_root,
+            diagnostics: Default::default(),
+            overlay_versions: Default::default(),
+            document_texts: Default::default(),
+            session_document_uris: Default::default(),
+            external_document_uris: Default::default(),
+            temp_dir: None,
+            editor_lsp: None,
+            editor_lsp_documents_dirty: true,
+            closed: false,
+        }
+    }
 }
 
 /// Legacy name kept for callers that still import `CorsaLspClient`.

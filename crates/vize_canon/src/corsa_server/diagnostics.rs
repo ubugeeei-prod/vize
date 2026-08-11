@@ -42,6 +42,9 @@ impl CorsaServer {
             .corsa_client
             .as_mut()
             .expect("corsa_client must be initialized above");
+        if let Some(project_root) = project.session_project_root.as_deref() {
+            client.synchronize_materialized_project(project_root, &project.materialized_changes)?;
+        }
         let documents: Vec<(&str, &str)> = project
             .documents
             .iter()
@@ -166,8 +169,12 @@ mod tests {
                 source_type: SourceType::ts(),
                 virtual_suffix: ".ts",
                 dependencies: Vec::new(),
+                materialized_sources: Vec::new(),
+                session_project_root: None,
             },
             documents: Vec::new(),
+            session_project_root: None,
+            materialized_changes: Default::default(),
         }
     }
 

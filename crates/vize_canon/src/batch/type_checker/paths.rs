@@ -3,6 +3,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use vize_carton::FxHashMap;
+
 use super::super::error::{CorsaError, CorsaResult};
 use super::super::source_policy::SourceFilePolicy;
 use super::super::virtual_project::VirtualProject;
@@ -15,39 +17,76 @@ use super::super::virtual_project::VirtualProject;
 /// grow from an out-of-scope change notification.
 pub(super) struct IncrementalPaths {
     allow_new_paths: bool,
-    paths: Mutex<Vec<PathBuf>>,
+    state: Mutex<IncrementalPathState>,
+}
+
+#[derive(Default)]
+struct IncrementalPathState {
+    roots: Vec<PathBuf>,
+    known_source_paths: Vec<PathBuf>,
+    source_stamps: FxHashMap<PathBuf, crate::package_route::stamp::InputStamp>,
 }
 
 impl IncrementalPaths {
     pub(super) fn new() -> Self {
         Self {
             allow_new_paths: false,
-            paths: Mutex::new(Vec::new()),
+            state: Mutex::new(IncrementalPathState::default()),
         }
     }
 
-    pub(super) fn after_explicit_scan(&mut self, paths: &[PathBuf]) {
-        let was_project_wide = std::mem::replace(&mut self.allow_new_paths, false);
-        let current = self
-            .paths
+    pub(super) fn after_explicit_scan(&mut self, project: &VirtualProject, paths: &[PathBuf]) {
+        self.allow_new_paths = false;
+        self.replace_snapshot(project, paths);
+    }
+
+    pub(super) fn after_project_scan(&mut self, project: &VirtualProject, roots: &[PathBuf]) {
+        self.allow_new_paths = true;
+        self.replace_snapshot(project, roots);
+    }
+
+    fn replace_snapshot(&mut self, project: &VirtualProject, roots: &[PathBuf]) {
+        let state = self
+            .state
             .get_mut()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        if was_project_wide {
-            current.clear();
-        }
-        current.extend(
-            paths
-                .iter()
-                .filter(|path| path.is_file())
-                .map(|path| vize_carton::path::canonicalize_non_verbatim(path)),
-        );
-        current.sort();
-        current.dedup();
+        state.roots = roots
+            .iter()
+            .filter(|path| path.is_file())
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect();
+        state.roots.sort();
+        state.roots.dedup();
+        state.known_source_paths = project.registered_original_paths_sorted();
+        state.source_stamps = stamp_project_inputs(project, &state.known_source_paths);
     }
 
-    pub(super) fn after_project_scan(&mut self, project: &VirtualProject) {
-        self.allow_new_paths = true;
-        self.replace_paths(project);
+    pub(super) fn effective_changes(
+        &self,
+        project_root: &Path,
+        changed: &[PathBuf],
+    ) -> Vec<PathBuf> {
+        let state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        changed
+            .iter()
+            .filter(|path| {
+                let logical = if path.is_absolute() {
+                    (*path).clone()
+                } else {
+                    project_root.join(path)
+                };
+                let canonical = crate::package_route::stamp::canonicalize_changed_path(&logical);
+                state
+                    .source_stamps
+                    .get(&logical)
+                    .or_else(|| state.source_stamps.get(&canonical))
+                    .is_none_or(|stamp| !stamp.is_current())
+            })
+            .cloned()
+            .collect()
     }
 
     pub(super) fn refresh(
@@ -55,30 +94,78 @@ impl IncrementalPaths {
         project: &VirtualProject,
         source_policy: SourceFilePolicy,
         changed: &[PathBuf],
+        package_source_paths: &[PathBuf],
     ) -> CorsaResult<Vec<PathBuf>> {
-        let mut paths = self
-            .paths
+        let mut state = self
+            .state
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        let known_source_paths = project.known_source_paths();
+        let mut known_source_paths = project.known_source_paths();
+        known_source_paths.extend(state.known_source_paths.iter().cloned());
+        known_source_paths.extend_from_slice(package_source_paths);
+        known_source_paths.sort();
+        known_source_paths.dedup();
         refresh_paths(
             project.project_root(),
-            &mut paths,
+            &mut state.roots,
             changed,
             self.allow_new_paths,
             source_policy,
             &known_source_paths,
         )?;
-        Ok(paths.clone())
+        Ok(state.roots.clone())
     }
 
-    fn replace_paths(&mut self, project: &VirtualProject) {
-        *self
-            .paths
-            .get_mut()
-            .unwrap_or_else(std::sync::PoisonError::into_inner) =
-            project.registered_original_paths_sorted();
+    pub(super) fn refresh_for_configuration(
+        &self,
+        project: &VirtualProject,
+        source_policy: SourceFilePolicy,
+    ) -> CorsaResult<Vec<PathBuf>> {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if self.allow_new_paths {
+            state.roots = collect_project_paths(project.project_root(), source_policy)?;
+        } else {
+            state.roots.retain(|path| path.is_file());
+        }
+        state.roots = state
+            .roots
+            .iter()
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect();
+        state.roots.sort();
+        state.roots.dedup();
+        Ok(state.roots.clone())
     }
+
+    /// Commit the complete successful graph, not just the paths that existed
+    /// when the persistent checker started. Roots stay caller-owned; this
+    /// closure is used only to validate later external watcher notifications.
+    pub(super) fn commit_project_snapshot(&self, project: &VirtualProject) {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        state.known_source_paths = project.registered_original_paths_sorted();
+        state.source_stamps = stamp_project_inputs(project, &state.known_source_paths);
+    }
+}
+
+fn stamp_project_inputs(
+    project: &VirtualProject,
+    paths: &[PathBuf],
+) -> FxHashMap<PathBuf, crate::package_route::stamp::InputStamp> {
+    paths
+        .iter()
+        .cloned()
+        .chain(project.governing_config_paths())
+        .map(|path| {
+            let stamp = crate::package_route::stamp::InputStamp::capture(path.clone());
+            (path, stamp)
+        })
+        .collect()
 }
 
 pub(super) fn collect_project_paths(
@@ -115,19 +202,26 @@ pub(super) fn refresh_paths(
 ) -> CorsaResult<()> {
     let mut refreshed_paths = paths.clone();
     for changed_path in changed {
-        let candidate = if changed_path.is_absolute() {
+        let logical_candidate = if changed_path.is_absolute() {
             changed_path.clone()
         } else {
             project_root.join(changed_path)
         };
-        if !candidate.exists() {
+        if !logical_candidate.exists() {
             continue;
         }
 
-        let candidate = vize_carton::path::canonicalize_non_verbatim(&candidate);
+        let logical_in_project = logical_candidate.starts_with(project_root);
+        let candidate = vize_carton::path::canonicalize_non_verbatim(&logical_candidate);
         let already_registered = refreshed_paths.iter().any(|path| path == &candidate);
-        let known_source = known_source_paths.iter().any(|path| path == &candidate);
-        if !candidate.starts_with(project_root) && !already_registered && !known_source {
+        let known_source = known_source_paths
+            .iter()
+            .any(|path| path == &candidate || candidate.starts_with(path));
+        if !logical_in_project
+            && !candidate.starts_with(project_root)
+            && !already_registered
+            && !known_source
+        {
             return Err(CorsaError::PathError { path: candidate });
         }
         if allow_new_paths

@@ -5,40 +5,103 @@ use vize_carton::FxHashMap;
 
 use super::stamp::{InputStamp, manifest_path};
 
+const MANIFEST_CACHE_CAPACITY: usize = 1_024;
+
 #[derive(Default)]
 pub(super) struct PackageSearchCache {
     manifests: FxHashMap<PathBuf, CachedManifest>,
+    manifest_reads: u64,
+    clock: u64,
+    evictions: u64,
 }
 
 struct CachedManifest {
     stamp: InputStamp,
     value: Option<Value>,
+    last_used: u64,
 }
 
 impl PackageSearchCache {
     pub(super) fn clear(&mut self) {
         self.manifests.clear();
+        self.manifest_reads = 0;
+        self.clock = 0;
+        self.evictions = 0;
+    }
+
+    pub(super) fn manifest_reads(&self) -> u64 {
+        self.manifest_reads
+    }
+
+    pub(super) fn len(&self) -> usize {
+        self.manifests.len()
+    }
+
+    pub(super) fn evictions(&self) -> u64 {
+        self.evictions
     }
 
     fn read_manifest(&mut self, root: &Path) -> Option<Value> {
         let path = manifest_path(root);
-        if let Some(cached) = self.manifests.get(&path)
-            && cached.stamp.is_current()
-        {
-            return cached.value.clone();
+        let cached = self
+            .manifests
+            .get(&path)
+            .filter(|cached| cached.stamp.is_current())
+            .map(|cached| cached.value.clone());
+        if let Some(cached) = cached {
+            self.clock = self.clock.wrapping_add(1);
+            if let Some(entry) = self.manifests.get_mut(&path) {
+                entry.last_used = self.clock;
+            }
+            return cached;
         }
+        self.manifests.remove(&path);
         let stamp = InputStamp::capture(&path);
+        self.manifest_reads += 1;
         let value = std::fs::read_to_string(&path)
             .ok()
             .and_then(|content| serde_json::from_str(&content).ok());
+        if self.manifests.len() >= MANIFEST_CACHE_CAPACITY {
+            let oldest = self
+                .manifests
+                .iter()
+                .min_by_key(|(_, entry)| entry.last_used)
+                .map(|(path, _)| path.clone());
+            if let Some(oldest) = oldest {
+                self.manifests.remove(&oldest);
+                self.evictions += 1;
+            }
+        }
+        self.clock = self.clock.wrapping_add(1);
         self.manifests.insert(
             path,
             CachedManifest {
                 stamp,
                 value: value.clone(),
+                last_used: self.clock,
             },
         );
         value
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{MANIFEST_CACHE_CAPACITY, PackageSearchCache};
+
+    #[test]
+    fn manifest_cache_has_a_measured_hard_bound() {
+        let root = tempfile::tempdir().unwrap();
+        let mut cache = PackageSearchCache::default();
+        for index in 0..=MANIFEST_CACHE_CAPACITY {
+            let package = root.path().join(index.to_string());
+            std::fs::create_dir_all(&package).unwrap();
+            std::fs::write(package.join("package.json"), r#"{"name":"bounded"}"#).unwrap();
+            assert!(cache.read_manifest(&package).is_some());
+        }
+
+        assert_eq!(cache.len(), MANIFEST_CACHE_CAPACITY);
+        assert_eq!(cache.evictions(), 1);
     }
 }
 

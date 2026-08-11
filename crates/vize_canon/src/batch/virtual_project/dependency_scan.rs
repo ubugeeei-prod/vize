@@ -8,10 +8,11 @@
 //! to a fixpoint. Published packages are left alone: a canonical path that
 //! stays inside `node_modules` keeps the stub (that half is #3282), while a
 //! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source. Declaration files are left alone too: they hold no
-//! component to check and their ambient declarations are program-wide, so the
-//! tsconfig decides which ones a program includes (see
-//! [`is_declaration_file`]).
+//! first-party source. Batch projects leave declaration files alone so their
+//! ambient declarations remain governed by the tsconfig. Editor sessions do
+//! mirror reachable declarations, preserving their authored `.d.ts` spelling,
+//! but keep them inferred rather than adding them as ambient program roots
+//! (see [`is_declaration_file`]).
 //!
 //! Specifiers are collected from the *generated* content (always valid TS,
 //! one collector for `.vue` and script files alike) and resolved against the
@@ -42,13 +43,22 @@ use resolution::{
     may_resolve_a_dependency,
 };
 
-type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str) -> Option<PathBuf>;
+type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
 
 #[allow(clippy::disallowed_types)]
 impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
         self.register_reachable_dependencies_with_overlays(&FxHashMap::default())
+    }
+
+    /// Reconcile only dependencies reachable from sources rebuilt by one
+    /// persistent patch. Existing edge ownership covers the untouched graph.
+    pub(crate) fn register_reachable_dependencies_from(
+        &mut self,
+        sources: &[PathBuf],
+    ) -> CorsaResult<()> {
+        self.register_reachable_dependencies_inner(Some(sources), &FxHashMap::default(), &[], None)
     }
 
     /// The same walk, with unsaved editor buffers standing in for their on-disk
@@ -63,7 +73,7 @@ impl VirtualProject {
         &mut self,
         overlays: &FxHashMap<PathBuf, &str>,
     ) -> CorsaResult<()> {
-        self.register_reachable_dependencies_inner(overlays, &[], None)
+        self.register_reachable_dependencies_inner(None, overlays, &[], None)
     }
 
     pub(crate) fn register_reachable_dependencies_with_package_resolver(
@@ -73,6 +83,7 @@ impl VirtualProject {
         package_resolver: PackageResolver<'_>,
     ) -> CorsaResult<()> {
         self.register_reachable_dependencies_inner(
+            None,
             overlays,
             workspace_package_specifiers,
             Some(package_resolver),
@@ -81,6 +92,7 @@ impl VirtualProject {
 
     fn register_reachable_dependencies_inner(
         &mut self,
+        initial_sources: Option<&[PathBuf]>,
         overlays: &FxHashMap<PathBuf, &str>,
         workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
@@ -93,32 +105,44 @@ impl VirtualProject {
             })
             .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
             .collect();
-        let mut queue: Vec<PathBuf> = self
-            .virtual_files_sorted()
-            .iter()
-            .map(|file| file.original_path.clone())
-            .collect();
+        let mut queue: Vec<PathBuf> = match initial_sources {
+            Some(paths) => paths
+                .iter()
+                .filter(|path| self.find_by_original(path).is_some())
+                .cloned()
+                .collect(),
+            None => self
+                .virtual_files_sorted()
+                .iter()
+                .map(|file| file.original_path.clone())
+                .collect(),
+        };
         let mut visited: FxHashSet<PathBuf> = queue
             .iter()
             .filter_map(|path| canonical_key(path))
             .collect();
 
         while let Some(importer) = queue.pop() {
-            let Some(virtual_file) = self.find_by_original(&importer) else {
+            let Some((virtual_content, virtual_path)) = self
+                .find_by_original(&importer)
+                .map(|file| (file.content.clone(), file.virtual_path.clone()))
+            else {
                 continue;
             };
+            let mut dependency_targets = FxHashSet::default();
             if !may_resolve_a_dependency(
-                &virtual_file.content,
+                &virtual_content,
                 &alias_prefixes,
                 workspace_package_specifiers,
             ) {
+                let released = self.replace_dependency_edges(&importer, dependency_targets);
+                self.prune_unowned_sources(released);
                 continue;
             }
             let Some(importer_dir) = importer.parent().map(Path::to_path_buf) else {
                 continue;
             };
-            let source_type = if virtual_file
-                .virtual_path
+            let source_type = if virtual_path
                 .extension()
                 .is_some_and(|extension| extension == "tsx")
             {
@@ -128,23 +152,39 @@ impl VirtualProject {
             };
             let specifiers = self
                 .rewriter()
-                .collect_all_specifiers(&virtual_file.content, source_type);
+                .collect_all_specifier_occurrences(&virtual_content, source_type);
+            // Package-local edges only exist inside a package root that already
+            // contains this importer, so scan the route table once per importer
+            // instead of once per specifier (#4137).
+            let importer_package_roots = self
+                .package_routes
+                .values()
+                .filter_map(|binding| binding.route.as_ref())
+                .flat_map(crate::PackageRoute::all_routes)
+                .filter(|route| importer.starts_with(&route.package_root))
+                .map(|route| route.package_root.clone())
+                .collect::<Vec<_>>();
 
-            for specifier in specifiers {
-                let target =
-                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases)
-                        .or_else(|| {
-                            package_resolver
-                                .as_deref_mut()
-                                .and_then(|resolve| resolve(&importer_dir, &specifier))
-                        });
-                let Some(target) = target else {
+            for (specifier, mode) in specifiers {
+                let native_target =
+                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
+                if native_target.is_none() {
+                    if let Some(resolve) = package_resolver.as_deref_mut() {
+                        let _ = resolve(&importer, &specifier, mode);
+                    }
                     continue;
-                };
+                }
+                let target = native_target.expect("checked above");
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                if inside_node_modules(&key) || is_declaration_file(&key) {
+                let package_local = importer_package_roots
+                    .iter()
+                    .any(|package_root| key.starts_with(package_root));
+                if inside_node_modules(&key) && !package_local {
+                    continue;
+                }
+                if is_declaration_file(&key) && !package_local && !self.session_scripts {
                     continue;
                 }
                 // Only `.vue` files gain anything from registration — their
@@ -155,9 +195,14 @@ impl VirtualProject {
                 // and force-registering them would change the scanned set that
                 // incremental sessions and Tier-L pin (#3898).
                 let is_vue = key.extension().is_some_and(|extension| extension == "vue");
-                if !is_vue && !self.session_scripts && key.starts_with(&self.project_root) {
+                if !is_vue
+                    && !self.session_scripts
+                    && key.starts_with(&self.project_root)
+                    && !package_local
+                {
                     continue;
                 }
+                dependency_targets.insert(key.clone());
                 if !visited.insert(key.clone()) {
                     continue;
                 }
@@ -177,6 +222,8 @@ impl VirtualProject {
                     queue.push(key);
                 }
             }
+            let released = self.replace_dependency_edges(&importer, dependency_targets);
+            self.prune_unowned_sources(released);
         }
         Ok(())
     }

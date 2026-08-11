@@ -115,6 +115,30 @@ fn maps_annotated_document_edits_and_drops_synthetic_resource_operations() {
         .is_none(),
         "synthetic resource operations must fail closed",
     );
+
+    let private_root = project.path().join("editor-session");
+    std::fs::create_dir_all(&private_root).unwrap();
+    host.session_project_roots.push(private_root.clone());
+    let unknown_private_uri = Url::from_file_path(private_root.join("package.json")).unwrap();
+    assert!(
+        map_canonical_corsa_workspace_edit(
+            &ctx,
+            &host,
+            WorkspaceEdit {
+                changes: None,
+                document_changes: Some(DocumentChanges::Operations(vec![
+                    DocumentChangeOperation::Op(ResourceOp::Create(CreateFile {
+                        uri: unknown_private_uri,
+                        options: None,
+                        annotation_id: None,
+                    })),
+                ])),
+                change_annotations: None,
+            },
+        )
+        .is_none(),
+        "unknown private-session resource operations must fail closed",
+    );
 }
 
 #[test]

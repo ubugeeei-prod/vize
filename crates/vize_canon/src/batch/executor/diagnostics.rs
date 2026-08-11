@@ -171,7 +171,7 @@ impl<'a> DiagnosticMapper<'a> {
         if self.project.skips_typescript_diagnostics(virtual_path) {
             return None;
         }
-        let Some(file) = self.project.find_by_virtual(virtual_path) else {
+        let Some(file) = self.project.find_by_diagnostic_virtual(virtual_path) else {
             return self.project.diagnostic_position(virtual_path, line, column);
         };
         let virtual_offset = self.virtual_offset(file, line, column)?;
@@ -221,7 +221,7 @@ impl<'a> DiagnosticMapper<'a> {
         line: u32,
         column: u32,
     ) -> bool {
-        let Some(file) = self.project.find_by_virtual(virtual_path) else {
+        let Some(file) = self.project.find_by_diagnostic_virtual(virtual_path) else {
             return false;
         };
         let Some(offset) = self.virtual_offset(file, line, column) else {

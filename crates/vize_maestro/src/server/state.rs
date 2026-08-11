@@ -98,6 +98,7 @@ pub struct ServerState {
     type_checker_options_api: RwLock<bool>,
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
     type_checker_legacy_vue2: RwLock<bool>,
+    type_checker_vue_version: RwLock<vize_carton::config::VueVersion>,
     /// Opt-in type-aware LSP features for `.jsx`/`.tsx` Vue components (#1498).
     /// Default off: a repository may contain React `.tsx` files that must not
     /// be type-checked as Vue JSX. Set via `typeChecker.jsxTypecheck`.
@@ -171,15 +172,17 @@ impl Default for ServerState {
 }
 
 impl ServerState {
-    /// Create a new server state.
     pub fn new() -> Self {
         let default_features = LspFeatureConfig::default();
+        let package_route_resolver = vize_canon::PackageRouteResolver::default();
         Self {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
-            open_imports: super::importers::OpenImportIndex::default(),
-            package_route_resolver: Mutex::new(vize_canon::PackageRouteResolver::default()),
+            open_imports: super::importers::OpenImportIndex::with_package_routes(
+                package_route_resolver.clone(),
+            ),
+            package_route_resolver: Mutex::new(package_route_resolver),
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),
@@ -187,12 +190,11 @@ impl ServerState {
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
             global_types: RwLock::new(GlobalTypesConfig::default()),
-            // Options API resolution is default-on (matches vue-tsc); config can
-            // opt out with `typeChecker.optionsApi: false`.
+            // Options API matches vue-tsc by default; config may opt out.
             type_checker_options_api: RwLock::new(true),
             type_checker_legacy_vue2: RwLock::new(false),
-            // JSX/TSX type-aware features default off so React `.tsx` is left
-            // untouched until explicitly opted in (#1498).
+            type_checker_vue_version: RwLock::new(vize_carton::config::VueVersion::default()),
+            // JSX/TSX stays off so React sources remain untouched (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             linter_rule_options: RwLock::new(vize_carton::config::LintRuleOptions::default()),

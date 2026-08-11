@@ -60,21 +60,24 @@ fn map_range(
     let source_path = source_uri.to_file_path().ok()?;
     let source = std::fs::read_to_string(&source_path).ok()?;
     let rewriter = vize_canon::ImportRewriter::new();
+    let virtual_ts_options = ctx.state.virtual_ts_options();
     let generated = vize_canon::batch::generate_vue_document_virtual_ts_with_options(
         &source_path,
         &source,
-        &vize_canon::virtual_ts::VirtualTsOptions::default(),
+        &virtual_ts_options,
         &rewriter,
         false,
         vize_canon::batch::VueDocumentVirtualTsOptions {
             options_api: ctx.state.options_api_enabled(),
             legacy_vue2: ctx.state.legacy_vue2_enabled(),
             preserve_event_navigation: true,
+            dialect: ctx.state.type_checker_vue_version(),
         },
     )
     .ok()?;
 
     let mirror_doc = CanonicalVirtualDocument {
+        source_uri: source_uri.clone(),
         request_uri: cstr!("{}{}", source_uri.path(), generated.virtual_suffix),
         virtual_result: VirtualTsResult {
             code: generated.code.to_string(),
@@ -87,6 +90,8 @@ fn map_range(
             skipped_import_lines: 0,
         },
         dependencies: Vec::new(),
+        materialized_sources: Vec::new(),
+        session_project_roots: Vec::new(),
     };
     map_lsp_range_to_source(&source, &mirror_doc, range)
 }

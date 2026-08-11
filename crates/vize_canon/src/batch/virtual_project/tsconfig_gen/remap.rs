@@ -60,38 +60,6 @@ impl VirtualProject {
         Value::String(relative.to_string_lossy().replace('\\', "/"))
     }
 
-    /// Add exact bare-specifier routes for workspace package sources whose
-    /// manifests point at `.vue` (or at a barrel that reaches one). The target
-    /// is already inside the virtual tree, so it must be added after ordinary
-    /// project-relative `paths` rebasing. Authored source keeps the bare
-    /// package spelling, which is also the spelling declaration emit retains.
-    #[allow(clippy::disallowed_types)]
-    pub(super) fn insert_virtual_module_alias_paths(
-        &self,
-        paths: &mut Map<std::string::String, Value>,
-    ) {
-        let mut aliases: Vec<_> = self.virtual_module_aliases.iter().collect();
-        aliases.sort_by_key(|(specifier, _)| specifier.as_str());
-        for (specifier, source_paths) in aliases {
-            let mut targets = source_paths
-                .iter()
-                .filter_map(|source_path| self.find_by_original(source_path))
-                .filter_map(|file| file.virtual_path.strip_prefix(&self.virtual_root).ok())
-                .map(|relative| Value::String(cstr!("./{}", relative.display()).into()))
-                .collect::<Vec<_>>();
-            if let Some(existing) = paths.get(specifier.as_str()).and_then(Value::as_array) {
-                for target in existing {
-                    if !targets.contains(target) {
-                        targets.push(target.clone());
-                    }
-                }
-            }
-            if !targets.is_empty() {
-                paths.insert(specifier.as_str().into(), Value::Array(targets));
-            }
-        }
-    }
-
     /// Re-anchor a list of project-root-relative directories (e.g. `typeRoots`)
     /// into the virtual mirror: each relative entry yields the mirror copy
     /// followed by the real source-tree directory. Absolute and non-string

@@ -35,6 +35,10 @@ fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
         "typeChecker.optionsApi should be reflected in logged runtime LSP features"
     );
     assert!(state.legacy_vue2_enabled());
+    assert_eq!(
+        state.type_checker_vue_version(),
+        vize_carton::config::VueVersion::V3
+    );
     assert!(state.options_api_enabled());
 
     let logged_payload = format!("{features:?}");
@@ -141,6 +145,10 @@ fn vue_version_2_7_alone_enables_legacy_lowering() {
     state.load_workspace_config(dir.path());
 
     assert!(state.legacy_vue2_enabled());
+    assert_eq!(
+        state.type_checker_vue_version(),
+        vize_carton::config::VueVersion::V2_7
+    );
     assert!(
         state.options_api_enabled(),
         "legacy mode implies Options API"
@@ -160,6 +168,10 @@ fn compiler_compatibility_vue_version_2_alone_enables_legacy_lowering() {
     state.load_workspace_config(dir.path());
 
     assert!(state.legacy_vue2_enabled());
+    assert_eq!(
+        state.type_checker_vue_version(),
+        vize_carton::config::VueVersion::V2
+    );
 }
 
 #[test]
@@ -175,4 +187,8 @@ fn vue_version_3_keeps_legacy_lowering_disabled() {
     state.load_workspace_config(dir.path());
 
     assert!(!state.legacy_vue2_enabled());
+    assert_eq!(
+        state.type_checker_vue_version(),
+        vize_carton::config::VueVersion::V3
+    );
 }

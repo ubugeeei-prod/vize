@@ -5,7 +5,12 @@ use std::path::{Path, PathBuf};
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 
+#[cfg(feature = "native")]
+use vize_canon::CorsaBridge;
+
 use super::IdeContext;
+#[cfg(feature = "native")]
+use crate::ide::corsa_support;
 
 #[cfg(test)]
 #[path = "module_specifier_tests.rs"]
@@ -25,6 +30,57 @@ pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse>
         uri,
         range: Range::new(origin, origin),
     }))
+}
+
+/// Ask TypeScript which conditional package target won, then map the exact
+/// materialized identity recorded by Canon back to authored source. This keeps
+/// manifest order, mode, custom conditions, and virtual-path spelling out of
+/// Maestro.
+#[cfg(feature = "native")]
+pub(super) async fn definition_with_corsa(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Option<GotoDefinitionResponse> {
+    specifier_at_offset(&ctx.content, ctx.offset)?;
+    let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
+    let (line, character) =
+        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+    let selected = bridge
+        .definition(&document.request_uri, line, character)
+        .await
+        .ok()?;
+    let mut mapped = selected
+        .iter()
+        .filter_map(|location| {
+            corsa_support::map_canonical_corsa_location(ctx, &document, location).or_else(|| {
+                corsa_support::map_canonical_materialized_module_location(&document, location)
+            })
+        })
+        .map(pin_to_module_origin)
+        .collect::<Vec<_>>();
+    mapped.sort_by(|left, right| {
+        left.uri
+            .as_str()
+            .cmp(right.uri.as_str())
+            .then_with(|| left.range.start.cmp(&right.range.start))
+    });
+    mapped.dedup();
+    match mapped.len() {
+        0 => None,
+        1 => Some(GotoDefinitionResponse::Scalar(mapped.pop()?)),
+        _ => Some(GotoDefinitionResponse::Array(mapped)),
+    }
+}
+
+/// A module specifier resolves to a *module*, not to a symbol inside it, so the
+/// answer is the file identity pinned to its origin. Native TypeScript reports
+/// the whole source file span for such a resolution, and forwarding that span
+/// would make the editor select the entire target file (#3893).
+#[cfg(feature = "native")]
+fn pin_to_module_origin(mut location: Location) -> Location {
+    let origin = Position::new(0, 0);
+    location.range = Range::new(origin, origin);
+    location
 }
 
 pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> {
@@ -106,7 +162,7 @@ fn resolve_specifier_with(
             specifier,
             PackageSourceOptions::new(true, true),
         )
-        .map(|route| route.source_path)
+        .and_then(|route| route.unambiguous_source_path().cloned())
         .filter(|path| path.is_file())
 }
 

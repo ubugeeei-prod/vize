@@ -22,7 +22,7 @@ use crate::batch::ImportRewriter;
 
 #[path = "vue_dependencies_alias/context.rs"]
 mod context;
-pub(super) use context::AliasContext;
+pub(super) use context::{AliasContext, SessionCache, recover_lock};
 
 /// Queue alias-resolved first-party dependencies of one document.
 pub(super) fn queue_alias_imports(
@@ -44,11 +44,20 @@ pub(super) fn queue_alias_imports(
         if specifier.starts_with("./") || specifier.starts_with("../") {
             continue; // the relative walk owns these
         }
+        if context.package_route(&specifier, dir).is_some() {
+            // Canon has already materialized the complete package route and
+            // every overlay-backed dependency into the importer-scoped
+            // mirror. Opening the authored TS barrel and Vue source again at
+            // their real identities creates a second module graph outside the
+            // mirror and can poison native package resolution for the host.
+            // Bare/private spelling must stay on the one native mirror graph.
+            continue;
+        }
         let Some(path) = context.resolve_first_party_source(&specifier, dir) else {
             continue;
         };
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
-        if inside_node_modules(&key) {
+        if context.package_route(&specifier, dir).is_none() && inside_node_modules(&key) {
             continue;
         }
         if key.extension().is_some_and(|extension| extension == "vue") {

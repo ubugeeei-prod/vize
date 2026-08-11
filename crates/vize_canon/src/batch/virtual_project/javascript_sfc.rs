@@ -95,7 +95,7 @@ mod tests {
     use super::{descriptor_is_unchecked_javascript, opts_into_type_checking};
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
-    fn descriptor_for(source: &str) -> vize_atelier_sfc::SfcDescriptor {
+    fn descriptor_for(source: &str) -> vize_atelier_sfc::SfcDescriptor<'_> {
         parse_sfc(source, SfcParseOptions::default()).expect("SFC must parse")
     }
 

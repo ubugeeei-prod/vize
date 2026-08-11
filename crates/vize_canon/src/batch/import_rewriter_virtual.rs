@@ -192,7 +192,7 @@ fn collect_import_specifiers(source: &str) -> Vec<String> {
     collector
         .specifiers
         .into_iter()
-        .map(|(_, _, path)| path)
+        .map(|(_, _, path, _)| path)
         .collect()
 }
 

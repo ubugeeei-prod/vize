@@ -25,10 +25,22 @@ fn alias_project() -> tempfile::TempDir {
     project
 }
 
-fn mirror_companion(project: &tempfile::TempDir) -> std::path::PathBuf {
-    crate::batch::project_virtual_root(project.path())
-        .join("src")
-        .join("UiButton.vue.ts")
+fn mirror_companion(
+    project: &super::vue_document::CorsaVueVirtualProject,
+) -> Option<std::path::PathBuf> {
+    project
+        .documents
+        .iter()
+        .find(|(uri, _)| uri.ends_with("UiButton.vue.ts"))
+        .and_then(|(uri, _)| crate::file_uri::file_uri_to_path(uri))
+}
+
+fn mirror_import_specifier(
+    project: &super::vue_document::CorsaVueVirtualProject,
+) -> Option<String> {
+    let companion = mirror_companion(project)?;
+    let spelled = companion.to_string_lossy().replace('\\', "/");
+    Some(spelled.strip_suffix(".ts").unwrap_or(&spelled).to_owned())
 }
 
 #[test]
@@ -56,13 +68,14 @@ fn an_alias_import_typed_into_the_host_buffer_resolves_to_the_mirror() {
         "an unsaved alias import must not keep its unresolvable alias path:\n{}",
         virtual_project.host.code,
     );
+    let mirror_import = mirror_import_specifier(&virtual_project).expect("mirror import");
     assert!(
-        virtual_project.host.code.contains("/.vize/canon/"),
+        virtual_project.host.code.contains(&mirror_import),
         "an unsaved alias import must resolve into the materialized mirror:\n{}",
         virtual_project.host.code,
     );
     assert!(
-        mirror_companion(&project).is_file(),
+        mirror_companion(&virtual_project).is_some_and(|path| path.is_file()),
         "the resolution target must exist on disk, where the checker looks",
     );
 }
@@ -105,12 +118,13 @@ fn an_alias_import_typed_into_a_dependency_buffer_resolves_to_the_mirror() {
         !child.contains("@/UiButton"),
         "an unsaved dependency's alias import must not keep its alias path:\n{child}",
     );
+    let mirror_import = mirror_import_specifier(&virtual_project).expect("mirror import");
     assert!(
-        child.contains("/.vize/canon/"),
+        child.contains(&mirror_import),
         "an unsaved dependency's alias import must resolve into the mirror:\n{child}",
     );
     assert!(
-        mirror_companion(&project).is_file(),
+        mirror_companion(&virtual_project).is_some_and(|path| path.is_file()),
         "the resolution target must exist on disk, where the checker looks",
     );
 }

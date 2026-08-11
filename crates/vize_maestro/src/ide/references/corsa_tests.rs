@@ -8,6 +8,9 @@ use super::super::ReferencesService;
 use crate::ide::IdeContext;
 use crate::server::ServerState;
 
+#[path = "corsa_tests/package_routes.rs"]
+mod package_routes;
+
 #[test]
 fn canonical_references_cross_vue_files_and_honor_include_declaration() {
     crate::runtime::block_on(async {

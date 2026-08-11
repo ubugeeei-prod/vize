@@ -7,10 +7,10 @@ use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
-use vize_carton::String;
 
 mod declarations;
 mod diagnostic_paths;
+mod incremental;
 mod metrics;
 mod paths;
 mod result;
@@ -58,7 +58,7 @@ pub trait TypeChecker: Send + Sync {
     /// dependency-aware invalidation. Use
     /// [`BatchTypeChecker::incremental_metrics`] to measure session reuse,
     /// refresh scope, diagnostic requests, and CLI degradation.
-    fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult>;
+    fn check_incremental(&mut self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult>;
 }
 
 /// Batch type checker using the Corsa CLI.
@@ -153,14 +153,17 @@ impl BatchTypeChecker {
             });
     }
 
-    /// Route exact bare workspace-package specifiers to registered source
-    /// modules in the virtual mirror. Authored imports keep their package
-    /// spelling, so declaration emit does not expose internal mirror paths.
-    pub fn set_virtual_module_aliases(
+    /// Preserve importer-scoped package identities in the virtual project.
+    pub fn set_package_routes(
         &mut self,
-        aliases: impl IntoIterator<Item = (String, PathBuf)>,
+        routes: impl IntoIterator<Item = crate::PackageRouteBinding>,
     ) {
-        self.project.set_virtual_module_aliases(aliases);
+        self.project.set_package_routes(routes);
+    }
+
+    /// Reuse the route-discovery cache that produced the supplied bindings.
+    pub fn set_package_route_resolver(&mut self, resolver: crate::PackageRouteResolver) {
+        self.project.set_package_route_resolver(resolver);
     }
 
     /// Configure template syntax compatibility for Vue template parsing.
@@ -190,15 +193,19 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        let previous_sources = self.project.registered_original_paths_sorted();
         self.project.set_declaration_roots(paths);
         self.project.register_paths(paths)?;
-        self.project.register_virtual_module_alias_targets()?;
+        self.project.register_package_route_targets()?;
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
         // (#3887).
         self.project.register_reachable_dependencies()?;
+        self.project.prune_unowned_sources(previous_sources);
+        self.project.finalize_package_routes()?;
         self.scanned = true;
-        self.incremental_paths.after_explicit_scan(paths);
+        self.incremental_paths
+            .after_explicit_scan(&self.project, paths);
         Ok(())
     }
 
@@ -210,12 +217,14 @@ impl BatchTypeChecker {
         )?;
         self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
-        self.project.register_virtual_module_alias_targets()?;
+        self.project.register_package_route_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
         self.project.register_reachable_dependencies()?;
+        self.project.finalize_package_routes()?;
         self.scanned = true;
-        self.incremental_paths.after_project_scan(&self.project);
+        self.incremental_paths
+            .after_project_scan(&self.project, &paths);
         Ok(())
     }
 
@@ -271,7 +280,7 @@ impl TypeChecker for BatchTypeChecker {
         Ok(result.diagnostics)
     }
 
-    fn check_incremental(&self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult> {
+    fn check_incremental(&mut self, changed: &[PathBuf]) -> CorsaResult<TypeCheckResult> {
         if !self.scanned {
             return Err(CorsaError::NotInitialized);
         }
@@ -279,19 +288,7 @@ impl TypeChecker for BatchTypeChecker {
             return self.check_project();
         }
 
-        // Rebuilding source-derived virtual files preserves the observable
-        // correctness contract; the executor reuses Corsa's dependency graph
-        // after diffing the complete materialized snapshot.
-        let mut refreshed = self.project.empty_with_same_options()?;
-        let paths = self.incremental_paths.refresh(
-            &self.project,
-            refreshed.source_file_policy(),
-            changed,
-        )?;
-        refreshed.register_paths(&paths)?;
-        refreshed.register_virtual_module_alias_targets()?;
-        refreshed.register_reachable_dependencies()?;
-        self.check_registered_project_incremental(&refreshed)
+        self.check_incremental_snapshot(changed)
     }
 }
 
@@ -303,14 +300,11 @@ impl BatchTypeChecker {
         Self::finish_registered_result(result, project)
     }
 
-    fn check_registered_project_incremental(
-        &self,
-        project: &VirtualProject,
-    ) -> CorsaResult<TypeCheckResult> {
+    fn check_registered_project_incremental(&mut self) -> CorsaResult<TypeCheckResult> {
         let result = self
             .executor
-            .check_incremental_session(project, self.server_count)?;
-        Self::finish_registered_result(result, project)
+            .check_incremental_session(&mut self.project, self.server_count)?;
+        Self::finish_registered_result(result, &self.project)
     }
 
     fn finish_registered_result(

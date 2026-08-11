@@ -10,142 +10,22 @@ use crate::file_uri::file_uri_to_path;
 use corsa::{
     CorsaError,
     api::{
-        ApiMode, ApiSpawnConfig, CapabilitiesResponse, DocumentIdentifier, FileChangeSummary,
-        FileChanges, OverlayChanges, OverlayUpdate, ProjectSession,
+        DocumentIdentifier, FileChangeSummary, FileChanges, OverlayChanges, OverlayUpdate,
+        ProjectSession,
     },
     fast::CompactString,
     runtime::block_on,
 };
 use lsp_types::Diagnostic;
 use serde_json::Value;
-use std::{path::Path, sync::Arc};
 use vize_carton::{String, cstr};
 
-pub(super) fn spawn_project_session(
-    executable: &str,
-    cwd: &Path,
-    config_path: &Path,
-) -> Result<(ProjectSession, Arc<CapabilitiesResponse>), ProjectSessionSpawnError> {
-    let config_path_wire = config_path.to_string_lossy();
-    let mode = api_mode_for_executable(executable);
-    let session = match block_on(spawn_project_session_with_mode(
-        executable,
-        cwd,
-        config_path_wire.as_ref(),
-        mode,
-    )) {
-        Ok(session) => session,
-        Err(error) if should_retry_json_rpc(mode, &error) => {
-            match block_on(spawn_project_session_with_mode(
-                executable,
-                cwd,
-                config_path_wire.as_ref(),
-                ApiMode::AsyncJsonRpcStdio,
-            )) {
-                Ok(session) => session,
-                Err(fallback) => {
-                    return Err(classify_project_session_error(
-                        fallback,
-                        Some(cstr!("after msgpack error: {error}")),
-                    ));
-                }
-            }
-        }
-        Err(error) => return Err(classify_project_session_error(error, None)),
-    };
-    let capabilities = block_on(session.describe_capabilities())
-        .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
-    Ok((session, capabilities))
-}
-
-#[derive(Debug)]
-pub(super) enum ProjectSessionSpawnError {
-    Unavailable(String),
-    Failed(String),
-}
-
-fn classify_project_session_error(
-    error: CorsaError,
-    context: Option<String>,
-) -> ProjectSessionSpawnError {
-    let message = context.map_or_else(
-        || cstr!("Failed to start Corsa API session: {error}"),
-        |context| cstr!("Failed to start Corsa API session: {error} ({context})"),
-    );
-    if matches!(
-        &error,
-        CorsaError::Protocol(detail)
-            if detail.contains("project session did not resolve a project")
-    ) {
-        ProjectSessionSpawnError::Unavailable(message)
-    } else {
-        ProjectSessionSpawnError::Failed(message)
-    }
-}
-
-async fn spawn_project_session_with_mode(
-    executable: &str,
-    cwd: &Path,
-    config_path: &str,
-    mode: ApiMode,
-) -> Result<ProjectSession, CorsaError> {
-    ProjectSession::spawn(
-        ApiSpawnConfig::new(executable)
-            .with_mode(mode)
-            .with_cwd(cwd),
-        config_path,
-        None,
-    )
-    .await
-}
-
-fn should_retry_json_rpc(mode: ApiMode, error: &CorsaError) -> bool {
-    if mode != ApiMode::SyncMsgpackStdio {
-        return false;
-    }
-
-    let CorsaError::Protocol(message) = error else {
-        return false;
-    };
-
-    let message = message.as_str();
-    message.contains("expected tuple marker")
-        || message.contains("expected uint8 marker")
-        || message.contains("expected bin marker")
-}
-
-fn api_mode_for_executable(executable: &str) -> ApiMode {
-    if is_node_wrapper_executable(Path::new(executable)) {
-        ApiMode::AsyncJsonRpcStdio
-    } else {
-        ApiMode::SyncMsgpackStdio
-    }
-}
-
-fn is_node_wrapper_executable(path: &Path) -> bool {
-    if path.extension().and_then(|extension| extension.to_str()) == Some("js") {
-        return true;
-    }
-
-    if path
-        .parent()
-        .and_then(|parent| parent.file_name())
-        .and_then(|name| name.to_str())
-        == Some(".bin")
-    {
-        return true;
-    }
-
-    let Some(parent) = path.parent() else {
-        return false;
-    };
-    let Some(grandparent) = parent.parent() else {
-        return false;
-    };
-
-    parent.file_name().and_then(|name| name.to_str()) == Some("bin")
-        && grandparent.file_name().and_then(|name| name.to_str()) == Some("native-preview")
-}
+mod bootstrap;
+mod canon_document;
+mod capabilities;
+pub(super) use bootstrap::{ProjectSessionSpawnError, spawn_project_session};
+#[cfg(test)]
+use bootstrap::{api_mode_for_executable, classify_project_session_error, should_retry_json_rpc};
 
 pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
     if let Some(path) = file_uri_to_path(uri) {
@@ -175,58 +55,6 @@ impl CorsaProjectClient {
             .ok_or_else(|| cstr!("Corsa project-session API is unavailable"))
     }
 
-    fn trusts_capabilities(&self) -> bool {
-        self.capabilities.runtime.capability_endpoint
-    }
-
-    pub(super) fn supports_overlay_api(&self) -> bool {
-        if !self.has_project_session() {
-            return true;
-        }
-        !self.overlay_api_disabled
-            && (!self.trusts_capabilities()
-                || self.capabilities.overlay.update_snapshot_overlay_changes)
-    }
-
-    pub(super) fn supports_project_diagnostics_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.diagnostics.project)
-    }
-
-    pub(super) fn supports_file_diagnostics_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.diagnostics.file)
-    }
-
-    pub(super) fn supports_hover_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.editor.hover)
-    }
-
-    pub(super) fn supports_definition_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.editor.definition)
-    }
-
-    pub(super) fn supports_references_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.editor.references)
-    }
-
-    pub(super) fn supports_rename_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.editor.rename)
-    }
-
-    pub(super) fn supports_completion_api(&self) -> bool {
-        self.has_project_session()
-            && (!self.trusts_capabilities() || self.capabilities.editor.completion)
-    }
-
-    pub(super) fn can_use_api_for_uri(&self, uri: &str) -> bool {
-        !self.document_texts.contains_key(uri) || self.supports_overlay_api()
-    }
-
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
         let previous = self.document_texts.insert(uri.into(), content.into());
         if previous.as_deref() != Some(content) {
@@ -243,6 +71,16 @@ impl CorsaProjectClient {
 
         let document_uri = self.session_document_uri(uri);
         if previous.as_deref() == Some(content) {
+            return Ok(());
+        }
+
+        // A Canon query document is already an exact file inside the active
+        // materialized project. Keep that disk identity authoritative even
+        // when the runtime advertises overlays: applying a second overlay
+        // snapshot after the materialized-file refresh can detach the file
+        // from its configured project on the next edit. `document_texts`
+        // remains populated above for editor-LSP fallback queries.
+        if self.sync_existing_canon_document(uri, content)? {
             return Ok(());
         }
 
@@ -275,6 +113,9 @@ impl CorsaProjectClient {
             Ok(()) => Ok(()),
             Err(error) if overlay_changes_error_is_unsupported(&error) => {
                 self.overlay_api_disabled = true;
+                if self.sync_existing_canon_document(uri, content)? {
+                    return Ok(());
+                }
                 self.sync_materialized_overlay_document(uri, content)
             }
             Err(error) => Err(cstr!("Failed to sync Corsa overlay: {error}")),

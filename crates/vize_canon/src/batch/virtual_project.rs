@@ -38,6 +38,7 @@ mod css_var_usage;
 mod declaration_emit;
 pub(crate) mod dependency_scan;
 mod document;
+mod incremental_graph;
 pub use document::{
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, generate_vue_document_virtual_ts,
     generate_vue_document_virtual_ts_with_options,
@@ -54,16 +55,35 @@ mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;
 mod mapping;
+pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
+mod materialize_delta;
+mod materialize_links;
+pub(crate) use materialize_delta::{
+    IncrementalMaterialization, MaterializedFileDelta, MaterializedFileSnapshot,
+};
 mod materialize_stubs;
 pub(crate) mod option_probe;
+mod package_link_owners;
 mod package_node_modules;
+pub(crate) mod package_resolution;
+mod package_route_discovery;
+pub(crate) use package_route_discovery::{
+    PackageRouteReachability, is_vue_runtime_support_specifier, package_route_reaches_vue,
+};
+mod package_shadow;
+mod package_shadow_owners;
+mod package_shadow_runtime;
+mod package_source_index;
 mod passthrough;
 mod paths;
 mod project;
 mod setup_props;
 mod tsconfig_gen;
-pub use tsconfig_gen::snapshot_tsconfig_compiler_options;
+pub use tsconfig_gen::{
+    TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
+    snapshot_tsconfig_compiler_options,
+};
 mod tsconfig_paths;
 mod vue_codegen;
 
@@ -110,7 +130,10 @@ pub struct VirtualProject {
     /// Project root directory.
     project_root: PathBuf,
 
-    /// Project-keyed virtual root under `node_modules/.vize/canon/projects`.
+    /// Project-keyed materialized root. Batch projects use
+    /// `node_modules/.vize/canon/projects`; editor projects are re-scoped to a
+    /// non-`node_modules` namespace so TypeScript does not classify the host as
+    /// an external library.
     virtual_root: PathBuf,
 
     /// Explicit tsconfig path, if one was provided by the caller.
@@ -136,10 +159,69 @@ pub struct VirtualProject {
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
 
-    /// Exact bare specifiers that TypeScript must route to registered virtual
-    /// modules. Values are source paths; tsconfig generation translates them
-    /// to their materialized counterparts after registration.
-    virtual_module_aliases: FxHashMap<CompactString, Vec<PathBuf>>,
+    /// Importer-local package identities retained until native package
+    /// topology is materialized. This must never collapse to a specifier map.
+    package_routes: FxHashMap<crate::package_route::PackageRouteKey, crate::PackageRouteBinding>,
+
+    /// Reverse invalidation and importer indexes for persistent refreshes.
+    /// These live beside the authoritative bindings so a warm check never has
+    /// to clone/sort the whole workspace route set merely to find one package.
+    package_route_reverse: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
+    package_route_importers: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
+    package_route_source_owners: FxHashMap<PathBuf, usize>,
+    package_route_manifests: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
+    package_route_roots: FxHashMap<PathBuf, FxHashSet<crate::package_route::PackageRouteKey>>,
+    package_source_index: FxHashMap<PathBuf, FxHashMap<PathBuf, (PathBuf, PathBuf)>>,
+
+    /// Authored dependency ownership for persistent source membership.
+    dependency_edges: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    dependency_inbound: FxHashMap<PathBuf, usize>,
+
+    /// Shared self-invalidating resolver used when persistent snapshots refresh
+    /// a package manifest, link, lockfile, or source without restarting Corsa.
+    #[allow(clippy::disallowed_types)]
+    package_route_resolver: std::sync::Arc<std::sync::Mutex<crate::PackageRouteResolver>>,
+    package_routes_need_refresh: bool,
+    package_route_refresh_keys: FxHashSet<crate::package_route::PackageRouteKey>,
+
+    /// Shadow path -> canonical generated file. Shadows reuse the canonical
+    /// source map and never become authored/publishable identities.
+    package_shadow_files: FxHashMap<PathBuf, PathBuf>,
+
+    /// Editor-only selector modules. A selector keeps the authored bare
+    /// spelling and lets native TypeScript resolve the copied raw manifest.
+
+    /// Shadow package.json -> original package.json. Manifests are copied raw.
+    package_shadow_manifests: FxHashMap<PathBuf, PathBuf>,
+    package_shadow_artifacts:
+        FxHashMap<crate::package_route::PackageRouteKey, package_shadow::PackageShadowTopology>,
+    package_shadow_file_owners:
+        FxHashMap<PathBuf, FxHashMap<crate::package_route::PackageRouteKey, PathBuf>>,
+    package_shadow_manifest_owners:
+        FxHashMap<PathBuf, FxHashMap<crate::package_route::PackageRouteKey, PathBuf>>,
+    package_shadow_source_paths: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    package_shadow_dirty_keys: FxHashSet<crate::package_route::PackageRouteKey>,
+    package_shadows_initialized: bool,
+
+    /// Materialized paths touched by the next persistent patch. Cold
+    /// materialization clears this set; warm checks write/hash only these
+    /// entries and never walk the virtual tree.
+    incremental_materialized_candidates: FxHashSet<PathBuf>,
+    incremental_source_nodes_rebuilt: usize,
+    incremental_dependency_nodes_reconciled: usize,
+    incremental_shadow_bindings_rebuilt: usize,
+    /// Exact package dependency links materialized by the persistent checker.
+    /// Each logical link scope owns only the paths below that importer/package
+    /// boundary, so a warm route patch never rescans unrelated source roots.
+    materialized_package_links: FxHashMap<PathBuf, PathBuf>,
+    materialized_package_link_scopes: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
+    materialized_package_link_owners: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
+    package_link_scope_files: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    package_link_scope_targets: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
+    package_shadow_link_scopes:
+        FxHashMap<crate::package_route::PackageRouteKey, Vec<(PathBuf, PathBuf)>>,
+    incremental_package_link_scopes: FxHashSet<PathBuf>,
+    incremental_link_topology_dirty: bool,
 
     /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
     options_api: bool,
@@ -173,6 +255,11 @@ pub struct VirtualProject {
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
+    /// Exact materialized artifacts owned by each authored source. Persistent
+    /// refreshes replace this set atomically so an SFC changing TS/TSX shape
+    /// cannot leave an old companion or passthrough file in the program.
+    source_artifacts: FxHashMap<PathBuf, SourceArtifacts>,
+
     /// Non-TS module files that must exist in the virtual mirror for TypeScript
     /// module resolution, keyed by materialized path.
     passthrough_files: FxHashMap<PathBuf, PathBuf>,
@@ -201,4 +288,10 @@ pub struct VirtualProject {
 
     /// Import rewriter for `.vue` specifiers inside TypeScript sources.
     rewriter: ImportRewriter,
+}
+
+#[derive(Default)]
+struct SourceArtifacts {
+    virtual_paths: Vec<PathBuf>,
+    passthrough_paths: Vec<PathBuf>,
 }

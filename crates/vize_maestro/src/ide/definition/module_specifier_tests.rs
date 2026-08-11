@@ -34,7 +34,7 @@ fn finds_only_module_specifier_strings_at_the_cursor() {
 }
 
 #[test]
-fn resolves_hoisted_package_types_export() {
+fn package_definition_without_native_fails_closed_for_conditional_candidates() {
     let workspace = tempdir().unwrap();
     let source = workspace.path().join("packages/app/src/App.vue");
     write(&source, "<script setup lang=\"ts\"></script>");
@@ -44,6 +44,24 @@ fn resolves_hoisted_package_types_export() {
         r#"{"exports":{".":{"import":"./dist/index.js","types":"./dist/index.d.ts"}}}"#,
     );
     write(&package.join("dist/index.js"), "export {};");
+    write(
+        &package.join("dist/index.d.ts"),
+        "export interface Route {}\n",
+    );
+
+    assert_eq!(resolve_specifier(&file_url(&source), "vue-router"), None);
+}
+
+#[test]
+fn package_definition_without_native_keeps_an_unambiguous_types_export() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("packages/app/src/App.vue");
+    write(&source, "<script setup lang=\"ts\"></script>");
+    let package = workspace.path().join("node_modules/vue-router");
+    write(
+        &package.join("package.json"),
+        r#"{"exports":{".":{"types":"./dist/index.d.ts"}}}"#,
+    );
     write(
         &package.join("dist/index.d.ts"),
         "export interface Route {}\n",
@@ -255,6 +273,27 @@ fn resolves_relative_declarations_and_rejects_package_escape() {
     assert_eq!(
         resolve_specifier(&file_url(&source), r"C:\components\Foo.vue"),
         None
+    );
+}
+
+/// Native TypeScript answers a module-specifier definition with the whole
+/// target file span. The editor contract is the module identity at its origin,
+/// so the mapped answer must collapse back to a zero-width range.
+#[cfg(feature = "native")]
+#[test]
+fn native_module_definitions_collapse_to_the_target_file_origin() {
+    use tower_lsp::lsp_types::{Location, Position, Range};
+
+    let uri = Url::parse("file:///pkg/dist/index.d.ts").unwrap();
+    let whole_file = Location {
+        uri: uri.clone(),
+        range: Range::new(Position::new(0, 0), Position::new(53, 0)),
+    };
+    let pinned = super::pin_to_module_origin(whole_file);
+    assert_eq!(pinned.uri, uri);
+    assert_eq!(
+        pinned.range,
+        Range::new(Position::new(0, 0), Position::new(0, 0))
     );
 }
 

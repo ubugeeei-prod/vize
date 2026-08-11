@@ -3,6 +3,10 @@ use std::path::{Path, PathBuf};
 use vize_carton::cstr;
 
 pub(crate) fn resolve(workspace_root: &Path) -> Option<String> {
+    if let Some(path) = std::env::var_os("CORSA_PATH").filter(|path| Path::new(path).is_file()) {
+        return Some(path.to_string_lossy().into_owned());
+    }
+
     let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
     if sibling_cache.exists() {
         return Some(sibling_cache.display().to_string());

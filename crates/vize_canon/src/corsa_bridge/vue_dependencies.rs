@@ -198,9 +198,10 @@ pub(super) fn queue_vue_dependency(
         .documents
         .push((generated.virtual_uri.clone(), generated_code.clone()));
     if generated.generated.virtual_suffix == ".tsx" {
-        imports
-            .documents
-            .push(tsx_vue_import_shim(&generated.source_path));
+        imports.documents.push(tsx_vue_import_shim(
+            &generated.source_path,
+            &generated.virtual_uri,
+        ));
     }
     imports.queue.push_back(DependencyScan::Vue {
         dir: parent_dir(&generated.source_path),
@@ -231,7 +232,7 @@ pub(super) fn fallback_vue_virtual_uri(path: &Path) -> String {
     path_to_file_uri(&virtual_path)
 }
 
-pub(super) fn tsx_vue_import_shim(path: &Path) -> (String, String) {
+pub(super) fn tsx_vue_import_shim(path: &Path, virtual_uri: &str) -> (String, String) {
     let shim_path = path.with_file_name(cstr!(
         "{}.ts",
         path.file_name()
@@ -244,7 +245,9 @@ pub(super) fn tsx_vue_import_shim(path: &Path) -> (String, String) {
         .map(|name| cstr!("{name}x"))
         .unwrap_or_else(|| "component.vue.tsx".into());
     (
-        path_to_file_uri(&shim_path),
+        virtual_uri
+            .strip_suffix('x')
+            .map_or_else(|| path_to_file_uri(&shim_path), Into::into),
         cstr!(
             "export {{ default }} from \"./{target_name}\";\nexport * from \"./{target_name}\";\n"
         ),
@@ -283,11 +286,18 @@ pub(super) fn queue_script_dependency(
     let source_type = source_type_for_path(path);
     let script_dir = parent_dir(path);
     let rewritten = rewriter
-        .rewrite_with_alias_resolver(&content, source_type, Some(&script_dir), &|specifier| {
-            alias_context
-                .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
-                .or_else(|| alias_context.resolve_specifier_to_mirror_path(specifier, &script_dir))
-        })
+        .rewrite_with_alias_resolver(
+            &content,
+            source_type,
+            Some(&script_dir),
+            &|specifier, mode| {
+                alias_context
+                    .resolve_relative_vue_to_mirror_path(specifier, &script_dir)
+                    .or_else(|| {
+                        alias_context.resolve_specifier_to_mirror_path(specifier, &script_dir, mode)
+                    })
+            },
+        )
         .code;
     let uri = normalize_document_uri(path_to_file_uri(path).as_str());
     imports.documents.push((uri, rewritten));

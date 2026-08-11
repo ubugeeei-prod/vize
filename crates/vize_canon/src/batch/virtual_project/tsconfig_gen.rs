@@ -6,6 +6,7 @@ mod control_alias;
 mod native_options;
 mod path_rebase;
 pub(super) mod references;
+pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
 mod remap;
 mod vue_alias;
 
@@ -161,6 +162,13 @@ impl VirtualProject {
         }
         normalize_native_removed_options(&mut compiler_options);
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
+        if self
+            .package_routes
+            .values()
+            .any(|binding| binding.route.is_some())
+        {
+            compiler_options.insert("allowArbitraryExtensions".into(), Value::Bool(true));
+        }
         if self.needs_vue_jsx_compiler_options() {
             compiler_options
                 .entry("jsx")
@@ -177,12 +185,11 @@ impl VirtualProject {
         // target gets a mirror candidate first (so the generated `.vue.ts`
         // modules win) and the real-tree path as a fallback (so aliases to files
         // outside the checked set keep resolving).
-        let mut remapped_paths = if original_paths.is_empty() {
+        let remapped_paths = if original_paths.is_empty() {
             Map::new()
         } else {
             self.remap_paths(&original_paths)
         };
-        self.insert_virtual_module_alias_paths(&mut remapped_paths);
         if !remapped_paths.is_empty() {
             compiler_options.insert("paths".into(), Value::Object(remapped_paths));
         }
@@ -295,10 +302,27 @@ impl VirtualProject {
             Some(paths) => paths.iter().filter_map(|path| relative(path)).collect(),
             None => self
                 .virtual_files
-                .keys()
-                .filter_map(|path| relative(path))
+                .values()
+                .filter(|file| {
+                    let original =
+                        vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+                    self.is_declaration_root(&original)
+                })
+                .filter_map(|file| relative(&file.virtual_path))
                 .collect(),
         };
+        if paths.is_none() {
+            includes.extend(self.package_shadow_files.iter().filter_map(
+                |(materialized_path, canonical_path)| {
+                    let file = self.virtual_files.get(canonical_path)?;
+                    let original =
+                        vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+                    self.is_declaration_root(&original)
+                        .then(|| relative(materialized_path))
+                        .flatten()
+                },
+            ));
+        }
         if include_js {
             includes.extend(self.javascript_passthrough_files().filter_map(relative));
         }
@@ -307,6 +331,7 @@ impl VirtualProject {
             includes.push(SHARED_HELPERS_FILE.into());
         }
         includes.sort();
+        includes.dedup();
         includes
     }
 }

@@ -13,9 +13,7 @@ use crate::batch::materialize_fs::{
 };
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
-use super::package_node_modules::{
-    PackageNodeModulesLink, materialize_package_node_modules, package_node_modules_links,
-};
+use super::package_node_modules::materialize_package_node_modules;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
     SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
@@ -32,8 +30,52 @@ impl VirtualProject {
     /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
-        let expected_files = self.expected_materialized_files();
-        let package_links = self.package_node_modules_links(&expected_files);
+        self.materialize_snapshot(&FxHashSet::default(), &Default::default(), None)
+            .map(|_| ())
+    }
+
+    pub(crate) fn materialize_editor_union(
+        &self,
+        preserved_files: &FxHashSet<PathBuf>,
+        preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
+        query_paths: &[PathBuf],
+    ) -> CorsaResult<super::MaterializedFileSnapshot> {
+        let _lock = super::super::materialize_lock::MaterializeLock::acquire(&self.virtual_root)?;
+        let package_links =
+            self.materialize_snapshot(preserved_files, preserved_package_links, Some(query_paths))?;
+        let mut expected_files = self.expected_materialized_files();
+        expected_files.extend(preserved_files.iter().cloned());
+        super::MaterializedFileSnapshot::capture_with_links(&expected_files, &package_links)
+    }
+
+    fn materialize_snapshot(
+        &self,
+        preserved_files: &FxHashSet<PathBuf>,
+        preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
+        query_paths: Option<&[PathBuf]>,
+    ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
+        let mut expected_files = self.expected_materialized_files();
+        expected_files.extend(preserved_files.iter().cloned());
+        let mut desired_package_links = self.desired_package_links_for_files(&expected_files);
+        for (path, target) in preserved_package_links {
+            desired_package_links
+                .entry(path.clone())
+                .and_modify(|current| {
+                    if target < current {
+                        current.clone_from(target);
+                    }
+                })
+                .or_insert_with(|| target.clone());
+        }
+        let package_links = desired_package_links
+            .iter()
+            .map(
+                |(virtual_dir, real_dir)| super::package_node_modules::PackageNodeModulesLink {
+                    virtual_dir: virtual_dir.clone(),
+                    real_dir: real_dir.clone(),
+                },
+            )
+            .collect::<Vec<_>>();
         profile!(
             "canon.project.prepare_dir",
             ensure_materialize_root(&self.virtual_root)
@@ -85,6 +127,17 @@ impl VirtualProject {
                         ensure_dir(parent)?;
                     }
                 }
+                for virtual_path in self
+                    .package_shadow_files
+                    .keys()
+                    .chain(self.package_shadow_manifests.keys())
+                {
+                    if let Some(parent) = virtual_path.parent()
+                        && created_dirs.insert(parent)
+                    {
+                        ensure_dir(parent)?;
+                    }
+                }
 
                 // `write_if_changed` records IO counters per call: actually
                 // performed writes land in `io.write.*` (the curator audit
@@ -100,6 +153,20 @@ impl VirtualProject {
                     |(virtual_path, original_path)| -> CorsaResult<()> {
                         let content = std::fs::read(original_path)?;
                         write_if_changed(virtual_path, &content)?;
+                        Ok(())
+                    },
+                )?;
+                self.package_shadow_files.par_iter().try_for_each(
+                    |(shadow_path, canonical_path)| -> CorsaResult<()> {
+                        let content = self.package_shadow_content(shadow_path, canonical_path)?;
+                        write_if_changed(shadow_path, content.as_bytes())?;
+                        Ok(())
+                    },
+                )?;
+                self.package_shadow_manifests.par_iter().try_for_each(
+                    |(shadow_path, original_path)| -> CorsaResult<()> {
+                        let content = std::fs::read(original_path)?;
+                        write_if_changed(shadow_path, &content)?;
                         Ok(())
                     },
                 )?;
@@ -129,14 +196,24 @@ impl VirtualProject {
             )?;
         }
 
-        profile!(
-            "canon.project.write_tsconfig",
-            self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)
-        )?;
-        Ok(())
+        profile!("canon.project.write_tsconfig", {
+            let path = self.virtual_root.join("tsconfig.json");
+            if let Some(query_paths) = query_paths {
+                let includes = query_paths.iter().map(PathBuf::as_path).collect::<Vec<_>>();
+                self.write_tsconfig_file_with_includes(
+                    &path,
+                    None,
+                    false,
+                    Some(includes.as_slice()),
+                )
+            } else {
+                self.write_tsconfig_file(&path, None, false)
+            }
+        })?;
+        Ok(desired_package_links)
     }
 
-    fn write_package_boundary(&self) -> CorsaResult<()> {
+    pub(super) fn write_package_boundary(&self) -> CorsaResult<()> {
         let content = b"{\n  \"type\": \"module\"\n}\n";
         write_if_changed(&self.virtual_root.join(PACKAGE_BOUNDARY_FILE), content)?;
         Ok(())
@@ -163,35 +240,13 @@ impl VirtualProject {
         Ok(config_path)
     }
 
-    /// The real `node_modules` directories mirrored into the virtual project so
-    /// bare specifiers keep resolving from a nested package (#3366).
-    fn package_node_modules_links(
-        &self,
-        expected_files: &FxHashSet<PathBuf>,
-    ) -> Vec<PackageNodeModulesLink> {
-        package_node_modules_links(
-            &self.project_root,
-            &self.virtual_root,
-            expected_files.iter().map(PathBuf::as_path),
-        )
-    }
-
-    /// Directories the garbage collector must leave alone: the runtime
-    /// dependency mirror plus every mirrored nested `node_modules`. Descending
-    /// into a mirrored `node_modules` would delete real dependencies, because
-    /// those paths resolve to the user's own install.
-    fn preserved_prune_roots(&self, package_links: &[PackageNodeModulesLink]) -> Vec<PathBuf> {
-        let mut roots = Vec::with_capacity(package_links.len() + 1);
-        roots.push(self.virtual_root.join("node_modules"));
-        roots.extend(package_links.iter().map(|link| link.virtual_dir.clone()));
-        roots
-    }
-
-    fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
+    pub(crate) fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
         let mut files = FxHashSet::default();
         files.reserve(self.virtual_files.len() + 4);
         files.extend(self.virtual_files.keys().cloned());
         files.extend(self.passthrough_files.keys().cloned());
+        files.extend(self.package_shadow_files.keys().cloned());
+        files.extend(self.package_shadow_manifests.keys().cloned());
         if self.has_global_auto_import_stubs() {
             files.insert(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE));
         }
@@ -243,10 +298,18 @@ impl VirtualProject {
         let Some(anchored) = self.resolved_tsconfig_path() else {
             return Vec::new();
         };
-        let mut paths = vec![anchored.clone()];
-        paths.extend(super::tsconfig_gen::references::referenced_project_configs(
+        let mut config_roots = vec![anchored.clone()];
+        config_roots.extend(super::tsconfig_gen::references::referenced_project_configs(
             &anchored,
         ));
+        let mut paths = config_roots.clone();
+        for config in config_roots {
+            if let Ok(flattened) = self.load_compiler_options_flattened(Some(&config)) {
+                paths.extend(flattened.input_paths);
+            }
+        }
+        paths.sort();
+        paths.dedup();
         paths
     }
 

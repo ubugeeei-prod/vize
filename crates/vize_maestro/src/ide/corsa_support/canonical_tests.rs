@@ -2,8 +2,8 @@ use tower_lsp::lsp_types::Url;
 use vize_canon::{LspLocation, LspPosition, LspRange};
 
 use super::canonical::{
-    CanonicalVirtualDocument, canonical_request_path, canonical_source_offset_to_position,
-    map_canonical_corsa_location,
+    CanonicalMaterializedSource, CanonicalVirtualDocument, canonical_request_path,
+    canonical_source_offset_to_position, map_canonical_corsa_location,
 };
 use super::request_file_uri;
 use crate::ide::IdeContext;
@@ -14,9 +14,12 @@ fn canonical_doc(uri: &Url, source: &str) -> CanonicalVirtualDocument {
         crate::ide::DiagnosticService::generate_virtual_ts(uri, source, false, false)
             .expect("virtual ts");
     CanonicalVirtualDocument {
+        source_uri: uri.clone(),
         request_uri: request_file_uri(canonical_request_path(uri).as_str()),
         virtual_result,
         dependencies: Vec::new(),
+        materialized_sources: Vec::new(),
+        session_project_roots: Vec::new(),
     }
 }
 
@@ -165,5 +168,79 @@ fn canonical_location_rejects_deleted_files_but_keeps_open_unsaved_files() {
             .expect("open unsaved target")
             .uri,
         target_uri
+    );
+}
+
+#[test]
+fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinates() {
+    let workspace = tempfile::tempdir().expect("temporary workspace");
+    let importer_uri = Url::from_file_path(workspace.path().join("Importer.vue")).expect("URI");
+    let authored_path = workspace.path().join("packages/ui/Widget.vue");
+    std::fs::create_dir_all(authored_path.parent().unwrap()).unwrap();
+    std::fs::write(&authored_path, "export const alpha = 1;\n").unwrap();
+    let authored_uri = Url::from_file_path(&authored_path).unwrap();
+    let shadow_path = workspace
+        .path()
+        .join("node_modules/.vize/canon/Widget.vue.ts");
+    std::fs::create_dir_all(shadow_path.parent().unwrap()).unwrap();
+    std::fs::write(&shadow_path, "export const alpha = 1;\n").unwrap();
+    let shadow_uri = Url::from_file_path(&shadow_path).unwrap();
+    let source = "<template />\n";
+    let state = ServerState::new();
+    let ctx = IdeContext::with_content(&state, &importer_uri, 0, source.to_string());
+    let mut doc = canonical_doc(&importer_uri, source);
+    doc.materialized_sources.push(CanonicalMaterializedSource {
+        source_uri: authored_uri.clone(),
+        source: "export const alpha = 1;\n".into(),
+        request_uri: shadow_uri.to_string().into(),
+        virtual_result: crate::ide::diagnostics::VirtualTsResult {
+            code: "export const alpha = 1;\n".to_string(),
+            source_mappings: Vec::new(),
+            import_source_map: vize_canon::ImportSourceMap::empty(),
+            user_code_start_line: 0,
+            sfc_script_start_line: 0,
+            template_scope_start_line: 0,
+            line_mappings: Vec::new(),
+            skipped_import_lines: 0,
+        },
+        mapping_kind: vize_canon::CorsaMaterializedMappingKind::AuthoredIdentity,
+    });
+    let location = LspLocation {
+        uri: shadow_uri.to_string(),
+        range: LspRange {
+            start: LspPosition {
+                line: 0,
+                character: 13,
+            },
+            end: LspPosition {
+                line: 0,
+                character: 18,
+            },
+        },
+    };
+    let mapped = map_canonical_corsa_location(&ctx, &doc, &location).expect("authored shadow");
+    assert_eq!(mapped.uri, authored_uri);
+    assert_eq!(mapped.range.start.character, 13);
+    assert_eq!(mapped.range.end.character, 18);
+    assert!(!mapped.uri.path().contains(".vize"));
+
+    doc.materialized_sources[0].mapping_kind = vize_canon::CorsaMaterializedMappingKind::Synthetic;
+    assert!(
+        map_canonical_corsa_location(&ctx, &doc, &location).is_none(),
+        "synthetic forwarder coordinates must fail closed, not leak a Canon URI"
+    );
+
+    let private_root = workspace.path().join("private-session");
+    let unknown = private_root.join("__vize_missing_module.d.ts");
+    std::fs::create_dir_all(&private_root).unwrap();
+    std::fs::write(&unknown, "declare const hidden: any;\n").unwrap();
+    doc.session_project_roots = vec![private_root];
+    let unknown = LspLocation {
+        uri: Url::from_file_path(unknown).unwrap().to_string(),
+        range: location.range,
+    };
+    assert!(
+        map_canonical_corsa_location(&ctx, &doc, &unknown).is_none(),
+        "unindexed files under the private Canon session must never leak"
     );
 }

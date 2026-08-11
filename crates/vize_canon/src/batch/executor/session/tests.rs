@@ -67,6 +67,50 @@ fn snapshot_tracks_in_place_diagnostic_source_changes() {
     assert_eq!(after.diff(&before).changed, vec![source]);
 }
 
+#[cfg(unix)]
+#[test]
+fn incremental_snapshot_hashes_directory_symlink_retargets_without_reading_the_directory() {
+    use crate::batch::virtual_project::MaterializedFileDelta;
+    use std::os::unix::fs::symlink;
+
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("first");
+    let second = temp.path().join("second");
+    std::fs::create_dir_all(&first).unwrap();
+    std::fs::create_dir_all(&second).unwrap();
+    let project = VirtualProject::new(temp.path()).unwrap();
+    let linked = project.virtual_root().join("node_modules/@scope/ui");
+    std::fs::create_dir_all(linked.parent().unwrap()).unwrap();
+    symlink(&first, &linked).unwrap();
+
+    let mut snapshot = MaterializedSnapshot::default();
+    snapshot
+        .apply_delta(
+            &project,
+            &MaterializedFileDelta {
+                created: vec![linked.clone()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let first_revision = snapshot.revisions[&linked];
+
+    std::fs::remove_file(&linked).unwrap();
+    symlink(&second, &linked).unwrap();
+    snapshot
+        .apply_delta(
+            &project,
+            &MaterializedFileDelta {
+                changed: vec![linked.clone()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+    assert_ne!(snapshot.revisions[&linked], first_revision);
+    assert!(snapshot.uris.is_empty());
+}
+
 fn snapshot(entries: &[(&str, u64)]) -> MaterializedSnapshot {
     MaterializedSnapshot {
         revisions: entries

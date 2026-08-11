@@ -190,7 +190,7 @@ fn map_document_changes(
                             .map(DocumentChangeOperation::Edit),
                     ),
                     DocumentChangeOperation::Op(operation)
-                        if resource_operation_is_authored(&operation) =>
+                        if resource_operation_is_authored(document, &operation) =>
                     {
                         mapped.push(DocumentChangeOperation::Op(operation));
                     }
@@ -305,9 +305,14 @@ fn annotatable_identity(
     }
 }
 
-fn resource_operation_is_authored(operation: &ResourceOp) -> bool {
+fn resource_operation_is_authored(
+    document: &CanonicalVirtualDocument,
+    operation: &ResourceOp,
+) -> bool {
     let safe = |uri: &Url| {
-        !is_canonical_vue_virtual_uri(uri) || uri.to_file_path().is_ok_and(|path| path.is_file())
+        !super::is_private_materialized_uri(document, uri.as_str())
+            && (!is_canonical_vue_virtual_uri(uri)
+                || uri.to_file_path().is_ok_and(|path| path.is_file()))
     };
     match operation {
         ResourceOp::Create(operation) => safe(&operation.uri),

@@ -24,6 +24,8 @@ mod import_rewriter_virtual_tests;
 mod materialize_fs;
 mod materialize_lock;
 mod runtime_deps;
+#[cfg(test)]
+pub(crate) use runtime_deps::{VUE_RUNTIME_DOM_STUB_TYPES, write_vue_facade};
 mod source_map;
 mod source_policy;
 mod type_checker;
@@ -41,7 +43,8 @@ pub use type_checker::{
 };
 pub use virtual_project::{
     ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
-    ContentMapperTransformOptions, OriginalPosition, VirtualFile, VirtualProject,
+    ContentMapperTransformOptions, OriginalPosition, TsconfigOwnershipCache,
+    TsconfigOwnershipOptions, TsconfigSourceKind, VirtualFile, VirtualProject,
     VueDocumentVirtualTs, VueDocumentVirtualTsOptions, external_mirror_original_path,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
     generate_vue_document_virtual_ts, generate_vue_document_virtual_ts_with_options,

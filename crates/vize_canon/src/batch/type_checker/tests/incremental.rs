@@ -1,10 +1,14 @@
 use super::super::{BatchTypeChecker, create_project_case, resolve_test_tsgo_binary};
 use crate::batch::TypeChecker;
 
+#[path = "incremental/config_hmr.rs"]
+mod config_hmr;
 #[path = "incremental/file_lifecycle.rs"]
 mod file_lifecycle;
 #[path = "incremental/javascript.rs"]
 mod javascript;
+#[path = "incremental/package_negative.rs"]
+mod package_negative;
 #[path = "incremental/workspace_packages.rs"]
 mod workspace_packages;
 
@@ -67,6 +71,9 @@ const total: number = 1
             session_starts: 1,
             last_session_started: true,
             last_requested_files: 1,
+            last_materialized_entries_considered: 8,
+            last_tree_entries_scanned: 8,
+            last_full_rebuild: true,
             ..Default::default()
         },
         "the first incremental check should expose its cold session work"
@@ -95,6 +102,9 @@ const total: number = 1
             last_session_refreshed: true,
             last_requested_files: 1,
             last_changed_files: 1,
+            last_materialized_entries_considered: 1,
+            last_source_nodes_rebuilt: 1,
+            last_dependency_nodes_reconciled: 1,
             ..Default::default()
         },
         "the repair should expose one refreshed-file request on the reused session"
@@ -186,6 +196,9 @@ const total: Total = 1
             last_session_refreshed: true,
             last_requested_files: 2,
             last_changed_files: 1,
+            last_materialized_entries_considered: 1,
+            last_source_nodes_rebuilt: 1,
+            last_dependency_nodes_reconciled: 1,
             ..Default::default()
         },
         "dependency repair should request both diagnostic inputs after one-file refresh"
