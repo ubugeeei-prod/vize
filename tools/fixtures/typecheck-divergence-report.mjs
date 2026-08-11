@@ -24,7 +24,7 @@ import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 import { readTypecheckPreparationEvidence } from "./typecheck-preparation-evidence.mjs";
 import { runMeasured } from "./typecheck-process-run.mjs";
-import { runSeededTypecheckMutation } from "./typecheck-seeded-mutation.mjs";
+import { runSeededTypecheckMutation, selectSeedProbeFile } from "./typecheck-seeded-mutation.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
@@ -69,6 +69,7 @@ function runProject(args, project, vueTsc, vize) {
     project,
     vizeBin: vize.path,
     vueTscBin: vueTsc.path,
+    probeFile: selectSeedProbeFile(vizeRun.payload.parsed, project.id),
   });
   const baselineProject = materializeBaselineProject(
     fixtureRoot,

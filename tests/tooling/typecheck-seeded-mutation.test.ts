@@ -5,7 +5,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-import { runSeededTypecheckMutation } from "../../tools/fixtures/typecheck-seeded-mutation.mjs";
+import {
+  runSeededTypecheckMutation,
+  selectSeedProbeFile,
+} from "../../tools/fixtures/typecheck-seeded-mutation.mjs";
 import { typecheckDependencySkip } from "./support/typecheck-dependency.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -32,6 +35,20 @@ const skip =
       "tsgo unavailable",
     ),
   ].find((reason) => reason !== false) ?? false;
+
+test("seeded parity uses a directory already checked by Vize", () => {
+  assert.equal(
+    selectSeedProbeFile(
+      { fileCount: 3, files: [{ file: "src/a.ts" }, { file: "packages/app/src/App.vue" }] },
+      "fixture",
+    ),
+    "packages/app/src/.vize-typecheck-parity-seed.vue",
+  );
+  assert.throws(
+    () => selectSeedProbeFile({ fileCount: 1, files: [{ file: "src/a.ts" }] }, "fixture"),
+    /Cannot select a checked Vue directory/,
+  );
+});
 
 test("seeded clean broken repaired SFC is exact in Vize and vue-tsc", { skip }, () => {
   const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-seeded-parity-")));

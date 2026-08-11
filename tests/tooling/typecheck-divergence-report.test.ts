@@ -88,7 +88,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
         .digest("hex"),
     });
     assert.equal(artifact.seededMutation.tier, "sfc-script-ts2322");
-    assert.equal(artifact.seededMutation.probeFile, ".vize-typecheck-parity-seed.vue");
+    assert.equal(artifact.seededMutation.probeFile, "src/.vize-typecheck-parity-seed.vue");
     assert.deepEqual(
       artifact.seededMutation.states.map((state) => state.state),
       ["clean", "broken", "repaired"],
@@ -107,7 +107,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.equal(artifact.seededMutation.states[1].divergence.shared[0].column, 1);
     assert.equal(
       artifact.seededMutation.states[1].divergence.shared[0].file,
-      ".vize-typecheck-parity-seed.vue",
+      "src/.vize-typecheck-parity-seed.vue",
     );
     for (const state of artifact.seededMutation.states) {
       assert.equal(state.coverage.sharedVueFileCount, 1);

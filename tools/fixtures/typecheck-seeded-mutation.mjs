@@ -6,7 +6,7 @@ import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 import { runMeasured } from "./typecheck-process-run.mjs";
 
-const probeFile = ".vize-typecheck-parity-seed.vue";
+const probeName = ".vize-typecheck-parity-seed.vue";
 const configFile = ".vize-typecheck-parity-seed.tsconfig.json";
 // A standalone assignment anchors TS2322 to the authored identifier in both
 // native and JavaScript TypeScript instead of their different initializer spans.
@@ -21,7 +21,13 @@ const cleanSource = [
 ].join("\n");
 const brokenSource = cleanSource.replace('"seed"', "42");
 
-export function runSeededTypecheckMutation({ fixtureRoot, project, vizeBin, vueTscBin }) {
+export function runSeededTypecheckMutation({
+  fixtureRoot,
+  project,
+  vizeBin,
+  vueTscBin,
+  probeFile = probeName,
+}) {
   const probePath = join(fixtureRoot, probeFile);
   const configPath = join(fixtureRoot, configFile);
   if (existsSync(probePath) || existsSync(configPath)) {
@@ -42,7 +48,7 @@ export function runSeededTypecheckMutation({ fixtureRoot, project, vizeBin, vueT
       runState("broken", brokenSource),
       runState("repaired", cleanSource),
     ];
-    validateStates(states, project.id);
+    validateStates(states, project.id, probeFile);
     return {
       tier: "sfc-script-ts2322",
       configSha256: sha256(readFileSync(configPath)),
@@ -111,7 +117,19 @@ export function runSeededTypecheckMutation({ fixtureRoot, project, vizeBin, vueT
   }
 }
 
-function validateStates(states, projectId) {
+export function selectSeedProbeFile(vizeReport, projectId) {
+  const checkedFiles = vizeReport?.files?.slice(0, vizeReport.fileCount) ?? [];
+  const source = checkedFiles.find(
+    (entry) => typeof entry?.file === "string" && entry.file.endsWith(".vue"),
+  )?.file;
+  if (source == null) {
+    throw new Error(`Cannot select a checked Vue directory for seeded parity in ${projectId}`);
+  }
+  const slash = source.lastIndexOf("/");
+  return slash === -1 ? probeName : `${source.slice(0, slash)}/${probeName}`;
+}
+
+function validateStates(states, projectId, probeFile) {
   const [clean, broken, repaired] = states;
   for (const state of [clean, repaired]) {
     if (
