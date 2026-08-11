@@ -19,6 +19,25 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "MoveConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { useMove } from "./move.ts";
+
+const move = useMove({
+  onMove(event) {
+    void event.deltaX;
+  },
+});
+</script>
+
+<template>
+  <div v-bind="move.moveProps" :data-moving="move.isMoving.value || undefined" tabindex="0">
+    Move target
+  </div>
+</template>
+`,
+  },
+  {
     filename: "HoverConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { useHover } from "./hover.ts";

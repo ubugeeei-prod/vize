@@ -75,6 +75,7 @@ const familySignatures = Object.freeze({
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
   hover: /VIZE_UI_HOVER_DISPOSED/,
   "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
+  move: /VIZE_UI_MOVE_DISPOSED/,
   press: /VIZE_UI_PRESS_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
   "visually-hidden": /visually-hidden/,
@@ -125,6 +126,12 @@ const componentCases = [
     family: "long-press",
     exportName: "createLongPress",
     maximumJavaScriptGzipBytes: 5_150,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "move",
+    exportName: "createMove",
+    maximumJavaScriptGzipBytes: 2_750,
     maximumCssGzipBytes: 0,
   },
   {

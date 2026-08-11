@@ -24,6 +24,7 @@ export default defineConfig({
       "interaction-modality": "src/interaction-modality.ts",
       hover: "src/hover.ts",
       "long-press": "src/long-press.ts",
+      move: "src/move.ts",
       press: "src/press.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",

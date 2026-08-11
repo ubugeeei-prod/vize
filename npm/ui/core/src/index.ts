@@ -7,6 +7,7 @@ export * from "./id.ts";
 export * from "./interaction-modality.ts";
 export * from "./hover.ts";
 export * from "./long-press.ts";
+export * from "./move.ts";
 export * from "./press.ts";
 export * from "./primitive.ts";
 export * from "./visually-hidden.ts";

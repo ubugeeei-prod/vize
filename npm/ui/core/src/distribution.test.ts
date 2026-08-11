@@ -15,6 +15,7 @@ const publicEntries = [
   "./interaction-modality",
   "./hover",
   "./long-press",
+  "./move",
   "./press",
   "./primitive",
   "./visually-hidden",

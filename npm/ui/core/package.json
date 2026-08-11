@@ -79,6 +79,11 @@
       "import": "./dist/long-press.mjs",
       "default": "./dist/long-press.mjs"
     },
+    "./move": {
+      "types": "./dist/move.d.mts",
+      "import": "./dist/move.mjs",
+      "default": "./dist/move.mjs"
+    },
     "./press": {
       "types": "./dist/press.d.mts",
       "import": "./dist/press.mjs",
