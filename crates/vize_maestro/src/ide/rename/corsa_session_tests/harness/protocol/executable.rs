@@ -48,8 +48,7 @@ mod tests {
         let root = tempfile::TempDir::new().expect("temp root");
         let traces = root.path().join("protocol-traces");
         fs::create_dir(&traces).expect("trace directory");
-        std::os::unix::fs::symlink("/usr/bin/true", root.path().join("actual-tsgo"))
-            .expect("fake tsgo");
+        fs::write(root.path().join("actual-tsgo.path"), "/usr/bin/true").expect("fake tsgo path");
         fs::write(
             root.path().join("trace-stdio.pl"),
             super::super::proxy::TRACE_STDIO_PROXY,

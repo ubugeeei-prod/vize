@@ -1,8 +1,9 @@
 #!/bin/sh
 wrapper_dir=$(pwd -P)
+actual_tsgo=$(cat "$wrapper_dir/actual-tsgo.path")
 for argument in "$@"; do
   if [ "$argument" = "--api" ]; then
-    exec "$wrapper_dir/actual-tsgo" "$@"
+    exec "$actual_tsgo" "$@"
   fi
 done
 trace_dir="$wrapper_dir/protocol-traces"
@@ -16,7 +17,7 @@ perl "$wrapper_dir/trace-stdio.pl" \
   "$trace_dir/server-$$.stderr" \
   "$trace_dir/shutdown-gate.enabled" \
   "$gate_port" \
-  "$wrapper_dir/actual-tsgo" \
+  "$actual_tsgo" \
   "$@"
 status=$?
 printf '%s\n' "$status" >"$trace_dir/process-$$.reaped"

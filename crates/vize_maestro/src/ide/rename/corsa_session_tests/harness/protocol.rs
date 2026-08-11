@@ -102,8 +102,22 @@ pub(in crate::ide) fn traced_corsa_executable(
 ) -> Result<(PathBuf, PathBuf, Option<ShutdownGate>), String> {
     let trace_dir = root.join("protocol-traces");
     fs::create_dir(&trace_dir).map_err(|error| error.to_string())?;
-    let actual = root.join("actual-tsgo");
-    std::os::unix::fs::symlink(corsa_path, &actual).map_err(|error| error.to_string())?;
+    let actual = corsa_path.canonicalize().map_err(|error| {
+        format!(
+            "canonicalize Corsa executable {}: {error}",
+            corsa_path.display()
+        )
+    })?;
+    let actual = actual
+        .to_str()
+        .filter(|path| !path.contains('\n'))
+        .ok_or_else(|| {
+            format!(
+                "Corsa executable path is not shell-safe: {}",
+                actual.display()
+            )
+        })?;
+    fs::write(root.join("actual-tsgo.path"), actual).map_err(|error| error.to_string())?;
     let wrapper = root.join("traced-tsgo");
     let shutdown_gate = if observe_shutdown {
         assert_shutdown_gate_runtime()?;
