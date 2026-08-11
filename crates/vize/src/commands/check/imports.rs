@@ -23,8 +23,8 @@ use registration::VirtualRegistrationCache;
 use registration::non_relative_import_needs_virtual_registration;
 #[path = "imports_resolution.rs"]
 mod resolution;
-pub(super) use resolution::resolve_import_base;
 use resolution::{absolutize, is_declaration_file, is_node_modules_path, resolve_relative_import};
+pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs};
 #[path = "imports_specifiers.rs"]
 mod specifiers;
 use specifiers::{extract_module_specifier_occurrences, is_relative_specifier};

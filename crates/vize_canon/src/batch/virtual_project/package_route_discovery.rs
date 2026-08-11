@@ -7,6 +7,7 @@ use vize_carton::FxHashSet;
 
 use super::VirtualProject;
 use super::dependency_scan::resolve_dependency;
+use super::package_route_reachability::{PackageRouteReachability, package_route_reaches_vue};
 
 impl VirtualProject {
     pub(crate) fn reconcile_package_routes_for_importers(&mut self, changed: &[PathBuf]) {
@@ -92,6 +93,7 @@ impl VirtualProject {
                 );
                 let watchable_negative = lookup.is_watchable_negative();
                 let (route, mut invalidation_paths) = lookup.into_parts();
+                let has_route = route.is_some();
                 let reachability =
                     route
                         .as_ref()
@@ -104,8 +106,11 @@ impl VirtualProject {
                                 source_options,
                             )
                         });
-                let needs_shadow = reachability.reaches_vue;
-                if !watchable_negative && !needs_shadow {
+                if has_route {
+                    reachability.record_work(&mut resolver);
+                }
+                let needs_shadow = reachability.requires_shadow();
+                if !watchable_negative && !reachability.requires_tracking() {
                     continue;
                 }
                 invalidation_paths.extend(reachability.inputs);
@@ -119,7 +124,7 @@ impl VirtualProject {
                     specifier,
                     occurrence_mode,
                     context,
-                    route,
+                    route: needs_shadow.then_some(route).flatten(),
                     invalidation_paths,
                 });
             }
@@ -173,96 +178,5 @@ mod runtime_support_tests {
         ] {
             assert!(!is_support(specifier), "{specifier}");
         }
-    }
-}
-
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
-#[derive(Clone, Debug, Default)]
-pub(crate) struct PackageRouteReachability {
-    pub(crate) reaches_vue: bool,
-    pub(crate) inputs: Vec<PathBuf>,
-}
-
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
-pub(crate) fn package_route_reaches_vue(
-    route: &crate::PackageRoute,
-    aliases: &[(std::string::String, std::string::String)],
-    resolution: &super::package_resolution::PackageResolutionSettings,
-    resolver: &mut crate::PackageRouteResolver,
-    source_options: crate::PackageSourceOptions,
-) -> PackageRouteReachability {
-    let mut queued = FxHashSet::default();
-    let mut queue = route
-        .all_source_paths()
-        .into_iter()
-        .filter(|path| queued.insert((*path).clone()))
-        .cloned()
-        .collect::<Vec<_>>();
-    let mut inputs = Vec::new();
-    let rewriter = crate::batch::ImportRewriter::new();
-    while let Some(path) = queue.pop() {
-        inputs.push(path.clone());
-        if path.extension().is_some_and(|extension| extension == "vue") {
-            return reachability(true, inputs);
-        }
-        let Ok(content) = std::fs::read_to_string(&path) else {
-            continue;
-        };
-        let source_type = if path.extension().is_some_and(|extension| extension == "tsx") {
-            SourceType::tsx()
-        } else {
-            SourceType::ts()
-        };
-        let Some(importer_dir) = path.parent() else {
-            continue;
-        };
-        for (specifier, mode) in rewriter.collect_all_specifier_occurrences(&content, source_type) {
-            if let Some(dependency) =
-                resolve_dependency(&specifier, importer_dir, &route.package_root, aliases)
-            {
-                if queued.insert(dependency.clone()) {
-                    queue.push(dependency);
-                }
-                continue;
-            }
-            if specifier.starts_with('.') || Path::new(specifier.as_str()).is_absolute() {
-                continue;
-            }
-            // Vue's compiler/runtime type packages are supplied by the virtual
-            // project itself. They are terminal support edges, not
-            // importer-scoped component packages: descending through their
-            // transitive compiler graph can walk the whole installed toolchain
-            // and can misclassify an internal fixture SFC as the caller's
-            // package identity. Resolve user aliases above before applying
-            // this native-package boundary.
-            if is_vue_runtime_support_specifier(&specifier) {
-                continue;
-            }
-            let (context, context_inputs) = resolution.context(resolver, &path, mode);
-            let (nested, consulted) = resolver
-                .lookup_with_context(importer_dir, &specifier, source_options, context)
-                .into_parts();
-            inputs.extend(context_inputs);
-            inputs.extend(consulted);
-            if let Some(nested) = nested {
-                queue.extend(
-                    nested
-                        .all_source_paths()
-                        .into_iter()
-                        .filter(|source| queued.insert((*source).clone()))
-                        .cloned(),
-                );
-            }
-        }
-    }
-    reachability(false, inputs)
-}
-
-fn reachability(reaches_vue: bool, mut inputs: Vec<PathBuf>) -> PackageRouteReachability {
-    inputs.sort();
-    inputs.dedup();
-    PackageRouteReachability {
-        reaches_vue,
-        inputs,
     }
 }

@@ -12,12 +12,20 @@ use crate::batch::virtual_project::{
 #[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
 type CompilerAlias = (std::string::String, std::string::String);
 
+type ReachabilityCacheKey = (
+    PathBuf,
+    PathBuf,
+    CompactString,
+    crate::PackageResolutionContext,
+    u8,
+);
+
 #[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
 pub(super) struct RouteDiscovery<'a> {
     settings: &'a PackageResolutionSettings,
     resolver: &'a mut crate::PackageRouteResolver,
     routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
-    reachability: &'a mut FxHashMap<(PathBuf, CompactString), PackageRouteReachability>,
+    reachability: &'a mut FxHashMap<ReachabilityCacheKey, PackageRouteReachability>,
     bindings: &'a mut Vec<crate::PackageRouteBinding>,
     inputs: &'a mut Vec<PathBuf>,
     aliases: &'a [CompilerAlias],
@@ -28,7 +36,7 @@ impl<'a> RouteDiscovery<'a> {
         settings: &'a PackageResolutionSettings,
         resolver: &'a mut crate::PackageRouteResolver,
         routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
-        reachability: &'a mut FxHashMap<(PathBuf, CompactString), PackageRouteReachability>,
+        reachability: &'a mut FxHashMap<ReachabilityCacheKey, PackageRouteReachability>,
         bindings: &'a mut Vec<crate::PackageRouteBinding>,
         inputs: &'a mut Vec<PathBuf>,
         aliases: &'a [CompilerAlias],
@@ -69,10 +77,17 @@ impl<'a> RouteDiscovery<'a> {
                 .extend(self.settings.input_paths().iter().cloned());
             self.inputs.extend(context_inputs.iter().cloned());
         }
+        let has_route = route.is_some();
         let reachability = route
             .as_ref()
             .map_or_else(PackageRouteReachability::default, |route| {
-                let key = (route.manifest_path.clone(), CompactString::from(specifier));
+                let key = (
+                    logical_absolute(importer),
+                    route.manifest_path.clone(),
+                    CompactString::from(specifier),
+                    context.clone(),
+                    crate::batch::PACKAGE_REACHABILITY_BUDGET_REVISION,
+                );
                 self.reachability
                     .entry(key)
                     .or_insert_with(|| {
@@ -86,7 +101,11 @@ impl<'a> RouteDiscovery<'a> {
                     })
                     .clone()
             });
-        let needs_shadow = reachability.reaches_vue;
+        if has_route {
+            reachability.record_work(self.resolver);
+        }
+        let needs_shadow = reachability.requires_shadow();
+        let track_reachability = reachability.requires_tracking();
         self.inputs.extend(reachability.inputs);
         if needs_shadow && let Some(route) = route.as_ref() {
             self.routes.insert(
@@ -94,13 +113,13 @@ impl<'a> RouteDiscovery<'a> {
                 route.clone(),
             );
         }
-        if needs_shadow || watchable_negative {
+        if track_reachability || watchable_negative {
             self.bindings.push(crate::PackageRouteBinding {
                 importer_path: importer.to_path_buf(),
                 specifier: specifier.into(),
                 occurrence_mode: mode,
                 context,
-                route,
+                route: needs_shadow.then_some(route).flatten(),
                 invalidation_paths: consulted
                     .into_iter()
                     .chain(self.settings.input_paths().iter().cloned())
@@ -323,3 +342,7 @@ export const DecoratorBase = Vue;
         std::fs::write(path, content).unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "routes_budget_tests.rs"]
+mod budget_tests;

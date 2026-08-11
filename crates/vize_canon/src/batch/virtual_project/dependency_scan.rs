@@ -37,11 +37,11 @@ use super::VirtualProject;
 mod resolution;
 #[cfg(test)]
 use resolution::probe_candidates;
-pub(crate) use resolution::resolve_dependency;
 use resolution::{
     alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
     may_resolve_a_dependency,
 };
+pub(crate) use resolution::{resolve_dependency, resolve_dependency_with_inputs};
 
 type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
 

@@ -34,34 +34,48 @@ pub(crate) fn resolve_import_base(
     canonical_paths: &mut CanonicalPathCache,
     options: ImportFileOptions,
 ) -> Option<PathBuf> {
+    resolve_import_base_with_inputs(base, canonical_paths, options).0
+}
+
+pub(crate) fn resolve_import_base_with_inputs(
+    base: &Path,
+    canonical_paths: &mut CanonicalPathCache,
+    options: ImportFileOptions,
+) -> (Option<PathBuf>, Vec<PathBuf>) {
+    let mut inputs = vec![base.to_path_buf()];
     if ImportFileOptions::path_has_typescript_source_extension(base) && base.is_file() {
-        return Some(canonical_paths.canonicalize(base));
+        return (Some(canonical_paths.canonicalize(base)), inputs);
     }
-    if let Some(rewritten) = rewrite_js_to_ts(base, canonical_paths, options.include_jsx) {
-        return Some(rewritten);
+    if let Some(rewritten) =
+        rewrite_js_to_ts(base, canonical_paths, options.include_jsx, &mut inputs)
+    {
+        return (Some(rewritten), inputs);
     }
     if options.javascript_extension_is_enabled(base) && base.is_file() {
-        return Some(canonical_paths.canonicalize(base));
+        return (Some(canonical_paths.canonicalize(base)), inputs);
     }
     for ext in options.resolve_extensions() {
         let candidate = append_extension(base, ext);
+        inputs.push(candidate.clone());
         if candidate.is_file() {
-            return Some(canonical_paths.canonicalize(&candidate));
+            return (Some(canonical_paths.canonicalize(&candidate)), inputs);
         }
     }
     for ext in options.resolve_extensions() {
         let candidate = base.join(cstr_index(ext));
+        inputs.push(candidate.clone());
         if candidate.is_file() {
-            return Some(canonical_paths.canonicalize(&candidate));
+            return (Some(canonical_paths.canonicalize(&candidate)), inputs);
         }
     }
-    None
+    (None, inputs)
 }
 
 fn rewrite_js_to_ts(
     base: &Path,
     canonical_paths: &mut CanonicalPathCache,
     include_jsx: bool,
+    inputs: &mut Vec<PathBuf>,
 ) -> Option<PathBuf> {
     let name = base.file_name()?.to_str()?;
     let (stem, extensions): (&str, &[&str]) = if let Some(stem) = name.strip_suffix(".mjs") {
@@ -84,6 +98,7 @@ fn rewrite_js_to_ts(
     };
     for ext in extensions {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
+        inputs.push(candidate.clone());
         if candidate.is_file() {
             return Some(canonical_paths.canonicalize(&candidate));
         }

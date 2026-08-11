@@ -276,4 +276,11 @@ pub struct PackageRouteMetrics {
     pub manifest_cache_entries: u64,
     pub resolution_cache_evictions: u64,
     pub manifest_cache_evictions: u64,
+    pub reachability_checks: u64,
+    pub reachability_budget_exceeded: u64,
+    pub last_reachability_files: u64,
+    pub last_reachability_bytes: u64,
+    pub last_reachability_edges: u64,
+    pub last_reachability_parses: u64,
+    pub last_reachability_packages: u64,
 }

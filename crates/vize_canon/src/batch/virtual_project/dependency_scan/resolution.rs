@@ -68,14 +68,25 @@ pub(crate) fn resolve_dependency(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> Option<PathBuf> {
+    resolve_dependency_with_inputs(specifier, importer_dir, project_root, aliases).0
+}
+
+#[allow(clippy::disallowed_types)]
+pub(crate) fn resolve_dependency_with_inputs(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(std::string::String, std::string::String)],
+) -> (Option<PathBuf>, Vec<PathBuf>) {
     let specifier = specifier
         .strip_suffix(".vue.ts")
         .map_or_else(|| specifier.to_owned(), |stem| cstr!("{stem}.vue").into());
     if specifier.starts_with("./") || specifier.starts_with("../") {
-        return probe_candidates(&importer_dir.join(&specifier));
+        return probe_candidates_with_inputs(&importer_dir.join(&specifier));
     }
 
     let mut best: Option<(usize, PathBuf)> = None;
+    let mut inputs = Vec::new();
     for (pattern, target) in aliases {
         let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
             match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
@@ -100,35 +111,43 @@ pub(crate) fn resolve_dependency(
             project_root.join(&substituted)
         };
         // Length first: a pattern that cannot win must not cost a probe.
-        if best.as_ref().is_none_or(|(len, _)| pattern.len() > *len)
-            && let Some(resolved) = probe_candidates(&absolute)
-        {
-            best = Some((pattern.len(), resolved));
+        if best.as_ref().is_none_or(|(len, _)| pattern.len() > *len) {
+            let (resolved, consulted) = probe_candidates_with_inputs(&absolute);
+            inputs.extend(consulted);
+            if let Some(resolved) = resolved {
+                best = Some((pattern.len(), resolved));
+            }
         }
     }
-    best.map(|(_, path)| path)
+    (best.map(|(_, path)| path), inputs)
 }
 
 pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
+    probe_candidates_with_inputs(base).0
+}
+
+fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) {
+    let mut inputs = vec![base.to_path_buf()];
     if base.is_file() {
-        return Some(base.to_path_buf());
+        return (Some(base.to_path_buf()), inputs);
     }
     let extension = base.extension().and_then(|extension| extension.to_str());
     let probe_base = match extension {
         Some("js" | "jsx" | "mjs" | "cjs") => base.with_extension(""),
-        Some(_) => return None,
+        Some(_) => return (None, inputs),
         None => base.to_path_buf(),
     };
     for extension in [
         "ts", "tsx", "d.ts", "mts", "d.mts", "cts", "d.cts", "vue", "js", "jsx", "mjs", "cjs",
     ] {
         let candidate = PathBuf::from(cstr!("{}.{extension}", probe_base.display()).as_str());
+        inputs.push(candidate.clone());
         if candidate.is_file() {
-            return Some(candidate);
+            return (Some(candidate), inputs);
         }
     }
     if extension.is_some() {
-        return None;
+        return (None, inputs);
     }
     for index in [
         "index.ts",
@@ -145,9 +164,10 @@ pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
         "index.cjs",
     ] {
         let candidate = base.join(index);
+        inputs.push(candidate.clone());
         if candidate.is_file() {
-            return Some(candidate);
+            return (Some(candidate), inputs);
         }
     }
-    None
+    (None, inputs)
 }

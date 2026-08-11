@@ -40,6 +40,13 @@ struct PackageRouteResolverState {
     last_refresh_total_routes: u64,
     clock: u64,
     resolution_evictions: u64,
+    reachability_checks: u64,
+    reachability_budget_exceeded: u64,
+    last_reachability_files: u64,
+    last_reachability_bytes: u64,
+    last_reachability_edges: u64,
+    last_reachability_parses: u64,
+    last_reachability_packages: u64,
 }
 
 struct CachedPackageRouteLookup {
@@ -199,6 +206,35 @@ impl PackageRouteResolver {
         state.last_refresh_total_routes = 0;
         state.clock = 0;
         state.resolution_evictions = 0;
+        state.reachability_checks = 0;
+        state.reachability_budget_exceeded = 0;
+        state.last_reachability_files = 0;
+        state.last_reachability_bytes = 0;
+        state.last_reachability_edges = 0;
+        state.last_reachability_parses = 0;
+        state.last_reachability_packages = 0;
+    }
+
+    pub(crate) fn record_reachability_work(
+        &mut self,
+        files: usize,
+        bytes: usize,
+        edges: usize,
+        parses: usize,
+        packages: usize,
+        budget_exceeded: bool,
+    ) {
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        state.reachability_checks += 1;
+        state.reachability_budget_exceeded += u64::from(budget_exceeded);
+        state.last_reachability_files = files as u64;
+        state.last_reachability_bytes = bytes as u64;
+        state.last_reachability_edges = edges as u64;
+        state.last_reachability_parses = parses as u64;
+        state.last_reachability_packages = packages as u64;
     }
 
     #[cfg(feature = "native")]
@@ -237,6 +273,13 @@ impl PackageRouteResolver {
             manifest_cache_entries: state.search.len() as u64,
             resolution_cache_evictions: state.resolution_evictions,
             manifest_cache_evictions: state.search.evictions(),
+            reachability_checks: state.reachability_checks,
+            reachability_budget_exceeded: state.reachability_budget_exceeded,
+            last_reachability_files: state.last_reachability_files,
+            last_reachability_bytes: state.last_reachability_bytes,
+            last_reachability_edges: state.last_reachability_edges,
+            last_reachability_parses: state.last_reachability_parses,
+            last_reachability_packages: state.last_reachability_packages,
         }
     }
 }

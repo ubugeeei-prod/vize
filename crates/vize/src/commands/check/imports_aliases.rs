@@ -63,6 +63,45 @@ impl PathAliasResolver {
             .and_then(|base_url| resolve_base(&base_url.join(specifier), canonical_paths, options))
     }
 
+    pub(super) fn resolve_with_inputs(
+        &self,
+        specifier: &str,
+        canonical_paths: &mut CanonicalPathCache,
+        options: impl Into<ImportFileOptions>,
+        mut resolve_base: impl FnMut(
+            &Path,
+            &mut CanonicalPathCache,
+            ImportFileOptions,
+        ) -> (Option<PathBuf>, Vec<PathBuf>),
+    ) -> (Option<PathBuf>, Vec<PathBuf>) {
+        let options = options.into();
+        let mut inputs = Vec::new();
+        for alias in &self.aliases {
+            let Some(matched) = alias.match_specifier(specifier) else {
+                continue;
+            };
+            for target in &alias.targets {
+                let target = if target.contains('*') {
+                    alias.base_dir.join(target.replace('*', matched))
+                } else {
+                    alias.base_dir.join(target.as_str())
+                };
+                let (resolved, consulted) = resolve_base(&target, canonical_paths, options);
+                inputs.extend(consulted);
+                if resolved.is_some() {
+                    return (resolved, inputs);
+                }
+            }
+        }
+        if let Some(base_url) = &self.base_url {
+            let (resolved, consulted) =
+                resolve_base(&base_url.join(specifier), canonical_paths, options);
+            inputs.extend(consulted);
+            return (resolved, inputs);
+        }
+        (None, inputs)
+    }
+
     pub(super) fn package_resolution_context(
         &self,
         resolver: &mut vize_canon::PackageRouteResolver,

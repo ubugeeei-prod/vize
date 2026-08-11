@@ -6,7 +6,8 @@ use super::super::imports_aliases::PathAliasResolver;
 use super::super::path_cache::CanonicalPathCache;
 use super::{
     ImportFileOptions, extract_module_specifier_occurrences, is_declaration_file,
-    is_relative_specifier, resolve_import_base, resolve_relative_import,
+    is_relative_specifier, resolve_import_base, resolve_import_base_with_inputs,
+    resolve_relative_import,
 };
 
 #[derive(Clone, Default)]
@@ -88,13 +89,13 @@ fn source_needs_virtual_registration(
     mut packages: Option<&mut vize_canon::PackageRouteResolver>,
     discovered_routes: &mut Vec<vize_canon::PackageRouteBinding>,
 ) -> bool {
-    let mut reaches_vue = false;
+    let mut needs_registration = false;
     while let Some(file) = queue.pop() {
         if !visited.insert(file.clone()) {
             continue;
         }
         if file.extension().and_then(|extension| extension.to_str()) == Some("vue") {
-            reaches_vue = true;
+            needs_registration = true;
             continue;
         }
 
@@ -131,7 +132,7 @@ fn source_needs_virtual_registration(
                             std::iter::empty::<vize_carton::String>(),
                         ),
                     };
-                    let route = packages.lookup_with_context(
+                    let lookup = packages.lookup_with_context(
                         dir,
                         &specifier,
                         vize_canon::PackageSourceOptions::new(
@@ -140,35 +141,97 @@ fn source_needs_virtual_registration(
                         ),
                         context.clone(),
                     );
-                    let watchable_negative = route.is_watchable_negative();
-                    let (route, mut invalidation_paths) = route.into_parts();
+                    let watchable_negative = lookup.is_watchable_negative();
+                    let (route, mut invalidation_paths) = lookup.into_parts();
                     invalidation_paths.extend(context_inputs);
                     invalidation_paths.push(file.clone());
+                    let mut binding_route = None;
+                    let mut track_reachability = false;
+                    if let Some(route) = route {
+                        let reachability = vize_canon::batch::scan_package_route_reachability(
+                            &route,
+                            |importer, nested_specifier| {
+                                let nested_dir = importer.parent().unwrap_or(importer);
+                                if is_relative_specifier(nested_specifier) {
+                                    resolve_import_base_with_inputs(
+                                        &nested_dir.join(nested_specifier),
+                                        canonical_paths,
+                                        options,
+                                    )
+                                } else {
+                                    let candidate = Path::new(nested_specifier);
+                                    if candidate.is_absolute() {
+                                        resolve_import_base_with_inputs(
+                                            candidate,
+                                            canonical_paths,
+                                            options,
+                                        )
+                                    } else {
+                                        aliases.map_or_else(
+                                            || (None, Vec::new()),
+                                            |aliases| {
+                                                aliases.resolve_with_inputs(
+                                                    nested_specifier,
+                                                    canonical_paths,
+                                                    options,
+                                                    resolve_import_base_with_inputs,
+                                                )
+                                            },
+                                        )
+                                    }
+                                }
+                            },
+                            |importer, nested_specifier, nested_mode| {
+                                let nested_dir = importer.parent().unwrap_or(importer);
+                                let (nested_context, mut nested_inputs) = match aliases {
+                                    Some(aliases) => aliases.package_resolution_context(
+                                        packages,
+                                        importer,
+                                        nested_mode,
+                                    ),
+                                    None => packages.resolution_context(
+                                        importer,
+                                        nested_mode,
+                                        None,
+                                        None,
+                                        std::iter::empty::<vize_carton::String>(),
+                                    ),
+                                };
+                                let (nested, consulted) = packages
+                                    .lookup_with_context(
+                                        nested_dir,
+                                        nested_specifier,
+                                        vize_canon::PackageSourceOptions::new(
+                                            options.include_js,
+                                            options.include_jsx,
+                                        ),
+                                        nested_context,
+                                    )
+                                    .into_parts();
+                                nested_inputs.extend(consulted);
+                                (nested, nested_inputs)
+                            },
+                        );
+                        reachability.record_work(packages);
+                        track_reachability = reachability.requires_tracking();
+                        let needs_shadow = reachability.requires_shadow();
+                        needs_registration |= track_reachability;
+                        invalidation_paths.extend(reachability.inputs);
+                        if needs_shadow {
+                            binding_route = Some(route);
+                        }
+                    }
                     invalidation_paths.sort();
                     invalidation_paths.dedup();
-                    if route.is_some() || watchable_negative {
+                    if track_reachability || watchable_negative {
                         discovered_routes.push(vize_canon::PackageRouteBinding {
                             importer_path: file.clone(),
                             specifier: specifier.clone(),
                             occurrence_mode: occurrence.mode,
                             context: context.clone(),
-                            route: route.clone(),
+                            route: binding_route,
                             invalidation_paths,
                         });
-                    }
-                    if let Some(route) = route {
-                        for source in route.all_source_paths() {
-                            if source
-                                .extension()
-                                .is_some_and(|extension| extension == "vue")
-                            {
-                                reaches_vue = true;
-                                continue;
-                            }
-                            if !visited.contains(source) {
-                                queue.push(source.clone());
-                            }
-                        }
                     }
                     None
                 } else {
@@ -186,7 +249,7 @@ fn source_needs_virtual_registration(
                 .and_then(|extension| extension.to_str())
                 == Some("vue")
             {
-                reaches_vue = true;
+                needs_registration = true;
                 continue;
             }
             if !visited.contains(&resolved) {
@@ -195,5 +258,5 @@ fn source_needs_virtual_registration(
         }
     }
 
-    reaches_vue
+    needs_registration
 }

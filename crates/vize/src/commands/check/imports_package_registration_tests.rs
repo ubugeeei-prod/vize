@@ -83,3 +83,68 @@ fn package_aware_registration_walks_a_package_closure_once_per_source() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn exhausted_package_closure_tracks_inputs_without_materializing_a_shadow() {
+    let root = tempfile::tempdir().unwrap();
+    let entry = write(
+        root.path(),
+        "src/entry.ts",
+        "import { Chart } from 'chart-like';\nvoid Chart;\n",
+    );
+    write(
+        root.path(),
+        "node_modules/chart-like/package.json",
+        r#"{"name":"chart-like","exports":{".":{"types":"./index.d.ts","import":"./index.js"}}}"#,
+    );
+    write(
+        root.path(),
+        "node_modules/chart-like/index.d.ts",
+        "export declare class Chart {}\n",
+    );
+    write(
+        root.path(),
+        "node_modules/chart-like/index.js",
+        &"x".repeat(129 * 1024),
+    );
+    let mut canonical_paths = CanonicalPathCache::default();
+    let entry = canonical_paths.canonicalize(&entry);
+    let mut packages = PackageRouteResolver::default();
+    let mut cache = registration::VirtualRegistrationCache::default();
+    let mut discovery = registration::VirtualRegistrationDiscovery::default();
+
+    let needs_registration = registration::non_relative_import_needs_virtual_registration(
+        &entry,
+        &mut canonical_paths,
+        ImportFileOptions {
+            include_js: true,
+            include_jsx: true,
+        },
+        None,
+        Some(&mut packages),
+        &mut cache,
+        &mut discovery,
+    );
+
+    assert!(needs_registration);
+    assert_eq!(discovery.package_routes.len(), 1);
+    let binding = &discovery.package_routes[0];
+    assert!(binding.route.is_none(), "an exhausted route stays native");
+    assert!(
+        binding
+            .invalidation_paths
+            .iter()
+            .any(|path| { path.ends_with("node_modules/chart-like/package.json") })
+    );
+    assert!(
+        binding
+            .invalidation_paths
+            .iter()
+            .any(|path| path.ends_with("node_modules/chart-like/index.js"))
+    );
+    let metrics = packages.metrics();
+    assert_eq!(metrics.reachability_checks, 1);
+    assert_eq!(metrics.reachability_budget_exceeded, 1);
+    assert_eq!(metrics.last_reachability_files, 2);
+    assert_eq!(metrics.last_reachability_parses, 1);
+}

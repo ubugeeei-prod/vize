@@ -68,8 +68,12 @@ mod package_link_owners;
 mod package_node_modules;
 pub(crate) mod package_resolution;
 mod package_route_discovery;
-pub(crate) use package_route_discovery::{
-    PackageRouteReachability, is_vue_runtime_support_specifier, package_route_reaches_vue,
+pub(crate) use package_route_discovery::is_vue_runtime_support_specifier;
+mod package_route_reachability;
+pub(crate) use package_route_reachability::package_route_reaches_vue;
+pub use package_route_reachability::{
+    PACKAGE_REACHABILITY_BUDGET_REVISION, PackageRouteReachability, ReachabilityOutcome,
+    ReachabilityWork, scan_package_route_reachability,
 };
 mod package_shadow;
 mod package_shadow_owners;

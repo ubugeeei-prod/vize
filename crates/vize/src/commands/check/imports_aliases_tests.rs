@@ -1,5 +1,7 @@
 use super::super::{
-    imports::{collect_transitive_local_imports, resolve_import_base},
+    imports::{
+        collect_transitive_local_imports, resolve_import_base, resolve_import_base_with_inputs,
+    },
     path_cache::CanonicalPathCache,
 };
 use super::PathAliasResolver;
@@ -57,6 +59,29 @@ fn exact_alias_does_not_match_prefix() {
         resolver.resolve("@app/prefix", &mut paths, false, resolve_import_base),
         Some(prefix.canonicalize().unwrap())
     );
+}
+
+#[test]
+fn missing_alias_target_retains_every_probed_candidate() {
+    let root = tempfile::tempdir().unwrap();
+    std::fs::write(
+        root.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"baseUrl":".","paths":{"@missing":["src/Missing"]}}}"#,
+    )
+    .unwrap();
+    let resolver =
+        PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
+
+    let (resolved, inputs) = resolver.resolve_with_inputs(
+        "@missing",
+        &mut CanonicalPathCache::default(),
+        false,
+        resolve_import_base_with_inputs,
+    );
+
+    assert!(resolved.is_none());
+    assert!(inputs.iter().any(|path| path.ends_with("src/Missing.ts")));
+    assert!(inputs.iter().any(|path| path.ends_with("src/Missing.vue")));
 }
 
 #[test]
