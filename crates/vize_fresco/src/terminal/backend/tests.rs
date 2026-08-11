@@ -51,38 +51,6 @@ fn injected_writer_owns_lifecycle_output_and_restoration_is_idempotent() {
 }
 
 #[test]
-fn failed_mode_enable_commands_are_never_recorded_as_active() {
-    assert_failed_init_does_not_mark_active(
-        TerminalOptions {
-            alternate_screen: true,
-            ..disabled_terminal_options()
-        },
-        |backend| backend.alternate_screen,
-    );
-    assert_failed_init_does_not_mark_active(
-        TerminalOptions {
-            bracketed_paste: true,
-            ..disabled_terminal_options()
-        },
-        |backend| backend.bracketed_paste,
-    );
-    assert_failed_init_does_not_mark_active(
-        TerminalOptions {
-            mouse_capture: true,
-            ..disabled_terminal_options()
-        },
-        |backend| backend.mouse_capture,
-    );
-    assert_failed_init_does_not_mark_active(
-        TerminalOptions {
-            hide_cursor: true,
-            ..disabled_terminal_options()
-        },
-        |backend| backend.cursor_hidden,
-    );
-}
-
-#[test]
 fn measured_flush_reports_exact_writer_bytes_and_changed_cells() {
     let mut backend = Backend::with_writer(4, 1, Vec::new());
     backend.buffer_mut().set_string(0, 0, "A", Style::new());
@@ -250,26 +218,6 @@ impl Write for AlwaysFailWriter {
     fn flush(&mut self) -> io::Result<()> {
         Err(io::Error::other("injected writer failure"))
     }
-}
-
-fn disabled_terminal_options() -> TerminalOptions {
-    TerminalOptions {
-        raw_mode: false,
-        alternate_screen: false,
-        mouse_capture: false,
-        bracketed_paste: false,
-        hide_cursor: false,
-    }
-}
-
-fn assert_failed_init_does_not_mark_active(
-    options: TerminalOptions,
-    active: impl FnOnce(&Backend<AlwaysFailWriter>) -> bool,
-) {
-    let mut backend = Backend::with_writer(80, 24, AlwaysFailWriter);
-
-    assert!(backend.init_with_options(options).is_err());
-    assert!(!active(&backend));
 }
 
 /// Writer that rejects exactly one armed write and then accepts output.

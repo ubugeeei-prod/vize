@@ -3,19 +3,17 @@
 use std::io::{self, Write};
 
 use crossterm::{
-    cursor::{Hide, Show},
-    event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
     execute,
-    terminal::{
-        Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode,
-        enable_raw_mode,
-    },
+    terminal::{Clear, ClearType},
 };
 
 use super::{buffer::Buffer, cursor::Cursor};
 
+mod lifecycle;
 mod output;
 
+#[cfg(test)]
+mod lifecycle_tests;
 #[cfg(test)]
 mod tests;
 
@@ -106,86 +104,6 @@ impl<W: Write> Backend<W> {
             height,
             writer,
         }
-    }
-
-    /// Initialize the terminal using [`TerminalOptions::default`].
-    pub fn init(&mut self) -> io::Result<()> {
-        self.init_with_options(TerminalOptions::default())
-    }
-
-    /// Initialize the terminal using explicit mode options.
-    pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
-        if options.raw_mode {
-            enable_raw_mode()?;
-            self.raw_mode = true;
-        }
-        if options.alternate_screen {
-            execute!(&mut self.writer, EnterAlternateScreen)?;
-            self.alternate_screen = true;
-        }
-        if options.bracketed_paste {
-            execute!(&mut self.writer, EnableBracketedPaste)?;
-            self.bracketed_paste = true;
-        }
-        if options.mouse_capture {
-            execute!(&mut self.writer, EnableMouseCapture)?;
-            self.mouse_capture = true;
-        }
-        if options.hide_cursor {
-            execute!(&mut self.writer, Hide)?;
-            self.cursor_hidden = true;
-        }
-        Ok(())
-    }
-
-    /// Initialize with mouse capture enabled.
-    pub fn init_with_mouse(&mut self) -> io::Result<()> {
-        self.init_with_options(TerminalOptions {
-            mouse_capture: true,
-            ..TerminalOptions::default()
-        })
-    }
-
-    /// Restore every terminal mode successfully enabled by this backend.
-    ///
-    /// Every independent cleanup action is attempted even when an earlier one
-    /// fails, so a rejected escape sequence cannot leave the process in raw
-    /// mode. The operation is idempotent: a failed action keeps its mode marked
-    /// active so a later explicit call or [`Drop`] can retry it, and the first
-    /// observed error is returned after all attempts.
-    pub fn restore(&mut self) -> io::Result<()> {
-        let mut first_error = None;
-        if self.mouse_capture {
-            match execute!(&mut self.writer, DisableMouseCapture) {
-                Ok(()) => self.mouse_capture = false,
-                Err(error) => first_error = Some(error),
-            }
-        }
-        if self.bracketed_paste {
-            match execute!(&mut self.writer, DisableBracketedPaste) {
-                Ok(()) => self.bracketed_paste = false,
-                Err(error) => first_error = first_error.or(Some(error)),
-            }
-        }
-        if self.alternate_screen {
-            match execute!(&mut self.writer, LeaveAlternateScreen) {
-                Ok(()) => self.alternate_screen = false,
-                Err(error) => first_error = first_error.or(Some(error)),
-            }
-        }
-        if self.cursor_hidden {
-            match execute!(&mut self.writer, Show) {
-                Ok(()) => self.cursor_hidden = false,
-                Err(error) => first_error = first_error.or(Some(error)),
-            }
-        }
-        if self.raw_mode {
-            match disable_raw_mode() {
-                Ok(()) => self.raw_mode = false,
-                Err(error) => first_error = first_error.or(Some(error)),
-            }
-        }
-        first_error.map_or(Ok(()), Err)
     }
 
     /// Return the terminal width in cells.
