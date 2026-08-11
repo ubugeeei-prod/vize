@@ -166,9 +166,10 @@ impl VirtualTsGenerator {
         self.write_line("// Module-level imports");
 
         let lines: Vec<&str> = content.lines().collect();
+        let code_starts = code_line_starts(&lines);
         let mut index = 0;
         while index < lines.len() {
-            let Some(end) = import_statement_end(&lines, index) else {
+            let Some(end) = import_statement_end(&lines, &code_starts, index) else {
                 index += 1;
                 continue;
             };
@@ -361,11 +362,12 @@ impl VirtualTsGenerator {
     pub(crate) fn emit_setup_body(&mut self, content: &str) {
         self.emit_line("// User setup code");
         let lines: Vec<&str> = content.lines().collect();
+        let code_starts = code_line_starts(&lines);
         let mut index = 0;
         while index < lines.len() {
             // Skip import statements (already emitted at module level),
             // including the continuation lines of a wrapped import.
-            if let Some(end) = import_statement_end(&lines, index) {
+            if let Some(end) = import_statement_end(&lines, &code_starts, index) {
                 index = end + 1;
                 continue;
             }
@@ -446,12 +448,18 @@ impl VirtualTsGenerator {
 /// lines inside the setup body, making the virtual TypeScript unparseable and
 /// erasing every type the file declares.
 ///
-/// Continuation lines are only consumed while the named-binding braces stay
-/// open, so a line that merely looks like an import can never swallow the rest
-/// of the script.
+/// `code_starts` marks which lines begin in code context, so `import`-looking
+/// text inside a template literal or a block comment is never mistaken for a
+/// statement. Continuation lines are consumed only while the named-binding
+/// braces stay open, or when the next line opens the trailing `from` clause,
+/// so a line that merely looks like an import can never swallow the rest of
+/// the script.
 ///
 /// Returns `None` when the line does not begin an import statement.
-fn import_statement_end(lines: &[&str], start: usize) -> Option<usize> {
+fn import_statement_end(lines: &[&str], code_starts: &[bool], start: usize) -> Option<usize> {
+    if !code_starts.get(start).copied().unwrap_or(false) {
+        return None;
+    }
     if !lines.get(start)?.trim().starts_with("import ") {
         return None;
     }
@@ -459,20 +467,42 @@ fn import_statement_end(lines: &[&str], start: usize) -> Option<usize> {
     let mut statement = String::with_capacity(128);
     for (offset, line) in lines[start..].iter().enumerate() {
         if offset > 0 {
-            statement.push(' ');
+            statement.push('\n');
         }
         statement.push_str(line.trim());
 
         let state = scan_import_statement(&statement);
-        if state.is_complete() || !state.is_open() {
+        if state.is_complete() {
             return Some(start + offset);
         }
+        if state.is_open() {
+            continue;
+        }
+        // The named-binding clause is balanced but no module specifier has
+        // been seen: `import { a }\nfrom "./x";` is one statement, while
+        // anything else ends it here rather than eating unrelated code.
+        if opens_from_clause(lines.get(start + offset + 1)) {
+            continue;
+        }
+        return Some(start + offset);
     }
 
     Some(start)
 }
 
-/// Join the lines of one import statement into a single logical line.
+/// Whether a line opens the trailing `from "…"` clause of an import.
+fn opens_from_clause(line: Option<&&str>) -> bool {
+    let Some(rest) = line.and_then(|line| line.trim_start().strip_prefix("from")) else {
+        return false;
+    };
+    rest.starts_with([' ', '\t', '"', '\''])
+}
+
+/// Join the lines of one import statement into a single logical statement.
+///
+/// Line structure is preserved: collapsing the lines into one would move any
+/// trailing `//` comment in front of the bindings that follow it and comment
+/// out the rest of the statement.
 fn join_statement_lines(lines: &[&str]) -> String {
     if let [line] = lines {
         return line.to_compact_string();
@@ -481,9 +511,9 @@ fn join_statement_lines(lines: &[&str]) -> String {
     let mut statement = String::with_capacity(128);
     for (offset, line) in lines.iter().enumerate() {
         if offset > 0 {
-            statement.push(' ');
+            statement.push('\n');
         }
-        statement.push_str(line.trim());
+        statement.push_str(line);
     }
     statement
 }
@@ -512,16 +542,41 @@ impl ImportStatementState {
     }
 }
 
-/// Scan an accumulated import statement for brace and string state.
+/// Scan an accumulated import statement for brace, string, and comment state.
+///
+/// Comments are skipped so that a `}` or a quote inside `// …` or `/* … */`
+/// never ends the statement early. The whole accumulated statement is rescanned
+/// on every added line, so comment state spanning lines resolves naturally.
 fn scan_import_statement(statement: &str) -> ImportStatementState {
     let bytes = statement.as_bytes();
     let mut depth: i32 = 0;
     let mut quote: Option<u8> = None;
     let mut has_specifier = false;
+    let mut line_comment = false;
+    let mut block_comment = false;
     let mut index = 0;
 
     while index < bytes.len() {
         let byte = bytes[index];
+
+        if line_comment {
+            if byte == b'\n' {
+                line_comment = false;
+            }
+            index += 1;
+            continue;
+        }
+
+        if block_comment {
+            if byte == b'*' && bytes.get(index + 1) == Some(&b'/') {
+                block_comment = false;
+                index += 2;
+                continue;
+            }
+            index += 1;
+            continue;
+        }
+
         match quote {
             Some(open) => {
                 if byte == b'\\' {
@@ -534,6 +589,16 @@ fn scan_import_statement(statement: &str) -> ImportStatementState {
                 }
             }
             None => match byte {
+                b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                    line_comment = true;
+                    index += 2;
+                    continue;
+                }
+                b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                    block_comment = true;
+                    index += 2;
+                    continue;
+                }
                 b'"' | b'\'' | b'`' => quote = Some(byte),
                 b'{' => depth += 1,
                 b'}' => depth -= 1,
@@ -548,6 +613,111 @@ fn scan_import_statement(statement: &str) -> ImportStatementState {
         quote_open: quote.is_some(),
         has_specifier,
     }
+}
+
+/// Source context of a template literal being scanned.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum TemplateContext {
+    /// Inside the literal text of a template.
+    Literal,
+    /// Inside a `${ … }` expression, tracking its unbalanced `{` count.
+    Expression(u32),
+}
+
+/// Report, for every line, whether it starts in code context.
+///
+/// Import extraction is line oriented, so it would otherwise hoist an
+/// `import`-looking line out of a template literal or a block comment and
+/// corrupt both the module scope and the setup body. Strings and `//` comments
+/// cannot span lines, so only block comments and template literals carry over.
+fn code_line_starts(lines: &[&str]) -> Vec<bool> {
+    let mut starts = Vec::with_capacity(lines.len());
+    let mut block_comment = false;
+    let mut templates: Vec<TemplateContext> = Vec::new();
+
+    for line in lines {
+        starts.push(!block_comment && templates.is_empty());
+
+        let bytes = line.as_bytes();
+        let mut quote: Option<u8> = None;
+        let mut index = 0;
+
+        while index < bytes.len() {
+            let byte = bytes[index];
+
+            if block_comment {
+                if byte == b'*' && bytes.get(index + 1) == Some(&b'/') {
+                    block_comment = false;
+                    index += 2;
+                    continue;
+                }
+                index += 1;
+                continue;
+            }
+
+            if let Some(open) = quote {
+                if byte == b'\\' {
+                    index += 2;
+                    continue;
+                }
+                if byte == open {
+                    quote = None;
+                }
+                index += 1;
+                continue;
+            }
+
+            if matches!(templates.last(), Some(TemplateContext::Literal)) {
+                match byte {
+                    b'\\' => {
+                        index += 2;
+                        continue;
+                    }
+                    b'`' => {
+                        templates.pop();
+                    }
+                    b'$' if bytes.get(index + 1) == Some(&b'{') => {
+                        templates.push(TemplateContext::Expression(0));
+                        index += 2;
+                        continue;
+                    }
+                    _ => {}
+                }
+                index += 1;
+                continue;
+            }
+
+            match byte {
+                // The rest of the line is a comment.
+                b'/' if bytes.get(index + 1) == Some(&b'/') => break,
+                b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                    block_comment = true;
+                    index += 2;
+                    continue;
+                }
+                b'"' | b'\'' => quote = Some(byte),
+                b'`' => templates.push(TemplateContext::Literal),
+                b'{' => {
+                    if let Some(TemplateContext::Expression(depth)) = templates.last_mut() {
+                        *depth += 1;
+                    }
+                }
+                b'}' => {
+                    if let Some(TemplateContext::Expression(depth)) = templates.last_mut() {
+                        if *depth == 0 {
+                            templates.pop();
+                        } else {
+                            *depth -= 1;
+                        }
+                    }
+                }
+                _ => {}
+            }
+            index += 1;
+        }
+    }
+
+    starts
 }
 
 /// Find a relative `from "./..."` import range with a byte scanner.
@@ -605,15 +775,30 @@ fn find_relative_import_from_range(line: &str) -> Option<(usize, usize, usize, u
 
 #[cfg(test)]
 mod tests {
-    use super::{find_relative_import_from_range, import_statement_end, join_statement_lines};
+    use super::{
+        String, code_line_starts, find_relative_import_from_range, import_statement_end,
+        join_statement_lines,
+    };
 
     fn relative_path(line: &str) -> Option<&str> {
         find_relative_import_from_range(line).map(|(_, start, end, _)| &line[start..end])
     }
 
     fn statement_end(content: &str) -> Option<usize> {
+        statement_end_at(content, 0)
+    }
+
+    fn statement_end_at(content: &str, start: usize) -> Option<usize> {
         let lines: Vec<&str> = content.lines().collect();
-        import_statement_end(&lines, 0)
+        let code_starts = code_line_starts(&lines);
+        import_statement_end(&lines, &code_starts, start)
+    }
+
+    /// The module-scope text emitted for the statement starting at line 0.
+    fn joined_statement(content: &str) -> String {
+        let lines: Vec<&str> = content.lines().collect();
+        let end = statement_end(content).expect("expected an import statement");
+        join_statement_lines(&lines[0..=end])
     }
 
     #[test]
@@ -621,12 +806,65 @@ mod tests {
         let content =
             "import {\n  createScope,\n  provideScope,\n} from \"./scope.ts\";\nconst a = 1;";
         assert_eq!(statement_end(content), Some(3));
-
-        let lines: Vec<&str> = content.lines().collect();
         assert_eq!(
-            join_statement_lines(&lines[0..=3]),
-            "import { createScope, provideScope, } from \"./scope.ts\";"
+            joined_statement(content),
+            "import {\n  createScope,\n  provideScope,\n} from \"./scope.ts\";"
         );
+    }
+
+    #[test]
+    fn groups_a_from_clause_on_its_own_line() {
+        let content = "import {\n  createScope,\n}\nfrom \"./scope.ts\";\nconst a = 1;";
+        assert_eq!(statement_end(content), Some(3));
+        assert!(joined_statement(content).ends_with("from \"./scope.ts\";"));
+    }
+
+    #[test]
+    fn keeps_line_comments_from_swallowing_later_bindings() {
+        let content =
+            "import {\n  createScope, // scope factory\n  provideScope,\n} from \"./scope.ts\";";
+        assert_eq!(statement_end(content), Some(3));
+
+        // Collapsing the lines would move `// scope factory` in front of the
+        // remaining bindings and comment out the rest of the statement.
+        let statement = joined_statement(content);
+        assert!(statement.contains("\n  provideScope,"));
+        assert!(statement.ends_with("from \"./scope.ts\";"));
+    }
+
+    #[test]
+    fn ignores_braces_and_quotes_inside_comments() {
+        let content = "import {\n  createScope, /* } it's fine */\n  provideScope,\n} from \"./scope.ts\";\nconst a = 1;";
+        assert_eq!(statement_end(content), Some(3));
+    }
+
+    #[test]
+    fn ignores_import_like_lines_inside_template_literals() {
+        let content = "const sample = `\nimport { ref } from 'vue';\n`;\nconst a = 1;";
+        assert_eq!(statement_end_at(content, 1), None);
+    }
+
+    #[test]
+    fn ignores_import_like_lines_inside_block_comments() {
+        let content = "/*\nimport { ref } from 'vue';\n*/\nconst a = 1;";
+        assert_eq!(statement_end_at(content, 1), None);
+    }
+
+    #[test]
+    fn resumes_after_a_template_literal_closes() {
+        let content =
+            "const sample = `\nimport { ref } from 'vue';\n`;\nimport { computed } from 'vue';";
+        assert_eq!(statement_end_at(content, 1), None);
+        assert_eq!(statement_end_at(content, 3), Some(3));
+    }
+
+    #[test]
+    fn tracks_nested_template_expressions() {
+        let lines: Vec<&str> = vec![
+            "const a = `${ `${ inner }` }`;",
+            "import { ref } from 'vue';",
+        ];
+        assert_eq!(code_line_starts(&lines), vec![true, true]);
     }
 
     #[test]
