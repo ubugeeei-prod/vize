@@ -18,7 +18,8 @@
  */
 export function anyAbortSignal(signals: Iterable<AbortSignal>): AbortSignal {
   const inputs = [...signals];
-  if (typeof AbortSignal.any === "function") return AbortSignal.any(inputs);
+  const nativeAny = conformantNativeAbortSignalAny();
+  if (nativeAny !== undefined) return nativeAny.call(AbortSignal, inputs);
 
   const controller = new AbortController();
   const listeners: Array<readonly [AbortSignal, () => void]> = [];
@@ -58,6 +59,44 @@ export function anyAbortSignal(signals: Iterable<AbortSignal>): AbortSignal {
   }
 
   return controller.signal;
+}
+
+let probedNativeAny: unknown;
+let cachedNativeAny: typeof AbortSignal.any | undefined;
+
+/** Resolve the current native implementation only after its first-reason contract passes. */
+function conformantNativeAbortSignalAny(): typeof AbortSignal.any | undefined {
+  let candidate: typeof AbortSignal.any | undefined;
+  try {
+    candidate = Reflect.get(AbortSignal, "any") as typeof AbortSignal.any | undefined;
+  } catch {
+    return undefined;
+  }
+  if (candidate === probedNativeAny) return cachedNativeAny;
+
+  probedNativeAny = candidate;
+  cachedNativeAny =
+    typeof candidate === "function" && nativeAnyReasonIsStable(candidate) ? candidate : undefined;
+  return cachedNativeAny;
+}
+
+/**
+ * Detect runtimes whose combined reason changes when an earlier array member
+ * aborts after the winner. The probe deliberately does not read the reason
+ * until both inputs abort, catching lazy native implementations as well.
+ */
+function nativeAnyReasonIsStable(candidate: typeof AbortSignal.any): boolean {
+  try {
+    const late = new AbortController();
+    const winner = new AbortController();
+    const expected = {};
+    const combined = candidate.call(AbortSignal, [late.signal, winner.signal]);
+    winner.abort(expected);
+    late.abort({});
+    return combined.aborted && combined.reason === expected;
+  } catch {
+    return false;
+  }
 }
 
 /** Options for {@link timeoutAbortSignal}. */
