@@ -50,6 +50,11 @@ mod tests {
         fs::create_dir(&traces).expect("trace directory");
         std::os::unix::fs::symlink("/usr/bin/true", root.path().join("actual-tsgo"))
             .expect("fake tsgo");
+        fs::write(
+            root.path().join("trace-stdio.pl"),
+            super::super::proxy::TRACE_STDIO_PROXY,
+        )
+        .expect("stdio trace proxy");
         let wrapper = root.path().join("traced-tsgo");
         link_session_wrapper(&wrapper).expect("link session wrapper");
         let mut dynamic_file = OpenOptions::new()

@@ -10,6 +10,7 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 use super::super::canonical;
 use crate::{ide::IdeContext, server::ServerState};
 
+pub(super) mod evidence;
 mod generation;
 mod protocol;
 

@@ -8,6 +8,7 @@ use std::{
 };
 
 mod executable;
+mod proxy;
 mod readiness;
 
 const SHUTDOWN_OBSERVATION_TIMEOUT: Duration = Duration::from_secs(30);
@@ -112,8 +113,6 @@ pub(super) fn traced_corsa_executable(
             .map_err(|error| error.to_string())?
             .port();
         let gate_sentinel = trace_dir.join("shutdown-gate.enabled");
-        fs::write(root.join("trace-client.pl"), TRACE_CLIENT_PROXY)
-            .map_err(|error| error.to_string())?;
         fs::write(trace_dir.join("shutdown-gate.port"), gate_port.to_string())
             .map_err(|error| error.to_string())?;
         Some(ShutdownGate {
@@ -124,6 +123,8 @@ pub(super) fn traced_corsa_executable(
     } else {
         None
     };
+    fs::write(root.join("trace-stdio.pl"), proxy::TRACE_STDIO_PROXY)
+        .map_err(|error| error.to_string())?;
     executable::link_session_wrapper(&wrapper)?;
     Ok((wrapper, trace_dir, shutdown_gate))
 }
@@ -133,7 +134,13 @@ pub(super) fn traced_corsa_executable(
 /// opaque bridge spawn failure.
 fn assert_shutdown_gate_runtime() -> Result<(), String> {
     let probe = std::process::Command::new("perl")
-        .args(["-MIO::Socket::INET", "-e", "1"])
+        .args([
+            "-MIO::Socket::INET",
+            "-MIO::Select",
+            "-MIPC::Open3",
+            "-e",
+            "1",
+        ])
         .output()
         .map_err(|error| {
             format!("editor shutdown gate requires perl with IO::Socket::INET: {error}")
@@ -147,51 +154,6 @@ fn assert_shutdown_gate_runtime() -> Result<(), String> {
     Ok(())
 }
 
-const TRACE_CLIENT_PROXY: &str = r#"use strict;
-use warnings;
-use IO::Socket::INET;
-
-my ($trace_path, $gate_sentinel, $gate_port) = @ARGV;
-open my $trace, '>:raw', $trace_path or die "open trace: $!";
-binmode STDIN;
-binmode STDOUT;
-my $tail = '';
-my $shutdown_seen = 0;
-
-sub write_all {
-    my ($handle, $bytes) = @_;
-    while (length $bytes) {
-        my $written = syswrite $handle, $bytes;
-        die "write proxy stream: $!" unless defined $written;
-        substr($bytes, 0, $written, '');
-    }
-}
-
-while (1) {
-    my $read = sysread STDIN, my $chunk, 8192;
-    die "read client stream: $!" unless defined $read;
-    last if $read == 0;
-    write_all($trace, $chunk);
-    write_all(*STDOUT, $chunk);
-    $tail .= $chunk;
-    if (!$shutdown_seen && $tail =~ /"method"\s*:\s*"shutdown"/) {
-        $shutdown_seen = 1;
-        if (-e $gate_sentinel) {
-            my $gate = IO::Socket::INET->new(
-                PeerAddr => '127.0.0.1',
-                PeerPort => $gate_port,
-                Proto => 'tcp',
-            ) or die "connect shutdown gate: $!";
-            write_all($gate, 'S');
-            my $read = sysread $gate, my $release, 1;
-            die "read shutdown gate release: $!" unless defined $read;
-            die "invalid shutdown gate release" unless $read == 1 && $release eq 'R';
-        }
-    }
-    $tail = substr($tail, -128) if length($tail) > 128;
-}
-"#;
-
 pub(super) fn assert_graceful_lsp_lifecycle(
     trace_dir: &Path,
     canonical_root_uri: &str,
@@ -201,6 +163,13 @@ pub(super) fn assert_graceful_lsp_lifecycle(
     let mut lsp_traces = Vec::new();
     for entry in fs::read_dir(trace_dir).map_err(|error| error.to_string())? {
         let path = entry.map_err(|error| error.to_string())?.path();
+        if !path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("client-") && name.ends_with(".raw"))
+        {
+            continue;
+        }
         let trace = fs::read(&path).map_err(|error| error.to_string())?;
         if find_bytes(&trace, b"textDocument/rename").is_some() {
             lsp_traces.push((path, trace));

@@ -41,7 +41,10 @@ fn concurrent_real_corsa_rename_sessions_are_isolated() {
                     session
                         .assert_direct_first_child_rename()
                         .map_err(|error| {
-                            format!("session {session_index} direct-first rename: {error}")
+                            format!(
+                                "session {session_index} direct-first rename: {error}; {}",
+                                harness::evidence::describe_server_frames(&session)
+                            )
                         })?;
                     for round in 0..ASSERTED_ROUNDS {
                         session.assert_prepare_ranges().map_err(|error| {
