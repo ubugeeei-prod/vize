@@ -299,7 +299,7 @@ function writeFakeVize(pathname: string) {
 }
 
 function seededVueTscBody() {
-  return `const config = process.argv.at(-1);\nif (config?.endsWith(".vize-typecheck-parity-seed.tsconfig.json")) {\n  const probe = path.join(process.cwd(), ".vize-typecheck-parity-seed.vue");\n  const broken = fs.readFileSync(probe, "utf8").includes("= 42;");\n  if (broken) process.stdout.write(probe + "(2,7): error TS2322: Type 'number' is not assignable to type 'string'.\\n");\n  process.stdout.write(probe + "\\n");\n  process.exit(broken ? 2 : 0);\n}`;
+  return `const config = process.argv.at(-1);\nif (config?.endsWith(".vize-typecheck-parity-seed.tsconfig.json")) {\n  const probe = path.join(process.cwd(), ".vize-typecheck-parity-seed.vue");\n  const broken = fs.readFileSync(probe, "utf8").includes("= 42;");\n  process.stdout.write("error TS5101: unrelated inherited config deprecation\\n");\n  if (broken) process.stdout.write(probe + "(2,7): error TS2322: Type 'number' is not assignable to type 'string'.\\n");\n  process.stdout.write(probe + "\\n");\n  process.exit(2);\n}`;
 }
 
 export function updateJson(pathname: string, update: (value: any) => void) {
