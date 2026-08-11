@@ -63,6 +63,7 @@ export const CRITERION_SUITES = [
   // cost dimensions surfaces here.
   { package: "vize_atelier_jsx", benches: ["jsx_compile"], label: "JSX compile" },
   { package: "vize_croquis_cf", benches: ["cross_file"], label: "Cross-file analysis" },
+  { package: "vize_doctor", benches: ["reporter"], label: "Doctor reporters" },
   { package: "vize_glyph", benches: ["formatter"], label: "Formatter" },
   { package: "vize_patina", benches: ["lint_bench", "markup_ir_bench"], label: "Lint" },
 ];
