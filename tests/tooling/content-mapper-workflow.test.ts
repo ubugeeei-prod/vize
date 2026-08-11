@@ -1,13 +1,39 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { parse } from "yaml";
+
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const UPSTREAM_SHA = "bddd2162710e50281fa838456a875fd59ee7c91f";
+const UPSTREAM_SHA = "c18f834e07d992a24cdfbb7cb8bd58812ff3d95e";
+const WATCHER_CLOSE_TEST = "TestWatcher_CloseWhileWatchFilesReconciles";
+const WATCHER_COMMAND = `go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`;
+const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo';
+const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
+const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
+const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
+
+interface WorkflowStep {
+  env?: Record<string, string>;
+  run?: string;
+  "working-directory"?: string;
+}
+
+function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
+  const jobs = (parse(workflow) as { jobs: Record<string, { steps?: WorkflowStep[] }> }).jobs;
+  const steps = jobs[jobName]?.steps;
+  assert.ok(Array.isArray(steps), `missing steps for job ${jobName}`);
+  return steps;
+}
+
+function stepsRunning(steps: WorkflowStep[], command: string): number[] {
+  return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
+}
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
   const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
   const job = workflowJobBody(workflow, "exact-tsgo-project");
+  const steps = jobSteps(workflow, "exact-tsgo-project");
 
   assert.match(workflow, /pull_request:\n\s+branches: \[main\]\n\s+paths:/);
   for (const relevantPath of [
@@ -24,6 +50,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize_maestro/src/ide/**"',
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
     '"crates/vize/tests/content_mapper_tsgo_build.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"',
+    '"crates/vize/tests/content_mapper_lsp_support/**"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
     '"npm/cli/bin/vize"',
     '"npm/cli/package.json"',
@@ -45,7 +75,15 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
   );
   assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
-  assert.match(job, /go build -tags=noembed -trimpath -o "\$RUNNER_TEMP\/tsgo" \.\/cmd\/tsgo/);
+  const watcherSteps = stepsRunning(steps, WATCHER_COMMAND);
+  const buildSteps = stepsRunning(steps, TSGO_BUILD_COMMAND);
+  assert.equal(watcherSteps.length, 1, "expected exactly one watcher regression step");
+  assert.equal(buildSteps.length, 1, "expected exactly one exact tsgo build step");
+  assert.equal(steps[watcherSteps[0]]["working-directory"], "typescript-go-content-mapper");
+  assert.ok(
+    watcherSteps[0] < buildSteps[0],
+    "watcher regression must run before the exact tsgo build",
+  );
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(
@@ -62,7 +100,44 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     job,
     /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
   );
-  assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
-  assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
-  assert.match(job, /cargo test -p vize_maestro/);
+  const editorCommands = [
+    "cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture",
+    "cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture",
+    "cargo test -p vize_canon --test lsp_import_resolution -- --nocapture",
+  ];
+  const editorSteps = steps.filter((step) =>
+    editorCommands.every((command) => step.run?.includes(command)),
+  );
+  assert.equal(editorSteps.length, 1, "expected one exact editor backend step");
+  assert.equal(editorSteps[0].env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
+  assert.equal(editorSteps[0].env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
+  const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
+  assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
+  const stressStep = steps[stressSteps[0]];
+  const stressRun = stressStep.run ?? "";
+  assert.equal(stressStep.env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
+  assert.equal(stressStep.env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
+  assert.equal(
+    [...stressRun.matchAll(/^\s*cargo test -p vize_maestro -- --quiet\s*$/gm)].length,
+    1,
+    "expected one direct Maestro command in the iteration loop",
+  );
+  assert.equal(
+    [...stressRun.matchAll(/^\s*(?:for|while|until)\b/gm)].length,
+    1,
+    "retry loops are forbidden in the lifecycle stress step",
+  );
+  assert.doesNotMatch(
+    stressRun,
+    /\bsleep\b|--test-threads(?:=|\s+)1|RUST_TEST_THREADS\s*=\s*1|\|\|\s*true|\bset\s+\+e\b|\b(?:retry|attempt)\b|(?:grep|rg).*\b(?:panic|fail)/i,
+    "stress step must not serialize, retry, sleep, ignore failures, or filter panics",
+  );
+  const loopStart = stressRun.indexOf(MAESTRO_LOOP);
+  assert.ok(loopStart >= 0, "Maestro stress step must run a 20-iteration loop");
+  const maestroRun = stressRun.indexOf(MAESTRO_COMMAND);
+  const successLog = stressRun.indexOf(MAESTRO_SUCCESS_LOG);
+  const loopEnd = stressRun.slice(loopStart).search(/^\s*done\s*$/m) + loopStart;
+  assert.ok(loopStart < maestroRun, "Maestro command must run inside the loop");
+  assert.ok(maestroRun < successLog, "success log must follow the Maestro command");
+  assert.ok(successLog < loopEnd, "success log must run inside the same loop");
 });

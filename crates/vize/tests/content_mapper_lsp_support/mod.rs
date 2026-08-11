@@ -8,8 +8,10 @@ use vize_carton::String as CompactString;
 
 #[allow(dead_code)]
 mod navigation;
+mod responder;
 #[allow(unused_imports)]
 pub use navigation::{contains_location_range, contains_text_edit, references, rename};
+pub use responder::EditorResponder;
 
 struct RawDocumentDiagnostic;
 struct RawHover;

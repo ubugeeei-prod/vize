@@ -79,6 +79,7 @@
     "vue-sfc-compiler-2-6": "catalog:legacy-vue-oracle",
     "vue-sfc-compiler-2-7": "catalog:legacy-vue-oracle",
     "vue-tsc": "catalog:typescript",
-    "vue-virtual-scroller": "3.0.4"
+    "vue-virtual-scroller": "3.0.4",
+    "yaml": "2.9.0"
   }
 }

@@ -16,9 +16,9 @@ use cases::EVENT_CASES;
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_completion, assert_prop_navigation, contains_location, contains_location_range,
-    contains_text_edit, copy_fixture, editor_capabilities, file_uri, install_packages, position,
-    pull_diagnostics, references, rename, workspace_root,
+    EditorResponder, assert_completion, assert_prop_navigation, contains_location,
+    contains_location_range, contains_text_edit, copy_fixture, editor_capabilities, file_uri,
+    install_packages, position, pull_diagnostics, references, rename, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -30,7 +30,7 @@ impl Drop for StopOnDrop<'_> {
     }
 }
 struct RawInitialize;
-struct RawDiscoverContentMappers;
+struct RawSetContentMapperContributions;
 struct RawInitialized;
 impl lsp_types::request::Request for RawInitialize {
     type Params = Value;
@@ -38,10 +38,10 @@ impl lsp_types::request::Request for RawInitialize {
     const METHOD: &'static str = "initialize";
 }
 
-impl lsp_types::request::Request for RawDiscoverContentMappers {
+impl lsp_types::request::Request for RawSetContentMapperContributions {
     type Params = Value;
     type Result = Value;
-    const METHOD: &'static str = "custom/discoverContentMappers";
+    const METHOD: &'static str = "custom/setContentMapperContributions";
 }
 
 impl lsp_types::notification::Notification for RawInitialized {
@@ -111,6 +111,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
     let root_uri = file_uri(project.path());
 
     let stop = AtomicBool::new(false);
+    let editor = EditorResponder::default();
     std::thread::scope(|scope| {
         let _stop_on_drop = StopOnDrop(&stop);
         corsa::runtime::block_on(async {
@@ -124,20 +125,13 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             let responder_client = client.clone();
             let events = responder_client.subscribe();
             let stop_ref = &stop;
+            let editor_ref = &editor;
             let responder = scope.spawn(move || {
                 while !stop_ref.load(Ordering::Relaxed) {
                     if let Ok(InboundEvent::Request { id, method, params }) =
                         events.recv_timeout(Duration::from_millis(50))
                     {
-                        let result = if method.as_str() == "workspace/configuration" {
-                            let count = params
-                                .get("items")
-                                .and_then(Value::as_array)
-                                .map_or(0, Vec::len);
-                            Value::Array(vec![Value::Null; count])
-                        } else {
-                            Value::Null
-                        };
+                        let result = editor_ref.respond_to(method.as_str(), &params);
                         let _ = responder_client.respond(id, result);
                     }
                 }
@@ -155,14 +149,15 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             assert!(initialize["capabilities"].is_object(), "{initialize:#}");
             client.notify::<RawInitialized>(json!({})).unwrap();
 
-            let discovered = client
-                .request::<RawDiscoverContentMappers>(json!({
-                    "textDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>(),
-                    "extensions": [".vue"]
+            let contributed = client
+                .request::<RawSetContentMapperContributions>(json!({
+                    "contributions": [{ "contributorId": "vize", "extensions": [".vue"] }],
+                    "openDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>()
                 }))
                 .await
                 .unwrap();
-            assert_eq!(discovered["extensions"], json!([".vue"]), "{discovered:#}");
+            assert!(contributed.is_null(), "{contributed:#}");
+            editor.assert_vue_did_open_registration();
 
             let overlay = client.overlay();
             let app_document_uri = Uri::from_str(&app_uri).unwrap();

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { buildComment } from "../../bench/comment-test-report.mjs";
 import { readRepoFile, root, workflowJobBody } from "./support/github-workflows.ts";
@@ -280,7 +281,14 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const sourceJob = workflowJobBody(workflow, "source-coverage");
   const branchJob = workflowJobBody(workflow, "branch-coverage");
+  const jobs = (
+    parse(workflow) as {
+      jobs: Record<string, { env?: Record<string, unknown> }>;
+    }
+  ).jobs;
 
+  assert.equal(jobs["clippy-and-test"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
+  assert.equal(jobs["source-coverage"].env?.VIZE_NUXT_CONFIG_ITERATIONS, "100");
   assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
   assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);
   assert.match(sourceJob, /vp run --workspace-root coverage:source/);

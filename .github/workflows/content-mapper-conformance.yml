@@ -15,6 +15,10 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
+      - "crates/vize/tests/content_mapper_lsp_support/**"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -52,6 +56,10 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/check_*package*.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
+      - "crates/vize/tests/content_mapper_lsp_support/**"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -86,7 +94,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  CONTENT_MAPPER_TSGO_SHA: "bddd2162710e50281fa838456a875fd59ee7c91f"
+  CONTENT_MAPPER_TSGO_SHA: "c18f834e07d992a24cdfbb7cb8bd58812ff3d95e"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -110,6 +118,9 @@ jobs:
         with:
           go-version-file: typescript-go-content-mapper/go.mod
           cache-dependency-path: typescript-go-content-mapper/go.sum
+      - name: Verify upstream watcher close regression
+        working-directory: typescript-go-content-mapper
+        run: go test ./internal/lsp/lspwatcher -run '^TestWatcher_CloseWhileWatchFilesReconciles$' -count=1
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -182,5 +193,14 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
           cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
-          cargo test -p vize_maestro
+      - name: Stress exact editor lifecycle
+        env:
+          TSGO_PATH: ${{ runner.temp }}/tsgo
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        run: |
+          for iteration in $(seq 1 20); do
+            cargo test -p vize_maestro -- --quiet
+            echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"
+          done

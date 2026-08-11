@@ -8,6 +8,7 @@ import { withRustTaskEnvironment } from "./task-shell.ts";
 export const task = (
   command: string,
   options: {
+    env?: string[];
     forwardArguments?: boolean;
     input?: TaskInput;
   } = {},
@@ -15,6 +16,7 @@ export const task = (
   command: withRustTaskEnvironment(command, {
     forwardArguments: options.forwardArguments,
   }),
+  ...(options.env == null ? {} : { env: options.env }),
   ...(options.input == null ? {} : { input: options.input }),
 });
 

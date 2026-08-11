@@ -358,6 +358,8 @@ jobs:
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
+    env:
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -380,7 +382,7 @@ jobs:
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
-        env: { VIZE_NUXT_CONFIG_ITERATIONS: "100", VIZE_TEST_REQUIRE_TSGO: "1" }
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         run: cargo test --workspace && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_vitrine --no-default-features --features wasm
 
   coverage:
@@ -413,13 +415,11 @@ jobs:
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
-    # cargo llvm-cov against the whole workspace runs ~4–6 minutes. Coverage is
-    # a trend metric, not a per-PR signal: one PR rarely moves workspace-wide
-    # percentages. Run on push-to-main and on the daily schedule; the
-    # fixture-coverage job (`coverage`) and compiler/lint suites still run per-PR.
+    # Source coverage is a push/daily trend metric; fixture and compiler/lint gates stay per PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 

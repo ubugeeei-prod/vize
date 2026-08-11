@@ -1204,6 +1204,9 @@ importers:
       vue-virtual-scroller:
         specifier: 3.0.4
         version: 3.0.4(vue@3.6.0-beta.10(typescript@6.0.3))
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
 
 packages:
 
