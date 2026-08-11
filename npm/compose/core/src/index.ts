@@ -1,3 +1,4 @@
+export * from "./abort-signal.ts";
 export * from "./async-resource.ts";
 export * from "./capability.ts";
 export * from "./disposal-scope.ts";

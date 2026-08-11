@@ -21,6 +21,7 @@ void test("publishes every utility through a typed side-effect-free subpath", as
   ) as PackageManifest;
   const expectedSubpaths = [
     ".",
+    "./abort-signal",
     "./async-resource",
     "./capability",
     "./disposal-scope",

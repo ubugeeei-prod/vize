@@ -9,6 +9,7 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      "abort-signal": "src/abort-signal.ts",
       "async-resource": "src/async-resource.ts",
       capability: "src/capability.ts",
       "disposal-scope": "src/disposal-scope.ts",
