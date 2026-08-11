@@ -194,8 +194,8 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
             // Never register an ambient declaration file — its `declare module`
             // statements would shadow real modules as a program root.
             if package_route.is_none()
-                && !package_graph
-                && (is_declaration_file(&resolved) || is_node_modules_path(&resolved))
+                && (is_declaration_file(&resolved)
+                    || (!package_graph && is_node_modules_path(&resolved)))
             {
                 continue;
             }

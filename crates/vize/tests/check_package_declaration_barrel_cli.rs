@@ -6,6 +6,8 @@
     clippy::disallowed_types
 )]
 
+#[path = "support/corsa_path.rs"]
+mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
@@ -219,6 +221,7 @@ fn resolve_test_corsa_path() -> Option<String> {
     std::env::var_os("CORSA_PATH")
         .filter(|path| Path::new(path).is_file())
         .map(|path| path.to_string_lossy().into_owned())
+        .or_else(|| corsa_path::resolve(workspace_root()))
 }
 
 fn write(path: &Path, content: &str) {

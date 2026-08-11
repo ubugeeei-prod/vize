@@ -69,6 +69,30 @@
       "diagnostics": []
     },
     {
+      "file": "<project>/packages/i18n/built/index.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-bubble-game/built/index.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/entities.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/index.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-js/built/streaming.types.js",
+      "diagnostics": []
+    },
+    {
+      "file": "<project>/packages/misskey-reversi/built/index.js",
+      "diagnostics": []
+    },
+    {
       "file": "src/accounts.ts",
       "diagnostics": []
     },
@@ -3199,5 +3223,5 @@
   ],
   "errorCount": 30,
   "warningCount": 0,
-  "fileCount": 788
+  "fileCount": 794
 }
