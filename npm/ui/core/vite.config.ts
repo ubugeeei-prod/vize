@@ -28,6 +28,7 @@ export default defineConfig({
       "long-press": "src/long-press.ts",
       move: "src/move.ts",
       press: "src/press.ts",
+      "spatial-navigation": "src/spatial-navigation.ts",
       typeahead: "src/typeahead.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",

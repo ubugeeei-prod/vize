@@ -19,6 +19,7 @@ const publicEntries = [
   "./long-press",
   "./move",
   "./press",
+  "./spatial-navigation",
   "./typeahead",
   "./primitive",
   "./visually-hidden",

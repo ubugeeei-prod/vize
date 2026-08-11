@@ -99,6 +99,11 @@
       "import": "./dist/press.mjs",
       "default": "./dist/press.mjs"
     },
+    "./spatial-navigation": {
+      "types": "./dist/spatial-navigation.d.mts",
+      "import": "./dist/spatial-navigation.mjs",
+      "default": "./dist/spatial-navigation.mjs"
+    },
     "./typeahead": {
       "types": "./dist/typeahead.d.mts",
       "import": "./dist/typeahead.mjs",

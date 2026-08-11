@@ -19,6 +19,38 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "SpatialNavigationConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { createCollectionRegistry } from "./collection.ts";
+import { useSpatialNavigation } from "./spatial-navigation.ts";
+
+const registry = createCollectionRegistry<string, string>();
+registry.register({ key: "alpha", value: "Alpha", textValue: "Alpha", order: 0 });
+registry.register({ key: "bravo", value: "Bravo", textValue: "Bravo", order: 1 });
+const navigation = useSpatialNavigation({
+  registry,
+  focusBehavior: "logical",
+  getRect: ({ key }) => ({
+    bottom: 100,
+    height: 100,
+    left: key === "alpha" ? 0 : 120,
+    right: key === "alpha" ? 100 : 220,
+    top: 0,
+    width: 100,
+  }),
+});
+</script>
+
+<template>
+  <div v-bind="navigation.spatialNavigationProps" role="grid">
+    <div v-for="key in ['alpha', 'bravo']" :key="key" role="gridcell">
+      {{ key }}
+    </div>
+  </div>
+</template>
+`,
+  },
+  {
     filename: "CompositeNavigationConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { createCollectionRegistry } from "./collection.ts";
