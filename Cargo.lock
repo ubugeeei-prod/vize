@@ -3753,6 +3753,7 @@ dependencies = [
  "corsa_lsp 1.7.0",
  "dashmap 6.1.0",
  "dirs",
+ "glob",
  "insta",
  "junction",
  "libc",

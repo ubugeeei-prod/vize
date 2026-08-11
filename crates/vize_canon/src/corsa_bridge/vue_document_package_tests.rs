@@ -1,277 +1,250 @@
-//! Importer-scoped workspace package routes in editor sessions (#4000).
+//! Importer-scoped package shadows in editor sessions (#4002).
 #![cfg(unix)]
 
 use std::path::{Path, PathBuf};
 
 use super::vue_document::{CorsaVueVirtualDocumentOptions, build_vue_virtual_project};
-use vize_carton::cstr;
 
-const TSCONFIG: &str = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler"}}"#;
-const UI_BUTTON: &str = "<script setup lang=\"ts\">\ndefineProps<{ variant: \"ghost\" | \"primary\" }>();\n</script>\n<template><button /></template>\n";
+#[path = "vue_document_package_tests/union.rs"]
+mod union;
+
+const TSCONFIG: &str = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","allowArbitraryExtensions":true,"customConditions":["editor"]}}"#;
 
 #[test]
-fn a_workspace_package_vue_export_resolves_to_the_external_mirror() {
-    let fixture = package_fixture("ui");
-    write_package_manifest(&fixture.package, "Widget.vue");
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let source = host_import("widget");
-
+fn editor_route_is_importer_scoped_and_materializes_native_shadow_topology() {
+    let fixture = package_fixture("alpha", "alpha", "string");
+    let source = host_source("alpha", "'ok'");
     let project = build(&fixture.host, &source);
 
-    assert!(!project.host.code.contains("@scope/ui/widget"));
-    let target = rewritten_package_target(&project.host.code);
-    assert!(target.with_extension("vue.ts").is_file());
-}
-
-#[test]
-fn package_ts_routes_through_the_mirror_while_declarations_stay_bare() {
-    let fixture = package_fixture("ui");
-    std::fs::write(
-        fixture.package.join("package.json"),
-        r#"{"name":"@scope/ui","exports":{"./widget":"./src/index.ts","./types":"./src/index.d.ts"}}"#,
-    )
-    .unwrap();
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    std::fs::write(
-        fixture.package.join("src/index.ts"),
-        "export { default } from './Widget.vue';\n",
-    )
-    .unwrap();
-    std::fs::write(
-        fixture.package.join("src/index.d.ts"),
-        "export interface Props { label: string }\n",
-    )
-    .unwrap();
-    link_package(&fixture.package, &fixture.link);
-    let source = "<script setup lang=\"ts\">\nimport Widget from '@scope/ui/widget'\nimport type { Props } from '@scope/ui/types'\nconst props = {} as Props\nvoid Widget; void props\n</script>\n";
-
-    let project = build(&fixture.host, source);
-
-    assert!(source.contains("@scope/ui/widget"));
-    assert!(!project.host.code.contains("@scope/ui/widget"));
-    assert!(project.host.code.contains("/__vize_external__/"));
-    assert!(project.host.code.contains("@scope/ui/types"));
-    let barrel = project
-        .documents
-        .iter()
-        .find(|(uri, _)| uri.ends_with("/packages/ui/src/index.ts"))
-        .expect("physical package barrel is synchronized");
-    assert!(barrel.1.contains("/__vize_external__/"));
-    let barrel_target = rewritten_package_target(&barrel.1);
-    assert!(barrel_target.with_extension("vue.ts").is_file());
-    assert!(
-        project
-            .documents
-            .iter()
-            .any(|(uri, _)| uri.ends_with("Widget.vue.ts"))
+    assert!(project.host.code.contains("from '@scope/ui'"));
+    assert!(!project.host.code.contains(".vize-package-routes"));
+    let host = crate::file_uri::file_uri_to_path(&project.host.request_uri).unwrap();
+    assert_ne!(host, fixture.host.with_extension("vue.ts"));
+    let shadow = shadow_root(&host);
+    assert_eq!(
+        std::fs::read_to_string(shadow.join("package.json")).unwrap(),
+        package_manifest("alpha", "string")
     );
+    assert!(shadow.join("src/Conditional.vue.ts").is_file());
+    assert!(shadow.join("src/Conditional.d.vue.ts").is_file());
+    assert!(shadow.join("src/Internal.d.vue.ts").is_file());
 }
 
 #[test]
-fn cache_detects_same_mtime_source_and_manifest_changes() {
-    let fixture = package_fixture("ui");
-    let original = fixture.package.join("src/Widget.vue");
-    let retargeted = fixture.package.join("src/Gadget.vue");
-    write_package_manifest(&fixture.package, "Widget.vue");
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let source = host_import("widget");
+fn duplicate_package_versions_materialize_distinct_editor_identities() {
+    let root = tempfile::tempdir().unwrap();
+    let alpha = app_fixture(root.path(), "alpha", "alpha", "string");
+    let bravo = app_fixture(root.path(), "bravo", "bravo", "number");
 
-    let initial = build(&fixture.host, &source);
-    let initial_target = rewritten_package_target(&initial.host.code);
-    let mirror = initial_target.with_extension("vue.ts");
-    let initial_mirror = std::fs::read_to_string(&mirror).unwrap();
+    let alpha_project = build(&alpha, &host_source("alpha", "'ok'"));
+    let bravo_project = build(&bravo, &host_source("bravo", "1"));
+    let alpha_shadow = request_path(&alpha_project);
+    let bravo_shadow = request_path(&bravo_project);
 
-    let source_mtime = modified(&original);
-    let changed = UI_BUTTON.replace("ghost", "solid");
-    assert_eq!(changed.len(), UI_BUTTON.len());
-    std::fs::write(&original, changed).unwrap();
-    restore_mtime(&original, source_mtime);
-    let refreshed = build(&fixture.host, &source);
-    let refreshed_mirror = std::fs::read_to_string(
-        rewritten_package_target(&refreshed.host.code).with_extension("vue.ts"),
-    )
-    .unwrap();
-    assert_ne!(initial_mirror, refreshed_mirror);
-    assert!(refreshed_mirror.contains("solid"));
-
-    std::fs::remove_file(&original).unwrap();
-    let deleted = build(&fixture.host, &source);
-    assert!(deleted.host.code.contains("@scope/ui/widget"));
-    assert!(!mirror.exists());
-
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
+    assert_ne!(alpha_shadow, bravo_shadow);
     assert!(
-        !build(&fixture.host, &source)
-            .host
-            .code
-            .contains("@scope/ui/widget")
+        std::fs::read_to_string(selected_companion(&alpha_shadow))
+            .unwrap()
+            .contains("alpha")
     );
-
-    let manifest = fixture.package.join("package.json");
-    let manifest_mtime = modified(&manifest);
-    std::fs::rename(&original, &retargeted).unwrap();
-    write_package_manifest(&fixture.package, "Gadget.vue");
-    restore_mtime(&manifest, manifest_mtime);
-    let rerouted = build(&fixture.host, &source);
-    let rerouted_target = rewritten_package_target(&rerouted.host.code);
-    assert!(rerouted_target.to_string_lossy().contains("Gadget.vue"));
-    assert!(!mirror.exists());
-}
-
-#[test]
-fn unresolved_package_cache_recovers_after_link_manifest_and_source_creation() {
-    let fixture = package_fixture("ui");
-    let source = host_import("widget");
-
-    let unresolved = build(&fixture.host, &source);
-    assert!(unresolved.host.code.contains("@scope/ui/widget"));
-
-    write_package_manifest(&fixture.package, "Widget.vue");
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let resolved = build(&fixture.host, &source);
-    let target = rewritten_package_target(&resolved.host.code);
-    assert!(target.with_extension("vue.ts").is_file());
-}
-
-#[test]
-fn invalid_manifest_cache_recovers_after_same_mtime_fix() {
-    let fixture = package_fixture("ui");
-    let valid = package_manifest("Widget.vue");
-    let invalid = valid.replacen('{', "[", 1);
-    assert_eq!(invalid.len(), valid.len());
-    std::fs::write(fixture.package.join("package.json"), invalid).unwrap();
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let source = host_import("widget");
-    let manifest = fixture.package.join("package.json");
-    let manifest_mtime = modified(&manifest);
-
-    let unresolved = build(&fixture.host, &source);
-    assert!(unresolved.host.code.contains("@scope/ui/widget"));
-
-    std::fs::write(&manifest, valid).unwrap();
-    restore_mtime(&manifest, manifest_mtime);
-    let resolved = build(&fixture.host, &source);
     assert!(
-        rewritten_package_target(&resolved.host.code)
-            .with_extension("vue.ts")
-            .is_file()
+        std::fs::read_to_string(selected_companion(&bravo_shadow))
+            .unwrap()
+            .contains("bravo")
     );
+    assert!(alpha_project.host.code.contains("from '@scope/ui'"));
+    assert!(bravo_project.host.code.contains("from '@scope/ui'"));
 }
 
 #[test]
-fn full_host_content_invalidates_export_from_routes() {
-    let fixture = package_fixture("ui");
-    std::fs::write(
-        fixture.package.join("package.json"),
-        r#"{"name":"@scope/ui","exports":{"./widget":"./src/Widget.vue","./gadget":"./src/Gadget.vue"}}"#,
-    )
-    .unwrap();
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    write_component(&fixture.package, "Gadget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let widget =
-        "<script lang=\"ts\">\nexport { default as Selected } from '@scope/ui/widget'\n</script>\n";
-    let gadget = widget.replace("widget", "gadget");
-    assert_eq!(widget.len(), gadget.len());
+fn corsa_editor_queries_observe_the_importer_local_package_shadow() {
+    let Some(corsa_path) = std::env::var_os("CORSA_PATH").map(PathBuf::from) else {
+        return;
+    };
+    if !corsa_path.is_file() {
+        return;
+    }
+    let fixture = package_fixture("queries", "alpha", "string");
+    let source = host_source("bravo", "1");
+    std::fs::write(&fixture.host, &source).unwrap();
+    let app = fixture.host.ancestors().nth(2).unwrap().to_path_buf();
+    install_runtime_stubs(&app);
+    let bridge = super::CorsaBridge::with_config(super::CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(app),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
 
-    let first = rewritten_package_target(&build(&fixture.host, widget).host.code);
-    let second = rewritten_package_target(&build(&fixture.host, &gadget).host.code);
-    assert!(first.to_string_lossy().contains("Widget.vue"));
-    assert!(second.to_string_lossy().contains("Gadget.vue"));
-}
+    corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let document = bridge
+            .open_vue_virtual_document(
+                &fixture.host,
+                &source,
+                CorsaVueVirtualDocumentOptions::default(),
+            )
+            .await
+            .unwrap();
+        let diagnostics = bridge.get_diagnostics(&document.request_uri).await.unwrap();
+        assert!(
+            diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code.as_ref().is_some_and(|code| code == 2353)),
+            "{diagnostics:#?}"
+        );
 
-#[test]
-fn cache_detects_workspace_package_symlink_retarget() {
-    let fixture = package_fixture("ui-a");
-    let second = fixture.root.path().join("packages/ui-b");
-    write_package_manifest(&fixture.package, "Widget.vue");
-    write_component(&fixture.package, "Widget.vue", UI_BUTTON);
-    write_package_manifest(&second, "Widget.vue");
-    write_component(&second, "Widget.vue", UI_BUTTON);
-    link_package(&fixture.package, &fixture.link);
-    let source = host_import("widget");
-
-    let first = rewritten_package_target(&build(&fixture.host, &source).host.code);
-    std::fs::remove_file(&fixture.link).unwrap();
-    link_package(&second, &fixture.link);
-    let retargeted = rewritten_package_target(&build(&fixture.host, &source).host.code);
-
-    assert!(first.to_string_lossy().contains("ui-a"));
-    assert!(retargeted.to_string_lossy().contains("ui-b"));
+        let widget = document.code.find("Widget").unwrap();
+        let (line, character) = line_column(&document.code, widget);
+        assert!(
+            bridge
+                .hover(&document.request_uri, line, character)
+                .await
+                .unwrap()
+                .is_some()
+        );
+        let definitions = bridge
+            .definition(&document.request_uri, line, character)
+            .await
+            .unwrap();
+        assert!(
+            definitions
+                .iter()
+                .filter_map(|location| crate::file_uri::file_uri_to_path(&location.uri))
+                .any(|path| path.to_string_lossy().contains("node_modules/@scope/ui")),
+            "{definitions:#?}"
+        );
+        assert!(
+            !bridge
+                .references(&document.request_uri, line, character, true)
+                .await
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            bridge
+                .prepare_rename(&document.request_uri, line, character)
+                .await
+                .unwrap()
+                .is_some()
+        );
+        let props_object = document.code.find("{ bravo: 1 }").unwrap() + 2;
+        let (completion_line, completion_character) = line_column(&document.code, props_object);
+        let completions = bridge
+            .completion(&document.request_uri, completion_line, completion_character)
+            .await
+            .unwrap();
+        assert!(
+            completions.iter().any(|item| item.label == "alpha"),
+            "{completions:#?}"
+        );
+        bridge.shutdown().await.unwrap();
+    });
 }
 
 struct PackageFixture {
-    root: tempfile::TempDir,
+    _root: tempfile::TempDir,
     host: PathBuf,
     package: PathBuf,
-    link: PathBuf,
 }
 
-fn package_fixture(package_name: &str) -> PackageFixture {
+fn package_fixture(package_dir: &str, prop: &str, ty: &str) -> PackageFixture {
     let root = tempfile::tempdir().unwrap();
-    let app = root.path().join("app");
-    let host = app.join("src/Host.vue");
-    let package = root.path().join("packages").join(package_name);
+    let host = app_fixture(root.path(), package_dir, prop, ty);
+    PackageFixture {
+        package: root.path().join(package_dir).join("node_modules/@scope/ui"),
+        _root: root,
+        host,
+    }
+}
+
+fn app_fixture(root: &Path, app: &str, prop: &str, ty: &str) -> PathBuf {
+    let app_root = root.join(app);
+    let host = app_root.join("src/Host.vue");
+    let package = app_root.join("node_modules/@scope/ui");
     std::fs::create_dir_all(host.parent().unwrap()).unwrap();
     std::fs::create_dir_all(package.join("src")).unwrap();
-    std::fs::write(app.join("tsconfig.json"), TSCONFIG).unwrap();
-    PackageFixture {
-        root,
-        host,
-        package,
-        link: app.join("node_modules/@scope/ui"),
-    }
+    std::fs::write(app_root.join("tsconfig.json"), TSCONFIG).unwrap();
+    std::fs::write(package.join("package.json"), package_manifest(prop, ty)).unwrap();
+    std::fs::write(
+        package.join("src/Internal.vue"),
+        format!("<script setup lang=\"ts\">defineProps<{{ {prop}: {ty} }}>()</script>\n"),
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("src/Conditional.vue"),
+        format!(
+            "<script setup lang=\"ts\">import Internal from '#internal'; void Internal; defineProps<{{ {prop}: {ty} }}>()</script>\n"
+        ),
+    )
+    .unwrap();
+    std::fs::write(
+        package.join("src/Fallback.vue"),
+        "<script setup lang=\"ts\">defineProps<{ fallback: Date }>()</script>\n",
+    )
+    .unwrap();
+    host
+}
+
+fn package_manifest(prop: &str, ty: &str) -> String {
+    format!(
+        "{{\n  \"name\": \"@scope/ui\",\n  \"version\": \"{prop}-{ty}\",\n  \"exports\": {{ \".\": {{ \"editor\": \"./src/Conditional.vue\", \"types\": \"./src/Fallback.vue\" }} }},\n  \"imports\": {{ \"#internal\": \"./src/Internal.vue\" }}\n}}\n"
+    )
+}
+
+fn host_source(prop: &str, value: &str) -> String {
+    format!(
+        "<script setup lang=\"ts\">\nimport Widget from '@scope/ui'\ntype Props = InstanceType<typeof Widget>['$props']\nconst props: Props = {{ {prop}: {value} }}\nvoid props\n</script>\n"
+    )
 }
 
 fn build(host: &Path, source: &str) -> super::vue_document::CorsaVueVirtualProject {
     build_vue_virtual_project(host, source, CorsaVueVirtualDocumentOptions::default()).unwrap()
 }
 
-fn host_import(subpath: &str) -> vize_carton::String {
-    cstr!(
-        "<script setup lang=\"ts\">\nimport Widget from '@scope/ui/{subpath}'\nvoid Widget\n</script>\n"
+fn line_column(source: &str, offset: usize) -> (u32, u32) {
+    let before = &source[..offset];
+    let line = before.bytes().filter(|byte| *byte == b'\n').count() as u32;
+    let character = before
+        .rsplit_once('\n')
+        .map_or(before.len(), |(_, tail)| tail.len()) as u32;
+    (line, character)
+}
+
+fn request_path(project: &super::vue_document::CorsaVueVirtualProject) -> PathBuf {
+    crate::file_uri::file_uri_to_path(&project.host.request_uri).unwrap()
+}
+
+fn shadow_root(host: &Path) -> PathBuf {
+    host.parent().unwrap().join("node_modules/@scope/ui")
+}
+
+fn selected_companion(host: &Path) -> PathBuf {
+    shadow_root(host).join("src/Conditional.vue.ts")
+}
+
+fn install_runtime_stubs(project_root: &Path) {
+    let node_modules = project_root.join("node_modules");
+    crate::batch::write_vue_facade(&node_modules).unwrap();
+    let runtime_dom = node_modules.join("@vue/runtime-dom");
+    std::fs::create_dir_all(&runtime_dom).unwrap();
+    std::fs::write(
+        runtime_dom.join("package.json"),
+        "{\"name\":\"@vue/runtime-dom\",\"types\":\"index.d.ts\"}\n",
     )
-}
+    .unwrap();
+    std::fs::write(
+        runtime_dom.join("index.d.ts"),
+        crate::batch::VUE_RUNTIME_DOM_STUB_TYPES,
+    )
+    .unwrap();
 
-fn write_package_manifest(package: &Path, target: &str) {
-    std::fs::create_dir_all(package).unwrap();
-    std::fs::write(package.join("package.json"), package_manifest(target)).unwrap();
-}
-
-fn package_manifest(target: &str) -> vize_carton::String {
-    cstr!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}")
-}
-
-fn write_component(package: &Path, name: &str, content: &str) {
-    std::fs::create_dir_all(package.join("src")).unwrap();
-    std::fs::write(package.join("src").join(name), content).unwrap();
-}
-
-fn rewritten_package_target(code: &str) -> PathBuf {
-    code.split(['\'', '"'])
-        .find(|part| part.contains("/__vize_external__/"))
-        .map(PathBuf::from)
-        .expect("rewritten package target")
-}
-
-fn modified(path: &Path) -> std::time::SystemTime {
-    std::fs::metadata(path).unwrap().modified().unwrap()
-}
-
-fn restore_mtime(path: &Path, modified: std::time::SystemTime) {
-    std::fs::File::options()
-        .write(true)
-        .open(path)
-        .unwrap()
-        .set_modified(modified)
-        .unwrap();
-}
-
-fn link_package(source: &Path, target: &Path) {
-    std::fs::create_dir_all(target.parent().unwrap()).unwrap();
-    std::os::unix::fs::symlink(source, target).unwrap();
+    let vite = node_modules.join("vite");
+    std::fs::create_dir_all(&vite).unwrap();
+    std::fs::write(
+        vite.join("package.json"),
+        "{\"name\":\"vite\",\"exports\":{\"./client\":{\"types\":\"./client.d.ts\"}}}\n",
+    )
+    .unwrap();
+    std::fs::write(vite.join("client.d.ts"), "export {};\n").unwrap();
 }

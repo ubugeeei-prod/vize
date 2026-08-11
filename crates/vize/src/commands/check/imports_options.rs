@@ -1,9 +1,14 @@
 use std::path::{Path, PathBuf};
 
-const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
-const JSX_RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".jsx", ".vue", ".mts", ".cts"];
+const RESOLVE_EXTENSIONS: &[&str] = &[
+    ".ts", ".tsx", ".d.ts", ".mts", ".d.mts", ".cts", ".d.cts", ".vue",
+];
+const JSX_RESOLVE_EXTENSIONS: &[&str] = &[
+    ".ts", ".tsx", ".d.ts", ".jsx", ".mts", ".d.mts", ".cts", ".d.cts", ".vue",
+];
 const JS_RESOLVE_EXTENSIONS: &[&str] = &[
-    ".ts", ".tsx", ".vue", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
+    ".ts", ".tsx", ".d.ts", ".mts", ".d.mts", ".cts", ".d.cts", ".vue", ".js", ".jsx", ".mjs",
+    ".cjs",
 ];
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
@@ -43,11 +48,9 @@ impl ImportFileOptions {
 pub(in crate::commands::check) struct TransitiveLocalImports {
     pub(in crate::commands::check) registrations: Vec<PathBuf>,
     pub(in crate::commands::check) authored: Vec<PathBuf>,
-    /// Bare workspace-package specifiers whose source target must resolve to
-    /// Vize's virtual mirror instead of the package manifest's real `.vue`.
-    /// Keeping the original specifier in authored code lets declaration emit
-    /// preserve package identity.
-    pub(in crate::commands::check) virtual_module_aliases: Vec<(vize_carton::String, PathBuf)>,
+    /// Importer-scoped package routes that Canon materializes as native package
+    /// topology. They must never collapse into an exact-specifier map.
+    pub(in crate::commands::check) package_routes: Vec<vize_canon::PackageRouteBinding>,
 }
 
 impl From<bool> for ImportFileOptions {

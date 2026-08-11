@@ -4,6 +4,14 @@ pub(super) fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
         return None;
     }
+    if let Some(path) = std::env::var_os("CORSA_PATH").map(PathBuf::from) {
+        assert!(
+            path.is_file() || std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "VIZE_TEST_REQUIRE_TSGO is set, but CORSA_PATH is not a file: {}",
+            path.display()
+        );
+        return path.is_file().then_some(path);
+    }
 
     let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

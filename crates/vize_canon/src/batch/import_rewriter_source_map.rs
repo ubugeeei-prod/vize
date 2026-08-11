@@ -14,7 +14,7 @@ pub struct RewriteResult {
     pub source_map: ImportSourceMap,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ImportSourceMap {
     adjustments: Vec<OffsetAdjustment>,
 }

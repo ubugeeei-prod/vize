@@ -26,6 +26,7 @@ pub fn snapshot_tsconfig_compiler_options(
     let FlattenedCompilerOptions {
         mut options,
         base_url,
+        ..
     } = project.load_compiler_options_flattened(Some(tsconfig_path))?;
 
     absolutize_string_option(&mut options, "rootDir", &project.project_root);

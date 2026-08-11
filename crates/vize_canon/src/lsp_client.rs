@@ -27,6 +27,7 @@ mod session;
 mod session_paths;
 mod utils;
 mod virtual_overlay;
+mod workspace_project;
 
 #[cfg(test)]
 mod tests;

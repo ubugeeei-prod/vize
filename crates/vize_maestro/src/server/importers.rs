@@ -9,7 +9,7 @@ use std::{
 };
 
 use oxc_span::SourceType;
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 use vize_carton::{FxHashMap, FxHashSet};
@@ -22,6 +22,7 @@ const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "ct
 #[derive(Default)]
 pub(super) struct OpenImportIndex {
     inner: RwLock<ImportIndexData>,
+    package_routes: Mutex<PackageRouteResolver>,
 }
 
 #[derive(Default)]
@@ -31,11 +32,20 @@ struct ImportIndexData {
 }
 
 impl OpenImportIndex {
+    pub(super) fn with_package_routes(package_routes: PackageRouteResolver) -> Self {
+        Self {
+            inner: RwLock::default(),
+            package_routes: Mutex::new(package_routes),
+        }
+    }
+
     pub(super) fn update(&self, importer: &Url, source: &str) {
         let dependencies = importer
             .to_file_path()
             .ok()
-            .map(|path| collect_dependencies(&path, importer, source))
+            .map(|path| {
+                collect_dependencies(&path, importer, source, &mut self.package_routes.lock())
+            })
             .unwrap_or_default();
         let mut index = self.inner.write();
         remove_importer(&mut index, importer);
@@ -60,6 +70,7 @@ impl OpenImportIndex {
         let mut index = self.inner.write();
         index.by_dependency.clear();
         index.by_importer.clear();
+        self.package_routes.lock().clear();
     }
 
     fn importers(&self, dependency: &Path) -> Vec<Url> {
@@ -124,11 +135,15 @@ impl ServerState {
     }
 }
 
-fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Vec<PathBuf> {
+fn collect_dependencies(
+    importer: &Path,
+    importer_uri: &Url,
+    source: &str,
+    package_routes: &mut PackageRouteResolver,
+) -> Vec<PathBuf> {
     let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
-    let mut package_routes = PackageRouteResolver::default();
     if importer
         .extension()
         .is_none_or(|extension| extension != "vue")
@@ -142,7 +157,7 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
             source_type,
             importer_dir,
             Some(importer_uri),
-            &mut package_routes,
+            package_routes,
             &mut dependencies,
         );
         return dependencies.into_iter().collect();
@@ -165,7 +180,7 @@ fn collect_dependencies(importer: &Path, importer_uri: &Url, source: &str) -> Ve
             source_type(script.lang.as_deref()),
             importer_dir,
             Some(importer_uri),
-            &mut package_routes,
+            package_routes,
             &mut dependencies,
         );
     }

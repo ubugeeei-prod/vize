@@ -10,16 +10,21 @@ on:
       - "crates/vize/Cargo.toml"
       - "crates/vize/src/commands/content_mapper.rs"
       - "crates/vize/src/commands/content_mapper/**"
+      - "crates/vize/src/commands/check/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
-      - "crates/vize_canon/src/batch/virtual_project.rs"
-      - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/batch/**"
+      - "crates/vize_canon/src/corsa_bridge.rs"
+      - "crates/vize_canon/src/corsa_bridge/**"
       - "crates/vize_canon/src/lib.rs"
       - "crates/vize_canon/src/lsp_client.rs"
       - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/src/package_route.rs"
+      - "crates/vize_canon/src/package_route/**"
       - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
@@ -41,16 +46,21 @@ on:
       - "crates/vize/Cargo.toml"
       - "crates/vize/src/commands/content_mapper.rs"
       - "crates/vize/src/commands/content_mapper/**"
+      - "crates/vize/src/commands/check/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
-      - "crates/vize_canon/src/batch/virtual_project.rs"
-      - "crates/vize_canon/src/batch/virtual_project/content_mapper*"
+      - "crates/vize_canon/src/batch/**"
+      - "crates/vize_canon/src/corsa_bridge.rs"
+      - "crates/vize_canon/src/corsa_bridge/**"
       - "crates/vize_canon/src/lib.rs"
       - "crates/vize_canon/src/lsp_client.rs"
       - "crates/vize_canon/src/lsp_client/**"
+      - "crates/vize_canon/src/package_route.rs"
+      - "crates/vize_canon/src/package_route/**"
       - "crates/vize_canon/tests/lsp_import_resolution.rs"
       - "crates/vize_canon/src/virtual_ts/**"
       - "crates/vize_maestro/src/ide/**"
@@ -148,9 +158,11 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/node_modules/vue
         run: |
           cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
+          cargo test -p vize --test content_mapper_importer_scoped_packages -- --nocapture
       - name: Run exact editor backend conformance
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo

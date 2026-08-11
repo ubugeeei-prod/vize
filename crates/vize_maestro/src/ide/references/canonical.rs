@@ -24,6 +24,14 @@ pub(super) async fn references(
         .await
         .ok()?;
     let mut linked = linked_positions(&document, &locations);
+    linked.extend(corsa_support::materialized_semantic_positions(
+        &document, ctx.uri, ctx.offset,
+    ));
+    linked.remove(&corsa_support::CanonicalSemanticPosition {
+        request_uri: document.request_uri.clone(),
+        line,
+        character,
+    });
     if linked.is_empty() && !include_declaration {
         let discovery = bridge
             .references(&document.request_uri, line, character, true)

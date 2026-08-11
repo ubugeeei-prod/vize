@@ -69,12 +69,15 @@ struct ChainLoad {
 
 /// Flattened options plus the effective `baseUrl` (#3886).
 #[allow(clippy::disallowed_types)]
+#[derive(Default)]
 pub(in super::super) struct FlattenedCompilerOptions {
     pub(in super::super) options: Map<std::string::String, Value>,
     /// The effective `baseUrl` rebased the way `paths` targets are: relative to
     /// the project root without a `./` prefix (empty for the root itself), or
     /// absolute when it escapes the root. `None` when no config declares one.
     pub(in super::super) base_url: Option<vize_carton::String>,
+    /// Every config file actually read while flattening this chain.
+    pub(in super::super) input_paths: Vec<PathBuf>,
 }
 
 impl VirtualProject {
@@ -114,6 +117,7 @@ impl VirtualProject {
             return Ok(FlattenedCompilerOptions {
                 options: Map::new(),
                 base_url: None,
+                input_paths: Vec::new(),
             });
         };
         let mut load = ChainLoad::default();
@@ -142,7 +146,15 @@ impl VirtualProject {
             path_rebase::paths_onto_project_root(paths, anchor, &self.project_root);
         }
 
-        Ok(FlattenedCompilerOptions { options, base_url })
+        let mut input_paths = load.completed.keys().cloned().collect::<Vec<_>>();
+        input_paths.push(normalize_path_lexically(tsconfig_path));
+        input_paths.sort();
+        input_paths.dedup();
+        Ok(FlattenedCompilerOptions {
+            options,
+            base_url,
+            input_paths,
+        })
     }
 
     /// `load.active` is the *active* `extends` path, not a set of everything

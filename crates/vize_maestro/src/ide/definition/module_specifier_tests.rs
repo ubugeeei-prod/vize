@@ -34,7 +34,7 @@ fn finds_only_module_specifier_strings_at_the_cursor() {
 }
 
 #[test]
-fn resolves_hoisted_package_types_export() {
+fn package_definition_without_native_fails_closed_for_conditional_candidates() {
     let workspace = tempdir().unwrap();
     let source = workspace.path().join("packages/app/src/App.vue");
     write(&source, "<script setup lang=\"ts\"></script>");
@@ -44,6 +44,24 @@ fn resolves_hoisted_package_types_export() {
         r#"{"exports":{".":{"import":"./dist/index.js","types":"./dist/index.d.ts"}}}"#,
     );
     write(&package.join("dist/index.js"), "export {};");
+    write(
+        &package.join("dist/index.d.ts"),
+        "export interface Route {}\n",
+    );
+
+    assert_eq!(resolve_specifier(&file_url(&source), "vue-router"), None);
+}
+
+#[test]
+fn package_definition_without_native_keeps_an_unambiguous_types_export() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("packages/app/src/App.vue");
+    write(&source, "<script setup lang=\"ts\"></script>");
+    let package = workspace.path().join("node_modules/vue-router");
+    write(
+        &package.join("package.json"),
+        r#"{"exports":{".":{"types":"./dist/index.d.ts"}}}"#,
+    );
     write(
         &package.join("dist/index.d.ts"),
         "export interface Route {}\n",

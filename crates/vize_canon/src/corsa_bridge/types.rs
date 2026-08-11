@@ -304,6 +304,8 @@ pub struct CorsaBridgeConfig {
     pub corsa_path: Option<PathBuf>,
     /// Working directory used for module resolution.
     pub working_dir: Option<PathBuf>,
+    /// Explicit effective tsconfig selected by the embedding editor.
+    pub tsconfig_path: Option<PathBuf>,
     /// Hard per-request bound, in milliseconds, on every call into the Corsa
     /// session — the spawn handshake included.
     ///
@@ -321,6 +323,7 @@ impl Default for CorsaBridgeConfig {
         Self {
             corsa_path: None,
             working_dir: None,
+            tsconfig_path: None,
             timeout_ms: 30000,
             enable_profiling: false,
         }

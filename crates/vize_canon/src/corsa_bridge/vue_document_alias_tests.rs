@@ -25,10 +25,14 @@ fn alias_project() -> tempfile::TempDir {
     project
 }
 
-fn mirror_companion(project: &tempfile::TempDir) -> std::path::PathBuf {
-    crate::batch::project_virtual_root(project.path())
-        .join("src")
-        .join("UiButton.vue.ts")
+fn mirror_companion(
+    project: &super::vue_document::CorsaVueVirtualProject,
+) -> Option<std::path::PathBuf> {
+    project
+        .documents
+        .iter()
+        .find(|(uri, _)| uri.ends_with("UiButton.vue.ts"))
+        .and_then(|(uri, _)| crate::file_uri::file_uri_to_path(uri))
 }
 
 #[test]
@@ -62,7 +66,7 @@ fn an_alias_import_typed_into_the_host_buffer_resolves_to_the_mirror() {
         virtual_project.host.code,
     );
     assert!(
-        mirror_companion(&project).is_file(),
+        mirror_companion(&virtual_project).is_some_and(|path| path.is_file()),
         "the resolution target must exist on disk, where the checker looks",
     );
 }
@@ -110,7 +114,7 @@ fn an_alias_import_typed_into_a_dependency_buffer_resolves_to_the_mirror() {
         "an unsaved dependency's alias import must resolve into the mirror:\n{child}",
     );
     assert!(
-        mirror_companion(&project).is_file(),
+        mirror_companion(&virtual_project).is_some_and(|path| path.is_file()),
         "the resolution target must exist on disk, where the checker looks",
     );
 }

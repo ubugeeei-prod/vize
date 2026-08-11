@@ -6,6 +6,11 @@ use vize_carton::cstr;
 
 use super::{PackageSourceOptions, canonical_path};
 
+pub(super) struct ResolvedPackageSource {
+    pub(super) source_path: PathBuf,
+    pub(super) native_probe_path: PathBuf,
+}
+
 const TS_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".vue", ".mts", ".cts", ".d.ts", ".d.mts", ".d.cts",
 ];
@@ -17,34 +22,81 @@ const JS_EXTENSIONS: &[&str] = &[
     ".cjs",
 ];
 
-pub(super) fn resolve_source(base: &Path, options: PackageSourceOptions) -> Option<PathBuf> {
+pub(super) fn resolve_sources(
+    base: &Path,
+    options: PackageSourceOptions,
+    consulted: &mut Vec<PathBuf>,
+) -> Vec<ResolvedPackageSource> {
+    let mut resolved = Vec::new();
     // A declaration sidecar stands in for its runtime module even when that
     // module is absent, so probe it before requiring `base` on disk.
-    if let Some(sidecar) = declaration_sidecar(base) {
-        return Some(canonical_path(&sidecar));
+    for sidecar in declaration_sidecars(base) {
+        record_if_file(&sidecar, &sidecar, consulted, &mut resolved);
     }
+    consulted.push(canonical_path(base));
     if base.is_file() && accepted_source(base, options) {
-        return Some(canonical_path(base));
+        resolved.push(ResolvedPackageSource {
+            source_path: canonical_path(base),
+            native_probe_path: canonical_path(&native_probe_for_source(base, base)),
+        });
     }
     // A manifest may name the built runtime target (`./dist/index.js`) that a
     // source checkout never emits; its authored twin carries a TypeScript
     // extension in the same place, so swap the extension before appending one.
-    if let Some(twin) = typescript_twin(base) {
-        return Some(canonical_path(&twin));
+    for twin in typescript_twins(base) {
+        let probe = native_probe_for_source(base, &twin);
+        record_if_file(&twin, &probe, consulted, &mut resolved);
     }
     for extension in source_extensions(options) {
         let candidate = append_extension(base, extension);
-        if candidate.is_file() {
-            return Some(canonical_path(&candidate));
-        }
+        let probe = native_probe_for_source(base, &candidate);
+        record_if_file(&candidate, &probe, consulted, &mut resolved);
     }
     for extension in source_extensions(options) {
         let candidate = base.join(cstr!("index{extension}").as_str());
-        if candidate.is_file() {
-            return Some(canonical_path(&candidate));
-        }
+        let probe = native_probe_for_source(base, &candidate);
+        record_if_file(&candidate, &probe, consulted, &mut resolved);
     }
-    None
+    resolved.sort_by(|left, right| {
+        (&left.source_path, &left.native_probe_path)
+            .cmp(&(&right.source_path, &right.native_probe_path))
+    });
+    resolved.dedup_by(|left, right| {
+        left.source_path == right.source_path && left.native_probe_path == right.native_probe_path
+    });
+    resolved
+}
+
+fn record_if_file(
+    path: &Path,
+    native_probe: &Path,
+    consulted: &mut Vec<PathBuf>,
+    resolved: &mut Vec<ResolvedPackageSource>,
+) {
+    let path = canonical_path(path);
+    consulted.push(path.clone());
+    if path.is_file() {
+        resolved.push(ResolvedPackageSource {
+            source_path: path,
+            native_probe_path: canonical_path(native_probe),
+        });
+    }
+}
+
+fn native_probe_for_source(target: &Path, source: &Path) -> PathBuf {
+    if source
+        .extension()
+        .is_none_or(|extension| extension != "vue")
+    {
+        return source.to_path_buf();
+    }
+    match target.extension().and_then(|extension| extension.to_str()) {
+        Some("vue") => target.with_extension("d.vue.ts"),
+        Some("mjs") => target.with_extension("mts"),
+        Some("cjs") => target.with_extension("cts"),
+        Some("js" | "jsx") => target.with_extension("ts"),
+        _ => source.with_extension("ts"),
+    }
 }
 
 fn source_extensions(options: PackageSourceOptions) -> &'static [&'static str] {
@@ -71,7 +123,7 @@ fn accepted_source(path: &Path, options: PackageSourceOptions) -> bool {
         || options.include_jsx && name.ends_with(".jsx")
 }
 
-fn declaration_sidecar(path: &Path) -> Option<PathBuf> {
+fn declaration_sidecars(path: &Path) -> Vec<PathBuf> {
     let extensions: &[&str] = match path.extension().and_then(|ext| ext.to_str()) {
         Some("mjs") => &["d.mts", "d.ts"],
         Some("cjs") => &["d.cts", "d.ts"],
@@ -81,22 +133,22 @@ fn declaration_sidecar(path: &Path) -> Option<PathBuf> {
     extensions
         .iter()
         .map(|extension| path.with_extension(extension))
-        .find(|candidate| candidate.is_file())
+        .collect()
 }
 
 /// The authored TypeScript-family file a runtime target was emitted from.
-fn typescript_twin(path: &Path) -> Option<PathBuf> {
+fn typescript_twins(path: &Path) -> Vec<PathBuf> {
     let extensions: &[&str] = match path.extension().and_then(|ext| ext.to_str()) {
         Some("js") => &["ts", "tsx", "vue"],
-        Some("jsx") => &["tsx", "ts"],
-        Some("mjs") => &["mts"],
-        Some("cjs") => &["cts"],
+        Some("jsx") => &["tsx", "ts", "vue"],
+        Some("mjs") => &["mts", "vue"],
+        Some("cjs") => &["cts", "vue"],
         _ => &[],
     };
     extensions
         .iter()
         .map(|extension| path.with_extension(extension))
-        .find(|candidate| candidate.is_file())
+        .collect()
 }
 
 fn append_extension(base: &Path, extension: &str) -> PathBuf {

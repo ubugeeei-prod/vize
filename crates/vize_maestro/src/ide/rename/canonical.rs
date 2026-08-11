@@ -114,6 +114,14 @@ pub(super) async fn rename_strict(
         }
     })?;
     let mut linked = linked_positions(&document, &response);
+    linked.extend(corsa_support::materialized_semantic_positions(
+        &document, ctx.uri, ctx.offset,
+    ));
+    linked.retain(|position| {
+        position.request_uri != document.request_uri
+            || position.line != line
+            || position.character != character
+    });
     if matches!(rename_kind, Some(event_rename::RenameKind::Model)) {
         linked.extend(event_rename::model_linked_positions(
             ctx, &document, &response,

@@ -81,7 +81,14 @@ impl ServerState {
         let config = self.get_type_checker_config();
         let corsa_path = config.runtime_path().map(PathBuf::from);
         let options = BatchTypeCheckerOptions {
-            tsconfig_path: config.tsconfig.as_ref().map(PathBuf::from),
+            tsconfig_path: config.tsconfig.as_ref().map(|path| {
+                let path = PathBuf::from(path);
+                if path.is_absolute() {
+                    path
+                } else {
+                    workspace_root.join(path)
+                }
+            }),
             virtual_ts_options: self.virtual_ts_options(),
         };
 
@@ -97,6 +104,7 @@ impl ServerState {
                 if self.legacy_vue2_enabled() {
                     checker.enable_legacy_vue2();
                 }
+                checker.set_dialect(self.type_checker_vue_version());
                 let arc = Arc::new(RwLock::new(checker));
                 // get_or_init to handle race condition
                 Some(self.batch_checker.get_or_init(|| arc.clone()).clone())

@@ -10,6 +10,94 @@ pub(crate) struct CanonicalSemanticPosition {
     pub(crate) character: u32,
 }
 
+/// Return every live TypeScript identity Canon materialized for one authored
+/// source position. Importer-scoped package shadows intentionally duplicate a
+/// physical source under distinct native module identities; project-wide
+/// references and rename query each identity once, then map and deduplicate the
+/// results back to authored locations.
+pub(crate) fn materialized_semantic_positions(
+    document: &CanonicalVirtualDocument,
+    source_uri: &tower_lsp::lsp_types::Url,
+    source_offset: usize,
+) -> Vec<CanonicalSemanticPosition> {
+    let mut positions = Vec::new();
+    if let Some(offset) =
+        super::source_offset_to_virtual_generated_offset(&document.virtual_result, source_offset)
+    {
+        let (line, character) =
+            crate::ide::offset_to_position(&document.virtual_result.code, offset);
+        positions.push(CanonicalSemanticPosition {
+            request_uri: document.request_uri.clone(),
+            line,
+            character,
+        });
+    }
+    positions.extend(document.dependencies.iter().filter_map(|source| {
+        if !same_authored_uri(&source.source_uri, source_uri) {
+            return None;
+        }
+        let offset = super::source_offset_to_virtual_generated_offset(
+            &source.virtual_result,
+            source_offset,
+        )?;
+        let (line, character) = crate::ide::offset_to_position(&source.virtual_result.code, offset);
+        Some(CanonicalSemanticPosition {
+            request_uri: source.request_uri.clone(),
+            line,
+            character,
+        })
+    }));
+    positions.extend(
+        document
+            .materialized_sources
+            .iter()
+            .filter(|source| {
+                source.coordinates_mappable && same_authored_uri(&source.source_uri, source_uri)
+            })
+            .filter(|source| {
+                !location_matches_uri(&source.request_uri, &document.request_uri)
+                    && !document.dependencies.iter().any(|dependency| {
+                        location_matches_uri(&source.request_uri, &dependency.request_uri)
+                    })
+            })
+            .filter_map(|source| {
+                let offset = super::source_offset_to_virtual_generated_offset(
+                    &source.virtual_result,
+                    source_offset,
+                )?;
+                let (line, character) =
+                    crate::ide::offset_to_position(&source.virtual_result.code, offset);
+                Some(CanonicalSemanticPosition {
+                    request_uri: source.request_uri.clone(),
+                    line,
+                    character,
+                })
+            }),
+    );
+    positions.sort_by(|left, right| {
+        (&left.request_uri, left.line, left.character).cmp(&(
+            &right.request_uri,
+            right.line,
+            right.character,
+        ))
+    });
+    positions.dedup();
+    positions
+}
+
+fn same_authored_uri(left: &tower_lsp::lsp_types::Url, right: &tower_lsp::lsp_types::Url) -> bool {
+    if left == right {
+        return true;
+    }
+    match (left.to_file_path(), right.to_file_path()) {
+        (Ok(left), Ok(right)) => {
+            vize_carton::path::canonicalize_non_verbatim(&left)
+                == vize_carton::path::canonicalize_non_verbatim(&right)
+        }
+        _ => false,
+    }
+}
+
 /// Resolve the synthetic link that joins an authored setup binding to the
 /// template-scope shadow used for Vue ref unwrapping.
 ///

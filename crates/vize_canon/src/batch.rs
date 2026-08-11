@@ -24,6 +24,8 @@ mod import_rewriter_virtual_tests;
 mod materialize_fs;
 mod materialize_lock;
 mod runtime_deps;
+#[cfg(test)]
+pub(crate) use runtime_deps::{VUE_RUNTIME_DOM_STUB_TYPES, write_vue_facade};
 mod source_map;
 mod source_policy;
 mod type_checker;

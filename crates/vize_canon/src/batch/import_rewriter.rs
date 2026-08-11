@@ -16,7 +16,7 @@ use authored_vue_ts::{VueTsCollision, authored_vue_ts_collides_with_sfc};
 
 #[path = "import_rewriter_collect.rs"]
 mod collect;
-use collect::ModuleSpecifierCollector;
+use collect::{ModuleSpecifierCollector, collect_specifier_occurrences};
 
 #[path = "import_rewriter_virtual.rs"]
 mod virtual_rewrite;
@@ -60,7 +60,7 @@ impl ImportRewriter {
             };
         }
 
-        self.rewrite_with(source, source_type, |path| {
+        self.rewrite_with(source, source_type, |path, _| {
             self.rewrite_module_specifier(path, source_dir)
                 .or_else(|| source_dir.and_then(|dir| rewrite_relative_vue_specifier(path, dir)))
         })
@@ -75,6 +75,27 @@ impl ImportRewriter {
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
     ) -> RewriteResult {
+        self.rewrite_for_virtual_project_with_policy(source, source_type, roots, source_dir, false)
+    }
+
+    pub(crate) fn rewrite_for_package_shadow(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&std::path::Path, &std::path::Path),
+        source_dir: Option<&std::path::Path>,
+    ) -> RewriteResult {
+        self.rewrite_for_virtual_project_with_policy(source, source_type, roots, source_dir, true)
+    }
+
+    fn rewrite_for_virtual_project_with_policy(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        roots: (&std::path::Path, &std::path::Path),
+        source_dir: Option<&std::path::Path>,
+        preserve_relative_declarations: bool,
+    ) -> RewriteResult {
         let project_root = roots.0.to_string_lossy();
         let dts_candidate = source_dir.is_some() && source_may_contain_relative_specifier(source);
         if !source.contains(".vue") && !source.contains(project_root.as_ref()) && !dts_candidate {
@@ -84,8 +105,13 @@ impl ImportRewriter {
             };
         }
 
-        self.rewrite_with(source, source_type, |path| {
-            self.rewrite_virtual_project_specifier(path, roots, source_dir)
+        self.rewrite_with(source, source_type, |path, _| {
+            self.rewrite_virtual_project_specifier(
+                path,
+                roots,
+                source_dir,
+                preserve_relative_declarations,
+            )
         })
     }
 
@@ -101,7 +127,7 @@ impl ImportRewriter {
             };
         }
 
-        self.rewrite_with(source, source_type, |path| {
+        self.rewrite_with(source, source_type, |path, _| {
             self.rewrite_declaration_specifier(path)
         })
     }
@@ -113,7 +139,7 @@ impl ImportRewriter {
         rewrite_specifier: F,
     ) -> RewriteResult
     where
-        F: Fn(&str) -> Option<String>,
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
@@ -123,8 +149,8 @@ impl ImportRewriter {
         collector.visit_program(&result.program);
 
         let mut rewrites: Vec<(u32, u32, String)> = Vec::new();
-        for (start, end, path) in collector.specifiers {
-            if let Some(rewrite) = rewrite_specifier(&path) {
+        for (start, end, path, mode) in collector.specifiers {
+            if let Some(rewrite) = rewrite_specifier(&path, mode) {
                 rewrites.push((start, end, rewrite));
             }
         }
@@ -175,7 +201,7 @@ impl ImportRewriter {
         let mut specifiers: Vec<String> = Vec::new();
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
-        for (_, _, path) in collector.specifiers {
+        for (_, _, path, _) in collector.specifiers {
             let candidate =
                 if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
                     path.to_compact_string()
@@ -207,12 +233,22 @@ impl ImportRewriter {
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
         let mut specifiers: Vec<String> = Vec::new();
-        for (_, _, path) in collector.specifiers {
+        for (_, _, path, _) in collector.specifiers {
             if !specifiers.contains(&path) {
                 specifiers.push(path);
             }
         }
         specifiers
+    }
+
+    /// Every module specifier with the syntactic import/require occurrence
+    /// mode used in TypeScript's package-resolution cache identity.
+    pub(crate) fn collect_all_specifier_occurrences(
+        &self,
+        source: &str,
+        source_type: SourceType,
+    ) -> Vec<(String, crate::PackageResolutionMode)> {
+        collect_specifier_occurrences(source, source_type)
     }
 
     pub(super) fn rewrite_module_specifier(
@@ -239,6 +275,7 @@ impl ImportRewriter {
         path: &str,
         roots: (&std::path::Path, &std::path::Path),
         source_dir: Option<&std::path::Path>,
+        preserve_relative_declarations: bool,
     ) -> Option<String> {
         if let Some(collision) = authored_vue_ts_collides_with_sfc(path, source_dir) {
             let marker = match collision {
@@ -248,7 +285,9 @@ impl ImportRewriter {
             return Some(cstr!("{path}{marker}"));
         }
         if let Some(source_dir) = source_dir
-            && let Some(rewritten) = rewrite_relative_dts_specifier(path, source_dir, roots.0)
+            && let Some(rewritten) = (!preserve_relative_declarations)
+                .then(|| rewrite_relative_dts_specifier(path, source_dir, roots.0))
+                .flatten()
                 .or_else(|| rewrite_relative_vue_specifier(path, source_dir))
         {
             return Some(rewritten);

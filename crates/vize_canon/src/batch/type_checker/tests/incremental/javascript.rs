@@ -141,3 +141,85 @@ fn allowjs_project_refreshes_javascript_family_lifecycle() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+#[test]
+fn base_config_allowjs_and_checkjs_flips_rebuild_membership_and_diagnostics() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "incremental-config-javascript-policy",
+        &[
+            ("src/index.ts", "export const ready = true\n"),
+            (
+                "src/contract.js",
+                "/** @type {number} */\nexport const contract = 'wrong';\n",
+            ),
+        ],
+    );
+    let base = project_root.join("tsconfig.base.json");
+    let disabled = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","allowJs":false,"checkJs":false},"pad":""}"#;
+    let enabled = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","allowJs":true,"checkJs":true},"pad":"xx"}"#;
+    let unchecked = r#"{"compilerOptions":{"strict":true,"moduleResolution":"bundler","allowJs":true,"checkJs":false},"pad":"x"}"#;
+    assert_eq!(disabled.len(), enabled.len());
+    assert_eq!(enabled.len(), unchecked.len());
+    std::fs::write(&base, disabled).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{"extends":"./tsconfig.base.json","include":["src/**/*"]}"#,
+    )
+    .unwrap();
+    let index = project_root.join("src/index.ts");
+    let javascript = project_root.join("src/contract.js");
+
+    let mut checker = BatchTypeChecker::new(&project_root).unwrap();
+    checker.scan_project().unwrap();
+    assert_eq!(checker.file_count(), 1);
+    let initial = checker
+        .check_incremental(std::slice::from_ref(&index))
+        .unwrap();
+    assert!(
+        initial
+            .diagnostics
+            .iter()
+            .all(|diagnostic| { diagnostic.file != javascript || diagnostic.code != Some(2322) })
+    );
+
+    replace_with_same_mtime(&base, enabled);
+    let checked = checker
+        .check_incremental(std::slice::from_ref(&base))
+        .unwrap();
+    diagnostic(&checked.diagnostics, &javascript, 2322);
+    assert_eq!(checker.file_count(), 2);
+    assert!(checker.incremental_metrics().last_full_rebuild);
+
+    replace_with_same_mtime(&base, unchecked);
+    let no_check = checker
+        .check_incremental(std::slice::from_ref(&base))
+        .unwrap();
+    assert!(
+        no_check
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.file != javascript || diagnostic.code != Some(2322)),
+        "checkJs=false retained JavaScript diagnostics: {:#?}",
+        no_check.diagnostics
+    );
+    assert_eq!(
+        checker.file_count(),
+        2,
+        "allowJs=true must retain membership"
+    );
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+fn replace_with_same_mtime(path: &std::path::Path, content: &str) {
+    let modified = std::fs::metadata(path).unwrap().modified().unwrap();
+    std::fs::write(path, content).unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(path)
+        .unwrap()
+        .set_modified(modified)
+        .unwrap();
+}

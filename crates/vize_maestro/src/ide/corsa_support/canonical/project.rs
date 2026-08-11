@@ -24,6 +24,13 @@ impl CanonicalVirtualDocument {
         for dependency in opened.dependencies.drain(..) {
             self.include_dependency(dependency);
         }
+        for materialized in opened.materialized_sources.drain(..) {
+            if !self.materialized_sources.iter().any(|existing| {
+                location_matches_uri(&existing.request_uri, &materialized.request_uri)
+            }) {
+                self.materialized_sources.push(materialized);
+            }
+        }
     }
 
     fn include_dependency(&mut self, dependency: CanonicalDependencyDocument) {
@@ -93,6 +100,28 @@ pub(crate) async fn open_canonical_virtual_project_document_strict(
             document.include_opened_document(uri.clone(), importer_ctx.content.into(), opened);
         }
     }
+
+    let materialized_documents = document
+        .materialized_sources
+        .iter()
+        .filter(|source| source.coordinates_mappable)
+        .filter(|source| {
+            !location_matches_uri(&source.request_uri, &document.request_uri)
+                && !document.dependencies.iter().any(|dependency| {
+                    location_matches_uri(&source.request_uri, &dependency.request_uri)
+                })
+        })
+        .map(|source| {
+            (
+                source.request_uri.clone(),
+                source.virtual_result.code.as_str().into(),
+            )
+        })
+        .collect::<Vec<_>>();
+    bridge
+        .open_virtual_documents_batch(&materialized_documents)
+        .await
+        .map_err(CanonicalProjectOpenError::Importer)?;
 
     Ok(Some(document))
 }

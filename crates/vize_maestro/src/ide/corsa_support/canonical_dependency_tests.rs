@@ -25,6 +25,7 @@ pub(super) fn host_document(uri: &Url, source: &str) -> CanonicalVirtualDocument
         virtual_result: DiagnosticService::generate_virtual_ts(uri, source, false, false)
             .expect("virtual ts"),
         dependencies: Vec::new(),
+        materialized_sources: Vec::new(),
     }
 }
 

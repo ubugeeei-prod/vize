@@ -145,8 +145,8 @@ fn persistent_sessions_refresh_independently_over_shared_dependencies() {
     let second_app = second_root.join("src/App.vue");
     let first_clean_source = std::fs::read_to_string(&first_app).unwrap();
     let second_clean_source = std::fs::read_to_string(&second_app).unwrap();
-    let first = scanned_checker(&first_root);
-    let second = scanned_checker(&second_root);
+    let mut first = scanned_checker(&first_root);
+    let mut second = scanned_checker(&second_root);
     assert_canonical_virtual_paths(&first, &first_root, &shared_node_modules);
     assert_canonical_virtual_paths(&second, &second_root, &shared_node_modules);
 

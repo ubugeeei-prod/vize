@@ -8,6 +8,8 @@ use super::RenameService;
 use crate::ide::IdeContext;
 use crate::server::ServerState;
 
+mod package_routes;
+
 #[test]
 fn canonical_rename_edits_authored_cross_vue_files() {
     crate::runtime::block_on(async {

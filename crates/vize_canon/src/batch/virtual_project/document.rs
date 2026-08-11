@@ -38,6 +38,7 @@ pub struct VueDocumentVirtualTsOptions {
     pub options_api: bool,
     pub legacy_vue2: bool,
     pub preserve_event_navigation: bool,
+    pub dialect: vize_carton::config::VueVersion,
 }
 
 /// Generate the rewritten virtual TypeScript for one in-memory `.vue` document.
@@ -119,7 +120,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             component_name: None,
             preserve_event_navigation: document_options.preserve_event_navigation,
             legacy_vue2: document_options.legacy_vue2,
-            dialect: vize_carton::config::VueVersion::default(),
+            dialect: document_options.dialect,
             template_syntax: TemplateSyntaxMode::default(),
             experimental_in_tag_comments: false,
             hoist_shared_preamble,

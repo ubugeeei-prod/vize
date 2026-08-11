@@ -65,16 +65,30 @@ impl ServerState {
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let type_checker_config = self.get_type_checker_config();
+        let tsconfig_path = type_checker_config.tsconfig.as_ref().map(|path| {
+            let path = PathBuf::from(path);
+            if path.is_absolute() {
+                path
+            } else {
+                workspace_root
+                    .as_ref()
+                    .map_or(path.clone(), |root| root.join(path))
+            }
+        });
 
         let config = CorsaBridgeConfig {
             corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
             working_dir: workspace_root,
+            tsconfig_path,
             timeout_ms: CORSA_REQUEST_TIMEOUT_MS,
             ..Default::default()
         };
         let working_dir = config.working_dir.clone();
         let corsa_path = config.corsa_path.clone();
-        let bridge = CorsaBridge::with_config(config);
+        let bridge = CorsaBridge::with_config_and_package_routes(
+            config,
+            self.package_route_resolver.lock().clone(),
+        );
 
         // No `runtime::timeout` wrapper here: `spawn()` never yields, so a
         // combinator around it could not be polled and never fired (#3376).

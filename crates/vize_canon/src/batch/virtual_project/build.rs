@@ -54,12 +54,12 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) preserve_unused_diagnostics: bool,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
-    /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497).
-    /// Otherwise JSX/TSX files pass through to TypeScript verbatim.
     pub(super) jsx_typecheck: bool,
     pub(super) dialect: vize_carton::config::VueVersion,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) experimental_in_tag_comments: bool,
+    pub(super) hoist_shared_preamble: bool,
+    pub(super) preserve_relative_declarations: bool,
     pub(super) rewriter: &'a ImportRewriter,
 }
 
@@ -79,6 +79,7 @@ pub(super) fn build_registered_file(
             SourceType::ts(),
             (context.project_root, context.virtual_root),
             context.rewriter,
+            context.preserve_relative_declarations,
         );
     }
 
@@ -101,6 +102,7 @@ pub(super) fn build_registered_file(
         source_type,
         (context.project_root, context.virtual_root),
         context.rewriter,
+        context.preserve_relative_declarations,
     )
 }
 
@@ -147,7 +149,7 @@ pub(super) fn build_vue_registered_file(
                 dialect: context.dialect,
                 template_syntax: context.template_syntax,
                 experimental_in_tag_comments: context.experimental_in_tag_comments,
-                hoist_shared_preamble: true,
+                hoist_shared_preamble: context.hoist_shared_preamble,
                 omit_vite_client_reference: false,
             },
         )
@@ -211,11 +213,15 @@ pub(super) fn build_script_registered_file(
     source_type: SourceType,
     roots: (&Path, &Path),
     rewriter: &ImportRewriter,
+    preserve_relative_declarations: bool,
 ) -> CorsaResult<RegisteredFile> {
-    let rewritten = profile!(
-        "canon.import.rewrite.script",
-        rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
-    );
+    let rewritten = profile!("canon.import.rewrite.script", {
+        if preserve_relative_declarations {
+            rewriter.rewrite_for_package_shadow(content, source_type, roots, path.parent())
+        } else {
+            rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
+        }
+    });
     let virtual_path = super::paths::script_virtual_path(roots.0, roots.1, path)?;
 
     Ok(RegisteredFile {

@@ -50,19 +50,23 @@ export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
 
     let mut tsconfig_input_cache = super::TsconfigInputCache::default();
     let mut canonical_paths = super::CanonicalPathCache::default();
+    let mut package_routes = vize_canon::PackageRouteResolver::default();
     let collected = super::collect_default_run_files(
-        &project_root,
-        &project_root,
-        Some(&project_root.join("tsconfig.json")),
-        super::ImportFileOptions::default(),
+        super::DefaultRunFileContext {
+            project_root: &project_root,
+            cwd: &project_root,
+            tsconfig_path: Some(&project_root.join("tsconfig.json")),
+            import_options: super::ImportFileOptions::default(),
+            check_ignore_set: None,
+        },
         &mut tsconfig_input_cache,
         &mut canonical_paths,
-        None,
+        &mut package_routes,
     );
     let files = collected.files;
     let inputs = collected.inputs;
     let reported_files = collected.reported;
-    let virtual_module_aliases = collected.virtual_module_aliases;
+    let package_routes = collected.package_routes;
 
     let included_file = canonicalize_non_verbatim(&project_root.join("inside/use.ts"));
     let transitive_file = canonicalize_non_verbatim(&project_root.join("outside/lib.ts"));
@@ -76,7 +80,7 @@ export const r = ITEMS.map(({ code, name }) => `${code}:${name}`)
         reported_files.contains(&transitive_file),
         "authored imports outside include remain part of the checked program"
     );
-    assert!(virtual_module_aliases.is_empty());
+    assert!(package_routes.is_empty());
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
@@ -119,19 +123,23 @@ fn default_tsconfig_run_registers_hidden_ambient_declarations_for_type_resolutio
 
     let mut tsconfig_input_cache = super::TsconfigInputCache::default();
     let mut canonical_paths = super::CanonicalPathCache::default();
+    let mut package_routes = vize_canon::PackageRouteResolver::default();
     let collected = super::collect_default_run_files(
-        &project_root,
-        &project_root,
-        Some(&project_root.join("tsconfig.json")),
-        super::ImportFileOptions::default(),
+        super::DefaultRunFileContext {
+            project_root: &project_root,
+            cwd: &project_root,
+            tsconfig_path: Some(&project_root.join("tsconfig.json")),
+            import_options: super::ImportFileOptions::default(),
+            check_ignore_set: None,
+        },
         &mut tsconfig_input_cache,
         &mut canonical_paths,
-        None,
+        &mut package_routes,
     );
     let files = collected.files;
     let inputs = collected.inputs;
     let reported_files = collected.reported;
-    let virtual_module_aliases = collected.virtual_module_aliases;
+    let package_routes = collected.package_routes;
 
     let app_file = canonicalize_non_verbatim(&project_root.join("app/plugins/auth.ts"));
     let ambient_file =
@@ -146,7 +154,7 @@ fn default_tsconfig_run_registers_hidden_ambient_declarations_for_type_resolutio
         !reported_files.contains(&ambient_file),
         "hidden ambient declarations are registered for types, not reported"
     );
-    assert!(virtual_module_aliases.is_empty());
+    assert!(package_routes.is_empty());
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

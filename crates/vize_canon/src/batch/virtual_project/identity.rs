@@ -14,6 +14,7 @@ const PROJECTS_DIR: &str = "projects";
 /// Versioned project-key input schema. Changing this deliberately moves every
 /// namespace, so the known-vector test below must change in the same review.
 const PROJECT_KEY_SCHEMA: &[u8] = b"vize-canon-project-key:v1\0";
+const PROJECT_CONTEXT_KEY_SCHEMA: &[u8] = b"vize-canon-project-context-key:v1\0";
 
 /// Return the stable, project-owned namespace for Canon's mutable artifacts.
 ///
@@ -24,6 +25,36 @@ const PROJECT_KEY_SCHEMA: &[u8] = b"vize-canon-project-key:v1\0";
 pub fn project_virtual_root(project_root: &Path) -> PathBuf {
     let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
     let project_key = project_key(&project_root);
+    project_virtual_root_for_key(&project_root, &project_key)
+}
+
+/// Return a namespace shared only by editor snapshots with the same effective
+/// config and generation options. A solution shell may own multiple referenced
+/// projects whose compiler options are intentionally incompatible; they must
+/// never overwrite one mirror `tsconfig.json` merely because their source tree
+/// has the same root.
+pub(super) fn project_virtual_root_with_identity(project_root: &Path, identity: u64) -> PathBuf {
+    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    let mut digest = Sha256::new();
+    digest.update(PROJECT_CONTEXT_KEY_SCHEMA);
+    update_path_digest(&mut digest, &project_root);
+    digest.update(identity.to_le_bytes());
+    let project_key = encode_digest(digest.finalize());
+    // TypeScript's editor project service classifies every path below a
+    // `node_modules` segment as an external library. A Canon host queried from
+    // the batch artifact root would therefore be assigned to an inferred
+    // project and silently lose the mirror tsconfig's native resolution
+    // settings. Editor mirrors live in a process-independent temp namespace;
+    // the digest still derives solely from the canonical project/config
+    // identity, while runtime dependency links keep package lookup local.
+    vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
+        .join("vize-canon")
+        .join("editor")
+        .join(PROJECTS_DIR)
+        .join(project_key.as_str())
+}
+
+fn project_virtual_root_for_key(project_root: &Path, project_key: &vize_carton::String) -> PathBuf {
     // Corsa compares workspace and document paths by their filesystem
     // identity. Resolve an existing dependency-store symlink once here so the
     // workspace root and every URI share one spelling; the project key still
@@ -86,7 +117,10 @@ fn update_path_digest(digest: &mut Sha256, path: &Path) {
 
 #[cfg(test)]
 mod tests {
-    use super::{project_key, project_virtual_lock_paths, project_virtual_root};
+    use super::{
+        project_key, project_virtual_lock_paths, project_virtual_root,
+        project_virtual_root_with_identity,
+    };
     use std::path::Path;
 
     #[test]
@@ -101,6 +135,19 @@ mod tests {
         let key = first.file_name().unwrap().to_str().unwrap();
         assert_eq!(key.len(), 64);
         assert!(key.bytes().all(|byte| byte.is_ascii_hexdigit()));
+    }
+
+    #[test]
+    fn editor_namespace_stays_outside_node_modules() {
+        let root = project_virtual_root_with_identity(Path::new("/workspace/project"), 7);
+        let storage = vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
+            .join("vize-canon/editor/projects");
+        assert!(root.starts_with(storage));
+        assert!(
+            root.components()
+                .all(|component| component.as_os_str() != "node_modules")
+        );
+        assert_eq!(root.file_name().unwrap().to_string_lossy().len(), 64);
     }
 
     #[cfg(unix)]

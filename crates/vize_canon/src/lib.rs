@@ -102,7 +102,9 @@ pub use intelligence::{
     DiagnosticSeverity, HoverInfo, Location, TypeIntelligence,
 };
 pub use package_route::{
-    PackageRoute, PackageRouteLookup, PackageRouteResolver, PackageSourceOptions,
+    PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
+    PackageRouteLookup, PackageRouteMetrics, PackageRouteResolver, PackageRouteSource,
+    PackageSourceOptions,
 };
 pub use sfc_typecheck::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
@@ -118,12 +120,13 @@ pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{
-    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueVirtualDependency,
-    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList,
-    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
-    LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, VIRTUAL_URI_SCHEME,
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaMaterializedSource,
+    CorsaScriptVirtualDocumentRequest, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
+    CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList, LspCompletionResponse,
+    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
+    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspParameterInformation,
+    LspParameterLabel, LspPosition, LspRange, LspSignatureHelp, LspSignatureInformation,
+    VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

@@ -64,7 +64,6 @@ fn async_collect_resolves_relative_vue_imports_in_script_setup() {
     state.load_workspace_config(project.path());
 
     let diagnostics = crate::runtime::block_on(DiagnosticService::collect_async(&state, &uri));
-
     assert!(
         diagnostics
             .iter()
@@ -212,7 +211,6 @@ void componentMustBeTyped;
     let state = state_for_fixture(root, &uri, source);
     state.load_workspace_config(root);
     let diagnostics = crate::runtime::block_on(DiagnosticService::collect_async(&state, &uri));
-
     assert!(
         diagnostics.iter().all(|diagnostic| {
             !diagnostic.message.contains("Cannot find module")

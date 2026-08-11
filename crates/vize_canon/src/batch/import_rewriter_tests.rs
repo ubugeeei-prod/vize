@@ -4,6 +4,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use vize_carton::cstr;
 
+#[path = "import_rewriter_tests/modes.rs"]
+mod modes;
+
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -62,15 +65,6 @@ fn test_no_rewrite_npm_import() {
     let result = rewriter.rewrite(source, SourceType::ts(), None);
 
     assert_eq!(result.code, r#"import { ref } from 'vue';"#);
-}
-
-#[test]
-fn test_no_rewrite_bare_vue_package_import() {
-    let rewriter = ImportRewriter::new();
-    let source = r#"import Emoji from 'emoji-mart-vue-fast/src/components/Emoji.vue';"#;
-    let result = rewriter.rewrite(source, SourceType::ts(), None);
-
-    assert_eq!(result.code, source);
 }
 
 #[test]

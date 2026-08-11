@@ -91,6 +91,8 @@ const added: number = 'broken added file'
             last_requested_files: 1,
             last_changed_files: 1,
             last_deleted_files: 1,
+            last_materialized_entries_considered: 2,
+            last_dependency_nodes_reconciled: 1,
             ..Default::default()
         },
         "the final delete should expose the deleted file and changed project config"

@@ -11,6 +11,11 @@ use super::tsconfig_inputs::{parse_jsonc_value, read_extends_entries, resolve_ex
 pub(super) struct PathAliasResolver {
     aliases: Vec<PathAlias>,
     base_url: Option<PathBuf>,
+    module_resolution: Option<String>,
+    module: Option<String>,
+    custom_conditions: Vec<String>,
+    custom_conditions_set: bool,
+    paths_set: bool,
 }
 
 struct PathAlias {
@@ -57,6 +62,41 @@ impl PathAliasResolver {
             .as_ref()
             .and_then(|base_url| resolve_base(&base_url.join(specifier), canonical_paths, options))
     }
+
+    pub(super) fn package_resolution_context(
+        &self,
+        resolver: &mut vize_canon::PackageRouteResolver,
+        importer: &Path,
+        occurrence_mode: vize_canon::PackageResolutionMode,
+    ) -> (vize_canon::PackageResolutionContext, Vec<PathBuf>) {
+        resolver.resolution_context(
+            importer,
+            occurrence_mode,
+            self.module_resolution.as_deref(),
+            self.module.as_deref(),
+            self.custom_conditions.iter().cloned(),
+        )
+    }
+
+    fn merge_from(&mut self, parent: Self) {
+        if parent.module_resolution.is_some() {
+            self.module_resolution = parent.module_resolution;
+        }
+        if parent.module.is_some() {
+            self.module = parent.module;
+        }
+        if parent.custom_conditions_set {
+            self.custom_conditions = parent.custom_conditions;
+            self.custom_conditions_set = true;
+        }
+        if parent.base_url.is_some() {
+            self.base_url = parent.base_url;
+        }
+        if parent.paths_set {
+            self.aliases = parent.aliases;
+            self.paths_set = true;
+        }
+    }
 }
 
 impl PathAlias {
@@ -88,13 +128,29 @@ fn load_aliases(
     let mut resolver = PathAliasResolver::default();
     for extends in read_extends_entries(&value) {
         if let Some(extended) = resolve_extended_tsconfig(&tsconfig_path, &extends) {
-            resolver = load_aliases(&extended, seen)?;
+            resolver.merge_from(load_aliases(&extended, seen)?);
         }
     }
 
     let Some(options) = value.get("compilerOptions").and_then(Value::as_object) else {
         return Ok(resolver);
     };
+    if let Some(module_resolution) = options.get("moduleResolution").and_then(Value::as_str) {
+        resolver.module_resolution = Some(module_resolution.into());
+    }
+    if let Some(module) = options.get("module").and_then(Value::as_str) {
+        resolver.module = Some(module.into());
+    }
+    if let Some(custom_conditions) = options.get("customConditions") {
+        resolver.custom_conditions_set = true;
+        resolver.custom_conditions = custom_conditions
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .map(String::from)
+            .collect();
+    }
     if let Some(base_url) = options
         .get("baseUrl")
         .and_then(Value::as_str)
@@ -105,6 +161,7 @@ fn load_aliases(
     let Some(paths) = options.get("paths").and_then(Value::as_object) else {
         return Ok(resolver);
     };
+    resolver.paths_set = true;
     let base_dir = resolver
         .base_url
         .clone()
@@ -145,132 +202,5 @@ fn split_pattern(pattern: &str) -> (String, String, bool) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::PathAliasResolver;
-    use crate::commands::check::{
-        imports::{collect_transitive_local_imports, resolve_import_base},
-        path_cache::CanonicalPathCache,
-    };
-    use std::path::{Path, PathBuf};
-
-    fn write(root: &Path, rel: &str, contents: &str) -> PathBuf {
-        let path = root.join(rel);
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-        std::fs::write(&path, contents).unwrap();
-        path
-    }
-
-    #[test]
-    fn resolves_wildcard_alias_to_vue_source() {
-        let root = tempfile::tempdir().unwrap();
-        let keyboard = write(
-            root.path(),
-            "src/keyboards/EnglishKeyboard.vue",
-            "<template />",
-        );
-        std::fs::write(
-            root.path().join("tsconfig.json"),
-            r#"{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["*"]
-    }
-  }
-}"#,
-        )
-        .unwrap();
-
-        let resolver =
-            PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
-        let resolved = resolver.resolve(
-            "~/src/keyboards/EnglishKeyboard.vue",
-            &mut CanonicalPathCache::default(),
-            false,
-            resolve_import_base,
-        );
-
-        assert_eq!(resolved, Some(keyboard.canonicalize().unwrap()));
-    }
-
-    #[test]
-    fn exact_alias_does_not_match_prefix() {
-        let root = tempfile::tempdir().unwrap();
-        let entry = write(root.path(), "src/exact.ts", "export const exact = 1;");
-        let prefix = write(root.path(), "src/prefix.ts", "export const prefix = 1;");
-        std::fs::write(
-            root.path().join("tsconfig.json"),
-            r#"{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@app": ["src/exact.ts"],
-      "@app/*": ["src/*"]
-    }
-  }
-}"#,
-        )
-        .unwrap();
-
-        let resolver =
-            PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
-        let mut canonical_paths = CanonicalPathCache::default();
-        let resolved_exact =
-            resolver.resolve("@app", &mut canonical_paths, false, resolve_import_base);
-        let resolved_prefix = resolver.resolve(
-            "@app/prefix",
-            &mut canonical_paths,
-            false,
-            resolve_import_base,
-        );
-
-        assert_eq!(resolved_exact, Some(entry.canonicalize().unwrap()));
-        assert_eq!(resolved_prefix, Some(prefix.canonicalize().unwrap()));
-    }
-
-    #[test]
-    fn collector_registers_tsconfig_alias_vue_dependencies() {
-        let root = tempfile::tempdir().unwrap();
-        let entry = write(
-            root.path(),
-            "src/Entry.vue",
-            r#"<script lang="ts">
-import EnglishKeyboard from "~/src/keyboards/EnglishKeyboard.vue";
-void EnglishKeyboard;
-</script>
-"#,
-        );
-        let keyboard = write(
-            root.path(),
-            "src/keyboards/EnglishKeyboard.vue",
-            "<template />",
-        );
-        std::fs::write(
-            root.path().join("tsconfig.json"),
-            r#"{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["*"]
-    }
-  }
-}"#,
-        )
-        .unwrap();
-
-        let resolver =
-            PathAliasResolver::from_tsconfig(Some(root.path().join("tsconfig.json").as_path()));
-        let discovered = collect_transitive_local_imports(
-            &[entry],
-            root.path(),
-            &mut CanonicalPathCache::default(),
-            false,
-            Some(&resolver),
-        );
-
-        assert_eq!(
-            discovered.registrations,
-            vec![keyboard.canonicalize().unwrap()]
-        );
-    }
-}
+#[path = "imports_aliases_tests.rs"]
+mod tests;
