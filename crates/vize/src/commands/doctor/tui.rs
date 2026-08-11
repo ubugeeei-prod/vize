@@ -10,7 +10,7 @@ mod tests;
 
 use std::{
     env, fmt,
-    io::{self, IsTerminal},
+    io::{self, IsTerminal, Write},
     path::Path,
     process::Command,
 };
@@ -148,7 +148,14 @@ pub(super) fn run(
     backend.cursor_mut().hide();
     let mut model = DoctorTuiModel::new(report, backend.width(), backend.height());
 
-    let session = run_loop(&mut backend, &mut model, sources, root, &mut capabilities);
+    let session = run_loop(
+        &mut backend,
+        &mut model,
+        sources,
+        root,
+        &mut capabilities,
+        read_event,
+    );
     let restoration = backend.restore();
     finish_session(session, restoration)
 }
@@ -185,12 +192,13 @@ fn finish_session(
     }
 }
 
-fn run_loop(
-    backend: &mut Backend,
+fn run_loop<W: Write>(
+    backend: &mut Backend<W>,
     model: &mut DoctorTuiModel<'_>,
     sources: &[DoctorSource],
     root: &Path,
     capabilities: &mut TerminalCapabilities,
+    mut next_event: impl FnMut() -> io::Result<Event>,
 ) -> Result<(), DoctorTuiError> {
     let mut renderer = FrameRenderer::new();
     loop {
@@ -198,7 +206,7 @@ fn run_loop(
         model.place_cursor(backend.cursor_mut());
         renderer.render(frame.tree_mut(), backend, FrameActivityTelemetry::default())?;
 
-        let outcome = match read_event()? {
+        let outcome = match next_event()? {
             Event::Resize(width, height) => {
                 backend.resize(width, height);
                 model.resize(width, height);
@@ -226,8 +234,8 @@ fn capabilities_for(width: u16, height: u16) -> TerminalCapabilities {
     )
 }
 
-fn open_selected_source(
-    backend: &mut Backend,
+fn open_selected_source<W: Write>(
+    backend: &mut Backend<W>,
     model: &mut DoctorTuiModel<'_>,
     sources: &[DoctorSource],
     root: &Path,
