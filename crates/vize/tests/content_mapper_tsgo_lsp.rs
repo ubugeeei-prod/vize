@@ -10,10 +10,10 @@ use serde_json::{Value, json};
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    assert_component_completions, assert_component_members, assert_component_navigation,
-    completion, contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
-    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
-    workspace_root,
+    EditorResponder, assert_component_completions, assert_component_members,
+    assert_component_navigation, completion, contains_location, copy_fixture, definition,
+    editor_capabilities, file_uri, hover, install_packages, notify_file_changes, position,
+    pull_diagnostics, try_pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -91,6 +91,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
     let component_position = position(&app_source, app_source.find("<Child").unwrap() + 1);
 
     let stop = AtomicBool::new(false);
+    let editor = EditorResponder::default();
     std::thread::scope(|scope| {
         let _stop_on_drop = StopOnDrop(&stop);
         corsa::runtime::block_on(async {
@@ -104,20 +105,13 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             let responder_client = client.clone();
             let events = responder_client.subscribe();
             let stop_ref = &stop;
+            let editor_ref = &editor;
             let responder = scope.spawn(move || {
                 while !stop_ref.load(Ordering::Relaxed) {
                     if let Ok(InboundEvent::Request { id, method, params }) =
                         events.recv_timeout(Duration::from_millis(50))
                     {
-                        let result = if method.as_str() == "workspace/configuration" {
-                            let count = params
-                                .get("items")
-                                .and_then(Value::as_array)
-                                .map_or(0, Vec::len);
-                            Value::Array(vec![Value::Null; count])
-                        } else {
-                            Value::Null
-                        };
+                        let result = editor_ref.respond_to(method.as_str(), &params);
                         let _ = responder_client.respond(id, result);
                     }
                 }
@@ -143,6 +137,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 .await
                 .unwrap();
             assert!(contributed.is_null(), "{contributed:#}");
+            editor.assert_vue_did_open_registration();
 
             let uri = Uri::from_str(&child_uri).unwrap();
             let overlay = client.overlay();
