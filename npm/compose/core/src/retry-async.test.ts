@@ -347,6 +347,14 @@ void test("validates execution controls before invoking user work", async () => 
       error instanceof TypeError &&
       error.message.startsWith("[VIZE_COMPOSE_RETRY_INVALID_OPERATION]"),
   );
+  for (const options of [null, 0, false, "", "abc", Symbol("options")]) {
+    await assert.rejects(
+      retryAsync(operation, options as never),
+      (error: unknown) =>
+        error instanceof TypeError &&
+        error.message.startsWith("[VIZE_COMPOSE_RETRY_INVALID_OPTIONS]"),
+    );
+  }
   assert.equal(calls, 0);
 });
 

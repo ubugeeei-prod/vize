@@ -93,8 +93,8 @@ export interface RetryAsyncOptions extends RetryDelayOptions {
  * @default options {}
  * @throws {RangeError} A tagged error when `maximumRetries` or inherited delay
  * options are outside their documented ranges.
- * @throws {TypeError} A tagged error when a callback is not callable or a
- * retry decision does not resolve to a boolean.
+ * @throws {TypeError} A tagged error when `options` is not an object, a
+ * callback is not callable, or a retry decision does not resolve to a boolean.
  * @returns The first successful operation value.
  */
 export async function retryAsync<Value>(
@@ -104,6 +104,11 @@ export async function retryAsync<Value>(
   if (typeof operation !== "function") {
     throw new TypeError(
       `[VIZE_COMPOSE_RETRY_INVALID_OPERATION] operation must be a function; received ${typeof operation}`,
+    );
+  }
+  if (options === null || typeof options !== "object") {
+    throw new TypeError(
+      `[VIZE_COMPOSE_RETRY_INVALID_OPTIONS] options must be an object; received ${options === null ? "null" : typeof options}`,
     );
   }
   const maximumRetries = options.maximumRetries === undefined ? 3 : options.maximumRetries;
