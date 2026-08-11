@@ -12,6 +12,7 @@ export default defineConfig({
       "abort-signal": "src/abort-signal.ts",
       "async-resource": "src/async-resource.ts",
       capability: "src/capability.ts",
+      catalog: "src/catalog.ts",
       "disposal-scope": "src/disposal-scope.ts",
       "event-listener": "src/event-listener.ts",
       locale: "src/locale.ts",

@@ -13,6 +13,7 @@ import {
   unavailableCapability,
   type UnavailableCapability,
 } from "./capability.js";
+import { COMPOSABLE_CATALOG, type ComposableCatalog } from "./catalog.js";
 import { type TextDirection, useLocale } from "./locale.js";
 import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
 
@@ -21,6 +22,15 @@ type Equal<Left, Right> =
     ? true
     : false;
 type Expect<Condition extends true> = Condition;
+
+type _CatalogSchemaVersionNeverWidens = Expect<Equal<typeof COMPOSABLE_CATALOG.schemaVersion, 1>>;
+type _CatalogStabilityNeverWidens = Expect<
+  Equal<typeof COMPOSABLE_CATALOG.catalogStability, "stable">
+>;
+type _CatalogPackageNameNeverWidens = Expect<
+  Equal<typeof COMPOSABLE_CATALOG.packageName, "@vizejs/composable">
+>;
+COMPOSABLE_CATALOG satisfies ComposableCatalog;
 
 const combinedAbortSignal = anyAbortSignal(new Set<AbortSignal>());
 type _AbortCompositionReturnsThePlatformSignal = Expect<

@@ -1,31 +1,27 @@
 import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
-const kibibyte = 1024;
-
-/** Per-subpath compressed budgets; every public runtime entry is mandatory. */
-const subpathBudgets = new Map([
-  ["abort-signal.mjs", 3 * kibibyte],
-  ["async-resource.mjs", 2 * kibibyte],
-  ["capability.mjs", 1 * kibibyte],
-  ["disposal-scope.mjs", 2 * kibibyte],
-  ["event-listener.mjs", 2 * kibibyte],
-  ["locale.mjs", 2 * kibibyte],
-  ["media-query.mjs", 1 * kibibyte],
-  ["scope.mjs", 0.5 * kibibyte],
-  ["temporal.mjs", 2 * kibibyte],
-  ["timeout-scheduler.mjs", 0.25 * kibibyte],
-  ["use-counter.mjs", 1.5 * kibibyte],
-  ["use-debounced.mjs", 2 * kibibyte],
-  ["use-history.mjs", 2.5 * kibibyte],
-  ["use-previous.mjs", 1 * kibibyte],
-  ["use-throttled.mjs", 2.5 * kibibyte],
-  ["use-toggle.mjs", 0.5 * kibibyte],
-]);
-
 const packageManifest = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
+const { COMPOSABLE_CATALOG: catalog } = await import(
+  new URL("../dist/catalog.mjs", import.meta.url)
+);
+const subpathBudgets = new Map(
+  catalog.entries.map((entry) => [
+    packageManifest.exports[entry.subpath]?.import.replace("./dist/", ""),
+    entry.gzipBudgetBytes,
+  ]),
+);
+if (subpathBudgets.has(undefined)) {
+  console.error(
+    JSON.stringify({
+      error: "VIZE_COMPOSE_SIZE_BUDGET_UNKNOWN_SUBPATH",
+      catalogSubpaths: catalog.entries.map((entry) => entry.subpath),
+    }),
+  );
+  process.exit(1);
+}
 const exportedEntries = new Map(
   Object.entries(packageManifest.exports).map(([subpath, conditions]) => [
     conditions.import.replace("./dist/", ""),
@@ -81,7 +77,17 @@ async function compressedClosureSize(entry) {
 // The convenience root transitively loads its re-exported runtime entries
 // when consumed without a bundler. Measure the complete emitted module graph
 // rather than only Rollup's tiny facade.
-const rootBudget = [...subpathBudgets.values()].reduce((sum, budget) => sum + budget, 0);
+const rootBudget = catalog.rootEntry.reexportedEntries.reduce((sum, subpath) => {
+  const entry = catalog.entries.find((candidate) => candidate.subpath === subpath);
+  if (entry === undefined) {
+    console.error(
+      JSON.stringify({ error: "VIZE_COMPOSE_SIZE_BUDGET_UNKNOWN_ROOT_ENTRY", subpath }),
+    );
+    process.exitCode = 1;
+    return sum;
+  }
+  return sum + entry.gzipBudgetBytes;
+}, 0);
 const rootSize = await compressedClosureSize("index.mjs");
 console.log(
   JSON.stringify({

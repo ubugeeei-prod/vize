@@ -47,6 +47,11 @@
       "import": "./dist/capability.mjs",
       "default": "./dist/capability.mjs"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.mts",
+      "import": "./dist/catalog.mjs",
+      "default": "./dist/catalog.mjs"
+    },
     "./disposal-scope": {
       "types": "./dist/disposal-scope.d.mts",
       "import": "./dist/disposal-scope.mjs",

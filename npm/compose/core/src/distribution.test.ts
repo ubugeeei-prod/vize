@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import { test } from "node:test";
 
+import { COMPOSABLE_CATALOG } from "./catalog.ts";
+
 interface ExportConditions {
   readonly types: string;
   readonly import: string;
@@ -20,23 +22,8 @@ void test("publishes every utility through a typed side-effect-free subpath", as
     await readFile(new URL("package.json", packageRoot), "utf8"),
   ) as PackageManifest;
   const expectedSubpaths = [
-    ".",
-    "./abort-signal",
-    "./async-resource",
-    "./capability",
-    "./disposal-scope",
-    "./event-listener",
-    "./locale",
-    "./media-query",
-    "./scope",
-    "./temporal",
-    "./timeout-scheduler",
-    "./use-counter",
-    "./use-debounced",
-    "./use-history",
-    "./use-previous",
-    "./use-throttled",
-    "./use-toggle",
+    COMPOSABLE_CATALOG.rootEntry.subpath,
+    ...COMPOSABLE_CATALOG.entries.map((entry) => entry.subpath),
   ];
 
   assert.equal(manifest.sideEffects, false);
@@ -52,9 +39,20 @@ void test("publishes every utility through a typed side-effect-free subpath", as
     assert.match(conditions.types, /^\.\/dist\/[a-z-]+\.d\.mts$/);
     await access(new URL(conditions.import, packageRoot));
     await access(new URL(conditions.types, packageRoot));
-    await assert.doesNotReject(
-      import(new URL(conditions.import, packageRoot).href),
-      `${subpath} runtime entry must be importable`,
+    const runtime = (await import(new URL(conditions.import, packageRoot).href)) as object;
+    const expectedRuntimeExports =
+      subpath === COMPOSABLE_CATALOG.rootEntry.subpath
+        ? COMPOSABLE_CATALOG.rootEntry.reexportedEntries.flatMap(
+            (entrySubpath) =>
+              COMPOSABLE_CATALOG.entries.find((entry) => entry.subpath === entrySubpath)
+                ?.runtimeExports ?? [],
+          )
+        : (COMPOSABLE_CATALOG.entries.find((entry) => entry.subpath === subpath)?.runtimeExports ??
+          []);
+    assert.deepEqual(
+      Object.keys(runtime).sort(),
+      [...new Set(expectedRuntimeExports)].sort(),
+      `${subpath} runtime exports must match the catalog`,
     );
   }
 });

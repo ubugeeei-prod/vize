@@ -1,6 +1,7 @@
 export * from "./abort-signal.ts";
 export * from "./async-resource.ts";
 export * from "./capability.ts";
+export * from "./catalog.ts";
 export * from "./disposal-scope.ts";
 export * from "./event-listener.ts";
 export * from "./locale.ts";
