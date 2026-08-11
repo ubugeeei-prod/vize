@@ -13,6 +13,7 @@ const publicEntries = [
   "./controllable-state",
   "./id",
   "./interaction-modality",
+  "./press",
   "./primitive",
   "./visually-hidden",
 ] as const;
