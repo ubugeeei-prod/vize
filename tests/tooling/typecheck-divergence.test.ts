@@ -228,6 +228,36 @@ test("typecheck divergence records project-level and external baseline diagnosti
   assert.deepEqual(result.falseNegatives, []);
 });
 
+test("typecheck divergence can bind a seeded comparison to one authored Vue file", () => {
+  const result = compareTypecheckDiagnostics({
+    projectId: "fixture-seed",
+    cwd,
+    vizeReport: {
+      files: [
+        {
+          file: ".vize-typecheck-parity-seed.vue",
+          diagnostics: ["error:2:14 [TS2322] exact seed"],
+        },
+        {
+          file: "node_modules/dependency/Noise.vue",
+          diagnostics: ["error:1:1 [TS2339] dependency noise"],
+        },
+      ],
+    },
+    vueTscOutput: [
+      ".vize-typecheck-parity-seed.vue(2,14): error TS2322: exact seed",
+      "node_modules/dependency/Noise.vue(1,1): error TS2307: different dependency noise",
+    ].join("\n"),
+    includedFiles: ["./.vize-typecheck-parity-seed.vue"],
+  });
+
+  assert.equal(result.summary.vizeDiagnosticCount, 1);
+  assert.equal(result.summary.baselineDiagnosticCount, 1);
+  assert.equal(result.summary.sharedCount, 1);
+  assert.equal(result.summary.falsePositiveCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 0);
+});
+
 test("typecheck divergence uses UTF-8 byte order for Unicode paths", () => {
   const paths = ["src/😀.vue", "src/é.vue", "src/z.vue", "src/Ω.vue"];
   const result = compare(
@@ -295,4 +325,15 @@ test("typecheck divergence rejects invalid envelopes", () => {
       vueTscOutput: "",
     }),
   );
+  for (const includedFiles of [[], ["src/helper.ts"], ["src/App.vue", "./src/App.vue"]]) {
+    assert.throws(() =>
+      compareTypecheckDiagnostics({
+        projectId: "fixture",
+        cwd,
+        vizeReport: { files: [] },
+        vueTscOutput: "",
+        includedFiles,
+      }),
+    );
+  }
 });

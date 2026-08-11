@@ -293,13 +293,13 @@ function sha256(value: string | Buffer) {
 function writeFakeVize(pathname: string) {
   fs.writeFileSync(
     pathname,
-    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("vize 0.0.0"); process.exit(0); }\nconst probe = ".vize-typecheck-parity-seed.vue";\nconst source = fs.readFileSync(probe, "utf8");\nconst broken = source.includes("= 42;");\nconst report = { errorCount: broken ? 1 : 0, warningCount: 0, fileCount: 1, files: [{ file: probe, diagnostics: broken ? ["error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."] : [] }] };\nprocess.stdout.write(JSON.stringify(report));\nprocess.exit(broken ? 1 : 0);\n`,
+    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("vize 0.0.0"); process.exit(0); }\nconst probe = ".vize-typecheck-parity-seed.vue";\nconst source = fs.readFileSync(probe, "utf8");\nconst broken = source.includes("= 42;");\nconst report = { errorCount: broken ? 1 : 0, warningCount: 0, fileCount: 1, files: [{ file: probe, diagnostics: broken ? ["error:2:14 [TS2322] Type 'number' is not assignable to type 'string'."] : [] }] };\nprocess.stdout.write(JSON.stringify(report));\nprocess.exit(broken ? 1 : 0);\n`,
   );
   fs.chmodSync(pathname, 0o755);
 }
 
 function seededVueTscBody() {
-  return `const config = process.argv.at(-1);\nif (config?.endsWith(".vize-typecheck-parity-seed.tsconfig.json")) {\n  const probe = path.join(process.cwd(), ".vize-typecheck-parity-seed.vue");\n  const broken = fs.readFileSync(probe, "utf8").includes("= 42;");\n  process.stdout.write("error TS5101: unrelated inherited config deprecation\\n");\n  if (broken) process.stdout.write(probe + "(2,7): error TS2322: Type 'number' is not assignable to type 'string'.\\n");\n  process.stdout.write(probe + "\\n");\n  process.exit(2);\n}`;
+  return `const config = process.argv.at(-1);\nif (config?.endsWith(".vize-typecheck-parity-seed.tsconfig.json")) {\n  const probe = path.join(process.cwd(), ".vize-typecheck-parity-seed.vue");\n  const broken = fs.readFileSync(probe, "utf8").includes("= 42;");\n  process.stdout.write("error TS5101: unrelated inherited config deprecation\\n");\n  process.stdout.write(path.join(process.cwd(), "node_modules/dependency/Noise.vue") + "(1,1): error TS2339: unrelated dependency Vue diagnostic\\n");\n  if (broken) process.stdout.write(probe + "(2,14): error TS2322: Type 'number' is not assignable to type 'string'.\\n");\n  process.stdout.write(probe + "\\n");\n  process.exit(2);\n}`;
 }
 
 export function updateJson(pathname: string, update: (value: any) => void) {

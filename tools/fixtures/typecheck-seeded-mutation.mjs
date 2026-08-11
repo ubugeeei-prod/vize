@@ -10,7 +10,7 @@ const probeFile = ".vize-typecheck-parity-seed.vue";
 const configFile = ".vize-typecheck-parity-seed.tsconfig.json";
 const cleanSource = [
   '<script lang="ts">',
-  'const vizeParitySeed: string = "clean";',
+  'export const vizeParitySeed: string = "clean";',
   "export default {};",
   "</script>",
   "<template><div /></template>",
@@ -95,6 +95,7 @@ export function runSeededTypecheckMutation({ fixtureRoot, project, vizeBin, vueT
       vizeReport: report,
       vueTscOutput: `${baseline.stdout}\n${baseline.stderr}`,
       documentedDifferences: [],
+      includedFiles: [probeFile],
     });
     return {
       state,

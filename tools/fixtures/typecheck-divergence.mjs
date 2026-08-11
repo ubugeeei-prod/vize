@@ -37,14 +37,16 @@ export function compareTypecheckDiagnostics({
   vizeReport,
   vueTscOutput,
   documentedDifferences = [],
+  includedFiles,
 }) {
   if (typeof projectId !== "string" || projectId.length === 0) invalid("project id is required");
   if (typeof cwd !== "string" || !isAbsolute(cwd)) invalid("cwd must be absolute");
   const expectedDifferences = selectDocumentedDifferences(documentedDifferences, projectId, cwd);
   const vizeInput = collectVizeDiagnostics(vizeReport, cwd);
   const baselineInput = collectVueTscDiagnostics(vueTscOutput, cwd);
-  const vize = vizeInput.diagnostics;
-  const baseline = baselineInput.diagnostics;
+  const comparisonFiles = normalizeIncludedFiles(includedFiles, cwd);
+  const vize = selectIncludedFiles(vizeInput.diagnostics, comparisonFiles);
+  const baseline = selectIncludedFiles(baselineInput.diagnostics, comparisonFiles);
   const vizeGroups = groupByIdentity(vize);
   const baselineGroups = groupByIdentity(baseline);
   const identities = [...new Set([...vizeGroups.keys(), ...baselineGroups.keys()])].sort(byteOrder);
@@ -117,6 +119,25 @@ export function compareTypecheckDiagnostics({
       .update(JSON.stringify({ summary, ...classified }))
       .digest("hex"),
   };
+}
+
+function normalizeIncludedFiles(values, cwd) {
+  if (values == null) return null;
+  if (!Array.isArray(values) || values.length === 0) {
+    invalid("included files must be a non-empty array");
+  }
+  const normalized = values.map((value, index) => {
+    const file = normalizePath(value, cwd, `included files[${index}]`);
+    if (!file.endsWith(".vue")) invalid(`included files[${index}] must reference a .vue file`);
+    return file;
+  });
+  if (new Set(normalized).size !== normalized.length) invalid("included files must be unique");
+  return new Set(normalized);
+}
+
+function selectIncludedFiles(diagnostics, includedFiles) {
+  if (includedFiles == null) return diagnostics;
+  return diagnostics.filter((diagnostic) => includedFiles.has(diagnostic.file));
 }
 function selectDocumentedDifferences(values, projectId, cwd) {
   if (!Array.isArray(values)) invalid("documented differences must be an array");
