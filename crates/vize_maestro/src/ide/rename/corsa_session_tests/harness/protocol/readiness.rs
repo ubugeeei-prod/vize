@@ -8,7 +8,7 @@ pub(super) fn assert_generation_order(
     exit: usize,
     expected_generations: usize,
 ) -> Result<(), String> {
-    let ready = find_all_bytes(trace, b"textDocument/diagnostic");
+    let ready = find_all_bytes(trace, b"textDocument/hover");
     // The initial generation opens both Parent and Child. Every later
     // generation in this fixture changes only Child, so each adds one exact
     // readiness request.
