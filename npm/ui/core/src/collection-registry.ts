@@ -44,6 +44,7 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
   let disposed = false;
   let mutationObservers: MutationObserver[] = [];
   let observedElements: readonly (Element | null)[] | undefined;
+  let observedConnected: readonly boolean[] = [];
 
   const items = computed<readonly CollectionItem<Key, Value>[]>(() => {
     void revision.value;
@@ -82,10 +83,14 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
     items,
     (nextItems) => {
       const nextElements = nextItems.map(({ element }) => element);
+      const nextConnected = nextElements.map((element) => element?.isConnected === true);
       if (
         observedElements !== undefined &&
         observedElements.length === nextElements.length &&
-        observedElements.every((element, index) => element === nextElements[index])
+        observedElements.every(
+          (element, index) =>
+            element === nextElements[index] && observedConnected[index] === nextConnected[index],
+        )
       ) {
         return;
       }
@@ -94,6 +99,7 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
         if (!disposed) revision.value += 1;
       });
       observedElements = nextElements;
+      observedConnected = nextConnected;
     },
     { flush: "sync", immediate: true },
   );

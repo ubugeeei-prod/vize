@@ -87,6 +87,60 @@ test("scopes mutation observation and preserves observers across text refreshes"
   }
 });
 
+test("reorders items when a fully detached collection mounts", async () => {
+  const registry = createCollectionRegistry<string, ItemValue>();
+  const first = document.createElement("div");
+  const second = document.createElement("div");
+
+  try {
+    registry.register({ key: "first", value: item("First"), element: first });
+    registry.register({ key: "second", value: item("Second"), element: second });
+    assert.deepEqual(
+      registry.items.value.map(({ key }) => key),
+      ["first", "second"],
+    );
+
+    document.body.append(second, first);
+    await flushDomMutations();
+    assert.deepEqual(
+      registry.items.value.map(({ key }) => key),
+      ["second", "first"],
+    );
+  } finally {
+    registry.dispose();
+    first.remove();
+    second.remove();
+  }
+});
+
+test("keeps observing an item that is detached after registration", async () => {
+  const registry = createCollectionRegistry<string, ItemValue>();
+  const element = document.createElement("div");
+  element.textContent = "Attached";
+  document.body.append(element);
+
+  try {
+    registry.register({
+      key: "item",
+      value: item("Item"),
+      element,
+      textValue: () => element.textContent ?? "",
+    });
+    assert.equal(registry.items.value[0]?.textValue, "Attached");
+
+    element.remove();
+    await flushDomMutations();
+    void registry.items.value;
+
+    element.textContent = "Updated while detached";
+    await flushDomMutations();
+    assert.equal(registry.items.value[0]?.textValue, "Updated while detached");
+  } finally {
+    registry.dispose();
+    element.remove();
+  }
+});
+
 test("refreshes snapshots synchronously and rejects refresh after disposal", () => {
   const registry = createCollectionRegistry<string, ItemValue>();
   const element = document.createElement("div");

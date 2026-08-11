@@ -17,7 +17,6 @@ export function validateCollectionKey(key: CollectionKey): void {
   }
 }
 
-/** Whether a resolved item list still contains a key. */
 export function hasCollectionKey<Key extends CollectionKey, Value>(
   items: readonly CollectionItem<Key, Value>[],
   key: Key,
@@ -25,12 +24,7 @@ export function hasCollectionKey<Key extends CollectionKey, Value>(
   return items.some((item) => item.key === key);
 }
 
-/**
- * Pick the logical focus successor for a key that left the navigable set.
- *
- * The next navigable item wins, then the previous one, so removing or
- * disabling the active item never orphans logical focus.
- */
+// Next navigable item wins, then the previous one, so logical focus is never orphaned.
 export function recoverCollectionKey<Key extends CollectionKey, Value>(
   removedKey: Key,
   previousItems: readonly CollectionItem<Key, Value>[],

@@ -1,11 +1,34 @@
 import type { CollectionItem, CollectionKey } from "./collection-types.ts";
 
+const orderAndTextMutations: MutationObserverInit = {
+  attributeFilter: [
+    "alt",
+    "aria-hidden",
+    "aria-label",
+    "aria-labelledby",
+    "hidden",
+    "inert",
+    "title",
+    "type",
+    "value",
+  ],
+  attributes: true,
+  characterData: true,
+  childList: true,
+  subtree: true,
+};
+
+const mountMutations: MutationObserverInit = { childList: true, subtree: true };
+
 /**
  * Observe DOM ordering and accessible text mutations for registered items.
  *
  * One observer is created per owning document. Connected items use their
- * closest common ancestor and disconnected items are observed directly, so a
- * partial mount never expands observation to the whole document.
+ * closest common ancestor and disconnected items are observed directly, so
+ * attribute and text noise from the rest of the document is never observed.
+ * Disconnected items additionally use a structure-only document observer that
+ * reports only once one of them mounts, because their insertion point is
+ * unknowable beforehand.
  */
 export function observeCollectionMutations<Key extends CollectionKey, Value>(
   items: readonly CollectionItem<Key, Value>[],
@@ -41,25 +64,16 @@ export function observeCollectionMutations<Key extends CollectionKey, Value>(
           ])
         : new Set<Node>([commonAncestor]);
     for (const target of targets) {
-      observer.observe(target, {
-        attributeFilter: [
-          "alt",
-          "aria-hidden",
-          "aria-label",
-          "aria-labelledby",
-          "hidden",
-          "inert",
-          "title",
-          "type",
-          "value",
-        ],
-        attributes: true,
-        characterData: true,
-        childList: true,
-        subtree: true,
-      });
+      observer.observe(target, orderAndTextMutations);
     }
     observers.push(observer);
+    if (disconnectedElements.length === 0) continue;
+
+    const mountObserver = new MutationObserverConstructor(() => {
+      if (disconnectedElements.some((element) => element.isConnected)) onMutation();
+    });
+    mountObserver.observe(ownerDocument.documentElement, mountMutations);
+    observers.push(mountObserver);
   }
   return observers;
 }
