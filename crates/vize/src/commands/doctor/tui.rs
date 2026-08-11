@@ -19,7 +19,9 @@ use vize_carton::{String, ToCompactString, cstr};
 use vize_doctor::DoctorReport;
 use vize_fresco::{
     Backend, Event, FrameActivityTelemetry, FrameRenderer, TerminalCapabilities,
-    TerminalCapabilityProbe, TerminalProfileOptions, input::read_event, terminal::TerminalOptions,
+    TerminalCapabilityProbe, TerminalPanicHookError, TerminalPanicHookInstallation,
+    TerminalProfileOptions, input::read_event, install_terminal_panic_hook,
+    terminal::TerminalOptions,
 };
 
 use super::{DoctorFormat, DoctorSource};
@@ -45,6 +47,8 @@ pub(super) enum DoctorTuiError {
     Io(io::Error),
     Presentation(vize_fresco::DiagnosticPresentationError),
     Frame(vize_fresco::FrameRenderError),
+    /// Fresco could not install process-wide emergency terminal restoration.
+    PanicSupervision(TerminalPanicHookError),
     /// Application work and the mandatory terminal restoration both failed.
     ///
     /// The application error remains the primary source while the display text
@@ -68,6 +72,9 @@ impl fmt::Display for DoctorTuiError {
             Self::Io(error) => write!(formatter, "terminal operation failed: {error}"),
             Self::Presentation(error) => write!(formatter, "invalid diagnostic view: {error}"),
             Self::Frame(error) => write!(formatter, "Doctor frame failed: {error}"),
+            Self::PanicSupervision(error) => {
+                write!(formatter, "terminal panic supervision failed: {error}")
+            }
             Self::SessionAndRestoration {
                 session,
                 restoration,
@@ -85,6 +92,7 @@ impl std::error::Error for DoctorTuiError {
             Self::Io(error) => Some(error),
             Self::Presentation(error) => Some(error),
             Self::Frame(error) => Some(error),
+            Self::PanicSupervision(error) => Some(error),
             Self::SessionAndRestoration { session, .. } => Some(session.as_ref()),
             Self::InvalidFormat | Self::NonInteractive(_) => None,
         }
@@ -133,6 +141,7 @@ pub(super) fn run(
     root: &Path,
     mut capabilities: TerminalCapabilities,
 ) -> Result<(), DoctorTuiError> {
+    prepare_panic_supervision(install_terminal_panic_hook)?;
     let mut backend = Backend::new()?;
     backend.init_with_options(TERMINAL_OPTIONS)?;
     backend.clear()?;
@@ -142,6 +151,23 @@ pub(super) fn run(
     let session = run_loop(&mut backend, &mut model, sources, root, &mut capabilities);
     let restoration = backend.restore();
     finish_session(session, restoration)
+}
+
+/// Prepare emergency terminal restoration before Doctor acquires any modes.
+///
+/// Fresco cannot yet restore native console state before an aborting panic on
+/// every platform. An unsupported platform therefore retains Doctor's ordinary
+/// transactional and unwind restoration. Failures on a supported platform are
+/// surfaced before terminal state changes, rather than silently weakening the
+/// promised supervision.
+fn prepare_panic_supervision(
+    install: impl FnOnce() -> Result<TerminalPanicHookInstallation, TerminalPanicHookError>,
+) -> Result<(), DoctorTuiError> {
+    match install() {
+        Ok(_) => Ok(()),
+        Err(TerminalPanicHookError::UnsupportedPlatform) => Ok(()),
+        Err(error) => Err(DoctorTuiError::PanicSupervision(error)),
+    }
 }
 
 fn finish_session(

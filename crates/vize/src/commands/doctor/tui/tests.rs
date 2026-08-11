@@ -9,13 +9,46 @@ use vize_doctor::{
 };
 use vize_fresco::{
     ColorPreference, FeaturePreference, Key, KeyEvent, TerminalCapabilities,
-    TerminalCapabilityProbe, TerminalProfileOptions,
+    TerminalCapabilityProbe, TerminalPanicHookError, TerminalPanicHookInstallation,
+    TerminalProfileOptions,
 };
 
 use super::{
     DoctorSource, DoctorTuiError, editor_command, finish_session,
     model::{DoctorTuiModel, InteractionMode, InteractionOutcome},
+    prepare_panic_supervision,
 };
+
+#[test]
+fn panic_supervision_accepts_installation_idempotency_and_platform_fallback() {
+    for installation in [
+        TerminalPanicHookInstallation::Installed,
+        TerminalPanicHookInstallation::AlreadyInstalled,
+    ] {
+        assert!(prepare_panic_supervision(|| Ok(installation)).is_ok());
+    }
+
+    assert!(prepare_panic_supervision(|| Err(TerminalPanicHookError::UnsupportedPlatform)).is_ok());
+}
+
+#[test]
+fn panic_supervision_surfaces_supported_platform_failures_before_terminal_entry() {
+    for cause in [
+        TerminalPanicHookError::PanickingThread,
+        TerminalPanicHookError::InstallationPoisoned,
+    ] {
+        let error = prepare_panic_supervision(|| Err(cause)).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            format!("terminal panic supervision failed: {cause}")
+        );
+        assert_eq!(
+            error.source().map(ToString::to_string),
+            Some(cause.to_string())
+        );
+        assert!(matches!(error, DoctorTuiError::PanicSupervision(actual) if actual == cause));
+    }
+}
 
 #[test]
 fn session_and_restoration_failures_preserve_both_causes() {
