@@ -195,6 +195,7 @@ impl PackageRoute {
         paths
     }
 
+    #[cfg(feature = "native")]
     pub(crate) fn all_routes(&self) -> Vec<&PackageRoute> {
         let mut routes = vec![self];
         for route in &self.nested_routes {
@@ -203,6 +204,7 @@ impl PackageRoute {
         routes
     }
 
+    #[cfg(feature = "native")]
     pub(crate) fn contains_package_local_edge(
         &self,
         importer: &std::path::Path,
@@ -253,6 +255,7 @@ pub struct PackageRouteBinding {
 }
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg(feature = "native")]
 pub(crate) struct PackageRouteKey {
     pub importer_path: PathBuf,
     pub specifier: String,
@@ -260,6 +263,7 @@ pub(crate) struct PackageRouteKey {
 }
 
 impl PackageRouteBinding {
+    #[cfg(feature = "native")]
     pub(crate) fn key(&self) -> PackageRouteKey {
         PackageRouteKey {
             importer_path: self.importer_path.clone(),

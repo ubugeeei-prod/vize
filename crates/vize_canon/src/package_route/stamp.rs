@@ -73,6 +73,7 @@ impl InputStamp {
 /// stamps were captured through its canonical physical spelling. Resolve the
 /// nearest existing ancestor and append the missing suffix so the reverse
 /// invalidation index keeps the same identity across delete/recreate events.
+#[cfg(feature = "native")]
 pub(crate) fn canonicalize_changed_path(path: &Path) -> PathBuf {
     if let Ok(canonical) = path.canonicalize() {
         return vize_carton::path::normalize_windows_verbatim_path(canonical);

@@ -201,6 +201,7 @@ impl PackageRouteResolver {
         state.resolution_evictions = 0;
     }
 
+    #[cfg(feature = "native")]
     pub(crate) fn record_refresh_scope(
         &mut self,
         total: usize,

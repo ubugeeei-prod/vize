@@ -110,6 +110,7 @@ impl ServerState {
     }
 
     /// Effective Vue language version used by every native type-check surface.
+    #[cfg(feature = "native")]
     pub(crate) fn type_checker_vue_version(&self) -> vize_carton::config::VueVersion {
         *self.type_checker_vue_version.read()
     }

@@ -38,6 +38,7 @@ use search::{
 use source::resolve_sources;
 
 pub use cache::{PackageRouteLookup, PackageRouteResolver};
+#[cfg(feature = "native")]
 pub(crate) use model::PackageRouteKey;
 pub use model::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
