@@ -101,7 +101,12 @@ export declare function getLastRenderLayouts(): Array<LayoutResultNapi>
 /** Get layout result for a node. */
 export declare function getLayout(id: number): LayoutResultNapi | null
 
-/** Get terminal info. */
+/**
+ * Resolve the complete standard-output capability profile.
+ *
+ * Size discovery falls back to positive `COLUMNS` and `LINES` values, then
+ * 80x24. The result therefore remains available for redirected output.
+ */
 export declare function getTerminalInfo(): TerminalInfoNapi
 
 /** Hide cursor. */
