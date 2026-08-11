@@ -5,8 +5,14 @@ use std::io;
 
 use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
-use vize_fresco::component::{DiagnosticWorkspaceState, VirtualListNavigation, VirtualListState};
-use vize_fresco::layout::{FlexStyle, LayoutEngine};
+use vize_fresco::component::{
+    BoxNode, DiagnosticWorkspaceState, TextNode, VirtualListNavigation, VirtualListState,
+};
+use vize_fresco::headless::{
+    HeadlessPresentation, HeadlessRenderer, HeadlessSemanticNode, SemanticRole,
+};
+use vize_fresco::layout::{Dimension, FlexStyle, LayoutEngine};
+use vize_fresco::render::RenderTree;
 use vize_fresco::terminal::{Backend, Buffer, Style};
 use vize_fresco::text::{TextWidth, TextWrap, WrapMode};
 
@@ -196,6 +202,51 @@ fn benchmark_diagnostic_workspace(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_headless_snapshot(c: &mut Criterion) {
+    let mut tree = RenderTree::new();
+    let root_id = tree.next_id();
+    tree.insert_root(
+        BoxNode::new()
+            .column()
+            .width_percent(100.0)
+            .height_percent(100.0)
+            .build(root_id),
+    );
+    let mut semantics = vec![HeadlessSemanticNode::new(
+        root_id,
+        SemanticRole::Application,
+        "Doctor",
+    )];
+    for _ in 0..50 {
+        let id = tree.next_id();
+        let mut node = TextNode::new("Finding").build(id);
+        node.style.width = Dimension::Percent(100.0);
+        node.style.height = Dimension::Points(1.0);
+        node.style.flex_shrink = 0.0;
+        tree.insert(node);
+        tree.add_child(root_id, id);
+        semantics.push(HeadlessSemanticNode::new(
+            id,
+            SemanticRole::ListItem,
+            "Finding",
+        ));
+    }
+    let presentation = HeadlessPresentation::new().with_semantics(semantics);
+    let mut renderer = HeadlessRenderer::new(120, 40).unwrap();
+    let mut group = c.benchmark_group("headless_snapshot");
+    group.throughput(Throughput::Elements(120 * 40));
+    group.bench_function("120x40_50_semantic_nodes", |b| {
+        b.iter(|| {
+            black_box(
+                renderer
+                    .render(black_box(&mut tree), black_box(&presentation))
+                    .unwrap(),
+            )
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -206,5 +257,6 @@ criterion_group!(
     benchmark_virtual_list,
     benchmark_injected_backend_output,
     benchmark_diagnostic_workspace,
+    benchmark_headless_snapshot,
 );
 criterion_main!(benches);

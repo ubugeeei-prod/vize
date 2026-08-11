@@ -14,6 +14,7 @@ Support and deprecation guarantees are defined in the
 - Flexbox-style layout via `taffy`
 - Render tree, buffer, and text measurement utilities
 - Stable-keyed, virtualized diagnostic master-detail workspace state
+- Deterministic headless screen, semantic-tree, focus, cursor, and announcement snapshots
 - Optional NAPI bindings through the `napi` feature
 
 ## Key Entry Points
@@ -22,6 +23,7 @@ Support and deprecation guarantees are defined in the
 - `DiagnosticWorkspaceState`, `DiagnosticWorkspaceLayout`, `VirtualListState`
 - `LayoutEngine`, `FlexStyle`, `Rect`
 - `RenderTree`, `RenderNode`
+- `HeadlessRenderer`, `HeadlessPresentation`, `HeadlessSnapshot`
 - `Backend`, `Buffer`, `Cursor`
 
 ## Related Crates

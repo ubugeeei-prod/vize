@@ -15,6 +15,7 @@
 //! - **CJK Support**: Full Unicode text handling including Japanese IME
 //! - **Efficient Rendering**: Double-buffered differential rendering
 //! - **Diagnostic Workspaces**: Stable, virtualized master-detail navigation
+//! - **Headless Assertions**: Deterministic visual and semantic frame snapshots
 //!
 //! # Architecture
 //!
@@ -53,6 +54,7 @@
 //! ```
 
 pub mod component;
+pub mod headless;
 pub mod input;
 pub mod layout;
 pub mod render;
@@ -67,6 +69,10 @@ pub use component::{
     BoxNode, DiagnosticWorkspaceFocus, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
     DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState, InputNode,
     TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+};
+pub use headless::{
+    AnnouncementPoliteness, HeadlessAnnouncement, HeadlessPresentation, HeadlessRenderError,
+    HeadlessRenderer, HeadlessSemanticNode, HeadlessSnapshot, SemanticRole, SemanticState,
 };
 pub use input::{Event, ImeState, KeyEvent, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
