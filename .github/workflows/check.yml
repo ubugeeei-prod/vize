@@ -413,13 +413,13 @@ jobs:
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
-    # cargo llvm-cov against the whole workspace runs ~4–6 minutes. Coverage is
-    # a trend metric, not a per-PR signal: one PR rarely moves workspace-wide
-    # percentages. Run on push-to-main and on the daily schedule; the
+    # cargo llvm-cov runs ~4–6 minutes and is a trend metric, not a per-PR signal:
+    # run on push-to-main and daily because one PR rarely moves global percentages; the
     # fixture-coverage job (`coverage`) and compiler/lint suites still run per-PR.
     if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
