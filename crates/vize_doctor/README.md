@@ -25,6 +25,41 @@ When enabled, the adapter converts an existing Vize whole-project analysis into
 source-aware findings and reports without reparsing files. It fails closed if a
 diagnostic references a stale file or a path outside the declared workspace.
 
+## Finding filters
+
+`DoctorFilterSpec` is a serializable, provider-neutral query shared by CLI,
+TUI, editor, CI, and AI clients. Enum values within a dimension are ORed,
+populated dimensions are ANDed, and string dimensions support validated shell
+globs. Applying a compiled filter produces a newly scored `DoctorReport` while
+leaving the source report unchanged.
+
+```rust
+use vize_doctor::{
+    DoctorCategory, DoctorFilterSpec, DoctorReport, FindingSeverity,
+};
+
+# let report = DoctorReport::new("example", []);
+let filter = DoctorFilterSpec {
+    categories: vec![DoctorCategory::Correctness],
+    severities: vec![FindingSeverity::Error],
+    paths: vec!["packages/**/src/*.vue".into()],
+    changed_files: vec!["packages/account/**".into()],
+    ..DoctorFilterSpec::default()
+}
+.compile()?;
+let focused = filter.apply(&report);
+
+assert!(focused
+    .findings()
+    .iter()
+    .all(|finding| filter.matches(finding)));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+Primary `paths` are intentionally distinct from `changed_files`. Changed-file
+matching traverses primary, related, evidence, fix-edit, and invalidation-input
+paths so dependent findings stay visible when a shared contract changes.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

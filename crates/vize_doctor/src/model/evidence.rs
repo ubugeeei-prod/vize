@@ -71,6 +71,9 @@ pub struct FindingContext {
     /// Route identifier. Defaults to absent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub route: Option<String>,
+    /// Workspace package identifier. Defaults to absent.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package: Option<String>,
     /// Component identifier. Defaults to absent.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component: Option<String>,

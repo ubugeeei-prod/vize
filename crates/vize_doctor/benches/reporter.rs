@@ -2,11 +2,11 @@ use std::{hint::black_box, io};
 
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use vize_doctor::{
-    AiContextBudget, AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport,
-    DoctorReporter, FindingAssessment, FindingConfidence, FindingImpact, FindingSeverity,
-    HealthPenalty, JsonReporter, ReporterAudience, ReporterCapability, ReporterDescriptor,
-    ReporterError, ReporterOutput, ReporterTransport, RuleCost, SarifReporter, SarifSource,
-    SourceLocation, build_ai_context, render_report,
+    AiContextBudget, AnalysisProvenance, DoctorCategory, DoctorFilterSpec, DoctorFinding,
+    DoctorReport, DoctorReporter, FindingAssessment, FindingConfidence, FindingImpact,
+    FindingSeverity, HealthPenalty, JsonReporter, ReporterAudience, ReporterCapability,
+    ReporterDescriptor, ReporterError, ReporterOutput, ReporterTransport, RuleCost, SarifReporter,
+    SarifSource, SourceLocation, build_ai_context, render_report,
 };
 
 struct EmptyReporter {
@@ -134,6 +134,39 @@ fn benchmark_sarif_reporter(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_finding_filter(c: &mut Criterion) {
+    let mut group = c.benchmark_group("doctor_filter/matches");
+    let filter = DoctorFilterSpec {
+        categories: vec![DoctorCategory::Performance],
+        severities: vec![FindingSeverity::Warning],
+        rules: vec!["VIZE_DOCTOR_BENCH".into()],
+        paths: vec!["src/**".into()],
+        changed_files: vec!["src/Benchmark.vue".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap();
+
+    for finding_count in [100, 10_000] {
+        let report = report_with_findings(finding_count);
+        group.throughput(Throughput::Elements(finding_count as u64));
+        group.bench_with_input(
+            BenchmarkId::from_parameter(finding_count),
+            &report,
+            |b, report| {
+                b.iter(|| {
+                    black_box(report)
+                        .findings()
+                        .iter()
+                        .filter(|finding| filter.matches(finding))
+                        .count()
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
 fn report_with_findings(finding_count: usize) -> DoctorReport {
     DoctorReport::new(
         "benchmark",
@@ -161,6 +194,7 @@ criterion_group!(
     benchmark_reporter_contract,
     benchmark_json_reporter,
     benchmark_ai_context,
-    benchmark_sarif_reporter
+    benchmark_sarif_reporter,
+    benchmark_finding_filter
 );
 criterion_main!(reporter_benches);

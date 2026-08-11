@@ -3,6 +3,7 @@
 mod analysis;
 mod canonical_sfc;
 mod discovery;
+mod filters;
 mod output;
 
 #[cfg(test)]
@@ -12,7 +13,8 @@ use clap::{Args, ValueEnum};
 use std::{fmt, io, path::PathBuf};
 use vize_carton::String;
 use vize_doctor::{
-    DoctorReport, ReporterFailure, SarifSourceError, application_analysis::ApplicationAnalysisError,
+    DoctorCategory, DoctorFilterError, DoctorReport, FindingConfidence, FindingSeverity,
+    ReporterFailure, SarifSourceError, application_analysis::ApplicationAnalysisError,
 };
 
 use self::{
@@ -55,6 +57,46 @@ pub struct DoctorArgs {
     /// Enforce the canonical public component SFC contract. Defaults to false.
     #[arg(long)]
     pub public_sfc: bool,
+
+    /// Include category values (repeat or comma-separate). Defaults to every category.
+    #[arg(long = "category", value_delimiter = ',', value_parser = filters::parse_category)]
+    pub categories: Vec<DoctorCategory>,
+
+    /// Include severity values (repeat or comma-separate). Defaults to every severity.
+    #[arg(long = "severity", value_delimiter = ',', value_parser = filters::parse_severity)]
+    pub severities: Vec<FindingSeverity>,
+
+    /// Include confidence values (repeat or comma-separate). Defaults to every confidence.
+    #[arg(long = "confidence", value_delimiter = ',', value_parser = filters::parse_confidence)]
+    pub confidences: Vec<FindingConfidence>,
+
+    /// Include target identifiers matching a glob. Defaults to every target.
+    #[arg(long = "target")]
+    pub targets: Vec<String>,
+
+    /// Include stable rule codes matching a glob. Defaults to every rule.
+    #[arg(long = "rule")]
+    pub rules: Vec<String>,
+
+    /// Include primary workspace-relative paths matching a glob. Defaults to every path.
+    #[arg(long = "path")]
+    pub path_filters: Vec<String>,
+
+    /// Include route identifiers matching a glob. Defaults to every route.
+    #[arg(long = "route")]
+    pub routes: Vec<String>,
+
+    /// Include environment identifiers matching a glob. Defaults to every environment.
+    #[arg(long = "environment")]
+    pub environments: Vec<String>,
+
+    /// Include workspace package identifiers matching a glob. Defaults to every package.
+    #[arg(long = "package")]
+    pub packages: Vec<String>,
+
+    /// Include findings affected by a changed-file glob. Defaults to every file.
+    #[arg(long = "changed-file")]
+    pub changed_files: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -91,6 +133,7 @@ enum DoctorError {
     },
     Analysis(ApplicationAnalysisError),
     SarifSource(SarifSourceError),
+    Filter(DoctorFilterError),
     Report(ReporterFailure),
     Write(io::Error),
 }
@@ -152,6 +195,7 @@ impl fmt::Display for DoctorError {
             }
             Self::Analysis(error) => write!(formatter, "cannot build health report: {error}"),
             Self::SarifSource(error) => write!(formatter, "cannot prepare SARIF source: {error}"),
+            Self::Filter(error) => write!(formatter, "cannot apply finding filters: {error}"),
             Self::Report(error) => write!(formatter, "cannot render health report: {error}"),
             Self::Write(error) => write!(formatter, "cannot write health report: {error}"),
         }
@@ -191,6 +235,7 @@ pub fn run(args: DoctorArgs) {
 }
 
 fn execute(args: DoctorArgs) -> Result<DoctorOutcome, DoctorError> {
+    let filter = filters::compile(&args).map_err(DoctorError::Filter)?;
     let cwd = std::env::current_dir().map_err(DoctorError::CurrentDirectory)?;
     let requested_root = if args.root.is_absolute() {
         args.root
@@ -204,7 +249,7 @@ fn execute(args: DoctorArgs) -> Result<DoctorOutcome, DoctorError> {
             source,
         })?;
     let sources = discover_sources(&root, &args.paths)?;
-    let report = analyze_application(&root, &sources, args.public_sfc)?;
+    let report = filter.apply(&analyze_application(&root, &sources, args.public_sfc)?);
     Ok(DoctorOutcome {
         report,
         sources,

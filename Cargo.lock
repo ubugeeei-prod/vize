@@ -3870,6 +3870,7 @@ name = "vize_doctor"
 version = "0.347.6"
 dependencies = [
  "criterion",
+ "globset",
  "serde",
  "serde_json",
  "tempfile",

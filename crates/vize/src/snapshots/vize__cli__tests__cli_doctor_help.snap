@@ -34,5 +34,35 @@ Options:
       --public-sfc
           Enforce the canonical public component SFC contract. Defaults to false
 
+      --category <CATEGORIES>
+          Include category values (repeat or comma-separate). Defaults to every category
+
+      --severity <SEVERITIES>
+          Include severity values (repeat or comma-separate). Defaults to every severity
+
+      --confidence <CONFIDENCES>
+          Include confidence values (repeat or comma-separate). Defaults to every confidence
+
+      --target <TARGETS>
+          Include target identifiers matching a glob. Defaults to every target
+
+      --rule <RULES>
+          Include stable rule codes matching a glob. Defaults to every rule
+
+      --path <PATH_FILTERS>
+          Include primary workspace-relative paths matching a glob. Defaults to every path
+
+      --route <ROUTES>
+          Include route identifiers matching a glob. Defaults to every route
+
+      --environment <ENVIRONMENTS>
+          Include environment identifiers matching a glob. Defaults to every environment
+
+      --package <PACKAGES>
+          Include workspace package identifiers matching a glob. Defaults to every package
+
+      --changed-file <CHANGED_FILES>
+          Include findings affected by a changed-file glob. Defaults to every file
+
   -h, --help
           Print help (see a summary with '-h')

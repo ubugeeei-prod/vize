@@ -13,6 +13,7 @@ default = []
 application-analysis = ["dep:vize_croquis_cf"]
 
 [dependencies]
+globset.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 vize_carton.workspace = true

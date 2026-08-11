@@ -56,6 +56,7 @@
 mod ai_context;
 #[cfg(feature = "application-analysis")]
 pub mod application_analysis;
+mod filter;
 mod model;
 mod report;
 mod reporter;
@@ -66,6 +67,7 @@ pub use ai_context::{
     AiEvidenceRelation, AiFindingContext, AiSourceSnippet, AiVerificationStep,
     DOCTOR_AI_CONTEXT_FORMAT_VERSION, build_ai_context,
 };
+pub use filter::{DoctorFilter, DoctorFilterDimension, DoctorFilterError, DoctorFilterSpec};
 pub use model::{
     AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding,
     EvidenceKind, FindingAssessment, FindingConfidence, FindingContext, FindingEvidence,
