@@ -64,6 +64,11 @@
       "import": "./dist/id.mjs",
       "default": "./dist/id.mjs"
     },
+    "./interaction-modality": {
+      "types": "./dist/interaction-modality.d.mts",
+      "import": "./dist/interaction-modality.mjs",
+      "default": "./dist/interaction-modality.mjs"
+    },
     "./primitive": {
       "types": "./dist/primitive.d.mts",
       "import": "./dist/primitive.mjs",

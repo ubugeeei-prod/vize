@@ -21,6 +21,7 @@ export default defineConfig({
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       id: "src/id.ts",
+      "interaction-modality": "src/interaction-modality.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",
       media: "src/media.ts",

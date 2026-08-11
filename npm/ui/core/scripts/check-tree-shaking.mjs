@@ -72,6 +72,7 @@ const familySignatures = Object.freeze({
   checkbox: /aria-checked/,
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
+  "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
   "visually-hidden": /visually-hidden/,
 });
@@ -99,6 +100,12 @@ const componentCases = [
     family: "id",
     exportName: "IdProvider",
     maximumJavaScriptGzipBytes: 1_050,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "interaction-modality",
+    exportName: "createInteractionModalityTracker",
+    maximumJavaScriptGzipBytes: 1_650,
     maximumCssGzipBytes: 0,
   },
   {
