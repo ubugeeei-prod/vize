@@ -77,7 +77,6 @@ impl<'a> RouteDiscovery<'a> {
                 .extend(self.settings.input_paths().iter().cloned());
             self.inputs.extend(context_inputs.iter().cloned());
         }
-        let has_route = route.is_some();
         let reachability = route
             .as_ref()
             .map_or_else(PackageRouteReachability::default, |route| {
@@ -91,19 +90,18 @@ impl<'a> RouteDiscovery<'a> {
                 self.reachability
                     .entry(key)
                     .or_insert_with(|| {
-                        crate::batch::virtual_project::package_route_reaches_vue(
+                        let scanned = crate::batch::virtual_project::package_route_reaches_vue(
                             route,
                             self.aliases,
                             self.settings,
                             self.resolver,
                             crate::PackageSourceOptions::new(true, true),
-                        )
+                        );
+                        scanned.record_work(self.resolver);
+                        scanned
                     })
                     .clone()
             });
-        if has_route {
-            reachability.record_work(self.resolver);
-        }
         let needs_shadow = reachability.requires_shadow();
         let track_reachability = reachability.requires_tracking();
         self.inputs.extend(reachability.inputs);

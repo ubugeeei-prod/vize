@@ -14,6 +14,7 @@ fn nested_package_graph_deduplicates_identity_and_stops_before_expansion() {
     let budget = ReachabilityBudget {
         max_packages: 2,
         max_files: 8,
+        max_queued_files: 64,
         max_file_bytes: 1024,
         max_total_bytes: 1024,
         max_edges: 8,

@@ -11,15 +11,18 @@ use super::dependency_scan::resolve_dependency_with_inputs;
 use super::is_vue_runtime_support_specifier;
 
 /// Cache and evidence identity for the fixed reachability work contract.
-pub const PACKAGE_REACHABILITY_BUDGET_REVISION: u8 = 1;
+pub const PACKAGE_REACHABILITY_BUDGET_REVISION: u8 = 2;
 
 // One route may inspect at most 128 package identities, source candidates, or
 // parses, 512 unique edges, 128 KiB per source, and 512 KiB total. Metadata is
 // checked before a source is read, so generated/minified bundles cannot consume
-// the parse budget.
+// the parse budget. Queued candidates are bounded separately because seeding a
+// package enumerates its whole source and dependency list before any file is
+// popped, and every queued path is retained as an invalidation input.
 const DEFAULT_BUDGET: ReachabilityBudget = ReachabilityBudget {
     max_packages: 128,
     max_files: 128,
+    max_queued_files: 4096,
     max_file_bytes: 128 * 1024,
     max_total_bytes: 512 * 1024,
     max_edges: 512,
@@ -75,6 +78,7 @@ impl PackageRouteReachability {
 struct ReachabilityBudget {
     max_packages: usize,
     max_files: usize,
+    max_queued_files: usize,
     max_file_bytes: usize,
     max_total_bytes: usize,
     max_edges: usize,
@@ -92,21 +96,12 @@ pub(crate) fn package_route_reaches_vue(
     resolver: &mut crate::PackageRouteResolver,
     source_options: crate::PackageSourceOptions,
 ) -> PackageRouteReachability {
-    scan_package_route_reachability_with_budget(
+    package_route_reaches_vue_with_budget(
         route,
-        |importer, specifier| {
-            let importer_dir = importer.parent().unwrap_or(importer);
-            resolve_dependency_with_inputs(specifier, importer_dir, &route.package_root, aliases)
-        },
-        |importer, specifier, mode| {
-            let importer_dir = importer.parent().unwrap_or(importer);
-            let (context, mut inputs) = resolution.context(resolver, importer, mode);
-            let (nested, consulted) = resolver
-                .lookup_with_context(importer_dir, specifier, source_options, context)
-                .into_parts();
-            inputs.extend(consulted);
-            (nested, inputs)
-        },
+        aliases,
+        resolution,
+        resolver,
+        source_options,
         DEFAULT_BUDGET,
     )
 }
@@ -135,7 +130,6 @@ where
 }
 
 #[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
-#[cfg(test)]
 fn package_route_reaches_vue_with_budget(
     route: &crate::PackageRoute,
     aliases: &[(std::string::String, std::string::String)],
@@ -257,7 +251,11 @@ where
                 {
                     return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
                 }
-                if queued.insert(dependency.clone()) {
+                if !queued.contains(&dependency) {
+                    if queued.len() == budget.max_queued_files {
+                        return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
+                    }
+                    queued.insert(dependency.clone());
                     queue.push((source_priority(&dependency), Reverse(dependency)));
                 }
                 continue;

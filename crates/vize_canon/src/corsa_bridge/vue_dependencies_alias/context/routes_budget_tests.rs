@@ -43,6 +43,32 @@ fn exhausted_editor_route_keeps_native_spelling_and_invalidation_inputs() {
             .iter()
             .any(|path| path.ends_with("node_modules/chart-like/dist/index.js"))
     );
+
+    // The assertions above also hold for a completed scan, so pin the outcome
+    // itself: removing the byte guard turns this into a finished scan and drops
+    // the exhaustion counter back to zero.
+    let settings =
+        crate::batch::virtual_project::package_resolution::PackageResolutionSettings::default();
+    let mut resolver = crate::PackageRouteResolver::default();
+    let mut routes = FxHashMap::default();
+    let mut reachability = FxHashMap::default();
+    let mut bindings = Vec::new();
+    let mut inputs = Vec::new();
+    let mut discovery = RouteDiscovery::new(
+        &settings,
+        &mut resolver,
+        &mut routes,
+        &mut reachability,
+        &mut bindings,
+        &mut inputs,
+        &[],
+    );
+    assert!(!discovery.resolve(&host, "chart-like", crate::PackageResolutionMode::Import));
+    drop(discovery);
+
+    let metrics = resolver.metrics();
+    assert_eq!(metrics.reachability_checks, 1);
+    assert_eq!(metrics.reachability_budget_exceeded, 1);
 }
 
 #[test]
@@ -90,6 +116,13 @@ fn reachability_cache_separates_importer_and_resolution_context() {
     ));
     assert!(!discovery.resolve(
         &other_importer,
+        "typed-package",
+        crate::PackageResolutionMode::Import,
+    ));
+    // A repeated resolution is a cache hit, so it must not scan again or move
+    // the cumulative work counters.
+    assert!(!discovery.resolve(
+        &importer,
         "typed-package",
         crate::PackageResolutionMode::Import,
     ));
