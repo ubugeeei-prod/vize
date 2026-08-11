@@ -1,5 +1,5 @@
 use std::{fs, path::Path, process::Command};
-use vize_doctor::DoctorReport;
+use vize_doctor::{DOCTOR_REPORT_FORMAT_VERSION, DoctorReport};
 
 #[test]
 fn json_output_is_versioned_and_uses_workspace_relative_paths() {
@@ -19,7 +19,7 @@ fn json_output_is_versioned_and_uses_workspace_relative_paths() {
     let report: DoctorReport = serde_json::from_slice(&output.stdout).unwrap();
 
     assert!(output.status.success());
-    assert_eq!(report.format_version(), 1);
+    assert_eq!(report.format_version(), DOCTOR_REPORT_FORMAT_VERSION);
     assert_eq!(report.workspace(), ".");
     assert_eq!(report.findings()[0].primary.path, "src/A.vue");
     assert_eq!(report.summary().counts.warnings, 1);
