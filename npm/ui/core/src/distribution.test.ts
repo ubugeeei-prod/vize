@@ -15,6 +15,7 @@ const publicEntries = [
   "./id",
   "./interaction-modality",
   "./focus",
+  "./focus-scope",
   "./hover",
   "./long-press",
   "./move",

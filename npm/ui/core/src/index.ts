@@ -7,6 +7,7 @@ export * from "./button.ts";
 export * from "./id.ts";
 export * from "./interaction-modality.ts";
 export * from "./focus.ts";
+export * from "./focus-scope.ts";
 export * from "./hover.ts";
 export * from "./long-press.ts";
 export * from "./move.ts";

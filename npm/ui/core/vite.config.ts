@@ -24,6 +24,7 @@ export default defineConfig({
       id: "src/id.ts",
       "interaction-modality": "src/interaction-modality.ts",
       focus: "src/focus.ts",
+      "focus-scope": "src/focus-scope.ts",
       hover: "src/hover.ts",
       "long-press": "src/long-press.ts",
       move: "src/move.ts",
