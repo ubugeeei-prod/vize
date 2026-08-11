@@ -1,7 +1,9 @@
 //! Deterministic terminal and automation output.
 
 use std::io::{self, Write};
-use vize_doctor::{DoctorFinding, DoctorReport, FindingSeverity, FixSafety};
+use vize_doctor::{
+    DoctorFinding, DoctorReport, FindingSeverity, FixSafety, JsonReporter, render_report,
+};
 
 use super::{DoctorError, DoctorFormat};
 
@@ -10,11 +12,9 @@ pub(super) fn write_report(report: &DoctorReport, format: DoctorFormat) -> Resul
     let mut output = stdout.lock();
     match format {
         DoctorFormat::Text => write_text(&mut output, report).map_err(DoctorError::Write),
-        DoctorFormat::Json => {
-            let serialized =
-                serde_json::to_string_pretty(report).map_err(DoctorError::Serialize)?;
-            writeln!(output, "{serialized}").map_err(DoctorError::Write)
-        }
+        DoctorFormat::Json => render_report(&JsonReporter::new(), report, &mut output)
+            .map(|_| ())
+            .map_err(DoctorError::Report),
     }
 }
 

@@ -14,9 +14,14 @@ application-analysis = ["dep:vize_croquis_cf"]
 
 [dependencies]
 serde.workspace = true
+serde_json.workspace = true
 vize_carton.workspace = true
 vize_croquis_cf = { workspace = true, optional = true }
 
 [dev-dependencies]
+criterion.workspace = true
 tempfile.workspace = true
-serde_json.workspace = true
+
+[[bench]]
+name = "reporter"
+harness = false

@@ -20,6 +20,8 @@
 //! - A blocking proven error remains blocking regardless of its health score.
 //! - The optional `application-analysis` adapter is disabled by default.
 //! - Enabled adapters reuse registered whole-project analysis without reparsing.
+//! - Reporters are registered explicitly and never mutate global process state.
+//! - Reporter descriptors are versioned, machine-readable, and deterministically ordered.
 //!
 //! # Example
 //!
@@ -54,6 +56,7 @@
 pub mod application_analysis;
 mod model;
 mod report;
+mod reporter;
 
 pub use model::{
     AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding,
@@ -64,4 +67,10 @@ pub use model::{
 pub use report::{
     CategoryHealth, DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorReport,
     DoctorSummary, FindingCounts,
+};
+pub use reporter::{
+    DOCTOR_REPORTER_CONTRACT_VERSION, DoctorReporter, JsonReporter, ReporterAudience,
+    ReporterCapability, ReporterContractError, ReporterDescriptor, ReporterError,
+    ReporterErrorKind, ReporterFailure, ReporterOutput, ReporterReceipt, ReporterRegistrationError,
+    ReporterSet, ReporterTransport, render_report,
 };
