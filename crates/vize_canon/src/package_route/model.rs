@@ -204,17 +204,6 @@ impl PackageRoute {
         routes
     }
 
-    #[cfg(feature = "native")]
-    pub(crate) fn contains_package_local_edge(
-        &self,
-        importer: &std::path::Path,
-        target: &std::path::Path,
-    ) -> bool {
-        self.all_routes().into_iter().any(|route| {
-            importer.starts_with(&route.package_root) && target.starts_with(&route.package_root)
-        })
-    }
-
     /// Map a native TypeScript definition inside a materialized package shadow
     /// back to the authored source candidate it selected. The native location
     /// is the authority; this method only reverses Canon's deterministic shadow

@@ -152,6 +152,17 @@ impl VirtualProject {
             let specifiers = self
                 .rewriter()
                 .collect_all_specifier_occurrences(&virtual_content, source_type);
+            // Package-local edges only exist inside a package root that already
+            // contains this importer, so scan the route table once per importer
+            // instead of once per specifier (#4137).
+            let importer_package_roots = self
+                .package_routes
+                .values()
+                .filter_map(|binding| binding.route.as_ref())
+                .flat_map(crate::PackageRoute::all_routes)
+                .filter(|route| importer.starts_with(&route.package_root))
+                .map(|route| route.package_root.clone())
+                .collect::<Vec<_>>();
 
             for (specifier, mode) in specifiers {
                 let native_target =
@@ -166,12 +177,9 @@ impl VirtualProject {
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };
-                let package_local = self.package_routes.values().any(|binding| {
-                    binding
-                        .route
-                        .as_ref()
-                        .is_some_and(|route| route.contains_package_local_edge(&importer, &key))
-                });
+                let package_local = importer_package_roots
+                    .iter()
+                    .any(|package_root| key.starts_with(package_root));
                 if (inside_node_modules(&key) || is_declaration_file(&key)) && !package_local {
                     continue;
                 }
