@@ -22,6 +22,7 @@ export default defineConfig({
       "controllable-state": "src/controllable-state.ts",
       id: "src/id.ts",
       "interaction-modality": "src/interaction-modality.ts",
+      "long-press": "src/long-press.ts",
       press: "src/press.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",

@@ -73,9 +73,14 @@ const familySignatures = Object.freeze({
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
+  "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
   press: /VIZE_UI_PRESS_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
   "visually-hidden": /visually-hidden/,
+});
+
+const retainedFamilies = Object.freeze({
+  "long-press": new Set(["long-press", "press"]),
 });
 
 const componentCases = [
@@ -107,6 +112,12 @@ const componentCases = [
     family: "interaction-modality",
     exportName: "createInteractionModalityTracker",
     maximumJavaScriptGzipBytes: 1_650,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "long-press",
+    exportName: "createLongPress",
+    maximumJavaScriptGzipBytes: 4_750,
     maximumCssGzipBytes: 0,
   },
   {
@@ -149,7 +160,8 @@ for (const {
   );
 
   for (const [signatureFamily, signature] of Object.entries(familySignatures)) {
-    if (signatureFamily === family) {
+    const allowed = retainedFamilies[family] ?? new Set([family]);
+    if (allowed.has(signatureFamily)) {
       assert.match(
         rootOutput.javascript,
         signature,

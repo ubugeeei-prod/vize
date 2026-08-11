@@ -69,6 +69,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./long-press": {
+      "types": "./dist/long-press.d.mts",
+      "import": "./dist/long-press.mjs",
+      "default": "./dist/long-press.mjs"
+    },
     "./press": {
       "types": "./dist/press.d.mts",
       "import": "./dist/press.mjs",

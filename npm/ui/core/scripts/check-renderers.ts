@@ -19,6 +19,30 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "LongPressConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { useLongPress } from "./long-press.ts";
+
+const longPress = useLongPress({
+  accessibilityDescription: "Hold for actions",
+  onLongPress(event) {
+    void event.pointerType;
+  },
+});
+</script>
+
+<template>
+  <button
+    v-bind="longPress.longPressProps"
+    type="button"
+    :data-long-pressed="longPress.isLongPressed.value || undefined"
+  >
+    Actions
+  </button>
+</template>
+`,
+  },
+  {
     filename: "PressConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { usePress } from "./press.ts";
