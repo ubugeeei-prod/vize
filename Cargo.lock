@@ -3897,6 +3897,7 @@ dependencies = [
  "criterion",
  "crossterm",
  "insta",
+ "libc",
  "napi",
  "napi-build",
  "napi-derive",

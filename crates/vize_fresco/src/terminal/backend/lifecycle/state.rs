@@ -33,7 +33,7 @@ impl TerminalMode {
         }
     }
 
-    const fn bit(self) -> u8 {
+    pub(in crate::terminal::backend) const fn bit(self) -> u8 {
         match self {
             Self::RawMode => 1 << 0,
             Self::AlternateScreen => 1 << 1,
@@ -103,6 +103,10 @@ impl TerminalSessionState {
         matches!(self.phase(), TerminalSessionPhase::Active)
     }
 
+    pub(in crate::terminal::backend) const fn bits(self) -> u8 {
+        self.owned_modes
+    }
+
     #[inline]
     pub(in crate::terminal::backend) fn acquire(&mut self, mode: TerminalMode) {
         self.owned_modes |= mode.bit();
@@ -110,9 +114,11 @@ impl TerminalSessionState {
 
     /// Conservatively own cursor commands queued by one frame.
     #[inline]
-    pub(in crate::terminal::backend) fn acquire_frame_cursor(&mut self, visible: bool) {
+    pub(in crate::terminal::backend) fn acquire_frame_cursor(&mut self, visible: bool) -> bool {
+        let previous = self.owned_modes;
         self.owned_modes |= TerminalMode::CursorVisibility.bit()
             | ((visible as u8) * TerminalMode::CursorShape.bit());
+        self.owned_modes != previous
     }
 
     pub(super) fn release(&mut self, mode: TerminalMode) {

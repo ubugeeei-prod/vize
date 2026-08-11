@@ -73,8 +73,11 @@ impl<W: Write> Backend<W> {
 
         // Cursor commands are part of every frame. Acquire ownership before
         // writing so a partial command is restored conservatively after an
-        // I/O failure. The state update is one branchless bitwise operation.
-        self.session.acquire_frame_cursor(self.cursor.visible);
+        // I/O failure. Publish only when ownership expands, keeping steady-state
+        // frames free of atomic stores.
+        if self.session.acquire_frame_cursor(self.cursor.visible) {
+            self.publish_process_session_state();
+        }
 
         let mut writer = CountingWriter::new(&mut self.writer);
         let mut changed_cells = 0_u64;

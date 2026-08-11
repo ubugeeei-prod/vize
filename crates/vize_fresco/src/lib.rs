@@ -87,8 +87,9 @@ pub use render::{
 pub use terminal::{
     Backend, Buffer, CapabilityDecision, CapabilityReason, Cell, ColorPreference, ColorSupport,
     Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,
-    TerminalCleanupFailure, TerminalMode, TerminalProfileOptions, TerminalRestorationError,
-    TerminalSessionAcquireError, TerminalSessionPhase, TerminalSessionState,
+    TerminalCleanupFailure, TerminalMode, TerminalPanicHookError, TerminalPanicHookInstallation,
+    TerminalProfileOptions, TerminalRestorationError, TerminalSessionAcquireError,
+    TerminalSessionPhase, TerminalSessionState, install_terminal_panic_hook,
 };
 pub use text::{TextSegment, TextWidth, TextWrap};
 

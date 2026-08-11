@@ -16,9 +16,13 @@ use crossterm::{
 use super::{Backend, TerminalOptions};
 
 mod lease;
+mod panic_hook;
 mod state;
 
 pub use lease::TerminalSessionAcquireError;
+pub use panic_hook::{
+    TerminalPanicHookError, TerminalPanicHookInstallation, install_terminal_panic_hook,
+};
 pub use state::{TerminalMode, TerminalSessionPhase, TerminalSessionState};
 
 /// One terminal mode that could not be restored.
@@ -150,22 +154,22 @@ impl<W: Write> Backend<W> {
     fn enable_modes(&mut self, options: TerminalOptions) -> io::Result<()> {
         if options.raw_mode && !self.session.owns(TerminalMode::RawMode) {
             enable_raw_mode()?;
-            self.session.acquire(TerminalMode::RawMode);
+            self.acquire_mode(TerminalMode::RawMode);
         }
         if options.alternate_screen && !self.session.owns(TerminalMode::AlternateScreen) {
-            self.session.acquire(TerminalMode::AlternateScreen);
+            self.acquire_mode(TerminalMode::AlternateScreen);
             execute!(&mut self.writer, EnterAlternateScreen)?;
         }
         if options.bracketed_paste && !self.session.owns(TerminalMode::BracketedPaste) {
-            self.session.acquire(TerminalMode::BracketedPaste);
+            self.acquire_mode(TerminalMode::BracketedPaste);
             execute!(&mut self.writer, EnableBracketedPaste)?;
         }
         if options.mouse_capture && !self.session.owns(TerminalMode::MouseCapture) {
-            self.session.acquire(TerminalMode::MouseCapture);
+            self.acquire_mode(TerminalMode::MouseCapture);
             execute!(&mut self.writer, EnableMouseCapture)?;
         }
         if options.hide_cursor && !self.session.owns(TerminalMode::CursorVisibility) {
-            self.session.acquire(TerminalMode::CursorVisibility);
+            self.acquire_mode(TerminalMode::CursorVisibility);
             execute!(&mut self.writer, Hide)?;
         }
         Ok(())
@@ -222,12 +226,18 @@ impl<W: Write> Backend<W> {
                 }),
             }
         }
+        self.publish_process_session_state();
         if failures.is_empty() {
             Ok(())
         } else {
             let kind = failures[0].error.kind();
             Err(io::Error::new(kind, TerminalRestorationError { failures }))
         }
+    }
+
+    fn acquire_mode(&mut self, mode: TerminalMode) {
+        self.session.acquire(mode);
+        self.publish_process_session_state();
     }
 }
 
