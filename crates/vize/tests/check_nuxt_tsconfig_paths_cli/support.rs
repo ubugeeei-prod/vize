@@ -3,7 +3,7 @@ use std::{
     process::Command,
 };
 
-use crate::nuxt_cli::workspace_node_modules;
+use crate::nuxt_cli::{workspace_node_modules, workspace_root};
 pub(super) use crate::{nuxt_cli::resolve_test_corsa_path, nuxt_stress::required_iterations};
 
 pub(super) fn run_nuxt2_alias_check(
@@ -45,14 +45,6 @@ pub(super) fn write_file(root: &Path, path: &str, content: &str) {
         std::fs::create_dir_all(parent).unwrap();
     }
     std::fs::write(file_path, content).unwrap();
-}
-
-fn workspace_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .expect("workspace root should exist")
-        .to_path_buf()
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {

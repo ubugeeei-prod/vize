@@ -41,11 +41,7 @@ pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_project(
     if !is_digest(name) {
         return Ok(false);
     }
-    match validate_owned_directory(bucket, project, name, "project") {
-        Ok(()) => Ok(true),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
-        Err(error) => Err(error),
-    }
+    validate_collectable_directory(bucket, project, name, "project")
 }
 
 pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_entry(
@@ -58,7 +54,18 @@ pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_entry(
     if !is_digest(name) {
         return Ok(false);
     }
-    match validate_owned_directory(project_cache, entry, name, "entry") {
+    validate_collectable_directory(project_cache, entry, name, "entry")
+}
+
+/// A directory whose ownership marker is missing is an interrupted creation,
+/// not foreign state: collection scans skip it instead of failing the check.
+fn validate_collectable_directory(
+    parent: &Path,
+    path: &Path,
+    identity: &str,
+    kind: &str,
+) -> Result<bool, std::io::Error> {
+    match validate_owned_directory(parent, path, identity, kind) {
         Ok(()) => Ok(true),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
         Err(error) => Err(error),

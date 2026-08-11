@@ -55,6 +55,22 @@ fn acquisitions_in_different_shards_never_share_a_lock() {
 }
 
 #[test]
+fn collection_survives_a_directory_created_before_its_ownership_marker() {
+    let case = tempfile::tempdir().unwrap();
+    let cache = case.path().join("cache");
+    fs::create_dir(&cache).unwrap();
+    let project_digest = format!("00{:062x}", 0);
+    let (project, entry, lease) = acquire(&cache, &project_digest, &format!("{:064x}", 0)).unwrap();
+    fs::create_dir(project.join(format!("{:064x}", 7))).unwrap();
+    fs::create_dir(project.parent().unwrap().join(format!("00{:062x}", 8))).unwrap();
+
+    collect(&project, &entry).unwrap();
+    collect_projects(&cache, &project).unwrap();
+    assert!(entry.exists());
+    drop(lease);
+}
+
+#[test]
 fn collection_is_project_local_bounded_and_preserves_live_readers() {
     let case = tempfile::tempdir().unwrap();
     let cache = case.path().join("cache");

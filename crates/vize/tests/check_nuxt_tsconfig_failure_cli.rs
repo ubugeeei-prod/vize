@@ -11,7 +11,7 @@ mod unix {
         fs,
         path::{Path, PathBuf},
         process::{Command, Stdio},
-        sync::{Mutex, MutexGuard, OnceLock},
+        sync::{Mutex, MutexGuard, OnceLock, PoisonError},
         time::{Duration, Instant},
     };
 
@@ -341,6 +341,6 @@ mod unix {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
         LOCK.get_or_init(|| Mutex::new(()))
             .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .unwrap_or_else(PoisonError::into_inner)
     }
 }

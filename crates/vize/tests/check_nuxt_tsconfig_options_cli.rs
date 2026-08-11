@@ -99,7 +99,9 @@ fn assert_authored_option_diagnostic(
         .unwrap()
         .iter()
         .find(|file| file["file"] == "tsconfig.json")
-        .unwrap_or_else(|| panic!("authored config must own its diagnostic: {stdout}"));
+        .unwrap_or_else(|| {
+            panic!("authored config must own its diagnostic\nstdout:\n{stdout}\nstderr:\n{stderr}")
+        });
     assert_eq!(
         config["diagnostics"],
         serde_json::json!([format!("error:1:1 [TS5024] {expected}")])

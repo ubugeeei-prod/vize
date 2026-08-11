@@ -20,9 +20,7 @@ mod unix {
     };
 
     use super::{
-        barrier::{
-            create_phase_barrier, describe_output, release, wait_until_both_configs_are_prepared,
-        },
+        barrier::{await_phase, create_phase_barrier, release},
         corsa_requirement,
         nuxt_cli::resolve_test_corsa_path,
         nuxt_stress::required_iterations,
@@ -169,25 +167,6 @@ mod unix {
         };
         write(&root.join("src/App.vue"), &app);
         root
-    }
-
-    fn await_phase(
-        barrier: &Path,
-        mut alpha: std::process::Child,
-        mut bravo: std::process::Child,
-    ) -> (std::process::Child, std::process::Child) {
-        if let Err(reason) = wait_until_both_configs_are_prepared(barrier, &mut alpha, &mut bravo) {
-            let _ = alpha.kill();
-            let _ = bravo.kill();
-            let alpha_output = alpha.wait_with_output().unwrap();
-            let bravo_output = bravo.wait_with_output().unwrap();
-            panic!(
-                "{reason}\n{}\n{}",
-                describe_output("alpha", &alpha_output),
-                describe_output("bravo", &bravo_output)
-            );
-        }
-        (alpha, bravo)
     }
 
     fn check_command(
