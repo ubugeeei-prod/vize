@@ -16,6 +16,7 @@ import {
 import { COMPOSABLE_CATALOG, type ComposableCatalog } from "./catalog.js";
 import { type TextDirection, useLocale } from "./locale.js";
 import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
+import { retryAsync, type RetryAsyncOptions } from "./retry-async.js";
 import { calculateRetryDelay, type RetryDelayOptions } from "./retry-delay.js";
 
 type Equal<Left, Right> =
@@ -63,6 +64,23 @@ calculateRetryDelay(2, retryDelayOptions) satisfies number;
 calculateRetryDelay(1n);
 // @ts-expect-error entropy sources must be callable.
 calculateRetryDelay(1, { random: 0.5 });
+
+const retryOptions = {
+  maximumRetries: 2,
+  shouldRetry: async ({ attempt, error }) => attempt < 2 && error !== undefined,
+} as const satisfies RetryAsyncOptions;
+const retriedValue = retryAsync(async ({ attempt, signal }) => {
+  signal satisfies AbortSignal;
+  return { attempt } as const;
+}, retryOptions);
+type _RetryPreservesTheOperationValue = Expect<
+  Equal<Awaited<typeof retriedValue>, { readonly attempt: number }>
+>;
+
+// @ts-expect-error retry operations receive their context from the executor.
+void retryAsync(async (attempt: number) => attempt);
+// @ts-expect-error the retry predicate must produce a boolean decision.
+void retryAsync(async () => 1, { shouldRetry: () => "yes" });
 
 const resource = useAsyncResource(async (_context, id: 1 | 2) => ({ id }) as const);
 

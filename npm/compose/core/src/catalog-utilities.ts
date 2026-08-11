@@ -163,6 +163,18 @@ export const utilities = [
     dependencies: ["useMediaQuery"],
   },
   {
+    name: "retryAsync",
+    entry: "./retry-async",
+    category: "async",
+    stability: "experimental",
+    targets: allTargets,
+    ssr: "safe",
+    hydration: "not-applicable",
+    cleanupOwners: ["returned-value"],
+    runtimeGlobals: ["AbortController"],
+    dependencies: ["timeoutAbortSignal", "calculateRetryDelay"],
+  },
+  {
     name: "calculateRetryDelay",
     entry: "./retry-delay",
     category: "timing",
