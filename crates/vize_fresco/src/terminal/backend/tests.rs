@@ -1,7 +1,13 @@
 use std::io::{self, Write};
 
+use crossterm::{
+    cursor::Show,
+    queue,
+    style::{Attribute, SetAttribute, SetBackgroundColor, SetForegroundColor},
+};
+
 use super::{Backend, TerminalOptions};
-use crate::terminal::Style;
+use crate::terminal::{Color, Style};
 
 #[test]
 fn standard_output_backend_uses_detected_terminal_size_when_available() {
@@ -105,6 +111,72 @@ fn failed_clear_does_not_discard_buffer_state() {
     );
 }
 
+#[test]
+fn restore_completes_every_cleanup_action_after_a_writer_failure() {
+    let mut backend = Backend::with_writer(4, 1, ArmedFailureWriter::default());
+    backend
+        .init_with_options(TerminalOptions {
+            raw_mode: false,
+            alternate_screen: true,
+            mouse_capture: true,
+            bracketed_paste: true,
+            hide_cursor: true,
+        })
+        .unwrap();
+    backend.writer_mut().data.clear();
+    backend.writer_mut().fail_next_write = true;
+
+    assert!(backend.restore().is_err());
+    assert!(backend.mouse_capture);
+    assert!(!backend.bracketed_paste);
+    assert!(!backend.alternate_screen);
+    assert!(!backend.cursor_hidden);
+
+    let mut show_cursor = Vec::new();
+    queue!(show_cursor, Show).unwrap();
+    assert!(
+        backend
+            .writer()
+            .data
+            .windows(show_cursor.len())
+            .any(|window| window == show_cursor.as_slice())
+    );
+
+    backend.restore().unwrap();
+    assert!(!backend.mouse_capture);
+}
+
+#[test]
+fn retry_after_a_partially_written_frame_reestablishes_the_style_baseline() {
+    let mut backend = Backend::with_writer(
+        2,
+        1,
+        BudgetedWriter {
+            remaining_writes: 2,
+            data: Vec::new(),
+        },
+    );
+    backend
+        .buffer_mut()
+        .set_string(0, 0, "A", Style::new().fg(Color::Red));
+    assert!(backend.flush_measured().is_err());
+
+    backend.writer_mut().remaining_writes = usize::MAX;
+    backend.writer_mut().data.clear();
+    backend.buffer_mut().set_string(0, 0, "B", Style::new());
+    backend.flush_measured().unwrap();
+
+    let mut expected_reset = Vec::new();
+    queue!(
+        expected_reset,
+        SetForegroundColor(crossterm::style::Color::Reset),
+        SetBackgroundColor(crossterm::style::Color::Reset),
+        SetAttribute(Attribute::Reset)
+    )
+    .unwrap();
+    assert!(backend.writer().data.starts_with(&expected_reset));
+}
+
 #[derive(Debug)]
 struct AlwaysFailWriter;
 
@@ -115,5 +187,52 @@ impl Write for AlwaysFailWriter {
 
     fn flush(&mut self) -> io::Result<()> {
         Err(io::Error::other("injected writer failure"))
+    }
+}
+
+/// Writer that rejects exactly one armed write and then accepts output.
+#[derive(Debug, Default)]
+struct ArmedFailureWriter {
+    fail_next_write: bool,
+    data: Vec<u8>,
+}
+
+impl Write for ArmedFailureWriter {
+    fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+        if self.fail_next_write {
+            self.fail_next_write = false;
+            return Err(io::Error::other("injected writer failure"));
+        }
+        self.data.extend_from_slice(buffer);
+        Ok(buffer.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+/// Writer that accepts a bounded number of writes before failing.
+#[derive(Debug)]
+struct BudgetedWriter {
+    remaining_writes: usize,
+    data: Vec<u8>,
+}
+
+impl Write for BudgetedWriter {
+    fn write(&mut self, buffer: &[u8]) -> io::Result<usize> {
+        if self.remaining_writes == 0 {
+            return Err(io::Error::other("injected writer failure"));
+        }
+        self.remaining_writes -= 1;
+        self.data.extend_from_slice(buffer);
+        Ok(buffer.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        if self.remaining_writes == 0 {
+            return Err(io::Error::other("injected writer failure"));
+        }
+        Ok(())
     }
 }

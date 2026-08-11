@@ -64,6 +64,9 @@ pub struct Backend<W: Write = io::Stdout> {
     raw_mode: bool,
     mouse_capture: bool,
     bracketed_paste: bool,
+    /// Set when a frame failed mid-write and may have left an unknown
+    /// terminal style, requiring an explicit reset before the next frame.
+    style_baseline_unknown: bool,
     width: u16,
     height: u16,
     pub(super) writer: W,
@@ -92,6 +95,7 @@ impl<W: Write> Backend<W> {
             raw_mode: false,
             mouse_capture: false,
             bracketed_paste: false,
+            style_baseline_unknown: false,
             width,
             height,
             writer,
@@ -138,30 +142,44 @@ impl<W: Write> Backend<W> {
 
     /// Restore every terminal mode successfully enabled by this backend.
     ///
-    /// The operation is idempotent. A failed writer operation leaves its mode
-    /// marked active so a later explicit call or [`Drop`] can retry it.
+    /// Every independent cleanup action is attempted even when an earlier one
+    /// fails, so a rejected escape sequence cannot leave the process in raw
+    /// mode. The operation is idempotent: a failed action keeps its mode marked
+    /// active so a later explicit call or [`Drop`] can retry it, and the first
+    /// observed error is returned after all attempts.
     pub fn restore(&mut self) -> io::Result<()> {
+        let mut first_error = None;
         if self.mouse_capture {
-            execute!(&mut self.writer, DisableMouseCapture)?;
-            self.mouse_capture = false;
+            match execute!(&mut self.writer, DisableMouseCapture) {
+                Ok(()) => self.mouse_capture = false,
+                Err(error) => first_error = Some(error),
+            }
         }
         if self.bracketed_paste {
-            execute!(&mut self.writer, DisableBracketedPaste)?;
-            self.bracketed_paste = false;
+            match execute!(&mut self.writer, DisableBracketedPaste) {
+                Ok(()) => self.bracketed_paste = false,
+                Err(error) => first_error = first_error.or(Some(error)),
+            }
         }
         if self.alternate_screen {
-            execute!(&mut self.writer, LeaveAlternateScreen)?;
-            self.alternate_screen = false;
+            match execute!(&mut self.writer, LeaveAlternateScreen) {
+                Ok(()) => self.alternate_screen = false,
+                Err(error) => first_error = first_error.or(Some(error)),
+            }
         }
         if self.cursor_hidden {
-            execute!(&mut self.writer, Show)?;
-            self.cursor_hidden = false;
+            match execute!(&mut self.writer, Show) {
+                Ok(()) => self.cursor_hidden = false,
+                Err(error) => first_error = first_error.or(Some(error)),
+            }
         }
         if self.raw_mode {
-            disable_raw_mode()?;
-            self.raw_mode = false;
+            match disable_raw_mode() {
+                Ok(()) => self.raw_mode = false,
+                Err(error) => first_error = first_error.or(Some(error)),
+            }
         }
-        Ok(())
+        first_error.map_or(Ok(()), Err)
     }
 
     /// Return the terminal width in cells.

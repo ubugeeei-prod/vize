@@ -50,10 +50,31 @@ impl<W: Write> Backend<W> {
     /// after every byte is accepted and flushed; an I/O failure leaves the
     /// current frame intact for a complete retry.
     pub fn flush_measured(&mut self) -> io::Result<FrameOutputTelemetry> {
+        match self.write_frame() {
+            Ok(telemetry) => {
+                self.style_baseline_unknown = false;
+                std::mem::swap(&mut self.current, &mut self.previous);
+                self.current.clear();
+                Ok(telemetry)
+            }
+            Err(error) => {
+                // A partially written frame may have left an arbitrary style
+                // applied, so the next frame must reestablish the baseline.
+                self.style_baseline_unknown = true;
+                Err(error)
+            }
+        }
+    }
+
+    fn write_frame(&mut self) -> io::Result<FrameOutputTelemetry> {
         let mut writer = CountingWriter::new(&mut self.writer);
         let mut changed_cells = 0_u64;
         let mut last_written: Option<(u16, u16)> = None;
         let mut last_style = Style::new();
+
+        if self.style_baseline_unknown {
+            queue_style_reset(&mut writer)?;
+        }
 
         for (x, y, cell) in self.current.diff(&self.previous) {
             changed_cells = changed_cells.saturating_add(1);
@@ -76,12 +97,7 @@ impl<W: Write> Backend<W> {
             last_written = Some((x, y));
         }
 
-        queue!(
-            writer,
-            SetForegroundColor(crossterm::style::Color::Reset),
-            SetBackgroundColor(crossterm::style::Color::Reset),
-            SetAttribute(Attribute::Reset)
-        )?;
+        queue_style_reset(&mut writer)?;
         if self.cursor.visible {
             let cursor_style = if self.cursor.blinking {
                 self.cursor.shape.to_blinking_cursor_style()
@@ -100,13 +116,20 @@ impl<W: Write> Backend<W> {
         writer.flush()?;
         let bytes_written = writer.bytes_written;
 
-        std::mem::swap(&mut self.current, &mut self.previous);
-        self.current.clear();
         Ok(FrameOutputTelemetry {
             changed_cells,
             bytes_written,
         })
     }
+}
+
+fn queue_style_reset(writer: &mut impl Write) -> io::Result<()> {
+    queue!(
+        writer,
+        SetForegroundColor(crossterm::style::Color::Reset),
+        SetBackgroundColor(crossterm::style::Color::Reset),
+        SetAttribute(Attribute::Reset)
+    )
 }
 
 fn apply_style(writer: &mut impl Write, new: &Style, old: &Style) -> io::Result<()> {
