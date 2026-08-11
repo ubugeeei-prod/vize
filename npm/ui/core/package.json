@@ -54,6 +54,11 @@
       "import": "./dist/controllable-state.mjs",
       "default": "./dist/controllable-state.mjs"
     },
+    "./id": {
+      "types": "./dist/id.d.mts",
+      "import": "./dist/id.mjs",
+      "default": "./dist/id.mjs"
+    },
     "./primitive": {
       "types": "./dist/primitive.d.mts",
       "import": "./dist/primitive.mjs",
@@ -90,8 +95,8 @@
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
     "pretest": "vp pack && pnpm check:size",
     "test": "vp test run",
-    "check": "vp check src scripts vite.config.ts",
-    "check:fix": "vp check --fix src scripts vite.config.ts",
+    "check": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "check:size": "node scripts/check-size.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
@@ -106,7 +111,8 @@
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "vue-tsc": "catalog:typescript"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

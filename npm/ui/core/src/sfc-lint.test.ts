@@ -20,20 +20,25 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
     [
       "src/ActionButton.vue",
       "src/CheckboxControl.vue",
+      "src/DeterministicIdProvider.vue",
       "src/PrimitiveElement.vue",
       "src/VisuallyHidden.vue",
     ],
   );
   assert.deepEqual(
     requests,
-    ["ActionButton.vue", "CheckboxControl.vue", "PrimitiveElement.vue", "VisuallyHidden.vue"].map(
-      (basename) => ({
-        filename: path.resolve("src", basename),
-        preset: "opinionated" as const,
-        typeAware: true as const,
-        helpLevel: "short" as const,
-      }),
-    ),
+    [
+      "ActionButton.vue",
+      "CheckboxControl.vue",
+      "DeterministicIdProvider.vue",
+      "PrimitiveElement.vue",
+      "VisuallyHidden.vue",
+    ].map((basename) => ({
+      filename: path.resolve("src", basename),
+      preset: "opinionated" as const,
+      typeAware: true as const,
+      helpLevel: "short" as const,
+    })),
   );
   assert.equal(formatSfcLintResults(results), "");
 });
