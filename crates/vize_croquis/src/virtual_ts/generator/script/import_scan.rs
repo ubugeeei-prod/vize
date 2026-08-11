@@ -53,10 +53,10 @@ pub(super) fn import_statement_end(
         if state.is_open() {
             continue;
         }
-        // The named-binding clause is balanced but no module specifier has
-        // been seen: `import { a }\nfrom "./x";` is one statement, while
-        // anything else ends it here rather than eating unrelated code.
-        if opens_from_clause(lines.get(start + offset + 1)) {
+        // The braces are balanced but no module specifier has been seen, so
+        // the statement may still be wrapped. Continue only while it is
+        // clearly unfinished, rather than eating unrelated code.
+        if continues_statement(&statement, lines.get(start + offset + 1)) {
             continue;
         }
         return Some(start + offset);
@@ -65,12 +65,34 @@ pub(super) fn import_statement_end(
     Some(start)
 }
 
+/// Whether an import that still lacks a module specifier continues.
+///
+/// Wrapping can land anywhere the grammar allows a break, so a balanced but
+/// specifier-less statement is unfinished when it ends on a `,` or the `from`
+/// keyword (`import defaultA,\n  { b } from "./x";`), or when the next line
+/// opens the `from` clause (`import { a }\nfrom "./x";`).
+fn continues_statement(statement: &str, next: Option<&&str>) -> bool {
+    let tail = statement.trim_end();
+    tail.ends_with(',') || ends_with_from_keyword(tail) || opens_from_clause(next)
+}
+
+/// Whether the statement ends on a bare `from` keyword.
+fn ends_with_from_keyword(tail: &str) -> bool {
+    let Some(head) = tail.strip_suffix("from") else {
+        return false;
+    };
+    !head.ends_with(|char: char| char.is_alphanumeric() || char == '_' || char == '$')
+}
+
 /// Whether a line opens the trailing `from "…"` clause of an import.
+///
+/// A line holding nothing but `from` counts: the specifier may wrap onto the
+/// line after it.
 fn opens_from_clause(line: Option<&&str>) -> bool {
     let Some(rest) = line.and_then(|line| line.trim_start().strip_prefix("from")) else {
         return false;
     };
-    rest.starts_with([' ', '\t', '"', '\''])
+    rest.is_empty() || rest.starts_with([' ', '\t', '"', '\''])
 }
 
 /// Join the lines of one import statement into a single logical statement.
@@ -101,17 +123,23 @@ struct ImportStatementState {
     quote_open: bool,
     /// Whether a closed quoted module specifier has been seen.
     has_specifier: bool,
+    /// Whether a `;` already closed the import at brace depth zero.
+    terminated: bool,
 }
 
 impl ImportStatementState {
-    /// A statement is complete once its braces balance, no string stays open,
-    /// and a quoted module specifier has been seen.
+    /// A statement is complete once no string stays open, a quoted module
+    /// specifier has been seen, and either the braces balance or a `;` already
+    /// closed it. The `;` case matters when unrelated code trails the import on
+    /// the same line (`import { a } from "./x"; function f() {`): its brace
+    /// must not drag the following lines into the import.
     fn is_complete(&self) -> bool {
-        !self.quote_open && self.depth <= 0 && self.has_specifier
+        !self.quote_open && self.has_specifier && (self.depth <= 0 || self.terminated)
     }
 
-    /// A statement continues onto the next line only while its named-binding
-    /// clause is still open.
+    /// A statement continues onto the next line while a brace clause is still
+    /// open, which covers wrapped named bindings and wrapped import attributes
+    /// (`with {\n  type: "json",\n}`).
     fn is_open(&self) -> bool {
         !self.quote_open && self.depth > 0
     }
@@ -127,6 +155,7 @@ fn scan_import_statement(statement: &str) -> ImportStatementState {
     let mut depth: i32 = 0;
     let mut quote: Option<u8> = None;
     let mut has_specifier = false;
+    let mut terminated = false;
     let mut line_comment = false;
     let mut block_comment = false;
     let mut index = 0;
@@ -177,6 +206,7 @@ fn scan_import_statement(statement: &str) -> ImportStatementState {
                 b'"' | b'\'' | b'`' => quote = Some(byte),
                 b'{' => depth += 1,
                 b'}' => depth -= 1,
+                b';' if depth <= 0 && has_specifier => terminated = true,
                 _ => {}
             },
         }
@@ -187,6 +217,7 @@ fn scan_import_statement(statement: &str) -> ImportStatementState {
         depth,
         quote_open: quote.is_some(),
         has_specifier,
+        terminated,
     }
 }
 

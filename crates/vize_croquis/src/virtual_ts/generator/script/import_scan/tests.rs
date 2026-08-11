@@ -42,6 +42,31 @@ fn groups_a_from_clause_on_its_own_line() {
 }
 
 #[test]
+fn groups_a_wrap_after_the_default_binding() {
+    let content = "import defaultA,\n  { b } from './x';\nconst a = 1;";
+    assert_eq!(statement_end(content), Some(1));
+}
+
+#[test]
+fn groups_a_bare_from_keyword_line() {
+    let content = "import {\n  a,\n}\nfrom\n  './x';\nconst a = 1;";
+    assert_eq!(statement_end(content), Some(4));
+}
+
+#[test]
+fn stops_at_code_trailing_a_complete_import() {
+    // The trailing `{` must not drag the function body into the import.
+    let content = "import { a } from './x'; function f() {\n  return 1;\n}\nconst b = 2;";
+    assert_eq!(statement_end(content), Some(0));
+}
+
+#[test]
+fn groups_wrapped_import_attributes() {
+    let content = "import data from \"./d.json\" with {\n  type: \"json\",\n};\nconst a = 1;";
+    assert_eq!(statement_end(content), Some(2));
+}
+
+#[test]
 fn keeps_line_comments_from_swallowing_later_bindings() {
     let content =
         "import {\n  createScope, // scope factory\n  provideScope,\n} from \"./scope.ts\";";
