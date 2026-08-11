@@ -190,81 +190,28 @@ fn cleanup_abandoned_pending(directory: &Path) -> Result<(), std::io::Error> {
         let Some(name) = name.to_str() else {
             continue;
         };
-        let Some(pid) = pending_owner_pid(name) else {
+        if !is_pending_name(name) {
             continue;
-        };
-        if pending_is_abandoned(&entry.path(), pid) {
-            match fs::remove_file(entry.path()) {
-                Ok(()) => {}
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                Err(error) => return Err(error),
-            }
+        }
+        // Publication owns the directory lock, so no matching pending file can
+        // still have a live writer. This is generation-safe even after PID reuse.
+        match fs::remove_file(entry.path()) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
         }
     }
     Ok(())
 }
 
-fn pending_is_abandoned(path: &Path, pid: u32) -> bool {
-    process_artifact_is_abandoned(path, pid)
-}
-
-fn pending_owner_pid(name: &str) -> Option<u32> {
-    let owner = name.strip_prefix(".vize-nuxt-config-")?;
-    let (pid, tail) = owner.split_once('-')?;
-    tail.ends_with(".pending")
-        .then(|| pid.parse().ok())
-        .flatten()
-}
-
-#[cfg(unix)]
-fn process_is_running(pid: u32) -> bool {
-    if pid == 0 || pid > i32::MAX as u32 {
+pub(super) fn is_pending_name(name: &str) -> bool {
+    let Some(owner) = name.strip_prefix(".vize-nuxt-config-") else {
         return false;
-    }
-    // SAFETY: signal 0 only checks whether the owner process still exists.
-    let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
-    result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
-}
-
-#[cfg(windows)]
-fn process_is_running(pid: u32) -> bool {
-    if pid == 0 {
+    };
+    let Some((pid, tail)) = owner.split_once('-') else {
         return false;
-    }
-    type Handle = *mut std::ffi::c_void;
-    const SYNCHRONIZE: u32 = 0x0010_0000;
-    const WAIT_OBJECT_0: u32 = 0;
-    unsafe extern "system" {
-        fn OpenProcess(access: u32, inherit: i32, process_id: u32) -> Handle;
-        fn WaitForSingleObject(handle: Handle, milliseconds: u32) -> u32;
-        fn CloseHandle(handle: Handle) -> i32;
-    }
-    // SAFETY: the API receives a validated PID and the returned handle is
-    // closed below. A process we cannot query is conservatively retained.
-    let handle = unsafe { OpenProcess(SYNCHRONIZE, 0, pid) };
-    if handle.is_null() {
-        return std::io::Error::last_os_error().raw_os_error() != Some(87);
-    }
-    // SAFETY: `handle` is live and the zero timeout only observes its state.
-    let state = unsafe { WaitForSingleObject(handle, 0) };
-    // SAFETY: `handle` was returned by OpenProcess exactly once.
-    unsafe { CloseHandle(handle) };
-    state != WAIT_OBJECT_0
-}
-
-#[cfg(any(unix, windows))]
-pub(super) fn process_artifact_is_abandoned(_path: &Path, pid: u32) -> bool {
-    !process_is_running(pid)
-}
-
-#[cfg(not(any(unix, windows)))]
-pub(super) fn process_artifact_is_abandoned(path: &Path, _pid: u32) -> bool {
-    const SAFE_STALE_AGE: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
-    path.metadata()
-        .and_then(|metadata| metadata.modified())
-        .ok()
-        .and_then(|modified| modified.elapsed().ok())
-        .is_some_and(|age| age >= SAFE_STALE_AGE)
+    };
+    pid.parse::<u32>().is_ok() && tail.ends_with(".pending")
 }
 
 fn verify_published_config(path: &Path, expected: &[u8]) -> Result<(), std::io::Error> {

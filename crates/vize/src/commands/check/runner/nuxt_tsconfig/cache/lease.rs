@@ -11,7 +11,7 @@ use std::{
 use super::{
     ensure_entry,
     ownership::{ensure_bucket, ensure_project, validate_project},
-    process_artifact_is_abandoned, validate_entry,
+    validate_entry,
 };
 
 const MAX_INACTIVE_CONFIGS: usize = 8;
@@ -20,10 +20,12 @@ const LOCK_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub(crate) struct ConfigLease {
     path: PathBuf,
+    file: Option<fs::File>,
 }
 
 impl Drop for ConfigLease {
     fn drop(&mut self) {
+        drop(self.file.take());
         let _ = fs::remove_file(&self.path);
     }
 }
@@ -49,8 +51,16 @@ pub(super) fn acquire(
     let lease = tempfile::Builder::new()
         .prefix(&format!(".lease-{}-", std::process::id()))
         .tempfile_in(&entry)?;
-    let (_file, path) = lease.keep().map_err(|error| error.error)?;
-    Ok((project_cache, entry, ConfigLease { path }))
+    lease.as_file().lock()?;
+    let (file, path) = lease.keep().map_err(|error| error.error)?;
+    Ok((
+        project_cache,
+        entry,
+        ConfigLease {
+            path,
+            file: Some(file),
+        },
+    ))
 }
 
 pub(super) fn collect(project_cache: &Path, current: &Path) -> Result<(), std::io::Error> {
@@ -289,16 +299,32 @@ fn project_lock_path(project_cache: &Path) -> Result<PathBuf, std::io::Error> {
 fn cleanup_dead_leases(entry: &Path) -> Result<(), std::io::Error> {
     for candidate in fs::read_dir(entry)?.filter_map(Result::ok) {
         let name = candidate.file_name();
-        let Some(pid) = name
+        if !name
             .to_str()
-            .and_then(|name| name.strip_prefix(".lease-"))
-            .and_then(|tail| tail.split_once('-'))
-            .and_then(|(pid, _)| pid.parse().ok())
-        else {
+            .is_some_and(|name| name.starts_with(".lease-"))
+        {
             continue;
-        };
-        if process_artifact_is_abandoned(&candidate.path(), pid) {
-            let _ = fs::remove_file(candidate.path());
+        }
+        let path = candidate.path();
+        let metadata = fs::symlink_metadata(&path)?;
+        if metadata.file_type().is_symlink() || !metadata.is_file() {
+            return Err(std::io::Error::new(
+                ErrorKind::InvalidData,
+                "Nuxt config reader lease is not a regular file",
+            ));
+        }
+        let file = fs::OpenOptions::new().read(true).write(true).open(&path)?;
+        match file.try_lock() {
+            Ok(()) => {
+                drop(file);
+                match fs::remove_file(path) {
+                    Ok(()) => {}
+                    Err(error) if error.kind() == ErrorKind::NotFound => {}
+                    Err(error) => return Err(error),
+                }
+            }
+            Err(TryLockError::WouldBlock) => {}
+            Err(TryLockError::Error(error)) => return Err(error),
         }
     }
     Ok(())

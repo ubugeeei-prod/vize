@@ -208,6 +208,14 @@ fn killed_publisher_is_cleaned_before_the_next_publisher() {
     child.wait().unwrap();
 
     assert_eq!(pending_count(case.path()), 1);
+    fs::write(
+        case.path().join(format!(
+            ".vize-nuxt-config-{}-reused.pending",
+            std::process::id()
+        )),
+        "stale same-PID state",
+    )
+    .unwrap();
     publish_config_atomically(&final_path, b"stable\n").unwrap();
     assert_eq!(fs::read(&final_path).unwrap(), b"stable\n");
     assert_eq!(pending_count(case.path()), 0);

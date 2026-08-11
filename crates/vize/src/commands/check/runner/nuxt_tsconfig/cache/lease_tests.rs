@@ -5,7 +5,7 @@ use crate::commands::check::runner::nuxt_tsconfig::cache::ownership::{
 use std::fs;
 
 #[test]
-fn acquisition_removes_dead_leases_before_publishing_a_new_reader() {
+fn acquisition_removes_an_unlocked_lease_even_when_its_pid_is_live() {
     let case = tempfile::tempdir().unwrap();
     let cache = case.path().join("cache");
     fs::create_dir(&cache).unwrap();
@@ -13,24 +13,11 @@ fn acquisition_removes_dead_leases_before_publishing_a_new_reader() {
     let bucket = ensure_bucket(&cache, "00").unwrap();
     let project = ensure_project(&bucket, &digest).unwrap();
     let entry = ensure_entry(&project, &digest).unwrap();
-    fs::write(
-        entry.join(format!(".lease-{}-orphan", u32::MAX)),
-        "dead reader",
-    )
-    .unwrap();
+    let orphan = entry.join(format!(".lease-{}-orphan", std::process::id()));
+    fs::write(&orphan, "dead reader").unwrap();
 
     let (_, _, lease) = acquire(&cache, &digest, &digest).unwrap();
-    assert_eq!(
-        fs::read_dir(&entry)
-            .unwrap()
-            .filter_map(Result::ok)
-            .filter(|candidate| candidate
-                .file_name()
-                .to_string_lossy()
-                .starts_with(&format!(".lease-{}-", u32::MAX)))
-            .count(),
-        0
-    );
+    assert!(!orphan.exists());
     drop(lease);
 }
 

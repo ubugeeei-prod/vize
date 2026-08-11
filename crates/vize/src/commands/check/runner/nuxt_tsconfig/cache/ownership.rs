@@ -106,7 +106,7 @@ fn ensure_owned_directory(
                     has_bootstrap_lock = !metadata.file_type().is_symlink() && metadata.is_file();
                     unknown |= !has_bootstrap_lock;
                 }
-                Some(name) if super::pending_owner_pid(name).is_some() => {}
+                Some(name) if super::is_pending_name(name) => {}
                 _ => unknown = true,
             }
         }
