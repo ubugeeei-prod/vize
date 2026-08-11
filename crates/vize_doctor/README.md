@@ -95,6 +95,36 @@ assert_eq!(receipt.reporter_id(), "example.agent-context");
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+### SARIF code-host annotations
+
+`SarifReporter` emits OASIS SARIF 2.1.0 plus Errata 01 without depending on a
+specific code host. Doctor spans are UTF-8 byte offsets, so the caller injects
+the exact source text that was analyzed. This makes Unicode line and column
+conversion deterministic and keeps the reporter free of filesystem access.
+Missing or stale sources fail before output by default; callers must opt in to
+artifact-only locations when precise annotations are intentionally unavailable.
+
+```rust
+use vize_doctor::{DoctorReport, DoctorReporter, SarifReporter, SarifSource, render_report};
+
+let report = DoctorReport::new("example", []);
+let reporter = SarifReporter::new().with_sources([
+    SarifSource::new("src/App.vue", "<template><main /></template>"),
+])?;
+let mut sarif = Vec::new();
+let receipt = render_report(&reporter, &report, &mut sarif)?;
+
+assert_eq!(receipt.reporter_id(), "vize.sarif");
+assert_eq!(reporter.descriptor().media_type(), "application/sarif+json");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The CLI wires its already-discovered sources into the same reporter:
+
+```sh
+vize doctor src --format sarif > vize-doctor.sarif
+```
+
 ## Example
 
 ```rust

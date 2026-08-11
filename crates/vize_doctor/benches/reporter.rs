@@ -5,8 +5,8 @@ use vize_doctor::{
     AiContextBudget, AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport,
     DoctorReporter, FindingAssessment, FindingConfidence, FindingImpact, FindingSeverity,
     HealthPenalty, JsonReporter, ReporterAudience, ReporterCapability, ReporterDescriptor,
-    ReporterError, ReporterOutput, ReporterTransport, RuleCost, SourceLocation, build_ai_context,
-    render_report,
+    ReporterError, ReporterOutput, ReporterTransport, RuleCost, SarifReporter, SarifSource,
+    SourceLocation, build_ai_context, render_report,
 };
 
 struct EmptyReporter {
@@ -108,6 +108,32 @@ fn benchmark_ai_context(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_sarif_reporter(c: &mut Criterion) {
+    let mut group = c.benchmark_group("doctor_reporter/sarif_compact");
+    let source = "x".repeat(10_001);
+    let reporter = SarifReporter::new()
+        .with_pretty(false)
+        .with_sources([SarifSource::new("src/Benchmark.vue", &source)])
+        .unwrap();
+
+    for finding_count in [0, 100, 10_000] {
+        let report = report_with_findings(finding_count);
+        let mut encoded = Vec::new();
+        render_report(&reporter, &report, &mut encoded).unwrap();
+        group.throughput(Throughput::Bytes(encoded.len() as u64));
+        group.bench_with_input(
+            BenchmarkId::from_parameter(finding_count),
+            &report,
+            |b, report| {
+                b.iter(|| {
+                    render_report(black_box(&reporter), black_box(report), &mut io::sink()).unwrap()
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
 fn report_with_findings(finding_count: usize) -> DoctorReport {
     DoctorReport::new(
         "benchmark",
@@ -134,6 +160,7 @@ criterion_group!(
     reporter_benches,
     benchmark_reporter_contract,
     benchmark_json_reporter,
-    benchmark_ai_context
+    benchmark_ai_context,
+    benchmark_sarif_reporter
 );
 criterion_main!(reporter_benches);

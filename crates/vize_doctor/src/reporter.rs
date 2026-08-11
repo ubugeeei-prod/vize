@@ -9,6 +9,7 @@ mod contract;
 mod execution;
 mod json;
 mod registry;
+mod sarif;
 
 #[cfg(test)]
 mod tests;
@@ -23,3 +24,4 @@ pub use execution::{
 };
 pub use json::JsonReporter;
 pub use registry::{ReporterRegistrationError, ReporterSet};
+pub use sarif::{SarifMissingSourcePolicy, SarifReporter, SarifSource, SarifSourceError};

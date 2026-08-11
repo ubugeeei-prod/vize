@@ -80,5 +80,6 @@ pub use reporter::{
     DOCTOR_REPORTER_CONTRACT_VERSION, DoctorReporter, JsonReporter, ReporterAudience,
     ReporterCapability, ReporterContractError, ReporterDescriptor, ReporterError,
     ReporterErrorKind, ReporterFailure, ReporterOutput, ReporterReceipt, ReporterRegistrationError,
-    ReporterSet, ReporterTransport, render_report,
+    ReporterSet, ReporterTransport, SarifMissingSourcePolicy, SarifReporter, SarifSource,
+    SarifSourceError, render_report,
 };
