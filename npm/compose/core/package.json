@@ -32,10 +32,80 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./async-resource": {
+      "types": "./dist/async-resource.d.mts",
+      "import": "./dist/async-resource.mjs",
+      "default": "./dist/async-resource.mjs"
+    },
+    "./capability": {
+      "types": "./dist/capability.d.mts",
+      "import": "./dist/capability.mjs",
+      "default": "./dist/capability.mjs"
+    },
+    "./disposal-scope": {
+      "types": "./dist/disposal-scope.d.mts",
+      "import": "./dist/disposal-scope.mjs",
+      "default": "./dist/disposal-scope.mjs"
+    },
+    "./event-listener": {
+      "types": "./dist/event-listener.d.mts",
+      "import": "./dist/event-listener.mjs",
+      "default": "./dist/event-listener.mjs"
+    },
+    "./locale": {
+      "types": "./dist/locale.d.mts",
+      "import": "./dist/locale.mjs",
+      "default": "./dist/locale.mjs"
+    },
+    "./media-query": {
+      "types": "./dist/media-query.d.mts",
+      "import": "./dist/media-query.mjs",
+      "default": "./dist/media-query.mjs"
+    },
+    "./scope": {
+      "types": "./dist/scope.d.mts",
+      "import": "./dist/scope.mjs",
+      "default": "./dist/scope.mjs"
+    },
     "./temporal": {
       "types": "./dist/temporal.d.mts",
       "import": "./dist/temporal.mjs",
       "default": "./dist/temporal.mjs"
+    },
+    "./timeout-scheduler": {
+      "types": "./dist/timeout-scheduler.d.mts",
+      "import": "./dist/timeout-scheduler.mjs",
+      "default": "./dist/timeout-scheduler.mjs"
+    },
+    "./use-counter": {
+      "types": "./dist/use-counter.d.mts",
+      "import": "./dist/use-counter.mjs",
+      "default": "./dist/use-counter.mjs"
+    },
+    "./use-debounced": {
+      "types": "./dist/use-debounced.d.mts",
+      "import": "./dist/use-debounced.mjs",
+      "default": "./dist/use-debounced.mjs"
+    },
+    "./use-history": {
+      "types": "./dist/use-history.d.mts",
+      "import": "./dist/use-history.mjs",
+      "default": "./dist/use-history.mjs"
+    },
+    "./use-previous": {
+      "types": "./dist/use-previous.d.mts",
+      "import": "./dist/use-previous.mjs",
+      "default": "./dist/use-previous.mjs"
+    },
+    "./use-throttled": {
+      "types": "./dist/use-throttled.d.mts",
+      "import": "./dist/use-throttled.mjs",
+      "default": "./dist/use-throttled.mjs"
+    },
+    "./use-toggle": {
+      "types": "./dist/use-toggle.d.mts",
+      "import": "./dist/use-toggle.mjs",
+      "default": "./dist/use-toggle.mjs"
     }
   },
   "publishConfig": {
