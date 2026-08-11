@@ -327,5 +327,8 @@ mod js_tests;
 #[path = "imports_package_cache_tests.rs"]
 mod package_cache_tests;
 #[cfg(test)]
+#[path = "imports_package_registration_tests.rs"]
+mod package_registration_tests;
+#[cfg(test)]
 #[path = "imports_tests.rs"]
 mod tests;
