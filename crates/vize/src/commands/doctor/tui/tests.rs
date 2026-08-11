@@ -1,4 +1,5 @@
 mod exit_tests;
+mod signal_tests;
 mod snapshot_tests;
 
 use std::{error::Error, io, path::PathBuf};

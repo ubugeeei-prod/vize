@@ -20,7 +20,8 @@ use vize_doctor::DoctorReport;
 use vize_fresco::{
     Backend, Event, FrameActivityTelemetry, FrameRenderer, TerminalCapabilities,
     TerminalCapabilityProbe, TerminalPanicHookError, TerminalPanicHookInstallation,
-    TerminalProfileOptions, input::read_event, install_terminal_panic_hook,
+    TerminalProfileOptions, TerminalSignalHookError, TerminalSignalHookInstallation,
+    input::read_event, install_terminal_panic_hook, install_terminal_signal_hook,
     terminal::TerminalOptions,
 };
 
@@ -49,6 +50,8 @@ pub(super) enum DoctorTuiError {
     Frame(vize_fresco::FrameRenderError),
     /// Fresco could not install process-wide emergency terminal restoration.
     PanicSupervision(TerminalPanicHookError),
+    /// Fresco could not install process-wide termination-signal restoration.
+    SignalSupervision(TerminalSignalHookError),
     /// Application work and the mandatory terminal restoration both failed.
     ///
     /// The application error remains the primary source while the display text
@@ -75,6 +78,9 @@ impl fmt::Display for DoctorTuiError {
             Self::PanicSupervision(error) => {
                 write!(formatter, "terminal panic supervision failed: {error}")
             }
+            Self::SignalSupervision(error) => {
+                write!(formatter, "terminal signal supervision failed: {error}")
+            }
             Self::SessionAndRestoration {
                 session,
                 restoration,
@@ -93,6 +99,7 @@ impl std::error::Error for DoctorTuiError {
             Self::Presentation(error) => Some(error),
             Self::Frame(error) => Some(error),
             Self::PanicSupervision(error) => Some(error),
+            Self::SignalSupervision(error) => Some(error),
             Self::SessionAndRestoration { session, .. } => Some(session.as_ref()),
             Self::InvalidFormat | Self::NonInteractive(_) => None,
         }
@@ -142,6 +149,7 @@ pub(super) fn run(
     mut capabilities: TerminalCapabilities,
 ) -> Result<(), DoctorTuiError> {
     prepare_panic_supervision(install_terminal_panic_hook)?;
+    prepare_signal_supervision(install_terminal_signal_hook)?;
     let mut backend = Backend::new()?;
     backend.init_with_options(TERMINAL_OPTIONS)?;
     backend.clear()?;
@@ -174,6 +182,22 @@ fn prepare_panic_supervision(
         Ok(_) => Ok(()),
         Err(TerminalPanicHookError::UnsupportedPlatform) => Ok(()),
         Err(error) => Err(DoctorTuiError::PanicSupervision(error)),
+    }
+}
+
+/// Prepare termination-signal restoration before Doctor acquires any modes.
+///
+/// Unix installations restore terminal presentation and native raw attributes
+/// before delegating `SIGINT`, `SIGTERM`, `SIGHUP`, and `SIGQUIT`. Unsupported
+/// platforms retain Doctor's transactional normal and unwind cleanup. Every
+/// other failure is reported before the backend can change terminal state.
+fn prepare_signal_supervision(
+    install: impl FnOnce() -> Result<TerminalSignalHookInstallation, TerminalSignalHookError>,
+) -> Result<(), DoctorTuiError> {
+    match install() {
+        Ok(_) => Ok(()),
+        Err(TerminalSignalHookError::UnsupportedPlatform) => Ok(()),
+        Err(error) => Err(DoctorTuiError::SignalSupervision(error)),
     }
 }
 
