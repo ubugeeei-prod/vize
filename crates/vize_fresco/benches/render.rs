@@ -15,7 +15,7 @@ use vize_fresco::headless::{
 };
 use vize_fresco::input::{Key, KeyEvent};
 use vize_fresco::layout::{Dimension, FlexStyle, LayoutEngine};
-use vize_fresco::render::RenderTree;
+use vize_fresco::render::{FrameCoalescer, FrameRenderer, RenderTree};
 use vize_fresco::terminal::{Backend, Buffer, Style};
 use vize_fresco::text::{TextWidth, TextWrap, WrapMode};
 
@@ -111,7 +111,6 @@ fn benchmark_buffer_diff(c: &mut Criterion) {
     let mut buf2 = Buffer::new(80, 24);
     let style = Style::default();
 
-    // Fill with some content
     for y in 0..24 {
         buf1.set_string(0, y, "Hello, World! This is line content.", style);
         buf2.set_string(0, y, "Hello, World! This is line content.", style);
@@ -290,6 +289,49 @@ fn benchmark_diagnostic_presentation(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_frame_telemetry(c: &mut Criterion) {
+    let mut tree = RenderTree::new();
+    let root = tree.next_id();
+    tree.insert_root(
+        BoxNode::new()
+            .column()
+            .width_percent(100.0)
+            .height_percent(100.0)
+            .build(root),
+    );
+    let row = tree.next_id();
+    let mut node = TextNode::new("Selected finding").build(row);
+    node.style.width = Dimension::Percent(100.0);
+    node.style.height = Dimension::Points(1.0);
+    tree.insert(node);
+    tree.add_child(root, row);
+
+    let mut backend = Backend::with_writer(120, 40, io::sink());
+    let mut renderer = FrameRenderer::new();
+    let mut coalescer = FrameCoalescer::new();
+    coalescer.request_frame();
+    renderer
+        .render_pending(&mut tree, &mut backend, &mut coalescer)
+        .unwrap();
+    let mut selected = false;
+    let mut group = c.benchmark_group("frame_telemetry");
+    group.throughput(Throughput::Elements(tree.node_count() as u64));
+
+    group.bench_function("selection_update", |b| {
+        b.iter(|| {
+            selected = !selected;
+            tree.get_mut(row).unwrap().appearance.bold = selected;
+            coalescer.request_frame();
+            black_box(
+                renderer
+                    .render_pending(&mut tree, &mut backend, &mut coalescer)
+                    .unwrap(),
+            )
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -303,5 +345,6 @@ criterion_group!(
     benchmark_headless_snapshot,
     benchmark_diagnostic_keymap,
     benchmark_diagnostic_presentation,
+    benchmark_frame_telemetry,
 );
 criterion_main!(benches);

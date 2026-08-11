@@ -80,7 +80,10 @@ pub use headless::{
 };
 pub use input::{Event, ImeState, Key, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
-pub use render::{RenderNode, RenderTree};
+pub use render::{
+    FRAME_TELEMETRY_SCHEMA_VERSION, FrameActivityTelemetry, FrameCoalescer, FrameRenderError,
+    FrameRenderer, FrameRequestOutcome, FrameTelemetry, RenderNode, RenderTree,
+};
 pub use terminal::{
     Backend, Buffer, CapabilityDecision, CapabilityReason, Cell, ColorPreference, ColorSupport,
     Cursor, FeaturePreference, FrameOutputTelemetry, TerminalCapabilities, TerminalCapabilityProbe,

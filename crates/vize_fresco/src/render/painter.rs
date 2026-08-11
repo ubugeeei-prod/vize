@@ -18,10 +18,21 @@ pub struct Painter<'a> {
 impl<'a> Painter<'a> {
     /// Create a new painter.
     pub fn new(buffer: &'a mut Buffer) -> Self {
+        Self::with_wrap_scratch(buffer, Vec::new())
+    }
+
+    pub(crate) fn with_wrap_scratch(
+        buffer: &'a mut Buffer,
+        wrap_scratch: Vec<CompactString>,
+    ) -> Self {
         Self {
             buffer,
-            wrap_scratch: Vec::new(),
+            wrap_scratch,
         }
+    }
+
+    pub(crate) fn into_wrap_scratch(self) -> Vec<CompactString> {
+        self.wrap_scratch
     }
 
     /// Paint the entire tree to the buffer.
