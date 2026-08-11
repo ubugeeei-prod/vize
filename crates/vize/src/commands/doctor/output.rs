@@ -2,19 +2,50 @@
 
 use std::io::{self, Write};
 use vize_doctor::{
-    DoctorFinding, DoctorReport, FindingSeverity, FixSafety, JsonReporter, render_report,
+    DoctorFinding, DoctorReport, FindingSeverity, FixSafety, JsonReporter, SarifReporter,
+    SarifSource, render_report,
 };
 
-use super::{DoctorError, DoctorFormat};
+use super::{DoctorError, DoctorFormat, DoctorSource};
 
-pub(super) fn write_report(report: &DoctorReport, format: DoctorFormat) -> Result<(), DoctorError> {
+pub(super) fn write_report(
+    report: &DoctorReport,
+    format: DoctorFormat,
+    sources: &[DoctorSource],
+) -> Result<(), DoctorError> {
     let stdout = io::stdout();
     let mut output = stdout.lock();
+    write_report_to(&mut output, report, format, sources)
+}
+
+fn write_report_to(
+    output: &mut impl Write,
+    report: &DoctorReport,
+    format: DoctorFormat,
+    sources: &[DoctorSource],
+) -> Result<(), DoctorError> {
     match format {
-        DoctorFormat::Text => write_text(&mut output, report).map_err(DoctorError::Write),
-        DoctorFormat::Json => render_report(&JsonReporter::new(), report, &mut output)
+        DoctorFormat::Text => write_text(output, report).map_err(DoctorError::Write),
+        DoctorFormat::Json => render_report(&JsonReporter::new(), report, output)
             .map(|_| ())
             .map_err(DoctorError::Report),
+        DoctorFormat::Sarif => {
+            let normalized_paths = sources
+                .iter()
+                .map(|source| source.path.to_string_lossy().replace('\\', "/"))
+                .collect::<Vec<_>>();
+            let reporter = SarifReporter::new()
+                .with_sources(
+                    normalized_paths
+                        .iter()
+                        .zip(sources)
+                        .map(|(path, source)| SarifSource::new(path, source.source.as_str())),
+                )
+                .map_err(DoctorError::SarifSource)?;
+            render_report(&reporter, report, output)
+                .map(|_| ())
+                .map_err(DoctorError::Report)
+        }
     }
 }
 
@@ -114,6 +145,41 @@ mod tests {
                 "  Test message\n",
                 "  Fix (unavailable): No automatic fix is available for this finding.\n",
             )
+        );
+    }
+
+    #[test]
+    fn sarif_output_uses_the_exact_discovered_source() {
+        let source = "<template><button>保存🙂</button></template>";
+        let start = source.find("保存🙂").unwrap() as u32;
+        let finding = DoctorFinding::new(
+            "VIZE_DOCTOR_TEST",
+            DoctorCategory::Accessibility,
+            FindingAssessment::new(
+                FindingSeverity::Warning,
+                FindingConfidence::High,
+                FindingImpact::Medium,
+                HealthPenalty::new(10, "Test penalty"),
+            ),
+            SourceLocation::new("src/App.vue", start, start + "保存🙂".len() as u32),
+            "Test finding",
+            "Test message",
+            AnalysisProvenance::new("test-analysis", RuleCost::Low),
+        );
+        let report = DoctorReport::new(".", [finding]);
+        let sources = [DoctorSource {
+            path: "src/App.vue".into(),
+            source: source.into(),
+        }];
+        let mut output = Vec::new();
+
+        write_report_to(&mut output, &report, DoctorFormat::Sarif, &sources).unwrap();
+
+        let value: serde_json::Value = serde_json::from_slice(&output).unwrap();
+        assert_eq!(value["version"], "2.1.0");
+        assert_eq!(
+            value["runs"][0]["results"][0]["locations"][0]["physicalLocation"]["region"]["startColumn"],
+            source[..start as usize].chars().count() + 1
         );
     }
 }

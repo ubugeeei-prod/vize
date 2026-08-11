@@ -13,14 +13,26 @@ import {
   unavailableCapability,
   type UnavailableCapability,
 } from "./capability.js";
+import { COMPOSABLE_CATALOG, type ComposableCatalog } from "./catalog.js";
 import { type TextDirection, useLocale } from "./locale.js";
 import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
+import { retryAsync, type RetryAsyncOptions } from "./retry-async.js";
+import { calculateRetryDelay, type RetryDelayOptions } from "./retry-delay.js";
 
 type Equal<Left, Right> =
   (<Value>() => Value extends Left ? 1 : 2) extends <Value>() => Value extends Right ? 1 : 2
     ? true
     : false;
 type Expect<Condition extends true> = Condition;
+
+type _CatalogSchemaVersionNeverWidens = Expect<Equal<typeof COMPOSABLE_CATALOG.schemaVersion, 1>>;
+type _CatalogStabilityNeverWidens = Expect<
+  Equal<typeof COMPOSABLE_CATALOG.catalogStability, "stable">
+>;
+type _CatalogPackageNameNeverWidens = Expect<
+  Equal<typeof COMPOSABLE_CATALOG.packageName, "@vizejs/composable">
+>;
+COMPOSABLE_CATALOG satisfies ComposableCatalog;
 
 const combinedAbortSignal = anyAbortSignal(new Set<AbortSignal>());
 type _AbortCompositionReturnsThePlatformSignal = Expect<
@@ -40,6 +52,35 @@ deadlineAbortSignal(new Date(), { now: () => 0 });
 timeoutAbortSignal(100n);
 // @ts-expect-error deadlines are Date objects or numeric Unix milliseconds.
 deadlineAbortSignal("tomorrow");
+
+const retryDelayOptions = {
+  initialDelayMs: 50,
+  jitterRatio: 1,
+  random: () => 0.5,
+} as const satisfies RetryDelayOptions;
+calculateRetryDelay(2, retryDelayOptions) satisfies number;
+
+// @ts-expect-error retry attempts are numeric and one-based at runtime.
+calculateRetryDelay(1n);
+// @ts-expect-error entropy sources must be callable.
+calculateRetryDelay(1, { random: 0.5 });
+
+const retryOptions = {
+  maximumRetries: 2,
+  shouldRetry: async ({ attempt, error }) => attempt < 2 && error !== undefined,
+} as const satisfies RetryAsyncOptions;
+const retriedValue = retryAsync(async ({ attempt, signal }) => {
+  signal satisfies AbortSignal;
+  return { attempt } as const;
+}, retryOptions);
+type _RetryPreservesTheOperationValue = Expect<
+  Equal<Awaited<typeof retriedValue>, { readonly attempt: number }>
+>;
+
+// @ts-expect-error retry operations receive their context from the executor.
+void retryAsync(async (attempt: number) => attempt);
+// @ts-expect-error the retry predicate must produce a boolean decision.
+void retryAsync(async () => 1, { shouldRetry: () => "yes" });
 
 const resource = useAsyncResource(async (_context, id: 1 | 2) => ({ id }) as const);
 

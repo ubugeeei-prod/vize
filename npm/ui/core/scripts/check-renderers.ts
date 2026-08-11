@@ -17,6 +17,32 @@ const rendererLanes: readonly RendererLane[] = [
   { name: "vapor", options: { ssr: false, vapor: true } },
 ];
 
+const inlineFixtures = [
+  {
+    filename: "PressConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { usePress } from "./press.ts";
+
+const press = usePress({
+  onPress(event) {
+    void event.pointerType;
+  },
+});
+</script>
+
+<template>
+  <button
+    v-bind="press.pressProps"
+    type="button"
+    :data-pressed="press.isPressed.value || undefined"
+  >
+    Activate
+  </button>
+</template>
+`,
+  },
+] as const;
+
 /**
  * Recursively collect authored Vue SFCs in deterministic path order.
  *
@@ -109,12 +135,18 @@ for (const file of sourceFiles) {
   const source = await readFile(file, "utf8");
   for (const lane of rendererLanes) verifyRendererLane(file, source, lane);
 }
+for (const fixture of inlineFixtures) {
+  for (const lane of rendererLanes) {
+    verifyRendererLane(fixture.filename, fixture.source, lane);
+  }
+}
 
 console.log(
   JSON.stringify({
     check: "@vizejs/ui renderer conformance",
     sourceFiles: sourceFiles.length,
-    compilations: sourceFiles.length * rendererLanes.length,
+    inlineFixtures: inlineFixtures.length,
+    compilations: (sourceFiles.length + inlineFixtures.length) * rendererLanes.length,
     lanes: rendererLanes.map((lane) => lane.name),
   }),
 );

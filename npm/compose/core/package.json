@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/composable",
-  "version": "0.347.2",
+  "version": "0.347.5",
   "description": "Lifecycle-safe composable foundations for Vize applications",
   "keywords": [
     "composables",
@@ -47,6 +47,11 @@
       "import": "./dist/capability.mjs",
       "default": "./dist/capability.mjs"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.mts",
+      "import": "./dist/catalog.mjs",
+      "default": "./dist/catalog.mjs"
+    },
     "./disposal-scope": {
       "types": "./dist/disposal-scope.d.mts",
       "import": "./dist/disposal-scope.mjs",
@@ -66,6 +71,16 @@
       "types": "./dist/media-query.d.mts",
       "import": "./dist/media-query.mjs",
       "default": "./dist/media-query.mjs"
+    },
+    "./retry-async": {
+      "types": "./dist/retry-async.d.mts",
+      "import": "./dist/retry-async.mjs",
+      "default": "./dist/retry-async.mjs"
+    },
+    "./retry-delay": {
+      "types": "./dist/retry-delay.d.mts",
+      "import": "./dist/retry-delay.mjs",
+      "default": "./dist/retry-delay.mjs"
     },
     "./scope": {
       "types": "./dist/scope.d.mts",

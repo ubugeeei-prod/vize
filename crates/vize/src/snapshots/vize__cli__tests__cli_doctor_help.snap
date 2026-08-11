@@ -22,8 +22,9 @@ Options:
           Output format. Defaults to `text`
 
           Possible values:
-          - text: Concise terminal-oriented health report
-          - json: Stable, versioned JSON report for automation and AI consumers
+          - text:  Concise terminal-oriented health report
+          - json:  Stable, versioned JSON report for automation and AI consumers
+          - sarif: OASIS SARIF 2.1.0 report for code-hosting annotations
 
           [default: text]
 

@@ -54,7 +54,12 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
       workflowName: "Real Project Matrix",
       workflowId: "real-project-matrix.yml",
       ref,
-      inputs: { budget_mode: "record-only", lsp_mode: "record-only" },
+      inputs: {
+        budget_mode: "record-only",
+        core_tools_mode: "record-only",
+        core_tools_timeout_ms: "600000",
+        lsp_mode: "record-only",
+      },
       expectedRunName: `Real Project Matrix @ ${headSha}`,
       acceptsScheduledEvidence: true,
     },

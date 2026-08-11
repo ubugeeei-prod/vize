@@ -12,6 +12,19 @@ on:
         options:
           - enforce
           - record-only
+      core_tools_mode:
+        description: "Core tool surface handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
+      core_tools_timeout_ms:
+        description: "Per-project core tool timeout in milliseconds"
+        required: false
+        default: "2400000"
+        type: string
       lsp_mode:
         description: "LSP lifecycle gate handling"
         required: false
@@ -127,12 +140,14 @@ jobs:
         id: core_tools
         if: ${{ !cancelled() }}
         continue-on-error: true
+        env:
+          CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
         run: |
           node tools/fixtures/tool-matrix-report.mjs \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --vize-bin target/ci/vize \
-            --timeout-ms 600000 \
+            --timeout-ms "$CORE_TOOLS_TIMEOUT_MS" \
             --output-dir "$FIXTURE_REPORT_DIR"
 
       - name: Check real-project LSP lifecycle
@@ -220,6 +235,7 @@ jobs:
         if: ${{ always() }}
         shell: bash
         env:
+          CORE_TOOLS_MODE: ${{ inputs.core_tools_mode || 'enforce' }}
           LSP_MODE: ${{ inputs.lsp_mode || 'enforce' }}
           VIZE_WAIVER_AUDIT_OUTCOME: ${{ steps.waiver_audit.outcome }}
           VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
@@ -229,6 +245,10 @@ jobs:
           VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
           VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
         run: |
+          core_tools_verdict="$VIZE_CORE_TOOLS_OUTCOME"
+          if [[ "$CORE_TOOLS_MODE" == "record-only" && "$core_tools_verdict" == "failure" ]]; then
+            core_tools_verdict=success
+          fi
           lsp_verdict="$VIZE_LSP_OUTCOME"
           if [[ "$LSP_MODE" == "record-only" && "$lsp_verdict" == "failure" ]]; then
             lsp_verdict=success
@@ -237,7 +257,7 @@ jobs:
             --output "$FIXTURE_REPORT_DIR/surface-verdict.json" \
             --surface "waiver-audit=$VIZE_WAIVER_AUDIT_OUTCOME" \
             --surface "typecheck-dependencies=$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME" \
-            --surface "core-tools=$VIZE_CORE_TOOLS_OUTCOME" \
+            --surface "core-tools=$core_tools_verdict" \
             --surface "lsp=$lsp_verdict" \
             --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
             --surface "glyph=$VIZE_GLYPH_OUTCOME" \

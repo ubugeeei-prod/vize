@@ -41,13 +41,31 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
-  assert.deepEqual(Object.keys(dispatch.inputs ?? {}), ["budget_mode", "lsp_mode"]);
+  assert.deepEqual(Object.keys(dispatch.inputs ?? {}), [
+    "budget_mode",
+    "core_tools_mode",
+    "core_tools_timeout_ms",
+    "lsp_mode",
+  ]);
   assert.deepEqual(dispatch.inputs?.budget_mode, {
     description: "Typecheck divergence budget handling",
     required: false,
     default: "enforce",
     type: "choice",
     options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.core_tools_mode, {
+    description: "Core tool surface handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.core_tools_timeout_ms, {
+    description: "Per-project core tool timeout in milliseconds",
+    required: false,
+    default: "2400000",
+    type: "string",
   });
   assert.deepEqual(dispatch.inputs?.lsp_mode, {
     description: "LSP lifecycle gate handling",
@@ -165,8 +183,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
   assert.match(run?.run ?? "", /tools\/fixtures\/tool-matrix-report\.mjs/);
   assert.match(run?.run ?? "", /--vize-bin target\/ci\/vize/);
-  assert.match(run?.run ?? "", /--timeout-ms 600000/);
+  assert.match(run?.run ?? "", /--timeout-ms "\$CORE_TOOLS_TIMEOUT_MS"/);
   assert.match(run?.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.equal(run?.env?.CORE_TOOLS_TIMEOUT_MS, "${{ inputs.core_tools_timeout_ms || '2400000' }}");
   for (const [step, id] of [
     [run, "core_tools"],
     [lsp, "lsp"],
@@ -248,6 +267,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.equal(verdict.if, "${{ always() }}");
   assert.equal(verdict.shell, "bash");
   assert.deepEqual(verdict.env, {
+    CORE_TOOLS_MODE: "${{ inputs.core_tools_mode || 'enforce' }}",
     LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
     VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
@@ -259,12 +279,14 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   });
   assert.match(verdict.run ?? "", /real-project-surface-verdict\.mjs/);
   assert.match(verdict.run ?? "", /surface-verdict\.json/);
+  assert.match(verdict.run ?? "", /core_tools_verdict="\$VIZE_CORE_TOOLS_OUTCOME"/);
+  assert.match(verdict.run ?? "", /\[\[ "\$CORE_TOOLS_MODE" == "record-only"/);
+  assert.match(verdict.run ?? "", /--surface "core-tools=\$core_tools_verdict"/);
   assert.match(verdict.run ?? "", /lsp_verdict="\$VIZE_LSP_OUTCOME"/);
   assert.match(verdict.run ?? "", /\[\[ "\$LSP_MODE" == "record-only"/);
   for (const [surface, variable] of [
     ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
     ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
-    ["core-tools", "VIZE_CORE_TOOLS_OUTCOME"],
     ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
     ["glyph", "VIZE_GLYPH_OUTCOME"],
     ["typecheck-divergence", "VIZE_TYPECHECK_DIVERGENCE_OUTCOME"],

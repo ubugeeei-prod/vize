@@ -70,7 +70,10 @@ function consumerSource(exportName, packageEntry) {
 const familySignatures = Object.freeze({
   button: /aria-busy/,
   checkbox: /aria-checked/,
+  collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
+  "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
+  press: /VIZE_UI_PRESS_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
   "visually-hidden": /visually-hidden/,
 });
@@ -89,9 +92,27 @@ const componentCases = [
     maximumCssGzipBytes: 0,
   },
   {
+    family: "collection",
+    exportName: "createCollectionRegistry",
+    maximumJavaScriptGzipBytes: 3_150,
+    maximumCssGzipBytes: 0,
+  },
+  {
     family: "id",
     exportName: "IdProvider",
     maximumJavaScriptGzipBytes: 1_050,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "interaction-modality",
+    exportName: "createInteractionModalityTracker",
+    maximumJavaScriptGzipBytes: 1_650,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "press",
+    exportName: "createPress",
+    maximumJavaScriptGzipBytes: 3_550,
     maximumCssGzipBytes: 0,
   },
   {

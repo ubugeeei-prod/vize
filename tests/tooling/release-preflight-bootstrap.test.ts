@@ -80,7 +80,12 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         workflowName: "Real Project Matrix",
         workflowId: "real-project-matrix.yml",
         ref: "v1.2.3",
-        inputs: { budget_mode: "record-only", lsp_mode: "record-only" },
+        inputs: {
+          budget_mode: "record-only",
+          core_tools_mode: "record-only",
+          core_tools_timeout_ms: "600000",
+          lsp_mode: "record-only",
+        },
         expectedRunName: `Real Project Matrix @ ${releaseSha}`,
       },
       {
@@ -173,9 +178,18 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
   assert.equal(matrix.name, "Real Project Matrix");
   const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
-  assert.deepEqual(Object.keys(dispatchInputs), ["budget_mode", "lsp_mode"]);
+  assert.deepEqual(Object.keys(dispatchInputs), [
+    "budget_mode",
+    "core_tools_mode",
+    "core_tools_timeout_ms",
+    "lsp_mode",
+  ]);
   assert.equal(dispatchInputs.budget_mode?.default, "enforce");
   assert.deepEqual(dispatchInputs.budget_mode?.options, ["enforce", "record-only"]);
+  assert.equal(dispatchInputs.core_tools_mode?.default, "enforce");
+  assert.deepEqual(dispatchInputs.core_tools_mode?.options, ["enforce", "record-only"]);
+  assert.equal(dispatchInputs.core_tools_timeout_ms?.default, "2400000");
+  assert.equal(dispatchInputs.core_tools_timeout_ms?.type, "string");
   assert.equal(dispatchInputs.lsp_mode?.default, "enforce");
   assert.deepEqual(dispatchInputs.lsp_mode?.options, ["enforce", "record-only"]);
   assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);

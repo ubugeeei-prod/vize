@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/ui",
-  "version": "0.347.2",
+  "version": "0.347.5",
   "description": "Accessible, headless, Native CSS-first UI primitives",
   "keywords": [
     "accessibility",
@@ -44,6 +44,11 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./collection": {
+      "types": "./dist/collection.d.mts",
+      "import": "./dist/collection.mjs",
+      "default": "./dist/collection.mjs"
+    },
     "./context": {
       "types": "./dist/context.d.mts",
       "import": "./dist/context.mjs",
@@ -58,6 +63,16 @@
       "types": "./dist/id.d.mts",
       "import": "./dist/id.mjs",
       "default": "./dist/id.mjs"
+    },
+    "./interaction-modality": {
+      "types": "./dist/interaction-modality.d.mts",
+      "import": "./dist/interaction-modality.mjs",
+      "default": "./dist/interaction-modality.mjs"
+    },
+    "./press": {
+      "types": "./dist/press.d.mts",
+      "import": "./dist/press.mjs",
+      "default": "./dist/press.mjs"
     },
     "./primitive": {
       "types": "./dist/primitive.d.mts",

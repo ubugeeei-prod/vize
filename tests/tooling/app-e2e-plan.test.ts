@@ -83,7 +83,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
     fullAppE2eRows.find(
       (row) => row.profile === "full" && row.suite === "check" && row.shard === "all",
     )?.timeout,
-    "15m",
+    "45m",
   );
 });
 

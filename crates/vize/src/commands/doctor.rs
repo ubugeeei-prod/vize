@@ -11,7 +11,9 @@ mod tests;
 use clap::{Args, ValueEnum};
 use std::{fmt, io, path::PathBuf};
 use vize_carton::String;
-use vize_doctor::{DoctorReport, ReporterFailure, application_analysis::ApplicationAnalysisError};
+use vize_doctor::{
+    DoctorReport, ReporterFailure, SarifSourceError, application_analysis::ApplicationAnalysisError,
+};
 
 use self::{
     analysis::analyze_application,
@@ -26,6 +28,8 @@ pub enum DoctorFormat {
     Text,
     /// Stable, versioned JSON report for automation and AI consumers.
     Json,
+    /// OASIS SARIF 2.1.0 report for code-hosting annotations.
+    Sarif,
 }
 
 /// Arguments for whole-application health analysis.
@@ -86,6 +90,7 @@ enum DoctorError {
         message: String,
     },
     Analysis(ApplicationAnalysisError),
+    SarifSource(SarifSourceError),
     Report(ReporterFailure),
     Write(io::Error),
 }
@@ -146,6 +151,7 @@ impl fmt::Display for DoctorError {
                 )
             }
             Self::Analysis(error) => write!(formatter, "cannot build health report: {error}"),
+            Self::SarifSource(error) => write!(formatter, "cannot prepare SARIF source: {error}"),
             Self::Report(error) => write!(formatter, "cannot render health report: {error}"),
             Self::Write(error) => write!(formatter, "cannot write health report: {error}"),
         }
@@ -160,6 +166,7 @@ impl From<ApplicationAnalysisError> for DoctorError {
 
 struct DoctorOutcome {
     report: DoctorReport,
+    sources: Vec<DoctorSource>,
     format: DoctorFormat,
     exit_zero: bool,
 }
@@ -168,7 +175,7 @@ pub fn run(args: DoctorArgs) {
     match execute(args) {
         Ok(outcome) => {
             let blocking = outcome.report.summary().has_blocking_errors;
-            if let Err(error) = write_report(&outcome.report, outcome.format) {
+            if let Err(error) = write_report(&outcome.report, outcome.format, &outcome.sources) {
                 eprintln!("vize doctor: {error}");
                 std::process::exit(2);
             }
@@ -200,6 +207,7 @@ fn execute(args: DoctorArgs) -> Result<DoctorOutcome, DoctorError> {
     let report = analyze_application(&root, &sources, args.public_sfc)?;
     Ok(DoctorOutcome {
         report,
+        sources,
         format: args.format,
         exit_zero: args.exit_zero,
     })

@@ -29,9 +29,12 @@ const sentinels = {
   "capability-unavailable": ['status: "unavailable"'],
   "capability-is-available": ["isCapabilityAvailable"],
   "capability-is-unavailable": ["isCapabilityUnavailable"],
+  catalog: ["COMPOSABLE_CATALOG", "provenance-preserving source-copy installer"],
   "disposal-scope": ["createDisposalScope", "VIZE_COMPOSE_DISPOSAL_FAILED"],
   "event-listener": ["useEventListener", "isListening"],
   "media-query": ["useMediaQuery", "matchMedia"],
+  "retry-async": ["retryAsync", "VIZE_COMPOSE_RETRY_INVALID_MAXIMUM_RETRIES"],
+  "retry-delay": ["calculateRetryDelay", "VIZE_COMPOSE_RETRY_INVALID_ATTEMPT"],
   locale: ["useLocale", "getTextInfo"],
   "async-resource": ["useAsyncResource", "A newer execution started."],
   temporal: ["useTemporalNow", "VIZE_COMPOSE_TEMPORAL_INVALID_INTERVAL"],
@@ -101,6 +104,13 @@ const utilities: readonly UtilityCase[] = [
   { binding: "useEventListener", entry: "index", module: "event-listener", shared: ["scope"] },
   { binding: "useMediaQuery", entry: "index", module: "media-query", shared: [] },
   { binding: "useReducedMotion", entry: "index", module: "media-query", shared: [] },
+  {
+    binding: "retryAsync",
+    entry: "index",
+    module: "retry-async",
+    shared: ["abort-signal-timeout", "abort-signal-any", "retry-delay"],
+  },
+  { binding: "calculateRetryDelay", entry: "index", module: "retry-delay", shared: [] },
   { binding: "useLocale", entry: "index", module: "locale", shared: [] },
   { binding: "useAsyncResource", entry: "index", module: "async-resource", shared: ["scope"] },
   { binding: "useTemporalNow", entry: "temporal", module: "temporal", shared: [] },
@@ -226,6 +236,21 @@ for (const { binding, entry, module, shared } of utilities) {
     }
   });
 }
+
+void test("bundling the catalog retains metadata without utility implementations", async () => {
+  const code = stripComments(
+    await bundleEntry(`export { COMPOSABLE_CATALOG } from ${JSON.stringify(entries.index)};`),
+  );
+
+  for (const sentinel of sentinels.catalog) {
+    assert.ok(code.includes(sentinel), `catalog bundle lost its own marker "${sentinel}"`);
+  }
+  assert.doesNotMatch(code, /\bimport\s|\bfrom\s*["']/);
+  assert.doesNotMatch(
+    code,
+    /\b(?:class|function)\s+(?:DisposalError|anyAbortSignal|availableCapability|createDisposalScope|deadlineAbortSignal|isCapabilityAvailable|isCapabilityUnavailable|timeoutAbortSignal|tryOnScopeDispose|unavailableCapability|use[A-Z]\w*)\b/,
+  );
+});
 
 void test("unused sibling exports of the same module are eliminated", async () => {
   const media = stripComments(

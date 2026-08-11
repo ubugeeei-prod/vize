@@ -1,8 +1,10 @@
 import {
   createLayoutNode,
+  flushTerminalMeasured,
   getLayout,
   pollEvent,
   setImeMode,
+  type FrameOutputTelemetryNapi,
   type InputEventNapi,
   type LayoutResultNapi,
   type RenderNodeNapi,
@@ -14,6 +16,9 @@ export const maybeLayout: LayoutResultNapi | null = getLayout(nullableStyleNode)
 // eslint-disable-next-line typescript-eslint/no-redundant-type-constituents -- resolved in the staged package fixture
 export const maybeEvent: InputEventNapi | null = pollEvent(0);
 export const imeModeResult: void = setImeMode("hiragana");
+export const frameOutput: FrameOutputTelemetryNapi = flushTerminalMeasured();
+export const changedCells: bigint = frameOutput.changedCells;
+export const bytesWritten: bigint = frameOutput.bytesWritten;
 
 export const nativeKeyPhaseIsRustDefined: InputEventNapi = {
   eventType: "key",

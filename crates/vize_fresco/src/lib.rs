@@ -14,6 +14,8 @@
 //! - **Flexbox Layout**: Layout engine powered by taffy
 //! - **CJK Support**: Full Unicode text handling including Japanese IME
 //! - **Efficient Rendering**: Double-buffered differential rendering
+//! - **Diagnostic Workspaces**: Stable, virtualized master-detail navigation
+//! - **Headless Assertions**: Deterministic visual and semantic frame snapshots
 //!
 //! # Architecture
 //!
@@ -52,6 +54,7 @@
 //! ```
 
 pub mod component;
+pub mod headless;
 pub mod input;
 pub mod layout;
 pub mod render;
@@ -63,12 +66,18 @@ pub mod napi;
 
 // Re-exports for convenience
 pub use component::{
-    BoxNode, InputNode, TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+    BoxNode, DiagnosticWorkspaceFocus, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
+    DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState, InputNode,
+    TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+};
+pub use headless::{
+    AnnouncementPoliteness, HeadlessAnnouncement, HeadlessPresentation, HeadlessRenderError,
+    HeadlessRenderer, HeadlessSemanticNode, HeadlessSnapshot, SemanticRole, SemanticState,
 };
 pub use input::{Event, ImeState, KeyEvent, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
 pub use render::{RenderNode, RenderTree};
-pub use terminal::{Backend, Buffer, Cell, Cursor};
+pub use terminal::{Backend, Buffer, Cell, Cursor, FrameOutputTelemetry};
 pub use text::{TextSegment, TextWidth, TextWrap};
 
 /// Fresco version
