@@ -272,7 +272,7 @@ fn seeded_candidates_stop_at_the_queue_bound_before_any_file_is_read() {
             .iter()
             .filter(|path| path.extension().is_some_and(|extension| extension == "ts"))
             .count(),
-        4
+        5
     );
 }
 

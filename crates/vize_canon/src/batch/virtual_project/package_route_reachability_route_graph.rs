@@ -37,10 +37,13 @@ pub(super) fn seed_route_graph(
         }
         work.packages += 1;
         for path in route.source_paths.iter().chain(&route.dependency_paths) {
-            if !queued.contains(path) && queued.len() == budget.max_queued_files {
-                return false;
+            if queued.contains(path) {
+                continue;
             }
             inputs.push(path.clone());
+            if queued.len() == budget.max_queued_files {
+                return false;
+            }
             enqueue(queue, queued, path.clone());
         }
         let mut nested = route.nested_routes.iter().collect::<Vec<_>>();
