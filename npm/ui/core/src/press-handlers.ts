@@ -39,17 +39,15 @@ export function createPressHandlers(lifecycle: PressLifecycle): PressHandlers {
     if (matches(current, "pointer", event.pointerId)) lifecycle.cancelActive(event);
   }
   function onMouseDown(event: MouseEvent): void {
-    if (lifecycle.disposed) return;
+    if (lifecycle.disposed || event.button !== 0) return;
+    const target = eventElement(event);
+    if (!target || readBooleanOption(lifecycle.options.isDisabled, "isDisabled")) return;
+    const elapsed = event.timeStamp - lastTouchTime;
+    if (elapsed >= 0 && elapsed < 800) return;
     if (readBooleanOption(lifecycle.options.preventFocusOnPress, "preventFocusOnPress")) {
       event.preventDefault();
     }
-    if ((event.view && "PointerEvent" in event.view) || lifecycle.active || event.button !== 0) {
-      return;
-    }
-    const elapsed = event.timeStamp - lastTouchTime;
-    if (elapsed >= 0 && elapsed < 800) return;
-    const target = eventElement(event);
-    if (!target || readBooleanOption(lifecycle.options.isDisabled, "isDisabled")) return;
+    if ((event.view && "PointerEvent" in event.view) || lifecycle.active) return;
     lifecycle.start(event, target, "mouse", "mouse", null, null, false);
   }
   function onMouseMove(event: MouseEvent): void {
@@ -171,9 +169,14 @@ export function createPressHandlers(lifecycle: PressLifecycle): PressHandlers {
     ...pressProps,
     installListeners(document: Document, source: PressSource) {
       const removals: Array<() => void> = [];
-      const listen = (owner: Document | Window, type: string, listener: EventListener) => {
-        owner.addEventListener(type, listener, true);
-        removals.push(() => owner.removeEventListener(type, listener, true));
+      const listen = (
+        owner: Document | Window,
+        type: string,
+        listener: EventListener,
+        capture = true,
+      ) => {
+        owner.addEventListener(type, listener, capture);
+        removals.push(() => owner.removeEventListener(type, listener, capture));
       };
       try {
         if (source === "pointer") {
@@ -192,7 +195,7 @@ export function createPressHandlers(lifecycle: PressLifecycle): PressHandlers {
           listen(document, "focusin", onFocusIn as EventListener);
         }
         if (document.defaultView) {
-          listen(document.defaultView, "blur", onWindowBlur as EventListener);
+          listen(document.defaultView, "blur", onWindowBlur as EventListener, false);
         }
         listen(document, "visibilitychange", onVisibilityChange as EventListener);
       } catch (error) {

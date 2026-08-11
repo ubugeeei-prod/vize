@@ -223,6 +223,33 @@ test("keyboard ownership cancels when focus moves before keyup", () => {
   next.remove();
 });
 
+test("pointer-driven focus movement does not cancel or suppress its click", () => {
+  const previous = document.createElement("input");
+  const host = document.createElement("button");
+  document.body.append(previous, host);
+  let presses = 0;
+  const controller = createPress({
+    preventFocusOnPress: false,
+    onPress: () => presses++,
+  });
+  host.addEventListener("pointerdown", controller.pressProps.onPointerdown);
+  host.addEventListener("pointerup", controller.pressProps.onPointerup);
+  host.addEventListener("click", controller.pressProps.onClick);
+  previous.focus();
+
+  host.dispatchEvent(pointer("pointerdown", host));
+  host.focus();
+  host.dispatchEvent(pointer("pointerup", host));
+  const click = new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 });
+  host.dispatchEvent(click);
+
+  assert.equal(click.defaultPrevented, false);
+  assert.equal(presses, 1);
+  controller.dispose();
+  previous.remove();
+  host.remove();
+});
+
 test("drag, window blur, and host removal terminate pointer ownership", () => {
   const host = document.createElement("button");
   document.body.append(host);

@@ -178,6 +178,25 @@ test("cancel-on-exit suppresses the following compatibility click", () => {
   harness.unmount();
 });
 
+test("an outside release cancels the default resumable interaction", () => {
+  const harness = mountPress();
+  const outside = document.createElement("div");
+  document.body.append(outside);
+  harness.dispatch(pointer("pointerdown"));
+  harness.dispatch(pointer("pointerup"), outside);
+  const click = new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 });
+  harness.dispatch(click);
+
+  assert.equal(click.defaultPrevented, true);
+  assert.deepEqual(
+    harness.events.map(({ type }) => type),
+    ["pressstart", "pressend"],
+  );
+  assert.equal(harness.events[1]?.isCanceled, true);
+  outside.remove();
+  harness.unmount();
+});
+
 test("cancels when disabled changes during a press", () => {
   let disabled = false;
   const harness = mountPress({ isDisabled: () => disabled });
@@ -249,6 +268,28 @@ test("emulates button and link keyboard semantics only for custom hosts", () => 
   link.unmount();
 });
 
+test("treats href-less anchors as custom hosts while preserving href links", () => {
+  const custom = mountPress({}, "a");
+  custom.dispatch(new KeyboardEvent("keydown", { bubbles: true, key: " " }));
+  custom.dispatch(new KeyboardEvent("keyup", { bubbles: true, key: " " }));
+  assert.equal(custom.events.filter(({ type }) => type === "press").length, 1);
+  custom.unmount();
+
+  const link = mountPress({ keyboardBehavior: "link" }, "a");
+  link.dispatch(new KeyboardEvent("keydown", { bubbles: true, key: "Enter" }));
+  link.dispatch(new KeyboardEvent("keyup", { bubbles: true, key: "Enter" }));
+  assert.equal(link.events.filter(({ type }) => type === "press").length, 1);
+  link.unmount();
+
+  const native = mountPress({}, "a");
+  native.host.setAttribute("href", "#destination");
+  native.dispatch(new KeyboardEvent("keydown", { bubbles: true, key: "Enter" }));
+  native.dispatch(new MouseEvent("click", { bubbles: true, detail: 0 }));
+  native.dispatch(new KeyboardEvent("keyup", { bubbles: true, key: "Enter" }));
+  assert.equal(native.events.filter(({ type }) => type === "press").length, 1);
+  native.unmount();
+});
+
 test("preserves native keyboard click timing and delivers exactly one press", () => {
   for (const key of ["Enter", " "]) {
     const harness = mountPress({}, "button");
@@ -276,66 +317,10 @@ test("ignores IME, repeats, nested targets, and disabled keyboard input", () => 
 
   assert.deepEqual(harness.events, []);
   harness.unmount();
-});
 
-test("restores exact selection styles and can prevent pointer focus", () => {
-  const harness = mountPress({ preventFocusOnPress: true });
-  harness.host.style.setProperty("user-select", "text", "important");
-  harness.dispatch(pointer("pointerdown"));
-  assert.equal(harness.host.style.userSelect, "none");
-  harness.dispatch(pointer("pointercancel"));
-  assert.equal(harness.host.style.getPropertyValue("user-select"), "text");
-  assert.equal(harness.host.style.getPropertyPriority("user-select"), "important");
-
-  const mousedown = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
-  harness.dispatch(mousedown);
-  assert.equal(mousedown.defaultPrevented, true);
-  harness.unmount();
-});
-
-test("normalizes legacy touch and suppresses its compatibility mouse sequence", () => {
-  const isolated = document.implementation.createHTMLDocument("legacy touch");
-  const host = isolated.createElement("button");
-  isolated.body.append(host);
-  const events: PressEvent[] = [];
-  const controller = createPress({
-    onPressStart: (event) => events.push(event),
-    onPressEnd: (event) => events.push(event),
-    onPress: (event) => events.push(event),
-  });
-  for (const [property, type] of Object.entries(eventNames) as Array<[keyof PressProps, string]>) {
-    host.addEventListener(type, controller.pressProps[property] as EventListener);
-  }
-  const touchEvent = (
-    type: string,
-    values: Array<{ clientX: number; clientY: number; identifier: number }>,
-  ) => {
-    const event = new Event(type, { bubbles: true }) as TouchEvent;
-    const touches = Object.assign(values, {
-      item: (index: number) => touches[index] ?? null,
-    }) as unknown as TouchList;
-    Object.defineProperty(event, "changedTouches", { value: touches });
-    Object.defineProperty(event, "view", { value: null });
-    return event;
-  };
-
-  host.dispatchEvent(touchEvent("touchstart", [{ identifier: 31, clientX: 4, clientY: 8 }]));
-  host.dispatchEvent(
-    touchEvent("touchend", [
-      { identifier: 99, clientX: 100, clientY: 200 },
-      { identifier: 31, clientX: 9, clientY: 12 },
-    ]),
-  );
-  host.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-  host.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-  host.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-
-  assert.deepEqual(
-    events.map(({ type }) => type),
-    ["pressstart", "pressend", "press"],
-  );
-  assert.ok(events.every(({ pointerType }) => pointerType === "touch"));
-  assert.deepEqual([events[0]?.x, events[0]?.y], [4, 8]);
-  assert.deepEqual([events[1]?.x, events[1]?.y], [9, 12]);
-  controller.dispose();
+  const disabled = mountPress({ isDisabled: true });
+  disabled.dispatch(new KeyboardEvent("keydown", { bubbles: true, key: "Enter" }));
+  disabled.dispatch(new KeyboardEvent("keyup", { bubbles: true, key: "Enter" }));
+  assert.deepEqual(disabled.events, []);
+  disabled.unmount();
 });

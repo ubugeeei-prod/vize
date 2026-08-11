@@ -129,7 +129,7 @@ export function keyboardActivation(
   if (behavior === "none") return null;
   const tag = target.localName;
   if (tag === "a" || tag === "area") {
-    return target.hasAttribute("href") && key === "Enter" ? "native" : null;
+    if (target.hasAttribute("href")) return key === "Enter" ? "native" : null;
   }
   if (tag === "button") return key === "Enter" || key === " " ? "native" : null;
   if (tag === "summary") return key === "Enter" || key === " " ? "native" : null;
