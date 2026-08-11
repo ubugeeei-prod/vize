@@ -1,13 +1,13 @@
 use std::io::{self, Write};
 
 use crossterm::{
-    cursor::{MoveTo, Show},
+    cursor::{MoveTo, SetCursorStyle, Show},
     queue,
     style::{Attribute, SetAttribute, SetBackgroundColor, SetForegroundColor},
 };
 
-use super::{Backend, TerminalOptions};
-use crate::terminal::{Color, Style};
+use super::{Backend, TerminalMode, TerminalOptions, TerminalSessionPhase};
+use crate::terminal::{Color, CursorShape, Style};
 
 #[test]
 fn standard_output_backend_uses_detected_terminal_size_when_available() {
@@ -26,6 +26,11 @@ fn terminal_options_documented_defaults_preserve_legacy_modes() {
     assert!(options.bracketed_paste);
     assert!(options.raw_mode);
     assert!(options.hide_cursor);
+}
+
+#[test]
+fn session_state_is_a_single_byte_hot_path_snapshot() {
+    assert_eq!(std::mem::size_of::<super::TerminalSessionState>(), 1);
 }
 
 #[test]
@@ -48,6 +53,59 @@ fn injected_writer_owns_lifecycle_output_and_restoration_is_idempotent() {
     assert!(restored_bytes > initialized_bytes);
     backend.restore().unwrap();
     assert_eq!(backend.writer().len(), restored_bytes);
+}
+
+#[test]
+fn frame_cursor_output_is_owned_and_restored_as_one_session() {
+    let mut backend = Backend::with_writer(4, 1, Vec::new());
+    backend.cursor_mut().set_shape(CursorShape::Bar);
+    backend.cursor_mut().set_blinking(false);
+
+    backend.flush_measured().unwrap();
+
+    let active = backend.session_state();
+    assert_eq!(active.phase(), TerminalSessionPhase::Active);
+    assert!(active.owns(TerminalMode::CursorVisibility));
+    assert!(active.owns(TerminalMode::CursorShape));
+
+    let frame_end = backend.writer().len();
+    backend.restore().unwrap();
+    assert!(backend.session_state().is_inactive());
+
+    let restoration = &backend.writer()[frame_end..];
+    let mut expected = Vec::new();
+    queue!(expected, SetCursorStyle::DefaultUserShape, Show).unwrap();
+    assert_eq!(restoration, expected);
+}
+
+#[test]
+fn hidden_cursor_frame_does_not_claim_cursor_shape() {
+    let mut backend = Backend::with_writer(4, 1, Vec::new());
+    backend.cursor_mut().hide();
+
+    backend.flush_measured().unwrap();
+
+    let active = backend.session_state();
+    assert!(active.owns(TerminalMode::CursorVisibility));
+    assert!(!active.owns(TerminalMode::CursorShape));
+    let frame_end = backend.writer().len();
+
+    backend.restore().unwrap();
+    let restoration = &backend.writer()[frame_end..];
+    let mut expected = Vec::new();
+    queue!(expected, Show).unwrap();
+    assert_eq!(restoration, expected);
+}
+
+#[test]
+fn failed_frame_conservatively_retains_cursor_ownership() {
+    let mut backend = Backend::with_writer(4, 1, AlwaysFailWriter);
+
+    assert!(backend.flush_measured().is_err());
+
+    let active = backend.session_state();
+    assert!(active.owns(TerminalMode::CursorVisibility));
+    assert!(active.owns(TerminalMode::CursorShape));
 }
 
 #[test]
@@ -128,10 +186,14 @@ fn restore_completes_every_cleanup_action_after_a_writer_failure() {
     backend.writer_mut().fail_next_write = true;
 
     assert!(backend.restore().is_err());
-    assert!(backend.mouse_capture);
-    assert!(!backend.bracketed_paste);
-    assert!(!backend.alternate_screen);
-    assert!(!backend.cursor_hidden);
+    assert!(backend.session_state().owns(TerminalMode::MouseCapture));
+    for mode in [
+        TerminalMode::BracketedPaste,
+        TerminalMode::AlternateScreen,
+        TerminalMode::CursorVisibility,
+    ] {
+        assert!(!backend.session_state().owns(mode));
+    }
 
     let mut show_cursor = Vec::new();
     queue!(show_cursor, Show).unwrap();
@@ -144,7 +206,10 @@ fn restore_completes_every_cleanup_action_after_a_writer_failure() {
     );
 
     backend.restore().unwrap();
-    assert!(!backend.mouse_capture);
+    assert_eq!(
+        backend.session_state().phase(),
+        TerminalSessionPhase::Inactive
+    );
 }
 
 #[test]

@@ -53,13 +53,44 @@ fn restoration_reports_every_failed_mode_in_cleanup_order() {
     ] {
         assert!(message.contains(mode), "missing {mode} in {message}");
     }
-    assert!(backend.mouse_capture);
-    assert!(backend.bracketed_paste);
-    assert!(backend.alternate_screen);
-    assert!(backend.cursor_hidden);
+    for mode in [
+        TerminalMode::MouseCapture,
+        TerminalMode::BracketedPaste,
+        TerminalMode::AlternateScreen,
+        TerminalMode::CursorVisibility,
+    ] {
+        assert!(backend.session_state().owns(mode));
+    }
 
     backend.writer_mut().fail = false;
     backend.restore().unwrap();
+}
+
+#[test]
+fn cursor_shape_and_visibility_failures_remain_independently_retryable() {
+    let mut backend = Backend::with_writer(80, 24, SwitchableFailureWriter::default());
+    backend.flush().unwrap();
+    backend.writer_mut().fail = true;
+
+    let error = backend.restore().unwrap_err();
+    let restoration = error
+        .get_ref()
+        .and_then(|source| source.downcast_ref::<TerminalRestorationError>())
+        .expect("cursor cleanup must retain structured failures");
+    assert_eq!(
+        restoration
+            .failures()
+            .iter()
+            .map(|failure| failure.mode())
+            .collect::<Vec<_>>(),
+        [TerminalMode::CursorShape, TerminalMode::CursorVisibility]
+    );
+    assert!(backend.session_state().owns(TerminalMode::CursorShape));
+    assert!(backend.session_state().owns(TerminalMode::CursorVisibility));
+
+    backend.writer_mut().fail = false;
+    backend.restore().unwrap();
+    assert!(backend.session_state().is_inactive());
 }
 
 #[derive(Debug, Default)]

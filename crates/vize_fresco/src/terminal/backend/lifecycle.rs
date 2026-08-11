@@ -7,7 +7,7 @@ use std::{
 };
 
 use crossterm::{
-    cursor::{Hide, Show},
+    cursor::{Hide, SetCursorStyle, Show},
     event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
@@ -15,40 +15,9 @@ use crossterm::{
 
 use super::{Backend, TerminalOptions};
 
-/// Terminal mode associated with one restoration failure.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum TerminalMode {
-    /// Process-global raw input mode.
-    RawMode,
-    /// Alternate screen buffer.
-    AlternateScreen,
-    /// Bracketed paste reporting.
-    BracketedPaste,
-    /// Mouse event capture.
-    MouseCapture,
-    /// Cursor visibility changed by Fresco.
-    CursorVisibility,
-}
+mod state;
 
-impl TerminalMode {
-    /// Return the stable human-readable mode name used in errors.
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::RawMode => "raw mode",
-            Self::AlternateScreen => "alternate screen",
-            Self::BracketedPaste => "bracketed paste",
-            Self::MouseCapture => "mouse capture",
-            Self::CursorVisibility => "cursor visibility",
-        }
-    }
-}
-
-impl fmt::Display for TerminalMode {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(self.as_str())
-    }
-}
+pub use state::{TerminalMode, TerminalSessionPhase, TerminalSessionState};
 
 /// One terminal mode that could not be restored.
 #[derive(Debug)]
@@ -119,16 +88,16 @@ impl Error for TerminalRestorationError {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
-struct TerminalModeState {
-    alternate_screen: bool,
-    cursor_hidden: bool,
-    raw_mode: bool,
-    mouse_capture: bool,
-    bracketed_paste: bool,
-}
-
 impl<W: Write> Backend<W> {
+    /// Return a copy of this backend's terminal-session ownership state.
+    ///
+    /// A mode remains owned after uncertain partial output or failed cleanup,
+    /// allowing callers to decide whether another restoration attempt is
+    /// required without inspecting Fresco-private fields.
+    pub const fn session_state(&self) -> TerminalSessionState {
+        self.session
+    }
+
     /// Initialize the terminal using [`TerminalOptions::default`].
     pub fn init(&mut self) -> io::Result<()> {
         self.init_with_options(TerminalOptions::default())
@@ -142,7 +111,7 @@ impl<W: Write> Backend<W> {
     /// modes are conservatively marked active before writing because an I/O
     /// error may occur after a terminal accepted a partial command.
     pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
-        let previous = self.mode_state();
+        let previous = self.session;
         if let Err(initialization) = self.enable_modes(options) {
             return match self.restore_to(previous) {
                 Ok(()) => Err(initialization),
@@ -168,70 +137,78 @@ impl<W: Write> Backend<W> {
     /// later explicit call or [`Drop`] retry. Every failure is retained in a
     /// [`TerminalRestorationError`] after all actions have been attempted.
     pub fn restore(&mut self) -> io::Result<()> {
-        self.restore_to(TerminalModeState::default())
+        self.restore_to(TerminalSessionState::new())
     }
 
     fn enable_modes(&mut self, options: TerminalOptions) -> io::Result<()> {
-        if options.raw_mode && !self.raw_mode {
+        if options.raw_mode && !self.session.owns(TerminalMode::RawMode) {
             enable_raw_mode()?;
-            self.raw_mode = true;
+            self.session.acquire(TerminalMode::RawMode);
         }
-        if options.alternate_screen && !self.alternate_screen {
-            self.alternate_screen = true;
+        if options.alternate_screen && !self.session.owns(TerminalMode::AlternateScreen) {
+            self.session.acquire(TerminalMode::AlternateScreen);
             execute!(&mut self.writer, EnterAlternateScreen)?;
         }
-        if options.bracketed_paste && !self.bracketed_paste {
-            self.bracketed_paste = true;
+        if options.bracketed_paste && !self.session.owns(TerminalMode::BracketedPaste) {
+            self.session.acquire(TerminalMode::BracketedPaste);
             execute!(&mut self.writer, EnableBracketedPaste)?;
         }
-        if options.mouse_capture && !self.mouse_capture {
-            self.mouse_capture = true;
+        if options.mouse_capture && !self.session.owns(TerminalMode::MouseCapture) {
+            self.session.acquire(TerminalMode::MouseCapture);
             execute!(&mut self.writer, EnableMouseCapture)?;
         }
-        if options.hide_cursor && !self.cursor_hidden {
-            self.cursor_hidden = true;
+        if options.hide_cursor && !self.session.owns(TerminalMode::CursorVisibility) {
+            self.session.acquire(TerminalMode::CursorVisibility);
             execute!(&mut self.writer, Hide)?;
         }
         Ok(())
     }
 
-    fn restore_to(&mut self, target: TerminalModeState) -> io::Result<()> {
+    fn restore_to(&mut self, target: TerminalSessionState) -> io::Result<()> {
         let mut failures = Vec::new();
         restore_writer_mode(
             &mut self.writer,
-            &mut self.mouse_capture,
-            target.mouse_capture,
+            &mut self.session,
+            target,
             TerminalMode::MouseCapture,
             DisableMouseCapture,
             &mut failures,
         );
         restore_writer_mode(
             &mut self.writer,
-            &mut self.bracketed_paste,
-            target.bracketed_paste,
+            &mut self.session,
+            target,
             TerminalMode::BracketedPaste,
             DisableBracketedPaste,
             &mut failures,
         );
         restore_writer_mode(
             &mut self.writer,
-            &mut self.alternate_screen,
-            target.alternate_screen,
+            &mut self.session,
+            target,
             TerminalMode::AlternateScreen,
             LeaveAlternateScreen,
             &mut failures,
         );
         restore_writer_mode(
             &mut self.writer,
-            &mut self.cursor_hidden,
-            target.cursor_hidden,
+            &mut self.session,
+            target,
+            TerminalMode::CursorShape,
+            SetCursorStyle::DefaultUserShape,
+            &mut failures,
+        );
+        restore_writer_mode(
+            &mut self.writer,
+            &mut self.session,
+            target,
             TerminalMode::CursorVisibility,
             Show,
             &mut failures,
         );
-        if self.raw_mode && !target.raw_mode {
+        if self.session.owns(TerminalMode::RawMode) && !target.owns(TerminalMode::RawMode) {
             match disable_raw_mode() {
-                Ok(()) => self.raw_mode = false,
+                Ok(()) => self.session.release(TerminalMode::RawMode),
                 Err(error) => failures.push(TerminalCleanupFailure {
                     mode: TerminalMode::RawMode,
                     error,
@@ -245,31 +222,21 @@ impl<W: Write> Backend<W> {
             Err(io::Error::new(kind, TerminalRestorationError { failures }))
         }
     }
-
-    const fn mode_state(&self) -> TerminalModeState {
-        TerminalModeState {
-            alternate_screen: self.alternate_screen,
-            cursor_hidden: self.cursor_hidden,
-            raw_mode: self.raw_mode,
-            mouse_capture: self.mouse_capture,
-            bracketed_paste: self.bracketed_paste,
-        }
-    }
 }
 
 fn restore_writer_mode<W: Write, C: crossterm::Command>(
     writer: &mut W,
-    active: &mut bool,
-    target: bool,
+    session: &mut TerminalSessionState,
+    target: TerminalSessionState,
     mode: TerminalMode,
     command: C,
     failures: &mut Vec<TerminalCleanupFailure>,
 ) {
-    if !*active || target {
+    if !session.owns(mode) || target.owns(mode) {
         return;
     }
     match execute!(writer, command) {
-        Ok(()) => *active = false,
+        Ok(()) => session.release(mode),
         Err(error) => failures.push(TerminalCleanupFailure { mode, error }),
     }
 }

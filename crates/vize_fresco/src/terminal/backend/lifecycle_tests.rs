@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use vize_carton::ToCompactString;
 
-use super::{Backend, TerminalOptions};
+use super::{Backend, TerminalMode, TerminalOptions};
 
 #[test]
 fn failed_escape_modes_remain_active_when_rollback_cannot_confirm_restoration() {
@@ -11,28 +11,28 @@ fn failed_escape_modes_remain_active_when_rollback_cannot_confirm_restoration() 
             alternate_screen: true,
             ..disabled_options()
         },
-        |backend| backend.alternate_screen,
+        |backend| backend.session_state().owns(TerminalMode::AlternateScreen),
     );
     assert_uncertain_mode_remains_active(
         TerminalOptions {
             bracketed_paste: true,
             ..disabled_options()
         },
-        |backend| backend.bracketed_paste,
+        |backend| backend.session_state().owns(TerminalMode::BracketedPaste),
     );
     assert_uncertain_mode_remains_active(
         TerminalOptions {
             mouse_capture: true,
             ..disabled_options()
         },
-        |backend| backend.mouse_capture,
+        |backend| backend.session_state().owns(TerminalMode::MouseCapture),
     );
     assert_uncertain_mode_remains_active(
         TerminalOptions {
             hide_cursor: true,
             ..disabled_options()
         },
-        |backend| backend.cursor_hidden,
+        |backend| backend.session_state().owns(TerminalMode::CursorVisibility),
     );
 }
 
@@ -51,7 +51,7 @@ fn one_shot_enable_failure_is_rolled_back_before_returning() {
             .to_compact_string()
             .contains("injected enable failure")
     );
-    assert!(!backend.alternate_screen);
+    assert!(backend.session_state().is_inactive());
     assert!(!backend.writer().data.is_empty());
     backend.restore().unwrap();
 }
@@ -91,12 +91,12 @@ fn partial_command_failure_is_retryable_after_rollback_also_fails() {
         .unwrap_err();
 
     assert!(error.to_compact_string().contains("rollback also failed"));
-    assert!(backend.alternate_screen);
+    assert!(backend.session_state().owns(TerminalMode::AlternateScreen));
     assert_eq!(backend.writer().data.len(), 1);
 
     backend.writer_mut().remaining = usize::MAX;
     backend.restore().unwrap();
-    assert!(!backend.alternate_screen);
+    assert!(backend.session_state().is_inactive());
 }
 
 #[test]
@@ -108,7 +108,7 @@ fn rollback_restores_only_modes_started_by_the_failing_call() {
             ..disabled_options()
         })
         .unwrap();
-    assert!(backend.alternate_screen);
+    assert!(backend.session_state().owns(TerminalMode::AlternateScreen));
 
     backend.writer_mut().fail_on_flush = Some(2);
     assert!(
@@ -121,8 +121,8 @@ fn rollback_restores_only_modes_started_by_the_failing_call() {
             .is_err()
     );
 
-    assert!(backend.alternate_screen);
-    assert!(!backend.bracketed_paste);
+    assert!(backend.session_state().owns(TerminalMode::AlternateScreen));
+    assert!(!backend.session_state().owns(TerminalMode::BracketedPaste));
     backend.restore().unwrap();
 }
 
@@ -146,8 +146,7 @@ fn rollback_attempts_every_mode_started_before_a_later_failure() {
             })
             .is_err()
     );
-    assert!(!backend.alternate_screen);
-    assert!(!backend.bracketed_paste);
+    assert!(backend.session_state().is_inactive());
     assert_eq!(backend.writer().flushes, 4);
 }
 

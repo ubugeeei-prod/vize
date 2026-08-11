@@ -21,7 +21,10 @@ mod lifecycle_tests;
 #[cfg(test)]
 mod tests;
 
-pub use lifecycle::{TerminalCleanupFailure, TerminalMode, TerminalRestorationError};
+pub use lifecycle::{
+    TerminalCleanupFailure, TerminalMode, TerminalRestorationError, TerminalSessionPhase,
+    TerminalSessionState,
+};
 pub use output::FrameOutputTelemetry;
 
 /// Terminal mode switches used during backend initialization.
@@ -68,11 +71,8 @@ pub struct Backend<W: Write = io::Stdout> {
     /// access and failed output conservatively invalidate it, allowing retained
     /// tree rendering to recover without scanning the viewport on normal frames.
     current_frame_blank: bool,
-    alternate_screen: bool,
-    cursor_hidden: bool,
-    raw_mode: bool,
-    mouse_capture: bool,
-    bracketed_paste: bool,
+    /// Single source of truth for terminal presentation owned by this backend.
+    session: TerminalSessionState,
     /// Set while the terminal style may not match [`Style::new`], either
     /// because no frame has been written yet or because a frame failed
     /// mid-write, requiring an explicit reset before the next frame.
@@ -103,11 +103,7 @@ impl<W: Write> Backend<W> {
             previous: Buffer::new(width, height),
             cursor: Cursor::new(),
             current_frame_blank: true,
-            alternate_screen: false,
-            cursor_hidden: false,
-            raw_mode: false,
-            mouse_capture: false,
-            bracketed_paste: false,
+            session: TerminalSessionState::new(),
             // An injected writer can point at a terminal whose inherited style
             // is unknown. The first frame establishes the same baseline used
             // after a partial-write failure.

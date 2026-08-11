@@ -69,6 +69,11 @@ impl<W: Write> Backend<W> {
     }
 
     fn write_frame(&mut self) -> io::Result<FrameOutputTelemetry> {
+        // Cursor commands are part of every frame. Acquire ownership before
+        // writing so a partial command is restored conservatively after an
+        // I/O failure. The state update is one branchless bitwise operation.
+        self.session.acquire_frame_cursor(self.cursor.visible);
+
         let mut writer = CountingWriter::new(&mut self.writer);
         let mut changed_cells = 0_u64;
         let mut last_written: Option<(u16, u16)> = None;
