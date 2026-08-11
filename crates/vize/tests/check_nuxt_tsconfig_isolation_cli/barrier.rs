@@ -8,6 +8,10 @@ use std::{
     time::{Duration, Instant},
 };
 
+use super::nuxt_cli::create_fifo;
+
+const BARRIER_TIMEOUT: Duration = Duration::from_secs(30);
+
 pub(super) fn create_phase_barrier(path: &Path) {
     fs::create_dir_all(path).unwrap();
     create_fifo(&path.join("ready"));
@@ -49,7 +53,7 @@ fn wait_until_both_configs_are_prepared(
     }
     // SAFETY: `descriptor` is a fresh owned descriptor from `libc::open`.
     let mut ready_file = unsafe { fs::File::from_raw_fd(descriptor) };
-    let deadline = Instant::now() + Duration::from_secs(30);
+    let deadline = Instant::now() + BARRIER_TIMEOUT;
     let mut ready = [0_u8; 2];
     let mut received = 0;
     loop {
@@ -85,13 +89,36 @@ fn wait_until_both_configs_are_prepared(
     }
 }
 
+/// Releases `participant` without blocking forever on a reader that never
+/// arrives: a writer-only FIFO open fails with `ENXIO` until the checker opens
+/// its end, so the open is retried until the barrier deadline elapses.
 pub(super) fn release(barrier: &Path, participant: &str) {
-    fs::OpenOptions::new()
-        .write(true)
-        .open(barrier.join(format!("release-{participant}")))
-        .unwrap()
-        .write_all(b"go\n")
-        .unwrap();
+    let path = barrier.join(format!("release-{participant}"));
+    let c_path = CString::new(path.as_os_str().as_bytes()).unwrap();
+    let deadline = Instant::now() + BARRIER_TIMEOUT;
+    let mut release_file = loop {
+        // SAFETY: `c_path` is a NUL-terminated FIFO path, the flags are valid
+        // on Unix, and a successful descriptor is owned immediately by `File`.
+        let descriptor = unsafe { libc::open(c_path.as_ptr(), libc::O_WRONLY | libc::O_NONBLOCK) };
+        if descriptor >= 0 {
+            // SAFETY: `descriptor` is a fresh owned descriptor from `libc::open`.
+            break unsafe { fs::File::from_raw_fd(descriptor) };
+        }
+        let error = std::io::Error::last_os_error();
+        assert_eq!(
+            error.raw_os_error(),
+            Some(libc::ENXIO),
+            "failed to open {}: {error}",
+            path.display()
+        );
+        assert!(
+            Instant::now() < deadline,
+            "timed out after 30s waiting for {participant} to open {}",
+            path.display()
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    };
+    release_file.write_all(b"go\n").unwrap();
 }
 
 fn describe_output(name: &str, output: &Output) -> String {
@@ -101,10 +128,4 @@ fn describe_output(name: &str, output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
-}
-
-fn create_fifo(path: &Path) {
-    let path = CString::new(path.as_os_str().as_bytes()).unwrap();
-    // SAFETY: `path` is a NUL-terminated filesystem path and mode is valid.
-    assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
 }

@@ -1,19 +1,23 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
+
 #[cfg(unix)]
 mod unix {
     use std::{
-        ffi::CString,
         fs,
-        os::unix::ffi::OsStrExt,
         path::{Path, PathBuf},
         process::{Command, Stdio},
         sync::{Mutex, MutexGuard, OnceLock, PoisonError},
         time::{Duration, Instant},
     };
 
-    use super::corsa_requirement;
+    use super::{
+        corsa_requirement,
+        nuxt_cli::{create_fifo, resolve_test_corsa_path, workspace_node_modules},
+    };
 
     #[test]
     fn failed_corsa_start_leaves_no_pending_config_or_dependency_state() {
@@ -308,38 +312,10 @@ mod unix {
         fs::write(path, content).unwrap();
     }
 
-    fn create_fifo(path: &Path) {
-        let path = CString::new(path.as_os_str().as_bytes()).unwrap();
-        // SAFETY: `path` is a NUL-terminated path and mode is valid.
-        assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
-    }
-
     fn failure_test_lock() -> MutexGuard<'static, ()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
         LOCK.get_or_init(|| Mutex::new(()))
             .lock()
             .unwrap_or_else(PoisonError::into_inner)
-    }
-
-    fn resolve_test_corsa_path() -> Option<PathBuf> {
-        std::env::var_os("CORSA_PATH")
-            .map(PathBuf::from)
-            .filter(|path| path.exists())
-            .or_else(|| {
-                let path = workspace_node_modules().join(".bin/tsgo");
-                path.exists().then_some(path)
-            })
-    }
-
-    fn workspace_node_modules() -> PathBuf {
-        std::env::var_os("VIZE_TEST_NODE_MODULES")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| {
-                Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .parent()
-                    .and_then(Path::parent)
-                    .unwrap()
-                    .join("node_modules")
-            })
     }
 }

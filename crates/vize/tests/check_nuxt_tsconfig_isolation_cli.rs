@@ -1,9 +1,8 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
-#[cfg(unix)]
-#[path = "check_nuxt_tsconfig_isolation_cli/environment.rs"]
-mod environment;
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
 
 #[cfg(unix)]
 #[path = "check_nuxt_tsconfig_isolation_cli/barrier.rs"]
@@ -20,7 +19,7 @@ mod unix {
     use super::{
         barrier::{await_phase, create_phase_barrier, release},
         corsa_requirement,
-        environment::{required_iterations, resolve_test_corsa_path, workspace_node_modules},
+        nuxt_cli::{required_iterations, resolve_test_corsa_path, workspace_node_modules},
     };
 
     #[test]

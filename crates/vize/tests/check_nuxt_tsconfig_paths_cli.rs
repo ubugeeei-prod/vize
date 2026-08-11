@@ -1,10 +1,14 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
 #[path = "check_nuxt_tsconfig_paths_cli/support.rs"]
 mod support;
 
 use std::process::Command;
-use support::*;
+
+use nuxt_cli::{required_iterations, resolve_test_corsa_path};
+use support::{create_project, run_nuxt2_alias_check, write_file};
 
 #[test]
 fn check_nuxt_sfc_virtual_ts_prefers_explicit_tsconfig_paths_over_fallback_modules() {

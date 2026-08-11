@@ -1,7 +1,11 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
 
-use std::{fs, path::PathBuf, process::Command};
+use std::{fs, process::Command};
+
+use nuxt_cli::{resolve_test_corsa_path, workspace_node_modules};
 
 #[test]
 fn self_contained_wrapper_preserves_authored_option_diagnostics() {
@@ -85,40 +89,25 @@ fn assert_authored_option_diagnostic(
         .output()
         .unwrap();
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(!output.status.success(), "{stdout}");
-    let value: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    assert!(
+        !output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let value: serde_json::Value = serde_json::from_str(&stdout)
+        .unwrap_or_else(|error| panic!("{error}\nstdout:\n{stdout}\nstderr:\n{stderr}"));
     let config = value["files"]
         .as_array()
         .unwrap()
         .iter()
         .find(|file| file["file"] == "tsconfig.json")
-        .unwrap_or_else(|| panic!("authored config must own its diagnostic: {stdout}"));
+        .unwrap_or_else(|| {
+            panic!("authored config must own its diagnostic\nstdout:\n{stdout}\nstderr:\n{stderr}")
+        });
     assert_eq!(
         config["diagnostics"],
         serde_json::json!([format!("error:1:1 [TS5024] {expected}")])
     );
-}
-
-fn resolve_test_corsa_path() -> Option<PathBuf> {
-    std::env::var_os("CORSA_PATH")
-        .map(PathBuf::from)
-        .filter(|path| path.exists())
-        .or_else(|| {
-            let path = workspace_node_modules().join(".bin/tsgo");
-            path.exists().then_some(path)
-        })
-}
-
-fn workspace_node_modules() -> PathBuf {
-    std::env::var_os("VIZE_TEST_NODE_MODULES")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| {
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .parent()
-                .and_then(std::path::Path::parent)
-                .unwrap()
-                .join("node_modules")
-        })
 }
 
 fn link_workspace_node_modules(project: &std::path::Path) {
