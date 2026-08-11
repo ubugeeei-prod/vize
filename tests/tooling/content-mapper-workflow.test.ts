@@ -113,7 +113,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   assert.equal(editorSteps[0].env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
   const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
-  const stressRun = steps[stressSteps[0]].run ?? "";
+  const stressStep = steps[stressSteps[0]];
+  const stressRun = stressStep.run ?? "";
+  assert.equal(stressStep.env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
+  assert.equal(stressStep.env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
   assert.equal(
     [...stressRun.matchAll(/^\s*cargo test -p vize_maestro -- --quiet\s*$/gm)].length,
     1,
