@@ -3,11 +3,13 @@ import { toValue } from "vue";
 import { extractCollectionTextValue, normalizeCollectionTextValue } from "./collection-text.ts";
 import type { CollectionItem, CollectionItemInput, CollectionKey } from "./collection-types.ts";
 
+/** Registration-time record kept for one collection item. */
 export interface CollectionRecord<Key extends CollectionKey, Value> {
   readonly input: Readonly<CollectionItemInput<Key, Value>>;
   readonly sequence: number;
 }
 
+/** Immutable item snapshot paired with its registration sequence. */
 export interface ResolvedCollectionRecord<Key extends CollectionKey, Value> {
   readonly item: CollectionItem<Key, Value>;
   readonly sequence: number;
@@ -17,6 +19,7 @@ const documentPositionDisconnected = 0x01;
 const documentPositionPreceding = 0x02;
 const documentPositionFollowing = 0x04;
 
+/** Resolve every reactive source of one record into an immutable snapshot. */
 export function resolveCollectionRecord<Key extends CollectionKey, Value>(
   record: CollectionRecord<Key, Value>,
 ): ResolvedCollectionRecord<Key, Value> {
@@ -48,7 +51,10 @@ export function resolveCollectionRecord<Key extends CollectionKey, Value>(
   };
 }
 
-// Explicit order, then DOM order, then registration order; mixed explicit orders are rejected.
+/**
+ * Sort resolved records in place using explicit order, DOM order, or
+ * registration order, rejecting ambiguous mixes of explicit orders.
+ */
 export function sortCollectionRecords<Key extends CollectionKey, Value>(
   records: ResolvedCollectionRecord<Key, Value>[],
 ): void {
