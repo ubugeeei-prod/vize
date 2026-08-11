@@ -103,6 +103,8 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     );
     assert.equal(artifact.seededMutation.states[1].divergence.summary.sharedCount, 1);
     assert.equal(artifact.seededMutation.states[1].divergence.shared[0].code, 2322);
+    assert.equal(artifact.seededMutation.states[1].divergence.shared[0].line, 3);
+    assert.equal(artifact.seededMutation.states[1].divergence.shared[0].column, 1);
     assert.equal(
       artifact.seededMutation.states[1].divergence.shared[0].file,
       ".vize-typecheck-parity-seed.vue",

@@ -8,15 +8,18 @@ import { runMeasured } from "./typecheck-process-run.mjs";
 
 const probeFile = ".vize-typecheck-parity-seed.vue";
 const configFile = ".vize-typecheck-parity-seed.tsconfig.json";
+// A standalone assignment anchors TS2322 to the authored identifier in both
+// native and JavaScript TypeScript instead of their different initializer spans.
 const cleanSource = [
   '<script lang="ts">',
-  'export const vizeParitySeed: string = "clean";',
+  'export let vizeParitySeed: string = "clean";',
+  'vizeParitySeed = "seed";',
   "export default {};",
   "</script>",
   "<template><div /></template>",
   "",
 ].join("\n");
-const brokenSource = cleanSource.replace('"clean"', "42");
+const brokenSource = cleanSource.replace('"seed"', "42");
 
 export function runSeededTypecheckMutation({ fixtureRoot, project, vizeBin, vueTscBin }) {
   const probePath = join(fixtureRoot, probeFile);
@@ -127,9 +130,20 @@ function validateStates(states, projectId) {
     summary.falsePositiveCount !== 0 ||
     summary.falseNegativeCount !== 0 ||
     broken.divergence.shared[0]?.code !== 2322 ||
+    broken.divergence.shared[0]?.line !== 3 ||
+    broken.divergence.shared[0]?.column !== 1 ||
     broken.divergence.shared[0]?.file !== probeFile
   ) {
-    throw new Error(`Seeded broken diagnostic did not match exactly for ${projectId}`);
+    throw new Error(
+      `Seeded broken diagnostic did not match exactly for ${projectId}: ` +
+        JSON.stringify({
+          summary,
+          shared: broken.divergence.shared,
+          falsePositives: broken.divergence.falsePositives,
+          falseNegatives: broken.divergence.falseNegatives,
+          messageMismatches: broken.divergence.messageMismatches,
+        }),
+    );
   }
   if (
     clean.sourceSha256 !== repaired.sourceSha256 ||

@@ -73,6 +73,8 @@ test("seeded clean broken repaired SFC is exact in Vize and vue-tsc", { skip }, 
     );
     assert.equal(evidence.states[1].divergence.summary.sharedCount, 1);
     assert.equal(evidence.states[1].divergence.shared[0].code, 2322);
+    assert.equal(evidence.states[1].divergence.shared[0].line, 3);
+    assert.equal(evidence.states[1].divergence.shared[0].column, 1);
     assert.equal(evidence.states[1].divergence.summary.falsePositiveCount, 0);
     assert.equal(evidence.states[1].divergence.summary.falseNegativeCount, 0);
     assert.equal(fs.existsSync(path.join(fixtureRoot, ".vize-typecheck-parity-seed.vue")), false);
