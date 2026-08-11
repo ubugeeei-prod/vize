@@ -215,6 +215,7 @@ impl PackageRouteResolver {
         state.last_reachability_packages = 0;
     }
 
+    #[cfg(feature = "native")]
     pub(crate) fn record_reachability_work(
         &mut self,
         files: usize,
