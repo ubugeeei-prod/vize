@@ -160,7 +160,7 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
-          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/node_modules/vue
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
         run: |
           cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
