@@ -56,6 +56,7 @@ pub(super) async fn definition_with_corsa(
                 corsa_support::map_canonical_materialized_module_location(&document, location)
             })
         })
+        .map(pin_to_module_origin)
         .collect::<Vec<_>>();
     mapped.sort_by(|left, right| {
         left.uri
@@ -69,6 +70,17 @@ pub(super) async fn definition_with_corsa(
         1 => Some(GotoDefinitionResponse::Scalar(mapped.pop()?)),
         _ => Some(GotoDefinitionResponse::Array(mapped)),
     }
+}
+
+/// A module specifier resolves to a *module*, not to a symbol inside it, so the
+/// answer is the file identity pinned to its origin. Native TypeScript reports
+/// the whole source file span for such a resolution, and forwarding that span
+/// would make the editor select the entire target file (#3893).
+#[cfg(feature = "native")]
+fn pin_to_module_origin(mut location: Location) -> Location {
+    let origin = Position::new(0, 0);
+    location.range = Range::new(origin, origin);
+    location
 }
 
 pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> {

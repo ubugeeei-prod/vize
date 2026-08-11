@@ -276,6 +276,27 @@ fn resolves_relative_declarations_and_rejects_package_escape() {
     );
 }
 
+/// Native TypeScript answers a module-specifier definition with the whole
+/// target file span. The editor contract is the module identity at its origin,
+/// so the mapped answer must collapse back to a zero-width range.
+#[cfg(feature = "native")]
+#[test]
+fn native_module_definitions_collapse_to_the_target_file_origin() {
+    use tower_lsp::lsp_types::{Location, Position, Range};
+
+    let uri = Url::parse("file:///pkg/dist/index.d.ts").unwrap();
+    let whole_file = Location {
+        uri: uri.clone(),
+        range: Range::new(Position::new(0, 0), Position::new(53, 0)),
+    };
+    let pinned = super::pin_to_module_origin(whole_file);
+    assert_eq!(pinned.uri, uri);
+    assert_eq!(
+        pinned.range,
+        Range::new(Position::new(0, 0), Position::new(0, 0))
+    );
+}
+
 fn write(path: &Path, content: &str) {
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(path, content).unwrap();
