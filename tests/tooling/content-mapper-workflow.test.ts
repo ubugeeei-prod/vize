@@ -3,7 +3,8 @@ import { test } from "node:test";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const UPSTREAM_SHA = "bddd2162710e50281fa838456a875fd59ee7c91f";
+const UPSTREAM_SHA = "c18f834e07d992a24cdfbb7cb8bd58812ff3d95e";
+const WATCHER_CLOSE_TEST = "TestWatcher_CloseWhileWatchFilesReconciles";
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
   const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
@@ -45,6 +46,9 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
   );
   assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
+  assert.ok(
+    job.includes(`go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`),
+  );
   assert.match(job, /go build -tags=noembed -trimpath -o "\$RUNNER_TEMP\/tsgo" \.\/cmd\/tsgo/);
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);
@@ -64,5 +68,7 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
-  assert.match(job, /cargo test -p vize_maestro/);
+  assert.match(job, /for iteration in \$\(seq 1 20\); do/);
+  assert.match(job, /cargo test -p vize_maestro -- --quiet/);
+  assert.match(job, /echo "Content Mapper Maestro lifecycle cycle \$iteration\/20 passed"/);
 });
