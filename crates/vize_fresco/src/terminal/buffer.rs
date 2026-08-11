@@ -1,9 +1,9 @@
 //! Double-buffered terminal buffer.
 
-use compact_str::ToCompactString;
+use unicode_segmentation::UnicodeSegmentation;
 
 use super::cell::{Cell, Style};
-use crate::layout::Rect;
+use crate::{layout::Rect, text::TextWidth};
 
 /// A buffer representing terminal content.
 ///
@@ -65,12 +65,14 @@ impl Buffer {
     }
 
     /// Clear a specific area of the buffer.
+    ///
+    /// A grapheme intersecting the area is cleared in full, including a
+    /// leading cell outside the area. This prevents partial wide glyphs from
+    /// surviving a clipped repaint.
     pub fn clear_area(&mut self, area: Rect) {
         for y in area.y..area.y.saturating_add(area.height) {
             for x in area.x..area.x.saturating_add(area.width) {
-                if let Some(cell) = self.get_mut(x, y) {
-                    cell.reset();
-                }
+                self.clear_grapheme_at(x, y);
             }
         }
     }
@@ -97,7 +99,10 @@ impl Buffer {
         self.index(x, y).map(|i| &mut self.cells[i])
     }
 
-    /// Set a cell at the given position.
+    /// Set a raw cell at the given position.
+    ///
+    /// Prefer [`set_string`](Self::set_string) for visible text. This low-level
+    /// operation intentionally does not repair adjacent continuation cells.
     #[inline]
     pub fn set(&mut self, x: u16, y: u16, cell: Cell) {
         if let Some(i) = self.index(x, y) {
@@ -107,58 +112,116 @@ impl Buffer {
 
     /// Set a character at the given position with optional style.
     pub fn set_char(&mut self, x: u16, y: u16, ch: char, style: Option<Style>) {
-        if let Some(cell) = self.get_mut(x, y) {
-            cell.set_symbol(ch.to_compact_string());
-            if let Some(s) = style {
-                cell.set_style(s);
+        let inherited_style = self.get(x, y).map_or_else(Style::new, |cell| cell.style);
+        let mut encoded = [0_u8; 4];
+        let text = ch.encode_utf8(&mut encoded);
+        self.set_string(x, y, text, style.unwrap_or(inherited_style));
+    }
+
+    /// Set a string starting at the given position, preserving grapheme clusters.
+    ///
+    /// Each extended grapheme cluster is stored intact in its leading cell;
+    /// any additional terminal columns are continuation cells. A cluster that
+    /// cannot fit is clipped atomically, so no partial glyph is written.
+    /// Returns the number of columns successfully written.
+    pub fn set_string(&mut self, x: u16, y: u16, text: &str, style: Style) -> u16 {
+        if y >= self.height || x >= self.width {
+            return 0;
+        }
+        let mut col = x;
+        if text.is_ascii() {
+            for byte in text.bytes() {
+                if byte.is_ascii_control() {
+                    continue;
+                }
+                let mut encoded = [0_u8; 4];
+                if !self.write_grapheme(
+                    col,
+                    y,
+                    char::from(byte).encode_utf8(&mut encoded),
+                    1,
+                    style,
+                ) {
+                    break;
+                }
+                col += 1;
             }
+        } else {
+            for grapheme in text.graphemes(true) {
+                let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
+                    break;
+                };
+                if width == 0 {
+                    continue;
+                }
+                if !self.write_grapheme(col, y, grapheme, width, style) {
+                    break;
+                }
+                col += width;
+            }
+        }
+        col.saturating_sub(x)
+    }
+
+    fn write_grapheme(&mut self, x: u16, y: u16, grapheme: &str, width: u16, style: Style) -> bool {
+        if width == 0 || y >= self.height || width > self.width.saturating_sub(x) {
+            return false;
+        }
+        self.clear_span(x, y, width);
+        let cell = self.get_mut(x, y).expect("validated grapheme origin");
+        cell.set_symbol(grapheme);
+        cell.set_style(style);
+        for offset in 1..width {
+            let continuation = self
+                .get_mut(x + offset, y)
+                .expect("validated grapheme continuation");
+            continuation.set_continuation();
+            continuation.set_style(style);
+        }
+        true
+    }
+
+    fn clear_span(&mut self, x: u16, y: u16, width: u16) {
+        for column in x..x.saturating_add(width).min(self.width) {
+            self.clear_grapheme_at(column, y);
         }
     }
 
-    /// Set a string starting at the given position.
-    /// Returns the number of columns used.
-    pub fn set_string(&mut self, x: u16, y: u16, text: &str, style: Style) -> u16 {
-        use unicode_width::UnicodeWidthChar;
-
-        let mut col = x;
-        for ch in text.chars() {
-            if col >= self.width {
-                break;
-            }
-
-            let width = ch.width().unwrap_or(0) as u16;
-            if width == 0 {
-                continue;
-            }
-
-            // Set the main character cell
-            if let Some(cell) = self.get_mut(col, y) {
-                cell.set_symbol(ch.to_compact_string());
-                cell.set_style(style);
-                cell.is_continuation = false;
-            }
-
-            // For wide characters, mark the next cell as continuation
-            if width > 1 {
-                for i in 1..width {
-                    if let Some(cell) = self.get_mut(col + i, y) {
-                        cell.set_continuation();
-                        cell.set_style(style);
-                    }
-                }
-            }
-
-            col += width;
+    fn clear_grapheme_at(&mut self, x: u16, y: u16) {
+        let Some(index) = self.index(x, y) else {
+            return;
+        };
+        let row_start = usize::from(y) * usize::from(self.width);
+        let row_end = row_start + usize::from(self.width);
+        let mut leader = index;
+        while leader > row_start && self.cells[leader].is_continuation {
+            leader -= 1;
         }
-
-        col.saturating_sub(x)
+        self.cells[leader].reset();
+        let mut continuation = leader + 1;
+        while continuation < row_end && self.cells[continuation].is_continuation {
+            self.cells[continuation].reset();
+            continuation += 1;
+        }
     }
 
     /// Fill a rectangular area with a character.
     pub fn fill(&mut self, area: Rect, ch: char, style: Style) {
+        self.clear_area(area);
+        let width = TextWidth::char_width(ch) as u16;
+        if width == 0 {
+            return;
+        }
+        let mut encoded = [0_u8; 4];
+        let grapheme = ch.encode_utf8(&mut encoded);
         for y in area.y..area.y.saturating_add(area.height) {
-            for x in area.x..area.x.saturating_add(area.width) {
-                self.set_char(x, y, ch, Some(style));
+            let end = area.x.saturating_add(area.width).min(self.width);
+            let mut x = area.x;
+            while width <= end.saturating_sub(x) {
+                if !self.write_grapheme(x, y, grapheme, width, style) {
+                    break;
+                }
+                x += width;
             }
         }
     }
@@ -200,12 +263,42 @@ impl Buffer {
     }
 
     /// Merge another buffer onto this one at the specified position.
+    ///
+    /// Complete source graphemes are copied atomically. A wide grapheme that
+    /// crosses the destination's right edge is skipped rather than truncated.
     pub fn merge(&mut self, other: &Buffer, x: u16, y: u16) {
         for oy in 0..other.height {
-            for ox in 0..other.width {
-                if let Some(cell) = other.get(ox, oy) {
-                    self.set(x + ox, y + oy, cell.clone());
+            let Some(destination_y) = y.checked_add(oy).filter(|row| *row < self.height) else {
+                continue;
+            };
+            let mut ox = 0;
+            while ox < other.width {
+                let cell = other.get(ox, oy).expect("source coordinate is in bounds");
+                if cell.is_continuation {
+                    ox += 1;
+                    continue;
                 }
+                let mut span = 1;
+                while ox + span < other.width
+                    && other
+                        .get(ox + span, oy)
+                        .is_some_and(|next| next.is_continuation)
+                {
+                    span += 1;
+                }
+                let Some(destination_x) = x.checked_add(ox) else {
+                    break;
+                };
+                if span <= self.width.saturating_sub(destination_x) {
+                    self.clear_span(destination_x, destination_y, span);
+                    for offset in 0..span {
+                        let source = other
+                            .get(ox + offset, oy)
+                            .expect("validated source grapheme span");
+                        self.set(destination_x + offset, destination_y, source.clone());
+                    }
+                }
+                ox += span;
             }
         }
     }
@@ -218,65 +311,5 @@ impl Default for Buffer {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::Buffer;
-    use crate::terminal::cell::{Cell, Style};
-
-    #[test]
-    fn test_buffer_new() {
-        let buf = Buffer::new(80, 24);
-        assert_eq!(buf.width(), 80);
-        assert_eq!(buf.height(), 24);
-    }
-
-    #[test]
-    fn test_buffer_set_get() {
-        let mut buf = Buffer::new(10, 10);
-        let cell = Cell::new("A");
-        buf.set(5, 5, cell.clone());
-        assert_eq!(buf.get(5, 5).map(|c| c.symbol.as_str()), Some("A"));
-    }
-
-    #[test]
-    fn test_buffer_set_string() {
-        let mut buf = Buffer::new(20, 1);
-        let cols = buf.set_string(0, 0, "Hello", Style::new());
-        assert_eq!(cols, 5);
-        assert_eq!(buf.get(0, 0).map(|c| c.symbol.as_str()), Some("H"));
-        assert_eq!(buf.get(4, 0).map(|c| c.symbol.as_str()), Some("o"));
-    }
-
-    #[test]
-    fn test_buffer_wide_char() {
-        let mut buf = Buffer::new(20, 1);
-        let cols = buf.set_string(0, 0, "あ", Style::new()); // Wide char
-        assert_eq!(cols, 2);
-        assert_eq!(buf.get(0, 0).map(|c| c.symbol.as_str()), Some("あ"));
-        assert!(buf.get(1, 0).map(|c| c.is_continuation).unwrap_or(false));
-    }
-
-    #[test]
-    fn test_buffer_diff() {
-        let mut buf1 = Buffer::new(5, 1);
-        let mut buf2 = Buffer::new(5, 1);
-
-        buf1.set_char(0, 0, 'A', None);
-        buf2.set_char(0, 0, 'B', None);
-
-        let diffs: Vec<_> = buf1.diff(&buf2).collect();
-        assert_eq!(diffs.len(), 1);
-        assert_eq!(diffs[0].0, 0);
-        assert_eq!(diffs[0].1, 0);
-    }
-
-    #[test]
-    fn test_buffer_resize() {
-        let mut buf = Buffer::new(10, 10);
-        buf.set_char(5, 5, 'X', None);
-        buf.resize(20, 20);
-        assert_eq!(buf.width(), 20);
-        assert_eq!(buf.height(), 20);
-        // Content should be cleared
-        assert_eq!(buf.get(5, 5).map(|c| c.symbol.as_str()), Some(" "));
-    }
-}
+#[path = "buffer_tests.rs"]
+mod tests;

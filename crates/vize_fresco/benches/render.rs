@@ -36,6 +36,18 @@ fn benchmark_buffer_set_string(c: &mut Criterion) {
     });
 }
 
+fn benchmark_buffer_ascii_line(c: &mut Criterion) {
+    const ASCII_LINE: &str =
+        "01234567890123456789012345678901234567890123456789012345678901234567890123456789";
+    let mut buffer = Buffer::new(80, 1);
+    let mut group = c.benchmark_group("buffer_set_string_ascii_line");
+    group.throughput(Throughput::Bytes(ASCII_LINE.len() as u64));
+    group.bench_function("80_columns", |b| {
+        b.iter(|| buffer.set_string(0, 0, black_box(ASCII_LINE), Style::new()));
+    });
+    group.finish();
+}
+
 fn benchmark_text_width(c: &mut Criterion) {
     c.bench_function("text_width_ascii", |b| {
         b.iter(|| TextWidth::width(black_box("Hello, World! This is a test string.")));
@@ -293,6 +305,7 @@ fn benchmark_diagnostic_presentation(c: &mut Criterion) {
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
+    benchmark_buffer_ascii_line,
     benchmark_text_width,
     benchmark_text_wrap,
     benchmark_layout,

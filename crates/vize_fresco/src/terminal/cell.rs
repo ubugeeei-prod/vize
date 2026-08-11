@@ -193,13 +193,12 @@ impl From<Color> for crossterm::style::Color {
 /// A single cell in the terminal buffer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cell {
-    /// The character(s) displayed in this cell.
-    /// May be empty (space) or contain multi-byte Unicode.
+    /// The complete extended grapheme cluster displayed in this cell.
+    /// May be an empty continuation marker, a space, or multi-scalar Unicode.
     pub symbol: CompactString,
     /// The style of this cell.
     pub style: Style,
-    /// Whether this is a wide character continuation cell.
-    /// Wide characters (e.g., CJK) span 2 cells.
+    /// Whether this cell continues the preceding multi-column grapheme.
     pub is_continuation: bool,
 }
 

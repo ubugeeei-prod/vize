@@ -121,7 +121,8 @@ fn cell_snapshot_preserves_wide_cells_style_and_visual_rows() {
         snapshot.cell(0, 0).unwrap().style,
         Style::new().fg(Color::LightCyan).bold()
     );
-    assert!(snapshot.row_text(0).unwrap().starts_with("診断🧭e"));
+    assert!(snapshot.row_text(0).unwrap().starts_with("診断🧭e\u{301}"));
+    assert_eq!(snapshot.cell(6, 0).unwrap().symbol, "e\u{301}");
     assert!(snapshot.row_text(1).unwrap().starts_with("92 / 100"));
     assert_eq!(snapshot.row_text(4), None);
     assert_eq!(snapshot.screen_text().lines().count(), 4);

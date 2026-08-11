@@ -13,6 +13,8 @@ mod lifecycle;
 mod output;
 
 #[cfg(test)]
+mod grapheme_tests;
+#[cfg(test)]
 mod lifecycle_tests;
 #[cfg(test)]
 mod tests;
