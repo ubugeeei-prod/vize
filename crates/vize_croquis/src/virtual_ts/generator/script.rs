@@ -165,12 +165,17 @@ impl VirtualTsGenerator {
     pub(crate) fn emit_module_imports(&mut self, content: &str, from_file: Option<&Path>) {
         self.write_line("// Module-level imports");
 
-        for line in content.lines() {
-            let trimmed = line.trim();
-            if trimmed.starts_with("import ") {
-                let resolved_line = self.resolve_import_line(line, from_file);
-                self.write_line(&resolved_line);
-            }
+        let lines: Vec<&str> = content.lines().collect();
+        let mut index = 0;
+        while index < lines.len() {
+            let Some(end) = import_statement_end(&lines, index) else {
+                index += 1;
+                continue;
+            };
+            let statement = join_statement_lines(&lines[index..=end]);
+            let resolved_line = self.resolve_import_line(&statement, from_file);
+            self.write_line(&resolved_line);
+            index = end + 1;
         }
         self.write_line("");
     }
@@ -355,13 +360,17 @@ impl VirtualTsGenerator {
     /// Emit the setup body (script content minus imports).
     pub(crate) fn emit_setup_body(&mut self, content: &str) {
         self.emit_line("// User setup code");
-        for line in content.lines() {
-            let trimmed = line.trim();
-            // Skip import statements (already emitted at module level)
-            if trimmed.starts_with("import ") {
+        let lines: Vec<&str> = content.lines().collect();
+        let mut index = 0;
+        while index < lines.len() {
+            // Skip import statements (already emitted at module level),
+            // including the continuation lines of a wrapped import.
+            if let Some(end) = import_statement_end(&lines, index) {
+                index = end + 1;
                 continue;
             }
-            self.emit_line(line);
+            self.emit_line(lines[index]);
+            index += 1;
         }
     }
 
@@ -429,6 +438,118 @@ impl VirtualTsGenerator {
     }
 }
 
+/// Report the last line index of the import statement starting at `start`.
+///
+/// Script content is processed line by line, so a wrapped import such as
+/// `import {\n  a,\n} from "./x.ts";` must be recognized as one statement.
+/// Emitting only its first line at module scope would leave the remaining
+/// lines inside the setup body, making the virtual TypeScript unparseable and
+/// erasing every type the file declares.
+///
+/// Continuation lines are only consumed while the named-binding braces stay
+/// open, so a line that merely looks like an import can never swallow the rest
+/// of the script.
+///
+/// Returns `None` when the line does not begin an import statement.
+fn import_statement_end(lines: &[&str], start: usize) -> Option<usize> {
+    if !lines.get(start)?.trim().starts_with("import ") {
+        return None;
+    }
+
+    let mut statement = String::with_capacity(128);
+    for (offset, line) in lines[start..].iter().enumerate() {
+        if offset > 0 {
+            statement.push(' ');
+        }
+        statement.push_str(line.trim());
+
+        let state = scan_import_statement(&statement);
+        if state.is_complete() || !state.is_open() {
+            return Some(start + offset);
+        }
+    }
+
+    Some(start)
+}
+
+/// Join the lines of one import statement into a single logical line.
+fn join_statement_lines(lines: &[&str]) -> String {
+    if let [line] = lines {
+        return line.to_compact_string();
+    }
+
+    let mut statement = String::with_capacity(128);
+    for (offset, line) in lines.iter().enumerate() {
+        if offset > 0 {
+            statement.push(' ');
+        }
+        statement.push_str(line.trim());
+    }
+    statement
+}
+
+/// Brace, string, and specifier state of an accumulated import statement.
+struct ImportStatementState {
+    /// Unbalanced `{` count of the named-binding clause.
+    depth: i32,
+    /// Whether a string literal is still open.
+    quote_open: bool,
+    /// Whether a closed quoted module specifier has been seen.
+    has_specifier: bool,
+}
+
+impl ImportStatementState {
+    /// A statement is complete once its braces balance, no string stays open,
+    /// and a quoted module specifier has been seen.
+    fn is_complete(&self) -> bool {
+        !self.quote_open && self.depth <= 0 && self.has_specifier
+    }
+
+    /// A statement continues onto the next line only while its named-binding
+    /// clause is still open.
+    fn is_open(&self) -> bool {
+        !self.quote_open && self.depth > 0
+    }
+}
+
+/// Scan an accumulated import statement for brace and string state.
+fn scan_import_statement(statement: &str) -> ImportStatementState {
+    let bytes = statement.as_bytes();
+    let mut depth: i32 = 0;
+    let mut quote: Option<u8> = None;
+    let mut has_specifier = false;
+    let mut index = 0;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        match quote {
+            Some(open) => {
+                if byte == b'\\' {
+                    index += 2;
+                    continue;
+                }
+                if byte == open {
+                    quote = None;
+                    has_specifier = true;
+                }
+            }
+            None => match byte {
+                b'"' | b'\'' | b'`' => quote = Some(byte),
+                b'{' => depth += 1,
+                b'}' => depth -= 1,
+                _ => {}
+            },
+        }
+        index += 1;
+    }
+
+    ImportStatementState {
+        depth,
+        quote_open: quote.is_some(),
+        has_specifier,
+    }
+}
+
 /// Find a relative `from "./..."` import range with a byte scanner.
 ///
 /// Script virtual-TS generation calls this for every import-looking line. A
@@ -484,10 +605,55 @@ fn find_relative_import_from_range(line: &str) -> Option<(usize, usize, usize, u
 
 #[cfg(test)]
 mod tests {
-    use super::find_relative_import_from_range;
+    use super::{find_relative_import_from_range, import_statement_end, join_statement_lines};
 
     fn relative_path(line: &str) -> Option<&str> {
         find_relative_import_from_range(line).map(|(_, start, end, _)| &line[start..end])
+    }
+
+    fn statement_end(content: &str) -> Option<usize> {
+        let lines: Vec<&str> = content.lines().collect();
+        import_statement_end(&lines, 0)
+    }
+
+    #[test]
+    fn groups_wrapped_named_imports_into_one_statement() {
+        let content =
+            "import {\n  createScope,\n  provideScope,\n} from \"./scope.ts\";\nconst a = 1;";
+        assert_eq!(statement_end(content), Some(3));
+
+        let lines: Vec<&str> = content.lines().collect();
+        assert_eq!(
+            join_statement_lines(&lines[0..=3]),
+            "import { createScope, provideScope, } from \"./scope.ts\";"
+        );
+    }
+
+    #[test]
+    fn keeps_single_line_imports_untouched() {
+        let content = "import { ref } from 'vue';\nconst a = 1;";
+        assert_eq!(statement_end(content), Some(0));
+
+        let lines: Vec<&str> = content.lines().collect();
+        assert_eq!(
+            join_statement_lines(&lines[0..=0]),
+            "import { ref } from 'vue';"
+        );
+    }
+
+    #[test]
+    fn ignores_lines_that_do_not_start_an_import() {
+        assert_eq!(
+            statement_end("const a = 1;\nimport { ref } from 'vue';"),
+            None
+        );
+    }
+
+    #[test]
+    fn never_consumes_beyond_an_unclosed_import_like_line() {
+        // A stray `import`-looking line must not swallow the rest of the body.
+        let content = "import foo\nconst a = 1;\nconst b = 2;";
+        assert_eq!(statement_end(content), Some(0));
     }
 
     #[test]
