@@ -77,6 +77,7 @@ const familySignatures = Object.freeze({
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
   focus: /VIZE_UI_FOCUS_DISPOSED/,
   "focus-scope": /VIZE_UI_FOCUS_SCOPE_DISPOSED/,
+  "focus-guards": /VIZE_UI_FOCUS_GUARDS_DISPOSED/,
   hover: /VIZE_UI_HOVER_DISPOSED/,
   "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
   move: /VIZE_UI_MOVE_DISPOSED/,
@@ -147,6 +148,12 @@ const componentCases = [
     family: "focus-scope",
     exportName: "createFocusScope",
     maximumJavaScriptGzipBytes: 4_050,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "focus-guards",
+    exportName: "createFocusGuards",
+    maximumJavaScriptGzipBytes: 3_500,
     maximumCssGzipBytes: 0,
   },
   {

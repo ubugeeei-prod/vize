@@ -1,6 +1,23 @@
 /** Headless component fixtures compiled by every supported renderer lane. */
 export const rendererFixtures = [
   {
+    filename: "FocusGuardsConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { focusGuardPreset, useFocusGuards } from "./focus-guards.ts";
+
+const root = ref<HTMLElement | null>(null);
+const guards = useFocusGuards({ root });
+</script>
+
+<template>
+  <span v-bind="guards.beforeProps" :style="focusGuardPreset"></span>
+  <div ref="root"><button type="button">Inside</button></div>
+  <span v-bind="guards.afterProps" :style="focusGuardPreset"></span>
+</template>
+`,
+  },
+  {
     filename: "ScrollLockConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { onMounted, ref } from "vue";

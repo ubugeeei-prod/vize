@@ -89,6 +89,11 @@
       "import": "./dist/focus-scope.mjs",
       "default": "./dist/focus-scope.mjs"
     },
+    "./focus-guards": {
+      "types": "./dist/focus-guards.d.mts",
+      "import": "./dist/focus-guards.mjs",
+      "default": "./dist/focus-guards.mjs"
+    },
     "./hover": {
       "types": "./dist/hover.d.mts",
       "import": "./dist/hover.mjs",

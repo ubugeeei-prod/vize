@@ -9,6 +9,7 @@ export * from "./inert-outside.ts";
 export * from "./interaction-modality.ts";
 export * from "./focus.ts";
 export * from "./focus-scope.ts";
+export * from "./focus-guards.ts";
 export * from "./hover.ts";
 export * from "./long-press.ts";
 export * from "./move.ts";
