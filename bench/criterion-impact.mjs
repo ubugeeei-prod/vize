@@ -14,6 +14,7 @@ const FULL_SWEEP_PATHS = new Set([
   "bench/criterion-ab.mjs",
   "bench/criterion-baselines.mjs",
   "bench/criterion-impact.mjs",
+  "bench/criterion-summary.mjs",
   "bench/dialect-guard.mjs",
   "bench/generate.mjs",
   "rust-toolchain.toml",
