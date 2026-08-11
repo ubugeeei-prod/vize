@@ -160,7 +160,10 @@ pub(super) fn publish_config_atomically_with_hook(
     }
     sync_directory(directory)?;
     verify_published_config(path, content)?;
-    publication_lock.unlock()
+    // The publication succeeded: the lock is released by the guard's drop, so a
+    // failed explicit unlock must not report a published config as an error.
+    let _ = publication_lock.unlock();
+    Ok(())
 }
 
 fn publication_lock(directory: &Path) -> Result<fs::File, std::io::Error> {
@@ -204,18 +207,13 @@ fn cleanup_abandoned_pending(directory: &Path) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-#[cfg(unix)]
-fn pending_is_abandoned(_path: &Path, pid: u64) -> bool {
-    !process_is_running(pid)
-}
-
-#[cfg(windows)]
-fn pending_is_abandoned(_path: &Path, pid: u64) -> bool {
+#[cfg(any(unix, windows))]
+fn pending_is_abandoned(_path: &Path, pid: u32) -> bool {
     !process_is_running(pid)
 }
 
 #[cfg(not(any(unix, windows)))]
-fn pending_is_abandoned(path: &Path, _pid: u64) -> bool {
+fn pending_is_abandoned(path: &Path, _pid: u32) -> bool {
     const SAFE_STALE_AGE: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
     path.metadata()
         .and_then(|metadata| metadata.modified())
@@ -224,7 +222,7 @@ fn pending_is_abandoned(path: &Path, _pid: u64) -> bool {
         .is_some_and(|age| age >= SAFE_STALE_AGE)
 }
 
-fn pending_owner_pid(name: &str) -> Option<u64> {
+fn pending_owner_pid(name: &str) -> Option<u32> {
     let owner = name.strip_prefix(".vize-nuxt-config-")?;
     let (pid, tail) = owner.split_once('-')?;
     tail.ends_with(".pending")
@@ -233,8 +231,8 @@ fn pending_owner_pid(name: &str) -> Option<u64> {
 }
 
 #[cfg(unix)]
-fn process_is_running(pid: u64) -> bool {
-    if pid == 0 || pid > i32::MAX as u64 {
+pub(super) fn process_is_running(pid: u32) -> bool {
+    if pid == 0 || pid > i32::MAX as u32 {
         return false;
     }
     // SAFETY: signal 0 only checks whether the owner process still exists.
@@ -243,8 +241,8 @@ fn process_is_running(pid: u64) -> bool {
 }
 
 #[cfg(windows)]
-fn process_is_running(pid: u64) -> bool {
-    if pid == 0 || pid > u32::MAX as u64 {
+pub(super) fn process_is_running(pid: u32) -> bool {
+    if pid == 0 {
         return false;
     }
     type Handle = *mut std::ffi::c_void;
@@ -257,7 +255,7 @@ fn process_is_running(pid: u64) -> bool {
     }
     // SAFETY: the API receives a validated PID and the returned handle is
     // closed below. A process we cannot query is conservatively retained.
-    let handle = unsafe { OpenProcess(SYNCHRONIZE, 0, pid as u32) };
+    let handle = unsafe { OpenProcess(SYNCHRONIZE, 0, pid) };
     if handle.is_null() {
         return std::io::Error::last_os_error().raw_os_error() != Some(87);
     }

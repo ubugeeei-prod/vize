@@ -18,9 +18,7 @@ mod unix {
     };
 
     use super::{
-        barrier::{
-            create_phase_barrier, describe_output, release, wait_until_both_configs_are_prepared,
-        },
+        barrier::{await_phase, create_phase_barrier, release},
         corsa_requirement,
         environment::{required_iterations, resolve_test_corsa_path, workspace_node_modules},
     };
@@ -51,40 +49,11 @@ mod unix {
             let bravo_child = check_command(&bravo, &corsa_path, &barrier, "bravo", false, 2)
                 .spawn()
                 .unwrap();
-            let mut alpha_child = alpha_child;
-            let mut bravo_child = bravo_child;
-            if let Err(reason) = wait_until_both_configs_are_prepared(
-                &prepared_barrier,
-                &mut alpha_child,
-                &mut bravo_child,
-            ) {
-                let _ = alpha_child.kill();
-                let _ = bravo_child.kill();
-                let alpha_output = alpha_child.wait_with_output().unwrap();
-                let bravo_output = bravo_child.wait_with_output().unwrap();
-                panic!(
-                    "{reason}\n{}\n{}",
-                    describe_output("alpha", &alpha_output),
-                    describe_output("bravo", &bravo_output)
-                );
-            }
+            let (alpha_child, bravo_child) =
+                await_phase(&prepared_barrier, alpha_child, bravo_child);
             release(&prepared_barrier, "alpha");
             release(&prepared_barrier, "bravo");
-            if let Err(reason) = wait_until_both_configs_are_prepared(
-                &active_barrier,
-                &mut alpha_child,
-                &mut bravo_child,
-            ) {
-                let _ = alpha_child.kill();
-                let _ = bravo_child.kill();
-                let alpha_output = alpha_child.wait_with_output().unwrap();
-                let bravo_output = bravo_child.wait_with_output().unwrap();
-                panic!(
-                    "{reason}\n{}\n{}",
-                    describe_output("alpha", &alpha_output),
-                    describe_output("bravo", &bravo_output)
-                );
-            }
+            let (alpha_child, bravo_child) = await_phase(&active_barrier, alpha_child, bravo_child);
             if iteration + 1 == iterations {
                 release(&active_barrier, "alpha");
                 assert_clean(alpha_child.wait_with_output().unwrap(), "alpha", iteration);

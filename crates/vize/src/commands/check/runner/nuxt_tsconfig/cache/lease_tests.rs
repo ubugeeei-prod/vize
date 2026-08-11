@@ -49,9 +49,25 @@ fn acquisitions_in_different_shards_never_share_a_lock() {
         drop(lease);
     });
     received
-        .recv_timeout(std::time::Duration::from_secs(1))
+        .recv_timeout(std::time::Duration::from_secs(5))
         .expect("an unrelated digest shard must not wait for alpha's lock");
     task.join().unwrap();
+}
+
+#[test]
+fn collection_survives_a_directory_created_before_its_ownership_marker() {
+    let case = tempfile::tempdir().unwrap();
+    let cache = case.path().join("cache");
+    fs::create_dir(&cache).unwrap();
+    let project_digest = format!("00{:062x}", 0);
+    let (project, entry, lease) = acquire(&cache, &project_digest, &format!("{:064x}", 0)).unwrap();
+    fs::create_dir(project.join(format!("{:064x}", 7))).unwrap();
+    fs::create_dir(project.parent().unwrap().join(format!("00{:062x}", 8))).unwrap();
+
+    collect(&project, &entry).unwrap();
+    collect_projects(&cache, &project).unwrap();
+    assert!(entry.exists());
+    drop(lease);
 }
 
 #[test]

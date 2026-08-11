@@ -15,7 +15,24 @@ pub(super) fn create_phase_barrier(path: &Path) {
     create_fifo(&path.join("release-bravo"));
 }
 
-pub(super) fn wait_until_both_configs_are_prepared(
+/// Waits for both checkers to reach `barrier`, reporting their output when the
+/// phase does not complete. The children are returned for the next phase.
+pub(super) fn await_phase(barrier: &Path, mut alpha: Child, mut bravo: Child) -> (Child, Child) {
+    let Err(reason) = wait_until_both_configs_are_prepared(barrier, &mut alpha, &mut bravo) else {
+        return (alpha, bravo);
+    };
+    let _ = alpha.kill();
+    let _ = bravo.kill();
+    let alpha_output = alpha.wait_with_output().unwrap();
+    let bravo_output = bravo.wait_with_output().unwrap();
+    panic!(
+        "{reason}\n{}\n{}",
+        describe_output("alpha", &alpha_output),
+        describe_output("bravo", &bravo_output)
+    );
+}
+
+fn wait_until_both_configs_are_prepared(
     barrier: &Path,
     alpha: &mut Child,
     bravo: &mut Child,
@@ -77,7 +94,7 @@ pub(super) fn release(barrier: &Path, participant: &str) {
         .unwrap();
 }
 
-pub(super) fn describe_output(name: &str, output: &Output) -> String {
+fn describe_output(name: &str, output: &Output) -> String {
     format!(
         "{name} status={}\nstdout:\n{}\nstderr:\n{}",
         output.status,

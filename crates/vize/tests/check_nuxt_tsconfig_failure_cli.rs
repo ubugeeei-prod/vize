@@ -9,7 +9,7 @@ mod unix {
         os::unix::ffi::OsStrExt,
         path::{Path, PathBuf},
         process::{Command, Stdio},
-        sync::{Mutex, MutexGuard, OnceLock},
+        sync::{Mutex, MutexGuard, OnceLock, PoisonError},
         time::{Duration, Instant},
     };
 
@@ -208,9 +208,14 @@ mod unix {
             .stderr(Stdio::piped())
             .spawn()
             .unwrap();
+        let ready = barrier.join("ready");
+        assert!(
+            fs::symlink_metadata(&ready).unwrap().is_file(),
+            "this barrier polls the length of a regular file the checker writes one byte to"
+        );
         let deadline = Instant::now() + Duration::from_secs(30);
         loop {
-            if fs::metadata(barrier.join("ready")).unwrap().len() == 1 {
+            if fs::metadata(&ready).unwrap().len() == 1 {
                 break;
             }
             assert!(
@@ -311,7 +316,9 @@ mod unix {
 
     fn failure_test_lock() -> MutexGuard<'static, ()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
+        LOCK.get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
     }
 
     fn resolve_test_corsa_path() -> Option<PathBuf> {
