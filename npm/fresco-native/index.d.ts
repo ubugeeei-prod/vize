@@ -78,6 +78,17 @@ export interface FlexStyleNapi {
 /** Flush the terminal buffer. */
 export declare function flushTerminal(): void
 
+/** Flush the terminal buffer and return exact presentation telemetry. */
+export declare function flushTerminalMeasured(): FrameOutputTelemetryNapi
+
+/** Exact output cost of one NAPI-driven terminal frame. */
+export interface FrameOutputTelemetryNapi {
+  /** Cells differing from the previous frame, including wide continuations. */
+  changedCells: bigint
+  /** Bytes accepted by the configured terminal writer. */
+  bytesWritten: bigint
+}
+
 /** Get all layout results. */
 export declare function getAllLayouts(): Array<LayoutResultNapi>
 
