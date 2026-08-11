@@ -155,7 +155,10 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:vue": task("cargo test -p vize_test_runner", { input: cacheInputs.rust }),
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
   "coverage:all": noCacheTask(runTasks("coverage", "coverage:source")),
-  "coverage:source": task(rustSourceCoverageCommand, { input: cacheInputs.rust }),
+  "coverage:source": task(rustSourceCoverageCommand, {
+    env: ["VIZE_NUXT_CONFIG_ITERATIONS"],
+    input: cacheInputs.rust,
+  }),
   "coverage:source:branch": task(rustBranchCoverageCommand, { input: cacheInputs.rust }),
   "coverage:verbose": task("cargo run -p vize_test_runner --bin coverage -- -v", {
     input: cacheInputs.rust,
