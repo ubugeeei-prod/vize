@@ -283,5 +283,3 @@ export function createCollectionRegistry<Key extends CollectionKey, Value>(
   if (getCurrentScope() !== undefined) onScopeDispose(dispose);
   return registry;
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize

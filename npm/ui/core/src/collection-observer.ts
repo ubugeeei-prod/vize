@@ -74,5 +74,3 @@ function findCollectionObservationRoot(elements: readonly Element[]): Node | nul
   }
   return null;
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize

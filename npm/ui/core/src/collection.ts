@@ -14,5 +14,3 @@ export type {
   CollectionRegistryOptions,
   CollectionTextSearchOptions,
 } from "./collection-types.ts";
-</content>
-<parameter name="environment">ubugeeei-prod/vize

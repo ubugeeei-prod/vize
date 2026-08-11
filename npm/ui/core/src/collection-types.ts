@@ -211,5 +211,3 @@ export interface CollectionRegistry<Key extends CollectionKey, Value> {
   /** Stop observation, clear items, and reject future mutations. */
   readonly dispose: () => boolean;
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize

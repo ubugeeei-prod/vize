@@ -92,5 +92,3 @@ function isCollectionTextHidden(element: Element): boolean {
     element.getAttribute("aria-hidden")?.trim().toLowerCase() === "true"
   );
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize

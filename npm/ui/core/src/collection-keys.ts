@@ -59,5 +59,3 @@ function containsAsciiControl(value: string): boolean {
   }
   return false;
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize

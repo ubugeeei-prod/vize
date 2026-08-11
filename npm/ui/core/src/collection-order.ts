@@ -108,5 +108,3 @@ export function sortCollectionRecords<Key extends CollectionKey, Value>(
     return left.sequence - right.sequence;
   });
 }
-</content>
-<parameter name="environment">ubugeeei-prod/vize
