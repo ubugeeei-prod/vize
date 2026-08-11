@@ -1,14 +1,38 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { parse } from "yaml";
+
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const UPSTREAM_SHA = "c18f834e07d992a24cdfbb7cb8bd58812ff3d95e";
 const WATCHER_CLOSE_TEST = "TestWatcher_CloseWhileWatchFilesReconciles";
+const WATCHER_COMMAND = `go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`;
+const TSGO_BUILD_COMMAND = 'go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsgo';
+const MAESTRO_COMMAND = "cargo test -p vize_maestro -- --quiet";
+const MAESTRO_LOOP = "for iteration in $(seq 1 20); do";
+const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $iteration/20 passed"';
+
+interface WorkflowStep {
+  run?: string;
+  "working-directory"?: string;
+}
+
+function jobSteps(workflow: string, jobName: string): WorkflowStep[] {
+  const jobs = (parse(workflow) as { jobs: Record<string, { steps?: WorkflowStep[] }> }).jobs;
+  const steps = jobs[jobName]?.steps;
+  assert.ok(Array.isArray(steps), `missing steps for job ${jobName}`);
+  return steps;
+}
+
+function stepsRunning(steps: WorkflowStep[], command: string): number[] {
+  return steps.flatMap((step, index) => (step.run?.includes(command) ? [index] : []));
+}
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {
   const workflow = readRepoFile(".github", "workflows", "content-mapper-conformance.yml");
   const job = workflowJobBody(workflow, "exact-tsgo-project");
+  const steps = jobSteps(workflow, "exact-tsgo-project");
 
   assert.match(workflow, /pull_request:\n\s+branches: \[main\]\n\s+paths:/);
   for (const relevantPath of [
@@ -46,10 +70,15 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     /uses: \.\/\.github\/actions\/setup-rust-sticky-cache\n\s+with:\n\s+key: content-mapper-conformance\n\s+cache-key-suffix: \$\{\{ runner\.os \}\}-\$\{\{ runner\.arch \}\}/,
   );
   assert.match(job, /go-version-file: typescript-go-content-mapper\/go\.mod/);
+  const watcherSteps = stepsRunning(steps, WATCHER_COMMAND);
+  const buildSteps = stepsRunning(steps, TSGO_BUILD_COMMAND);
+  assert.equal(watcherSteps.length, 1, "expected exactly one watcher regression step");
+  assert.equal(buildSteps.length, 1, "expected exactly one exact tsgo build step");
+  assert.equal(steps[watcherSteps[0]]["working-directory"], "typescript-go-content-mapper");
   assert.ok(
-    job.includes(`go test ./internal/lsp/lspwatcher -run '^${WATCHER_CLOSE_TEST}$' -count=1`),
+    watcherSteps[0] < buildSteps[0],
+    "watcher regression must run before the exact tsgo build",
   );
-  assert.match(job, /go build -tags=noembed -trimpath -o "\$RUNNER_TEMP\/tsgo" \.\/cmd\/tsgo/);
   assert.match(job, /cp internal\/bundled\/libs\/\*\.d\.ts "\$RUNNER_TEMP\/"/);
   assert.match(job, /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(
@@ -68,7 +97,15 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   );
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
   assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
-  assert.match(job, /for iteration in \$\(seq 1 20\); do/);
-  assert.match(job, /cargo test -p vize_maestro -- --quiet/);
-  assert.match(job, /echo "Content Mapper Maestro lifecycle cycle \$iteration\/20 passed"/);
+  const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
+  assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");
+  const stressRun = steps[stressSteps[0]].run ?? "";
+  const loopStart = stressRun.indexOf(MAESTRO_LOOP);
+  assert.ok(loopStart >= 0, "Maestro stress step must run a 20-iteration loop");
+  const maestroRun = stressRun.indexOf(MAESTRO_COMMAND);
+  const successLog = stressRun.indexOf(MAESTRO_SUCCESS_LOG);
+  const loopEnd = stressRun.slice(loopStart).search(/^\s*done\s*$/m) + loopStart;
+  assert.ok(loopStart < maestroRun, "Maestro command must run inside the loop");
+  assert.ok(maestroRun < successLog, "success log must follow the Maestro command");
+  assert.ok(successLog < loopEnd, "success log must run inside the same loop");
 });
