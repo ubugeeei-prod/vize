@@ -92,12 +92,13 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
-    "pretest": "vp pack && pnpm check:size",
+    "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
+    "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
     "test": "vp test run",
     "check": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "check:size": "node scripts/check-size.mjs",
+    "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "devDependencies": {
