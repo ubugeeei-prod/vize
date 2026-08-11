@@ -5,7 +5,7 @@ use std::io;
 
 use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
-use vize_fresco::component::{VirtualListNavigation, VirtualListState};
+use vize_fresco::component::{DiagnosticWorkspaceState, VirtualListNavigation, VirtualListState};
 use vize_fresco::layout::{FlexStyle, LayoutEngine};
 use vize_fresco::terminal::{Backend, Buffer, Style};
 use vize_fresco::text::{TextWidth, TextWrap, WrapMode};
@@ -167,6 +167,35 @@ fn benchmark_injected_backend_output(c: &mut Criterion) {
     });
 }
 
+fn benchmark_diagnostic_workspace(c: &mut Criterion) {
+    let keys = (0_u64..10_000).collect::<Vec<_>>();
+    let mut workspace = DiagnosticWorkspaceState::<u64, u64>::new(120, 40);
+    let _ = workspace.reconcile_findings(&keys);
+    let _ = workspace.select_finding(&keys, 9_000);
+    let mut group = c.benchmark_group("diagnostic_workspace_10k");
+
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("navigation", |b| {
+        b.iter(|| {
+            if workspace.findings().selected_index() == Some(keys.len() - 1) {
+                let _ = workspace.navigate_findings(&keys, VirtualListNavigation::First);
+            }
+            black_box(workspace.navigate_findings(black_box(&keys), VirtualListNavigation::Next))
+        });
+    });
+    let mut narrow = false;
+    group.bench_function("responsive_resize", |b| {
+        b.iter(|| {
+            narrow = !narrow;
+            black_box(workspace.resize(if narrow { 60 } else { 120 }, 40))
+        });
+    });
+    group.bench_function("virtual_window", |b| {
+        b.iter(|| black_box(workspace.finding_window()));
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -176,5 +205,6 @@ criterion_group!(
     benchmark_buffer_diff,
     benchmark_virtual_list,
     benchmark_injected_backend_output,
+    benchmark_diagnostic_workspace,
 );
 criterion_main!(benches);

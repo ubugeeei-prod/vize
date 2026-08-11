@@ -14,6 +14,7 @@
 //! - **Flexbox Layout**: Layout engine powered by taffy
 //! - **CJK Support**: Full Unicode text handling including Japanese IME
 //! - **Efficient Rendering**: Double-buffered differential rendering
+//! - **Diagnostic Workspaces**: Stable, virtualized master-detail navigation
 //!
 //! # Architecture
 //!
@@ -63,7 +64,9 @@ pub mod napi;
 
 // Re-exports for convenience
 pub use component::{
-    BoxNode, InputNode, TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+    BoxNode, DiagnosticWorkspaceFocus, DiagnosticWorkspaceLayout, DiagnosticWorkspaceMode,
+    DiagnosticWorkspaceOptions, DiagnosticWorkspacePane, DiagnosticWorkspaceState, InputNode,
+    TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
 };
 pub use input::{Event, ImeState, KeyEvent, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};

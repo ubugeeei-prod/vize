@@ -13,11 +13,13 @@ Support and deprecation guarantees are defined in the
 - Cross-platform terminal primitives
 - Flexbox-style layout via `taffy`
 - Render tree, buffer, and text measurement utilities
+- Stable-keyed, virtualized diagnostic master-detail workspace state
 - Optional NAPI bindings through the `napi` feature
 
 ## Key Entry Points
 
 - `BoxNode`, `TextNode`, `InputNode`
+- `DiagnosticWorkspaceState`, `DiagnosticWorkspaceLayout`, `VirtualListState`
 - `LayoutEngine`, `FlexStyle`, `Rect`
 - `RenderTree`, `RenderNode`
 - `Backend`, `Buffer`, `Cursor`
