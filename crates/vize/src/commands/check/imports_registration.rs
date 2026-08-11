@@ -9,11 +9,19 @@ use super::{
     is_relative_specifier, resolve_import_base, resolve_relative_import,
 };
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(super) struct VirtualRegistrationDiscovery {
     pub(super) package_routes: Vec<vize_canon::PackageRouteBinding>,
     pub(super) package_sources: Vec<PathBuf>,
 }
+
+#[derive(Clone)]
+pub(super) struct CachedVirtualRegistration {
+    needs_registration: bool,
+    discovery: VirtualRegistrationDiscovery,
+}
+
+pub(super) type VirtualRegistrationCache = FxHashMap<(PathBuf, bool), CachedVirtualRegistration>;
 
 pub(super) fn non_relative_import_needs_virtual_registration(
     path: &Path,
@@ -21,12 +29,18 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
     packages: Option<&mut vize_canon::PackageRouteResolver>,
-    cache: &mut FxHashMap<PathBuf, bool>,
+    cache: &mut VirtualRegistrationCache,
     discovery: &mut VirtualRegistrationDiscovery,
 ) -> bool {
-    let package_aware = packages.is_some();
-    if !package_aware && let Some(needs_registration) = cache.get(path) {
-        return *needs_registration;
+    let cache_key = (path.to_path_buf(), packages.is_some());
+    if let Some(cached) = cache.get(&cache_key) {
+        discovery
+            .package_routes
+            .extend(cached.discovery.package_routes.iter().cloned());
+        discovery
+            .package_sources
+            .extend(cached.discovery.package_sources.iter().cloned());
+        return cached.needs_registration;
     }
 
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
@@ -41,13 +55,27 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         packages,
         &mut discovered,
     );
-    if needs_registration {
-        discovery.package_routes.extend(discovered);
-        discovery.package_sources.extend(visited);
-    }
-    if !package_aware {
-        cache.insert(path.to_path_buf(), needs_registration);
-    }
+    let resolved_discovery = if needs_registration {
+        VirtualRegistrationDiscovery {
+            package_routes: discovered,
+            package_sources: visited.into_iter().collect(),
+        }
+    } else {
+        VirtualRegistrationDiscovery::default()
+    };
+    discovery
+        .package_routes
+        .extend(resolved_discovery.package_routes.iter().cloned());
+    discovery
+        .package_sources
+        .extend(resolved_discovery.package_sources.iter().cloned());
+    cache.insert(
+        cache_key,
+        CachedVirtualRegistration {
+            needs_registration,
+            discovery: resolved_discovery,
+        },
+    );
     needs_registration
 }
 

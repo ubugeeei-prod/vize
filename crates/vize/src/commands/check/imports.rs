@@ -4,9 +4,13 @@
 //! sources. This module separates authored files that TypeScript can resolve
 //! in place from files that must enter Vize's mirror for Vue import rewriting.
 
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
+use vize_canon::{
+    PackageResolutionContext, PackageResolutionMode, PackageRouteBinding, PackageRouteLookup,
+    PackageRouteResolver, PackageSourceOptions,
+};
 #[cfg(test)]
 use vize_carton::cstr;
 use vize_carton::{FxHashMap, FxHashSet, String};
@@ -16,6 +20,7 @@ use super::path_cache::CanonicalPathCache;
 
 #[path = "imports_registration.rs"]
 mod registration;
+use registration::VirtualRegistrationCache;
 use registration::non_relative_import_needs_virtual_registration;
 #[path = "imports_resolution.rs"]
 mod resolution;
@@ -68,7 +73,20 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
     let options = options.into();
     let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
     let mut registered: FxHashSet<PathBuf> = FxHashSet::default();
-    let mut registration_cache: FxHashMap<PathBuf, bool> = FxHashMap::default();
+    let mut registration_cache = VirtualRegistrationCache::default();
+    let mut resolution_contexts: FxHashMap<
+        (PathBuf, Option<OsString>, PackageResolutionMode),
+        (PackageResolutionContext, Vec<PathBuf>),
+    > = FxHashMap::default();
+    let mut package_lookups: FxHashMap<
+        (
+            PathBuf,
+            String,
+            PackageSourceOptions,
+            PackageResolutionContext,
+        ),
+        PackageRouteLookup,
+    > = FxHashMap::default();
     let mut queue: Vec<(PathBuf, bool, bool)> = Vec::new();
 
     // Seed the visited set with the roots so they are never re-registered.
@@ -111,24 +129,47 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                 match aliased {
                     Some(resolved) => Some(resolved),
                     None => {
-                        let (context, context_inputs) = match aliases {
-                            Some(aliases) => {
-                                aliases.package_resolution_context(packages, &file, occurrence.mode)
-                            }
-                            None => packages.resolution_context(
-                                &file,
-                                occurrence.mode,
-                                None,
-                                None,
-                                std::iter::empty::<String>(),
-                            ),
-                        };
-                        let lookup = packages.lookup_with_context(
-                            dir,
-                            &specifier,
-                            PackageSourceOptions::new(options.include_js, options.include_jsx),
+                        let context_key = (
+                            dir.to_path_buf(),
+                            file.extension().map(OsString::from),
+                            occurrence.mode,
+                        );
+                        let (context, context_inputs) = resolution_contexts
+                            .entry(context_key)
+                            .or_insert_with(|| match aliases {
+                                Some(aliases) => aliases.package_resolution_context(
+                                    packages,
+                                    &file,
+                                    occurrence.mode,
+                                ),
+                                None => packages.resolution_context(
+                                    &file,
+                                    occurrence.mode,
+                                    None,
+                                    None,
+                                    std::iter::empty::<String>(),
+                                ),
+                            })
+                            .clone();
+                        let source_options =
+                            PackageSourceOptions::new(options.include_js, options.include_jsx);
+                        let lookup_key = (
+                            dir.to_path_buf(),
+                            specifier.clone(),
+                            source_options,
                             context.clone(),
                         );
+                        let lookup = package_lookups
+                            .entry(lookup_key)
+                            .or_insert_with(|| {
+                                packages.lookup_with_context(
+                                    dir,
+                                    &specifier,
+                                    source_options,
+                                    context.clone(),
+                                )
+                            })
+                            .clone();
                         let watchable_negative = lookup.is_watchable_negative();
                         let (route, mut consulted) = lookup.into_parts();
                         consulted.extend(context_inputs);
@@ -277,6 +318,9 @@ mod generated_tests;
 #[cfg(test)]
 #[path = "imports_js_tests.rs"]
 mod js_tests;
+#[cfg(test)]
+#[path = "imports_package_cache_tests.rs"]
+mod package_cache_tests;
 #[cfg(test)]
 #[path = "imports_tests.rs"]
 mod tests;
