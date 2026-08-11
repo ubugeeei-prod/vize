@@ -22,6 +22,7 @@
 //! - Enabled adapters reuse registered whole-project analysis without reparsing.
 //! - Reporters are registered explicitly and never mutate global process state.
 //! - Reporter descriptors are versioned, machine-readable, and deterministically ordered.
+//! - AI context is vendor-neutral, explicitly source-fed, budgeted, and wire-validated.
 //!
 //! # Example
 //!
@@ -52,12 +53,19 @@
 //! assert_eq!(report.findings().len(), 1);
 //! ```
 
+mod ai_context;
 #[cfg(feature = "application-analysis")]
 pub mod application_analysis;
 mod model;
 mod report;
 mod reporter;
 
+pub use ai_context::{
+    AiContextBudget, AiContextError, AiContextOmissions, AiContextPacket, AiEditOperation,
+    AiEditPlan, AiEvidenceEdge, AiEvidenceGraph, AiEvidenceNode, AiEvidenceNodeKind,
+    AiEvidenceRelation, AiFindingContext, AiSourceSnippet, AiVerificationStep,
+    DOCTOR_AI_CONTEXT_FORMAT_VERSION, build_ai_context,
+};
 pub use model::{
     AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding,
     EvidenceKind, FindingAssessment, FindingConfidence, FindingContext, FindingEvidence,
