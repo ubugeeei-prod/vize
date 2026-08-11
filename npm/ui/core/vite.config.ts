@@ -22,6 +22,7 @@ export default defineConfig({
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
       id: "src/id.ts",
+      "inert-outside": "src/inert-outside.ts",
       "interaction-modality": "src/interaction-modality.ts",
       focus: "src/focus.ts",
       "focus-scope": "src/focus-scope.ts",

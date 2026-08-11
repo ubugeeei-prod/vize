@@ -69,6 +69,11 @@
       "import": "./dist/id.mjs",
       "default": "./dist/id.mjs"
     },
+    "./inert-outside": {
+      "types": "./dist/inert-outside.d.mts",
+      "import": "./dist/inert-outside.mjs",
+      "default": "./dist/inert-outside.mjs"
+    },
     "./interaction-modality": {
       "types": "./dist/interaction-modality.d.mts",
       "import": "./dist/interaction-modality.mjs",

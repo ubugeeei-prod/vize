@@ -13,6 +13,7 @@ const publicEntries = [
   "./composite-navigation",
   "./controllable-state",
   "./id",
+  "./inert-outside",
   "./interaction-modality",
   "./focus",
   "./focus-scope",

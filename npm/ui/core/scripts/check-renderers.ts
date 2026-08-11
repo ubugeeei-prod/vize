@@ -19,6 +19,23 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "InertOutsideConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useInertOutside } from "./inert-outside.ts";
+
+const root = ref<HTMLElement | null>(null);
+const isolation = useInertOutside({ root, mode: "both" });
+</script>
+
+<template>
+  <div ref="root" :data-active="isolation.isActive.value || undefined">
+    Modal content
+  </div>
+</template>
+`,
+  },
+  {
     filename: "FocusScopeConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

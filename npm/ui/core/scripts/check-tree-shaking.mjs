@@ -73,6 +73,7 @@ const familySignatures = Object.freeze({
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
   "composite-navigation": /VIZE_UI_COMPOSITE_NAVIGATION_DISPOSED/,
   id: /DeterministicIdProvider/,
+  "inert-outside": /VIZE_UI_INERT_OUTSIDE_DISPOSED/,
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
   focus: /VIZE_UI_FOCUS_DISPOSED/,
   "focus-scope": /VIZE_UI_FOCUS_SCOPE_DISPOSED/,
@@ -121,6 +122,12 @@ const componentCases = [
     family: "id",
     exportName: "IdProvider",
     maximumJavaScriptGzipBytes: 1_050,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "inert-outside",
+    exportName: "createInertOutside",
+    maximumJavaScriptGzipBytes: 2_175,
     maximumCssGzipBytes: 0,
   },
   {
