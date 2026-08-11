@@ -10,5 +10,6 @@ export * from "./hover.ts";
 export * from "./long-press.ts";
 export * from "./move.ts";
 export * from "./press.ts";
+export * from "./typeahead.ts";
 export * from "./primitive.ts";
 export * from "./visually-hidden.ts";

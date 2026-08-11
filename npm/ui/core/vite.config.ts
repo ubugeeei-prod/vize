@@ -27,6 +27,7 @@ export default defineConfig({
       "long-press": "src/long-press.ts",
       move: "src/move.ts",
       press: "src/press.ts",
+      typeahead: "src/typeahead.ts",
       primitive: "src/primitive.ts",
       "visually-hidden": "src/visually-hidden.ts",
       media: "src/media.ts",

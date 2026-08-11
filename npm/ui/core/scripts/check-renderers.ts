@@ -19,6 +19,29 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "TypeaheadConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { createCollectionRegistry } from "./collection.ts";
+import { useTypeahead } from "./typeahead.ts";
+
+const registry = createCollectionRegistry<string, string>();
+registry.register({ key: "alpha", value: "Alpha", textValue: "Alpha" });
+const typeahead = useTypeahead({ registry });
+</script>
+
+<template>
+  <div
+    v-bind="typeahead.typeaheadProps"
+    :data-active="registry.activeKey.value || undefined"
+    :data-query="typeahead.query.value || undefined"
+    tabindex="0"
+  >
+    Typeahead target
+  </div>
+</template>
+`,
+  },
+  {
     filename: "FocusConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { useFocusRing } from "./focus.ts";

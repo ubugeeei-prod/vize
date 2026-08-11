@@ -94,6 +94,11 @@
       "import": "./dist/press.mjs",
       "default": "./dist/press.mjs"
     },
+    "./typeahead": {
+      "types": "./dist/typeahead.d.mts",
+      "import": "./dist/typeahead.mjs",
+      "default": "./dist/typeahead.mjs"
+    },
     "./primitive": {
       "types": "./dist/primitive.d.mts",
       "import": "./dist/primitive.mjs",

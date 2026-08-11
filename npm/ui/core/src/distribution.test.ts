@@ -18,6 +18,7 @@ const publicEntries = [
   "./long-press",
   "./move",
   "./press",
+  "./typeahead",
   "./primitive",
   "./visually-hidden",
 ] as const;
