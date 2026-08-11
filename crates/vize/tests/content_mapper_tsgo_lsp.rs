@@ -27,7 +27,7 @@ impl Drop for StopOnDrop<'_> {
 }
 
 struct RawInitialize;
-struct RawDiscoverContentMappers;
+struct RawSetContentMapperContributions;
 struct RawSignatureHelp;
 struct RawReferences;
 struct RawRename;
@@ -43,7 +43,10 @@ macro_rules! raw_request {
 }
 
 raw_request!(RawInitialize, "initialize");
-raw_request!(RawDiscoverContentMappers, "custom/discoverContentMappers");
+raw_request!(
+    RawSetContentMapperContributions,
+    "custom/setContentMapperContributions"
+);
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
 raw_request!(RawReferences, "textDocument/references");
 raw_request!(RawRename, "textDocument/rename");
@@ -132,14 +135,14 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             assert!(initialize["capabilities"].is_object(), "{initialize:#}");
             client.notify::<RawInitialized>(json!({})).unwrap();
 
-            let discovered = client
-                .request::<RawDiscoverContentMappers>(json!({
-                    "textDocuments": [{ "uri": child_uri }],
-                    "extensions": [".vue"]
+            let contributed = client
+                .request::<RawSetContentMapperContributions>(json!({
+                    "contributions": [{ "contributorId": "vize", "extensions": [".vue"] }],
+                    "openDocuments": [{ "uri": child_uri }, { "uri": app_uri }]
                 }))
                 .await
                 .unwrap();
-            assert_eq!(discovered["extensions"], json!([".vue"]), "{discovered:#}");
+            assert!(contributed.is_null(), "{contributed:#}");
 
             let uri = Uri::from_str(&child_uri).unwrap();
             let overlay = client.overlay();

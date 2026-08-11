@@ -30,7 +30,7 @@ impl Drop for StopOnDrop<'_> {
     }
 }
 struct RawInitialize;
-struct RawDiscoverContentMappers;
+struct RawSetContentMapperContributions;
 struct RawInitialized;
 impl lsp_types::request::Request for RawInitialize {
     type Params = Value;
@@ -38,10 +38,10 @@ impl lsp_types::request::Request for RawInitialize {
     const METHOD: &'static str = "initialize";
 }
 
-impl lsp_types::request::Request for RawDiscoverContentMappers {
+impl lsp_types::request::Request for RawSetContentMapperContributions {
     type Params = Value;
     type Result = Value;
-    const METHOD: &'static str = "custom/discoverContentMappers";
+    const METHOD: &'static str = "custom/setContentMapperContributions";
 }
 
 impl lsp_types::notification::Notification for RawInitialized {
@@ -155,14 +155,14 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             assert!(initialize["capabilities"].is_object(), "{initialize:#}");
             client.notify::<RawInitialized>(json!({})).unwrap();
 
-            let discovered = client
-                .request::<RawDiscoverContentMappers>(json!({
-                    "textDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>(),
-                    "extensions": [".vue"]
+            let contributed = client
+                .request::<RawSetContentMapperContributions>(json!({
+                    "contributions": [{ "contributorId": "vize", "extensions": [".vue"] }],
+                    "openDocuments": cases.iter().map(|case| json!({ "uri": case.0 })).collect::<Vec<_>>()
                 }))
                 .await
                 .unwrap();
-            assert_eq!(discovered["extensions"], json!([".vue"]), "{discovered:#}");
+            assert!(contributed.is_null(), "{contributed:#}");
 
             let overlay = client.overlay();
             let app_document_uri = Uri::from_str(&app_uri).unwrap();
