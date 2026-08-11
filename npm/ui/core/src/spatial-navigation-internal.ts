@@ -237,7 +237,9 @@ export function selectWrappedCandidate<Key extends CollectionKey, Value>(
 }
 
 export function keyDirection(event: KeyboardEvent): SpatialNavigationDirection | null {
-  if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return null;
+  if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return null;
+  }
   if (event.key === "ArrowDown") return "down";
   if (event.key === "ArrowLeft") return "left";
   if (event.key === "ArrowRight") return "right";

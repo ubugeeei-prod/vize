@@ -42,8 +42,13 @@ const navigation = useSpatialNavigation({
 </script>
 
 <template>
-  <div v-bind="navigation.spatialNavigationProps" role="grid">
-    <div v-for="key in ['alpha', 'bravo']" :key="key" role="gridcell">
+  <div
+    v-bind="navigation.spatialNavigationProps"
+    role="grid"
+    tabindex="0"
+    :aria-activedescendant="registry.activeKey.value ? 'cell-' + registry.activeKey.value : undefined"
+  >
+    <div v-for="key in ['alpha', 'bravo']" :key="key" :id="'cell-' + key" role="gridcell">
       {{ key }}
     </div>
   </div>

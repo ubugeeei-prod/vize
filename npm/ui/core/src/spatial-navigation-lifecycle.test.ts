@@ -20,6 +20,10 @@ test("modified, composing, handled, and editable descendant keys remain untouche
     keyboard("ArrowRight", harness.container, { metaKey: true }).defaultPrevented,
     false,
   );
+  assert.equal(
+    keyboard("ArrowRight", harness.container, { shiftKey: true }).defaultPrevented,
+    false,
+  );
   const composing = new KeyboardEvent("keydown", {
     bubbles: true,
     cancelable: true,
