@@ -5,6 +5,7 @@ export * from "./controllable-state.ts";
 export * from "./button.ts";
 export * from "./id.ts";
 export * from "./interaction-modality.ts";
+export * from "./hover.ts";
 export * from "./long-press.ts";
 export * from "./press.ts";
 export * from "./primitive.ts";

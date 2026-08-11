@@ -69,6 +69,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./hover": {
+      "types": "./dist/hover.d.mts",
+      "import": "./dist/hover.mjs",
+      "default": "./dist/hover.mjs"
+    },
     "./long-press": {
       "types": "./dist/long-press.d.mts",
       "import": "./dist/long-press.mjs",

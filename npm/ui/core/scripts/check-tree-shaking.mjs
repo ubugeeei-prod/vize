@@ -73,6 +73,7 @@ const familySignatures = Object.freeze({
   collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
   "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
+  hover: /VIZE_UI_HOVER_DISPOSED/,
   "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
   press: /VIZE_UI_PRESS_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
@@ -112,6 +113,12 @@ const componentCases = [
     family: "interaction-modality",
     exportName: "createInteractionModalityTracker",
     maximumJavaScriptGzipBytes: 1_650,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "hover",
+    exportName: "createHover",
+    maximumJavaScriptGzipBytes: 1_450,
     maximumCssGzipBytes: 0,
   },
   {

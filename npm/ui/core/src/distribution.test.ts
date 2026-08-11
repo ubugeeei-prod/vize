@@ -13,6 +13,7 @@ const publicEntries = [
   "./controllable-state",
   "./id",
   "./interaction-modality",
+  "./hover",
   "./long-press",
   "./press",
   "./primitive",

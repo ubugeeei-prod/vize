@@ -19,6 +19,25 @@ const rendererLanes: readonly RendererLane[] = [
 
 const inlineFixtures = [
   {
+    filename: "HoverConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { useHover } from "./hover.ts";
+
+const hover = useHover({
+  onHoverStart(event) {
+    void event.pointerType;
+  },
+});
+</script>
+
+<template>
+  <div v-bind="hover.hoverProps" :data-hovered="hover.isHovered.value || undefined">
+    Hover target
+  </div>
+</template>
+`,
+  },
+  {
     filename: "LongPressConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { useLongPress } from "./long-press.ts";
