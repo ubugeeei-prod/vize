@@ -3884,6 +3884,7 @@ dependencies = [
  "globset",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "vize_carton",
  "vize_croquis_cf",
