@@ -11,7 +11,9 @@ use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 mod build;
 #[path = "context/cache.rs"]
 mod cache;
-use cache::{ContextFingerprint, lock_session_cache};
+pub(in crate::corsa_bridge) use cache::SessionCache;
+pub(in crate::corsa_bridge) use cache::recover_lock;
+use cache::{ContextFingerprint, ProjectMember};
 #[path = "context/routes.rs"]
 mod routes;
 
@@ -69,7 +71,11 @@ impl AliasContext {
             environment.project_root,
             environment.tsconfig_path,
         );
-        if let Some(context) = lock_session_cache().get(source_path, &fingerprint) {
+        if let Some(context) = environment
+            .editor_session
+            .cache()
+            .get(source_path, &fingerprint)
+        {
             return Ok(PreparedAliasContext {
                 context,
                 materialized_changes: Default::default(),
@@ -86,7 +92,7 @@ impl AliasContext {
         )?;
         let mut fingerprint = fingerprint;
         fingerprint.stamp(&context);
-        let mut cache = lock_session_cache();
+        let mut cache = environment.editor_session.cache();
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {
                 context,
@@ -99,8 +105,12 @@ impl AliasContext {
             let expected_files = mirror.expected_materialized_files();
             let package_links = mirror.desired_package_links();
             let query_path = mirror.preferred_materialized_path_for_original(&source_path);
-            let (preserved_files, preserved_package_links, mut query_paths) =
-                cache.project_union_snapshot(mirror.virtual_root(), &source_path);
+            let (preserved_files, preserved_package_links, mut query_paths) = cache
+                .project_union_snapshot(
+                    mirror.virtual_root(),
+                    &source_path,
+                    fingerprint.overlay_identity(),
+                );
             if let Some(query_path) = query_path.as_ref() {
                 query_paths.push(query_path.clone());
             }
@@ -119,10 +129,13 @@ impl AliasContext {
             cache.record_project_member(
                 mirror.virtual_root().to_path_buf(),
                 source_path,
-                expected_files,
-                package_links,
-                query_path,
-                fingerprint.input_stamps(),
+                ProjectMember {
+                    expected_files,
+                    package_links,
+                    query_path,
+                    stamps: fingerprint.input_stamps(),
+                    overlay_identity: fingerprint.overlay_identity(),
+                },
             );
         }
         let context = std::sync::Arc::new(context);
@@ -154,6 +167,7 @@ impl AliasContext {
                 package_routes: &crate::PackageRouteResolver::default(),
                 project_root: None,
                 tsconfig_path: None,
+                editor_session: crate::corsa_bridge::editor_session::fallback_editor_session(),
             },
         )
         .expect("test alias context")
@@ -258,7 +272,17 @@ impl AliasContext {
                             code: document.code,
                             mappings: document.mappings,
                             import_source_map: document.import_source_map,
-                            coordinates_mappable: document.coordinates_mappable,
+                            mapping_kind: match document.mapping_kind {
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::Generated
+                                }
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::AuthoredIdentity => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::AuthoredIdentity
+                                }
+                                crate::batch::virtual_project::MaterializedSourceMappingKind::Synthetic => {
+                                    super::super::vue_document::CorsaMaterializedMappingKind::Synthetic
+                                }
+                            },
                         },
                     )
                     .collect()
@@ -286,7 +310,10 @@ impl AliasContext {
         self.package_routes.get(&package_key)
     }
 
-    pub(in crate::corsa_bridge) fn forget_cached_sources(source_paths: &[PathBuf]) {
-        lock_session_cache().forget_sources(source_paths);
+    pub(in crate::corsa_bridge) fn forget_cached_sources(
+        session: &crate::corsa_bridge::EditorMirrorSession,
+        source_paths: &[PathBuf],
+    ) {
+        session.cache().forget_sources(source_paths);
     }
 }

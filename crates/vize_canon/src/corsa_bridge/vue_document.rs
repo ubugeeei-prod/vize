@@ -16,8 +16,8 @@ mod model;
 pub(crate) use model::CorsaVueVirtualProject;
 pub(super) use model::GeneratedVueDocument;
 pub use model::{
-    CorsaMaterializedSource, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions,
+    CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
 
 #[derive(Clone, Copy)]
@@ -26,6 +26,7 @@ pub(crate) struct CorsaProjectEnvironment<'a> {
     pub(crate) package_routes: &'a crate::PackageRouteResolver,
     pub(crate) project_root: Option<&'a Path>,
     pub(crate) tsconfig_path: Option<&'a Path>,
+    pub(crate) editor_session: &'a crate::corsa_bridge::EditorMirrorSession,
 }
 
 impl CorsaBridge {
@@ -34,7 +35,10 @@ impl CorsaBridge {
         &self,
         source_paths: &[PathBuf],
     ) -> Result<(), CorsaBridgeError> {
-        super::vue_dependencies_alias::AliasContext::forget_cached_sources(source_paths);
+        super::vue_dependencies_alias::AliasContext::forget_cached_sources(
+            &self.editor_session,
+            source_paths,
+        );
         let source_paths = source_paths.to_vec();
         self.with_client(move |client| {
             client
@@ -120,6 +124,7 @@ impl CorsaBridge {
                 package_routes: &self.package_route_resolver,
                 project_root: self.config.working_dir.as_deref(),
                 tsconfig_path: self.config.tsconfig_path.as_deref(),
+                editor_session: &self.editor_session,
             },
         )?;
         let CorsaVueVirtualProject {
@@ -194,6 +199,7 @@ fn build_vue_virtual_project_with_overlays_and_options(
             package_routes: &crate::PackageRouteResolver::default(),
             project_root: None,
             tsconfig_path: None,
+            editor_session: super::editor_session::fallback_editor_session(),
         },
     )
 }
@@ -260,6 +266,7 @@ pub(crate) fn build_vue_virtual_project_with_overlays_and_options_and_package_ro
             virtual_suffix: generated.virtual_suffix,
             dependencies,
             materialized_sources,
+            session_project_root: session_project_root.clone(),
         },
         documents,
         session_project_root,

@@ -40,11 +40,31 @@ pub(super) fn resolve_extended_tsconfig_path(
 }
 
 fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathBuf> {
+    let (package, subpath) = split_package_specifier(extends)?;
     let mut current = Some(base_dir);
     while let Some(dir) = current {
-        let base = dir.join("node_modules").join(extends);
-        if let Some(found) = tsconfig_path_candidates(base)
+        let package_root = dir.join("node_modules").join(package);
+        let from_package_json = if subpath.is_none() {
+            std::fs::read_to_string(package_root.join("package.json"))
+                .ok()
+                .and_then(|content| parse_jsonc_value(&content).ok())
+                .and_then(|package| {
+                    package
+                        .get("tsconfig")
+                        .and_then(Value::as_str)
+                        .map(|target| package_root.join(target))
+                })
+        } else {
+            None
+        };
+        let base = subpath.map_or_else(
+            || package_root.join("tsconfig.json"),
+            |subpath| package_root.join(subpath),
+        );
+        if let Some(found) = from_package_json
             .into_iter()
+            .flat_map(tsconfig_path_candidates)
+            .chain(tsconfig_path_candidates(base))
             .map(|candidate| normalize_path_lexically(&candidate))
             .find(|candidate| candidate.is_file())
         {
@@ -53,6 +73,32 @@ fn resolve_package_tsconfig_path(base_dir: &Path, extends: &str) -> Option<PathB
         current = dir.parent();
     }
     None
+}
+
+fn split_package_specifier(extends: &str) -> Option<(&str, Option<&str>)> {
+    let first = extends.split('/').next()?;
+    if first.is_empty() {
+        return None;
+    }
+    if first.starts_with('@') {
+        let name = extends.get(first.len() + 1..)?.split('/').next()?;
+        if name.is_empty() {
+            return None;
+        }
+        let package_len = first.len() + 1 + name.len();
+        return Some((
+            &extends[..package_len],
+            extends
+                .get(package_len + 1..)
+                .filter(|path| !path.is_empty()),
+        ));
+    }
+    Some((
+        first,
+        extends
+            .get(first.len() + 1..)
+            .filter(|path| !path.is_empty()),
+    ))
 }
 
 fn tsconfig_path_candidates(base: PathBuf) -> Vec<PathBuf> {

@@ -111,6 +111,8 @@ pub struct CorsaServer {
     corsa_client: Option<crate::corsa_client::CorsaProjectClient>,
     /// Shared importer-scoped package topology for the full server lifetime.
     package_route_resolver: crate::PackageRouteResolver,
+    /// Private editor mirror/cache for this check-server process.
+    editor_session: crate::corsa_bridge::EditorMirrorSession,
 }
 
 impl CorsaServer {
@@ -128,6 +130,7 @@ impl CorsaServer {
             cache: FxHashMap::default(),
             corsa_client: None,
             package_route_resolver: crate::PackageRouteResolver::default(),
+            editor_session: crate::corsa_bridge::EditorMirrorSession::new(),
         }
     }
 

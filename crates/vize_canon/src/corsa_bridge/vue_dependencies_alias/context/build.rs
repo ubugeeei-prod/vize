@@ -60,7 +60,7 @@ pub(super) fn build(
         Some(&root),
         project.effective_tsconfig_path().as_deref(),
     );
-    project.scope_editor_namespace(namespace_identity);
+    project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
     project.set_package_route_resolver(resolver.clone());
     let package_resolution = project.package_resolution_settings();

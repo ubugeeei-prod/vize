@@ -105,12 +105,13 @@ pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
                     line_mappings: Vec::new(),
                     skipped_import_lines: 0,
                 },
-                coordinates_mappable: materialized.coordinates_mappable,
+                mapping_kind: materialized.mapping_kind,
             })
         })
         .collect();
 
     Ok(Some(CanonicalVirtualDocument {
+        source_uri: ctx.uri.clone(),
         request_uri: opened.request_uri,
         virtual_result: VirtualTsResult {
             code: opened.code.to_string(),
@@ -124,6 +125,7 @@ pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
         },
         dependencies,
         materialized_sources,
+        session_project_roots: opened.session_project_root.into_iter().collect(),
     }))
 }
 

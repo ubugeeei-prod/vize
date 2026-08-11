@@ -91,6 +91,7 @@ void OptionsWidget; void ClassWidget; void PageWidget
             package_routes: &crate::PackageRouteResolver::default(),
             project_root: Some(&app),
             tsconfig_path: None,
+            editor_session: super::editor_session::fallback_editor_session(),
         },
     )
     .unwrap();
@@ -119,7 +120,7 @@ fn mapped_code<'a>(
         .host
         .materialized_sources
         .iter()
-        .find(|document| document.source_path == source && document.coordinates_mappable)
+        .find(|document| document.source_path == source && document.mapping_kind.is_mappable())
         .map(|document| document.code.as_str())
         .expect("mapped package SFC")
 }

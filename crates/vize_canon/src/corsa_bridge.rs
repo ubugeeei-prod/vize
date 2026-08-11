@@ -6,6 +6,7 @@
 
 mod batch_checker;
 mod bridge;
+mod editor_session;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;
@@ -42,6 +43,7 @@ mod worker;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;
+pub(crate) use editor_session::EditorMirrorSession;
 pub use script_document::CorsaScriptVirtualDocumentRequest;
 pub use types::{
     CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
@@ -51,8 +53,8 @@ pub use types::{
     LspSignatureInformation, TypeCheckResult, VIRTUAL_URI_SCHEME,
 };
 pub use vue_document::{
-    CorsaMaterializedSource, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions,
+    CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
 pub(crate) use vue_document::{
     CorsaProjectEnvironment, CorsaVueVirtualProject,

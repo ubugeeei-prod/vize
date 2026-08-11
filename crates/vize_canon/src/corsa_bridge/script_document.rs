@@ -43,6 +43,7 @@ impl CorsaBridge {
                 package_routes: &self.package_route_resolver,
                 project_root: self.config.working_dir.as_deref(),
                 tsconfig_path: self.config.tsconfig_path.as_deref(),
+                editor_session: &self.editor_session,
             },
         )?;
         self.open_canon_project_documents(
@@ -87,6 +88,7 @@ pub(super) fn build_script_virtual_project(
             package_routes: &crate::PackageRouteResolver::default(),
             project_root: None,
             tsconfig_path: None,
+            editor_session: super::editor_session::fallback_editor_session(),
         },
     )
     .expect("script virtual project");

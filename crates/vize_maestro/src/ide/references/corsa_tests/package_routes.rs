@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn package_shadow_references_map_only_to_authored_vue_uris() {
+fn package_shadow_references_identity_map_an_authored_typescript_barrel() {
     crate::runtime::block_on(async {
         let Some(tsgo_path) = resolve_tsgo_binary() else {
             return;
@@ -18,17 +18,17 @@ fn package_shadow_references_map_only_to_authored_vue_uris() {
         .unwrap();
         fs::write(
             package.join("package.json"),
-            r#"{"name":"@scope/ui","exports":{".":"./Entry.vue"}}"#,
+            r#"{"name":"@scope/ui","exports":{".":"./index.ts"}}"#,
         )
         .unwrap();
-        let package_source = r#"<script lang="ts">
-export const shared = 1
-export default {}
-</script>
-<template>{{ shared }}</template>
-"#;
-        let package_path = package.join("Entry.vue");
+        let package_source = "export { default } from './Entry.vue'\nexport const shared = 1\n";
+        let package_path = package.join("index.ts");
         fs::write(&package_path, package_source).unwrap();
+        fs::write(
+            package.join("Entry.vue"),
+            "<script setup lang=\"ts\">defineProps<{ label: string }>()</script>\n",
+        )
+        .unwrap();
         let host_source = r#"<script setup lang="ts">
 import { shared } from '@scope/ui'
 const value = shared
@@ -42,13 +42,13 @@ void value
         let host_uri = Url::from_file_path(&host_path).unwrap();
         let state = ServerState::new();
         state.set_workspace_root(project.path().to_path_buf());
-        for (uri, source) in [(&package_uri, package_source), (&host_uri, host_source)] {
-            state
-                .documents
-                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-            state.update_virtual_docs(uri, source);
-        }
-        assert_eq!(state.open_importers(&package_uri), vec![host_uri.clone()]);
+        state.documents.open(
+            host_uri.clone(),
+            host_source.to_string(),
+            1,
+            "vue".to_string(),
+        );
+        state.update_virtual_docs(&host_uri, host_source);
         let bridge = Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(tsgo_path),
             working_dir: Some(project.path().to_path_buf()),
@@ -57,8 +57,8 @@ void value
         }));
         bridge.spawn().await.unwrap();
 
-        let offset = package_source.find("shared =").unwrap() + 1;
-        let ctx = IdeContext::new(&state, &package_uri, offset).unwrap();
+        let offset = host_source.find("shared\nvoid").unwrap() + 1;
+        let ctx = IdeContext::new(&state, &host_uri, offset).unwrap();
         let document =
             crate::ide::corsa_support::open_canonical_virtual_project_document(&ctx, &bridge)
                 .await
@@ -66,11 +66,21 @@ void value
         let identities = crate::ide::corsa_support::materialized_semantic_positions(
             &document,
             &package_uri,
-            offset,
+            package_source.find("shared =").unwrap() + 1,
         );
         assert!(
             !identities.is_empty(),
-            "package source identity was not indexed"
+            "authored TypeScript barrel identity was not indexed"
+        );
+        assert!(
+            identities.iter().all(|identity| {
+                identity.request_uri != document.request_uri
+                    && document.materialized_sources.iter().any(|source| {
+                        same_file(&source.source_uri, &package_uri)
+                            && source.request_uri == identity.request_uri
+                    })
+            }),
+            "package semantic fan-out used an unrelated host identity: {identities:#?}"
         );
         let mut raw_identity_references = Vec::new();
         for identity in &identities {
@@ -110,22 +120,27 @@ void value
         bridge.shutdown().await.unwrap();
 
         assert!(
-            locations.iter().any(|location| location.uri == package_uri),
+            locations
+                .iter()
+                .any(|location| same_file(&location.uri, &package_uri)),
             "authored package declaration missing: {locations:#?}"
         );
         assert!(
-            locations.iter().any(|location| location.uri == host_uri),
+            locations
+                .iter()
+                .any(|location| same_file(&location.uri, &host_uri)),
             "authored importer references missing: {locations:#?}"
         );
         assert!(
             locations.iter().all(|location| {
                 !location.uri.path().contains(".vize")
-                    && (location.uri == package_uri || location.uri == host_uri)
+                    && (same_file(&location.uri, &package_uri)
+                        || same_file(&location.uri, &host_uri))
             }),
             "package shadow URI leaked: {locations:#?}"
         );
         for location in &locations {
-            let source = if location.uri == package_uri {
+            let source = if same_file(&location.uri, &package_uri) {
                 package_source
             } else {
                 host_source
@@ -133,4 +148,14 @@ void value
             assert_eq!(authored_text(source, location), "shared");
         }
     });
+}
+
+fn same_file(left: &Url, right: &Url) -> bool {
+    left.to_file_path()
+        .ok()
+        .and_then(|path| path.canonicalize().ok())
+        == right
+            .to_file_path()
+            .ok()
+            .and_then(|path| path.canonicalize().ok())
 }

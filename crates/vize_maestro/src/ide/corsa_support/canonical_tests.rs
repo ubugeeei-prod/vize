@@ -14,10 +14,12 @@ fn canonical_doc(uri: &Url, source: &str) -> CanonicalVirtualDocument {
         crate::ide::DiagnosticService::generate_virtual_ts(uri, source, false, false)
             .expect("virtual ts");
     CanonicalVirtualDocument {
+        source_uri: uri.clone(),
         request_uri: request_file_uri(canonical_request_path(uri).as_str()),
         virtual_result,
         dependencies: Vec::new(),
         materialized_sources: Vec::new(),
+        session_project_roots: Vec::new(),
     }
 }
 
@@ -201,7 +203,7 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
             line_mappings: Vec::new(),
             skipped_import_lines: 0,
         },
-        coordinates_mappable: true,
+        mapping_kind: vize_canon::CorsaMaterializedMappingKind::AuthoredIdentity,
     });
     let location = LspLocation {
         uri: shadow_uri.to_string(),
@@ -222,9 +224,23 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
     assert_eq!(mapped.range.end.character, 18);
     assert!(!mapped.uri.path().contains(".vize"));
 
-    doc.materialized_sources[0].coordinates_mappable = false;
+    doc.materialized_sources[0].mapping_kind = vize_canon::CorsaMaterializedMappingKind::Synthetic;
     assert!(
         map_canonical_corsa_location(&ctx, &doc, &location).is_none(),
         "synthetic forwarder coordinates must fail closed, not leak a Canon URI"
+    );
+
+    let private_root = workspace.path().join("private-session");
+    let unknown = private_root.join("__vize_missing_module.d.ts");
+    std::fs::create_dir_all(&private_root).unwrap();
+    std::fs::write(&unknown, "declare const hidden: any;\n").unwrap();
+    doc.session_project_roots = vec![private_root];
+    let unknown = LspLocation {
+        uri: Url::from_file_path(unknown).unwrap().to_string(),
+        range: location.range,
+    };
+    assert!(
+        map_canonical_corsa_location(&ctx, &doc, &unknown).is_none(),
+        "unindexed files under the private Canon session must never leak"
     );
 }

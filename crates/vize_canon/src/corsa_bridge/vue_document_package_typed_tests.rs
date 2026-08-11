@@ -95,6 +95,7 @@ void Widget
                 package_routes: &crate::PackageRouteResolver::default(),
                 project_root: Some(&app),
                 tsconfig_path: None,
+                editor_session: super::editor_session::fallback_editor_session(),
             },
         )
         .unwrap();
@@ -103,7 +104,9 @@ void Widget
             .host
             .materialized_sources
             .iter()
-            .find(|source| source.source_path == canonical_component && source.coordinates_mappable)
+            .find(|source| {
+                source.source_path == canonical_component && source.mapping_kind.is_mappable()
+            })
             .expect("package Vue source");
         let host_uses_vue2_instance = project.host.code.contains("__VizeVue2ComponentInstance");
         let dependency_uses_vue2_instance = dependency.code.contains("__VizeVue2ComponentInstance");

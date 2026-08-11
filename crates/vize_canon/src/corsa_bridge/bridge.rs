@@ -1,6 +1,8 @@
 //! Core Corsa bridge implementation backed by `corsa-bind`.
 
 use serde_json::Value;
+#[allow(clippy::disallowed_types)]
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use vize_carton::cstr;
@@ -32,6 +34,8 @@ pub struct CorsaBridge {
     /// Shared importer-scoped package topology used by every editor surface
     /// attached to this bridge.
     pub(super) package_route_resolver: crate::PackageRouteResolver,
+    /// Private materialized mirrors and cache for this native session.
+    pub(super) editor_session: Arc<super::EditorMirrorSession>,
 }
 
 #[allow(clippy::disallowed_types)]
@@ -59,13 +63,19 @@ impl CorsaBridge {
             Profiler::new()
         };
 
+        let editor_session = Arc::new(super::EditorMirrorSession::new());
         Self {
-            worker: BoundedWorker::new("vize-corsa-bridge", None),
+            worker: BoundedWorker::new_with_keepalive(
+                "vize-corsa-bridge",
+                None,
+                Arc::clone(&editor_session),
+            ),
             config,
             initialized: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
             package_route_resolver,
+            editor_session,
         }
     }
 
@@ -114,7 +124,10 @@ impl CorsaBridge {
             outcome
         });
 
-        self.initialized.store(false, Ordering::SeqCst);
+        if !matches!(result, Err(CorsaBridgeError::Timeout)) {
+            self.initialized.store(false, Ordering::SeqCst);
+            self.editor_session.clear();
+        }
         result
     }
 

@@ -27,10 +27,12 @@ pub(crate) use semantic_links::materialized_semantic_positions;
 pub(crate) use semantic_links::{CanonicalSemanticPosition, linked_semantic_position, tower_range};
 
 pub(crate) struct CanonicalVirtualDocument {
+    pub(crate) source_uri: Url,
     pub(crate) request_uri: String,
     pub(crate) virtual_result: VirtualTsResult,
     pub(crate) dependencies: Vec<CanonicalDependencyDocument>,
     pub(crate) materialized_sources: Vec<CanonicalMaterializedSource>,
+    pub(crate) session_project_roots: Vec<std::path::PathBuf>,
 }
 
 pub(crate) struct CanonicalDependencyDocument {
@@ -45,7 +47,7 @@ pub(crate) struct CanonicalMaterializedSource {
     pub(crate) source: String,
     pub(crate) request_uri: String,
     pub(crate) virtual_result: VirtualTsResult,
-    pub(crate) coordinates_mappable: bool,
+    pub(crate) mapping_kind: vize_canon::CorsaMaterializedMappingKind,
 }
 
 pub(crate) fn canonical_request_path(uri: &Url) -> String {
@@ -104,7 +106,7 @@ pub(crate) fn map_canonical_corsa_location(
         .iter()
         .find(|source| location_matches_uri(&location.uri, &source.request_uri))
     {
-        if !materialized.coordinates_mappable {
+        if !materialized.mapping_kind.is_mappable() {
             return None;
         }
         let range = map_virtual_result_lsp_range_to_source(
@@ -120,6 +122,10 @@ pub(crate) fn map_canonical_corsa_location(
 
     if let Some(location) = super::external_mirror::map_location(ctx, location) {
         return Some(location);
+    }
+
+    if is_private_materialized_uri(doc, &location.uri) {
+        return None;
     }
 
     let uri = super::accessible_external_uri(ctx, &location.uri)?;
@@ -150,6 +156,9 @@ pub(crate) fn map_canonical_materialized_module_location(
         .materialized_sources
         .iter()
         .find(|source| location_matches_uri(&location.uri, &source.request_uri))?;
+    if !materialized.mapping_kind.is_mappable() {
+        return None;
+    }
     let origin = tower_lsp::lsp_types::Position::new(0, 0);
     Some(Location {
         uri: materialized.source_uri.clone(),
@@ -179,4 +188,18 @@ fn file_uri_paths_match(left: &str, right: &str) -> bool {
     };
     vize_carton::path::canonicalize_non_verbatim(&left)
         == vize_carton::path::canonicalize_non_verbatim(&right)
+}
+
+pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_uri: &str) -> bool {
+    let Some(path) = Url::parse(raw_uri)
+        .ok()
+        .and_then(|uri| uri.to_file_path().ok())
+    else {
+        return false;
+    };
+    doc.session_project_roots.iter().any(|root| {
+        path.starts_with(root)
+            || vize_carton::path::canonicalize_non_verbatim(&path)
+                .starts_with(vize_carton::path::canonicalize_non_verbatim(root))
+    })
 }

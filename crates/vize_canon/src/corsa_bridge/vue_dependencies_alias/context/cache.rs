@@ -2,7 +2,7 @@
 #![allow(clippy::disallowed_types)]
 
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use vize_carton::FxHashMap;
 
@@ -11,18 +11,19 @@ use super::AliasContext;
 const CONTEXT_CACHE_CAPACITY: usize = 8;
 
 #[derive(Default)]
-pub(super) struct SessionCache {
+pub(in crate::corsa_bridge) struct SessionCache {
     slots: FxHashMap<PathBuf, CachedContext>,
     project_snapshots: FxHashMap<PathBuf, crate::batch::virtual_project::MaterializedFileSnapshot>,
     project_members: FxHashMap<PathBuf, FxHashMap<PathBuf, ProjectMember>>,
     clock: u64,
 }
 
-struct ProjectMember {
-    expected_files: vize_carton::FxHashSet<PathBuf>,
-    package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
-    query_path: Option<PathBuf>,
-    stamps: Vec<crate::package_route::stamp::InputStamp>,
+pub(super) struct ProjectMember {
+    pub(super) expected_files: vize_carton::FxHashSet<PathBuf>,
+    pub(super) package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
+    pub(super) query_path: Option<PathBuf>,
+    pub(super) stamps: Vec<crate::package_route::stamp::InputStamp>,
+    pub(super) overlay_identity: u64,
 }
 
 struct CachedContext {
@@ -32,6 +33,13 @@ struct CachedContext {
 }
 
 impl SessionCache {
+    pub(in crate::corsa_bridge) fn clear(&mut self) {
+        self.slots.clear();
+        self.project_snapshots.clear();
+        self.project_members.clear();
+        self.clock = 0;
+    }
+
     pub(super) fn get(
         &mut self,
         source_path: &Path,
@@ -63,7 +71,7 @@ impl SessionCache {
                 .min_by_key(|(_, cached)| cached.last_used)
                 .map(|(path, _)| path.clone());
             if let Some(lru) = lru {
-                self.slots.remove(&lru);
+                self.evict_source(&lru);
             }
         }
         self.clock = self.clock.wrapping_add(1);
@@ -81,6 +89,7 @@ impl SessionCache {
         &mut self,
         virtual_root: &Path,
         current_source: &Path,
+        overlay_identity: u64,
     ) -> (
         vize_carton::FxHashSet<PathBuf>,
         vize_carton::FxHashMap<PathBuf, PathBuf>,
@@ -88,10 +97,11 @@ impl SessionCache {
     ) {
         if let Some(members) = self.project_members.get_mut(virtual_root) {
             members.retain(|_, member| {
-                member
-                    .stamps
-                    .iter()
-                    .all(crate::package_route::stamp::InputStamp::is_current)
+                member.overlay_identity == overlay_identity
+                    && member
+                        .stamps
+                        .iter()
+                        .all(crate::package_route::stamp::InputStamp::is_current)
             });
         }
         let mut files = vize_carton::FxHashSet::default();
@@ -128,10 +138,7 @@ impl SessionCache {
         &mut self,
         virtual_root: PathBuf,
         source_path: PathBuf,
-        expected_files: vize_carton::FxHashSet<PathBuf>,
-        package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
-        query_path: Option<PathBuf>,
-        stamps: Vec<crate::package_route::stamp::InputStamp>,
+        member: ProjectMember,
     ) {
         for members in self.project_members.values_mut() {
             members.remove(&source_path);
@@ -139,19 +146,8 @@ impl SessionCache {
         self.project_members
             .entry(virtual_root)
             .or_default()
-            .insert(
-                source_path,
-                ProjectMember {
-                    expected_files,
-                    package_links,
-                    query_path,
-                    stamps,
-                },
-            );
-        self.project_members
-            .retain(|_, members| !members.is_empty());
-        self.project_snapshots
-            .retain(|root, _| self.project_members.contains_key(root));
+            .insert(source_path, member);
+        self.prune_project_state();
     }
 
     pub(super) fn forget_sources(&mut self, source_paths: &[PathBuf]) {
@@ -166,6 +162,27 @@ impl SessionCache {
         }
         self.project_members
             .retain(|_, members| !members.is_empty());
+    }
+
+    /// Capacity eviction is the only path that can forget the last disk
+    /// snapshot immediately. Invalidated or deleted members retain it until
+    /// the next union build so Corsa receives exact changed/deleted deltas.
+    fn evict_source(&mut self, source_path: &Path) {
+        let canonical = vize_carton::path::canonicalize_non_verbatim(source_path);
+        self.slots.remove(source_path);
+        self.slots.remove(&canonical);
+        for members in self.project_members.values_mut() {
+            members.remove(source_path);
+            members.remove(&canonical);
+        }
+        self.prune_project_state();
+    }
+
+    fn prune_project_state(&mut self) {
+        self.project_members
+            .retain(|_, members| !members.is_empty());
+        self.project_snapshots
+            .retain(|root, _| self.project_members.contains_key(root));
     }
 
     pub(super) fn materialized_snapshot(
@@ -187,12 +204,7 @@ impl SessionCache {
     }
 }
 
-pub(super) fn lock_session_cache() -> MutexGuard<'static, SessionCache> {
-    static CACHE: OnceLock<Mutex<SessionCache>> = OnceLock::new();
-    recover_lock(CACHE.get_or_init(|| Mutex::new(SessionCache::default())))
-}
-
-fn recover_lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
+pub(in crate::corsa_bridge) fn recover_lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
     match mutex.lock() {
         Ok(guard) => guard,
         Err(poisoned) => {
@@ -277,6 +289,10 @@ impl ContextFingerprint {
 
     pub(super) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
         self.stamps.clone()
+    }
+
+    pub(super) fn overlay_identity(&self) -> u64 {
+        self.overlays
     }
 }
 

@@ -14,6 +14,7 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
+      - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -50,6 +51,7 @@ on:
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
       - "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
+      - "crates/vize/tests/check_*package*.rs"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -163,6 +165,17 @@ jobs:
           cargo test -p vize --test content_mapper_tsgo_cli -- --nocapture
           cargo test -p vize --test content_mapper_tsgo_build -- --nocapture
           cargo test -p vize --test content_mapper_importer_scoped_packages -- --nocapture
+      - name: Run importer-scoped package resolution matrix
+        env:
+          CORSA_PATH: ${{ runner.temp }}/tsgo
+          VIZE_TEST_REQUIRE_TSGO: "1"
+        run: |
+          cargo test -p vize --test check_importer_scoped_package_cli -- --nocapture
+          cargo test -p vize --test check_package_declaration_barrel_cli -- --nocapture
+          cargo test -p vize --test check_package_paths_authority_cli -- --nocapture
+          cargo test -p vize --test check_package_resolution_modes_cli -- --nocapture
+          cargo test -p vize --test check_package_scope_mode_cli -- --nocapture
+          cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture
       - name: Run exact editor backend conformance
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo

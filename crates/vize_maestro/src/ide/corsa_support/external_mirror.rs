@@ -77,6 +77,7 @@ fn map_range(
     .ok()?;
 
     let mirror_doc = CanonicalVirtualDocument {
+        source_uri: source_uri.clone(),
         request_uri: cstr!("{}{}", source_uri.path(), generated.virtual_suffix),
         virtual_result: VirtualTsResult {
             code: generated.code.to_string(),
@@ -90,6 +91,7 @@ fn map_range(
         },
         dependencies: Vec::new(),
         materialized_sources: Vec::new(),
+        session_project_roots: Vec::new(),
     };
     map_lsp_range_to_source(&source, &mirror_doc, range)
 }

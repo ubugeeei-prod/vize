@@ -31,6 +31,10 @@ impl CanonicalVirtualDocument {
                 self.materialized_sources.push(materialized);
             }
         }
+        self.session_project_roots
+            .append(&mut opened.session_project_roots);
+        self.session_project_roots.sort();
+        self.session_project_roots.dedup();
     }
 
     fn include_dependency(&mut self, dependency: CanonicalDependencyDocument) {
@@ -104,7 +108,7 @@ pub(crate) async fn open_canonical_virtual_project_document_strict(
     let materialized_documents = document
         .materialized_sources
         .iter()
-        .filter(|source| source.coordinates_mappable)
+        .filter(|source| source.mapping_kind.is_mappable())
         .filter(|source| {
             !location_matches_uri(&source.request_uri, &document.request_uri)
                 && !document.dependencies.iter().any(|dependency| {

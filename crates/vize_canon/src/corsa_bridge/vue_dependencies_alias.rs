@@ -22,7 +22,7 @@ use crate::batch::ImportRewriter;
 
 #[path = "vue_dependencies_alias/context.rs"]
 mod context;
-pub(super) use context::AliasContext;
+pub(super) use context::{AliasContext, SessionCache, recover_lock};
 
 /// Queue alias-resolved first-party dependencies of one document.
 pub(super) fn queue_alias_imports(

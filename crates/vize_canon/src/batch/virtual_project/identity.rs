@@ -33,7 +33,11 @@ pub fn project_virtual_root(project_root: &Path) -> PathBuf {
 /// projects whose compiler options are intentionally incompatible; they must
 /// never overwrite one mirror `tsconfig.json` merely because their source tree
 /// has the same root.
-pub(super) fn project_virtual_root_with_identity(project_root: &Path, identity: u64) -> PathBuf {
+pub(super) fn project_virtual_root_with_identity(
+    storage_root: &Path,
+    project_root: &Path,
+    identity: u64,
+) -> PathBuf {
     let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
     let mut digest = Sha256::new();
     digest.update(PROJECT_CONTEXT_KEY_SCHEMA);
@@ -41,15 +45,10 @@ pub(super) fn project_virtual_root_with_identity(project_root: &Path, identity: 
     digest.update(identity.to_le_bytes());
     let project_key = encode_digest(digest.finalize());
     // TypeScript's editor project service classifies every path below a
-    // `node_modules` segment as an external library. A Canon host queried from
-    // the batch artifact root would therefore be assigned to an inferred
-    // project and silently lose the mirror tsconfig's native resolution
-    // settings. Editor mirrors live in a process-independent temp namespace;
-    // the digest still derives solely from the canonical project/config
-    // identity, while runtime dependency links keep package lookup local.
-    vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
-        .join("vize-canon")
-        .join("editor")
+    // `node_modules` segment as an external library. The bridge supplies a
+    // session-private temp root so unsaved overlay bytes never cross native
+    // project lifetimes; this digest scopes incompatible configs inside it.
+    vize_carton::path::canonicalize_non_verbatim(storage_root)
         .join(PROJECTS_DIR)
         .join(project_key.as_str())
 }
@@ -139,15 +138,26 @@ mod tests {
 
     #[test]
     fn editor_namespace_stays_outside_node_modules() {
-        let root = project_virtual_root_with_identity(Path::new("/workspace/project"), 7);
-        let storage = vize_carton::path::canonicalize_non_verbatim(&std::env::temp_dir())
-            .join("vize-canon/editor/projects");
+        let storage = std::env::temp_dir().join("private-editor-session");
+        let root = project_virtual_root_with_identity(&storage, Path::new("/workspace/project"), 7);
+        let storage = vize_carton::path::canonicalize_non_verbatim(&storage).join("projects");
         assert!(root.starts_with(storage));
         assert!(
             root.components()
                 .all(|component| component.as_os_str() != "node_modules")
         );
         assert_eq!(root.file_name().unwrap().to_string_lossy().len(), 64);
+    }
+
+    #[test]
+    fn editor_namespace_is_session_scoped_even_for_the_same_project_identity() {
+        let project = Path::new("/workspace/project");
+        let first =
+            project_virtual_root_with_identity(Path::new("/private/session-first"), project, 7);
+        let second =
+            project_virtual_root_with_identity(Path::new("/private/session-second"), project, 7);
+        assert_ne!(first, second);
+        assert_eq!(first.file_name(), second.file_name());
     }
 
     #[cfg(unix)]

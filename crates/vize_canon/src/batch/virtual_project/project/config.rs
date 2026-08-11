@@ -11,10 +11,11 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use super::super::VirtualProject;
 
 impl VirtualProject {
-    pub(crate) fn scope_editor_namespace(&mut self, identity: u64) {
+    pub(crate) fn scope_editor_namespace(&mut self, storage_root: &Path, identity: u64) {
         debug_assert!(self.virtual_files.is_empty());
         debug_assert!(self.package_routes.is_empty());
         self.virtual_root = super::super::identity::project_virtual_root_with_identity(
+            storage_root,
             &self.project_root,
             identity,
         );

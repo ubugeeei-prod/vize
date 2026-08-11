@@ -8,15 +8,9 @@ use crate::batch::SfcBlockType;
 
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
-pub(crate) struct MaterializedSourceDocument {
-    pub(crate) materialized_path: PathBuf,
-    pub(crate) source_path: PathBuf,
-    pub(crate) source: vize_carton::String,
-    pub(crate) code: vize_carton::String,
-    pub(crate) mappings: Vec<crate::virtual_ts::VizeMapping>,
-    pub(crate) import_source_map: crate::batch::ImportSourceMap,
-    pub(crate) coordinates_mappable: bool,
-}
+#[path = "mapping/materialized_sources.rs"]
+mod materialized_sources;
+pub(crate) use materialized_sources::MaterializedSourceMappingKind;
 
 impl VirtualProject {
     pub(crate) fn preferred_materialized_path_for_original(
@@ -52,71 +46,6 @@ impl VirtualProject {
         shadows.into_iter().next().or(Some(canonical_virtual))
     }
 
-    pub(crate) fn materialized_source_documents(&self) -> Vec<MaterializedSourceDocument> {
-        let mut documents = Vec::new();
-        for file in self.virtual_files_sorted() {
-            let source = self
-                .original_contents
-                .get(&file.virtual_path)
-                .cloned()
-                .unwrap_or_default();
-            let mappings = file
-                .source_map
-                .sfc_map
-                .as_ref()
-                .map(|map| map.mappings().to_vec())
-                .unwrap_or_default();
-            documents.push(MaterializedSourceDocument {
-                materialized_path: file.virtual_path.clone(),
-                source_path: file.original_path.clone(),
-                source,
-                code: file.content.clone(),
-                mappings,
-                import_source_map: file.source_map.import_map.clone(),
-                coordinates_mappable: true,
-            });
-        }
-        for (materialized_path, canonical_path) in &self.package_shadow_files {
-            let Some(file) = self.virtual_files.get(canonical_path) else {
-                continue;
-            };
-            let Ok(code) = self.package_shadow_content(materialized_path, canonical_path) else {
-                continue;
-            };
-            let source = self
-                .original_contents
-                .get(&file.virtual_path)
-                .cloned()
-                .unwrap_or_default();
-            let coordinates_mappable = code == file.content;
-            let mappings = if coordinates_mappable {
-                file.source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.mappings().to_vec())
-                    .unwrap_or_default()
-            } else {
-                Vec::new()
-            };
-            let import_source_map = if coordinates_mappable {
-                file.source_map.import_map.clone()
-            } else {
-                Default::default()
-            };
-            documents.push(MaterializedSourceDocument {
-                materialized_path: materialized_path.clone(),
-                source_path: file.original_path.clone(),
-                source,
-                code,
-                mappings,
-                import_source_map,
-                coordinates_mappable,
-            });
-        }
-        documents.sort_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
-        documents.dedup_by(|left, right| left.materialized_path == right.materialized_path);
-        documents
-    }
     pub(crate) fn set_diagnostic_paths<'a>(&mut self, paths: impl IntoIterator<Item = &'a Path>) {
         self.diagnostic_paths = paths
             .into_iter()

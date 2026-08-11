@@ -2,6 +2,7 @@
 
 use tower_lsp::lsp_types::Range;
 
+use super::CanonicalMaterializedSource;
 use super::CanonicalVirtualDocument;
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
@@ -29,6 +30,22 @@ pub(super) fn source_offset_to_virtual_generated_offset(
             .import_source_map
             .get_virtual_offset(generated_pre_rewrite as u32) as usize,
     )
+}
+
+pub(super) fn materialized_source_offset_to_generated_offset(
+    source: &CanonicalMaterializedSource,
+    source_offset: usize,
+) -> Option<usize> {
+    match source.mapping_kind {
+        vize_canon::CorsaMaterializedMappingKind::Generated => {
+            source_offset_to_virtual_generated_offset(&source.virtual_result, source_offset)
+        }
+        vize_canon::CorsaMaterializedMappingKind::AuthoredIdentity => (source_offset
+            <= source.source.len()
+            && source_offset <= source.virtual_result.code.len())
+        .then_some(source_offset),
+        vize_canon::CorsaMaterializedMappingKind::Synthetic => None,
+    }
 }
 
 fn mapping_for_source_offset(

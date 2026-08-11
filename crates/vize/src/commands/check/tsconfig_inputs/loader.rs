@@ -6,14 +6,12 @@ use std::{
 };
 
 use serde_json::Value;
+use vize_canon::batch::{TsconfigOwnershipCache, TsconfigSourceKind};
 use vize_carton::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
 
 use super::glob::{compiler_option_dir_exclude, normalize_input_path};
 use super::jsonc::parse_jsonc_value;
 use super::spec::{GlobSpec, RelativePathSpec, TsconfigDeclarationOptions, TsconfigInputSpec};
-
-mod project_graph;
-use project_graph::collect_tsconfig_project_paths;
 
 /// Run-scoped memo for merged tsconfig input specs, keyed by canonical
 /// tsconfig path.
@@ -26,7 +24,7 @@ use project_graph::collect_tsconfig_project_paths;
 #[derive(Default)]
 pub(crate) struct TsconfigInputCache {
     specs: FxHashMap<PathBuf, Option<TsconfigInputSpec>>,
-    project_paths: FxHashMap<PathBuf, Vec<PathBuf>>,
+    ownership: TsconfigOwnershipCache,
 }
 
 impl TsconfigInputCache {
@@ -34,11 +32,21 @@ impl TsconfigInputCache {
     /// check run. Callers receive an owned list so they can continue loading
     /// specs through this same mutable cache without overlapping borrows.
     pub(super) fn project_paths(&mut self, tsconfig_path: &Path) -> Vec<PathBuf> {
-        let resolved = normalize_input_path(tsconfig_path);
-        self.project_paths
-            .entry(resolved)
-            .or_insert_with_key(|resolved| collect_tsconfig_project_paths(resolved))
-            .clone()
+        self.ownership.project_paths(tsconfig_path)
+    }
+
+    pub(super) fn effective_config_for_source(
+        &mut self,
+        tsconfig_path: &Path,
+        source_path: &Path,
+        source_kind: TsconfigSourceKind,
+    ) -> PathBuf {
+        self.ownership
+            .effective_config_for_source(tsconfig_path, source_path, source_kind)
+    }
+
+    pub(super) fn project_allows_js(&mut self, tsconfig_path: &Path) -> bool {
+        self.ownership.project_allows_js(tsconfig_path)
     }
 
     /// Load (or reuse) the merged input spec for `tsconfig_path`. Returns

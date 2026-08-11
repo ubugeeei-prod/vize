@@ -107,6 +107,7 @@ impl CorsaServer {
                     package_routes: &self.package_route_resolver,
                     project_root: Some(&working_dir),
                     tsconfig_path: None,
+                    editor_session: &self.editor_session,
                 },
             )
             .map_err(|error| cstr!("Failed to generate virtual TS: {error}"))?;

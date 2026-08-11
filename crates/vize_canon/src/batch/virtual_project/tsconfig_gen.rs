@@ -6,6 +6,7 @@ mod control_alias;
 mod native_options;
 mod path_rebase;
 pub(super) mod references;
+pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
 mod remap;
 mod vue_alias;
 

@@ -21,8 +21,11 @@ pub(crate) fn materialized_semantic_positions(
     source_offset: usize,
 ) -> Vec<CanonicalSemanticPosition> {
     let mut positions = Vec::new();
-    if let Some(offset) =
-        super::source_offset_to_virtual_generated_offset(&document.virtual_result, source_offset)
+    if same_authored_uri(&document.source_uri, source_uri)
+        && let Some(offset) = super::source_offset_to_virtual_generated_offset(
+            &document.virtual_result,
+            source_offset,
+        )
     {
         let (line, character) =
             crate::ide::offset_to_position(&document.virtual_result.code, offset);
@@ -51,9 +54,7 @@ pub(crate) fn materialized_semantic_positions(
         document
             .materialized_sources
             .iter()
-            .filter(|source| {
-                source.coordinates_mappable && same_authored_uri(&source.source_uri, source_uri)
-            })
+            .filter(|source| same_authored_uri(&source.source_uri, source_uri))
             .filter(|source| {
                 !location_matches_uri(&source.request_uri, &document.request_uri)
                     && !document.dependencies.iter().any(|dependency| {
@@ -61,8 +62,8 @@ pub(crate) fn materialized_semantic_positions(
                     })
             })
             .filter_map(|source| {
-                let offset = super::source_offset_to_virtual_generated_offset(
-                    &source.virtual_result,
+                let offset = super::mapping::materialized_source_offset_to_generated_offset(
+                    source,
                     source_offset,
                 )?;
                 let (line, character) =
@@ -180,6 +181,62 @@ pub(crate) fn tower_range(range: tower_lsp::lsp_types::Range) -> LspRange {
             line: range.end.line,
             character: range.end.character,
         },
+    }
+}
+
+#[cfg(test)]
+mod semantic_position_tests {
+    use tower_lsp::lsp_types::Url;
+    use vize_canon::{CorsaMaterializedMappingKind, ImportSourceMap};
+
+    use super::materialized_semantic_positions;
+    use crate::ide::corsa_support::canonical::{
+        CanonicalMaterializedSource, CanonicalVirtualDocument,
+    };
+    use crate::ide::diagnostics::VirtualTsResult;
+
+    fn identity_result(code: &str) -> VirtualTsResult {
+        VirtualTsResult {
+            code: code.to_owned(),
+            source_mappings: Vec::new(),
+            import_source_map: ImportSourceMap::empty(),
+            user_code_start_line: 0,
+            sfc_script_start_line: 0,
+            template_scope_start_line: 0,
+            line_mappings: Vec::new(),
+            skipped_import_lines: 0,
+        }
+    }
+
+    #[test]
+    fn authored_identity_uses_direct_offsets_without_querying_an_unrelated_host() {
+        let host_uri = Url::parse("file:///workspace/Host.vue").unwrap();
+        let package_uri = Url::parse("file:///workspace/node_modules/pkg/index.ts").unwrap();
+        let source = "export const shared = 1\n";
+        let offset = source.find("shared").unwrap() + 3;
+        let document = CanonicalVirtualDocument {
+            source_uri: host_uri,
+            request_uri: "file:///mirror/Host.vue.ts".into(),
+            virtual_result: identity_result("export {};\n"),
+            dependencies: Vec::new(),
+            materialized_sources: vec![CanonicalMaterializedSource {
+                source_uri: package_uri.clone(),
+                source: source.into(),
+                request_uri: "file:///mirror/node_modules/pkg/index.ts".into(),
+                virtual_result: identity_result(source),
+                mapping_kind: CorsaMaterializedMappingKind::AuthoredIdentity,
+            }],
+            session_project_roots: vec!["/mirror".into()],
+        };
+
+        let positions = materialized_semantic_positions(&document, &package_uri, offset);
+
+        assert_eq!(positions.len(), 1);
+        assert_eq!(
+            positions[0].request_uri,
+            "file:///mirror/node_modules/pkg/index.ts"
+        );
+        assert_eq!((positions[0].line, positions[0].character), (0, 16));
     }
 }
 

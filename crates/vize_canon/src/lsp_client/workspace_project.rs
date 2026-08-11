@@ -81,10 +81,41 @@ impl CorsaProjectClient {
         self.cwd = project_root.clone();
         self.project_root = project_root;
         self.materialized_project_session = false;
+        self.clear_workspace_project_overlays();
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         self.diagnostics.clear();
-        self.retire_editor_lsp();
+        let _ = self.retire_editor_lsp();
         Ok(())
+    }
+
+    fn clear_workspace_project_overlays(&mut self) {
+        self.document_texts.clear();
+        self.overlay_versions.clear();
+        self.editor_lsp_documents_dirty = true;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CorsaProjectClient;
+
+    #[test]
+    fn project_reload_drops_overlays_before_the_editor_fallback_can_reopen_them() {
+        let root = tempfile::tempdir().unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(root.path().to_path_buf());
+        client.document_texts.insert(
+            "file:///mirror/deleted.ts".into(),
+            "export const stale = true;".into(),
+        );
+        client
+            .overlay_versions
+            .insert("file:///mirror/deleted.ts".into(), 3);
+
+        client.clear_workspace_project_overlays();
+
+        assert!(client.document_texts.is_empty());
+        assert!(client.overlay_versions.is_empty());
+        assert!(client.editor_lsp_documents_dirty);
     }
 }
