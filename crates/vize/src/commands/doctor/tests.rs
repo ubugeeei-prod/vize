@@ -1,6 +1,7 @@
 use super::{DoctorSource, analysis::analyze_application, discovery::discover_sources};
 use std::{fs, path::Path};
 use vize_carton::String;
+use vize_doctor::ContentFingerprint;
 
 #[test]
 fn discovery_is_sorted_deduplicated_and_uses_standard_ignores() {
@@ -64,6 +65,14 @@ const label = 'Email'
     assert_eq!(
         finding.related[0].location.start as usize,
         second.find("id=\"email\"").unwrap()
+    );
+    assert_eq!(
+        finding.provenance.invalidation_fingerprints["src/First.vue"],
+        ContentFingerprint::digest(first)
+    );
+    assert_eq!(
+        finding.provenance.invalidation_fingerprints["src/Second.vue"],
+        ContentFingerprint::digest(second)
     );
 }
 

@@ -1,8 +1,10 @@
+use std::collections::BTreeMap;
+
 use vize_doctor::{
-    AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DOCTOR_REPORT_FORMAT_VERSION,
-    DOCTOR_SCORING_VERSION, DoctorCategory, DoctorFinding, DoctorReport, EvidenceKind,
-    FindingAssessment, FindingConfidence, FindingEvidence, FindingImpact, FindingSeverity,
-    FixSafety, HealthPenalty, RuleCost, SourceLocation,
+    AnalysisProvenance, ContentFingerprint, DEFAULT_UNAVAILABLE_FIX_REASON,
+    DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorCategory, DoctorFinding,
+    DoctorReport, EvidenceKind, FindingAssessment, FindingConfidence, FindingEvidence,
+    FindingImpact, FindingSeverity, FixSafety, HealthPenalty, RuleCost, SourceLocation,
 };
 
 fn finding(
@@ -232,10 +234,42 @@ fn validates_versions_and_derived_summary_when_deserializing() {
     );
 
     let mut wrong_version = value.clone();
-    wrong_version["formatVersion"] = 2.into();
+    wrong_version["formatVersion"] = 999.into();
     assert!(serde_json::from_value::<DoctorReport>(wrong_version).is_err());
 
     let mut wrong_summary = value;
     wrong_summary["summary"]["overallScore"] = 100.into();
     assert!(serde_json::from_value::<DoctorReport>(wrong_summary).is_err());
+}
+
+#[test]
+fn fingerprinted_provenance_round_trips_and_rejects_undeclared_inputs() {
+    let fingerprint = ContentFingerprint::digest("export const value = 1");
+    let mut finding = finding(
+        "VIZE_DOCTOR_001",
+        DoctorCategory::Maintainability,
+        FindingSeverity::Notice,
+        FindingConfidence::High,
+        FindingImpact::Low,
+        "src/state.ts",
+        4,
+    );
+    finding.provenance = finding
+        .provenance
+        .with_invalidation_fingerprints(BTreeMap::from([("src/state.ts".into(), fingerprint)]));
+    let report = DoctorReport::new("app", [finding]);
+    let mut wire = serde_json::to_value(&report).unwrap();
+
+    assert_eq!(
+        wire["findings"][0]["provenance"]["invalidationFingerprints"]["src/state.ts"],
+        serde_json::to_value(fingerprint).unwrap()
+    );
+    assert_eq!(
+        serde_json::from_value::<DoctorReport>(wire.clone()).unwrap(),
+        report
+    );
+
+    wire["findings"][0]["provenance"]["invalidationFingerprints"]["src/orphan.ts"] =
+        serde_json::to_value(ContentFingerprint::digest("orphan")).unwrap();
+    assert!(serde_json::from_value::<DoctorReport>(wire).is_err());
 }

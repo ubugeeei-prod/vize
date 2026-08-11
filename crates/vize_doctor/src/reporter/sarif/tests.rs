@@ -86,7 +86,10 @@ fn empty_log_declares_the_oasis_contract_and_vize_versions() {
     assert_eq!(value["runs"][0]["tool"]["driver"]["name"], "Vize Doctor");
     assert_eq!(value["runs"][0]["columnKind"], "unicodeCodePoints");
     assert_eq!(value["runs"][0]["results"], serde_json::json!([]));
-    assert_eq!(value["runs"][0]["properties"]["vizeReportFormatVersion"], 1);
+    assert_eq!(
+        value["runs"][0]["properties"]["vizeReportFormatVersion"],
+        crate::DOCTOR_REPORT_FORMAT_VERSION
+    );
 }
 
 #[test]

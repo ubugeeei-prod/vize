@@ -3,7 +3,7 @@
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
-use std::path::Path;
+use std::{collections::BTreeMap, path::Path};
 use vize_armature::Parser;
 use vize_atelier_sfc::{
     SfcParseOptions,
@@ -14,7 +14,8 @@ use vize_carton::{Allocator, FxHashMap, String, ToCompactString};
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
 use vize_doctor::{
-    DoctorFinding, DoctorReport, application_analysis::report_from_application_graph,
+    ContentFingerprint, DoctorFinding, DoctorReport,
+    application_analysis::report_from_application_graph,
 };
 
 use super::{DoctorError, DoctorSource, canonical_sfc};
@@ -75,14 +76,41 @@ pub(super) fn analyze_application(
     normalize_sfc_diagnostics(&mut result.diagnostics, &source_maps);
     let graph_report =
         report_from_application_graph(".", &analyzer, &result).map_err(DoctorError::from)?;
+    let fingerprints = source_fingerprints(sources);
     Ok(DoctorReport::new(
         graph_report.workspace(),
         graph_report
             .findings()
             .iter()
             .cloned()
-            .chain(public_sfc_findings),
+            .chain(public_sfc_findings)
+            .map(|mut finding| {
+                finding.provenance.invalidation_fingerprints = finding
+                    .provenance
+                    .invalidation_inputs
+                    .iter()
+                    .filter_map(|input| {
+                        fingerprints
+                            .get(input)
+                            .copied()
+                            .map(|fingerprint| (input.clone(), fingerprint))
+                    })
+                    .collect();
+                finding
+            }),
     ))
+}
+
+fn source_fingerprints(sources: &[DoctorSource]) -> BTreeMap<String, ContentFingerprint> {
+    sources
+        .iter()
+        .map(|source| {
+            (
+                String::from(source.path.to_string_lossy().replace('\\', "/")),
+                ContentFingerprint::digest(source.source.as_bytes()),
+            )
+        })
+        .collect()
 }
 
 fn add_sfc(

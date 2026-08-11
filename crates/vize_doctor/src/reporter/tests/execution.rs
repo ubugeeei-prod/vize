@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use super::super::*;
 use super::{TestReporter, report};
-use crate::DoctorReport;
+use crate::{DOCTOR_REPORT_FORMAT_VERSION, DoctorReport};
 
 #[test]
 fn execution_receipt_counts_streamed_output_without_buffering() {
@@ -14,7 +14,10 @@ fn execution_receipt_counts_streamed_output_without_buffering() {
     assert_eq!(output, b"context");
     assert_eq!(receipt.reporter_id(), "vendor.context");
     assert_eq!(receipt.reporter_format_version(), 1);
-    assert_eq!(receipt.report_format_version(), 1);
+    assert_eq!(
+        receipt.report_format_version(),
+        DOCTOR_REPORT_FORMAT_VERSION
+    );
     assert_eq!(receipt.findings_emitted(), 1);
     assert_eq!(receipt.bytes_written(), 7);
 }

@@ -9,7 +9,7 @@ use crate::{
 };
 
 /// Current serialized doctor report format.
-pub const DOCTOR_REPORT_FORMAT_VERSION: u32 = 1;
+pub const DOCTOR_REPORT_FORMAT_VERSION: u32 = 2;
 
 /// Current explainable health-scoring model.
 pub const DOCTOR_SCORING_VERSION: u32 = 1;
@@ -154,6 +154,16 @@ impl DoctorReport {
             finding.evidence.sort();
             finding.provenance.invalidation_inputs.sort();
             finding.provenance.invalidation_inputs.dedup();
+            finding
+                .provenance
+                .invalidation_fingerprints
+                .retain(|input, _| {
+                    finding
+                        .provenance
+                        .invalidation_inputs
+                        .binary_search(input)
+                        .is_ok()
+                });
             if let Some(fix) = &mut finding.fix {
                 fix.edits.sort();
                 fix.verification.sort();
