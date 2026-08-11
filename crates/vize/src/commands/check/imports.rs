@@ -276,6 +276,23 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                     }
                     registered.insert(candidate.clone());
                 }
+            } else if let Some(route) = package_route
+                && route.workspace_source
+            {
+                // A workspace package reached through `node_modules` is real
+                // project source, so it owns diagnostics even when nothing in
+                // it needs a Vize mirror. Only the mirror is optional here:
+                // skipping the walk would silently drop every error authored
+                // inside a plain TypeScript workspace package (#4137).
+                for candidate in route.all_source_paths() {
+                    if is_declaration_file(candidate) {
+                        continue;
+                    }
+                    if visited.insert(candidate.clone()) {
+                        authored.push(candidate.clone());
+                        queue.push((candidate.clone(), false, true));
+                    }
+                }
             }
             let first_visit = package_route.is_none() && visited.insert(resolved.clone());
             let first_registration = package_route.is_none()
