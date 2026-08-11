@@ -168,6 +168,15 @@ test("cancels on pointer exit, manual cancellation, disablement, and disposal", 
     harness.unmount();
   }
 
+  const disabled = ref(false);
+  const triggered = mountLongPress({ isDisabled: disabled, threshold: 0 });
+  triggered.host.dispatchEvent(pointer("pointerdown"));
+  await elapseThreshold();
+  disabled.value = true;
+  triggered.host.dispatchEvent(pointer("pointerup"));
+  assert.equal((triggered.events.at(-1) as LongPressEvent).isCanceled, true);
+  triggered.unmount();
+
   const harness = mountLongPress({ threshold: 0 });
   harness.host.dispatchEvent(pointer("pointerdown"));
   await elapseThreshold();

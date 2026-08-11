@@ -132,13 +132,14 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
   const finishTriggered = (originalEvent: Event | null, isCanceled: boolean): boolean => {
     if (!isLongPressed.value || !attempt) return false;
     const current = attempt;
+    const canceled = isCanceled || readBoolean(options.isDisabled, "isDisabled");
     clearRelease();
     clearAttempt();
     isPressed.value = false;
     isLongPressed.value = false;
     lingerContextMenuSuppression();
     options.onLongPressEnd?.(
-      toLongPressEvent("longpressend", current.event, originalEvent, isCanceled),
+      toLongPressEvent("longpressend", current.event, originalEvent, canceled),
     );
     return true;
   };
@@ -209,12 +210,17 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
     } finally {
       endingAtThreshold = false;
     }
+    const focusable = current.target as HTMLElement;
     if (
       (current.pointerType === "touch" || current.pointerType === "pen") &&
       current.target.ownerDocument.activeElement !== current.target &&
-      "focus" in current.target
+      typeof focusable.focus === "function"
     ) {
-      (current.target as HTMLElement).focus({ preventScroll: true });
+      try {
+        focusable.focus({ preventScroll: true });
+      } catch {
+        focusable.focus();
+      }
     }
     if (!readBoolean(options.allowTextSelectionOnPress, "allowTextSelectionOnPress")) {
       restoreTriggeredSelection = disableTextSelection(current.target);
