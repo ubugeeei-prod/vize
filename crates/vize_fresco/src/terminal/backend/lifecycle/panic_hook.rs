@@ -16,6 +16,8 @@ use std::{
 use super::TerminalMode;
 #[cfg(unix)]
 use super::lease::emergency_presentation_modes;
+#[cfg(unix)]
+use super::raw_mode::emergency_restore_raw_mode;
 
 #[cfg(unix)]
 static PANIC_HOOK_INSTALLATION: Mutex<()> = Mutex::new(());
@@ -86,11 +88,10 @@ impl Error for TerminalPanicHookError {}
 /// Install process-wide restoration before Rust invokes the existing panic hook.
 ///
 /// On Unix, Fresco restores every tracked ANSI presentation mode directly to
-/// standard output before delegating to the hook that was active at installation
+/// standard output, then restores the exact native terminal attributes captured
+/// before raw mode, before delegating to the hook that was active at installation
 /// time. This path does not allocate, format, acquire a standard-output lock, or
 /// depend on [`Drop`], so it also runs before a `panic = "abort"` process exits.
-/// Raw input mode requires a captured native terminal snapshot and is deliberately
-/// outside this hook's contract.
 ///
 /// Installation is process-global, thread-safe, and idempotent. The wrapper is
 /// permanent because stable Rust cannot determine whether a later application
@@ -130,6 +131,7 @@ pub fn install_terminal_panic_hook() -> Result<TerminalPanicHookInstallation, Te
                 emergency_presentation_modes(),
                 emergency_write_stdout,
             );
+            let _ = emergency_restore_raw_mode();
             previous(information);
         }));
         PANIC_HOOK_INSTALLED.store(true, Ordering::Release);

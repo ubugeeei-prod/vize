@@ -17,6 +17,8 @@ use crossterm::{
 
 use super::*;
 #[cfg(unix)]
+use crate::terminal::backend::lifecycle::pty_test_support::PtyFixture;
+#[cfg(unix)]
 use crate::terminal::{Backend, TerminalOptions};
 
 #[cfg(unix)]
@@ -30,7 +32,16 @@ const CHILD_MARKER_VALUE: &str = "panic-hook-v1";
 #[cfg(unix)]
 const SUBPROCESS_TEST: &str = concat!(
     "terminal::backend::lifecycle::panic_hook::tests::",
-    "panic_hook_subprocess_restores_presentation_and_chains_once"
+    "panic_hook_subprocess_restores_terminal_and_chains_once"
+);
+#[cfg(unix)]
+const NORMAL_RAW_CHILD_MARKER: &str = "VIZE_FRESCO_NORMAL_RAW_CHILD";
+#[cfg(unix)]
+const NORMAL_RAW_CHILD_VALUE: &str = "normal-raw-v1";
+#[cfg(unix)]
+const NORMAL_RAW_SUBPROCESS_TEST: &str = concat!(
+    "terminal::backend::lifecycle::panic_hook::tests::",
+    "normal_raw_mode_subprocess_keeps_crossterm_state_consistent"
 );
 
 #[test]
@@ -96,11 +107,13 @@ fn unsupported_platform_is_explicit_and_does_not_install() {
 
 #[cfg(unix)]
 #[test]
-fn panic_hook_subprocess_restores_presentation_and_chains_once() {
+fn panic_hook_subprocess_restores_terminal_and_chains_once() {
     if std::env::var(CHILD_MARKER).as_deref() != Ok(CHILD_MARKER_VALUE) {
+        let mut pty = PtyFixture::open();
         let output = Command::new(std::env::current_exe().unwrap())
             .args(["--exact", SUBPROCESS_TEST, "--nocapture"])
             .env(CHILD_MARKER, CHILD_MARKER_VALUE)
+            .stdin(pty.take_child_stdin())
             .output()
             .unwrap();
         assert!(
@@ -119,6 +132,7 @@ fn panic_hook_subprocess_restores_presentation_and_chains_once() {
                 output.stdout
             );
         }
+        pty.assert_restored();
         return;
     }
 
@@ -181,7 +195,7 @@ fn panic_hook_subprocess_restores_presentation_and_chains_once() {
     let mut backend = Backend::with_process_writer(8, 2, io::stdout());
     backend
         .init_with_options(TerminalOptions {
-            raw_mode: false,
+            raw_mode: true,
             alternate_screen: true,
             mouse_capture: true,
             bracketed_paste: true,
@@ -195,10 +209,61 @@ fn panic_hook_subprocess_restores_presentation_and_chains_once() {
     }));
     assert!(panic_result.is_err());
     assert_eq!(PREVIOUS_HOOK_CALLS.load(Ordering::Acquire), 1);
+    assert!(crossterm::terminal::is_raw_mode_enabled().unwrap());
 
     // Avoid normal restoration so the parent can prove that the observed
     // reset sequences came from the panic hook rather than `Drop`.
     std::mem::forget(backend);
+}
+
+#[cfg(unix)]
+#[test]
+fn normal_raw_mode_subprocess_keeps_crossterm_state_consistent() {
+    if std::env::var(NORMAL_RAW_CHILD_MARKER).as_deref() != Ok(NORMAL_RAW_CHILD_VALUE) {
+        let mut pty = PtyFixture::open();
+        let output = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", NORMAL_RAW_SUBPROCESS_TEST, "--nocapture"])
+            .env(NORMAL_RAW_CHILD_MARKER, NORMAL_RAW_CHILD_VALUE)
+            .stdin(pty.take_child_stdin())
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "child failed\nstdout: {}\nstderr: {}",
+            std::str::from_utf8(&output.stdout).unwrap_or("<non-UTF-8>"),
+            std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8>")
+        );
+        pty.assert_restored();
+        return;
+    }
+
+    let mut backend = Backend::with_process_writer(8, 2, Vec::new());
+    backend
+        .init_with_options(TerminalOptions {
+            raw_mode: true,
+            alternate_screen: false,
+            mouse_capture: false,
+            bracketed_paste: false,
+            hide_cursor: false,
+        })
+        .unwrap();
+    assert!(crossterm::terminal::is_raw_mode_enabled().unwrap());
+    backend.restore().unwrap();
+    assert!(!crossterm::terminal::is_raw_mode_enabled().unwrap());
+
+    crossterm::terminal::enable_raw_mode().unwrap();
+    backend
+        .init_with_options(TerminalOptions {
+            raw_mode: true,
+            alternate_screen: false,
+            mouse_capture: false,
+            bracketed_paste: false,
+            hide_cursor: false,
+        })
+        .unwrap();
+    backend.restore().unwrap();
+    assert!(crossterm::terminal::is_raw_mode_enabled().unwrap());
+    crossterm::terminal::disable_raw_mode().unwrap();
 }
 
 fn assert_command_bytes(command_bytes: &[u8], command: impl crossterm::Command) {

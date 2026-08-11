@@ -33,7 +33,11 @@ pub use output::FrameOutputTelemetry;
 /// Terminal mode switches used during backend initialization.
 #[derive(Debug, Clone, Copy)]
 pub struct TerminalOptions {
-    /// Enable process terminal raw mode. Defaults to `true`.
+    /// Enable process-terminal raw input. Defaults to `true`.
+    ///
+    /// This mode is process-global. Fresco preserves an already-active
+    /// Crossterm raw-mode owner instead of disabling it during restoration;
+    /// other owners must not change raw mode while the Fresco lease is active.
     pub raw_mode: bool,
     /// Enter the alternate screen. Defaults to `true`.
     pub alternate_screen: bool,

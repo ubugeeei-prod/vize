@@ -10,14 +10,20 @@ use crossterm::{
     cursor::{Hide, SetCursorStyle, Show},
     event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
     execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
 };
 
 use super::{Backend, TerminalOptions};
 
 mod lease;
 mod panic_hook;
+mod raw_mode;
 mod state;
+
+#[cfg(all(test, unix))]
+mod pty_test_support;
+
+use raw_mode::{disable_raw_mode, enable_raw_mode, raw_mode_requires_restoration};
 
 pub use lease::TerminalSessionAcquireError;
 pub use panic_hook::{
@@ -115,7 +121,9 @@ impl<W: Write> Backend<W> {
     /// active. If any enable operation fails, every mode attempted by this call
     /// is restored while pre-existing modes remain active. Escape-sequence
     /// modes are conservatively marked active before writing because an I/O
-    /// error may occur after a terminal accepted a partial command.
+    /// error may occur after a terminal accepted a partial command. On Unix,
+    /// raw mode retains the exact prior termios value and a dedicated terminal
+    /// descriptor for panic-safe restoration.
     pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
         self.prepare_session(options)?;
         let previous = self.session;
@@ -153,7 +161,12 @@ impl<W: Write> Backend<W> {
 
     fn enable_modes(&mut self, options: TerminalOptions) -> io::Result<()> {
         if options.raw_mode && !self.session.owns(TerminalMode::RawMode) {
-            enable_raw_mode()?;
+            if let Err(error) = enable_raw_mode() {
+                if raw_mode_requires_restoration() {
+                    self.acquire_mode(TerminalMode::RawMode);
+                }
+                return Err(error);
+            }
             self.acquire_mode(TerminalMode::RawMode);
         }
         if options.alternate_screen && !self.session.owns(TerminalMode::AlternateScreen) {
