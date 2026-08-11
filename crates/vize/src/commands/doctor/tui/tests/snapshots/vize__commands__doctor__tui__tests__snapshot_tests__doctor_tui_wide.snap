@@ -1,5 +1,6 @@
 ---
-source: crates/vize/src/commands/doctor/tui/tests.rs
+source: crates/vize/src/commands/doctor/tui/tests/snapshot_tests.rs
+assertion_line: 39
 expression: screen
 ---
 VIZE DOCTOR  ✓ Score: 95 / 100
