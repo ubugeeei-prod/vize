@@ -110,9 +110,17 @@ fn signature_help_maps_art_variant_template() {
             "art cursor mapped to the wrong virtual offset:\n{}",
             template.content
         );
-        let help = SignatureHelpService::signature_help_with_corsa(&ctx, Some(bridge.clone()))
-            .await
-            .expect("signature help in art variant");
+        let (help, stages) =
+            SignatureHelpService::signature_help_with_corsa_traced(&ctx, Some(bridge.clone()))
+                .await;
+        let help = help.unwrap_or_else(|| panic!("signature help in art variant: {stages:?}"));
+        assert_eq!(
+            stages,
+            [
+                SignatureHelpStage::VirtualOpened,
+                SignatureHelpStage::RequestSome,
+            ]
+        );
         assert_signature(help, "format", 1);
 
         bridge.shutdown().await.unwrap();
