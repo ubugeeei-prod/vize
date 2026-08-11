@@ -10,8 +10,12 @@ use vize_carton::{FxHashSet, String, cstr};
 use crate::ide::{IdeContext, ReferencesService, corsa_support};
 
 mod event_rename;
+mod execute;
 mod failure;
 
+pub(super) use execute::rename;
+#[cfg(test)]
+pub(super) use execute::{CanonicalRenameStage, rename_strict, rename_strict_traced};
 use failure::CanonicalFailure;
 
 pub(super) enum Answer<T> {
@@ -64,129 +68,6 @@ pub(super) async fn prepare_strict(
             .map(PrepareRenameResponse::Range)
             .or_else(|| corsa_support::map_canonical_prepare_rename(ctx, &document, response))
     })))
-}
-
-pub(super) async fn rename(
-    ctx: &IdeContext<'_>,
-    new_name: &str,
-    bridge: Option<&CorsaBridge>,
-) -> Answer<WorkspaceEdit> {
-    match rename_strict(ctx, new_name, bridge).await {
-        Ok(answer) => answer,
-        Err(error) => error.into_lenient_answer(),
-    }
-}
-
-pub(super) async fn rename_strict(
-    ctx: &IdeContext<'_>,
-    new_name: &str,
-    bridge: Option<&CorsaBridge>,
-) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
-    let rename_kind = event_rename::query_kind(ctx);
-    let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
-        return Ok(Answer::Available(None));
-    };
-    let Some(bridge) = initialized_bridge(bridge) else {
-        return Ok(Answer::Unavailable);
-    };
-    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
-        .await
-        .map_err(CanonicalFailure::from_project_open)?
-    else {
-        return Ok(Answer::Unavailable);
-    };
-    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
-        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
-    else {
-        return Ok(Answer::Unavailable);
-    };
-    let response = bridge
-        .rename(&document.request_uri, line, character, &semantic_name)
-        .await
-        .map_err(CanonicalFailure::FallbackBridge)?;
-    // A null answer from the query identity is not the end of the rename. When
-    // the project session materializes importer-scoped package shadows, the
-    // authored source is duplicated under distinct native module identities and
-    // the identity this document was opened under can stop being the one the
-    // session still knows. The materialized identities below answer for the same
-    // authored position, so only the absence of every identity means the rename
-    // is unavailable.
-    let response = response
-        .map(|response| {
-            serde_json::from_value::<WorkspaceEdit>(response).map_err(|error| {
-                CanonicalFailure::InvalidResponse {
-                    operation: "rename",
-                    message: cstr!("{error}"),
-                }
-            })
-        })
-        .transpose()?;
-    let mut linked = response
-        .as_ref()
-        .map(|response| linked_positions(&document, response))
-        .unwrap_or_default();
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
-    linked.retain(|position| {
-        position.request_uri != document.request_uri
-            || position.line != line
-            || position.character != character
-    });
-    if matches!(rename_kind, Some(event_rename::RenameKind::Model))
-        && let Some(response) = response.as_ref()
-    {
-        linked.extend(event_rename::model_linked_positions(
-            ctx, &document, response,
-        ));
-    }
-    let mut mapped = response
-        .and_then(|response| {
-            corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
-        })
-        .into_iter()
-        .collect::<Vec<_>>();
-    if mapped.is_empty() && linked.is_empty() {
-        return Ok(Answer::Available(None));
-    }
-
-    for position in linked {
-        let Some(extra) = bridge
-            .rename(
-                &position.request_uri,
-                position.line,
-                position.character,
-                &semantic_name,
-            )
-            .await
-            .map_err(CanonicalFailure::AuthoritativeBridge)?
-        else {
-            return Ok(Answer::Available(None));
-        };
-        let extra =
-            serde_json::from_value(extra).map_err(|error| CanonicalFailure::InvalidResponse {
-                operation: "linked rename",
-                message: cstr!("{error}"),
-            })?;
-        let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
-        else {
-            return Err(CanonicalFailure::UnmappedResponse("linked rename"));
-        };
-        mapped.push(extra);
-    }
-    if let Some(styles) = style_workspace_edit(ctx, &mapped, new_name) {
-        mapped.push(styles);
-    }
-
-    if let Some(kind) = rename_kind {
-        for edit in &mut mapped {
-            event_rename::rewrite_edits(ctx, edit, &semantic_name, kind);
-        }
-    }
-
-    Ok(Answer::Available(
-        corsa_support::merge_canonical_workspace_edits(mapped),
-    ))
 }
 
 fn style_workspace_edit(

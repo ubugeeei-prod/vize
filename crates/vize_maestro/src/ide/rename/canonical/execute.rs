@@ -1,0 +1,212 @@
+use tower_lsp::lsp_types::WorkspaceEdit;
+use vize_canon::CorsaBridge;
+use vize_carton::{String, cstr};
+
+use super::{
+    Answer, CanonicalFailure, event_rename, initialized_bridge, linked_positions,
+    style_workspace_edit,
+};
+use crate::ide::{IdeContext, corsa_support};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(in crate::ide::rename) enum CanonicalRenameStage {
+    PrimaryQuery {
+        request_uri: String,
+        line: u32,
+        character: u32,
+    },
+    PrimaryNull,
+    PrimaryMapped,
+    PrimaryMappingDropped,
+    LinkedQuery {
+        request_uri: String,
+        line: u32,
+        character: u32,
+    },
+    LinkedNull {
+        request_uri: String,
+        line: u32,
+        character: u32,
+    },
+    LinkedMapped {
+        request_uri: String,
+        line: u32,
+        character: u32,
+    },
+    Complete,
+}
+
+pub(in crate::ide::rename) async fn rename(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    bridge: Option<&CorsaBridge>,
+) -> Answer<WorkspaceEdit> {
+    match rename_strict(ctx, new_name, bridge).await {
+        Ok(answer) => answer,
+        Err(error) => error.into_lenient_answer(),
+    }
+}
+
+pub(in crate::ide::rename) async fn rename_strict(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    bridge: Option<&CorsaBridge>,
+) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
+    rename_strict_inner(ctx, new_name, bridge, None).await
+}
+
+#[cfg(test)]
+pub(in crate::ide::rename) async fn rename_strict_traced(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    bridge: Option<&CorsaBridge>,
+) -> (
+    Result<Answer<WorkspaceEdit>, CanonicalFailure>,
+    Vec<CanonicalRenameStage>,
+) {
+    let mut trace = Vec::new();
+    let answer = rename_strict_inner(ctx, new_name, bridge, Some(&mut trace)).await;
+    (answer, trace)
+}
+
+async fn rename_strict_inner(
+    ctx: &IdeContext<'_>,
+    new_name: &str,
+    bridge: Option<&CorsaBridge>,
+    mut trace: Option<&mut Vec<CanonicalRenameStage>>,
+) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
+    let rename_kind = event_rename::query_kind(ctx);
+    let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
+        return Ok(Answer::Available(None));
+    };
+    let Some(bridge) = initialized_bridge(bridge) else {
+        return Ok(Answer::Unavailable);
+    };
+    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+        .await
+        .map_err(CanonicalFailure::from_project_open)?
+    else {
+        return Ok(Answer::Unavailable);
+    };
+    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
+        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
+    else {
+        return Ok(Answer::Unavailable);
+    };
+    record(&mut trace, || CanonicalRenameStage::PrimaryQuery {
+        request_uri: document.request_uri.clone(),
+        line,
+        character,
+    });
+    let response = bridge
+        .rename(&document.request_uri, line, character, &semantic_name)
+        .await
+        .map_err(CanonicalFailure::FallbackBridge)?;
+    if response.is_none() {
+        record(&mut trace, || CanonicalRenameStage::PrimaryNull);
+    }
+    let response = response
+        .map(|response| {
+            serde_json::from_value::<WorkspaceEdit>(response).map_err(|error| {
+                CanonicalFailure::InvalidResponse {
+                    operation: "rename",
+                    message: cstr!("{error}"),
+                }
+            })
+        })
+        .transpose()?;
+    let had_primary_response = response.is_some();
+    let mut linked = response
+        .as_ref()
+        .map(|response| linked_positions(&document, response))
+        .unwrap_or_default();
+    linked.extend(corsa_support::materialized_semantic_positions(
+        &document, ctx.uri, ctx.offset,
+    ));
+    linked.retain(|position| {
+        position.request_uri != document.request_uri
+            || position.line != line
+            || position.character != character
+    });
+    if matches!(rename_kind, Some(event_rename::RenameKind::Model))
+        && let Some(response) = response.as_ref()
+    {
+        linked.extend(event_rename::model_linked_positions(
+            ctx, &document, response,
+        ));
+    }
+    let mapped_primary = response.and_then(|response| {
+        corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
+    });
+    if mapped_primary.is_some() {
+        record(&mut trace, || CanonicalRenameStage::PrimaryMapped);
+    } else if had_primary_response {
+        record(&mut trace, || CanonicalRenameStage::PrimaryMappingDropped);
+    }
+    let mut mapped = mapped_primary.into_iter().collect::<Vec<_>>();
+    if mapped.is_empty() && linked.is_empty() {
+        return Ok(Answer::Available(None));
+    }
+
+    for position in linked {
+        record(&mut trace, || CanonicalRenameStage::LinkedQuery {
+            request_uri: position.request_uri.clone(),
+            line: position.line,
+            character: position.character,
+        });
+        let Some(extra) = bridge
+            .rename(
+                &position.request_uri,
+                position.line,
+                position.character,
+                &semantic_name,
+            )
+            .await
+            .map_err(CanonicalFailure::AuthoritativeBridge)?
+        else {
+            record(&mut trace, || CanonicalRenameStage::LinkedNull {
+                request_uri: position.request_uri.clone(),
+                line: position.line,
+                character: position.character,
+            });
+            return Ok(Answer::Available(None));
+        };
+        let extra =
+            serde_json::from_value(extra).map_err(|error| CanonicalFailure::InvalidResponse {
+                operation: "linked rename",
+                message: cstr!("{error}"),
+            })?;
+        let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
+        else {
+            return Err(CanonicalFailure::UnmappedResponse("linked rename"));
+        };
+        record(&mut trace, || CanonicalRenameStage::LinkedMapped {
+            request_uri: position.request_uri.clone(),
+            line: position.line,
+            character: position.character,
+        });
+        mapped.push(extra);
+    }
+    if let Some(styles) = style_workspace_edit(ctx, &mapped, new_name) {
+        mapped.push(styles);
+    }
+
+    if let Some(kind) = rename_kind {
+        for edit in &mut mapped {
+            event_rename::rewrite_edits(ctx, edit, &semantic_name, kind);
+        }
+    }
+    record(&mut trace, || CanonicalRenameStage::Complete);
+    Ok(Answer::Available(
+        corsa_support::merge_canonical_workspace_edits(mapped),
+    ))
+}
+
+fn record(
+    trace: &mut Option<&mut Vec<CanonicalRenameStage>>,
+    stage: impl FnOnce() -> CanonicalRenameStage,
+) {
+    if let Some(trace) = trace.as_mut() {
+        trace.push(stage());
+    }
+}

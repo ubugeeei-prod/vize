@@ -2,11 +2,12 @@ use std::sync::{Arc, Barrier};
 
 use harness::RealCorsaRenameSession;
 
+mod direct_first;
 mod harness;
 
 #[test]
 fn concurrent_real_corsa_rename_sessions_are_isolated() {
-    const SESSION_COUNT: usize = 12;
+    const SESSION_COUNT: usize = 20;
     const ASSERTED_ROUNDS: usize = 4;
 
     let corsa_path = resolve_tsgo_binary_required();
@@ -37,6 +38,11 @@ fn concurrent_real_corsa_rename_sessions_are_isolated() {
                 let rendezvous = Arc::clone(&rendezvous);
                 scope.spawn(move || -> Result<_, String> {
                     rendezvous.wait();
+                    session
+                        .assert_direct_first_child_rename()
+                        .map_err(|error| {
+                            format!("session {session_index} direct-first rename: {error}")
+                        })?;
                     for round in 0..ASSERTED_ROUNDS {
                         session.assert_prepare_ranges().map_err(|error| {
                             format!("session {session_index} round {round} prepare: {error}")

@@ -10,6 +10,7 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 use super::super::canonical;
 use crate::{ide::IdeContext, server::ServerState};
 
+mod generation;
 mod protocol;
 
 const CHILD_SOURCE: &str = r#"<script setup lang="ts">
@@ -33,6 +34,7 @@ pub(super) struct RealCorsaRenameSession {
     parent_uri: Url,
     protocol_trace_dir: PathBuf,
     shutdown_gate: Option<protocol::ShutdownGate>,
+    expected_readiness_generations: usize,
     shutdown_complete: bool,
 }
 
@@ -112,6 +114,7 @@ impl RealCorsaRenameSession {
             parent_uri,
             protocol_trace_dir,
             shutdown_gate,
+            expected_readiness_generations: 1,
             shutdown_complete: false,
         })
     }
@@ -141,6 +144,37 @@ impl RealCorsaRenameSession {
             }
         }
         Ok(())
+    }
+
+    pub(super) fn assert_direct_first_child_rename(&self) -> Result<(), String> {
+        let child_start = CHILD_SOURCE
+            .find("saveItem")
+            .ok_or_else(|| "child event marker missing".to_owned())?;
+        let child_ctx = IdeContext::new(&self.state, &self.child_uri, child_start + 2)
+            .ok_or_else(|| "missing child context".to_owned())?;
+        let (answer, stages) = crate::runtime::block_on(canonical::rename_strict_traced(
+            &child_ctx,
+            "direct-event",
+            Some(self.bridge.as_ref()),
+        ));
+        let answer =
+            answer.map_err(|error| format!("strict rename failed: {error}; {stages:#?}"))?;
+        let canonical::Answer::Available(Some(edit)) = answer else {
+            return Err(format!(
+                "strict rename returned no canonical edit; stages={stages:#?}"
+            ));
+        };
+        if !matches!(
+            stages.last(),
+            Some(canonical::CanonicalRenameStage::Complete)
+        ) {
+            return Err(format!("rename did not complete; stages={stages:#?}"));
+        }
+        assert_exact_event_edit(
+            &edit,
+            (&self.parent_uri, PARENT_SOURCE, "save-item", "direct-event"),
+            (&self.child_uri, CHILD_SOURCE, "saveItem", "directEvent"),
+        )
     }
 
     pub(super) fn assert_parent_and_child_renames(&self) -> Result<(), String> {
@@ -182,6 +216,7 @@ impl RealCorsaRenameSession {
             &self.protocol_trace_dir,
             canonical_uri.as_str(),
             logical_uri.as_str(),
+            self.expected_readiness_generations,
         )
     }
 

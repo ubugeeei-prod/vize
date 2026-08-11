@@ -8,6 +8,7 @@ use std::{
 };
 
 mod executable;
+mod readiness;
 
 const SHUTDOWN_OBSERVATION_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -195,6 +196,7 @@ pub(super) fn assert_graceful_lsp_lifecycle(
     trace_dir: &Path,
     canonical_root_uri: &str,
     logical_root_uri: &str,
+    expected_readiness_generations: usize,
 ) -> Result<(), String> {
     let mut lsp_traces = Vec::new();
     for entry in fs::read_dir(trace_dir).map_err(|error| error.to_string())? {
@@ -226,8 +228,8 @@ pub(super) fn assert_graceful_lsp_lifecycle(
             path.display()
         ));
     }
-    let rename = find_bytes(trace, b"textDocument/rename")
-        .ok_or_else(|| format!("missing rename request in {}", path.display()))?;
+    let did_open = find_bytes(trace, b"textDocument/didOpen")
+        .ok_or_else(|| format!("missing didOpen in {}", path.display()))?;
     let shutdown = find_bytes(trace, b"\"shutdown\"").ok_or_else(|| {
         format!(
             "raw-closed editor LSP without shutdown in {}",
@@ -236,12 +238,14 @@ pub(super) fn assert_graceful_lsp_lifecycle(
     })?;
     let exit = find_bytes(trace, b"\"exit\"")
         .ok_or_else(|| format!("closed editor LSP without exit in {}", path.display()))?;
-    if !(rename < shutdown && shutdown < exit) {
-        return Err(format!(
-            "invalid editor LSP lifecycle order in {}: rename={rename}, shutdown={shutdown}, exit={exit}",
-            path.display()
-        ));
-    }
+    readiness::assert_generation_order(
+        path,
+        trace,
+        did_open,
+        shutdown,
+        exit,
+        expected_readiness_generations,
+    )?;
     let pid = path
         .file_stem()
         .and_then(|name| name.to_str())
