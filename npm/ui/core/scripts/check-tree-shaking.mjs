@@ -81,6 +81,7 @@ const familySignatures = Object.freeze({
   "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
   move: /VIZE_UI_MOVE_DISPOSED/,
   press: /VIZE_UI_PRESS_DISPOSED/,
+  "scroll-lock": /VIZE_UI_SCROLL_LOCK_DISPOSED/,
   "spatial-navigation": /VIZE_UI_SPATIAL_NAVIGATION_DISPOSED/,
   typeahead: /VIZE_UI_TYPEAHEAD_DISPOSED/,
   primitive: /data-vize-ui.+primitive/,
@@ -170,6 +171,12 @@ const componentCases = [
     family: "press",
     exportName: "createPress",
     maximumJavaScriptGzipBytes: 3_550,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "scroll-lock",
+    exportName: "createScrollLock",
+    maximumJavaScriptGzipBytes: 2_150,
     maximumCssGzipBytes: 0,
   },
   {

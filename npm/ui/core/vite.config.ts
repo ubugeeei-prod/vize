@@ -30,6 +30,7 @@ export default defineConfig({
       "long-press": "src/long-press.ts",
       move: "src/move.ts",
       press: "src/press.ts",
+      "scroll-lock": "src/scroll-lock.ts",
       "spatial-navigation": "src/spatial-navigation.ts",
       typeahead: "src/typeahead.ts",
       primitive: "src/primitive.ts",
