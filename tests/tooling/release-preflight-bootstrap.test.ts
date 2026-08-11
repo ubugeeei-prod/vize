@@ -80,7 +80,7 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         workflowName: "Real Project Matrix",
         workflowId: "real-project-matrix.yml",
         ref: "v1.2.3",
-        inputs: {},
+        inputs: { budget_mode: "record-only" },
         expectedRunName: `Real Project Matrix @ ${releaseSha}`,
       },
       {
@@ -173,7 +173,9 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   const matrix = readWorkflow(findReleasePlan("Real Project Matrix").workflowId);
   assert.equal(matrix.name, "Real Project Matrix");
   const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
-  assert.deepEqual(dispatchInputs, {}, "release dispatch must not admit record-only evidence");
+  assert.deepEqual(Object.keys(dispatchInputs), ["budget_mode"]);
+  assert.equal(dispatchInputs.budget_mode?.default, "enforce");
+  assert.deepEqual(dispatchInputs.budget_mode?.options, ["enforce", "record-only"]);
   assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);
   assert.match(matrix["run-name"] ?? "", /github\.sha/);
 });

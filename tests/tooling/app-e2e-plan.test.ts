@@ -79,6 +79,12 @@ test("full and readiness plans preserve every isolated execution row", () => {
     readinessRows.filter((row) => row.needsPlaywright).map((row) => row.shard),
     ["dev-misskey", "dev-nuxt-ui"],
   );
+  assert.equal(
+    fullAppE2eRows.find(
+      (row) => row.profile === "full" && row.suite === "check" && row.shard === "all",
+    )?.timeout,
+    "15m",
+  );
 });
 
 test("planned tasks, fixtures, and mutable identities are exact and unique", () => {

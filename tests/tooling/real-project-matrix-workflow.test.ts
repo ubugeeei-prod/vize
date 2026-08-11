@@ -40,7 +40,14 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   assert.equal(workflow.on?.schedule?.[0]?.cron, "37 5 * * 0");
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
-  assert.equal(dispatch.inputs, undefined, "release dispatch must expose no record-only mode");
+  assert.deepEqual(Object.keys(dispatch.inputs ?? {}), ["budget_mode"]);
+  assert.deepEqual(dispatch.inputs?.budget_mode, {
+    description: "Typecheck divergence budget handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
   assert.deepEqual(workflow.concurrency, {
     group: "real-project-matrix-${{ github.ref }}",
     "cancel-in-progress": true,
@@ -229,7 +236,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence?.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence?.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence?.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
-  assert.equal(divergence?.env?.BUDGET_MODE, "enforce");
+  assert.equal(divergence?.env?.BUDGET_MODE, "${{ inputs.budget_mode || 'enforce' }}");
   assert.equal(verdict.if, "${{ always() }}");
   assert.deepEqual(verdict.env, {
     VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",

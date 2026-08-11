@@ -25,6 +25,76 @@ When enabled, the adapter converts an existing Vize whole-project analysis into
 source-aware findings and reports without reparsing files. It fails closed if a
 diagnostic references a stale file or a path outside the declared workspace.
 
+## Reporter integrations
+
+External CI, editor, code-hosting, and AI integrations implement the object-safe
+`DoctorReporter` trait and advertise a versioned `ReporterDescriptor`. Reporters
+are installed into an explicitly owned `ReporterSet`; there is no process-global
+registry for one integration to replace or reorder another. `render_report`
+streams to any `std::io::Write` destination and returns the reporter identity,
+format versions, finding count, and exact accepted byte count.
+
+Descriptors declare their media type, delivery transport, intended audiences,
+and the Doctor semantics preserved by the output. Registration rejects invalid
+contracts and duplicate stable identifiers. Identical reports and explicit
+reporter configuration must produce identical bytes.
+
+```rust
+use std::io::Write;
+use vize_doctor::{
+    DoctorReport, DoctorReporter, ReporterAudience, ReporterCapability,
+    ReporterDescriptor, ReporterError, ReporterOutput, ReporterTransport,
+    render_report,
+};
+
+struct AgentContextReporter {
+    descriptor: ReporterDescriptor,
+}
+
+impl AgentContextReporter {
+    fn new() -> Self {
+        Self {
+            descriptor: ReporterDescriptor::new(
+                "example.agent-context",
+                "Example agent context",
+                "application/vnd.example.agent-context+json",
+                ReporterTransport::Document,
+            )
+            .with_file_extension("json")
+            .with_audiences([ReporterAudience::Ai])
+            .with_capabilities([
+                ReporterCapability::Findings,
+                ReporterCapability::Evidence,
+                ReporterCapability::Fixes,
+                ReporterCapability::Provenance,
+            ]),
+        }
+    }
+}
+
+impl DoctorReporter for AgentContextReporter {
+    fn descriptor(&self) -> &ReporterDescriptor {
+        &self.descriptor
+    }
+
+    fn write_report(
+        &self,
+        report: &DoctorReport,
+        output: &mut ReporterOutput<'_>,
+    ) -> Result<(), ReporterError> {
+        writeln!(output, "{}", report.summary().overall_score)?;
+        Ok(())
+    }
+}
+
+# let report = DoctorReport::new("example", []);
+let reporter = AgentContextReporter::new();
+let mut bytes = Vec::new();
+let receipt = render_report(&reporter, &report, &mut bytes)?;
+assert_eq!(receipt.reporter_id(), "example.agent-context");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 ## Example
 
 ```rust

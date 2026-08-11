@@ -11,7 +11,7 @@ mod tests;
 use clap::{Args, ValueEnum};
 use std::{fmt, io, path::PathBuf};
 use vize_carton::String;
-use vize_doctor::{DoctorReport, application_analysis::ApplicationAnalysisError};
+use vize_doctor::{DoctorReport, ReporterFailure, application_analysis::ApplicationAnalysisError};
 
 use self::{
     analysis::analyze_application,
@@ -86,7 +86,7 @@ enum DoctorError {
         message: String,
     },
     Analysis(ApplicationAnalysisError),
-    Serialize(serde_json::Error),
+    Report(ReporterFailure),
     Write(io::Error),
 }
 
@@ -146,7 +146,7 @@ impl fmt::Display for DoctorError {
                 )
             }
             Self::Analysis(error) => write!(formatter, "cannot build health report: {error}"),
-            Self::Serialize(error) => write!(formatter, "cannot serialize health report: {error}"),
+            Self::Report(error) => write!(formatter, "cannot render health report: {error}"),
             Self::Write(error) => write!(formatter, "cannot write health report: {error}"),
         }
     }

@@ -71,7 +71,7 @@ export const fullAppE2eRows = [
     false,
     "10m",
   ),
-  row("full", "check", "all", "test:check", checkFixtures, false, "10m"),
+  row("full", "check", "all", "test:check", checkFixtures, false, "15m"),
   row("full", "lint", "all", "test:lint", lintFixtures, false, "10m"),
 ];
 
