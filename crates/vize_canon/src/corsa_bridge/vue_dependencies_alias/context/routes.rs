@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 use vize_carton::{FxHashMap, String as CompactString};
 
 use crate::batch::virtual_project::VirtualProject;
-use crate::batch::virtual_project::package_resolution::PackageResolutionSettings;
+use crate::batch::virtual_project::{
+    PackageRouteReachability, package_resolution::PackageResolutionSettings,
+};
 
 #[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
 type CompilerAlias = (std::string::String, std::string::String);
@@ -15,7 +17,7 @@ pub(super) struct RouteDiscovery<'a> {
     settings: &'a PackageResolutionSettings,
     resolver: &'a mut crate::PackageRouteResolver,
     routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
-    reachability: &'a mut FxHashMap<(PathBuf, CompactString), bool>,
+    reachability: &'a mut FxHashMap<(PathBuf, CompactString), PackageRouteReachability>,
     bindings: &'a mut Vec<crate::PackageRouteBinding>,
     inputs: &'a mut Vec<PathBuf>,
     aliases: &'a [CompilerAlias],
@@ -26,7 +28,7 @@ impl<'a> RouteDiscovery<'a> {
         settings: &'a PackageResolutionSettings,
         resolver: &'a mut crate::PackageRouteResolver,
         routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
-        reachability: &'a mut FxHashMap<(PathBuf, CompactString), bool>,
+        reachability: &'a mut FxHashMap<(PathBuf, CompactString), PackageRouteReachability>,
         bindings: &'a mut Vec<crate::PackageRouteBinding>,
         inputs: &'a mut Vec<PathBuf>,
         aliases: &'a [CompilerAlias],
@@ -48,7 +50,7 @@ impl<'a> RouteDiscovery<'a> {
         specifier: &str,
         mode: crate::PackageResolutionMode,
     ) -> bool {
-        if crate::batch::virtual_project::is_generated_runtime_support_specifier(specifier) {
+        if crate::batch::virtual_project::is_vue_runtime_support_specifier(specifier) {
             return false;
         }
         let importer_dir = importer.parent().unwrap_or(importer);
@@ -67,18 +69,25 @@ impl<'a> RouteDiscovery<'a> {
                 .extend(self.settings.input_paths().iter().cloned());
             self.inputs.extend(context_inputs.iter().cloned());
         }
-        let needs_shadow = route.as_ref().is_some_and(|route| {
-            let key = (route.manifest_path.clone(), CompactString::from(specifier));
-            *self.reachability.entry(key).or_insert_with(|| {
-                crate::batch::virtual_project::package_route_reaches_vue(
-                    route,
-                    self.aliases,
-                    self.settings,
-                    self.resolver,
-                    crate::PackageSourceOptions::new(true, true),
-                )
-            })
-        });
+        let reachability = route
+            .as_ref()
+            .map_or_else(PackageRouteReachability::default, |route| {
+                let key = (route.manifest_path.clone(), CompactString::from(specifier));
+                self.reachability
+                    .entry(key)
+                    .or_insert_with(|| {
+                        crate::batch::virtual_project::package_route_reaches_vue(
+                            route,
+                            self.aliases,
+                            self.settings,
+                            self.resolver,
+                            crate::PackageSourceOptions::new(true, true),
+                        )
+                    })
+                    .clone()
+            });
+        let needs_shadow = reachability.reaches_vue;
+        self.inputs.extend(reachability.inputs);
         if needs_shadow && let Some(route) = route.as_ref() {
             self.routes.insert(
                 (logical_absolute(importer_dir), specifier.into()),
@@ -151,6 +160,11 @@ mod tests {
     use vize_carton::FxHashMap;
 
     const HOST_SOURCE: &str = "<template><div /></template>\n";
+    const CLASS_HOST_SOURCE: &str = r#"<script lang="ts">
+import { Vue } from "vue-property-decorator";
+export const DecoratorBase = Vue;
+</script>
+"#;
 
     #[test]
     fn generated_runtime_support_never_creates_editor_route_state() {
@@ -197,6 +211,35 @@ mod tests {
         assert!(context.mirror.is_none());
     }
 
+    #[test]
+    fn runtime_support_dependency_chain_does_not_create_an_editor_mirror() {
+        let fixture = runtime_package_fixture();
+        let context =
+            AliasContext::for_host(&fixture.host, CLASS_HOST_SOURCE, &FxHashMap::default());
+
+        assert!(context.aliases.is_empty());
+        assert!(context.package_routes.is_empty());
+        assert!(context.mirror.is_none());
+        assert!(
+            context
+                .route_inputs
+                .iter()
+                .any(|path| { path.ends_with("node_modules/vue-property-decorator/index.d.ts") })
+        );
+        assert!(
+            context
+                .route_inputs
+                .iter()
+                .any(|path| { path.ends_with("node_modules/vue-class-component/index.d.ts") })
+        );
+        assert!(
+            !context
+                .route_inputs
+                .iter()
+                .any(|path| path.ends_with("node_modules/vue/RuntimeOnly.vue"))
+        );
+    }
+
     struct RuntimePackageFixture {
         _root: tempfile::TempDir,
         host: std::path::PathBuf,
@@ -220,6 +263,24 @@ mod tests {
             "export { default as RuntimeOnly } from './RuntimeOnly.vue';\n",
         );
         write(&vue.join("RuntimeOnly.vue"), "<template />\n");
+        let class_component = root.path().join("node_modules/vue-class-component");
+        write(
+            &class_component.join("package.json"),
+            r#"{"name":"vue-class-component","types":"./index.d.ts"}"#,
+        );
+        write(
+            &class_component.join("index.d.ts"),
+            "import type { Component } from 'vue';\nexport declare const Vue: Component;\n",
+        );
+        let property_decorator = root.path().join("node_modules/vue-property-decorator");
+        write(
+            &property_decorator.join("package.json"),
+            r#"{"name":"vue-property-decorator","types":"./index.d.ts"}"#,
+        );
+        write(
+            &property_decorator.join("index.d.ts"),
+            "export { Vue } from 'vue-class-component';\n",
+        );
         RuntimePackageFixture { _root: root, host }
     }
 

@@ -72,7 +72,7 @@ impl VirtualProject {
                 .rewriter
                 .collect_all_specifier_occurrences(&content, source_type)
             {
-                if is_generated_runtime_support_specifier(&specifier) {
+                if is_vue_runtime_support_specifier(&specifier) {
                     continue;
                 }
                 if specifier.starts_with('.')
@@ -92,18 +92,23 @@ impl VirtualProject {
                 );
                 let watchable_negative = lookup.is_watchable_negative();
                 let (route, mut invalidation_paths) = lookup.into_parts();
-                let needs_shadow = route.as_ref().is_some_and(|route| {
-                    package_route_reaches_vue(
-                        route,
-                        &aliases,
-                        &resolution,
-                        &mut resolver,
-                        source_options,
-                    )
-                });
+                let reachability =
+                    route
+                        .as_ref()
+                        .map_or_else(PackageRouteReachability::default, |route| {
+                            package_route_reaches_vue(
+                                route,
+                                &aliases,
+                                &resolution,
+                                &mut resolver,
+                                source_options,
+                            )
+                        });
+                let needs_shadow = reachability.reaches_vue;
                 if !watchable_negative && !needs_shadow {
                     continue;
                 }
+                invalidation_paths.extend(reachability.inputs);
                 invalidation_paths.extend(resolution.input_paths().iter().cloned());
                 invalidation_paths.extend(context_inputs);
                 invalidation_paths.push(importer.clone());
@@ -136,18 +141,18 @@ impl VirtualProject {
     }
 }
 
-/// Whether a module specifier is emitted by Canon's shared Vue runtime helpers.
+/// Whether a module specifier belongs to Vue's shared runtime/type support.
 ///
-/// These types are supplied by the virtual project and are not authored,
-/// importer-local package routes. Looking them up as routes grows persistent
-/// batch projects and editor mirrors from generated implementation details.
-pub(crate) fn is_generated_runtime_support_specifier(specifier: &str) -> bool {
+/// Canon supplies these types to virtual documents. They are terminal support
+/// edges rather than importer-scoped component packages, whether the edge came
+/// from generated helpers or from a package declaration in their runtime graph.
+pub(crate) fn is_vue_runtime_support_specifier(specifier: &str) -> bool {
     specifier == "vue" || specifier.starts_with("@vue/") || specifier == "vite/client"
 }
 
 #[cfg(test)]
 mod runtime_support_tests {
-    use super::is_generated_runtime_support_specifier as is_support;
+    use super::is_vue_runtime_support_specifier as is_support;
 
     #[test]
     fn generated_runtime_support_filter_is_exact() {
@@ -172,26 +177,33 @@ mod runtime_support_tests {
 }
 
 #[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct PackageRouteReachability {
+    pub(crate) reaches_vue: bool,
+    pub(crate) inputs: Vec<PathBuf>,
+}
+
+#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
 pub(crate) fn package_route_reaches_vue(
     route: &crate::PackageRoute,
     aliases: &[(std::string::String, std::string::String)],
     resolution: &super::package_resolution::PackageResolutionSettings,
     resolver: &mut crate::PackageRouteResolver,
     source_options: crate::PackageSourceOptions,
-) -> bool {
+) -> PackageRouteReachability {
+    let mut queued = FxHashSet::default();
     let mut queue = route
         .all_source_paths()
         .into_iter()
+        .filter(|path| queued.insert((*path).clone()))
         .cloned()
         .collect::<Vec<_>>();
-    let mut visited = FxHashSet::default();
+    let mut inputs = Vec::new();
     let rewriter = crate::batch::ImportRewriter::new();
     while let Some(path) = queue.pop() {
-        if !visited.insert(path.clone()) {
-            continue;
-        }
+        inputs.push(path.clone());
         if path.extension().is_some_and(|extension| extension == "vue") {
-            return true;
+            return reachability(true, inputs);
         }
         let Ok(content) = std::fs::read_to_string(&path) else {
             continue;
@@ -208,7 +220,7 @@ pub(crate) fn package_route_reaches_vue(
             if let Some(dependency) =
                 resolve_dependency(&specifier, importer_dir, &route.package_root, aliases)
             {
-                if !visited.contains(&dependency) {
+                if queued.insert(dependency.clone()) {
                     queue.push(dependency);
                 }
                 continue;
@@ -216,15 +228,41 @@ pub(crate) fn package_route_reaches_vue(
             if specifier.starts_with('.') || Path::new(specifier.as_str()).is_absolute() {
                 continue;
             }
-            let (context, _) = resolution.context(resolver, &path, mode);
-            let nested = resolver
+            // Vue's compiler/runtime type packages are supplied by the virtual
+            // project itself. They are terminal support edges, not
+            // importer-scoped component packages: descending through their
+            // transitive compiler graph can walk the whole installed toolchain
+            // and can misclassify an internal fixture SFC as the caller's
+            // package identity. Resolve user aliases above before applying
+            // this native-package boundary.
+            if is_vue_runtime_support_specifier(&specifier) {
+                continue;
+            }
+            let (context, context_inputs) = resolution.context(resolver, &path, mode);
+            let (nested, consulted) = resolver
                 .lookup_with_context(importer_dir, &specifier, source_options, context)
-                .into_parts()
-                .0;
+                .into_parts();
+            inputs.extend(context_inputs);
+            inputs.extend(consulted);
             if let Some(nested) = nested {
-                queue.extend(nested.all_source_paths().into_iter().cloned());
+                queue.extend(
+                    nested
+                        .all_source_paths()
+                        .into_iter()
+                        .filter(|source| queued.insert((*source).clone()))
+                        .cloned(),
+                );
             }
         }
     }
-    false
+    reachability(false, inputs)
+}
+
+fn reachability(reaches_vue: bool, mut inputs: Vec<PathBuf>) -> PackageRouteReachability {
+    inputs.sort();
+    inputs.dedup();
+    PackageRouteReachability {
+        reaches_vue,
+        inputs,
+    }
 }
