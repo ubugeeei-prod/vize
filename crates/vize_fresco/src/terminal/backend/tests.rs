@@ -147,12 +147,24 @@ fn restore_completes_every_cleanup_action_after_a_writer_failure() {
 }
 
 #[test]
+fn first_frame_resets_style_before_a_default_style_glyph() {
+    let mut backend = Backend::with_writer(2, 1, Vec::new());
+    backend.buffer_mut().set_string(0, 0, "A", Style::new());
+
+    backend.flush_measured().unwrap();
+
+    assert!(backend.writer().starts_with(&style_reset_bytes()));
+}
+
+#[test]
 fn retry_after_a_partially_written_frame_reestablishes_the_style_baseline() {
+    // Budget: the opening style reset, the cursor move, and the foreground
+    // color are accepted, then the glyph write fails with red still applied.
     let mut backend = Backend::with_writer(
         2,
         1,
         BudgetedWriter {
-            remaining_writes: 2,
+            remaining_writes: 5,
             data: Vec::new(),
         },
     );
@@ -166,15 +178,19 @@ fn retry_after_a_partially_written_frame_reestablishes_the_style_baseline() {
     backend.buffer_mut().set_string(0, 0, "B", Style::new());
     backend.flush_measured().unwrap();
 
-    let mut expected_reset = Vec::new();
+    assert!(backend.writer().data.starts_with(&style_reset_bytes()));
+}
+
+fn style_reset_bytes() -> Vec<u8> {
+    let mut reset = Vec::new();
     queue!(
-        expected_reset,
+        reset,
         SetForegroundColor(crossterm::style::Color::Reset),
         SetBackgroundColor(crossterm::style::Color::Reset),
         SetAttribute(Attribute::Reset)
     )
     .unwrap();
-    assert!(backend.writer().data.starts_with(&expected_reset));
+    reset
 }
 
 #[derive(Debug)]

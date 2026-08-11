@@ -64,8 +64,11 @@ pub struct Backend<W: Write = io::Stdout> {
     raw_mode: bool,
     mouse_capture: bool,
     bracketed_paste: bool,
-    /// Set when a frame failed mid-write and may have left an unknown
-    /// terminal style, requiring an explicit reset before the next frame.
+    /// Set while the terminal style may not match [`Style::new`], either
+    /// because no frame has been written yet or because a frame failed
+    /// mid-write, requiring an explicit reset before the next frame.
+    ///
+    /// [`Style::new`]: crate::terminal::Style::new
     style_baseline_unknown: bool,
     width: u16,
     height: u16,
@@ -95,7 +98,7 @@ impl<W: Write> Backend<W> {
             raw_mode: false,
             mouse_capture: false,
             bracketed_paste: false,
-            style_baseline_unknown: false,
+            style_baseline_unknown: true,
             width,
             height,
             writer,
