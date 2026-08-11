@@ -1,5 +1,6 @@
 import {
   "vizejs/tools/lib" @tool,
+  "moonbitlang/core/env",
   "moonbitlang/async",
   "moonbitlang/async/process",
   "moonbitlang/x/sys",

@@ -2,6 +2,7 @@
 
 import type { ShallowRef } from "vue";
 
+import { anyAbortSignal } from "./abort-signal.js";
 import { type AsyncResourceExecution, useAsyncResource } from "./async-resource.js";
 import {
   availableCapability,
@@ -20,6 +21,14 @@ type Equal<Left, Right> =
     ? true
     : false;
 type Expect<Condition extends true> = Condition;
+
+const combinedAbortSignal = anyAbortSignal(new Set<AbortSignal>());
+type _AbortCompositionReturnsThePlatformSignal = Expect<
+  Equal<typeof combinedAbortSignal, AbortSignal>
+>;
+
+// @ts-expect-error cancellation composition accepts AbortSignal inputs only.
+anyAbortSignal([new AbortController()]);
 
 const resource = useAsyncResource(async (_context, id: 1 | 2) => ({ id }) as const);
 

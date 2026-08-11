@@ -1,7 +1,7 @@
 
 fn wasm_rustflags() -> String {
   let flag = "--cfg getrandom_backend=\"wasm_js\""
-  match @sys.get_env_var("RUSTFLAGS") {
+  match @env.get_env_var("RUSTFLAGS") {
     Some(value) if value.trim() != "" => value + " " + flag
     _ => flag
   }

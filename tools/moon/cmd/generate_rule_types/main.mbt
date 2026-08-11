@@ -74,7 +74,7 @@ fn generate_output(rule_names : Array[String]) -> String {
 }
 
 fn run_app() -> Int {
-  let repo_root = match @sys.get_env_var("VIZE_REPO_ROOT") {
+  let repo_root = match @env.get_env_var("VIZE_REPO_ROOT") {
     Some(value) => {
       let path : @path.Path = value
       path.resolve().to_string()

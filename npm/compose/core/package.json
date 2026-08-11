@@ -32,6 +32,11 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./abort-signal": {
+      "types": "./dist/abort-signal.d.mts",
+      "import": "./dist/abort-signal.mjs",
+      "default": "./dist/abort-signal.mjs"
+    },
     "./async-resource": {
       "types": "./dist/async-resource.d.mts",
       "import": "./dist/async-resource.mjs",

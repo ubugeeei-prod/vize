@@ -21,6 +21,7 @@ const entries = {
  * another module or in the retained external `vue` import specifiers.
  */
 const sentinels = {
+  "abort-signal": ["anyAbortSignal"],
   scope: ["tryOnScopeDispose"],
   "capability-available": ['status: "available"'],
   "capability-unavailable": ['status: "unavailable"'],
@@ -51,6 +52,7 @@ interface UtilityCase {
 }
 
 const utilities: readonly UtilityCase[] = [
+  { binding: "anyAbortSignal", entry: "index", module: "abort-signal", shared: [] },
   { binding: "tryOnScopeDispose", entry: "index", module: "scope", shared: [] },
   {
     binding: "availableCapability",

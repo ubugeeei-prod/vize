@@ -5,6 +5,7 @@ const kibibyte = 1024;
 
 /** Per-subpath compressed budgets; every public runtime entry is mandatory. */
 const subpathBudgets = new Map([
+  ["abort-signal.mjs", 1 * kibibyte],
   ["async-resource.mjs", 2 * kibibyte],
   ["capability.mjs", 1 * kibibyte],
   ["disposal-scope.mjs", 2 * kibibyte],

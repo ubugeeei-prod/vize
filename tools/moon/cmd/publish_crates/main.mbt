@@ -58,7 +58,7 @@ fn positive_int_or(value : String, fallback : Int) -> Int {
 
 /// Reads a retry-related integer from the environment with a validated default.
 fn env_positive_int(name : String, fallback : Int) -> Int {
-  match @sys.get_env_var(name) {
+  match @env.get_env_var(name) {
     Some(value) if value != "" => positive_int_or(value, fallback)
     _ => fallback
   }

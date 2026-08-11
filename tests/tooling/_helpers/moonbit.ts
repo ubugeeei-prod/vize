@@ -21,6 +21,11 @@ export function moonScriptPackagePath(name: string): string {
   return path.join(repoRoot, "tools", "moon", "cmd", ...name.split("/"));
 }
 
+function moonScriptPackageArg(name: string, cwd: string): string {
+  const packagePath = moonScriptPackagePath(name);
+  return cwd === repoRoot ? path.relative(repoRoot, packagePath) : packagePath;
+}
+
 function resolveRunnerShim(env: NodeJS.ProcessEnv): string | undefined {
   const runnerTemp = env.RUNNER_TEMP;
   if (!runnerTemp) {
@@ -97,7 +102,7 @@ export function runMoonScript(
     ...(options.denyWarn ? ["--deny-warn"] : []),
     "--target",
     "native",
-    moonScriptPackagePath(name),
+    moonScriptPackageArg(name, options.cwd ?? repoRoot),
     "--",
     ...args,
   ];
