@@ -17,6 +17,7 @@ export const rootEntry = {
     "./event-listener",
     "./locale",
     "./media-query",
+    "./retry-delay",
     "./scope",
     "./timeout-scheduler",
     "./use-counter",
@@ -96,6 +97,13 @@ export const entries = [
     gzipBudgetBytes: 1024,
     runtimeExports: ["useMediaQuery", "useReducedMotion"],
     utilities: ["useMediaQuery", "useReducedMotion"],
+  },
+  {
+    subpath: "./retry-delay",
+    source: "src/retry-delay.ts",
+    gzipBudgetBytes: 1.5 * 1024,
+    runtimeExports: ["calculateRetryDelay"],
+    utilities: ["calculateRetryDelay"],
   },
   {
     subpath: "./scope",

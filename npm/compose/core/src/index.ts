@@ -6,6 +6,7 @@ export * from "./disposal-scope.ts";
 export * from "./event-listener.ts";
 export * from "./locale.ts";
 export * from "./media-query.ts";
+export * from "./retry-delay.ts";
 export * from "./scope.ts";
 export * from "./timeout-scheduler.ts";
 export * from "./use-counter.ts";

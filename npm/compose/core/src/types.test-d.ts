@@ -16,6 +16,7 @@ import {
 import { COMPOSABLE_CATALOG, type ComposableCatalog } from "./catalog.js";
 import { type TextDirection, useLocale } from "./locale.js";
 import { createDisposalScope, type DisposalError } from "./disposal-scope.js";
+import { calculateRetryDelay, type RetryDelayOptions } from "./retry-delay.js";
 
 type Equal<Left, Right> =
   (<Value>() => Value extends Left ? 1 : 2) extends <Value>() => Value extends Right ? 1 : 2
@@ -50,6 +51,18 @@ deadlineAbortSignal(new Date(), { now: () => 0 });
 timeoutAbortSignal(100n);
 // @ts-expect-error deadlines are Date objects or numeric Unix milliseconds.
 deadlineAbortSignal("tomorrow");
+
+const retryDelayOptions = {
+  initialDelayMs: 50,
+  jitterRatio: 1,
+  random: () => 0.5,
+} as const satisfies RetryDelayOptions;
+calculateRetryDelay(2, retryDelayOptions) satisfies number;
+
+// @ts-expect-error retry attempts are numeric and one-based at runtime.
+calculateRetryDelay(1n);
+// @ts-expect-error entropy sources must be callable.
+calculateRetryDelay(1, { random: 0.5 });
 
 const resource = useAsyncResource(async (_context, id: 1 | 2) => ({ id }) as const);
 

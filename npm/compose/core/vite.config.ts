@@ -17,6 +17,7 @@ export default defineConfig({
       "event-listener": "src/event-listener.ts",
       locale: "src/locale.ts",
       "media-query": "src/media-query.ts",
+      "retry-delay": "src/retry-delay.ts",
       scope: "src/scope.ts",
       temporal: "src/temporal.ts",
       "timeout-scheduler": "src/timeout-scheduler.ts",

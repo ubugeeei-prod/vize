@@ -163,6 +163,18 @@ export const utilities = [
     dependencies: ["useMediaQuery"],
   },
   {
+    name: "calculateRetryDelay",
+    entry: "./retry-delay",
+    category: "timing",
+    stability: "experimental",
+    targets: allTargets,
+    ssr: "safe",
+    hydration: "not-applicable",
+    cleanupOwners: ["none"],
+    runtimeGlobals: [],
+    dependencies: [],
+  },
+  {
     name: "tryOnScopeDispose",
     entry: "./scope",
     category: "lifecycle",

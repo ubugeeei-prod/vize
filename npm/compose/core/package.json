@@ -72,6 +72,11 @@
       "import": "./dist/media-query.mjs",
       "default": "./dist/media-query.mjs"
     },
+    "./retry-delay": {
+      "types": "./dist/retry-delay.d.mts",
+      "import": "./dist/retry-delay.mjs",
+      "default": "./dist/retry-delay.mjs"
+    },
     "./scope": {
       "types": "./dist/scope.d.mts",
       "import": "./dist/scope.mjs",
