@@ -126,7 +126,10 @@ fn exhausted_package_closure_tracks_inputs_without_materializing_a_shadow() {
         &mut discovery,
     );
 
-    assert!(needs_registration);
+    assert!(
+        !needs_registration,
+        "an exhausted native route must not widen the program roots"
+    );
     assert_eq!(discovery.package_routes.len(), 1);
     let binding = &discovery.package_routes[0];
     assert!(binding.route.is_none(), "an exhausted route stays native");
@@ -147,4 +150,49 @@ fn exhausted_package_closure_tracks_inputs_without_materializing_a_shadow() {
     assert_eq!(metrics.reachability_budget_exceeded, 1);
     assert_eq!(metrics.last_reachability_files, 2);
     assert_eq!(metrics.last_reachability_parses, 1);
+}
+
+#[test]
+fn vue_runtime_support_stays_native_without_reachability_work() {
+    let root = tempfile::tempdir().unwrap();
+    let entry = write(
+        root.path(),
+        "src/entry.ts",
+        "import type { Component } from 'vue';\nexport type Entry = Component;\n",
+    );
+    write(
+        root.path(),
+        "node_modules/vue/package.json",
+        r#"{"name":"vue","exports":{".":{"types":"./index.d.ts"}}}"#,
+    );
+    write(
+        root.path(),
+        "node_modules/vue/index.d.ts",
+        "export type { Component } from './runtime';\n",
+    );
+    write(
+        root.path(),
+        "node_modules/vue/runtime.d.ts",
+        "export interface Component { readonly name?: string }\n",
+    );
+
+    let mut resolver = PackageRouteResolver::default();
+    let discovered = collect_transitive_local_imports_with_resolver(
+        &[entry],
+        root.path(),
+        &mut CanonicalPathCache::default(),
+        false,
+        None,
+        &mut resolver,
+    );
+
+    assert!(discovered.registrations.is_empty());
+    assert!(discovered.authored.is_empty());
+    assert!(discovered.package_routes.is_empty());
+    let metrics = resolver.metrics();
+    assert_eq!(metrics.cache_misses, 0, "runtime support stays native");
+    assert_eq!(
+        metrics.reachability_checks, 0,
+        "runtime support is terminal"
+    );
 }

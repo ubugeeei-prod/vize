@@ -68,7 +68,7 @@ mod package_link_owners;
 mod package_node_modules;
 pub(crate) mod package_resolution;
 mod package_route_discovery;
-pub(crate) use package_route_discovery::is_vue_runtime_support_specifier;
+pub use package_route_discovery::is_vue_runtime_support_specifier;
 mod package_route_reachability;
 pub(crate) use package_route_reachability::package_route_reaches_vue;
 pub use package_route_reachability::{

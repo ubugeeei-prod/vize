@@ -6,6 +6,7 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_canon::batch::is_vue_runtime_support_specifier;
 use vize_canon::{PackageRouteBinding, PackageRouteResolver, PackageSourceOptions};
 #[cfg(test)]
 use vize_carton::cstr;
@@ -116,6 +117,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                 });
                 match aliased {
                     Some(resolved) => Some(resolved),
+                    None if is_vue_runtime_support_specifier(&specifier) => None,
                     None => {
                         let context_key = (
                             dir.to_path_buf(),
@@ -227,9 +229,7 @@ pub(super) fn collect_transitive_local_imports_with_resolver(
                     &mut discovery,
                 )
             };
-            if needs_registration {
-                package_routes.extend(discovery.package_routes);
-            }
+            package_routes.extend(discovery.package_routes);
             let in_package_graph = package_graph || package_route.is_some();
             if let Some(route) = package_route
                 && needs_registration

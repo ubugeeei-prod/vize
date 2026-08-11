@@ -110,7 +110,7 @@ impl VirtualProject {
                     reachability.record_work(&mut resolver);
                 }
                 let needs_shadow = reachability.requires_shadow();
-                if !watchable_negative && !reachability.requires_tracking() {
+                if !route_requires_invalidation_binding(has_route, watchable_negative) {
                     continue;
                 }
                 invalidation_paths.extend(reachability.inputs);
@@ -146,18 +146,24 @@ impl VirtualProject {
     }
 }
 
+fn route_requires_invalidation_binding(has_route: bool, watchable_negative: bool) -> bool {
+    has_route || watchable_negative
+}
+
 /// Whether a module specifier belongs to Vue's shared runtime/type support.
 ///
 /// Canon supplies these types to virtual documents. They are terminal support
 /// edges rather than importer-scoped component packages, whether the edge came
 /// from generated helpers or from a package declaration in their runtime graph.
-pub(crate) fn is_vue_runtime_support_specifier(specifier: &str) -> bool {
+pub fn is_vue_runtime_support_specifier(specifier: &str) -> bool {
     specifier == "vue" || specifier.starts_with("@vue/") || specifier == "vite/client"
 }
 
 #[cfg(test)]
 mod runtime_support_tests {
-    use super::is_vue_runtime_support_specifier as is_support;
+    use super::{
+        is_vue_runtime_support_specifier as is_support, route_requires_invalidation_binding,
+    };
 
     #[test]
     fn generated_runtime_support_filter_is_exact() {
@@ -178,5 +184,12 @@ mod runtime_support_tests {
         ] {
             assert!(!is_support(specifier), "{specifier}");
         }
+    }
+
+    #[test]
+    fn positive_non_vue_routes_keep_an_invalidation_binding() {
+        assert!(route_requires_invalidation_binding(true, false));
+        assert!(route_requires_invalidation_binding(false, true));
+        assert!(!route_requires_invalidation_binding(false, false));
     }
 }

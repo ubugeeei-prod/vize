@@ -56,13 +56,13 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         packages,
         &mut discovered,
     );
-    let resolved_discovery = if needs_registration {
-        VirtualRegistrationDiscovery {
-            package_routes: discovered,
-            package_sources: visited.into_iter().collect(),
-        }
-    } else {
-        VirtualRegistrationDiscovery::default()
+    let resolved_discovery = VirtualRegistrationDiscovery {
+        package_routes: discovered,
+        package_sources: if needs_registration {
+            visited.into_iter().collect()
+        } else {
+            Vec::new()
+        },
     };
     discovery
         .package_routes
@@ -119,6 +119,8 @@ fn source_needs_virtual_registration(
                 });
                 if aliased.is_some() {
                     aliased
+                } else if vize_canon::batch::is_vue_runtime_support_specifier(&specifier) {
+                    None
                 } else if let Some(packages) = packages.as_deref_mut() {
                     let (context, context_inputs) = match aliases {
                         Some(aliases) => {
@@ -215,7 +217,7 @@ fn source_needs_virtual_registration(
                         reachability.record_work(packages);
                         track_reachability = reachability.requires_tracking();
                         let needs_shadow = reachability.requires_shadow();
-                        needs_registration |= track_reachability;
+                        needs_registration |= needs_shadow;
                         invalidation_paths.extend(reachability.inputs);
                         if needs_shadow {
                             binding_route = Some(route);
