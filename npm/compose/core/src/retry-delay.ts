@@ -68,13 +68,19 @@ export interface RetryDelayOptions {
  * @default options {}
  * @throws {RangeError} A tagged error when the retry number, delay options, or
  * entropy value is outside its documented range.
- * @throws {TypeError} A tagged error when `random` is not callable.
+ * @throws {TypeError} A tagged error when `options` is not an object or
+ * `random` is not callable.
  * @returns An integer delay in milliseconds.
  */
 export function calculateRetryDelay(retryAttempt: number, options: RetryDelayOptions = {}): number {
   if (!Number.isSafeInteger(retryAttempt) || retryAttempt < 1) {
     throw new RangeError(
       `[VIZE_COMPOSE_RETRY_INVALID_ATTEMPT] retryAttempt must be a positive safe integer; received ${String(retryAttempt)}`,
+    );
+  }
+  if (options === null || typeof options !== "object") {
+    throw new TypeError(
+      `[VIZE_COMPOSE_RETRY_INVALID_OPTIONS] options must be an object; received ${options === null ? "null" : typeof options}`,
     );
   }
 

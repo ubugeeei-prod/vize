@@ -122,6 +122,17 @@ void test("rejects retry numbers that cannot identify an attempt", () => {
   }
 });
 
+void test("rejects option containers that cannot carry a delay policy", () => {
+  for (const options of [null, 0, false, "", "abc", Symbol("options")]) {
+    assert.throws(
+      () => calculateRetryDelay(1, options as never),
+      (error: unknown) =>
+        error instanceof TypeError &&
+        error.message.startsWith("[VIZE_COMPOSE_RETRY_INVALID_OPTIONS]"),
+    );
+  }
+});
+
 void test("rejects non-portable backoff options before requesting entropy", () => {
   let randomCalls = 0;
   const random = () => {
