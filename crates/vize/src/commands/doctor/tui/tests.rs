@@ -1,6 +1,6 @@
 mod snapshot_tests;
 
-use std::path::PathBuf;
+use std::{error::Error, io, path::PathBuf};
 
 use vize_doctor::{
     AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport, EvidenceKind,
@@ -13,9 +13,53 @@ use vize_fresco::{
 };
 
 use super::{
-    DoctorSource, editor_command,
+    DoctorSource, DoctorTuiError, editor_command, finish_session,
     model::{DoctorTuiModel, InteractionMode, InteractionOutcome},
 };
+
+#[test]
+fn session_and_restoration_failures_preserve_both_causes() {
+    let session = DoctorTuiError::Io(io::Error::new(
+        io::ErrorKind::TimedOut,
+        "injected frame failure",
+    ));
+    let restoration = io::Error::new(io::ErrorKind::BrokenPipe, "injected restoration failure");
+
+    let error = finish_session(Err(session), Err(restoration)).unwrap_err();
+    assert_eq!(
+        error.to_string(),
+        "Doctor TUI failed: terminal operation failed: injected frame failure; terminal restoration also failed: injected restoration failure"
+    );
+    assert_eq!(
+        error.source().map(ToString::to_string).as_deref(),
+        Some("terminal operation failed: injected frame failure")
+    );
+    let DoctorTuiError::SessionAndRestoration {
+        session,
+        restoration,
+    } = error
+    else {
+        panic!("both failures must use the combined error contract");
+    };
+    assert!(matches!(*session, DoctorTuiError::Io(_)));
+    assert_eq!(restoration.kind(), io::ErrorKind::BrokenPipe);
+}
+
+#[test]
+fn session_completion_keeps_each_single_failure_exact() {
+    let session = DoctorTuiError::NonInteractive("injected session failure");
+    let session_only = finish_session(Err(session), Ok(())).unwrap_err();
+    assert!(matches!(session_only, DoctorTuiError::NonInteractive(_)));
+
+    let restoration = io::Error::new(io::ErrorKind::Other, "injected restoration failure");
+    let restoration_only = finish_session(Ok(()), Err(restoration)).unwrap_err();
+    let DoctorTuiError::Io(restoration_only) = restoration_only else {
+        panic!("restoration-only failure must retain the terminal error");
+    };
+    assert_eq!(restoration_only.kind(), io::ErrorKind::Other);
+
+    assert!(finish_session(Ok(()), Ok(())).is_ok());
+}
 
 #[test]
 fn navigation_filters_and_incremental_search_preserve_stable_selection() {

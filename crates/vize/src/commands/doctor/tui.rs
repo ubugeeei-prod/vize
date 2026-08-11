@@ -44,6 +44,14 @@ pub(super) enum DoctorTuiError {
     NonInteractive(&'static str),
     Io(io::Error),
     Presentation(vize_fresco::DiagnosticPresentationError),
+    /// Application work and the mandatory terminal restoration both failed.
+    ///
+    /// The application error remains the primary source while the display text
+    /// retains the independent restoration failure for an actionable report.
+    SessionAndRestoration {
+        session: Box<DoctorTuiError>,
+        restoration: io::Error,
+    },
 }
 
 impl fmt::Display for DoctorTuiError {
@@ -58,6 +66,13 @@ impl fmt::Display for DoctorTuiError {
             ),
             Self::Io(error) => write!(formatter, "terminal operation failed: {error}"),
             Self::Presentation(error) => write!(formatter, "invalid diagnostic view: {error}"),
+            Self::SessionAndRestoration {
+                session,
+                restoration,
+            } => write!(
+                formatter,
+                "Doctor TUI failed: {session}; terminal restoration also failed: {restoration}"
+            ),
         }
     }
 }
@@ -67,6 +82,7 @@ impl std::error::Error for DoctorTuiError {
         match self {
             Self::Io(error) => Some(error),
             Self::Presentation(error) => Some(error),
+            Self::SessionAndRestoration { session, .. } => Some(session.as_ref()),
             Self::InvalidFormat | Self::NonInteractive(_) => None,
         }
     }
@@ -116,8 +132,19 @@ pub(super) fn run(
 
     let session = run_loop(&mut backend, &mut model, sources, root, &mut capabilities);
     let restoration = backend.restore();
+    finish_session(session, restoration)
+}
+
+fn finish_session(
+    session: Result<(), DoctorTuiError>,
+    restoration: io::Result<()>,
+) -> Result<(), DoctorTuiError> {
     match (session, restoration) {
-        (Err(error), _) => Err(error),
+        (Err(session), Err(restoration)) => Err(DoctorTuiError::SessionAndRestoration {
+            session: Box::new(session),
+            restoration,
+        }),
+        (Err(error), Ok(())) => Err(error),
         (Ok(()), Err(error)) => Err(error.into()),
         (Ok(()), Ok(())) => Ok(()),
     }
