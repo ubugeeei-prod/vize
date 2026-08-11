@@ -49,6 +49,10 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     '"crates/vize_maestro/src/ide/**"',
     '"crates/vize/tests/content_mapper_tsgo_cli.rs"',
     '"crates/vize/tests/content_mapper_tsgo_build.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"',
+    '"crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"',
+    '"crates/vize/tests/content_mapper_lsp_support/**"',
     '"crates/vize/tests/fixtures/content_mapper_project/**"',
     '"npm/cli/bin/vize"',
     '"npm/cli/package.json"',
@@ -96,6 +100,8 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
     /VIZE_TEST_CONTENT_MAPPER_TSGO: \$\{\{ runner\.temp \}\}\/tsgo[\s\S]*smoke-release-install\.mjs --prepare-manifests --content-mapper-checks[\s\S]*npm\/native npm\/native\/npm\/\*[\s\S]*npm\/cli/,
   );
   assert.match(job, /TSGO_PATH: \$\{\{ runner\.temp \}\}\/tsgo/);
+  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture/);
+  assert.match(job, /cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture/);
   assert.match(job, /cargo test -p vize_canon --test lsp_import_resolution -- --nocapture/);
   const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);
   assert.equal(stressSteps.length, 1, "expected exactly one Maestro lifecycle stress step");

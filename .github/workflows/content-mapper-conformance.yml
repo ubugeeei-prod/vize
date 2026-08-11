@@ -12,6 +12,10 @@ on:
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
+      - "crates/vize/tests/content_mapper_lsp_support/**"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -43,6 +47,10 @@ on:
       - "crates/vize/src/commands/content_mapper/**"
       - "crates/vize/tests/content_mapper_tsgo_cli.rs"
       - "crates/vize/tests/content_mapper_tsgo_build.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
+      - "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**"
+      - "crates/vize/tests/content_mapper_lsp_support/**"
       - "crates/vize/tests/fixtures/content_mapper_project/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -160,6 +168,7 @@ jobs:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
         run: |
           cargo test -p vize --test content_mapper_tsgo_lsp -- --nocapture
+          cargo test -p vize --test content_mapper_tsgo_lsp_event_forms -- --nocapture
           cargo test -p vize_canon --test lsp_import_resolution -- --nocapture
       - name: Stress exact editor lifecycle
         env:
