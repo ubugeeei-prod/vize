@@ -62,7 +62,9 @@ pub mod text;
 pub mod napi;
 
 // Re-exports for convenience
-pub use component::{BoxNode, InputNode, TextNode};
+pub use component::{
+    BoxNode, InputNode, TextNode, VirtualListNavigation, VirtualListState, VirtualWindow,
+};
 pub use input::{Event, ImeState, KeyEvent, MouseEvent};
 pub use layout::{FlexStyle, LayoutEngine, Rect};
 pub use render::{RenderNode, RenderTree};

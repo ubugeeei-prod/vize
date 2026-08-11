@@ -1,8 +1,9 @@
 //! Render benchmarks.
 #![allow(deprecated)]
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
+use vize_fresco::component::{VirtualListNavigation, VirtualListState};
 use vize_fresco::layout::{FlexStyle, LayoutEngine};
 use vize_fresco::terminal::{Buffer, Style};
 use vize_fresco::text::{TextWidth, TextWrap, WrapMode};
@@ -117,6 +118,36 @@ fn benchmark_buffer_diff(c: &mut Criterion) {
     });
 }
 
+fn benchmark_virtual_list(c: &mut Criterion) {
+    let keys: Vec<u64> = (0..10_000).collect();
+    let mut group = c.benchmark_group("virtual_list_10k");
+    group.throughput(Throughput::Elements(keys.len() as u64));
+
+    let mut reconciliation = VirtualListState::with_overscan(20, 3);
+    let _ = reconciliation.reconcile(&keys);
+    let _ = reconciliation.select_index(&keys, 9_000);
+    group.bench_function("reconcile", |b| {
+        b.iter(|| black_box(reconciliation.reconcile(black_box(&keys))));
+    });
+
+    group.throughput(Throughput::Elements(1));
+    let mut navigation = VirtualListState::with_overscan(20, 3);
+    let _ = navigation.reconcile(&keys);
+    group.bench_function("navigation", |b| {
+        b.iter(|| {
+            if navigation.selected_index() == Some(keys.len() - 1) {
+                let _ = navigation.navigate(&keys, VirtualListNavigation::First);
+            }
+            black_box(navigation.navigate(black_box(&keys), VirtualListNavigation::Next))
+        });
+    });
+
+    group.bench_function("window", |b| {
+        b.iter(|| black_box(navigation.window()));
+    });
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -124,5 +155,6 @@ criterion_group!(
     benchmark_text_wrap,
     benchmark_layout,
     benchmark_buffer_diff,
+    benchmark_virtual_list,
 );
 criterion_main!(benches);
