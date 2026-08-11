@@ -18,13 +18,13 @@ use std::{
 use vize_carton::{String, ToCompactString, cstr};
 use vize_doctor::DoctorReport;
 use vize_fresco::{
-    Backend, Event, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
-    input::read_event, terminal::TerminalOptions,
+    Backend, Event, FrameActivityTelemetry, FrameRenderer, TerminalCapabilities,
+    TerminalCapabilityProbe, TerminalProfileOptions, input::read_event, terminal::TerminalOptions,
 };
 
 use super::{DoctorFormat, DoctorSource};
 use model::{DoctorTuiModel, InteractionOutcome};
-use render::render_frame;
+use render::build_frame;
 
 const TERMINAL_OPTIONS: TerminalOptions = TerminalOptions {
     raw_mode: true,
@@ -44,6 +44,7 @@ pub(super) enum DoctorTuiError {
     NonInteractive(&'static str),
     Io(io::Error),
     Presentation(vize_fresco::DiagnosticPresentationError),
+    Frame(vize_fresco::FrameRenderError),
     /// Application work and the mandatory terminal restoration both failed.
     ///
     /// The application error remains the primary source while the display text
@@ -66,6 +67,7 @@ impl fmt::Display for DoctorTuiError {
             ),
             Self::Io(error) => write!(formatter, "terminal operation failed: {error}"),
             Self::Presentation(error) => write!(formatter, "invalid diagnostic view: {error}"),
+            Self::Frame(error) => write!(formatter, "Doctor frame failed: {error}"),
             Self::SessionAndRestoration {
                 session,
                 restoration,
@@ -82,6 +84,7 @@ impl std::error::Error for DoctorTuiError {
         match self {
             Self::Io(error) => Some(error),
             Self::Presentation(error) => Some(error),
+            Self::Frame(error) => Some(error),
             Self::SessionAndRestoration { session, .. } => Some(session.as_ref()),
             Self::InvalidFormat | Self::NonInteractive(_) => None,
         }
@@ -97,6 +100,12 @@ impl From<io::Error> for DoctorTuiError {
 impl From<vize_fresco::DiagnosticPresentationError> for DoctorTuiError {
     fn from(error: vize_fresco::DiagnosticPresentationError) -> Self {
         Self::Presentation(error)
+    }
+}
+
+impl From<vize_fresco::FrameRenderError> for DoctorTuiError {
+    fn from(error: vize_fresco::FrameRenderError) -> Self {
+        Self::Frame(error)
     }
 }
 
@@ -157,10 +166,11 @@ fn run_loop(
     root: &Path,
     capabilities: &mut TerminalCapabilities,
 ) -> Result<(), DoctorTuiError> {
+    let mut renderer = FrameRenderer::new();
     loop {
-        render_frame(backend.buffer_mut(), model, sources, *capabilities)?;
+        let mut frame = build_frame(model, sources, *capabilities)?;
         model.place_cursor(backend.cursor_mut());
-        backend.flush_measured()?;
+        renderer.render(frame.tree_mut(), backend, FrameActivityTelemetry::default())?;
 
         let outcome = match read_event()? {
             Event::Resize(width, height) => {

@@ -3,9 +3,10 @@
 use std::io;
 
 use vize_doctor::DoctorReport;
+use vize_fresco::render::Painter;
 use vize_fresco::{Backend, FrameOutputTelemetry, Key, KeyEvent, TerminalCapabilities};
 
-use super::{DoctorTuiModel, render_frame};
+use super::{DoctorTuiModel, build_frame};
 
 /// Headless Doctor workspace used by Criterion and downstream performance gates.
 ///
@@ -21,6 +22,7 @@ pub struct DoctorTuiBenchmark<'report> {
     capabilities: TerminalCapabilities,
     selection_forward: bool,
     search_has_query: bool,
+    retained_nodes: usize,
 }
 
 impl<'report> DoctorTuiBenchmark<'report> {
@@ -37,19 +39,21 @@ impl<'report> DoctorTuiBenchmark<'report> {
             capabilities,
             selection_forward: true,
             search_has_query: false,
+            retained_nodes: 0,
         }
     }
 
     /// Paint and differentially flush one complete frame.
     pub fn render(&mut self) -> FrameOutputTelemetry {
-        render_frame(
-            self.backend.buffer_mut(),
-            &mut self.model,
-            &[],
-            self.capabilities,
-        )
-        .expect("benchmark fixture must produce valid semantic presentations");
+        let mut frame = build_frame(&mut self.model, &[], self.capabilities)
+            .expect("benchmark fixture must produce valid semantic presentations");
         self.model.place_cursor(self.backend.cursor_mut());
+        self.retained_nodes = frame.tree_mut().node_count();
+        frame
+            .tree_mut()
+            .compute_layout(self.backend.width(), self.backend.height());
+        self.backend.buffer_mut().clear();
+        Painter::new(self.backend.buffer_mut()).paint_tree(frame.tree_mut());
         self.backend
             .flush_measured()
             .expect("injected sink must accept a complete frame")
@@ -85,5 +89,10 @@ impl<'report> DoctorTuiBenchmark<'report> {
     /// Return the number of finding rows retained for the current viewport.
     pub fn materialized_findings(&self) -> usize {
         self.model.workspace().finding_window().materialized_len()
+    }
+
+    /// Return render nodes retained by the most recently completed frame.
+    pub const fn retained_nodes(&self) -> usize {
+        self.retained_nodes
     }
 }

@@ -139,6 +139,7 @@ fn differential_frame_costs_stay_inside_explicit_budgets() {
     let first_frame = tui.render();
     assert!(first_frame.changed_cells() <= 1_600, "{first_frame:?}");
     assert!(first_frame.bytes_written() <= 8_192, "{first_frame:?}");
+    assert!(tui.retained_nodes() <= 96, "{first_frame:?}");
 
     let selection_frame = tui.toggle_selection_and_render();
     assert!(
@@ -149,6 +150,7 @@ fn differential_frame_costs_stay_inside_explicit_budgets() {
         selection_frame.bytes_written() <= 512,
         "{selection_frame:?}"
     );
+    assert!(tui.retained_nodes() <= 96, "{selection_frame:?}");
 }
 
 #[test]

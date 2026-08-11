@@ -5,8 +5,8 @@ mod labels;
 use vize_carton::{String, cstr};
 use vize_doctor::{DoctorFinding, FixSafety};
 use vize_fresco::{
-    DiagnosticPresentation, DiagnosticPresentationKind, DiagnosticTone, TerminalCapabilities,
-    TextWrap,
+    DiagnosticPresentation, DiagnosticPresentationKind, DiagnosticTone, HeadlessSemanticNode,
+    SemanticRole, SemanticState, TerminalCapabilities, TextWrap,
     terminal::{Color, Style},
     text::WrapMode,
 };
@@ -14,7 +14,10 @@ use vize_fresco::{
 use super::{StyledLine, profile, severity_tone};
 use crate::commands::doctor::{
     DoctorSource,
-    tui::{DoctorTuiError, model::DoctorTuiModel},
+    tui::{
+        DoctorTuiError,
+        model::{DoctorTuiModel, InteractionMode},
+    },
 };
 use labels::{
     confidence_label, confidence_tone, evidence_kind_label, fix_safety_label, impact_label,
@@ -35,10 +38,17 @@ pub(super) fn build(
     };
     let width = usize::from(width.max(1));
     let mut lines = Vec::new();
-    lines.push(line(
-        cstr!("{} — {}", finding.code, finding.title),
-        capabilities.adapt_style(Style::new().fg(Color::Cyan).bold()),
-    ));
+    lines.push(
+        line(
+            cstr!("{} — {}", finding.code, finding.title),
+            capabilities.adapt_style(Style::new().fg(Color::Cyan).bold()),
+        )
+        .with_semantic(
+            HeadlessSemanticNode::new(0, SemanticRole::Heading, finding.title.clone())
+                .with_description(finding.code.clone())
+                .with_state(SemanticState::default().with_level(2)),
+        ),
+    );
     presentation(
         &mut lines,
         DiagnosticPresentation::new(
@@ -144,6 +154,7 @@ fn evidence_rows(
         )?;
         let mut style = capabilities.adapt_style(presentation.style());
         style.reverse = selected == Some(index);
+        let line_start = lines.len();
         push_wrapped(
             lines,
             "",
@@ -152,6 +163,14 @@ fn evidence_rows(
             style,
             capabilities,
         );
+        if let Some(line) = lines.get_mut(line_start) {
+            let mut semantic = presentation.semantic_node(0);
+            semantic.state.selected = selected == Some(index);
+            line.semantic = Some(semantic);
+            line.focused = selected == Some(index)
+                && model.mode() == InteractionMode::Browse
+                && model.workspace().focus() == vize_fresco::DiagnosticWorkspaceFocus::Evidence;
+        }
         if selected == Some(index) {
             for (key, value) in &evidence.details {
                 push_wrapped(
@@ -266,10 +285,15 @@ fn presentation(
     presentation: DiagnosticPresentation,
     capabilities: TerminalCapabilities,
 ) {
-    lines.push(line(
-        presentation.text(profile(capabilities, false)).as_str(),
-        capabilities.adapt_style(presentation.style()),
-    ));
+    let text = presentation.text(profile(capabilities, false));
+    let semantic = presentation.semantic_node(0);
+    lines.push(
+        line(
+            text.as_str(),
+            capabilities.adapt_style(presentation.style()),
+        )
+        .with_semantic(semantic),
+    );
 }
 
 fn push_wrapped(
@@ -292,11 +316,24 @@ fn section(label: &str, capabilities: TerminalCapabilities) -> StyledLine {
         cstr!("— {label} —"),
         capabilities.adapt_style(Style::new().fg(Color::Cyan).bold()),
     )
+    .with_semantic(
+        HeadlessSemanticNode::new(0, SemanticRole::Heading, label)
+            .with_state(SemanticState::default().with_level(3)),
+    )
 }
 
 fn line(text: impl Into<String>, style: Style) -> StyledLine {
     StyledLine {
         text: text.into(),
         style,
+        semantic: None,
+        focused: false,
+    }
+}
+
+impl StyledLine {
+    fn with_semantic(mut self, semantic: HeadlessSemanticNode) -> Self {
+        self.semantic = Some(semantic);
+        self
     }
 }
