@@ -1,6 +1,20 @@
 //! Direct check orchestration over one or more effective TypeScript programs.
 
-use super::*;
+use std::{
+    path::{Path, PathBuf},
+    time::Instant,
+};
+
+use vize_carton::profiler::global_profiler;
+
+use super::{
+    CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
+    collect_roots, dialect_from_features, exit_after_execution_error, explicit_input_root,
+    finish_executions, load_check_ignore_set, prepare_and_execute, report_no_inputs,
+    resolve_from_config_dir, resolve_invocation_program, resolve_nuxt_project_root,
+    split_program_candidates, template_syntax_mode, validate_config_arg,
+    validate_corsa_server_count, warn_for_disabled_legacy,
+};
 
 /// Run type checking directly with materialized Corsa projects.
 pub(crate) fn run_direct(args: &CheckArgs) {

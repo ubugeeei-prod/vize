@@ -4,12 +4,7 @@
 
 #![allow(clippy::disallowed_macros)]
 
-use std::{
-    path::{Path, PathBuf},
-    time::Instant,
-};
-
-use vize_carton::profiler::global_profiler;
+use std::path::Path;
 
 use super::{
     CheckArgs,
