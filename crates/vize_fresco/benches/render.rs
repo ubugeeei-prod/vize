@@ -1,11 +1,13 @@
 //! Render benchmarks.
 #![allow(deprecated)]
 
+use std::io;
+
 use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
 
 use vize_fresco::component::{VirtualListNavigation, VirtualListState};
 use vize_fresco::layout::{FlexStyle, LayoutEngine};
-use vize_fresco::terminal::{Buffer, Style};
+use vize_fresco::terminal::{Backend, Buffer, Style};
 use vize_fresco::text::{TextWidth, TextWrap, WrapMode};
 
 fn benchmark_buffer_set_string(c: &mut Criterion) {
@@ -148,6 +150,23 @@ fn benchmark_virtual_list(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_injected_backend_output(c: &mut Criterion) {
+    let mut backend = Backend::with_writer(120, 40, io::sink());
+    backend.buffer_mut().set_string(0, 0, "A", Style::new());
+    backend.flush().unwrap();
+    let mut alternate = false;
+
+    c.bench_function("terminal_output/one_changed_cell", |b| {
+        b.iter(|| {
+            alternate = !alternate;
+            backend
+                .buffer_mut()
+                .set_string(0, 0, if alternate { "B" } else { "A" }, Style::new());
+            black_box(backend.flush_measured().unwrap())
+        });
+    });
+}
+
 criterion_group!(
     benches,
     benchmark_buffer_set_string,
@@ -156,5 +175,6 @@ criterion_group!(
     benchmark_layout,
     benchmark_buffer_diff,
     benchmark_virtual_list,
+    benchmark_injected_backend_output,
 );
 criterion_main!(benches);

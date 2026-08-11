@@ -9,7 +9,10 @@ use std::sync::Mutex;
 
 use crate::terminal::{Backend, TerminalOptions};
 
-use super::types::{TerminalInfoNapi, TerminalOptionsNapi};
+use super::{
+    frame_output::FrameOutputTelemetryNapi,
+    types::{TerminalInfoNapi, TerminalOptionsNapi},
+};
 
 // Global terminal backend (lazy initialized)
 static BACKEND: Mutex<Option<Backend>> = Mutex::new(None);
@@ -171,6 +174,23 @@ pub fn flush_terminal() -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Flush the terminal buffer and return exact presentation telemetry.
+#[napi(js_name = "flushTerminalMeasured")]
+#[allow(clippy::disallowed_macros)]
+pub fn flush_terminal_measured() -> Result<FrameOutputTelemetryNapi> {
+    let mut guard = BACKEND
+        .lock()
+        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
+
+    let Some(backend) = guard.as_mut() else {
+        return Ok(crate::terminal::FrameOutputTelemetry::default().into());
+    };
+    backend
+        .flush_measured()
+        .map(Into::into)
+        .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to flush: {}", e)))
 }
 
 /// Sync terminal size (call after resize events).

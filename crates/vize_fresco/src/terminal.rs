@@ -11,7 +11,7 @@ mod buffer;
 mod cell;
 mod cursor;
 
-pub use backend::{Backend, TerminalOptions};
+pub use backend::{Backend, FrameOutputTelemetry, TerminalOptions};
 pub use buffer::Buffer;
 pub use cell::{Cell, Color, Style};
 pub use cursor::{Cursor, CursorShape};

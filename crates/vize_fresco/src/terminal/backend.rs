@@ -1,27 +1,38 @@
-//! Terminal backend using crossterm.
+//! Terminal backend with an injectable presentation writer.
 
 use std::io::{self, Write};
 
 use crossterm::{
-    cursor::{Hide, MoveTo, Show},
+    cursor::{Hide, Show},
     event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
-    execute, queue,
-    style::{Attribute, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
+    execute,
     terminal::{
         Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode,
         enable_raw_mode,
     },
 };
 
-use super::{buffer::Buffer, cell::Style, cursor::Cursor};
+use super::{buffer::Buffer, cursor::Cursor};
+
+mod output;
+
+#[cfg(test)]
+mod tests;
+
+pub use output::FrameOutputTelemetry;
 
 /// Terminal mode switches used during backend initialization.
 #[derive(Debug, Clone, Copy)]
 pub struct TerminalOptions {
+    /// Enable process terminal raw mode. Defaults to `true`.
     pub raw_mode: bool,
+    /// Enter the alternate screen. Defaults to `true`.
     pub alternate_screen: bool,
+    /// Capture mouse events. Defaults to `false`.
     pub mouse_capture: bool,
+    /// Enable bracketed paste. Defaults to `true`.
     pub bracketed_paste: bool,
+    /// Hide the terminal cursor. Defaults to `true`.
     pub hide_cursor: bool,
 }
 
@@ -37,35 +48,42 @@ impl Default for TerminalOptions {
     }
 }
 
-/// Terminal backend for rendering.
-pub struct Backend {
-    /// Current buffer (what should be displayed)
-    current: Buffer,
-    /// Previous buffer (what was displayed last frame)
-    previous: Buffer,
-    /// Current cursor state
-    cursor: Cursor,
-    /// Whether alternate screen is enabled
+/// Double-buffered terminal renderer with an owned presentation writer.
+///
+/// [`Backend::new`] preserves the standard-output behavior used by existing
+/// applications. [`Backend::with_writer`] accepts any [`Write`] sink and an
+/// explicit viewport, enabling deterministic headless tests without replacing
+/// process-global standard output. Terminal mode escape sequences, clear
+/// operations, differential frames, and restoration all use the same writer.
+pub struct Backend<W: Write = io::Stdout> {
+    pub(super) current: Buffer,
+    pub(super) previous: Buffer,
+    pub(super) cursor: Cursor,
     alternate_screen: bool,
-    /// Whether the cursor was hidden during initialization
     cursor_hidden: bool,
-    /// Whether raw mode is enabled
     raw_mode: bool,
-    /// Whether mouse capture is enabled
     mouse_capture: bool,
-    /// Whether bracketed paste is enabled
     bracketed_paste: bool,
-    /// Terminal width
     width: u16,
-    /// Terminal height
     height: u16,
+    pub(super) writer: W,
 }
 
-impl Backend {
-    /// Create a new backend with the current terminal size.
+impl Backend<io::Stdout> {
+    /// Create a standard-output backend with the current terminal size.
     pub fn new() -> io::Result<Self> {
         let (width, height) = crossterm::terminal::size()?;
-        Ok(Self {
+        Ok(Self::with_writer(width, height, io::stdout()))
+    }
+}
+
+impl<W: Write> Backend<W> {
+    /// Create a backend with an explicit viewport and presentation writer.
+    ///
+    /// This constructor does not inspect or mutate terminal process state.
+    /// Set `raw_mode` to `false` when initializing a memory-backed test writer.
+    pub fn with_writer(width: u16, height: u16, writer: W) -> Self {
+        Self {
             current: Buffer::new(width, height),
             previous: Buffer::new(width, height),
             cursor: Cursor::new(),
@@ -76,41 +94,36 @@ impl Backend {
             bracketed_paste: false,
             width,
             height,
-        })
+            writer,
+        }
     }
 
-    /// Initialize the terminal for TUI mode.
+    /// Initialize the terminal using [`TerminalOptions::default`].
     pub fn init(&mut self) -> io::Result<()> {
         self.init_with_options(TerminalOptions::default())
     }
 
-    /// Initialize the terminal for TUI mode with explicit mode options.
+    /// Initialize the terminal using explicit mode options.
     pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
         if options.raw_mode {
             enable_raw_mode()?;
             self.raw_mode = true;
         }
-
-        let mut stdout = io::stdout();
-
         if options.alternate_screen {
-            execute!(stdout, EnterAlternateScreen)?;
             self.alternate_screen = true;
+            execute!(&mut self.writer, EnterAlternateScreen)?;
         }
-
         if options.bracketed_paste {
-            execute!(stdout, EnableBracketedPaste)?;
             self.bracketed_paste = true;
+            execute!(&mut self.writer, EnableBracketedPaste)?;
         }
-
         if options.mouse_capture {
-            execute!(stdout, EnableMouseCapture)?;
             self.mouse_capture = true;
+            execute!(&mut self.writer, EnableMouseCapture)?;
         }
-
         if options.hide_cursor {
-            execute!(stdout, Hide)?;
             self.cursor_hidden = true;
+            execute!(&mut self.writer, Hide)?;
         }
         Ok(())
     }
@@ -123,30 +136,27 @@ impl Backend {
         })
     }
 
-    /// Restore the terminal to normal mode.
+    /// Restore every terminal mode successfully enabled by this backend.
+    ///
+    /// The operation is idempotent. A failed writer operation leaves its mode
+    /// marked active so a later explicit call or [`Drop`] can retry it.
     pub fn restore(&mut self) -> io::Result<()> {
-        let mut stdout = io::stdout();
-
         if self.mouse_capture {
-            execute!(stdout, DisableMouseCapture)?;
+            execute!(&mut self.writer, DisableMouseCapture)?;
             self.mouse_capture = false;
         }
-
         if self.bracketed_paste {
-            execute!(stdout, DisableBracketedPaste)?;
+            execute!(&mut self.writer, DisableBracketedPaste)?;
             self.bracketed_paste = false;
         }
-
         if self.alternate_screen {
-            execute!(stdout, LeaveAlternateScreen)?;
+            execute!(&mut self.writer, LeaveAlternateScreen)?;
             self.alternate_screen = false;
         }
-
         if self.cursor_hidden {
-            execute!(stdout, Show)?;
+            execute!(&mut self.writer, Show)?;
             self.cursor_hidden = false;
         }
-
         if self.raw_mode {
             disable_raw_mode()?;
             self.raw_mode = false;
@@ -154,282 +164,89 @@ impl Backend {
         Ok(())
     }
 
-    /// Get terminal width.
+    /// Return the terminal width in cells.
     #[inline]
     pub fn width(&self) -> u16 {
         self.width
     }
 
-    /// Get terminal height.
+    /// Return the terminal height in cells.
     #[inline]
     pub fn height(&self) -> u16 {
         self.height
     }
 
-    /// Get current buffer for modification.
+    /// Return the current frame buffer for modification.
     #[inline]
     pub fn buffer_mut(&mut self) -> &mut Buffer {
         &mut self.current
     }
 
-    /// Get current buffer for reading.
+    /// Return the current frame buffer for reading.
     #[inline]
     pub fn buffer(&self) -> &Buffer {
         &self.current
     }
 
-    /// Get cursor for modification.
+    /// Return the cursor state for modification.
     #[inline]
     pub fn cursor_mut(&mut self) -> &mut Cursor {
         &mut self.cursor
     }
 
-    /// Get cursor for reading.
+    /// Return the cursor state for reading.
     #[inline]
     pub fn cursor(&self) -> &Cursor {
         &self.cursor
     }
 
-    /// Check if terminal size has changed and resize buffers if needed.
+    /// Return the owned presentation writer for inspection.
+    pub const fn writer(&self) -> &W {
+        &self.writer
+    }
+
+    /// Return the owned presentation writer for configuration.
+    pub fn writer_mut(&mut self) -> &mut W {
+        &mut self.writer
+    }
+
+    /// Check the process terminal size and resize both frame buffers if needed.
     pub fn sync_size(&mut self) -> io::Result<bool> {
         let (width, height) = crossterm::terminal::size()?;
-        if width != self.width || height != self.height {
-            self.width = width;
-            self.height = height;
-            self.current.resize(width, height);
-            self.previous.resize(width, height);
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+        Ok(self.resize(width, height))
     }
 
-    /// Clear the screen completely.
+    /// Resize both frame buffers to an explicit viewport.
+    ///
+    /// Returns `false` without reallocating when the viewport is unchanged.
+    pub fn resize(&mut self, width: u16, height: u16) -> bool {
+        if width == self.width && height == self.height {
+            return false;
+        }
+        self.width = width;
+        self.height = height;
+        self.current.resize(width, height);
+        self.previous.resize(width, height);
+        true
+    }
+
+    /// Clear both frame buffers and the presentation screen.
     pub fn clear(&mut self) -> io::Result<()> {
+        execute!(&mut self.writer, Clear(ClearType::All))?;
         self.current.clear();
         self.previous.clear();
-        execute!(io::stdout(), Clear(ClearType::All))?;
-        Ok(())
-    }
-
-    /// Render the current buffer to the terminal.
-    /// Uses differential rendering for efficiency.
-    pub fn flush(&mut self) -> io::Result<()> {
-        let mut stdout = io::stdout();
-        let mut last_style = Style::new();
-        let mut last_x: i32 = -1;
-        let mut last_y: i32 = -1;
-
-        // Collect changes
-        let changes: Vec<_> = self.current.diff(&self.previous).collect();
-
-        for (x, y, cell) in changes {
-            // Skip continuation cells
-            if cell.is_continuation {
-                continue;
-            }
-
-            // Move cursor if not adjacent
-            if x as i32 != last_x + 1 || y as i32 != last_y {
-                queue!(stdout, MoveTo(x, y))?;
-            }
-
-            // Apply style changes
-            if cell.style != last_style {
-                self.apply_style(&mut stdout, &cell.style, &last_style)?;
-                last_style = cell.style;
-            }
-
-            // Print the character
-            queue!(stdout, Print(&cell.symbol))?;
-
-            last_x = x as i32;
-            last_y = y as i32;
-        }
-
-        // Reset style
-        queue!(
-            stdout,
-            SetForegroundColor(crossterm::style::Color::Reset),
-            SetBackgroundColor(crossterm::style::Color::Reset),
-            SetAttribute(Attribute::Reset)
-        )?;
-
-        // Update cursor
-        if self.cursor.visible {
-            let cursor_style = if self.cursor.blinking {
-                self.cursor.shape.to_blinking_cursor_style()
-            } else {
-                self.cursor.shape.to_cursor_style()
-            };
-            queue!(
-                stdout,
-                MoveTo(self.cursor.x, self.cursor.y),
-                cursor_style,
-                Show
-            )?;
-        } else {
-            queue!(stdout, Hide)?;
-        }
-
-        stdout.flush()?;
-
-        // Swap buffers
-        std::mem::swap(&mut self.current, &mut self.previous);
-        self.current.clear();
-
-        Ok(())
-    }
-
-    /// Apply style changes to stdout.
-    fn apply_style<W: Write>(&self, writer: &mut W, new: &Style, old: &Style) -> io::Result<()> {
-        // Foreground color
-        if new.fg != old.fg {
-            if let Some(fg) = new.fg {
-                queue!(writer, SetForegroundColor(fg.into()))?;
-            } else {
-                queue!(writer, SetForegroundColor(crossterm::style::Color::Reset))?;
-            }
-        }
-
-        // Background color
-        if new.bg != old.bg {
-            if let Some(bg) = new.bg {
-                queue!(writer, SetBackgroundColor(bg.into()))?;
-            } else {
-                queue!(writer, SetBackgroundColor(crossterm::style::Color::Reset))?;
-            }
-        }
-
-        // Attributes
-        if new.bold != old.bold {
-            queue!(
-                writer,
-                SetAttribute(if new.bold {
-                    Attribute::Bold
-                } else {
-                    Attribute::NormalIntensity
-                })
-            )?;
-        }
-
-        if new.dim != old.dim {
-            queue!(
-                writer,
-                SetAttribute(if new.dim {
-                    Attribute::Dim
-                } else {
-                    Attribute::NormalIntensity
-                })
-            )?;
-        }
-
-        if new.italic != old.italic {
-            queue!(
-                writer,
-                SetAttribute(if new.italic {
-                    Attribute::Italic
-                } else {
-                    Attribute::NoItalic
-                })
-            )?;
-        }
-
-        if new.underline != old.underline {
-            queue!(
-                writer,
-                SetAttribute(if new.underline {
-                    Attribute::Underlined
-                } else {
-                    Attribute::NoUnderline
-                })
-            )?;
-        }
-
-        if new.blink != old.blink {
-            queue!(
-                writer,
-                SetAttribute(if new.blink {
-                    Attribute::SlowBlink
-                } else {
-                    Attribute::NoBlink
-                })
-            )?;
-        }
-
-        if new.strikethrough != old.strikethrough {
-            queue!(
-                writer,
-                SetAttribute(if new.strikethrough {
-                    Attribute::CrossedOut
-                } else {
-                    Attribute::NotCrossedOut
-                })
-            )?;
-        }
-
-        if new.reverse != old.reverse {
-            queue!(
-                writer,
-                SetAttribute(if new.reverse {
-                    Attribute::Reverse
-                } else {
-                    Attribute::NoReverse
-                })
-            )?;
-        }
-
-        if new.hidden != old.hidden {
-            queue!(
-                writer,
-                SetAttribute(if new.hidden {
-                    Attribute::Hidden
-                } else {
-                    Attribute::NoHidden
-                })
-            )?;
-        }
-
         Ok(())
     }
 }
 
-impl Default for Backend {
+impl Default for Backend<io::Stdout> {
     fn default() -> Self {
-        // Panic path by trait-contract limitation: `Default` cannot return an
-        // I/O error. Callers that need recoverable terminal initialization should
-        // use `Backend::new`; this impl is kept for ergonomic tests and builders.
         Self::new().expect("Failed to create backend")
     }
 }
 
-impl Drop for Backend {
+impl<W: Write> Drop for Backend<W> {
     fn drop(&mut self) {
         let _ = self.restore();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Backend, TerminalOptions};
-
-    #[test]
-    fn test_backend_size() {
-        // This test requires a terminal, so we just check it doesn't panic
-        if let Ok(backend) = Backend::new() {
-            assert!(backend.width() > 0);
-            assert!(backend.height() > 0);
-        }
-    }
-
-    #[test]
-    fn terminal_options_default_preserves_legacy_init_modes() {
-        let options = TerminalOptions::default();
-
-        assert!(options.alternate_screen);
-        assert!(!options.mouse_capture);
-        assert!(options.bracketed_paste);
-        assert!(options.raw_mode);
-        assert!(options.hide_cursor);
     }
 }

@@ -7,6 +7,12 @@
     clippy::disallowed_methods,
     clippy::disallowed_macros
 )]
+mod frame_output;
+#[allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 mod input;
 mod input_size;
 #[allow(
@@ -42,6 +48,7 @@ mod terminal;
 )]
 mod types;
 
+pub use frame_output::FrameOutputTelemetryNapi;
 pub use input::{
     disable_ime, enable_ime, get_ime_state, poll_event, poll_event_non_blocking, read_event,
     set_ime_mode,
@@ -56,8 +63,8 @@ pub use render::{
     render_tree, set_cursor, set_cursor_shape, show_cursor,
 };
 pub use terminal::{
-    clear_screen, flush_terminal, get_terminal_info, init_terminal, init_terminal_with_mouse,
-    init_terminal_with_options, restore_terminal, sync_terminal_size,
+    clear_screen, flush_terminal, flush_terminal_measured, get_terminal_info, init_terminal,
+    init_terminal_with_mouse, init_terminal_with_options, restore_terminal, sync_terminal_size,
 };
 pub use types::{
     FlexStyleNapi, ImeStateNapi, InputEventNapi, LayoutResultNapi, ModifiersNapi, RenderNodeNapi,
