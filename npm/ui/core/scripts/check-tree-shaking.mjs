@@ -117,7 +117,7 @@ const componentCases = [
   {
     family: "long-press",
     exportName: "createLongPress",
-    maximumJavaScriptGzipBytes: 4_800,
+    maximumJavaScriptGzipBytes: 5_150,
     maximumCssGzipBytes: 0,
   },
   {

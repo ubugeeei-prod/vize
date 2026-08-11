@@ -9,33 +9,12 @@ export type LongPressPointerType = Extract<PressPointerType, "mouse" | "pen" | "
 export type LongPressEventType = "longpress" | "longpressend" | "longpressstart";
 
 /** Immutable snapshot of one long-press lifecycle event. */
-export interface LongPressEvent {
+export interface LongPressEvent extends Omit<PressEvent, "type" | "pointerType"> {
   /** Long-press lifecycle phase represented by this snapshot. */
   readonly type: LongPressEventType;
 
   /** Pointing-device family that initiated the interaction. */
   readonly pointerType: LongPressPointerType;
-
-  /** Element whose bound props own the interaction. */
-  readonly target: Element;
-
-  /** Native event responsible for this phase, or `null` for manual cancellation. */
-  readonly originalEvent: Event | null;
-
-  /** Viewport coordinate when supplied by pointing hardware. */
-  readonly x: number | null;
-
-  /** Viewport coordinate when supplied by pointing hardware. */
-  readonly y: number | null;
-
-  /** Modifier-key snapshots captured from the native event. */
-  readonly altKey: boolean;
-  readonly ctrlKey: boolean;
-  readonly metaKey: boolean;
-  readonly shiftKey: boolean;
-
-  /** Whether the attempt ended without reaching a normal release. */
-  readonly isCanceled: boolean;
 }
 
 /** Options shared by {@link createLongPress} and {@link useLongPress}. */
@@ -125,7 +104,12 @@ export interface LongPressController {
   /** Stable handlers and accessibility attributes for exactly one host. */
   readonly longPressProps: Readonly<LongPressProps>;
 
-  /** Cancel the current pending or triggered interaction. */
+  /**
+   * Cancel the current pending or triggered interaction.
+   * Returns `true` when an interaction was canceled.
+   *
+   * @throws Error with `VIZE_UI_LONG_PRESS_DISPOSED` after disposal.
+   */
   readonly cancel: () => boolean;
 
   /** Release timers, listeners, selection guards, and reactive state. */

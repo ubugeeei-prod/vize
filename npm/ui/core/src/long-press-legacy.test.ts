@@ -41,7 +41,10 @@ test("normalizes a legacy touch hold and owns only its initiating contact", asyn
   );
   assert.equal(controller.isLongPressed.value, true);
   isolated.body.dispatchEvent(
-    touchEvent("touchend", [{ identifier: 31, clientX: 9, clientY: 12 }]),
+    touchEvent("touchend", [
+      { identifier: 99, clientX: 100, clientY: 200 },
+      { identifier: 31, clientX: 9, clientY: 12 },
+    ]),
   );
 
   assert.deepEqual(

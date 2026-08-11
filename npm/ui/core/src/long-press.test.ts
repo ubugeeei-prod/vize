@@ -4,99 +4,8 @@ import { effectScope, ref } from "vue";
 import { test } from "vite-plus/test";
 
 import { createLongPress, useLongPress } from "./long-press.ts";
-import type {
-  LongPressController,
-  LongPressEvent,
-  LongPressOptions,
-  LongPressProps,
-} from "./long-press.ts";
-import type { PressEvent } from "./press.ts";
-
-const eventNames: Readonly<Record<keyof Omit<LongPressProps, `aria-${string}`>, string>> = {
-  onClick: "click",
-  onContextmenu: "contextmenu",
-  onDragstart: "dragstart",
-  onKeydown: "keydown",
-  onKeyup: "keyup",
-  onMousedown: "mousedown",
-  onMousemove: "mousemove",
-  onMouseup: "mouseup",
-  onPointercancel: "pointercancel",
-  onPointerdown: "pointerdown",
-  onPointermove: "pointermove",
-  onPointerup: "pointerup",
-  onTouchcancel: "touchcancel",
-  onTouchend: "touchend",
-  onTouchmove: "touchmove",
-  onTouchstart: "touchstart",
-};
-
-interface Harness {
-  readonly controller: LongPressController;
-  readonly events: Array<LongPressEvent | PressEvent>;
-  readonly host: HTMLButtonElement;
-  readonly unmount: () => void;
-}
-
-function mountLongPress(options: LongPressOptions = {}): Harness {
-  const host = document.createElement("button");
-  document.body.append(host);
-  const events: Array<LongPressEvent | PressEvent> = [];
-  const controller = createLongPress({
-    ...options,
-    onLongPressStart: (event) => {
-      events.push(event);
-      options.onLongPressStart?.(event);
-    },
-    onLongPress: (event) => {
-      events.push(event);
-      options.onLongPress?.(event);
-    },
-    onLongPressEnd: (event) => {
-      events.push(event);
-      options.onLongPressEnd?.(event);
-    },
-    onPress: (event) => {
-      events.push(event);
-      options.onPress?.(event);
-    },
-  });
-  for (const [property, type] of Object.entries(eventNames) as Array<
-    [keyof typeof eventNames, string]
-  >) {
-    host.addEventListener(type, controller.longPressProps[property] as EventListener);
-  }
-  return {
-    controller,
-    events,
-    host,
-    unmount: () => {
-      controller.dispose();
-      host.remove();
-    },
-  };
-}
-
-function pointer(
-  type: string,
-  pointerType = "mouse",
-  values: Partial<PointerEventInit> = {},
-): PointerEvent {
-  return new PointerEvent(type, {
-    bubbles: true,
-    button: 0,
-    clientX: 12,
-    clientY: 18,
-    isPrimary: true,
-    pointerId: 19,
-    pointerType,
-    ...values,
-  });
-}
-
-async function elapseThreshold(): Promise<void> {
-  await new Promise<void>((resolve) => setTimeout(resolve, 5));
-}
+import type { LongPressEvent } from "./long-press.ts";
+import { elapseThreshold, mountLongPress, pointer } from "./long-press-test-utils.ts";
 
 test("reports a stable long-press lifecycle and suppresses the compatibility click", async () => {
   const harness = mountLongPress({ threshold: 0 });
@@ -164,7 +73,10 @@ test("cancels on pointer exit, manual cancellation, disablement, and disposal", 
     assert.equal(harness.controller.isPressed.value, false);
     assert.equal((harness.events.at(-1) as LongPressEvent).isCanceled, true);
     await elapseThreshold();
-    assert.doesNotMatch(harness.events.map(({ type }) => type).join(), /longpress,/);
+    assert.equal(
+      harness.events.some(({ type }) => type === "longpress"),
+      false,
+    );
     harness.unmount();
   }
 
@@ -212,6 +124,35 @@ test("filters pointer families and ignores secondary or non-primary contacts", a
     harness.host.dispatchEvent(pointer("pointerdown", "mouse", values));
     await elapseThreshold();
     assert.deepEqual(harness.events, []);
+    harness.unmount();
+  }
+});
+
+test("a triggered attempt retains ownership when another primary contact starts", async () => {
+  for (const releaseOrder of ["other-first", "owner-first"] as const) {
+    const harness = mountLongPress({ threshold: 0 });
+    harness.host.dispatchEvent(pointer("pointerdown", "touch", { pointerId: 31 }));
+    await elapseThreshold();
+
+    harness.host.dispatchEvent(pointer("pointerdown", "touch", { pointerId: 47 }));
+    assert.equal(harness.controller.isLongPressed.value, true);
+    if (releaseOrder === "other-first") {
+      harness.host.dispatchEvent(pointer("pointerup", "touch", { pointerId: 47 }));
+      assert.equal(harness.controller.isLongPressed.value, true);
+      harness.host.dispatchEvent(pointer("pointerup", "touch", { pointerId: 31 }));
+    } else {
+      harness.host.dispatchEvent(pointer("pointerup", "touch", { pointerId: 31 }));
+      harness.host.dispatchEvent(pointer("pointerup", "touch", { pointerId: 47 }));
+    }
+
+    assert.equal(harness.controller.isLongPressed.value, false);
+    assert.deepEqual(
+      harness.events.map(({ type }) => type),
+      ["longpressstart", "longpress", "longpressend"],
+    );
+    const end = harness.events.at(-1) as LongPressEvent;
+    assert.equal(end.originalEvent?.type, "pointerup");
+    assert.equal((end.originalEvent as PointerEvent).pointerId, 31);
     harness.unmount();
   }
 });

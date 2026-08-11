@@ -1,97 +1,31 @@
-import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef, toValue } from "vue";
+import { getCurrentScope, onScopeDispose, shallowReadonly, shallowRef } from "vue";
 
-import { createPressEvent, disableTextSelection } from "./press-event.ts";
+import { disableTextSelection } from "./press-event.ts";
 import { createPress } from "./press.ts";
+import {
+  captureError,
+  installTriggeredRelease,
+  isHardwarePointer,
+  ownerMatches,
+  ownerOf,
+  readBoolean,
+  readPointerType,
+  readText,
+  readThreshold,
+  surfaceErrors,
+  toLongPressEvent,
+  validateOptions,
+} from "./long-press-internal.ts";
+import type { Attempt } from "./long-press-internal.ts";
 import type {
   LongPressController,
-  LongPressEvent,
-  LongPressEventType,
   LongPressOptions,
   LongPressPointerType,
   LongPressProps,
 } from "./long-press-types.ts";
-import type { PressEvent } from "./press-types.ts";
-
-const defaultThreshold = 500;
-const invalidOptionDiagnostic = "VIZE_UI_LONG_PRESS_OPTION";
+const contextMenuLingerMs = 50;
 const disposedDiagnostic = "VIZE_UI_LONG_PRESS_DISPOSED";
 const setupDiagnostic = "VIZE_UI_LONG_PRESS_SETUP";
-const hardwarePointers = new Set<LongPressPointerType>(["mouse", "pen", "pointer", "touch"]);
-
-interface Attempt {
-  readonly event: LongPressEvent;
-  readonly pointerType: LongPressPointerType;
-  readonly target: Element;
-  timer: ReturnType<typeof setTimeout> | null;
-}
-
-function readBoolean(value: LongPressOptions["isDisabled"], name: string): boolean {
-  const resolved = toValue(value);
-  if (resolved === undefined) return false;
-  if (typeof resolved !== "boolean") {
-    throw new TypeError(`${invalidOptionDiagnostic}: ${name} must resolve to a boolean`);
-  }
-  return resolved;
-}
-
-function readPointerType(value: LongPressOptions["pointerType"]): LongPressPointerType | null {
-  const resolved = toValue(value) ?? null;
-  if (resolved !== null && !hardwarePointers.has(resolved)) {
-    throw new TypeError(
-      `${invalidOptionDiagnostic}: pointerType must resolve to mouse, pen, pointer, or touch`,
-    );
-  }
-  return resolved;
-}
-
-function readThreshold(value: LongPressOptions["threshold"]): number {
-  const resolved = toValue(value) ?? defaultThreshold;
-  if (typeof resolved !== "number" || !Number.isFinite(resolved) || resolved < 0) {
-    throw new TypeError(
-      `${invalidOptionDiagnostic}: threshold must resolve to a finite number >= 0`,
-    );
-  }
-  return resolved;
-}
-
-function readText(
-  value: LongPressOptions["accessibilityDescription"],
-  name: string,
-): string | undefined {
-  const resolved = toValue(value);
-  if (resolved === undefined || resolved === "") return undefined;
-  if (typeof resolved !== "string") {
-    throw new TypeError(`${invalidOptionDiagnostic}: ${name} must resolve to a string`);
-  }
-  return resolved;
-}
-
-function toLongPressEvent(
-  type: LongPressEventType,
-  event: Omit<PressEvent, "type">,
-  originalEvent = event.originalEvent,
-  isCanceled = event.isCanceled,
-): LongPressEvent {
-  const snapshot = createPressEvent(
-    "pressend",
-    event.target,
-    event.pointerType,
-    originalEvent,
-    isCanceled,
-  );
-  return Object.freeze({ ...snapshot, type }) as LongPressEvent;
-}
-
-function validateOptions(options: LongPressOptions): void {
-  for (const name of ["onLongPress", "onLongPressEnd", "onLongPressStart", "onPress"] as const) {
-    const callback = options[name];
-    if (callback !== undefined && typeof callback !== "function") {
-      throw new TypeError(`${invalidOptionDiagnostic}: ${name} must be a function`);
-    }
-  }
-  if (typeof options.threshold !== "function") readThreshold(options.threshold);
-  if (typeof options.pointerType !== "function") readPointerType(options.pointerType);
-}
 
 /** Create an SSR-safe long-press recognizer for one host element. */
 export function createLongPress(options: LongPressOptions = {}): LongPressController {
@@ -115,83 +49,61 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
     contextMenuTimer = setTimeout(() => {
       contextMenuPointer = null;
       contextMenuTimer = null;
-    }, 50);
+    }, contextMenuLingerMs);
   };
   const clearRelease = () => {
-    releaseTriggered?.();
+    const release = releaseTriggered;
+    const restore = restoreTriggeredSelection;
     releaseTriggered = null;
-    restoreTriggeredSelection?.();
     restoreTriggeredSelection = null;
+    const errors: unknown[] = [];
+    try {
+      captureError(errors, () => release?.());
+    } finally {
+      captureError(errors, () => restore?.());
+    }
+    surfaceErrors(errors, "Long-press release cleanup failed");
   };
-  const clearAttempt = () => {
-    const timer = attempt?.timer;
+  const clearAttempt = (owner: Attempt | null = attempt): boolean => {
+    if (!owner || attempt !== owner) return false;
+    const timer = owner.timer;
     if (timer != null) clearTimeout(timer);
     attempt = null;
-  };
-
-  const finishTriggered = (originalEvent: Event | null, isCanceled: boolean): boolean => {
-    if (!isLongPressed.value || !attempt) return false;
-    const current = attempt;
-    const canceled = isCanceled || readBoolean(options.isDisabled, "isDisabled");
-    clearRelease();
-    clearAttempt();
-    isPressed.value = false;
-    isLongPressed.value = false;
-    lingerContextMenuSuppression();
-    options.onLongPressEnd?.(
-      toLongPressEvent("longpressend", current.event, originalEvent, canceled),
-    );
     return true;
   };
 
-  const installTriggeredRelease = (current: Attempt): (() => void) => {
-    const removals: Array<() => void> = [];
-    const document = current.target.ownerDocument;
-    const start = current.event.originalEvent;
-    const listen = (
-      owner: Document | Window,
-      type: string,
-      callback: EventListener,
-      capture = true,
-    ) => {
-      owner.addEventListener(type, callback, capture);
-      removals.push(() => owner.removeEventListener(type, callback, capture));
-    };
-    const finish = (event: Event | null, canceled = false) => finishTriggered(event, canceled);
-    if (start && "pointerId" in start) {
-      const id = Number((start as PointerEvent).pointerId);
-      listen(document, "pointerup", ((event: PointerEvent) => {
-        if (event.pointerId === id) finish(event);
-      }) as EventListener);
-      listen(document, "pointercancel", ((event: PointerEvent) => {
-        if (event.pointerId === id) finish(event, true);
-      }) as EventListener);
-    } else if (start && "changedTouches" in start) {
-      const id = (start as TouchEvent).changedTouches.item(0)?.identifier;
-      const ownsTouch = (event: TouchEvent) =>
-        id !== undefined &&
-        Array.from(event.changedTouches).some((touch) => touch.identifier === id);
-      listen(document, "touchend", ((event: TouchEvent) => {
-        if (ownsTouch(event)) finish(event);
-      }) as EventListener);
-      listen(document, "touchcancel", ((event: TouchEvent) => {
-        if (ownsTouch(event)) finish(event, true);
-      }) as EventListener);
-    } else {
-      listen(document, "mouseup", ((event: MouseEvent) => {
-        if (event.button === 0) finish(event);
-      }) as EventListener);
+  const finishTriggered = (
+    owner: Attempt,
+    originalEvent: Event | null,
+    isCanceled: boolean,
+  ): boolean => {
+    if (!isLongPressed.value || attempt !== owner) return false;
+    const errors: unknown[] = [];
+    captureError(errors, clearRelease);
+    clearAttempt(owner);
+    isPressed.value = false;
+    isLongPressed.value = false;
+    captureError(errors, lingerContextMenuSuppression);
+    let canceled = isCanceled;
+    try {
+      canceled ||= readBoolean(options.isDisabled, "isDisabled");
+    } catch (error) {
+      canceled = true;
+      errors.push(error);
     }
-    listen(document, "dragstart", (event) => finish(event, true));
-    listen(document, "visibilitychange", (() => {
-      if (document.visibilityState === "hidden") finish(null, true);
-    }) as EventListener);
-    if (document.defaultView) {
-      listen(document.defaultView, "blur", (event) => finish(event, true), false);
-    }
-    return () => {
-      for (const remove of removals.splice(0)) remove();
-    };
+    captureError(errors, () =>
+      options.onLongPressEnd?.(
+        toLongPressEvent(
+          "longpressend",
+          owner.event,
+          originalEvent,
+          canceled,
+          owner.touchIdentifier,
+        ),
+      ),
+    );
+    surfaceErrors(errors, "Long-press completion failed");
+    return true;
   };
 
   let press!: ReturnType<typeof createPress>;
@@ -203,7 +115,25 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
       return;
     }
     isLongPressed.value = true;
-    releaseTriggered = installTriggeredRelease(current);
+    try {
+      releaseTriggered = installTriggeredRelease(current, (event, canceled = false) =>
+        finishTriggered(current, event, canceled),
+      );
+    } catch (error) {
+      const errors: unknown[] = [error];
+      clearAttempt(current);
+      isPressed.value = false;
+      isLongPressed.value = false;
+      contextMenuPointer = null;
+      endingAtThreshold = true;
+      try {
+        captureError(errors, press.cancel);
+      } finally {
+        endingAtThreshold = false;
+      }
+      surfaceErrors(errors, "Long-press trigger setup failed");
+      return;
+    }
     endingAtThreshold = true;
     try {
       press.cancel();
@@ -225,7 +155,15 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
     if (!readBoolean(options.allowTextSelectionOnPress, "allowTextSelectionOnPress")) {
       restoreTriggeredSelection = disableTextSelection(current.target);
     }
-    options.onLongPress?.(toLongPressEvent("longpress", current.event));
+    options.onLongPress?.(
+      toLongPressEvent(
+        "longpress",
+        current.event,
+        current.event.originalEvent,
+        current.event.isCanceled,
+        current.touchIdentifier,
+      ),
+    );
   };
 
   press = createPress({
@@ -238,15 +176,33 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
       : { preventFocusOnPress: options.preventFocusOnPress }),
     shouldCancelOnPointerExit: true,
     onPressStart(event) {
-      if (!hardwarePointers.has(event.pointerType as LongPressPointerType)) return;
-      const pointerType = event.pointerType as LongPressPointerType;
+      if (!isHardwarePointer(event.pointerType)) return;
+      const pointerType = event.pointerType;
       const filter = readPointerType(options.pointerType);
       if (filter && filter !== pointerType) return;
-      clearAttempt();
+      if (attempt) {
+        press.cancel();
+        return;
+      }
       contextMenuPointer = pointerType;
       clearContextMenuTimer();
-      const start = toLongPressEvent("longpressstart", event);
-      const current: Attempt = { event: start, pointerType, target: event.target, timer: null };
+      const owner = ownerOf(event);
+      const touchIdentifier = owner.source === "touch" ? owner.id : null;
+      const start = toLongPressEvent(
+        "longpressstart",
+        event,
+        event.originalEvent,
+        event.isCanceled,
+        touchIdentifier,
+      );
+      const current: Attempt = {
+        event: start,
+        owner,
+        pointerType,
+        target: event.target,
+        touchIdentifier,
+        timer: null,
+      };
       attempt = current;
       isPressed.value = true;
       current.timer = setTimeout(() => trigger(current), readThreshold(options.threshold));
@@ -255,7 +211,8 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
     onPressEnd(event) {
       if (!attempt || endingAtThreshold) return;
       const current = attempt;
-      clearAttempt();
+      if (!ownerMatches(current.owner, event)) return;
+      clearAttempt(current);
       isPressed.value = false;
       if (current.pointerType === "touch" || current.pointerType === "pen") {
         lingerContextMenuSuppression();
@@ -263,7 +220,13 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
         contextMenuPointer = null;
       }
       options.onLongPressEnd?.(
-        toLongPressEvent("longpressend", current.event, event.originalEvent, event.isCanceled),
+        toLongPressEvent(
+          "longpressend",
+          current.event,
+          event.originalEvent,
+          event.isCanceled,
+          current.touchIdentifier,
+        ),
       );
     },
     ...(options.onPress ? { onPress: options.onPress } : {}),
@@ -292,19 +255,21 @@ export function createLongPress(options: LongPressOptions = {}): LongPressContro
     longPressProps: Object.freeze(attributes),
     cancel: () => {
       if (disposed) throw new Error(`${disposedDiagnostic}: the controller has been disposed`);
-      if (finishTriggered(null, true)) return true;
+      if (attempt && finishTriggered(attempt, null, true)) return true;
       return press.cancel();
     },
     dispose: () => {
       if (disposed) return;
-      clearRelease();
-      clearAttempt();
-      clearContextMenuTimer();
+      disposed = true;
+      const errors: unknown[] = [];
+      captureError(errors, clearRelease);
+      captureError(errors, () => clearAttempt());
+      captureError(errors, clearContextMenuTimer);
       contextMenuPointer = null;
       isPressed.value = false;
       isLongPressed.value = false;
-      press.dispose();
-      disposed = true;
+      captureError(errors, press.dispose);
+      surfaceErrors(errors, "Long-press disposal failed");
     },
   });
   return controller;
