@@ -460,8 +460,9 @@ Presets: `happy-path`, `nuxt`, `opinionated`.
 `vue/scoped-event-names` recommends scoped event names such as `form:submit`. Default: `warning`.
 Presets: `nuxt`, `opinionated`.
 
-`vue/sfc-element-order` enforces the order of top-level SFC blocks. Default: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
+`vue/sfc-element-order` enforces the order of top-level SFC blocks, carrying `vue/block-order`'s
+default order: `<script>` and `<template>` are interchangeable, and `<style>` comes last. Default:
+`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
 
 `vue/single-style-block` recommends keeping styles in a single block. Default: `warning`. Presets:
 `happy-path`, `nuxt`, `opinionated`.

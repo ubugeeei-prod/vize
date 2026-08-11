@@ -6,11 +6,11 @@ expression: result.diagnostics
     LintDiagnostic {
         rule_name: "vue/sfc-element-order",
         severity: Warning,
-        message: "<script> should come before <template>",
-        start: 33,
-        end: 56,
+        message: "<script> should come before <style>",
+        start: 16,
+        end: 39,
         help: Some(
-            "Recommended order: <script> -> <template> -> <style>",
+            "Recommended order: <script> and <template> (either order) -> <style>",
         ),
         labels: [],
         fix: None,
