@@ -41,6 +41,8 @@ mod rename;
 mod service;
 #[cfg(feature = "native")]
 mod service_project;
+#[cfg(all(test, feature = "native"))]
+mod signature_help_trace;
 
 #[cfg(feature = "native")]
 pub use references::JsxReferencesService;
@@ -48,3 +50,5 @@ pub use references::JsxReferencesService;
 pub use rename::JsxRenameService;
 #[cfg(feature = "native")]
 pub use service::JsxService;
+#[cfg(all(test, feature = "native"))]
+pub(in crate::ide) use signature_help_trace::signature_help_traced;

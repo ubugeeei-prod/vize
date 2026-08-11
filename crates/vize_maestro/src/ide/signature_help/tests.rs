@@ -1,7 +1,7 @@
 mod fixture;
 
 use super::{SignatureHelpService, SignatureHelpStage};
-use crate::ide::{IdeContext, JsxService};
+use crate::ide::IdeContext;
 use fixture::{Fixture, resolve_tsgo_binary};
 
 #[test]
@@ -139,7 +139,7 @@ fn signature_help_maps_tsx_calls() {
         let Some(corsa_path) = resolve_tsgo_binary() else {
             return;
         };
-        let fixture = Fixture::new(&corsa_path);
+        let fixture = Fixture::new_traced(&corsa_path);
         let source = "function format(value: string, precision: number): string { return value.repeat(precision) }\nexport default () => <p>{format('tsx', )}</p>;\n";
         let (state, uri) = fixture.tsx("Component.tsx", source);
         let bridge = fixture.bridge();
@@ -148,9 +148,21 @@ fn signature_help_maps_tsx_calls() {
         let marker = "format('tsx', ";
         let offset = source.find(marker).unwrap() + marker.len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let help = JsxService::signature_help(&ctx, Some(bridge.clone()))
-            .await
-            .expect("signature help in TSX");
+        let (help, stages) =
+            crate::ide::jsx::signature_help_traced(&ctx, Some(bridge.clone()), None).await;
+        let help = help.unwrap_or_else(|| {
+            panic!(
+                "signature help in TSX: {stages:?}; {}",
+                fixture.describe_server_frames()
+            )
+        });
+        assert_eq!(
+            stages,
+            [
+                SignatureHelpStage::VirtualOpened,
+                SignatureHelpStage::RequestSome,
+            ]
+        );
         assert_signature(help, "format", 1);
 
         bridge.shutdown().await.unwrap();
