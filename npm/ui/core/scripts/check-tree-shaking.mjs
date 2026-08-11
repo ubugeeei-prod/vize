@@ -70,6 +70,7 @@ function consumerSource(exportName, packageEntry) {
 const familySignatures = Object.freeze({
   button: /aria-busy/,
   checkbox: /aria-checked/,
+  collection: /VIZE_UI_COLLECTION_DISPOSED/,
   id: /DeterministicIdProvider/,
   primitive: /data-vize-ui.+primitive/,
   "visually-hidden": /visually-hidden/,
@@ -86,6 +87,12 @@ const componentCases = [
     family: "checkbox",
     exportName: "Checkbox",
     maximumJavaScriptGzipBytes: 1_100,
+    maximumCssGzipBytes: 0,
+  },
+  {
+    family: "collection",
+    exportName: "createCollectionRegistry",
+    maximumJavaScriptGzipBytes: 3_050,
     maximumCssGzipBytes: 0,
   },
   {

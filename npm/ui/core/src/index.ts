@@ -1,4 +1,5 @@
 export * from "./checkbox.ts";
+export * from "./collection.ts";
 export * from "./context.ts";
 export * from "./controllable-state.ts";
 export * from "./button.ts";

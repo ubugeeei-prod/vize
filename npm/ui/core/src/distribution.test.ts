@@ -9,6 +9,7 @@ const publicEntries = [
   ".",
   "./button",
   "./checkbox",
+  "./collection",
   "./controllable-state",
   "./id",
   "./primitive",

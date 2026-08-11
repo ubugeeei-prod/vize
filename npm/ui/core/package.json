@@ -44,6 +44,11 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./collection": {
+      "types": "./dist/collection.d.mts",
+      "import": "./dist/collection.mjs",
+      "default": "./dist/collection.mjs"
+    },
     "./context": {
       "types": "./dist/context.d.mts",
       "import": "./dist/context.mjs",
