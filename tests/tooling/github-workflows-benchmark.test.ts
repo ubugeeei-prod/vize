@@ -242,10 +242,12 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   // Only runs on PRs and only when Rust or the bench harness changes.
   assert.match(workflow, /\n  pull_request:\n/);
   assert.match(workflow, /paths:\n\s+- "crates\/\*\*"/);
+  assert.match(workflow, /- "benchmarks\/\*\*"/);
   assert.match(workflow, /- "Cargo\.lock"/);
   assert.match(workflow, /- "Cargo\.toml"/);
   assert.match(workflow, /- "bench\/criterion-ab\.mjs"/);
   assert.match(workflow, /- "bench\/criterion-impact\.mjs"/);
+  assert.match(workflow, /- "bench\/criterion-summary\.mjs"/);
   assert.match(workflow, /- "bench\/dialect-guard\.mjs"/);
   assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
 
