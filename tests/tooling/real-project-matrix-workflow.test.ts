@@ -286,7 +286,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(upload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(upload?.with, {
     name: "real-project-matrix-${{ matrix.shard }}",
-    path: "${{ env.FIXTURE_REPORT_DIR }}",
+    path:
+      "${{ env.FIXTURE_REPORT_DIR }}\n" +
+      "!${{ env.FIXTURE_REPORT_DIR }}/*-vue-tsc/node_modules/**",
     "if-no-files-found": "error",
     "retention-days": 30,
   });
