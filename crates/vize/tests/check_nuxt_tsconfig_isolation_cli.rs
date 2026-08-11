@@ -1,9 +1,11 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
-
-#[cfg(unix)]
-#[path = "check_nuxt_tsconfig_isolation_cli/environment.rs"]
-mod environment;
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
+#[path = "support/nuxt_fifo.rs"]
+mod nuxt_fifo;
+#[path = "support/nuxt_stress.rs"]
+mod nuxt_stress;
 
 #[cfg(unix)]
 #[path = "check_nuxt_tsconfig_isolation_cli/barrier.rs"]
@@ -22,7 +24,8 @@ mod unix {
             create_phase_barrier, describe_output, release, wait_until_both_configs_are_prepared,
         },
         corsa_requirement,
-        environment::{required_iterations, resolve_test_corsa_path, workspace_node_modules},
+        nuxt_cli::resolve_test_corsa_path,
+        nuxt_stress::required_iterations,
     };
 
     #[test]
@@ -32,9 +35,17 @@ mod unix {
             return;
         };
         let case = tempfile::tempdir().unwrap();
-        let alpha = create_project(case.path(), "alpha", "string", "\"alpha\"");
-        let bravo = create_project(case.path(), "bravo", "number", "42");
-        let legacy_wrapper = workspace_node_modules().join(".vize/cli/tsconfig.nuxt-fallback.json");
+        let shared_node_modules = case.path().join("shared-node_modules");
+        fs::create_dir(&shared_node_modules).unwrap();
+        let alpha = create_project(
+            case.path(),
+            &shared_node_modules,
+            "alpha",
+            "string",
+            "\"alpha\"",
+        );
+        let bravo = create_project(case.path(), &shared_node_modules, "bravo", "number", "42");
+        let legacy_wrapper = shared_node_modules.join(".vize/cli/tsconfig.nuxt-fallback.json");
         let legacy_before = fs::read(&legacy_wrapper).ok();
         let iterations = required_iterations();
 
@@ -51,40 +62,11 @@ mod unix {
             let bravo_child = check_command(&bravo, &corsa_path, &barrier, "bravo", false, 2)
                 .spawn()
                 .unwrap();
-            let mut alpha_child = alpha_child;
-            let mut bravo_child = bravo_child;
-            if let Err(reason) = wait_until_both_configs_are_prepared(
-                &prepared_barrier,
-                &mut alpha_child,
-                &mut bravo_child,
-            ) {
-                let _ = alpha_child.kill();
-                let _ = bravo_child.kill();
-                let alpha_output = alpha_child.wait_with_output().unwrap();
-                let bravo_output = bravo_child.wait_with_output().unwrap();
-                panic!(
-                    "{reason}\n{}\n{}",
-                    describe_output("alpha", &alpha_output),
-                    describe_output("bravo", &bravo_output)
-                );
-            }
+            let (alpha_child, bravo_child) =
+                await_phase(&prepared_barrier, alpha_child, bravo_child);
             release(&prepared_barrier, "alpha");
             release(&prepared_barrier, "bravo");
-            if let Err(reason) = wait_until_both_configs_are_prepared(
-                &active_barrier,
-                &mut alpha_child,
-                &mut bravo_child,
-            ) {
-                let _ = alpha_child.kill();
-                let _ = bravo_child.kill();
-                let alpha_output = alpha_child.wait_with_output().unwrap();
-                let bravo_output = bravo_child.wait_with_output().unwrap();
-                panic!(
-                    "{reason}\n{}\n{}",
-                    describe_output("alpha", &alpha_output),
-                    describe_output("bravo", &bravo_output)
-                );
-            }
+            let (alpha_child, bravo_child) = await_phase(&active_barrier, alpha_child, bravo_child);
             if iteration + 1 == iterations {
                 release(&active_barrier, "alpha");
                 assert_clean(alpha_child.wait_with_output().unwrap(), "alpha", iteration);
@@ -108,10 +90,16 @@ mod unix {
         );
     }
 
-    fn create_project(case: &Path, name: &str, expected: &str, value: &str) -> PathBuf {
+    fn create_project(
+        case: &Path,
+        shared_node_modules: &Path,
+        name: &str,
+        expected: &str,
+        value: &str,
+    ) -> PathBuf {
         let root = case.join(name);
         fs::create_dir_all(root.join("src")).unwrap();
-        std::os::unix::fs::symlink(workspace_node_modules(), root.join("node_modules")).unwrap();
+        std::os::unix::fs::symlink(shared_node_modules, root.join("node_modules")).unwrap();
         let dependencies = if name == "alpha" {
             r#""nuxt": "2.17.0", "@nuxt/bridge": "3.0.0""#
         } else {
@@ -181,6 +169,25 @@ mod unix {
         };
         write(&root.join("src/App.vue"), &app);
         root
+    }
+
+    fn await_phase(
+        barrier: &Path,
+        mut alpha: std::process::Child,
+        mut bravo: std::process::Child,
+    ) -> (std::process::Child, std::process::Child) {
+        if let Err(reason) = wait_until_both_configs_are_prepared(barrier, &mut alpha, &mut bravo) {
+            let _ = alpha.kill();
+            let _ = bravo.kill();
+            let alpha_output = alpha.wait_with_output().unwrap();
+            let bravo_output = bravo.wait_with_output().unwrap();
+            panic!(
+                "{reason}\n{}\n{}",
+                describe_output("alpha", &alpha_output),
+                describe_output("bravo", &bravo_output)
+            );
+        }
+        (alpha, bravo)
     }
 
     fn check_command(

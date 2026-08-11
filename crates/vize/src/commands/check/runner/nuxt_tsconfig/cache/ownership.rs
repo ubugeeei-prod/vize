@@ -41,8 +41,11 @@ pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_project(
     if !is_digest(name) {
         return Ok(false);
     }
-    validate_owned_directory(bucket, project, name, "project")?;
-    Ok(true)
+    match validate_owned_directory(bucket, project, name, "project") {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error),
+    }
 }
 
 pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_entry(
@@ -55,8 +58,11 @@ pub(in crate::commands::check::runner::nuxt_tsconfig) fn validate_entry(
     if !is_digest(name) {
         return Ok(false);
     }
-    validate_owned_directory(project_cache, entry, name, "entry")?;
-    Ok(true)
+    match validate_owned_directory(project_cache, entry, name, "entry") {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error),
+    }
 }
 
 fn ensure_owned_directory(

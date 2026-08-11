@@ -11,7 +11,7 @@ use std::{
 use super::{
     ensure_entry,
     ownership::{ensure_bucket, ensure_project, validate_project},
-    validate_entry,
+    process_artifact_is_abandoned, validate_entry,
 };
 
 const MAX_INACTIVE_CONFIGS: usize = 8;
@@ -119,12 +119,12 @@ pub(super) fn collect_projects(
         if project_has_live_readers(&project)? {
             continue;
         }
-        drop(project_lock);
         match fs::remove_dir_all(&project) {
             Ok(()) => {}
             Err(error) if error.kind() == ErrorKind::NotFound => {}
             Err(error) => return Err(error),
         }
+        drop(project_lock);
         match fs::remove_file(&project_lock_path) {
             Ok(()) => {}
             Err(error) if error.kind() == ErrorKind::NotFound => {}
@@ -297,48 +297,11 @@ fn cleanup_dead_leases(entry: &Path) -> Result<(), std::io::Error> {
         else {
             continue;
         };
-        if !process_is_running(pid) {
+        if process_artifact_is_abandoned(&candidate.path(), pid) {
             let _ = fs::remove_file(candidate.path());
         }
     }
     Ok(())
-}
-
-#[cfg(unix)]
-fn process_is_running(pid: u32) -> bool {
-    if pid == 0 || pid > i32::MAX as u32 {
-        return false;
-    }
-    // SAFETY: signal 0 only checks whether a process currently owns this PID.
-    let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
-    result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
-}
-
-#[cfg(windows)]
-fn process_is_running(pid: u32) -> bool {
-    type Handle = *mut std::ffi::c_void;
-    const SYNCHRONIZE: u32 = 0x0010_0000;
-    const WAIT_OBJECT_0: u32 = 0;
-    unsafe extern "system" {
-        fn OpenProcess(access: u32, inherit: i32, process_id: u32) -> Handle;
-        fn WaitForSingleObject(handle: Handle, milliseconds: u32) -> u32;
-        fn CloseHandle(handle: Handle) -> i32;
-    }
-    // SAFETY: the API is called with a PID and the returned handle is closed.
-    let handle = unsafe { OpenProcess(SYNCHRONIZE, 0, pid) };
-    if handle.is_null() {
-        return std::io::Error::last_os_error().raw_os_error() != Some(87);
-    }
-    // SAFETY: `handle` is live and the zero timeout only observes its state.
-    let state = unsafe { WaitForSingleObject(handle, 0) };
-    // SAFETY: handle is a live handle returned by OpenProcess.
-    unsafe { CloseHandle(handle) };
-    state != WAIT_OBJECT_0
-}
-
-#[cfg(not(any(unix, windows)))]
-fn process_is_running(_pid: u32) -> bool {
-    true
 }
 
 #[cfg(test)]

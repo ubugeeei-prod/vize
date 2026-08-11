@@ -8,6 +8,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use super::nuxt_fifo::create_fifo;
+
 pub(super) fn create_phase_barrier(path: &Path) {
     fs::create_dir_all(path).unwrap();
     create_fifo(&path.join("ready"));
@@ -69,12 +71,38 @@ pub(super) fn wait_until_both_configs_are_prepared(
 }
 
 pub(super) fn release(barrier: &Path, participant: &str) {
-    fs::OpenOptions::new()
-        .write(true)
-        .open(barrier.join(format!("release-{participant}")))
-        .unwrap()
-        .write_all(b"go\n")
-        .unwrap();
+    let release = barrier.join(format!("release-{participant}"));
+    let encoded = CString::new(release.as_os_str().as_bytes()).unwrap();
+    let deadline = Instant::now() + Duration::from_secs(30);
+    loop {
+        // SAFETY: `encoded` is a NUL-terminated FIFO path and the returned
+        // descriptor is immediately owned by `File` when successful.
+        let descriptor = unsafe {
+            libc::open(
+                encoded.as_ptr(),
+                libc::O_WRONLY | libc::O_NONBLOCK | libc::O_CLOEXEC,
+            )
+        };
+        if descriptor >= 0 {
+            // SAFETY: `descriptor` is a fresh owned descriptor from `libc::open`.
+            let mut writer = unsafe { fs::File::from_raw_fd(descriptor) };
+            writer.write_all(b"go\n").unwrap();
+            return;
+        }
+        let error = std::io::Error::last_os_error();
+        assert_eq!(
+            error.raw_os_error(),
+            Some(libc::ENXIO),
+            "failed to open release FIFO {}: {error}",
+            release.display()
+        );
+        assert!(
+            Instant::now() < deadline,
+            "timed out after 30s waiting for release FIFO reader: {}",
+            release.display()
+        );
+        std::thread::park_timeout(Duration::from_millis(10));
+    }
 }
 
 pub(super) fn describe_output(name: &str, output: &Output) -> String {
@@ -84,10 +112,4 @@ pub(super) fn describe_output(name: &str, output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
-}
-
-fn create_fifo(path: &Path) {
-    let path = CString::new(path.as_os_str().as_bytes()).unwrap();
-    // SAFETY: `path` is a NUL-terminated filesystem path and mode is valid.
-    assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
 }

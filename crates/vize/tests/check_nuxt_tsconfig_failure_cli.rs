@@ -1,19 +1,21 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "support/nuxt_cli.rs"]
+mod nuxt_cli;
+#[path = "support/nuxt_fifo.rs"]
+mod nuxt_fifo;
 
 #[cfg(unix)]
 mod unix {
     use std::{
-        ffi::CString,
         fs,
-        os::unix::ffi::OsStrExt,
         path::{Path, PathBuf},
         process::{Command, Stdio},
         sync::{Mutex, MutexGuard, OnceLock},
         time::{Duration, Instant},
     };
 
-    use super::corsa_requirement;
+    use super::{corsa_requirement, nuxt_cli::resolve_test_corsa_path, nuxt_fifo::create_fifo};
 
     #[test]
     fn failed_corsa_start_leaves_no_pending_config_or_dependency_state() {
@@ -23,9 +25,13 @@ mod unix {
             return;
         };
         let case = tempfile::tempdir().unwrap();
+        let cache_home = case.path().join("cache-home");
+        let shared_node_modules = case.path().join("shared-node_modules");
+        fs::create_dir_all(&cache_home).unwrap();
+        fs::create_dir(&shared_node_modules).unwrap();
         let project = case.path().join("nuxt-project");
         fs::create_dir_all(project.join("src")).unwrap();
-        std::os::unix::fs::symlink(workspace_node_modules(), project.join("node_modules")).unwrap();
+        std::os::unix::fs::symlink(&shared_node_modules, project.join("node_modules")).unwrap();
         write(
             &project.join("package.json"),
             r#"{ "private": true, "dependencies": { "nuxt": "3.0.0" } }"#,
@@ -50,12 +56,13 @@ mod unix {
             &project.join("src/App.vue"),
             "<script setup lang=\"ts\">import { value } from '~/value'; void value;</script>\n",
         );
-        let dependency_before = snapshot_tree(&workspace_node_modules().join(".vize/cli"));
-        let transient_before = transient_configs();
+        let dependency_before = snapshot_tree(&shared_node_modules.join(".vize/cli"));
+        let transient_root = transient_root(&cache_home);
+        let transient_before = transient_configs(&transient_root);
 
-        let failed = check(&project, Path::new("/usr/bin/false"));
+        let failed = check(&project, Path::new("/usr/bin/false"), &cache_home);
         assert!(!failed.status.success(), "a non-LSP Corsa binary must fail");
-        let transient_after = transient_configs();
+        let transient_after = transient_configs(&transient_root);
         assert!(
             transient_after
                 .iter()
@@ -63,12 +70,12 @@ mod unix {
             "failed Corsa startup left new pending files or leases: {transient_after:?}"
         );
         assert_eq!(
-            snapshot_tree(&workspace_node_modules().join(".vize/cli")),
+            snapshot_tree(&shared_node_modules.join(".vize/cli")),
             dependency_before,
             "failed startup must not mutate generated state under shared node_modules"
         );
 
-        let recovered = check(&project, &corsa_path);
+        let recovered = check(&project, &corsa_path, &cache_home);
         assert!(
             recovered.status.success(),
             "a failed child must not poison the next checker\nstdout:\n{}\nstderr:\n{}",
@@ -78,6 +85,8 @@ mod unix {
         assert_killed_active_checker_does_not_poison_cache(
             &project,
             &corsa_path,
+            &cache_home,
+            &transient_root,
             &transient_before,
         );
 
@@ -85,10 +94,10 @@ mod unix {
             &project.join("src/App.vue"),
             "<script setup lang=\"ts\">import { missing } from '~/missing'; void missing;</script>\n",
         );
-        let diagnostic_failure = check(&project, &corsa_path);
+        let diagnostic_failure = check(&project, &corsa_path, &cache_home);
         assert!(!diagnostic_failure.status.success());
         assert!(String::from_utf8_lossy(&diagnostic_failure.stdout).contains("[TS2307]"));
-        let diagnostic_transients = transient_configs();
+        let diagnostic_transients = transient_configs(&transient_root);
         assert!(
             diagnostic_transients
                 .iter()
@@ -105,13 +114,17 @@ mod unix {
             return;
         };
         let case = tempfile::tempdir().unwrap();
+        let cache_home = case.path().join("cache-home");
+        let shared_node_modules = case.path().join("shared-node_modules");
+        fs::create_dir_all(&cache_home).unwrap();
+        fs::create_dir(&shared_node_modules).unwrap();
         let project = case.path().join("nuxt-workspace");
         let inside = project.join("internal/src/App.vue");
         let outside_root = case.path().join("outside");
         let outside = outside_root.join("src/App.vue");
         fs::create_dir_all(inside.parent().unwrap()).unwrap();
         fs::create_dir_all(outside.parent().unwrap()).unwrap();
-        std::os::unix::fs::symlink(workspace_node_modules(), project.join("node_modules")).unwrap();
+        std::os::unix::fs::symlink(&shared_node_modules, project.join("node_modules")).unwrap();
         write(
             &project.join("package.json"),
             r#"{ "private": true, "dependencies": { "nuxt": "3.0.0" } }"#,
@@ -145,11 +158,14 @@ mod unix {
             &outside,
             "<script setup lang=\"ts\">const value = 1; void value;</script>\n",
         );
-        let transient_before = transient_configs();
+        let transient_root = transient_root(&cache_home);
+        let transient_before = transient_configs(&transient_root);
 
         let output = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(&project)
             .env("CORSA_PATH", corsa_path)
+            .env("HOME", &cache_home)
+            .env("XDG_CACHE_HOME", cache_home.join("cache"))
             .arg("check")
             .arg("--tsconfig")
             .arg("tsconfig.json")
@@ -172,7 +188,7 @@ mod unix {
             stderr.contains("outside project root"),
             "missing later-program validation error: {stderr}"
         );
-        let transient_after = transient_configs();
+        let transient_after = transient_configs(&transient_root);
         assert!(
             transient_after
                 .iter()
@@ -184,6 +200,8 @@ mod unix {
     fn assert_killed_active_checker_does_not_poison_cache(
         project: &Path,
         corsa_path: &Path,
+        cache_home: &Path,
+        transient_root: &Path,
         transient_before: &[PathBuf],
     ) {
         let barrier = project.parent().unwrap().join("active-cancellation");
@@ -193,6 +211,8 @@ mod unix {
         let mut child = Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(project)
             .env("CORSA_PATH", corsa_path)
+            .env("HOME", cache_home)
+            .env("XDG_CACHE_HOME", cache_home.join("cache"))
             .env("VIZE_TEST_NUXT_CONFIG_ACTIVE_BARRIER", &barrier)
             .env("VIZE_TEST_NUXT_CONFIG_PARTICIPANT", "cancelled")
             .args([
@@ -209,8 +229,14 @@ mod unix {
             .spawn()
             .unwrap();
         let deadline = Instant::now() + Duration::from_secs(30);
+        let ready = barrier.join("ready");
+        let ready_metadata = fs::symlink_metadata(&ready).unwrap();
+        assert!(
+            ready_metadata.is_file() && !ready_metadata.file_type().is_symlink(),
+            "the cancellation barrier must use a regular ready file"
+        );
         loop {
-            if fs::metadata(barrier.join("ready")).unwrap().len() == 1 {
+            if fs::metadata(&ready).unwrap().len() == 1 {
                 break;
             }
             assert!(
@@ -226,14 +252,14 @@ mod unix {
         child.kill().unwrap();
         child.wait().unwrap();
 
-        let recovered = check(project, corsa_path);
+        let recovered = check(project, corsa_path, cache_home);
         assert!(
             recovered.status.success(),
             "a killed active checker poisoned its immutable config\nstdout:\n{}\nstderr:\n{}",
             String::from_utf8_lossy(&recovered.stdout),
             String::from_utf8_lossy(&recovered.stderr)
         );
-        let transient_after = transient_configs();
+        let transient_after = transient_configs(transient_root);
         assert!(
             transient_after
                 .iter()
@@ -242,10 +268,12 @@ mod unix {
         );
     }
 
-    fn check(project: &Path, corsa_path: &Path) -> std::process::Output {
+    fn check(project: &Path, corsa_path: &Path, cache_home: &Path) -> std::process::Output {
         Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(project)
             .env("CORSA_PATH", corsa_path)
+            .env("HOME", cache_home)
+            .env("XDG_CACHE_HOME", cache_home.join("cache"))
             .args([
                 "check",
                 "src/App.vue",
@@ -259,10 +287,8 @@ mod unix {
             .unwrap()
     }
 
-    fn transient_configs() -> Vec<PathBuf> {
-        dirs::cache_dir()
-            .map(|root| snapshot_tree(&root.join("vize/check/nuxt/v2")))
-            .unwrap_or_default()
+    fn transient_configs(root: &Path) -> Vec<PathBuf> {
+        snapshot_tree(root)
             .into_iter()
             .filter_map(|(path, _)| {
                 path.file_name()
@@ -275,6 +301,14 @@ mod unix {
                     .then_some(path)
             })
             .collect()
+    }
+
+    fn transient_root(cache_home: &Path) -> PathBuf {
+        #[cfg(target_os = "macos")]
+        let root = cache_home.join("Library/Caches");
+        #[cfg(not(target_os = "macos"))]
+        let root = cache_home.join("cache");
+        root.join("vize/check/nuxt/v2")
     }
 
     fn snapshot_tree(root: &Path) -> Vec<(PathBuf, Option<Vec<u8>>)> {
@@ -303,36 +337,10 @@ mod unix {
         fs::write(path, content).unwrap();
     }
 
-    fn create_fifo(path: &Path) {
-        let path = CString::new(path.as_os_str().as_bytes()).unwrap();
-        // SAFETY: `path` is a NUL-terminated path and mode is valid.
-        assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
-    }
-
     fn failure_test_lock() -> MutexGuard<'static, ()> {
         static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
-    }
-
-    fn resolve_test_corsa_path() -> Option<PathBuf> {
-        std::env::var_os("CORSA_PATH")
-            .map(PathBuf::from)
-            .filter(|path| path.exists())
-            .or_else(|| {
-                let path = workspace_node_modules().join(".bin/tsgo");
-                path.exists().then_some(path)
-            })
-    }
-
-    fn workspace_node_modules() -> PathBuf {
-        std::env::var_os("VIZE_TEST_NODE_MODULES")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| {
-                Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .parent()
-                    .and_then(Path::parent)
-                    .unwrap()
-                    .join("node_modules")
-            })
+        LOCK.get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 }

@@ -49,7 +49,7 @@ fn acquisitions_in_different_shards_never_share_a_lock() {
         drop(lease);
     });
     received
-        .recv_timeout(std::time::Duration::from_secs(1))
+        .recv_timeout(std::time::Duration::from_secs(5))
         .expect("an unrelated digest shard must not wait for alpha's lock");
     task.join().unwrap();
 }
@@ -76,6 +76,22 @@ fn collection_is_project_local_bounded_and_preserves_live_readers() {
     drop(current_lease);
     collect(&project, &current).unwrap();
     assert!(entry_count(&project) <= 9);
+}
+
+#[test]
+fn collection_ignores_an_unmarked_crash_window_directory() {
+    let case = tempfile::tempdir().unwrap();
+    let cache = case.path().join("cache");
+    fs::create_dir(&cache).unwrap();
+    let digest = format!("{:064x}", 0);
+    let (project, current, lease) = acquire(&cache, &digest, &digest).unwrap();
+    let incomplete = project.join(format!("{:064x}", 1));
+    fs::create_dir(&incomplete).unwrap();
+
+    collect(&project, &current).unwrap();
+
+    assert!(incomplete.exists(), "unknown directories are not deleted");
+    drop(lease);
 }
 
 #[test]

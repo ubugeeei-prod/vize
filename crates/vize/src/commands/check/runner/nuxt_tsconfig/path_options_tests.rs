@@ -176,6 +176,12 @@ fn invalid_path_options_survive_for_the_authored_option_probe() {
         value["compilerOptions"]["paths"],
         serde_json::json!("invalid")
     );
+    assert!(
+        value["compilerOptions"]["paths"]
+            .get("#fallback/*")
+            .is_none(),
+        "an invalid authored paths value cannot receive a generated alias"
+    );
 }
 
 fn prepared_paths(root: &Path, config: &str) -> serde_json::Map<String, serde_json::Value> {
