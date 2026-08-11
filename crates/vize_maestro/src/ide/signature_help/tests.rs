@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 
-use super::SignatureHelpService;
+use super::{SignatureHelpService, SignatureHelpStage};
 use crate::ide::{IdeContext, JsxService};
 use crate::server::ServerState;
 
@@ -61,10 +61,19 @@ fn signature_help_maps_art_variant_template() {
         let script_marker = "format('script', ";
         let script_offset = source.find(script_marker).unwrap() + script_marker.len();
         let script_ctx = IdeContext::new(&state, &uri, script_offset).unwrap();
-        let help =
-            SignatureHelpService::signature_help_with_corsa(&script_ctx, Some(bridge.clone()))
-                .await
-                .expect("signature help in art script setup");
+        let (help, stages) = SignatureHelpService::signature_help_with_corsa_traced(
+            &script_ctx,
+            Some(bridge.clone()),
+        )
+        .await;
+        let help = help.unwrap_or_else(|| panic!("signature help in art script setup: {stages:?}"));
+        assert_eq!(
+            stages,
+            [
+                SignatureHelpStage::VirtualOpened,
+                SignatureHelpStage::RequestSome,
+            ]
+        );
         assert_signature(help, "format", 1);
 
         let marker = "format('art', ";

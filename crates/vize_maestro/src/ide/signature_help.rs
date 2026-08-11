@@ -29,6 +29,16 @@ use crate::virtual_code::{ArtCursorPosition, ArtVariantInfo, BlockType, VirtualD
 pub struct SignatureHelpService;
 
 #[cfg(feature = "native")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(in crate::ide) enum SignatureHelpStage {
+    VirtualOpened,
+    VirtualOpenFailed { message: String },
+    RequestSome,
+    RequestNull,
+    RequestFailed { message: String },
+}
+
+#[cfg(feature = "native")]
 impl SignatureHelpService {
     /// Resolve signature help through the same canonical virtual TypeScript
     /// project used by hover, completion, definition, and diagnostics.
@@ -45,6 +55,31 @@ impl SignatureHelpService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
         context: Option<serde_json::Value>,
     ) -> Option<SignatureHelp> {
+        Self::signature_help_with_corsa_context_traced(ctx, corsa_bridge, context, None).await
+    }
+
+    #[cfg(test)]
+    pub(in crate::ide) async fn signature_help_with_corsa_traced(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+    ) -> (Option<SignatureHelp>, Vec<SignatureHelpStage>) {
+        let mut trace = Vec::new();
+        let help = Self::signature_help_with_corsa_context_traced(
+            ctx,
+            corsa_bridge,
+            None,
+            Some(&mut trace),
+        )
+        .await;
+        (help, trace)
+    }
+
+    async fn signature_help_with_corsa_context_traced(
+        ctx: &IdeContext<'_>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
+        context: Option<serde_json::Value>,
+        trace: Option<&mut Vec<SignatureHelpStage>>,
+    ) -> Option<SignatureHelp> {
         let bridge = corsa_bridge?;
         if !bridge.is_initialized() {
             return None;
@@ -57,13 +92,13 @@ impl SignatureHelpService {
                 Self::signature_help_in_canonical_sfc(ctx, &bridge, context).await
             }
             BlockType::Script => {
-                Self::signature_help_in_split_script(ctx, &bridge, false, context).await
+                Self::signature_help_in_split_script(ctx, &bridge, false, context, trace).await
             }
             BlockType::ScriptSetup => {
-                Self::signature_help_in_split_script(ctx, &bridge, true, context).await
+                Self::signature_help_in_split_script(ctx, &bridge, true, context, trace).await
             }
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
-                Self::signature_help_in_art_variant(ctx, &bridge, info, context).await
+                Self::signature_help_in_art_variant(ctx, &bridge, info, context, trace).await
             }
             BlockType::Template | BlockType::Style(_) | BlockType::Art(_) => None,
         }
@@ -89,6 +124,7 @@ impl SignatureHelpService {
         bridge: &CorsaBridge,
         is_setup: bool,
         context: Option<serde_json::Value>,
+        trace: Option<&mut Vec<SignatureHelpStage>>,
     ) -> Option<SignatureHelp> {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let script = if is_setup {
@@ -104,6 +140,7 @@ impl SignatureHelpService {
             generated_offset,
             corsa_support::script_request_path(ctx.uri, is_setup),
             context,
+            trace,
         )
         .await
     }
@@ -113,6 +150,7 @@ impl SignatureHelpService {
         bridge: &CorsaBridge,
         info: &ArtVariantInfo,
         context: Option<serde_json::Value>,
+        trace: Option<&mut Vec<SignatureHelpStage>>,
     ) -> Option<SignatureHelp> {
         let template = ctx
             .virtual_docs
@@ -129,6 +167,7 @@ impl SignatureHelpService {
             generated_offset,
             corsa_support::art_template_request_path(ctx.uri, info.variant_index),
             context,
+            trace,
         )
         .await
     }
@@ -140,16 +179,43 @@ impl SignatureHelpService {
         generated_offset: usize,
         request_path: vize_carton::String,
         context: Option<serde_json::Value>,
+        mut trace: Option<&mut Vec<SignatureHelpStage>>,
     ) -> Option<SignatureHelp> {
         let (line, character) = super::offset_to_position(&document.content, generated_offset);
-        let uri = bridge
+        let uri = match bridge
             .open_or_update_virtual_document(&request_path, &document.content)
             .await
-            .ok()?;
-        let help = bridge
+        {
+            Ok(uri) => {
+                record_signature_help_stage(&mut trace, || SignatureHelpStage::VirtualOpened);
+                uri
+            }
+            Err(error) => {
+                record_signature_help_stage(&mut trace, || SignatureHelpStage::VirtualOpenFailed {
+                    message: error.to_string(),
+                });
+                return None;
+            }
+        };
+        let help = match bridge
             .signature_help_with_context(&uri, line, character, context)
             .await
-            .ok()??;
+        {
+            Ok(Some(help)) => {
+                record_signature_help_stage(&mut trace, || SignatureHelpStage::RequestSome);
+                help
+            }
+            Ok(None) => {
+                record_signature_help_stage(&mut trace, || SignatureHelpStage::RequestNull);
+                return None;
+            }
+            Err(error) => {
+                record_signature_help_stage(&mut trace, || SignatureHelpStage::RequestFailed {
+                    message: error.to_string(),
+                });
+                return None;
+            }
+        };
         Some(Self::convert_lsp_signature_help(help))
     }
 
@@ -201,6 +267,16 @@ impl SignatureHelpService {
                 value: markup.value,
             }),
         }
+    }
+}
+
+#[cfg(feature = "native")]
+fn record_signature_help_stage(
+    trace: &mut Option<&mut Vec<SignatureHelpStage>>,
+    stage: impl FnOnce() -> SignatureHelpStage,
+) {
+    if let Some(trace) = trace.as_mut() {
+        trace.push(stage());
     }
 }
 

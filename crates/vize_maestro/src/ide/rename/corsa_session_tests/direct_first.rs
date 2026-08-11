@@ -49,7 +49,9 @@ fn direct_first_renames_survive_twenty_session_shutdown_overlap() {
         .collect::<Result<Vec<_>, _>>()
         .unwrap_or_else(|error| panic!("{error}"));
 
-    std::thread::scope(|scope| {
+    // Own the gates inside the scoped closure so unwinding drops them and
+    // releases blocked shutdown threads before `scope` joins those threads.
+    std::thread::scope(move |scope| {
         let shutdowns = pairs
             .into_iter()
             .map(|(index, mut closing, survivor)| {

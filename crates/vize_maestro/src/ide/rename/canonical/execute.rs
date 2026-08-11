@@ -1,6 +1,6 @@
 use tower_lsp::lsp_types::WorkspaceEdit;
 use vize_canon::CorsaBridge;
-use vize_carton::{String, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::{
     Answer, CanonicalFailure, event_rename, initialized_bridge, linked_positions,
@@ -123,11 +123,6 @@ async fn rename_strict_inner(
     linked.extend(corsa_support::materialized_semantic_positions(
         &document, ctx.uri, ctx.offset,
     ));
-    linked.retain(|position| {
-        position.request_uri != document.request_uri
-            || position.line != line
-            || position.character != character
-    });
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
         && let Some(response) = response.as_ref()
     {
@@ -135,6 +130,7 @@ async fn rename_strict_inner(
             ctx, &document, response,
         ));
     }
+    retain_unique_linked_positions(&mut linked, &document.request_uri, line, character);
     let mapped_primary = response.and_then(|response| {
         corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, response)
     });
@@ -202,11 +198,50 @@ async fn rename_strict_inner(
     ))
 }
 
+fn retain_unique_linked_positions(
+    linked: &mut Vec<corsa_support::CanonicalSemanticPosition>,
+    primary_uri: &str,
+    primary_line: u32,
+    primary_character: u32,
+) {
+    let mut seen = FxHashSet::default();
+    linked.retain(|position| {
+        (position.request_uri != primary_uri
+            || position.line != primary_line
+            || position.character != primary_character)
+            && seen.insert(position.clone())
+    });
+}
+
 fn record(
     trace: &mut Option<&mut Vec<CanonicalRenameStage>>,
     stage: impl FnOnce() -> CanonicalRenameStage,
 ) {
     if let Some(trace) = trace.as_mut() {
         trace.push(stage());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn linked_positions_remove_primary_and_cross_producer_duplicates() {
+        let primary = corsa_support::CanonicalSemanticPosition {
+            request_uri: "file:///project/Primary.vue.ts".into(),
+            line: 4,
+            character: 2,
+        };
+        let linked = corsa_support::CanonicalSemanticPosition {
+            request_uri: "file:///project/Linked.vue.ts".into(),
+            line: 8,
+            character: 3,
+        };
+        let mut positions = vec![linked.clone(), primary, linked.clone()];
+
+        retain_unique_linked_positions(&mut positions, "file:///project/Primary.vue.ts", 4, 2);
+
+        assert_eq!(positions, [linked]);
     }
 }

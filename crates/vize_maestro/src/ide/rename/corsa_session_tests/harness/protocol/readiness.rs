@@ -68,21 +68,20 @@ fn assert_cross_document_generation(
         .iter()
         .filter(|rename| second_generation_ready < **rename && **rename < shutdown)
         .count();
-    let first_rename_after_change = renames
+    let unarmed_renames = renames
         .iter()
-        .find(|rename| did_change < **rename)
-        .copied()
-        .ok_or_else(|| format!("missing rename after didChange in {}", path.display()))?;
+        .filter(|rename| did_change < **rename && **rename < second_generation_ready)
+        .count();
     if first_generation_ready < did_change
         && did_change < second_generation_ready
-        && second_generation_ready < first_rename_after_change
+        && unarmed_renames == 0
         && first_generation >= 2
         && second_generation >= 2
     {
         return Ok(());
     }
     Err(format!(
-        "invalid cross-document readiness order in {}: ready={ready:?}, didChange={did_change}, rename={renames:?}, shutdown={shutdown}",
+        "invalid cross-document readiness order in {}: ready={ready:?}, didChange={did_change}, unarmedRenames={unarmed_renames}, rename={renames:?}, shutdown={shutdown}",
         path.display()
     ))
 }
