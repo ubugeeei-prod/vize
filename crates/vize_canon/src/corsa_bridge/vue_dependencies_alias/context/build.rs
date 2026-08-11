@@ -62,6 +62,11 @@ pub(super) fn build(
     );
     project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
+    // The native editor queries this one importer. Reachable declarations must
+    // be mirrored so user `paths` and relative declaration barrels resolve from
+    // the session-private root, but they must stay inferred modules rather than
+    // ambient program roots.
+    project.set_declaration_roots(&[source_path.to_path_buf()]);
     project.set_package_route_resolver(resolver.clone());
     let package_resolution = project.package_resolution_settings();
     let aliases = project.dependency_alias_map();

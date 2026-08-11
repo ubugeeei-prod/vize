@@ -56,7 +56,7 @@ impl CorsaProjectClient {
     pub(in crate::lsp_client) fn can_use_api_for_uri(&self, uri: &str) -> bool {
         !self.document_texts.contains_key(uri)
             || self.supports_overlay_api()
-            || (self.project_root.join("__vize_helpers.d.ts").is_file()
+            || (self.project_root.join("__vize_vue_modules.d.ts").is_file()
                 && file_uri_to_path(uri)
                     .is_some_and(|path| path.starts_with(&self.project_root) && path.is_file()))
     }

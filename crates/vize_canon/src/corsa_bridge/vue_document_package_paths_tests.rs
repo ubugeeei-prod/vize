@@ -86,6 +86,80 @@ fn native_editor_diagnostics_and_definition_follow_the_user_path() {
     });
 }
 
+#[test]
+fn native_editor_keeps_paths_declarations_inferred() {
+    let Some(corsa_path) = std::env::var_os("CORSA_PATH").map(PathBuf::from) else {
+        return;
+    };
+    if !corsa_path.is_file() {
+        return;
+    }
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("app");
+    let host = app.join("src/Host.vue");
+    write(
+        &app.join("tsconfig.json"),
+        r#"{"compilerOptions":{"allowJs":true,"checkJs":true,"moduleResolution":"bundler","paths":{"@/*":["./src/*"]}}}"#,
+    );
+    let source = "<script>import { transactionList } from '@/api/remote-search';\nconst marker = 'first';\nexport default { methods: { load() { return transactionList() } } };\nvoid marker;\n</script>\n";
+    write(&host, source);
+    write(
+        &app.join("src/api/remote-search.d.ts"),
+        "export declare function transactionList(): Promise<unknown>;\n",
+    );
+    install_runtime_stubs(&app);
+    let bridge = super::CorsaBridge::with_config(super::CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(app),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let document = bridge
+            .open_vue_virtual_document(
+                &host,
+                source,
+                CorsaVueVirtualDocumentOptions {
+                    options_api: true,
+                    legacy_vue2: true,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        let diagnostics = bridge.get_diagnostics(&document.request_uri).await.unwrap();
+        assert!(
+            diagnostics.is_empty(),
+            "reachable inferred declaration widened or failed resolution: {diagnostics:#?}"
+        );
+        let changed = source.replace("'first'", "'second'");
+        write(&host, &changed);
+        let changed_document = bridge
+            .open_vue_virtual_document(
+                &host,
+                &changed,
+                CorsaVueVirtualDocumentOptions {
+                    options_api: true,
+                    legacy_vue2: true,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        let changed_diagnostics = bridge
+            .get_diagnostics(&changed_document.request_uri)
+            .await
+            .unwrap();
+        assert!(
+            changed_diagnostics.is_empty(),
+            "inferred declaration widened or detached after editor change: {changed_diagnostics:#?}"
+        );
+        bridge.shutdown().await.unwrap();
+    });
+}
+
 const SOURCE: &str = r#"<script setup lang="ts">
 import Widget from '@scope/ui'
 type Props = InstanceType<typeof Widget>['$props']

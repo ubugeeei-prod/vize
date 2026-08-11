@@ -240,6 +240,40 @@ export const DecoratorBase = Vue;
         );
     }
 
+    #[test]
+    fn editor_paths_declaration_is_inferred_inside_the_mirror() {
+        let root = tempfile::tempdir().unwrap();
+        let host = root.path().join("src/App.vue");
+        let declaration = root.path().join("src/api/remote-search.d.ts");
+        write(
+            &root.path().join("tsconfig.json"),
+            r#"{"compilerOptions":{"paths":{"@/*":["./src/*"]}}}"#,
+        );
+        write(
+            &host,
+            "<script>import { transactionList } from '@/api/remote-search';\nexport default { methods: { load() { return transactionList() } } }\n</script>\n",
+        );
+        write(
+            &declaration,
+            "export declare function transactionList(): Promise<unknown>;\n",
+        );
+
+        let source = std::fs::read_to_string(&host).unwrap();
+        let context = AliasContext::for_host(&host, &source, &FxHashMap::default());
+        let mirror = context.mirror.as_ref().expect("paths require a mirror");
+        let materialized = mirror
+            .preferred_materialized_path_for_original(&declaration)
+            .expect("reachable declaration must be mirrored");
+
+        assert_eq!(materialized.file_name().unwrap(), "remote-search.d.ts");
+        assert!(
+            mirror.expected_materialized_files().contains(&materialized),
+            "{}",
+            materialized.display()
+        );
+        assert!(!mirror.is_declaration_root(&declaration));
+    }
+
     struct RuntimePackageFixture {
         _root: tempfile::TempDir,
         host: std::path::PathBuf,

@@ -124,6 +124,7 @@ impl VirtualProject {
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
                 hoist_shared_preamble: true,
                 preserve_relative_declarations: package_route_path,
+                preserve_declaration_spelling: self.session_scripts,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -174,6 +175,7 @@ impl VirtualProject {
             experimental_in_tag_comments: self.experimental_in_tag_comments,
             hoist_shared_preamble: true,
             preserve_relative_declarations: false,
+            preserve_declaration_spelling: self.session_scripts,
             rewriter: &self.rewriter,
         };
         let package_paths = self
@@ -219,6 +221,7 @@ impl VirtualProject {
                 experimental_in_tag_comments: self.experimental_in_tag_comments,
                 hoist_shared_preamble: true,
                 preserve_relative_declarations: self.is_package_route_path(path),
+                preserve_declaration_spelling: self.session_scripts,
                 rewriter: &self.rewriter,
             },
         )?;
@@ -254,6 +257,7 @@ impl VirtualProject {
             (&self.project_root, &self.virtual_root),
             &self.rewriter,
             self.is_package_route_path(path),
+            self.session_scripts,
         )?;
         self.absorb_registered_file(registered);
         Ok(())

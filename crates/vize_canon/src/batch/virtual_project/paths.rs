@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use oxc_span::SourceType;
 use vize_carton::cstr;
 
 use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
@@ -9,6 +10,7 @@ pub(super) fn script_virtual_path(
     project_root: &Path,
     virtual_root: &Path,
     path: &Path,
+    preserve_declaration_spelling: bool,
 ) -> CorsaResult<PathBuf> {
     // Out-of-root scripts (a workspace barrel reached by the reachability
     // pass, #3887) mirror into the external escape subtree.
@@ -35,8 +37,38 @@ pub(super) fn script_virtual_path(
         );
         return Ok(virtual_path);
     }
-    if let Some(stem) = file_name.strip_suffix(".d.ts") {
+    if !preserve_declaration_spelling && let Some(stem) = file_name.strip_suffix(".d.ts") {
         virtual_path.set_file_name(cstr!("{stem}.d.cts").as_str());
     }
     Ok(virtual_path)
+}
+
+pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {
+    let file_name = path.file_name()?.to_str()?;
+    if file_name.ends_with(".jsx") {
+        return Some(SourceType::unambiguous().with_jsx(true));
+    }
+    if file_name.ends_with(".tsx") {
+        return Some(SourceType::tsx());
+    }
+    if file_name.ends_with(".cjs") {
+        return Some(SourceType::cjs());
+    }
+    if file_name.ends_with(".mjs") {
+        return Some(SourceType::mjs());
+    }
+    if file_name.ends_with(".js") {
+        return Some(SourceType::unambiguous());
+    }
+    if file_name.ends_with(".ts")
+        || file_name.ends_with(".d.ts")
+        || file_name.ends_with(".mts")
+        || file_name.ends_with(".cts")
+    {
+        return Some(SourceType::ts());
+    }
+    if file_name.ends_with(".js") || file_name.ends_with(".mjs") || file_name.ends_with(".cjs") {
+        return SourceType::from_path(path).ok();
+    }
+    None
 }

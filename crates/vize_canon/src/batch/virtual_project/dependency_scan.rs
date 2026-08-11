@@ -8,10 +8,11 @@
 //! to a fixpoint. Published packages are left alone: a canonical path that
 //! stays inside `node_modules` keeps the stub (that half is #3282), while a
 //! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source. Declaration files are left alone too: they hold no
-//! component to check and their ambient declarations are program-wide, so the
-//! tsconfig decides which ones a program includes (see
-//! [`is_declaration_file`]).
+//! first-party source. Batch projects leave declaration files alone so their
+//! ambient declarations remain governed by the tsconfig. Editor sessions do
+//! mirror reachable declarations, preserving their authored `.d.ts` spelling,
+//! but keep them inferred rather than adding them as ambient program roots
+//! (see [`is_declaration_file`]).
 //!
 //! Specifiers are collected from the *generated* content (always valid TS,
 //! one collector for `.vue` and script files alike) and resolved against the
@@ -180,7 +181,10 @@ impl VirtualProject {
                 let package_local = importer_package_roots
                     .iter()
                     .any(|package_root| key.starts_with(package_root));
-                if (inside_node_modules(&key) || is_declaration_file(&key)) && !package_local {
+                if inside_node_modules(&key) && !package_local {
+                    continue;
+                }
+                if is_declaration_file(&key) && !package_local && !self.session_scripts {
                     continue;
                 }
                 // Only `.vue` files gain anything from registration — their

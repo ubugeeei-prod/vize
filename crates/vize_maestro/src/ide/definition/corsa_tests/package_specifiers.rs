@@ -80,6 +80,14 @@ void Widget
             selected.canonicalize().unwrap(),
             "definition must agree with the native selected condition"
         );
+        assert_eq!(
+            location.range,
+            tower_lsp::lsp_types::Range::new(
+                tower_lsp::lsp_types::Position::new(0, 0),
+                tower_lsp::lsp_types::Position::new(0, 0)
+            ),
+            "module-specifier navigation selects the authored file, not a symbol span"
+        );
     });
 }
 
@@ -232,6 +240,10 @@ void value
         assert_eq!(
             location.uri.to_file_path().unwrap().canonicalize().unwrap(),
             barrel.canonicalize().unwrap()
+        );
+        assert_ne!(
+            location.range.start, location.range.end,
+            "ordinary symbol definitions must keep their native authored span"
         );
         assert!(!location.uri.path().contains(".vize"));
     });

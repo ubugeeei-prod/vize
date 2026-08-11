@@ -17,6 +17,7 @@ use crate::batch::source_map::{CompositeSourceMap, SfcSourceMap};
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
 
 mod css_modules;
+pub(super) use super::paths::source_type_for_path;
 pub(super) use css_modules::virtual_ts_options_for_descriptor;
 
 use super::VirtualFile;
@@ -60,6 +61,7 @@ pub(super) struct VirtualBuildContext<'a> {
     pub(super) experimental_in_tag_comments: bool,
     pub(super) hoist_shared_preamble: bool,
     pub(super) preserve_relative_declarations: bool,
+    pub(super) preserve_declaration_spelling: bool,
     pub(super) rewriter: &'a ImportRewriter,
 }
 
@@ -80,6 +82,7 @@ pub(super) fn build_registered_file(
             (context.project_root, context.virtual_root),
             context.rewriter,
             context.preserve_relative_declarations,
+            context.preserve_declaration_spelling,
         );
     }
 
@@ -103,6 +106,7 @@ pub(super) fn build_registered_file(
         (context.project_root, context.virtual_root),
         context.rewriter,
         context.preserve_relative_declarations,
+        context.preserve_declaration_spelling,
     )
 }
 
@@ -214,6 +218,7 @@ pub(super) fn build_script_registered_file(
     roots: (&Path, &Path),
     rewriter: &ImportRewriter,
     preserve_relative_declarations: bool,
+    preserve_declaration_spelling: bool,
 ) -> CorsaResult<RegisteredFile> {
     let rewritten = profile!("canon.import.rewrite.script", {
         if preserve_relative_declarations {
@@ -222,7 +227,8 @@ pub(super) fn build_script_registered_file(
             rewriter.rewrite_for_virtual_project(content, source_type, roots, path.parent())
         }
     });
-    let virtual_path = super::paths::script_virtual_path(roots.0, roots.1, path)?;
+    let virtual_path =
+        super::paths::script_virtual_path(roots.0, roots.1, path, preserve_declaration_spelling)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {
@@ -317,34 +323,4 @@ fn virtual_vue_path(
         })?;
     virtual_path.set_file_name(file_name.as_str());
     Ok(virtual_path)
-}
-
-pub(super) fn source_type_for_path(path: &Path) -> Option<SourceType> {
-    let file_name = path.file_name()?.to_str()?;
-    if file_name.ends_with(".jsx") {
-        return Some(SourceType::unambiguous().with_jsx(true));
-    }
-    if file_name.ends_with(".tsx") {
-        return Some(SourceType::tsx());
-    }
-    if file_name.ends_with(".cjs") {
-        return Some(SourceType::cjs());
-    }
-    if file_name.ends_with(".mjs") {
-        return Some(SourceType::mjs());
-    }
-    if file_name.ends_with(".js") {
-        return Some(SourceType::unambiguous());
-    }
-    if file_name.ends_with(".ts")
-        || file_name.ends_with(".d.ts")
-        || file_name.ends_with(".mts")
-        || file_name.ends_with(".cts")
-    {
-        return Some(SourceType::ts());
-    }
-    if file_name.ends_with(".js") || file_name.ends_with(".mjs") || file_name.ends_with(".cjs") {
-        return SourceType::from_path(path).ok();
-    }
-    None
 }

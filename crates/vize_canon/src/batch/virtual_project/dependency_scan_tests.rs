@@ -186,6 +186,61 @@ fn a_reachable_declaration_file_is_not_registered() {
 }
 
 #[test]
+fn an_editor_paths_declaration_is_mirrored_but_not_a_program_root() {
+    let root = case_dir("editor-paths-declaration");
+    let src = root.join("src");
+    fs::create_dir_all(src.join("api")).unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"paths":{"@/*":["./src/*"]}}}"#,
+    )
+    .unwrap();
+    let declaration = src.join("api/remote-search.d.ts");
+    fs::write(&declaration, "export declare const search: () => void;\n").unwrap();
+    let vue_path = src.join("App.vue");
+    fs::write(
+        &vue_path,
+        "<script setup lang=\"ts\">import { search } from '@/api/remote-search'; search()</script>\n",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.set_session_script_registration(true);
+    project.set_declaration_roots(std::slice::from_ref(&vue_path));
+    project.register_path(&vue_path).unwrap();
+    project.register_reachable_dependencies().unwrap();
+
+    let registered = project.registered_original_paths_sorted();
+    assert!(registered.contains(&declaration), "{registered:?}");
+    assert!(!project.is_declaration_root(&declaration));
+    assert_eq!(
+        project
+            .find_by_original(&declaration)
+            .unwrap()
+            .virtual_path
+            .file_name()
+            .unwrap(),
+        "remote-search.d.ts"
+    );
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn batch_declaration_spelling_stays_isolated_from_editor_mirrors() {
+    let root = case_dir("batch-declaration-spelling");
+    fs::create_dir_all(root.join("src")).unwrap();
+    let declaration = root.join("src/globals.d.ts");
+    fs::write(&declaration, "declare const batchOnly: string;\n").unwrap();
+    let mut project = VirtualProject::new(&root).unwrap();
+    project
+        .register_declaration_file(&declaration, "declare const batchOnly: string;\n")
+        .unwrap();
+    let virtual_path = &project.find_by_original(&declaration).unwrap().virtual_path;
+    assert_eq!(virtual_path.file_name().unwrap(), "globals.d.cts");
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn a_wildcard_alias_into_node_modules_is_kept() {
     // A pnpm workspace link lives under `node_modules/<scope>/<pkg>`, so a
     // wildcard target's entries can each canonicalize out and be first

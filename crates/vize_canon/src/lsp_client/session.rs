@@ -74,10 +74,17 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
+        // A Canon query document is already an exact file inside the active
+        // materialized project. Keep that disk identity authoritative even
+        // when the runtime advertises overlays: applying a second overlay
+        // snapshot after the materialized-file refresh can detach the file
+        // from its configured project on the next edit. `document_texts`
+        // remains populated above for editor-LSP fallback queries.
+        if self.sync_existing_canon_document(uri, content)? {
+            return Ok(());
+        }
+
         if document_uri != uri || !self.supports_overlay_api() {
-            if self.sync_existing_canon_document(uri, content)? {
-                return Ok(());
-            }
             return self.sync_materialized_overlay_document(uri, content);
         }
 

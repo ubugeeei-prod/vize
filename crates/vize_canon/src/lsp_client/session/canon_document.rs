@@ -16,7 +16,11 @@ impl CorsaProjectClient {
         uri: &str,
         content: &str,
     ) -> Result<bool, String> {
-        if !self.project_root.join("__vize_helpers.d.ts").is_file() {
+        // Every Canon project owns this stub, while the shared helper file is
+        // emitted only for documents whose generated code actually needs it.
+        // The marker must therefore identify the materialized project, not a
+        // particular host's helper shape.
+        if !self.project_root.join("__vize_vue_modules.d.ts").is_file() {
             return Ok(false);
         }
         let Some(path) = file_uri_to_path(uri) else {
