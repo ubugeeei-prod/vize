@@ -179,12 +179,26 @@ export function readCgroupPids(): CgroupPids {
   return { current: null, max: null, path: cgroupPath, source: null };
 }
 
-/** Sample every runner fact that bounds process creation. */
-export function readRunnerFacts(): RunnerFacts {
-  return {
-    cgroupPids: readCgroupPids(),
+type StaticRunnerFacts = Omit<RunnerFacts, "cgroupPids">;
+
+let cachedStaticFacts: StaticRunnerFacts | null = null;
+
+/**
+ * The platform, CPU count, and process rlimit cannot change while the
+ * supervisor runs, and reading the rlimit falls back to spawning `/bin/sh`.
+ * Sampling happens on an interval for the lifetime of every phase, so re-read
+ * only the cgroup counters and keep the rest for the run.
+ */
+function staticRunnerFacts(): StaticRunnerFacts {
+  cachedStaticFacts ??= {
     cpuCount: os.availableParallelism(),
     platform: `${process.platform}-${process.arch}`,
     ulimitProcesses: readUlimitProcesses(),
   };
+  return cachedStaticFacts;
+}
+
+/** Sample every runner fact that bounds process creation. */
+export function readRunnerFacts(): RunnerFacts {
+  return { ...staticRunnerFacts(), cgroupPids: readCgroupPids() };
 }

@@ -187,10 +187,22 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
 
   const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");
-  assert.match(
-    summary?.run ?? "",
-    /check-fixtures-topology check-fixtures-cycles vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn/,
-  );
+  // Asserted one directory at a time: a single ordered pattern fails without
+  // saying which suite went missing, and it breaks on a harmless reordering.
+  const summarisedDirectories = [
+    "check-fixtures-topology",
+    "check-fixtures-cycles",
+    "vben-batch-incremental",
+    "misskey-lsp-incremental",
+    "vben-lsp-incremental",
+    "misskey-lsp-churn",
+  ];
+  for (const directory of summarisedDirectories) {
+    assert.ok(
+      (summary?.run ?? "").includes(directory),
+      `the summary step must publish the ${directory} metrics directory`,
+    );
+  }
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /GITHUB_STEP_SUMMARY/);
 
@@ -226,6 +238,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   });
   const cycleUpload = steps.find((step) => step.name === "Upload fixture process budget cycles");
   assert.equal(cycleUpload?.if, "${{ always() }}");
+  assert.match(cycleUpload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
   assert.deepEqual(cycleUpload?.with, {
     name: "check-fixtures-cycles",
     path: "target/vize-tests/metrics/check-fixtures-cycles/",

@@ -35,8 +35,11 @@ test("real-world check and lint snapshots are wired into e2e scripts", () => {
   assert.match(pkg.scripts["test:check"], serialTestConcurrency);
   // The fixture lane runs through the supervisor now (#4126), so the flag it
   // passes every phase lives in the manifest rather than in the script string.
+  // `CHECK_FIXTURE_NODE_ARGS` is an argv array, so the flag is one whole
+  // element: match it exactly rather than reusing the pattern that exists to
+  // find the flag inside a shell string.
   assert.ok(
-    CHECK_FIXTURE_NODE_ARGS.some((argument) => serialTestConcurrency.test(argument)),
+    CHECK_FIXTURE_NODE_ARGS.includes("--test-concurrency=1"),
     "test:check:fixtures phases should stay serial",
   );
 

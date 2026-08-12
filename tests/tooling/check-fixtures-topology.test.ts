@@ -164,7 +164,12 @@ test("the recorded tree keeps every checker and drops unrelated system processes
     relevantTasks(records, { pgid: null, rootPid: 900 }).map((record) => record.pid),
     [501, 502, 503, 900],
   );
+});
 
+// Kept apart from the filtering test above: this one reads the live process
+// table, so a failure here is about the running runner rather than about how
+// recorded tasks are selected.
+test("a sample taken without a group still roots the tree at the supervisor", () => {
   const sample = sampleTopology("before", { pgid: null, startedAt: performance.now() });
   assert.equal(sample.label, "before");
   assert.ok(

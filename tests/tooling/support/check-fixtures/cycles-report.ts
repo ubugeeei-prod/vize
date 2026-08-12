@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { CycleRecord } from "./cycle-runner.ts";
+import { writeAtomic } from "./report.ts";
 import { readRunnerFacts, type RunnerFacts } from "./runner-facts.ts";
 
 export const CYCLES_SCHEMA = "vize.check-fixtures.cycles/1";
@@ -59,6 +60,32 @@ export function createCyclesReport(options: {
   };
 }
 
+/** Longest failure text kept in one summary entry. */
+const MAX_CELL_CHARS = 300;
+
+/**
+ * Flatten a failure into one bounded line.
+ *
+ * Failures quote process argv and stderr, so they arrive with newlines and can
+ * be long enough to bury the table under one bad cycle.
+ */
+function flatten(value: string): string {
+  const single = value.replace(/\r?\n/g, "<br>");
+  return single.length <= MAX_CELL_CHARS
+    ? single
+    : `${single.slice(0, MAX_CELL_CHARS)} (truncated)`;
+}
+
+/**
+ * Render a Markdown table cell.
+ *
+ * An unescaped `|` from a quoted command or stderr line would start a new
+ * column and shift every later value into the wrong header.
+ */
+function cell(value: string): string {
+  return flatten(value).replace(/\|/g, "\\|");
+}
+
 function targetRows(target: CyclesTargetReport): string[] {
   return target.cycles.map((cycle: CycleRecord) =>
     [
@@ -72,7 +99,7 @@ function targetRows(target: CyclesTargetReport): string[] {
       String(cycle.peakCorsaProcesses),
       cycle.outputSha256.slice(0, 12),
       cycle.reportedEagain ? "**yes**" : "no",
-      cycle.failures.length === 0 ? "ok" : cycle.failures.join("<br>"),
+      cycle.failures.length === 0 ? "ok" : cell(cycle.failures.join("\n")),
       "",
     ].join(" | "),
   );
@@ -99,7 +126,7 @@ export function renderCyclesSummary(report: CyclesReport): string {
   for (const target of report.targets) {
     lines.push(`- \`${target.id}\`: ${target.status} — ${target.description}`);
     for (const failure of target.failures) {
-      lines.push(`  - ${failure}`);
+      lines.push(`  - ${flatten(failure)}`);
     }
   }
   lines.push("");
@@ -109,6 +136,6 @@ export function renderCyclesSummary(report: CyclesReport): string {
 /** Write `cycles.json` and `summary.md` into `directory`. */
 export function writeCyclesReport(directory: string, report: CyclesReport): void {
   fs.mkdirSync(directory, { recursive: true });
-  fs.writeFileSync(path.join(directory, "cycles.json"), `${JSON.stringify(report, null, 2)}\n`);
-  fs.writeFileSync(path.join(directory, "summary.md"), renderCyclesSummary(report));
+  writeAtomic(path.join(directory, "cycles.json"), `${JSON.stringify(report, null, 2)}\n`);
+  writeAtomic(path.join(directory, "summary.md"), renderCyclesSummary(report));
 }

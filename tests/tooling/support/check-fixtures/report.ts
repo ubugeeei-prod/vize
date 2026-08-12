@@ -77,9 +77,24 @@ export function renderSummary(report: SupervisorReport): string {
   return `${lines.join("\n")}\n`;
 }
 
+/**
+ * Replace `file` in one step.
+ *
+ * The report is rewritten after every phase precisely so it survives the run
+ * being killed. A bare `writeFileSync` truncates the previous contents first,
+ * so a kill landing inside that window leaves the artifact half written and
+ * `topology.json` unparseable. Writing a sibling and renaming means readers see
+ * either the previous report or the new one.
+ */
+export function writeAtomic(file: string, contents: string): void {
+  const temporary = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(temporary, contents);
+  fs.renameSync(temporary, file);
+}
+
 /** Write `topology.json` and `summary.md` into `directory`. */
 export function writeReport(directory: string, report: SupervisorReport): void {
   fs.mkdirSync(directory, { recursive: true });
-  fs.writeFileSync(path.join(directory, "topology.json"), `${JSON.stringify(report, null, 2)}\n`);
-  fs.writeFileSync(path.join(directory, "summary.md"), renderSummary(report));
+  writeAtomic(path.join(directory, "topology.json"), `${JSON.stringify(report, null, 2)}\n`);
+  writeAtomic(path.join(directory, "summary.md"), renderSummary(report));
 }

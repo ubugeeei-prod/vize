@@ -101,7 +101,7 @@ export async function runSupervised(options: SupervisedOptions): Promise<Supervi
   let peak: TopologySample | null = null;
   const observe = () => {
     if (pgid != null) {
-      peak = peakOf(peak, sampleTopology("peak", { pgid, startedAt: options.startedAt }));
+      peak = peakOf(peak, sampleTopology("peak", { pgid, runner, startedAt: options.startedAt }));
     }
   };
   observe();
@@ -123,7 +123,12 @@ export async function runSupervised(options: SupervisedOptions): Promise<Supervi
   // One read backs both the `after` sample and the guard, so the artifact can
   // never disagree with the verdict drawn from it.
   const settled = readProcessTable();
-  const after = sampleTopology("after", { pgid, records: settled, startedAt: options.startedAt });
+  const after = sampleTopology("after", {
+    pgid,
+    records: settled,
+    runner,
+    startedAt: options.startedAt,
+  });
   const survivors = pgid == null ? [] : guardedSurvivors(settled, { pgid, rootPid: process.pid });
   const reaped = survivors.length > 0 && pgid != null ? await killGroup(pgid, process.pid) : false;
 

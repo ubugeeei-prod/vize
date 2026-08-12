@@ -132,6 +132,21 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
   return report;
 }
 
+/**
+ * Parse a count that must be at least one.
+ *
+ * `Number.parseInt` alone turns `--cycles nope` into `NaN`, and every
+ * `index <= NaN` comparison is false, so the harness would run no cycles at all
+ * and still report the target as passed. Refuse the input instead.
+ */
+function parsePositiveInt(flag: string, value: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${flag} expects an integer of at least 1, received: ${value}`);
+  }
+  return parsed;
+}
+
 export function parseCyclesArgs(argv: readonly string[]): {
   cycles: number | undefined;
   metricsDir: string | undefined;
@@ -144,7 +159,7 @@ export function parseCyclesArgs(argv: readonly string[]): {
     const flag = argv[index];
     const value = argv[index + 1];
     if (flag === "--cycles" && value != null) {
-      cycles = Number.parseInt(value, 10);
+      cycles = parsePositiveInt(flag, value);
       index += 1;
     } else if (flag === "--metrics-dir" && value != null) {
       metricsDir = value;

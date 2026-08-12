@@ -17,6 +17,7 @@
 //! It deliberately does not retry, sleep, or swallow a spawn failure: an
 //! `EAGAIN` is reported as `spawn-failed` with the runner's budget attached.
 
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -88,6 +89,22 @@ export async function runSupervisor(options: SupervisorOptions = {}): Promise<Su
   return report;
 }
 
+/**
+ * Parse a sampling interval in milliseconds.
+ *
+ * `Number.parseInt` alone lets `--sample-interval-ms nope` through as `NaN`,
+ * and `setInterval` clamps `NaN` and `0` to one millisecond, which turns the
+ * sampler into a busy loop that competes with the phase for the very process
+ * budget it is measuring.
+ */
+function parseIntervalMs(flag: string, value: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${flag} expects an integer of at least 1, received: ${value}`);
+  }
+  return parsed;
+}
+
 export function parseArgs(argv: readonly string[]): {
   only: string[];
   metricsDir: string | undefined;
@@ -106,7 +123,7 @@ export function parseArgs(argv: readonly string[]): {
       metricsDir = value;
       index += 1;
     } else if (flag === "--sample-interval-ms" && value != null) {
-      sampleIntervalMs = Number.parseInt(value, 10);
+      sampleIntervalMs = parseIntervalMs(flag, value);
       index += 1;
     } else {
       throw new Error(`unknown supervisor argument: ${String(flag)}`);
@@ -152,6 +169,37 @@ async function main(): Promise<void> {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+/**
+ * Decide whether this module is the process entry point.
+ *
+ * A plain `process.argv[1] === fileURLToPath(import.meta.url)` compares an
+ * unresolved argv path against a specifier ESM already resolved through
+ * symlinks, so any symlinked checkout made the two differ, skipped `main`, and
+ * exited 0 with no phase run at all. Prefer `import.meta.main`, and fall back
+ * to comparing both sides after `realpath`.
+ */
+function invokedDirectly(entry: string | undefined, modulePath: string): boolean {
+  // Read reflectively: `import.meta.main` only exists on newer runtimes.
+  const flagged: unknown = Reflect.get(import.meta, "main");
+  if (typeof flagged === "boolean") {
+    return flagged;
+  }
+  if (entry == null) {
+    return false;
+  }
+  return fs.realpathSync(entry) === fs.realpathSync(modulePath);
+}
+
+const modulePath = fileURLToPath(import.meta.url);
+const entryPath = process.argv[1];
+if (invokedDirectly(entryPath, modulePath)) {
   await main();
+} else if (entryPath != null && path.basename(entryPath) === path.basename(modulePath)) {
+  // Invoked as a script yet not recognised as the entry point: report it rather
+  // than exiting 0 for phases that never ran.
+  console.error(
+    `[check-fixtures] refusing to exit 0: ${entryPath} looks like this supervisor ` +
+      `but did not resolve to ${modulePath}`,
+  );
+  process.exit(1);
 }

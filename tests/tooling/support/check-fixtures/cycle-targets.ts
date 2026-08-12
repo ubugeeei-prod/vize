@@ -76,13 +76,19 @@ export const cycleTargets: readonly CycleTarget[] = [
 const BIN_EXT = process.platform === "win32" ? ".exe" : "";
 
 /**
- * Resolve the `vize` binary the same way `tests/_helpers/apps.ts` does, so a
- * cycle measures the same build the fixture phases run.
+ * Resolve the `vize` binary so a cycle measures the same build the fixture
+ * phases run. `VIZE_TEST_BIN` (the test-suite convention the `vue-parity`
+ * action sets) wins over `VIZE_BIN`, then the staged build profiles in the
+ * order `tests/_helpers/apps.ts` prefers them.
+ *
+ * Every candidate resolves against `repoRoot` because a cycle spawns `vize`
+ * with the fixture directory as its cwd, so the relative `target/ci/vize` the
+ * action passes would otherwise be looked up under the fixture.
  */
 export function resolveVizeBin(repoRoot: string): string {
-  const override = process.env.VIZE_BIN;
+  const override = process.env.VIZE_TEST_BIN ?? process.env.VIZE_BIN;
   if (override != null && override.length > 0) {
-    return override;
+    return path.resolve(repoRoot, override);
   }
   const candidates = ["ci", "release", "debug"].map((profile) =>
     path.join(repoRoot, "target", profile, `vize${BIN_EXT}`),
