@@ -1184,7 +1184,7 @@
       "fixturePath": "tests/_fixtures/_git/vue-storefront",
       "repository": "https://github.com/vuestorefront/vue-storefront",
       "revision": "16167a4c7d1fb1b77fcafb3ca7e49560f489aecc",
-      "license": { "spdx": "MIT", "files": ["LICENSE.md"] },
+      "license": { "spdx": "NONE", "files": [] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
