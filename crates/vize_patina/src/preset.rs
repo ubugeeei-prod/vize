@@ -115,8 +115,9 @@ pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'st
 #[cfg(test)]
 mod tests {
     use super::LintPreset;
+    use crate::Severity;
     use crate::rule::RuleRegistry;
-    use std::collections::BTreeSet;
+    use std::collections::{BTreeMap, BTreeSet};
 
     #[test]
     fn parses_common_aliases() {
@@ -314,6 +315,63 @@ mod tests {
                 !hidden_rule,
                 "{eslint_rule} is marked unimplemented despite a registered Patina counterpart"
             );
+        }
+    }
+
+    /// The rule map records each mapped rule's default severity and preset
+    /// membership so `tools/fixtures/lint-divergence-report.mjs` can configure the
+    /// `eslint-plugin-vue` baseline from the checked-in fixture alone, without a
+    /// native binding. Both fields are classification inputs — the comparator
+    /// matches on severity, and a rule no preset activates would turn every
+    /// upstream finding into a false negative — so drift has to fail here rather
+    /// than quietly skew a divergence report.
+    #[test]
+    fn eslint_vue_rule_map_records_current_severity_and_ecosystem_membership() {
+        let rule_map: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../tests/_fixtures/patina-eslint-vue-rule-map.json"
+        ))
+        .unwrap();
+
+        let mut severities: BTreeMap<&'static str, &'static str> = BTreeMap::new();
+        for registry in [RuleRegistry::with_all(), RuleRegistry::with_opt_in_rules()] {
+            for rule in registry.rules() {
+                let meta = rule.meta();
+                severities.insert(meta.name, severity_name(meta.default_severity));
+            }
+        }
+        for script_rule in crate::linter::script_rules::builtin_script_rules() {
+            severities.insert(script_rule.name, severity_name(script_rule.default_severity));
+        }
+        let ecosystem: BTreeSet<&'static str> = ecosystem_rule_names().into_iter().collect();
+
+        for (eslint_rule, entry) in rule_map["entries"].as_object().unwrap() {
+            if entry["status"] != "mapped" {
+                continue;
+            }
+            let target = entry["patinaRule"].as_str().unwrap();
+            assert_eq!(
+                entry["patinaSeverity"].as_str(),
+                severities.get(target).copied(),
+                "{eslint_rule} records a stale default severity for {target}"
+            );
+            let recorded: Vec<&str> = entry["patinaPresets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|preset| preset.as_str().unwrap())
+                .collect();
+            assert_eq!(
+                recorded.contains(&"ecosystem"),
+                ecosystem.contains(target),
+                "{eslint_rule} records stale ecosystem membership for {target}"
+            );
+        }
+    }
+
+    const fn severity_name(severity: Severity) -> &'static str {
+        match severity {
+            Severity::Error => "error",
+            Severity::Warning => "warning",
         }
     }
 

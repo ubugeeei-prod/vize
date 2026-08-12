@@ -42,7 +42,17 @@ function loadUpstream() {
   };
 }
 
-async function loadPatinaRuleNames() {
+/**
+ * Registered patina rules, keyed by name.
+ *
+ * The recorded `defaultSeverity` and `presets` are what lets a consumer decide,
+ * from the checked-in map alone, which rules are comparable against upstream
+ * under a given preset and at which severity — `tools/fixtures/lint-divergence.mjs`
+ * classifies on severity, so a baseline configured at the wrong one turns every
+ * agreement into a false-positive/false-negative pair. Reading them here keeps
+ * the native binding a `--write`-time dependency instead of a run-time one.
+ */
+async function loadPatinaRules() {
   const nativeEntry = process.env.VIZE_PATINA_NATIVE_MODULE
     ? path.resolve(process.env.VIZE_PATINA_NATIVE_MODULE)
     : path.join(repoRoot, "npm", "native", "index.js");
@@ -53,7 +63,20 @@ async function loadPatinaRuleNames() {
     "function",
     "building the rule map requires a local @vizejs/native binding",
   );
-  return new Set(binding.getPatinaRules().map((rule) => rule.name));
+  const rules = new Map();
+  for (const rule of binding.getPatinaRules()) {
+    assert.match(
+      rule.defaultSeverity,
+      /^(?:error|warning)$/u,
+      `${rule.name} has an unsupported default severity`,
+    );
+    assert.ok(Array.isArray(rule.presets), `${rule.name} must record its presets`);
+    rules.set(rule.name, {
+      defaultSeverity: rule.defaultSeverity,
+      presets: [...rule.presets].sort(),
+    });
+  }
+  return rules;
 }
 
 function patinaTargetFor(upstreamRule, patinaRules) {
@@ -72,7 +95,7 @@ function patinaTargetFor(upstreamRule, patinaRules) {
 
 export async function generateRuleMap() {
   const upstream = loadUpstream();
-  const patinaRules = await loadPatinaRuleNames();
+  const patinaRules = await loadPatinaRules();
   const entries = {};
   let mapped = 0;
 
@@ -82,7 +105,13 @@ export async function generateRuleMap() {
       entries[ruleId] = { status: "unimplemented", issue: trackingIssue };
       continue;
     }
-    entries[ruleId] = { status: "mapped", patinaRule };
+    const meta = patinaRules.get(patinaRule);
+    entries[ruleId] = {
+      status: "mapped",
+      patinaRule,
+      patinaSeverity: meta.defaultSeverity,
+      patinaPresets: meta.presets,
+    };
     mapped += 1;
   }
 
@@ -126,7 +155,26 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
     assert.equal(typeof entry, "object", `${ruleId} must have a structured map entry`);
     if (entry.status === "mapped") {
       assert.match(entry.patinaRule, /^(?:script|vue)\/[a-z0-9-]+$/u);
-      assert.deepEqual(Object.keys(entry).sort(), ["patinaRule", "status"]);
+      assert.deepEqual(Object.keys(entry).sort(), [
+        "patinaPresets",
+        "patinaRule",
+        "patinaSeverity",
+        "status",
+      ]);
+      // Shape only. The recorded values are enforced against the live registry
+      // by `eslint_vue_rule_map_matches_registered_patina_rules` in
+      // `crates/vize_patina/src/preset.rs`, which needs no native binding and so
+      // can run on every PR.
+      assert.match(entry.patinaSeverity, /^(?:error|warning)$/u, `${ruleId} needs a severity`);
+      assert.ok(
+        Array.isArray(entry.patinaPresets) && entry.patinaPresets.every((v) => /\S/u.test(v)),
+        `${ruleId} needs its patina preset membership`,
+      );
+      assert.deepEqual(
+        entry.patinaPresets,
+        [...entry.patinaPresets].sort(),
+        `${ruleId} must list presets in sorted order`,
+      );
       mapped += 1;
       continue;
     }
