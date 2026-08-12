@@ -303,6 +303,21 @@ fn is_reserved_prop(name: &str) -> bool {
 /// required contract under camelCase keys. Canonicalizing the authored key lets
 /// the helper intersect `$props` with that raw contract without making both
 /// spellings optional (which would silently lose required props).
+///
+/// # Documented divergence from `vue-tsc`
+///
+/// TypeScript's own JSX checking has no notion of Vue's kebab aliasing, and it
+/// exempts hyphenated attribute names from excess-property checks because they
+/// are not valid identifiers. So for `<Widget foo-bar="ok"/>` against
+/// `defineProps<{ fooBar: string }>()`, `vue-tsc` reports
+/// `TS2322: Type '{ "foo-bar": string; }' is not assignable to …` (the required
+/// `fooBar` is missing) while vize accepts it, and for an *unknown* hyphenated
+/// attribute (`what-ever="x"`) `vue-tsc` is silent while vize reports the
+/// canonicalized key. Both follow from accepting kebab aliases, which is
+/// required behaviour for this path (#4042); recovering `vue-tsc`'s exact
+/// answers would mean giving up either kebab acceptance or required-prop
+/// enforcement, because a type admitting both spellings of a required prop
+/// cannot keep either one required.
 fn canonical_prop_name(name: &str) -> CompactString {
     if name.starts_with("data-") || name.starts_with("aria-") {
         return name.to_compact_string();

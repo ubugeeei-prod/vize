@@ -78,11 +78,7 @@ pub(super) fn collect(
 /// the tag is already mapped by the component call this slot belongs to, and
 /// mapping it twice would double-report any diagnostic landing on it. Only the
 /// authored binding pattern is mapped.
-pub(super) fn render_open(
-    out: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    scope: &JsxSlotScope,
-) {
+pub(super) fn render_open(out: &mut String, mappings: &mut Vec<VizeMapping>, scope: &JsxSlotScope) {
     out.push_str("__vize_jsx_component_slot__(");
     out.push_str(&scope.host);
     out.push_str(", ");

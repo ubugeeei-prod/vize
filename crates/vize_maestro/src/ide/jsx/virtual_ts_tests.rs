@@ -151,6 +151,62 @@ fn component_tags_props_and_spreads_survive_editor_lowering() {
     }
 }
 
+/// The editor generator must produce the same scoped-slot scope the Canon batch
+/// generator does, byte for byte, or a diagnostic would land at a different
+/// range in the editor than on the CLI (#4042). The expected text below is the
+/// exact string asserted by
+/// `vize_canon::batch::virtual_project::jsx_codegen::tests`.
+#[test]
+fn scoped_slot_lowering_matches_the_batch_generator() {
+    let source = "import Widget from './Widget.vue';\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => props.item }}</Widget>;\n";
+    let generated = generate(source);
+
+    let rendered = generated
+        .code
+        .lines()
+        .find(|line| line.starts_with("export const view = "))
+        .expect("the render root must be rewritten");
+    assert_eq!(
+        rendered,
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+    );
+
+    let mapped: Vec<&str> = generated
+        .mappings
+        .iter()
+        .map(|mapping| &source[mapping.src_range.clone()])
+        .collect();
+    assert_eq!(
+        mapped,
+        vec![
+            "import Widget from './Widget.vue';\nexport const view = ",
+            "Widget",
+            "\"ok\"",
+            "fooBar=\"ok\"",
+            "Widget",
+            "props",
+            "props.item",
+            ";\n",
+        ]
+    );
+}
+
+/// The structural walk (semantic tokens, hover) must still see the slot pattern
+/// and every body expression once the generator wraps them in a scope.
+#[test]
+fn collect_jsx_expressions_includes_scoped_slot_pattern_and_body() {
+    let source = "import Widget from './Widget.vue';\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => props.item }}</Widget>;\n";
+    let contents: Vec<String> = collect_jsx_expressions(source, JsxLang::Tsx)
+        .into_iter()
+        .map(|expr| expr.content)
+        .collect();
+
+    assert_eq!(
+        contents,
+        vec!["props".to_string(), "props.item".to_string()]
+    );
+}
+
 #[test]
 fn collect_jsx_expressions_includes_for_body_model_and_style_exprs() {
     let source = "const Comp = (props: { items: string[]; color: string }) => (\n  <>\n    {props.items.map((item) => <span>{item}</span>)}\n    <input v-model={props.color} />\n    <style scoped>{`.box { color: ${props.color}; }`}</style>\n  </>\n);\n";
