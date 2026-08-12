@@ -104,6 +104,22 @@ test("the smoke only passes init flags the guide documents", () => {
   }
   // The idempotent run the smoke asserts is the one the guide prints verbatim.
   assert.ok(guide.includes("[vize init] nothing to do; the project is already configured"));
+
+  // The guide's non-interactive example is the invocation the smoke stands in
+  // for, so every feature it names must be answered explicitly -- either taken
+  // or refused. A deferred feature then shows up as a visible `--no-` flag
+  // rather than as a silent gap in coverage.
+  const example = guide.match(/^vpx vize init (--[^\n]+)$/mu);
+  assert.ok(example, "docs/content/guide/init.md must show a non-interactive example");
+  for (const shape of Object.values(PROJECT_SHAPES)) {
+    for (const flag of example[1].split(" ")) {
+      const refused = `--no-${flag.replace(/^--/u, "")}`;
+      assert.ok(
+        shape.initFlags.includes(flag) || shape.initFlags.includes(refused),
+        `${shape.id} neither takes nor refuses the documented ${flag}`,
+      );
+    }
+  }
 });
 
 test("the release runtime smoke runs the fresh-project matrix", () => {
