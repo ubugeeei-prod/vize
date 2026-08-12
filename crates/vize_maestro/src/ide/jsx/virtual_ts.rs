@@ -81,7 +81,7 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
     let mut exprs = Vec::new();
     for root in &lowered.roots {
         let mut emits = Vec::new();
-        collect::collect_root_expressions(&root.root, &mut emits, false);
+        collect_root_expressions(&root.root, &mut emits, false);
         collect_style_expressions(&root.scoped_style_exprs, &mut emits);
         flatten_emits(&emits, &mut exprs);
     }
