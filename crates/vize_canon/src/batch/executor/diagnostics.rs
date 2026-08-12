@@ -12,10 +12,12 @@ mod line_index;
 mod module_resolution;
 mod module_specifier;
 mod skip_rules;
+mod virtual_path_message;
 
 use line_index::LineIndex;
 pub(super) use module_resolution::relative_module_resolves_on_disk;
 pub(super) use skip_rules::{should_skip_diagnostic, should_skip_original_diagnostic};
+pub(super) use virtual_path_message::restore_authored_paths;
 
 pub(super) fn map_batch_diagnostics(
     results: Vec<(String, Vec<LspDiagnostic>)>,
@@ -96,6 +98,20 @@ impl<'a> DiagnosticMapper<'a> {
         self.preserve_unused_diagnostics
     }
 
+    /// A checker message with every trace of the virtual project removed.
+    ///
+    /// Two independent halves of the mirroring have to be undone, and a message
+    /// can carry both: the import rewriter's `./Panel.vue` -> `./Panel.vue.ts`
+    /// specifier spelling, and the materialized root every path is printed from.
+    fn authored_message(&mut self, original: &OriginalPosition, message: String) -> String {
+        let message = self.devirtualized_module_message(original, message);
+        restore_authored_paths(
+            &message,
+            self.project.virtual_root(),
+            self.project.project_root(),
+        )
+    }
+
     fn map_lsp_diagnostic(
         &mut self,
         virtual_path: &Path,
@@ -146,7 +162,7 @@ impl<'a> DiagnosticMapper<'a> {
 
         if let Some(original) = original {
             return Some(Diagnostic {
-                message: self.devirtualized_module_message(&original, diagnostic.message),
+                message: self.authored_message(&original, diagnostic.message),
                 line: original.line,
                 column: original.column,
                 file: original.path,

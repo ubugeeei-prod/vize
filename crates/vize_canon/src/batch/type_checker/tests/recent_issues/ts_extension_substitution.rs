@@ -108,13 +108,19 @@ const mainNumber: number = main;
         let result = checker.check_project().unwrap();
         let virtual_root = crate::batch::project_virtual_root(&project_root);
         let virtual_root = virtual_root.to_string_lossy();
+        let project_prefix = project_root.to_string_lossy();
         let mut snapshot: Vec<_> = result
             .diagnostics
             .into_iter()
             .map(|diagnostic| {
+                // `<virtual>` must never appear: since #3227 a diagnostic body
+                // names the authored root, not the materialized mirror. Both
+                // substitutions stay so the assertion below distinguishes the
+                // two rather than accepting whichever one is produced.
                 let message = diagnostic
                     .message
-                    .replace(virtual_root.as_ref(), "<virtual>");
+                    .replace(virtual_root.as_ref(), "<virtual>")
+                    .replace(project_prefix.as_ref(), "<project>");
                 (
                     relative_path(&project_root, &diagnostic.file),
                     diagnostic.code,
@@ -166,7 +172,7 @@ const mainNumber: number = main;
                     String::from("src/App.vue"),
                     Some(7016),
                     String::from(
-                        "3:25 Could not find a declaration file for module './Runtime.vue.ts'. '<virtual>/src/Runtime.vue.ts.__vize_authored_vue_ts_alias__.js' implicitly has an 'any' type."
+                        "3:25 Could not find a declaration file for module './Runtime.vue.ts'. '<project>/src/Runtime.vue.ts.__vize_authored_vue_ts_alias__.js' implicitly has an 'any' type."
                     ),
                 ),
             ]
