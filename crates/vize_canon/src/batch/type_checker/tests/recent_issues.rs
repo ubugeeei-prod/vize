@@ -17,6 +17,7 @@ mod single_required_camel_prop;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
+mod template_key_expressions;
 mod ts_extension_substitution;
 mod unmapped_template_fallback;
 mod v_for_source_callbacks;
