@@ -42,7 +42,7 @@ pub use type_checker::{
     DeclarationOutput, IncrementalCheckMetrics, TypeCheckResult, TypeChecker,
 };
 pub use virtual_project::{
-    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
+    BatchTopologyMetrics, ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
     ContentMapperTransformOptions, OriginalPosition, PACKAGE_REACHABILITY_BUDGET_REVISION,
     PackageRouteReachability, ReachabilityOutcome, ReachabilityWork, TsconfigOwnershipCache,
     TsconfigOwnershipOptions, TsconfigSourceKind, VirtualFile, VirtualProject,

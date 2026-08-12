@@ -60,6 +60,7 @@ impl VirtualProject {
             package_shadow_source_paths: FxHashMap::default(),
             package_shadow_dirty_keys: FxHashSet::default(),
             package_shadows_initialized: false,
+            package_shadow_scopes: FxHashMap::default(),
             incremental_materialized_candidates: FxHashSet::default(),
             incremental_source_nodes_rebuilt: 0,
             incremental_dependency_nodes_reconciled: 0,

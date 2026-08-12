@@ -132,7 +132,8 @@ pub use corsa_bridge::{
 // Re-export batch type checker
 #[cfg(feature = "native")]
 pub use batch::{
-    BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic, ContentMapperSpan,
+    BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic,
+    ContentMapperSpan,
     ContentMapperTransform, ContentMapperTransformOptions, CorsaError, CorsaExecutor,
     CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
     Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,

@@ -61,4 +61,14 @@ impl BatchTypeChecker {
     pub fn package_route_metrics(&self) -> crate::PackageRouteMetrics {
         self.project.package_route_metrics()
     }
+
+    /// Exact per-phase project membership after the most recent scan.
+    ///
+    /// These counters are the fail-closed bound for large batch topologies: a
+    /// project that materializes or type-checks the same authored file once per
+    /// importing directory shows up here long before it shows up as a timeout
+    /// (#4153).
+    pub fn topology_metrics(&self) -> crate::batch::BatchTopologyMetrics {
+        self.project.topology_metrics()
+    }
 }

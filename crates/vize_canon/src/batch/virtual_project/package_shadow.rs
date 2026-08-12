@@ -31,6 +31,7 @@ impl VirtualProject {
             self.package_shadows_initialized = true;
         }
 
+        self.refresh_package_shadow_scopes();
         let mut dirty = std::mem::take(&mut self.package_shadow_dirty_keys)
             .into_iter()
             .collect::<Vec<_>>();
@@ -79,26 +80,59 @@ impl VirtualProject {
             .find_by_original(&binding.importer_path)
             .map(|file| file.virtual_path.clone())
         {
-            let shadow_root = if binding.specifier.starts_with('#') {
-                private_package_shadow_root(&self.virtual_root, &route.manifest_path)
+            let shadow_roots = if binding.specifier.starts_with('#') {
+                vec![private_package_shadow_root(
+                    &self.virtual_root,
+                    &route.manifest_path,
+                )]
             } else if let (Some(package_name), Some(importer_dir)) = (
                 route.package_name.as_deref(),
                 importer_virtual_path.parent(),
             ) {
-                importer_dir.join("node_modules").join(package_name)
+                self.package_shadow_scope_dirs(package_name, importer_dir)
+                    .into_iter()
+                    .map(|scope| scope.join("node_modules").join(package_name))
+                    .collect()
             } else {
                 self.install_package_shadow_owner(key.clone(), topology);
                 return Ok(());
             };
-            self.collect_route_shadow_topology(
-                route,
-                &shadow_root,
-                &mut FxHashSet::default(),
-                &mut topology,
-            );
+            for shadow_root in shadow_roots {
+                self.collect_route_shadow_topology(
+                    route,
+                    &shadow_root,
+                    &mut FxHashSet::default(),
+                    &mut topology,
+                );
+            }
         }
         self.install_package_shadow_owner(key.clone(), topology);
         Ok(())
+    }
+
+    /// Recompute the shared scope map and dirty every binding whose package
+    /// moved, so a scope that opens or closes as importers arrive or leave is
+    /// reinstalled instead of leaving a stale copy in the program (#4153).
+    fn refresh_package_shadow_scopes(&mut self) {
+        let next = self.shared_package_shadow_scopes();
+        let drifted = self.package_shadow_scope_drift(&next);
+        self.package_shadow_scopes = next;
+        if drifted.is_empty() {
+            return;
+        }
+        let keys = self
+            .package_routes
+            .iter()
+            .filter(|(_, binding)| {
+                binding
+                    .route
+                    .as_ref()
+                    .and_then(|route| route.package_name.as_deref())
+                    .is_some_and(|name| drifted.contains(name))
+            })
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        self.package_shadow_dirty_keys.extend(keys);
     }
 
     fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {

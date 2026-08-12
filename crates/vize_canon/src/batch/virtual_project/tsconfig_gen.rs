@@ -292,7 +292,11 @@ impl VirtualProject {
         })
     }
 
-    fn include_paths(&self, paths: Option<&[&Path]>, include_js: bool) -> Vec<CompactString> {
+    pub(super) fn include_paths(
+        &self,
+        paths: Option<&[&Path]>,
+        include_js: bool,
+    ) -> Vec<CompactString> {
         let relative = |path: &Path| {
             path.strip_prefix(&self.virtual_root)
                 .ok()
