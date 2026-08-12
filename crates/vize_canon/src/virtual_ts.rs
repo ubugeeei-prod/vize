@@ -66,6 +66,13 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, 
 /// typed from the host component's declared `$slots`, falling back to `any`
 /// whenever the host or the slot is untyped so untyped slot hosts never produce
 /// a false positive.
+///
+/// It resolves `$slots` on *constructable* hosts only, which covers the imported
+/// `.vue` components #4042 is about. A local function component declares its
+/// slots on the second `Ctx<Emits, Slots>` parameter instead, and those payloads
+/// are intentionally left `any` here: that fallback is the conservative side of
+/// the trade (it can miss an error, never fabricate one), and typing them is
+/// tracked separately from this fix.
 pub const JSX_COMPONENT_HELPER: &str = "type __VizeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${__VizeJsxKebabCase<T>}` : `-${Lowercase<H>}${__VizeJsxKebabCase<T>}` : S;\n\
 type __VizeJsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;\n\
 type __VizeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | __VizeJsxKebabCase<K> : K }[keyof R] : never;\n\

@@ -30,10 +30,12 @@ pub(super) fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut
     }
 }
 
-/// Collect one child. `host` is the enclosing component's tag expression when
-/// this child is a *direct* child of a component element — the only position a
-/// synthesized `<template v-slot>` can occupy — so a scoped slot can type its
-/// parameter from that component's declared `$slots` (#4042).
+/// Collect one child. `host` is the enclosing component's tag expression, so a
+/// scoped slot can type its parameter from that component's declared `$slots`
+/// (#4042). It is set for a component's children and *forwarded* through the
+/// structural `v-if`/`v-for` arms, because JSX control flow inside a component's
+/// children lowers into those nodes, so a synthesized `<template v-slot>` can sit
+/// under them and still belong to the same component.
 pub(super) fn collect_child(
     child: &TemplateChildNode<'_>,
     out: &mut Vec<JsxEmit>,
@@ -60,7 +62,7 @@ pub(super) fn collect_child(
             }
             for prop in &element.props {
                 if !has_semantic_component || !component::captures_prop(element, prop) {
-                    collect_prop(prop, out);
+                    collect_prop(prop, out, preserve_components);
                 }
             }
             for child in &element.children {
@@ -129,19 +131,39 @@ fn collect_text_call(content: &vize_relief::TextCallContent<'_>, out: &mut Vec<J
     }
 }
 
-fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
+/// Collect one prop.
+///
+/// `preserve_components` distinguishes the two callers: the generated
+/// type-check document (`true`), which must stay byte-for-byte identical to the
+/// batch generator, and the structural walk behind semantic tokens and hover
+/// (`false`), which wants every authored expression range including binding
+/// patterns.
+fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>, preserve_components: bool) {
     match prop {
         // Static `class="a"` style attributes carry only literal text.
         PropNode::Attribute(_) => {}
         PropNode::Directive(directive) => {
-            if directive.name.as_str() == "model" {
-                if let Some(exp) = &directive.exp
-                    && let Some(target) = expr_of(exp)
-                {
-                    out.push(JsxEmit::ModelTarget(target));
+            match directive.name.as_str() {
+                "model" => {
+                    if let Some(exp) = &directive.exp
+                        && let Some(target) = expr_of(exp)
+                    {
+                        out.push(JsxEmit::ModelTarget(target));
+                    }
                 }
-            } else if let Some(exp) = &directive.exp {
-                collect_expression(exp, out);
+                // A `v-slot` expression is a binding *pattern*, not a readable
+                // value. A scoped slot whose host is known is re-emitted as its
+                // own scope by [`slot::collect`], so reaching here in a generated
+                // document means no host was available (a native-mode dashed tag
+                // carrying `v-slots`, which is not a semantic component), where
+                // re-emitting the pattern as a read would fabricate `TS2304`
+                // (#4042). The structural walk still reports the pattern's range.
+                "slot" if preserve_components => {}
+                _ => {
+                    if let Some(exp) = &directive.exp {
+                        collect_expression(exp, out);
+                    }
+                }
             }
             if let Some(arg) = &directive.arg {
                 collect_expression(arg, out);

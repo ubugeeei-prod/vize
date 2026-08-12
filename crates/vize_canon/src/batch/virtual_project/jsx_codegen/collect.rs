@@ -44,10 +44,12 @@ pub(super) fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut
     }
 }
 
-/// Collect one child. `host` is the enclosing component's tag expression when
-/// this child is a *direct* child of a component element, which is the only
-/// position a synthesized `<template v-slot>` can occupy; it lets a scoped slot
-/// type its parameter from that component's declared `$slots`.
+/// Collect one child. `host` is the enclosing component's tag expression, which
+/// lets a scoped slot type its parameter from that component's declared
+/// `$slots`. It is set for a component's children and *forwarded* through the
+/// structural `v-if`/`v-for` arms, because JSX control flow inside a component's
+/// children lowers into those nodes, so a synthesized `<template v-slot>` can
+/// sit under them and still belong to the same component.
 pub(super) fn collect_child(
     child: &TemplateChildNode<'_>,
     out: &mut Vec<JsxEmit>,
@@ -159,14 +161,26 @@ pub(super) fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
             // an assignment so a `const`/`readonly`/non-lvalue binding is reported
             // at the binding. Other directive values (`v-show`, `v-if`, custom
             // `v-x:arg={…}`, `v-on` handlers, bound attributes) are plain reads.
-            if directive.name.as_str() == "model" {
-                if let Some(exp) = &directive.exp
-                    && let Some(target) = expr_of(exp)
-                {
-                    out.push(JsxEmit::ModelTarget(target));
+            match directive.name.as_str() {
+                "model" => {
+                    if let Some(exp) = &directive.exp
+                        && let Some(target) = expr_of(exp)
+                    {
+                        out.push(JsxEmit::ModelTarget(target));
+                    }
                 }
-            } else if let Some(exp) = &directive.exp {
-                collect_expression(exp, out);
+                // A `v-slot` expression is a binding *pattern*, not a readable
+                // value. A scoped slot whose host is known is re-emitted as its
+                // own scope by [`slot::collect`], so reaching here means no host
+                // was available (e.g. a native-mode dashed tag carrying
+                // `v-slots`, which is not a semantic component), and re-emitting
+                // the pattern as a read would fabricate `TS2304` (#4042).
+                "slot" => {}
+                _ => {
+                    if let Some(exp) = &directive.exp {
+                        collect_expression(exp, out);
+                    }
+                }
             }
             if let Some(arg) = &directive.arg {
                 collect_expression(arg, out);

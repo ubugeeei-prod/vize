@@ -129,6 +129,31 @@ fn component_inside_a_scoped_slot_body_keeps_its_props_call() {
     );
 }
 
+/// A scoped slot nested in a structural scope keeps both scopes: the `v-for`
+/// aliases bind over the loop body and the slot pattern binds over the slot body
+/// inside it.
+#[test]
+fn scoped_slot_inside_a_v_for_body_binds_both_scopes() {
+    let source = "import Widget from \"./Widget.vue\";\nconst items: string[] = [];\nexport const view = <ul>{items.map((item) => <Widget fooBar={item}>{{ default: (props: { item: string }) => props.item }}</Widget>)}</ul>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)))));"
+    );
+}
+
+/// Nested scoped slots each resolve *their own* host, so the inner slot's
+/// parameter is typed from the inner component's `$slots`, not the outer one's.
+#[test]
+fn nested_scoped_slots_each_resolve_their_own_host() {
+    let source = "import Widget from \"./Widget.vue\";\nimport Panel from \"./Panel.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: (outer: { item: string }) => <Panel title={outer.item}>{{ default: (inner: { row: number }) => inner.row }}</Panel> }}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer) => __vize_jsx_expr__(__vize_jsx_component__(Panel, {\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner) => __vize_jsx_expr__(inner.row)))));"
+    );
+}
+
 /// A slot with no binding pattern introduces no scope, so its body stays in the
 /// enclosing sink exactly as before.
 #[test]

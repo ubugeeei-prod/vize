@@ -152,6 +152,37 @@ fn render_prop_scoped_slot_child_stays_clean() {
     assert_eq!(diagnostics, vec![]);
 }
 
+/// The slot payload is *inferred* from the host's declared slots, not `any`.
+///
+/// Every other scoped-slot case here annotates its callback parameter, so all of
+/// them would still pass if `__VizeJsxSlotPayload` degraded to `any`. This one
+/// leaves the parameter unannotated and reads a member the declared `string`
+/// payload does not have: `any` accepts that silently, the real payload rejects
+/// it. Only the code and the message are asserted; the authored position is
+/// already pinned by the oracle-verified cases above.
+#[test]
+fn unannotated_scoped_slot_payload_is_typed_from_the_declared_slots() {
+    let project = create_project(&[
+        ("src/Widget.vue", WIDGET_SFC),
+        (
+            "src/Consumer.tsx",
+            "import Widget from \"./Widget.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: (props) => props.item.zzTop }}</Widget>;\n",
+        ),
+    ]);
+    let Some(diagnostics) = consumer_diagnostics(project.path()) else {
+        return;
+    };
+
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
+    let (file, code, message) = &diagnostics[0];
+    assert_eq!(file, "src/Consumer.tsx");
+    assert_eq!(*code, Some(2339));
+    assert!(
+        message.contains("Property 'zzTop' does not exist on type 'string'."),
+        "{message}"
+    );
+}
+
 /// Native DOM listener fallthrough on a component is a **deliberate divergence
 /// from vue-tsc**, pinned by `crates/vize/tests/check_jsx_component_contract_cli.rs`:
 /// Vue forwards such a listener to the fallthrough root at runtime, so vize
@@ -217,12 +248,14 @@ fn declared_emit_listener_stays_accepted() {
 /// positions, sorted for a stable full-equality comparison.
 ///
 /// Returns `None` when no type checker is available in this environment, which
-/// mirrors the sibling batch integration tests.
+/// mirrors the sibling batch integration tests. Only *construction* is that
+/// environment probe: scanning and checking are the behavior under test, so a
+/// failure there must fail the test instead of turning every case into a no-op.
 fn consumer_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
     let mut checker = BatchTypeChecker::new(project_root).ok()?;
     checker.enable_jsx_typecheck();
-    checker.scan_project().ok()?;
-    let result = checker.check_project().ok()?;
+    checker.scan_project().expect("project should scan");
+    let result = checker.check_project().expect("project should type check");
 
     // The temporary root and the reported path can differ by a symlinked prefix
     // (`/tmp` -> `/private/tmp` on macOS), so canonicalize before stripping.
@@ -237,11 +270,11 @@ fn consumer_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>,
                 file.strip_prefix(&root)
                     .map(|path| path.display().to_string())
                     .unwrap_or_else(|_| file.display().to_string()),
+                diagnostic.line,
+                diagnostic.column,
                 diagnostic.code,
                 format!(
-                    "{}:{} {} {}",
-                    diagnostic.line + 1,
-                    diagnostic.column + 1,
+                    "{} {}",
                     match diagnostic.severity {
                         1 => "error",
                         2 => "warning",
@@ -253,8 +286,17 @@ fn consumer_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>,
             )
         })
         .collect();
+    // Sort while line and column are still numeric: ordering the formatted
+    // "{line}:{column}" text lexicographically would place line 10 before line 2.
     diagnostics.sort();
-    Some(diagnostics)
+    Some(
+        diagnostics
+            .into_iter()
+            .map(|(file, line, column, code, message)| {
+                (file, code, format!("{}:{} {message}", line + 1, column + 1))
+            })
+            .collect(),
+    )
 }
 
 fn create_project(files: &[(&str, &str)]) -> tempfile::TempDir {
