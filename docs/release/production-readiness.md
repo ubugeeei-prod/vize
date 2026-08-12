@@ -63,6 +63,21 @@ A production-ready claim for any supported surface requires current evidence for
   formatter, LSP, packaging, and release changes
 - release rollback instructions for npm, crates.io, GitHub Releases, docs, and editor channels
 
+### Fresh-Project Setup Coverage
+
+`--runtime-checks` also drives a project created **outside** the smoke's install tree, with its
+own `node_modules` and no workspace links: it runs `vize init` from the packed CLI, asserts the
+complete plan (files, scripts, dependencies, editor recommendation) and its idempotent re-run,
+installs exactly the dependency plan the run printed, and then drives the generated `vize:check`
+script through a clean, broken, and repaired program. It also asserts that a missing Corsa runtime
+fails with the package name and the package-manager-specific install command rather than reporting
+a clean project. Cells live in `tools/npm/smoke-release-init-shapes.mjs`.
+
+Covered today: npm, a Vite + Vue TypeScript project shape, and the host the smoke runs on. Still
+open under [#3956](https://github.com/ubugeeei-prod/vize/issues/3956): pnpm, yarn, Bun and Vite+;
+the create-vue JavaScript/checkJs, monorepo, Nuxt and pre-configured shapes; the lint half of the
+plan; `vize lsp` and packaged editor hosts; and the install-time metrics the issue enumerates.
+
 ## Current Audit Snapshot
 
 Local audit evidence from May 18, 2026:
