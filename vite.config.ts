@@ -91,6 +91,20 @@ const config = {
       typeAware: true,
     },
     overrides: [
+      /**
+       * The repo-wide lint analyses the VS Code extension without its isolated
+       * dependency install, so `vscode` and `vscode-languageclient` imports
+       * resolve to error types and every union mentioning them is reported as a
+       * redundant constituent. Vite+ merges this override into the extension's
+       * own nested run as well, which is the accepted trade for keeping the
+       * repository zero-warning budget free of unresolved-type false positives.
+       */
+      {
+        files: ["editors/vscode/**"],
+        rules: {
+          "typescript/no-redundant-type-constituents": "off",
+        },
+      },
       {
         files: floatingPromiseTestPatterns,
         rules: {
