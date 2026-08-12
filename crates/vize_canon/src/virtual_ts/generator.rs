@@ -57,7 +57,7 @@ use super::{
         OptionsApiPropsSource, add_generic_defaults, collect_template_prop_names,
         extract_generic_names, strip_const_modifiers,
     },
-    scope::{ScopeGenerationOptions, generate_scope_closures},
+    scope::{ScopeGenerationOptions, emit_slot_payload_helpers, generate_scope_closures},
     types::{
         DEFAULT_LIB_REFERENCES, VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput,
         VizeMapping, emit_lib_reference_directives,
@@ -136,8 +136,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ts.push_str("// ========== Module Scope (imports) ==========\n");
     if !hoist_shared_preamble {
         ts.push_str(legacy_vue2::vue_type_helpers(legacy_vue2, dialect));
-        ts.push('\n');
     }
+    emit_slot_payload_helpers(&mut ts, summary, !hoist_shared_preamble);
 
     let has_script_setup = summary
         .scopes

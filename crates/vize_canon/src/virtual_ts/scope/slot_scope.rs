@@ -28,6 +28,75 @@ use super::children::generate_child_scopes;
 use super::context::{ScopeGenContext, VForPropsContext};
 use super::emit::{component_binding_reference, emit_slot_function_open, slot_props_type};
 
+/// The slot-payload aliases, emitted per file rather than hoisted into the
+/// shared preamble.
+///
+/// They deliberately stay out of `VUE_TYPE_HELPERS`: every other alias there is
+/// transitively referenced by the always-emitted default-export types, while
+/// these three are roots that only a resolvable `v-slot` scope reaches. A
+/// module-scope copy in a component that has no such scope is dead code, which
+/// a `noUnusedLocals` consumer reports as `TS6196` — the same reason
+/// `__VizeWidenTemplateRef` and `__EmitProps` are emitted conditionally. A
+/// component without a resolvable `v-slot` scope therefore gains nothing.
+const SLOT_RESOLVER_HELPERS: &str = "type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;\ntype __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;\n";
+
+/// Payload of one statically named slot.
+const STATIC_SLOT_PAYLOAD_HELPER: &str = "type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;\n";
+
+/// Union of every declared payload, for `v-slot:[name]`.
+const DYNAMIC_SLOT_PAYLOAD_HELPER: &str = "type __VizeAnySlotPayload<__S> = { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
+
+/// Whether any `v-slot` scope in this document resolves a host component, split
+/// by how the slot is named — the static and dynamic payload aliases have
+/// disjoint call sites, so a document that only has one kind must only declare
+/// that one.
+fn slot_helper_usage(summary: &Croquis) -> (bool, bool) {
+    let mut used = (false, false);
+    for scope in summary.scopes.iter() {
+        let Some(data) = (match scope.data() {
+            vize_croquis::ScopeData::VSlot(data) => Some(data),
+            _ => None,
+        }) else {
+            continue;
+        };
+        let Some(component) = data.component.as_deref() else {
+            continue;
+        };
+        if find_slot_host(summary, scope, component).is_none() {
+            continue;
+        }
+        if summary.scopes.is_v_slot_name_static(scope.id) {
+            used.0 = true;
+        } else {
+            used.1 = true;
+        }
+    }
+    used
+}
+
+/// Emit the per-file slot-payload aliases this document actually references,
+/// plus the blank line that closed the embedded preamble before them.
+pub(crate) fn emit_slot_payload_helpers(
+    ts: &mut String,
+    summary: &Croquis,
+    embedded_preamble: bool,
+) {
+    if embedded_preamble {
+        ts.push('\n');
+    }
+    let (static_names, dynamic_names) = slot_helper_usage(summary);
+    if !static_names && !dynamic_names {
+        return;
+    }
+    ts.push_str(SLOT_RESOLVER_HELPERS);
+    if static_names {
+        ts.push_str(STATIC_SLOT_PAYLOAD_HELPER);
+    }
+    if dynamic_names {
+        ts.push_str(DYNAMIC_SLOT_PAYLOAD_HELPER);
+    }
+}
+
 /// The component usage that hosts this `v-slot` scope.
 ///
 /// A template can mount the same child many times, so the tag name alone does

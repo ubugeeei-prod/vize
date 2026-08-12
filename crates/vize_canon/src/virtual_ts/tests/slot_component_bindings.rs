@@ -4,6 +4,67 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 const TEMPLATE: &str =
     r#"<el-badge><template #content="{ value }">{{ value.missing }}</template></el-badge>"#;
 
+/// Generate the embedded-preamble virtual TS for a template with no script.
+fn generate(template: &str) -> vize_carton::String {
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    generate_virtual_ts_with_offsets(&summary, None, Some(&root), 0, 0, &Default::default()).code
+}
+
+/// The slot-payload aliases are roots that nothing else in the preamble
+/// reaches, so a module-scope copy in a component that never annotates a slot
+/// scope from them is dead code — `TS6196` for a `noUnusedLocals` consumer, and
+/// what the exact-tsgo project gate reports. Each is declared exactly when the
+/// document references it, and never otherwise.
+#[test]
+fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
+    let slot_free = generate(r#"<div v-for="item in items">{{ item }}</div>"#);
+    for alias in [
+        "type __VizeStructuralSlots<",
+        "type __VizeSlotsResolver<",
+        "type __VizeSlotPayload<",
+        "type __VizeAnySlotPayload<",
+    ] {
+        assert!(
+            !slot_free.contains(alias),
+            "a component with no v-slot scope must not declare {alias}:\n{slot_free}"
+        );
+    }
+
+    let static_name = generate(TEMPLATE);
+    assert!(
+        static_name.contains("type __VizeSlotsResolver<"),
+        "{static_name}"
+    );
+    assert!(
+        static_name.contains("type __VizeSlotPayload<"),
+        "{static_name}"
+    );
+    assert!(
+        !static_name.contains("type __VizeAnySlotPayload<"),
+        "a statically named slot must not declare the dynamic-name alias:\n{static_name}"
+    );
+
+    let dynamic_name = generate(
+        r#"<el-badge><template #[slotName]="{ value }">{{ value }}</template></el-badge>"#,
+    );
+    assert!(
+        dynamic_name.contains("type __VizeSlotsResolver<"),
+        "{dynamic_name}"
+    );
+    assert!(
+        dynamic_name.contains("type __VizeAnySlotPayload<"),
+        "{dynamic_name}"
+    );
+    assert!(
+        !dynamic_name.contains("type __VizeSlotPayload<"),
+        "a dynamically named slot must not declare the static-name alias:\n{dynamic_name}"
+    );
+}
+
 #[test]
 fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     let script = r#"import { ElBadge } from 'element-plus'"#;

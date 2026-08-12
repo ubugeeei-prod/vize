@@ -56,10 +56,6 @@ type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true :
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
 type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
 type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
-type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;
-type __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;
-type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;
-type __VizeAnySlotPayload<__S> = { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type __VizeNativeElements = import('vue').NativeElements;
 type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
@@ -115,7 +111,7 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
     current: () => Mode;
   }>();
   
-  // @vize-map: 10215:10451 -> 0:207
+  // @vize-map: 9477:9713 -> 0:207
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
