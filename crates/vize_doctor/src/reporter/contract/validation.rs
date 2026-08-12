@@ -2,6 +2,8 @@
 
 use std::{error::Error, fmt};
 
+use crate::contract::is_stable_id;
+
 use super::{DOCTOR_REPORTER_CONTRACT_VERSION, ReporterDescriptor};
 
 impl ReporterDescriptor {
@@ -112,16 +114,6 @@ impl fmt::Display for ReporterContractError {
 }
 
 impl Error for ReporterContractError {}
-
-fn is_stable_id(value: &str) -> bool {
-    value.as_bytes().first().is_some_and(u8::is_ascii_lowercase)
-        && value.bytes().all(|byte| {
-            byte.is_ascii_lowercase() || byte.is_ascii_digit() || matches!(byte, b'.' | b'-')
-        })
-        && !value.ends_with(['.', '-'])
-        && !value.contains("..")
-        && !value.contains("--")
-}
 
 fn is_media_type(value: &str) -> bool {
     let Some((top, subtype)) = value.split_once('/') else {

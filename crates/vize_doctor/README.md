@@ -60,6 +60,44 @@ Primary `paths` are intentionally distinct from `changed_files`. Changed-file
 matching traverses primary, related, evidence, fix-edit, and invalidation-input
 paths so dependent findings stay visible when a shared contract changes.
 
+## Capability cache identities
+
+`CapabilityCacheIdentity` gives each independently reusable analysis product a
+domain-separated cache key. The key covers the stable capability identifier,
+an implementation fingerprint, a configuration fingerprint, and the complete
+set of logical input fingerprints. Input order cannot affect the key; ambiguous
+or duplicate input identities fail closed. Comparing two identities reports
+added, removed, and content-changed inputs separately in linear time.
+
+```rust
+use vize_doctor::{CapabilityCacheIdentity, ContentFingerprint};
+
+let implementation = ContentFingerprint::digest("template-analyzer-v2");
+let configuration = ContentFingerprint::digest("strict=true");
+let previous = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    implementation,
+    configuration,
+    [("src/App.vue", ContentFingerprint::digest("before"))],
+)?;
+let current = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    implementation,
+    configuration,
+    [("src/App.vue", ContentFingerprint::digest("after"))],
+)?;
+
+let invalidation = current.invalidation_from(&previous);
+assert_eq!(invalidation.changed_inputs(), ["src/App.vue"]);
+assert_ne!(current.cache_key(), previous.cache_key());
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The input set is a producer contract, not an automatic filesystem scan. A
+capability must include its complete discovery boundary so a newly added or
+removed source also changes the identity. Absolute paths, timestamps, and host
+metadata must not be smuggled into logical identifiers or configuration hashes.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe
