@@ -25,9 +25,6 @@ mod span_normalize;
 
 use span_features::content_mapper_span_features;
 
-const SCRIPT_KIND_TS: u8 = 3;
-const SCRIPT_KIND_TSX: u8 = 4;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(usize)]
 enum ContentMapperSpanKind {
@@ -40,7 +37,6 @@ enum ContentMapperSpanKind {
 #[serde(rename_all = "camelCase")]
 pub struct ContentMapperTransform {
     pub text: CompactString,
-    pub script_kind: u8,
     pub mappings: Vec<ContentMapperSpan>,
     pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
@@ -134,7 +130,6 @@ pub fn generate_vue_content_mapper_transform_with_options(
         Err(error) => {
             return Ok(ContentMapperTransform {
                 text: invalid_sfc_fallback_virtual_ts(),
-                script_kind: SCRIPT_KIND_TS,
                 mappings: Vec::new(),
                 diagnostics: vec![sfc_parse_diagnostic(content, &error)],
             });
@@ -180,11 +175,6 @@ pub fn generate_vue_content_mapper_transform_with_options(
             .map(|diagnostic| generated_diagnostic(content, diagnostic))
             .collect(),
         text: code,
-        script_kind: if use_tsx {
-            SCRIPT_KIND_TSX
-        } else {
-            SCRIPT_KIND_TS
-        },
     })
 }
 

@@ -91,6 +91,7 @@ export function assertInstalledMapperContract(installDir) {
     manifest.tsContentMapper,
     {
       exec: ["node", "./bin/vize", "content-mapper"],
+      extensions: { ".vue": ".tsx" },
       compilerOptions: ["noUnusedLocals"],
     },
     `${path.join(packageRoot, "package.json")} must expose the production tsContentMapper contract`,

@@ -15,12 +15,14 @@ test("vize package exposes an executable TypeScript content mapper", () => {
     tsContentMapper?: {
       compilerOptions?: string[];
       exec?: string[];
+      extensions?: Record<string, string>;
     };
   };
   const binPath = path.join(root, "npm/cli/bin/vize");
 
   assert.deepEqual(packageJson.tsContentMapper, {
     exec: ["node", "./bin/vize", "content-mapper"],
+    extensions: { ".vue": ".tsx" },
     compilerOptions: ["noUnusedLocals"],
   });
   assert.equal(packageJson.bin?.vize, "bin/vize");

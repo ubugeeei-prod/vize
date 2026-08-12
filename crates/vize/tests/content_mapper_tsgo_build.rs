@@ -41,6 +41,7 @@ fn install_packages(project_root: &Path) {
             "private": true,
             "tsContentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                "extensions": { ".vue": ".tsx" },
                 "compilerOptions": ["noUnusedLocals"],
             },
         }))

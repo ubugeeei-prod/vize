@@ -98,6 +98,9 @@
       "./bin/vize",
       "content-mapper"
     ],
+    "extensions": {
+      ".vue": ".tsx"
+    },
     "compilerOptions": [
       "noUnusedLocals"
     ]

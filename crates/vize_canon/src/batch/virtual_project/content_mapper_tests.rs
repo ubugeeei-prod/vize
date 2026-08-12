@@ -45,7 +45,6 @@ const message = "hello"
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
 
-    assert_eq!(result.script_kind, 3);
     assert!(result.text.contains("const message = \"hello\""));
     assert!(
         !result
@@ -261,12 +260,11 @@ fn a_component_without_setup_bindings_declares_no_widening_helpers() {
 }
 
 #[test]
-fn jsx_scripts_report_tsx_script_kind() {
+fn jsx_scripts_preserve_vue_jsx_type_context() {
     let source = "<script lang=\"tsx\">export default () => <div /></script>";
     let result =
         generate_vue_content_mapper_transform(Path::new("Jsx.vue"), source).expect("transform");
 
-    assert_eq!(result.script_kind, 4);
     assert!(
         result
             .text

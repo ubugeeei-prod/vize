@@ -195,9 +195,11 @@ Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, an
 
 ## Experimental TypeScript Content Mapper
 
-Vize publishes the package metadata and protocol server proposed by
-[microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712). This lets a
-compatible `tsgo` build ask Vize to transform `.vue` files directly instead of materializing a
+The TypeScript 7.1
+[API roadmap](https://github.com/microsoft/typescript-go/issues/4830) identifies Content Mappers as
+the TS Server plugin replacement needed by Vue. Vize publishes the package metadata and protocol
+server proposed by [microsoft/typescript-go#4712](https://github.com/microsoft/typescript-go/pull/4712),
+letting a compatible `tsgo` build transform `.vue` files directly instead of materializing a
 parallel `.vue.ts` project.
 
 ```json
@@ -223,7 +225,8 @@ tsgo --loadExternalPlugins --noEmit -p tsconfig.json
 The content-mapper API is not in a released TypeScript native preview yet. Use the exact PR build
 while evaluating it, keep `--loadExternalPlugins` explicit, and keep `vize check` as the supported
 typecheck path until TypeScript ships the protocol. Vize currently negotiates protocol v1 with
-UTF-8 mappings and does not declare compiler-option dependencies.
+UTF-8 mappings, advertises `.tsx` virtual output for `.vue` files so both TypeScript and embedded
+JSX parse correctly, and declares its `noUnusedLocals` compiler-option dependency.
 
 ## Compiler and Tool Options
 

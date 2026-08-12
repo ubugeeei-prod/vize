@@ -34,7 +34,7 @@ fn negotiates_utf8_and_transforms_vue_sfc() {
     assert_eq!(responses[0]["result"]["protocolVersion"], 1);
     assert_eq!(responses[0]["result"]["positionEncoding"], "utf-8");
     assert_eq!(responses[0]["result"]["diagnosticSource"], "vize");
-    assert_eq!(responses[1]["result"]["scriptKind"], 3);
+    assert!(responses[1]["result"].get("scriptKind").is_none());
     assert!(
         responses[1]["result"]["text"]
             .as_str()

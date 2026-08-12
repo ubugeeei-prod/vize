@@ -66,6 +66,7 @@ fn install_mapper_and_vue(root: &Path, vue: &Path) {
             "private": true,
             "tsContentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                "extensions": { ".vue": ".tsx" },
                 "compilerOptions": ["noUnusedLocals"]
             }
         }))

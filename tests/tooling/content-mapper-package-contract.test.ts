@@ -18,6 +18,7 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
         name: "vize",
         tsContentMapper: {
           exec: ["node", "./bin/vize", "content-mapper"],
+          extensions: { ".vue": ".tsx" },
           compilerOptions: ["noUnusedLocals"],
         },
       }),
@@ -39,6 +40,20 @@ test("installed Content Mapper contract rejects a corrupted exec entry", () => {
     const manifestPath = path.join(packageRoot, "package.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
     manifest.tsContentMapper.exec = ["node", "./bin/missing", "content-mapper"];
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+
+    assert.throws(
+      () => assertInstalledMapperContract(installDir),
+      /must expose the production tsContentMapper contract/,
+    );
+  });
+});
+
+test("installed Content Mapper contract rejects a missing virtual extension", () => {
+  withInstalledMapper((installDir, packageRoot) => {
+    const manifestPath = path.join(packageRoot, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    delete manifest.tsContentMapper.extensions;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
     assert.throws(
