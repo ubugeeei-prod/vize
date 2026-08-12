@@ -427,8 +427,18 @@ const current = computed(() => Child)
     );
 }
 
+/// `Child` really is unused here — the `computed` parameter shadows the import —
+/// but a dynamic `:is` suppresses the whole file, matching
+/// `eslint-plugin-vue`'s `ignoreWhenBindingPresent: true` default (#3223).
+///
+/// Vize used to report it, and the extra strictness cost far more than it
+/// found: over the pinned corpus it produced 2,235 false positives, because a
+/// dynamic `<component :is>` normally *does* reach its registered components —
+/// through a string map, or a registration under a computed key that leaves no
+/// statically matchable name. Restoring this detection needs the upstream escape
+/// hatch (`ignoreWhenBindingPresent: false`), not a different default.
 #[test]
-fn test_lint_sfc_no_unused_components_reports_shadowed_dynamic_component_import() {
+fn test_lint_sfc_no_unused_components_ignores_shadowed_import_under_dynamic_is() {
     let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
     let sfc = r#"<script setup lang="ts">
 import { computed } from 'vue'
@@ -443,9 +453,106 @@ const current = computed((Child) => Child)
 "#;
     let result = linter.lint_sfc(sfc, "test.vue");
 
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+/// The suppression is scoped to *dynamic* bindings. A literal `:is` names its
+/// component, so the registration stays checkable.
+#[test]
+fn test_lint_sfc_no_unused_components_still_reports_under_literal_is() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+</script>
+
+<template>
+  <component :is="'SomethingElse'" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-components");
     assert!(result.diagnostics[0].message.contains("Child"));
+}
+
+/// A static `is="..."` attribute is not a binding and suppresses nothing.
+#[test]
+fn test_lint_sfc_no_unused_components_still_reports_under_static_is() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+</script>
+
+<template>
+  <component is="SomethingElse" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(result.diagnostics[0].message.contains("Child"));
+}
+
+/// Pinned reproduction from `tests/_fixtures/_git/element`
+/// (`packages/result/src/index.vue`, revision `1ede...`): four icons registered
+/// under computed keys and rendered through `<component :is="iconElement">`. All
+/// four were reported unused.
+#[test]
+fn test_lint_sfc_no_unused_components_pinned_computed_key_registration_stays_clean() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<template>
+  <div class="el-result">
+    <div class="el-result__icon">
+      <component :is="iconElement" :class="iconElement" />
+    </div>
+  </div>
+</template>
+
+<script>
+import IconSuccess from './icon-success.vue';
+import IconError from './icon-error.vue';
+
+const IconMap = { success: 'icon-success', error: 'icon-error' };
+
+export default {
+  name: 'ElResult',
+  components: {
+    [IconSuccess.name]: IconSuccess,
+    [IconError.name]: IconError
+  },
+  props: { icon: { type: String, default: 'info' } },
+  computed: {
+    iconElement() {
+      return IconMap[this.icon] || 'icon-info';
+    }
+  }
+};
+</script>
+"#;
+    let result = linter.lint_sfc(sfc, "index.vue");
+
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+/// A dynamic directive argument can resolve to `is`, so it suppresses too.
+#[test]
+fn test_lint_sfc_no_unused_components_ignores_dynamic_directive_argument() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+
+const key = 'is'
+const value = 'Other'
+</script>
+
+<template>
+  <component :[key]="value" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
 }
 
 #[test]

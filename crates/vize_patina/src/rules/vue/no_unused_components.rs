@@ -40,7 +40,17 @@ use vize_carton::{CompactString, FxHashSet, String, ToCompactString};
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, ScopeData};
 use vize_relief::BindingType;
-use vize_relief::RootNode;
+use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
+
+/// Whether a directive expression is a quoted string literal.
+fn is_string_literal(content: &str) -> bool {
+    let content = content.trim();
+    let mut characters = content.chars();
+    let (Some(open), Some(close)) = (characters.next(), content.chars().last()) else {
+        return false;
+    };
+    content.len() >= 2 && open == close && matches!(open, '\'' | '"' | '`')
+}
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-components",
@@ -114,6 +124,59 @@ impl NoUnusedComponents {
         names
     }
 
+    /// Whether the template binds `is` to something other than a string
+    /// literal, anywhere.
+    ///
+    /// `eslint-plugin-vue`'s `vue/no-unused-components` defaults
+    /// `ignoreWhenBindingPresent` to `true` and stops reporting for the whole
+    /// file when it sees one, because a dynamic `<component :is="resolved">` can
+    /// render any registered component and the rule cannot tell which. Reporting
+    /// anyway is how a legitimately-used component gets called unused — the
+    /// shape is common enough in real code to dominate this rule's output
+    /// (#3223).
+    ///
+    /// A literal (`:is="'MyPanel'"`) is exempt: it names its component, so the
+    /// registration is still checkable. A static `is="MyPanel"` attribute is not
+    /// a binding at all and does not suppress anything.
+    fn has_dynamic_is_binding(nodes: &[TemplateChildNode<'_>]) -> bool {
+        nodes.iter().any(|node| match node {
+            TemplateChildNode::Element(element) => {
+                element.props.iter().any(Self::is_dynamic_is_prop)
+                    || Self::has_dynamic_is_binding(&element.children)
+            }
+            TemplateChildNode::If(node) => node
+                .branches
+                .iter()
+                .any(|branch| Self::has_dynamic_is_binding(&branch.children)),
+            TemplateChildNode::IfBranch(branch) => Self::has_dynamic_is_binding(&branch.children),
+            TemplateChildNode::For(node) => Self::has_dynamic_is_binding(&node.children),
+            _ => false,
+        })
+    }
+
+    fn is_dynamic_is_prop(prop: &PropNode<'_>) -> bool {
+        let PropNode::Directive(directive) = prop else {
+            return false;
+        };
+        if directive.name.as_str() != "bind" {
+            return false;
+        }
+        // A dynamic argument (`:[name]="x"`) can resolve to `is`, so it counts.
+        let Some(ExpressionNode::Simple(argument)) = directive.arg.as_ref() else {
+            return true;
+        };
+        if !argument.is_static {
+            return true;
+        }
+        if argument.content.as_str() != "is" {
+            return false;
+        }
+        !matches!(
+            directive.exp.as_ref(),
+            Some(ExpressionNode::Simple(expression)) if is_string_literal(expression.content.as_str())
+        )
+    }
+
     fn component_name_matches(used: &str, registered: &str) -> bool {
         used == registered
             || vize_croquis::naming::names_match(used, registered)
@@ -134,9 +197,12 @@ impl Rule for NoUnusedComponents {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         // Skip if no analysis available
         if !ctx.has_analysis() {
+            return;
+        }
+        if Self::has_dynamic_is_binding(&root.children) {
             return;
         }
 
