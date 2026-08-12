@@ -231,9 +231,12 @@ export const PROJECT_SHAPES = {
         "",
       ].join("\n"),
     },
-    /** Clean / broken / repaired triple, keyed by authored file. */
+    /**
+     * The broken half of the clean/broken/repaired triple. The clean and
+     * repaired states are `files()` itself, so a repair cannot silently drift
+     * from the state the clean run already proved.
+     */
     check: {
-      clean: {},
       broken: {
         "src/App.vue": appSource(true),
         "src/components/HelloWorld.vue": helloWorldSource(true),
