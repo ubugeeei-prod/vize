@@ -68,7 +68,29 @@ pub(super) fn has_top_level_type_operator(type_name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::has_top_level_type_operator;
+    use super::{has_top_level_type_operator, is_plain_inline_type_literal};
+
+    #[test]
+    fn a_plain_inline_literal_is_recognized() {
+        assert!(is_plain_inline_type_literal("{ a: string }"));
+        assert!(is_plain_inline_type_literal("  { a: { b: number } }  "));
+    }
+
+    #[test]
+    fn a_named_or_suffixed_type_is_not_a_plain_literal() {
+        assert!(!is_plain_inline_type_literal("Props"));
+        assert!(!is_plain_inline_type_literal("{ a: string }[]"));
+        assert!(!is_plain_inline_type_literal("{ a: string } & Props"));
+    }
+
+    #[test]
+    fn a_brace_inside_a_string_member_falls_back_to_keyed_bindings() {
+        // The scan is textual, so a `}` inside a string literal closes the
+        // literal early and leaves a trailing suffix. Reporting "not plain"
+        // there is the safe direction: the caller then emits keyed bindings,
+        // which resolve for any shape.
+        assert!(!is_plain_inline_type_literal("{ a: '}' }"));
+    }
 
     #[test]
     fn top_level_union_survives_a_function_valued_member() {
