@@ -29,6 +29,10 @@ use super::with_defaults::{
 use super::{strip_generic_params, strip_outer_angle_brackets, type_reference_lookup_key};
 use crate::virtual_ts::generator::setup_scope::define_props_type_requires_setup_scope;
 
+mod type_shape;
+
+use type_shape::{has_top_level_type_operator, is_plain_inline_type_literal};
+
 /// The component's resolved prop contract as the template sees it.
 pub(crate) struct TemplatePropsModel {
     /// The authored contract: `Props`, `Props<T>`, or the setup-scoped
@@ -295,91 +299,4 @@ fn should_emit_keyed_template_prop_bindings(
             || !is_plain_inline_type_literal(body.as_str());
     }
     emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
-}
-
-fn is_plain_inline_type_literal(type_name: &str) -> bool {
-    let type_name = type_name.trim();
-    if !type_name.starts_with('{') {
-        return false;
-    }
-
-    let mut depth = 0i32;
-    for (idx, c) in type_name.char_indices() {
-        match c {
-            '{' => depth += 1,
-            '}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return type_name[idx + c.len_utf8()..].trim().is_empty();
-                }
-            }
-            _ => {}
-        }
-    }
-    false
-}
-
-fn has_top_level_type_operator(type_name: &str) -> bool {
-    let mut angle_depth = 0i32;
-    let mut brace_depth = 0i32;
-    let mut paren_depth = 0i32;
-    let mut bracket_depth = 0i32;
-
-    // An arrow's `>` closes nothing: counting it would drive the angle depth
-    // negative for a function-valued member, so every operator after it would
-    // look nested and a union such as
-    // `{ onPick: (v: string) => void } | { onPick: null }` would be missed.
-    // Closing delimiters clamp at zero for the same reason: an unbalanced input
-    // must not hide a later top-level operator.
-    let mut prev = '\0';
-    for c in type_name.chars() {
-        match c {
-            '<' => angle_depth += 1,
-            '>' if prev != '=' => angle_depth = (angle_depth - 1).max(0),
-            '{' => brace_depth += 1,
-            '}' => brace_depth = (brace_depth - 1).max(0),
-            '(' => paren_depth += 1,
-            ')' => paren_depth = (paren_depth - 1).max(0),
-            '[' => bracket_depth += 1,
-            ']' => bracket_depth = (bracket_depth - 1).max(0),
-            '&' | '|'
-                if angle_depth == 0
-                    && brace_depth == 0
-                    && paren_depth == 0
-                    && bracket_depth == 0 =>
-            {
-                return true;
-            }
-            _ => {}
-        }
-        prev = c;
-    }
-    false
-}
-
-#[cfg(test)]
-mod tests {
-    use super::has_top_level_type_operator;
-
-    #[test]
-    fn top_level_union_survives_a_function_valued_member() {
-        assert!(has_top_level_type_operator(
-            "{ onPick: (v: string) => void } | { onPick: null }"
-        ));
-        assert!(has_top_level_type_operator("(() => void) | null"));
-        assert!(has_top_level_type_operator("{ a: string } & { b: number }"));
-    }
-
-    #[test]
-    fn nested_operators_are_not_top_level() {
-        assert!(!has_top_level_type_operator(
-            "{ onPick: (v: string) => void }"
-        ));
-        assert!(!has_top_level_type_operator("Array<string | number>"));
-    }
-
-    #[test]
-    fn an_unbalanced_closer_does_not_hide_a_later_operator() {
-        assert!(has_top_level_type_operator("Unexpected } | string"));
-    }
 }
