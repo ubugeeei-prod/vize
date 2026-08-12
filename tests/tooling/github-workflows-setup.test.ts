@@ -22,8 +22,16 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
     readRepoFile(".github", "workflows", "check.yml"),
     "playground-test",
   );
-  const playgroundSetup = check.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
-  const playgroundInstall = check.indexOf("Install Playwright browsers");
+  assert.ok(check.includes("uses: ./.github/actions/install-playwright-browsers"));
+
+  const playground = readRepoFile(
+    ".github",
+    "actions",
+    "install-playwright-browsers",
+    "action.yml",
+  );
+  const playgroundSetup = playground.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
+  const playgroundInstall = playground.indexOf("install_playwright_browsers --");
   assert.ok(playgroundSetup >= 0 && playgroundSetup < playgroundInstall);
 });
 

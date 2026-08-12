@@ -1,0 +1,12 @@
+name: Install Playwright browsers
+description: Install Chromium for the playground jobs after stabilizing apt for its OS dependencies
+
+runs:
+  using: composite
+  steps:
+    - name: Stabilize Ubuntu package archive
+      uses: ./.github/actions/setup-ubuntu-archive
+
+    - name: Install Playwright browsers
+      shell: bash
+      run: moon run --target native tools/moon/cmd/github/install_playwright_browsers --

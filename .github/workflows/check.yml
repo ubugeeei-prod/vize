@@ -579,9 +579,6 @@ jobs:
           name: shared-js-build
           path: .
 
-      - name: Stabilize Ubuntu package archive
-        uses: ./.github/actions/setup-ubuntu-archive
-
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
@@ -591,7 +588,7 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: moon run --target native tools/moon/cmd/github/install_playwright_browsers --
+        uses: ./.github/actions/install-playwright-browsers
 
       - name: Run playground tests
         run: vp run --filter './playground' test:browser
