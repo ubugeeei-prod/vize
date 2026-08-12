@@ -24,10 +24,12 @@ use vize_croquis::Croquis;
 
 use crate::virtual_ts::types::VirtualTsOptions;
 
-use super::super::imports::collect_imported_names;
-
 /// Auto-import binding names the template references and that no SFC-local
 /// binding already provides.
+///
+/// `imported_names` is the module-level import set the generator already
+/// computed for `emit_auto_import_stubs`; `options_api_setup_binding_names`
+/// are the Options API `setup()` return bindings that own their own shadow.
 ///
 /// `structural_unwrap` is the Vue 2/2.7 dialect flag. That dialect's `__U`
 /// helper is the purely structural `T extends { value: infer V } ? V : T`,
@@ -37,7 +39,8 @@ use super::super::imports::collect_imported_names;
 pub(super) fn collect(
     summary: &Croquis,
     options: &VirtualTsOptions,
-    script_content: Option<&str>,
+    imported_names: &FxHashSet<&str>,
+    options_api_setup_binding_names: &FxHashSet<&str>,
     template_referenced_names: &FxHashSet<String>,
     structural_unwrap: bool,
 ) -> Vec<String> {
@@ -53,17 +56,18 @@ pub(super) fn collect(
         .filter(|name| !summary.bindings.bindings.contains_key(name.as_str()))
         .filter(|name| !summary.used_components.contains(name.as_str()))
         .filter(|name| !reserved.contains(name.as_str()))
+        // An Options API `setup()` return spread infers its bindings from the
+        // template, so it claims names `summary.bindings` never holds. It
+        // already emits a `__R_<name>` capture and a `__U` shadow for each of
+        // them; a second pair here would be a `TS2451`.
+        .filter(|name| !options_api_setup_binding_names.contains(name.as_str()))
+        // A plain `<script>` next to `<script setup>` keeps its imports out of
+        // `summary.bindings`, and `emit_auto_import_stubs` skips a stub whose
+        // name one of them already declares. Mirror that so a shadow is only
+        // ever emitted for a name the generated module really declares
+        // ambiently.
+        .filter(|name| !imported_names.contains(name.as_str()))
         .collect();
-    if names.is_empty() {
-        return names;
-    }
-
-    // A plain `<script>` next to `<script setup>` keeps its imports out of
-    // `summary.bindings`, and `emit_auto_import_stubs` skips a stub whose name
-    // one of them already declares. Mirror that so a shadow is only ever
-    // emitted for a name the generated module really declares ambiently.
-    let imported_names = collect_imported_names(summary, script_content);
-    names.retain(|name| !imported_names.contains(&name.as_str()));
     names.sort_unstable();
     names.dedup();
     names
@@ -90,7 +94,51 @@ fn reserved_template_names(options: &VirtualTsOptions) -> FxHashSet<&str> {
 
 #[cfg(test)]
 mod tests {
+    use vize_carton::{FxHashSet, String};
+    use vize_croquis::Croquis;
+
     use crate::virtual_ts::types::VirtualTsOptions;
+
+    const REF_STUB: &str =
+        "declare const currentUser: typeof import('./composables')['currentUser'];";
+
+    fn collect_with(
+        imported_names: &[&'static str],
+        options_api_setup_binding_names: &[&'static str],
+    ) -> Vec<String> {
+        let options = VirtualTsOptions {
+            auto_import_stubs: vec![REF_STUB.into()],
+            ..Default::default()
+        };
+        let referenced: FxHashSet<String> = ["currentUser".into()].into_iter().collect();
+        super::collect(
+            &Croquis::new(),
+            &options,
+            &imported_names.iter().copied().collect(),
+            &options_api_setup_binding_names.iter().copied().collect(),
+            &referenced,
+            false,
+        )
+    }
+
+    #[test]
+    fn a_referenced_auto_import_is_a_candidate() {
+        assert_eq!(collect_with(&[], &[]), vec!["currentUser"]);
+    }
+
+    #[test]
+    fn a_name_a_module_level_import_already_declares_is_declined() {
+        // `emit_auto_import_stubs` skips the stub for such a name, so shadowing
+        // it here would capture `typeof` an undeclared name.
+        assert!(collect_with(&["currentUser"], &[]).is_empty());
+    }
+
+    #[test]
+    fn a_name_the_options_api_setup_spread_owns_is_declined() {
+        // The spread emits its own `__R_currentUser` capture and `__U` shadow;
+        // a second pair would be a `TS2451`.
+        assert!(collect_with(&[], &["currentUser"]).is_empty());
+    }
 
     fn names(stub: &str) -> Vec<vize_carton::String> {
         VirtualTsOptions {

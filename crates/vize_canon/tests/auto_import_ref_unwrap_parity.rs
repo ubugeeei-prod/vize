@@ -103,6 +103,20 @@ const BROKEN_VALUE_TEMPLATE: &str = "  <div>{{ mediaList.value }}</div>\n";
 /// reading a member that does not exist on it still reports.
 const BROKEN_PLAIN_OBJECT_TEMPLATE: &str = "  <div>{{ OPTION.valeu }}</div>\n";
 
+/// The names `AUTO_LINE` stands for. Shared so the negative control below can
+/// never drift onto a different binding set than the positive tests.
+const AUTO_IMPORT_NAMES: &[&str] = &[
+    "OPTION",
+    "currentUser",
+    "draftName",
+    "flag",
+    "mediaList",
+    "nullableUser",
+    "readonlyCount",
+    "shallowList",
+    "unionValue",
+];
+
 fn project(provenance_line: &str, template: &str) -> Project {
     let auto_import = provenance_line == AUTO_LINE;
     let mut project = Project::new();
@@ -110,17 +124,7 @@ fn project(provenance_line: &str, template: &str) -> Project {
     project.write("src/Child.vue", CHILD);
     project.write("src/App.vue", &app(provenance_line, template));
     if auto_import {
-        project.declare_auto_imports(&[
-            "OPTION",
-            "currentUser",
-            "draftName",
-            "flag",
-            "mediaList",
-            "nullableUser",
-            "readonlyCount",
-            "shallowList",
-            "unionValue",
-        ]);
+        project.declare_auto_imports(AUTO_IMPORT_NAMES);
     }
     project
 }
@@ -222,17 +226,7 @@ fn auto_imported_refs_are_not_unwrapped_outside_the_template() {
     project.write("src/composables.ts", COMPOSABLES);
     project.write("src/Child.vue", CHILD);
     project.write("src/App.vue", &broken);
-    project.declare_auto_imports(&[
-        "OPTION",
-        "currentUser",
-        "draftName",
-        "flag",
-        "mediaList",
-        "nullableUser",
-        "readonlyCount",
-        "shallowList",
-        "unionValue",
-    ]);
+    project.declare_auto_imports(AUTO_IMPORT_NAMES);
     assert_eq!(
         project.diagnostics("src/App.vue"),
         vec![Diagnostic {

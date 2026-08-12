@@ -357,7 +357,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
     let global_components =
         GlobalComponentPlan::new(summary, legacy_vue2, has_script_reference_types);
+    // The template-scope unwrap set also needs it: an auto-import already
+    // imported by a plain `<script>` must not gain a second shadow.
     let needs_imported_names = !options.auto_import_stubs.is_empty()
+        || !options.auto_import_bindings.is_empty()
         || (global_components.enabled() && !summary.component_usages.is_empty());
     let imported_names: FxHashSet<&str> = if needs_imported_names {
         profile!(
@@ -665,6 +668,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 options_api,
                 Some(&template_usage_names),
                 script_content,
+                &imported_names,
                 options,
                 generation_options,
             );

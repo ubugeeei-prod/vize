@@ -25,6 +25,7 @@ impl TemplateRefUnwraps {
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
         script_content: Option<&str>,
+        imported_names: &FxHashSet<&str>,
         options: &VirtualTsOptions,
         generation_options: VirtualTsGenerationOptions<'_>,
     ) -> Self {
@@ -63,7 +64,14 @@ impl TemplateRefUnwraps {
 
         let auto_import_bindings = template_referenced_names
             .map(|referenced| {
-                auto_imports::collect(summary, options, script_content, referenced, legacy_helpers)
+                auto_imports::collect(
+                    summary,
+                    options,
+                    imported_names,
+                    &options_api_setup_binding_names,
+                    referenced,
+                    legacy_helpers,
+                )
             })
             .unwrap_or_default();
 

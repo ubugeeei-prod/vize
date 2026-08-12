@@ -56,7 +56,8 @@ impl Project {
         }
     }
 
-    /// Every diagnostic reported against `path`, in authored order.
+    /// Every diagnostic reported against `path`, sorted by authored line,
+    /// column and code.
     pub fn diagnostics(&self, path: &str) -> Vec<Diagnostic> {
         let mut checker = BatchTypeChecker::with_options(
             self.dir.path(),
@@ -71,6 +72,8 @@ impl Project {
         let mut diagnostics: Vec<Diagnostic> = result
             .diagnostics
             .into_iter()
+            // `diagnostic.file` is a `PathBuf`, so this is `Path::ends_with`:
+            // a component-wise match that is separator-agnostic.
             .filter(|diagnostic| diagnostic.file.ends_with(path))
             .map(|diagnostic| Diagnostic {
                 code: diagnostic.code,
@@ -87,7 +90,24 @@ impl Project {
 /// Whether a Corsa/tsgo binary is reachable. Without one the batch checker
 /// cannot produce diagnostics, and the test declines rather than passing
 /// vacuously.
+///
+/// Required CI lanes fail closed instead: with `VIZE_TEST_REQUIRE_TSGO` set, a
+/// missing toolchain is an assertion failure, so the suite can never report a
+/// green run in which no assertion executed. `VIZE_TEST_DISABLE_TSGO` is the
+/// explicit opt-out and takes precedence over discovery.
 pub fn corsa_available() -> bool {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return false;
+    }
+    let available = discover_corsa();
+    assert!(
+        available || std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+        "VIZE_TEST_REQUIRE_TSGO is set, but no tsgo executable was found"
+    );
+    available
+}
+
+fn discover_corsa() -> bool {
     if let Ok(path) = std::env::var("CORSA_PATH")
         && Path::new(&path).exists()
     {
@@ -103,6 +123,9 @@ pub fn corsa_available() -> bool {
     ]
     .iter()
     .any(|candidate| candidate.exists())
+        // The checker resolves its own binary this way, so the guard must not
+        // decline a toolchain the run would actually have used.
+        || vize_carton::corsa_resolver::discover_corsa_in_ancestors(&root).is_some()
 }
 
 fn workspace_root() -> Option<PathBuf> {

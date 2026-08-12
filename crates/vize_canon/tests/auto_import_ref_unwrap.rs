@@ -8,7 +8,7 @@
 
 use vize_canon::virtual_ts::{
     TemplateGlobal, VirtualTsOptions, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_legacy_vue2,
+    generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -145,6 +145,51 @@ fn script_declared_and_imported_names_are_never_double_shadowed() {
             .count(),
         1,
         "an authored import must not gain a second shadow:\n{code}"
+    );
+}
+
+#[test]
+fn options_api_setup_spread_names_are_never_double_shadowed() {
+    // A `setup()` return spread infers its bindings from the template, so it
+    // claims names `summary.bindings` never holds: exactly the set the
+    // auto-import candidates are drawn from. Only one of the two may shadow
+    // the name; a second `__R_currentUser` would be a `TS2451`.
+    let script = r#"import { defineComponent, toRefs } from 'vue'
+
+export default defineComponent({
+    setup() {
+        const state = useAccountState()
+        return {
+            ...toRefs(state),
+        }
+    },
+})
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, r#"<div>{{ currentUser.account }}</div>"#);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
+    analyzer.analyze_script_plain(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &options_with_stubs(&[REF_STUB]),
+    );
+    let code = output.code.as_str();
+    assert_eq!(
+        code.matches("type __R_currentUser =").count(),
+        1,
+        "the setup spread already owns the capture:\n{code}"
+    );
+    assert_eq!(
+        code.matches("var currentUser: __U<__R_currentUser> = undefined as any;")
+            .count(),
+        1,
+        "the setup spread already owns the shadow:\n{code}"
     );
 }
 
