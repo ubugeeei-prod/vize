@@ -89,9 +89,15 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
 }): Promise<void> {
   const { page, devServer, startupLogStart, cwd, mountSelector, appName, goto, waitForHydration } =
     options;
-  const originalText = 'data-slot="base"';
-  const updatedText = `${originalText}\n      data-vize-hmr-probe="updated"`;
-  const sourcePath = path.join(cwd, "src/runtime/components/Button.vue");
+  // Nuxt UI 4.5 watches its published component directory and regenerates
+  // Nuxt templates when a library component changes. That upstream watcher
+  // reloads route-rules.mjs, which cannot prove that Vize accepted an authored
+  // SFC update without a page reload. Probe the playground-owned Matrix SFC
+  // rendered by the same route instead; it exercises Vize HMR without crossing
+  // the library template-regeneration boundary.
+  const originalText = '<div class="flex items-start gap-2 min-h-0">';
+  const updatedText = '<div data-vize-hmr-probe="updated" class="flex items-start gap-2 min-h-0">';
+  const sourcePath = path.join(cwd, "playgrounds/nuxt/app/components/Matrix.vue");
   const originalSource = fs.readFileSync(sourcePath, "utf8");
   expect(originalSource.split(originalText)).toHaveLength(2);
   const updatedSource = originalSource.replace(originalText, updatedText);
@@ -104,7 +110,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
       const url = new URL(response.url());
       return (
         response.ok() &&
-        url.pathname.endsWith("/src/runtime/components/Button.vue.ts") &&
+        url.pathname.endsWith("/playgrounds/nuxt/app/components/Matrix.vue.ts") &&
         url.searchParams.has("vize") &&
         !url.searchParams.has("vize-ssr")
       );
@@ -129,7 +135,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (
-      url.pathname.endsWith("/src/runtime/components/Button.vue.ts") &&
+      url.pathname.endsWith("/playgrounds/nuxt/app/components/Matrix.vue.ts") &&
       url.searchParams.has("t") &&
       url.searchParams.has("vize")
     )
@@ -137,7 +143,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   });
   page.on("console", (message) => {
     if (
-      /\[vite\] hot updated: .*\/src\/runtime\/components\/Button\.vue\.ts\?vue&vize/.test(
+      /\[vite\] hot updated: .*\/playgrounds\/nuxt\/app\/components\/Matrix\.vue\.ts\?vue&vize/.test(
         message.text(),
       )
     )
@@ -191,7 +197,9 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   ).toBe(probe);
   expect(fs.readFileSync(sourcePath, "utf8")).toBe(originalSource);
   const updateLogs = getProcessLogs(devServer).slice(updateLogStart).join("\n");
-  expect(updateLogs).toMatch(/hmr update .*\/src\/runtime\/components\/Button\.vue\.ts\?vue&vize/);
+  expect(updateLogs).toMatch(
+    /hmr update .*\/playgrounds\/nuxt\/app\/components\/Matrix\.vue\.ts\?vue&vize/,
+  );
   expect(updateLogs).not.toMatch(/page reload/i);
   expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
   expect(hydrationErrors).toHaveLength(0);
