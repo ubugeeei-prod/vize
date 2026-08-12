@@ -165,11 +165,7 @@ test("template ref unwrapping matches vue-tsc and is provenance-independent", ()
     writeApp(autoDir, autoLine, variant);
 
     const baseline = normalizeVueTsc(runVueTsc(explicitDir, vueTscPath));
-    assert.deepEqual(
-      baseline,
-      variant.expected,
-      `vue-tsc baseline drifted for "${variant.name}"`,
-    );
+    assert.deepEqual(baseline, variant.expected, `vue-tsc baseline drifted for "${variant.name}"`);
 
     const explicit = normalizeVize(runVizeCheck(explicitDir, corsaPath, ["src"]));
     assert.deepEqual(
@@ -197,7 +193,11 @@ function createWorkspace(name: string, autoImported: boolean): string {
   if (autoImported) {
     fs.mkdirSync(path.join(dir, ".nuxt/types"), { recursive: true });
     write(dir, "nuxt.config.ts", "export default {}\n");
-    write(dir, "tsconfig.json", `${JSON.stringify({ extends: "./.nuxt/tsconfig.json" }, null, 2)}\n`);
+    write(
+      dir,
+      "tsconfig.json",
+      `${JSON.stringify({ extends: "./.nuxt/tsconfig.json" }, null, 2)}\n`,
+    );
     write(dir, ".nuxt/tsconfig.json", `${JSON.stringify(nuxtTsconfig, null, 2)}\n`);
     write(dir, ".nuxt/types/imports.d.ts", generatedImports);
   } else {
