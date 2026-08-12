@@ -7,9 +7,9 @@ High-performance Vue.js toolchain in Rust
 Usage: vize [COMMAND]
 
 Commands:
-  build           Compile Vue SFC files (default command) [aliases: atelier]
-  fmt             Format Vue, JSX, and TSX files [aliases: glyph]
-  lint            Lint Vue, HTML, JSX, and TSX files [aliases: patina]
+  build           Compile Vue SFC files (default command) [alias: atelier]
+  fmt             Format Vue, JSX, and TSX files [alias: glyph]
+  lint            Lint Vue, HTML, JSX, and TSX files [alias: patina]
   check           Type check Vue, JSX, and TSX files
   inspector       Create playground compiler inspector payloads and agent reports
   curator         Curator utilities for diagnostics and reports
@@ -18,9 +18,9 @@ Commands:
   check-server    Start type check JSON-RPC server (Unix only)
   content-mapper  Start the experimental TypeScript content-mapper protocol server
   musea           Start component gallery server
-  lsp             Start Language Server Protocol server [aliases: maestro]
+  lsp             Start Language Server Protocol server [alias: maestro]
   ide             IDE integration - LSP server and editor extension management
-  upgrade         Update the installed Vize package [aliases: self-update]
+  upgrade         Update the installed Vize package [alias: self-update]
   ready           Run fmt, lint, check, and build
   help            Print this message or the help of the given subcommand(s)
 

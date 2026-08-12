@@ -10,10 +10,8 @@
     clippy::disallowed_types,
     clippy::disallowed_methods
 )]
-
-use std::hint::black_box;
-
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
+use std::hint::black_box;
 use vize_carton::Bump;
 use vize_carton::append;
 use vize_musea::{ArtParseOptions, parse_art, transform_to_csf, transform_to_vue};

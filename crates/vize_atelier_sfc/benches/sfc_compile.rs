@@ -1,10 +1,8 @@
 //! Native Rust benchmarks for SFC compilation performance.
 //!
 //! Run with: cargo bench -p vize_atelier_sfc --bench sfc_compile
-
-use std::hint::black_box;
-
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
+use std::hint::black_box;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
     TemplateCompileOptions, compile_sfc, parse_sfc,
