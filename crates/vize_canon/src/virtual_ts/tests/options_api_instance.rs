@@ -246,6 +246,54 @@ fn test_options_api_script_setup_next_to_plain_script_disables_the_instance_form
     );
 }
 
+/// The same split-script shape keeps the authored component out of the emitted
+/// export. Next to a `<script setup>` block the plain default export is an
+/// options fragment (`inheritAttrs`, `name`, shared helper objects), not the
+/// component, so intersecting it into `__vize_component__` breaks the export's
+/// construct-signature inference: Misskey's `popup(MkAutocomplete, props, {
+/// done: res => ... })` lost every listener's contextual type (`TS7006`).
+#[test]
+fn test_script_setup_next_to_plain_script_drops_the_authored_component() {
+    let setup = r#"const props = defineProps<{ toaster: boolean }>()
+"#;
+    let script = r#"export default {
+    inheritAttrs: false,
+}
+"#;
+    let allocator = vize_carton::Bump::new();
+    let (root, _) = vize_armature::parse(&allocator, "<div>{{ toaster }}</div>");
+    let options = vize_croquis::AnalyzerOptions::full();
+    let mut setup_analyzer = vize_croquis::Analyzer::with_options(options).with_options_api();
+    setup_analyzer.analyze_script_setup(setup);
+    let mut summary = setup_analyzer.finish();
+    let mut plain_analyzer = vize_croquis::Analyzer::with_options(options).with_options_api();
+    plain_analyzer.analyze_script_plain(script);
+    summary.merge_plain_script(plain_analyzer.finish());
+    let mut analyzer =
+        vize_croquis::Analyzer::with_summary(options, summary, true).with_options_api();
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let output = generate_virtual_ts_with_offsets_options_api(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &Default::default(),
+    );
+
+    assert!(
+        !output.code.contains("__VizeAuthoredComponent"),
+        "a `<script setup>` block must keep the authored component aliases off:\n{}",
+        output.code
+    );
+    assert!(
+        output.code.contains("type __VizeComponentInstance = {\n"),
+        "the public instance must stay the normalized shape:\n{}",
+        output.code
+    );
+}
+
 /// A configured `globalTypes` entry already declares the name in the template
 /// closure, so the `var` the instance form hoists would redeclare it
 /// (`TS2451 Cannot redeclare block-scoped variable`).

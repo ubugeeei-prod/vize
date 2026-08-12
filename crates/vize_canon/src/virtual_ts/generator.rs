@@ -804,8 +804,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let mut setup_artifact_return_fields = Vec::new();
     setup_props_plan.push_return_field(&mut setup_artifact_return_fields);
     setup_return_fields.extend(setup_artifact_return_fields.into_iter().map(String::from));
-    let preserve_authored_component =
-        declared_default_alias && generation_options.preserve_authored_component;
+    // A `<script setup>` block next to the plain script keeps the authored
+    // component out of the emitted export, for the same reason the
+    // public-instance form stays off there: that default export carries only
+    // the options `<script setup>` cannot express (`inheritAttrs`, `name`,
+    // helper re-exports, ...), so it is an options fragment, not the component.
+    // Intersecting it into `__vize_component__` costs the export its usable
+    // construct-signature inference, and a consumer reading the component's
+    // emits off it loses every listener's contextual type (`TS7006` on
+    // `popup(MkAutocomplete, props, { done: res => ... })` in Misskey).
+    let preserve_authored_component = declared_default_alias
+        && !has_script_setup
+        && generation_options.preserve_authored_component;
     if preserve_authored_component
         && !setup_return_fields
             .iter()
