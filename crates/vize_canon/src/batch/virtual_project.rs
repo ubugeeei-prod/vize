@@ -77,8 +77,8 @@ pub use package_route_reachability::{
 };
 mod package_shadow;
 mod package_shadow_owners;
-mod package_shadow_scope;
 mod package_shadow_runtime;
+mod package_shadow_scope;
 mod package_source_index;
 mod passthrough;
 mod paths;

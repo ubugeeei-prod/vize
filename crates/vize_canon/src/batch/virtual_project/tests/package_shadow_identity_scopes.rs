@@ -32,16 +32,18 @@ fn a_scope_never_lands_where_the_real_tree_owns_an_install() {
     let shared_route = route(&monorepo);
     let mut importer_paths = monorepo.importer_paths.clone();
     importer_paths.push(host_path.clone());
-    project.set_package_routes(importer_paths.iter().map(|importer_path| {
-        PackageRouteBinding {
-            importer_path: importer_path.clone(),
-            specifier: "@w/ui".into(),
-            occurrence_mode: PackageResolutionMode::Import,
-            context: PackageResolutionContext::default(),
-            route: Some(shared_route.clone()),
-            invalidation_paths: vec![monorepo.manifest_path.clone()],
-        }
-    }));
+    project.set_package_routes(
+        importer_paths
+            .iter()
+            .map(|importer_path| PackageRouteBinding {
+                importer_path: importer_path.clone(),
+                specifier: "@w/ui".into(),
+                occurrence_mode: PackageResolutionMode::Import,
+                context: PackageResolutionContext::default(),
+                route: Some(shared_route.clone()),
+                invalidation_paths: vec![monorepo.manifest_path.clone()],
+            }),
+    );
     let mut roots = importer_paths.clone();
     roots.extend(monorepo.component_paths.iter().cloned());
     project.set_declaration_roots(&roots);

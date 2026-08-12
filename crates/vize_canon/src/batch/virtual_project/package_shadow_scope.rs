@@ -281,7 +281,10 @@ mod tests {
             PathBuf::from("/v/apps/a/src"),
             PathBuf::from("/v/packages/ui/src"),
         ];
-        assert_eq!(super::shared_scope_dir(&dirs, root), Some(PathBuf::from("/v")));
+        assert_eq!(
+            super::shared_scope_dir(&dirs, root),
+            Some(PathBuf::from("/v"))
+        );
     }
 
     #[test]

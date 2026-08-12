@@ -119,8 +119,7 @@ impl VirtualProject {
     /// Program root files relative to the mirror root, sorted.
     #[cfg(test)]
     pub(crate) fn topology_program_files(&self) -> Vec<vize_carton::String> {
-        let mut files =
-            self.include_paths(None, self.source_file_policy().allows_javascript());
+        let mut files = self.include_paths(None, self.source_file_policy().allows_javascript());
         files.sort();
         files
     }

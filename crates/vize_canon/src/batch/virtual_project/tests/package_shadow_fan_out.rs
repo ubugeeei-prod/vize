@@ -59,7 +59,8 @@ fn build_monorepo(name: &str, importer_dirs: usize) -> Monorepo {
 
     let mut component_paths = Vec::new();
     for index in 0..PACKAGE_SOURCES {
-        let component_path = package_root.join(vize_carton::cstr!("src/Widget{index}.vue").as_str());
+        let component_path =
+            package_root.join(vize_carton::cstr!("src/Widget{index}.vue").as_str());
         fs::write(
             &component_path,
             vize_carton::cstr!(
@@ -243,8 +244,7 @@ fn the_program_does_not_grow_when_more_directories_import_the_same_package() {
     let wide_metrics = wide.topology_metrics();
 
     assert_eq!(
-        narrow_metrics.package_shadow_files,
-        wide_metrics.package_shadow_files,
+        narrow_metrics.package_shadow_files, wide_metrics.package_shadow_files,
         "shadow materialization must not scale with importing directories"
     );
     assert_eq!(
