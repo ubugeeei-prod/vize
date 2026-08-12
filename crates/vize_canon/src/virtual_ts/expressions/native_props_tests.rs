@@ -203,12 +203,15 @@ fn legacy_vue2_does_not_require_vue_native_elements() {
     );
 }
 
-/// The `<template>` shapes #4149 is about, alongside the element and bare
+/// The `<template>` shapes #4149 is about — one per `renders_as_fragment` arm,
+/// `v-else-if` and `v-else` included — alongside the element and bare
 /// `<template>` shapes that must keep their checks.
 const FRAGMENT_TEMPLATE: &str = concat!(
     r#"<div v-for="row in rows" :key="row.text" />"#,
     r#"<template v-for="row in rows" :key="row.text" :id="row.text"><span :id="row.text" /></template>"#,
     r#"<template v-if="flag" :key="rows"></template>"#,
+    r#"<template v-else-if="flag" :key="rows"></template>"#,
+    r#"<template v-else :id="rows"></template>"#,
     r#"<template #footer :id="rows"></template>"#,
     r#"<template :id="rows"></template>"#,
 );
@@ -238,7 +241,7 @@ fn template_fragments_carry_no_element_prop_check() {
     // inside a key expression stays a diagnostic at its authored range.
     assert_eq!(
         unchecked_v_bind_expressions(&output.code),
-        vec!["rows", "rows", "row.text", "row.text"],
+        vec!["rows", "rows", "rows", "rows", "row.text", "row.text"],
         "fragment props must stay checked as ordinary expressions:\n{}",
         output.code
     );
@@ -263,7 +266,7 @@ fn legacy_vue2_template_fragments_carry_no_element_prop_check() {
     assert_eq!(
         unchecked_v_bind_expressions(&output.code),
         vec![
-            "rows", "rows", "rows", "row.text", "row.text", "row.text", "row.text"
+            "rows", "rows", "rows", "rows", "rows", "row.text", "row.text", "row.text", "row.text"
         ],
         "Vue 2 must keep every authored key expression checkable:\n{}",
         output.code
