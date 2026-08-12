@@ -22,6 +22,19 @@ const editorScenarioFixtureIgnorePattern =
   "editors/vscode/test-fixtures/extension-host/real-vue/src/Scenario.vue";
 
 /**
+ * The VS Code extension lints itself from `editors/vscode` with its own
+ * isolated toolchain, and Vite+ merges these root ignore patterns into that
+ * nested run. Ignoring `editors/vscode/**` wholesale would leave the extension
+ * with nothing to lint, so only its generated output and deliberately unlinted
+ * fixtures/vendored plugin sources are excluded here.
+ */
+const vscodeExtensionLintIgnorePatterns = [
+  "editors/vscode/dist/**",
+  "editors/vscode/test-fixtures/**",
+  "editors/vscode/typescript-vue-plugin/**",
+];
+
+/**
  * Oxfmt 0.61 formats Markdown tables containing translated prose and literal
  * pipe characters as if every pipe were a column separator. Keep authored
  * documentation, parser fixtures, and generated Playwright output byte-stable.
@@ -71,7 +84,7 @@ const config = {
       "**/__snapshot__/**",
       testOutputIgnorePattern,
       "**/__ubugeeei__/**",
-      "editors/vscode/**",
+      ...vscodeExtensionLintIgnorePatterns,
       "tests/_fixtures/**",
     ],
     options: {
