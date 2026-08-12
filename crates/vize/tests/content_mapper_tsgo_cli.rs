@@ -95,6 +95,21 @@ fn run_tsgo(tsgo: &Path, project_root: &Path, arguments: &[&str]) -> Output {
         .unwrap_or_else(|error| panic!("failed to run {}: {error}", tsgo.display()))
 }
 
+fn check_project(tsgo: &Path, project_root: &Path, config: &str) -> Output {
+    run_tsgo(
+        tsgo,
+        project_root,
+        &[
+            "--loadExternalPlugins",
+            "--noEmit",
+            "-p",
+            config,
+            "--pretty",
+            "false",
+        ],
+    )
+}
+
 fn output_text(output: &Output) -> CompactString {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-UTF-8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8 stderr>");
@@ -152,46 +167,14 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
     install_mapper_manifest(project.path());
     install_vue_package(project.path());
 
-    let check = run_tsgo(
-        &tsgo,
-        project.path(),
-        &[
-            "--loadExternalPlugins",
-            "--noEmit",
-            "-p",
-            "tsconfig.json",
-            "--pretty",
-            "false",
-        ],
-    );
+    let check = check_project(&tsgo, project.path(), "tsconfig.json");
     assert_success(&check);
 
-    let options_enabled = run_tsgo(
-        &tsgo,
-        project.path(),
-        &[
-            "--loadExternalPlugins",
-            "--noEmit",
-            "-p",
-            "tsconfig.options-api-enabled.json",
-            "--pretty",
-            "false",
-        ],
-    );
+    let options_enabled = check_project(&tsgo, project.path(), "tsconfig.options-api-enabled.json");
     assert_success(&options_enabled);
 
-    let options_disabled = run_tsgo(
-        &tsgo,
-        project.path(),
-        &[
-            "--loadExternalPlugins",
-            "--noEmit",
-            "-p",
-            "tsconfig.options-api-disabled.json",
-            "--pretty",
-            "false",
-        ],
-    );
+    let options_disabled =
+        check_project(&tsgo, project.path(), "tsconfig.options-api-disabled.json");
     assert!(
         !options_disabled.status.success(),
         "Options API disabled fixture passed unexpectedly"
@@ -204,18 +187,7 @@ fn standard_tsgo_checks_vue_project_and_emits_consumable_declarations() {
         "{options_disabled_output}"
     );
 
-    let broken = run_tsgo(
-        &tsgo,
-        project.path(),
-        &[
-            "--loadExternalPlugins",
-            "--noEmit",
-            "-p",
-            "tsconfig.error.json",
-            "--pretty",
-            "false",
-        ],
-    );
+    let broken = check_project(&tsgo, project.path(), "tsconfig.error.json");
     assert!(
         !broken.status.success(),
         "broken fixture passed unexpectedly"
