@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { cpus, totalmem } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { collectRunEvidence } from "./run-evidence.mjs";
 import { resolveVizeLaunch, runTool } from "./tool-matrix-run.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.mjs";
 
@@ -45,7 +44,7 @@ function main() {
     schema,
     version: 3,
     generatedAt: new Date().toISOString(),
-    evidence: collectEvidence(),
+    evidence: collectRunEvidence(),
     registryPath: relative(repoRoot, registryPath),
     command: {
       vize: launch.label,
@@ -224,47 +223,6 @@ function selectShard(projects, shardIndex, shardCount) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
-}
-function collectEvidence() {
-  const machineCpus = cpus();
-  const logicalCpuCount = machineCpus.length;
-  const totalMemoryBytes = totalmem();
-  if (!Number.isSafeInteger(logicalCpuCount) || logicalCpuCount < 1) {
-    throw new Error("Machine evidence requires at least one logical CPU");
-  }
-  if (!Number.isSafeInteger(totalMemoryBytes) || totalMemoryBytes < 1) {
-    throw new Error("Machine evidence requires positive total memory");
-  }
-  return {
-    commitSha: resolveCommitSha(),
-    runtime: { name: "node", version: process.versions.node },
-    machine: {
-      platform: process.platform,
-      arch: process.arch,
-      cpuModel: machineCpus[0]?.model.trim() || "unknown",
-      logicalCpuCount,
-      totalMemoryBytes,
-    },
-  };
-}
-function resolveCommitSha() {
-  const environmentSha = process.env.GITHUB_SHA;
-  if (environmentSha != null) return requireCommitSha(environmentSha, "GITHUB_SHA");
-  const result = spawnSync("git", ["rev-parse", "HEAD"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-    timeout: 30_000,
-  });
-  if (result.error != null || result.status !== 0) {
-    throw new Error("Unable to resolve fixture matrix commit SHA");
-  }
-  return requireCommitSha(result.stdout.trim(), "git rev-parse HEAD");
-}
-function requireCommitSha(value, source) {
-  if (!/^[0-9a-f]{40}$/.test(value)) {
-    throw new Error(`${source} must be a full lowercase commit SHA`);
-  }
-  return value;
 }
 function splitCsv(value) {
   return value

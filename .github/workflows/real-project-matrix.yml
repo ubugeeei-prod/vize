@@ -167,6 +167,19 @@ jobs:
             tests/tooling/real-project-lsp.test.ts
           test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
 
+      - name: Measure real-project lint divergence
+        id: lint_divergence
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          node tools/fixtures/lint-divergence-report.mjs \
+            --shard-index "$FIXTURE_SHARD_INDEX" \
+            --shard-count "$FIXTURE_SHARD_COUNT" \
+            --vize-bin target/ci/vize \
+            --timeout-ms 600000 \
+            --output-dir "$FIXTURE_REPORT_DIR"
+          test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"
+
       - name: Check real-project syntax highlighting
         id: syntax_highlighter
         if: ${{ !cancelled() }}
@@ -242,6 +255,7 @@ jobs:
           VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
           VIZE_CORE_TOOLS_OUTCOME: ${{ steps.core_tools.outcome }}
           VIZE_LSP_OUTCOME: ${{ steps.lsp.outcome }}
+          VIZE_LINT_DIVERGENCE_OUTCOME: ${{ steps.lint_divergence.outcome }}
           VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: ${{ steps.syntax_highlighter.outcome }}
           VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
           VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
@@ -264,6 +278,7 @@ jobs:
             --surface "typecheck-dependencies=$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME" \
             --surface "core-tools=$core_tools_verdict" \
             --surface "lsp=$lsp_verdict" \
+            --surface "lint-divergence=$VIZE_LINT_DIVERGENCE_OUTCOME" \
             --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
             --surface "glyph=$VIZE_GLYPH_OUTCOME" \
             --surface "typecheck-divergence=$typecheck_divergence_verdict"
@@ -290,6 +305,16 @@ jobs:
               "$syntax_report" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No syntax-highlighter report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          lint_divergence="$FIXTURE_REPORT_DIR/lint-divergence-summary.json"
+          if [[ -s "$lint_divergence" ]]; then
+            jq -r '"Lint divergence: \(.projectCount) project(s), \(.totals.sharedCount) shared, \(.totals.falsePositiveCount) false positive(s), \(.totals.falseNegativeCount) false negative(s), \(.totals.patinaOnlyRuleFindingCount) patina-only finding(s)"' \
+              "$lint_divergence" >> "$GITHUB_STEP_SUMMARY"
+            for report in "$FIXTURE_REPORT_DIR"/*-lint-divergence.md; do
+              [[ -s "$report" ]] && cat "$report" >> "$GITHUB_STEP_SUMMARY"
+            done
+          else
+            echo "No lint divergence report was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
           syntax_divergence="$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
           if [[ -s "$syntax_divergence" ]]; then
