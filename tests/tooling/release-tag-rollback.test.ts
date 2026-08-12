@@ -7,7 +7,7 @@ import {
   remoteTagState,
   rollbackUnpublishedTag,
 } from "../../tools/github/release-tag-rollback.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const tag = "v0.348.0";
 const commitSha = "a".repeat(40);
@@ -184,4 +184,11 @@ test("release calls a credential-minimal hosted rollback workflow after prefligh
   assert.deepEqual(rollback.permissions, { contents: "write" });
   assert.doesNotMatch(JSON.stringify(rollback), /environment|id-token|secrets\./);
   assert.match(JSON.stringify(rollback), /release-tag-rollback\.mjs/);
+});
+
+test("release stabilizes apt before installing ARM64 cross-compilation tools", () => {
+  const build = workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-cli");
+  const archiveSetup = build.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
+  const aptInstall = build.indexOf("install_cross_compile_tools --");
+  assert.ok(archiveSetup >= 0 && archiveSetup < aptInstall);
 });
