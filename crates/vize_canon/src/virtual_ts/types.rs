@@ -77,6 +77,15 @@ pub struct VirtualTsOptions {
     /// Auto-import stub declarations (e.g., Nuxt composables).
     /// Each entry is a full TypeScript `declare function ...;` statement.
     pub auto_import_stubs: Vec<String>,
+    /// Value binding names the framework auto-imports into every SFC, when
+    /// their declarations live outside this file.
+    ///
+    /// The batch virtual project materializes [`Self::auto_import_stubs`] into
+    /// one program-wide ambient file and clears the per-file list. Template
+    /// scope still has to unwrap those bindings' refs — an auto-import is a
+    /// `<script setup>` import once the framework transform runs — so the names
+    /// are carried here instead (#4146).
+    pub auto_import_bindings: Vec<String>,
     /// Template identifiers declared outside the SFC virtual module.
     ///
     /// Nuxt auto-imported components are declared in a generated ambient file.
@@ -95,10 +104,63 @@ impl Default for VirtualTsOptions {
             template_globals: default_plugin_globals(),
             css_modules: Vec::new(),
             auto_import_stubs: Vec::new(),
+            auto_import_bindings: Vec::new(),
             external_template_bindings: Vec::new(),
             reference_paths: Vec::new(),
         }
     }
+}
+
+impl VirtualTsOptions {
+    /// Every framework auto-import *value* binding available to an SFC.
+    ///
+    /// [`Self::auto_import_stubs`] carries the declarations inline for
+    /// single-file callers (editor diagnostics, `type_check_sfc`); the batch
+    /// virtual project moves them into one ambient file and leaves the names in
+    /// [`Self::auto_import_bindings`]. Both spellings resolve here so template
+    /// scope behaves identically in either path (#4146).
+    pub(crate) fn auto_import_binding_names(&self) -> Vec<String> {
+        let mut names: Vec<String> = self
+            .auto_import_stubs
+            .iter()
+            .filter_map(|stub| typed_value_binding(stub))
+            .map(String::from)
+            .collect();
+        names.extend(self.auto_import_bindings.iter().cloned());
+        names.sort_unstable();
+        names.dedup();
+        names
+    }
+}
+
+/// The declared name of a stub that introduces a *value* binding carrying a
+/// real type annotation.
+///
+/// `declare function` stubs are skipped: a function is never a ref, so an
+/// unwrap shadow would only add output. So is the degraded `declare const X:
+/// any;` fallback vize emits for a framework project with no generated types —
+/// `__U<any>` is `any`, so shadowing it cannot change a single diagnostic.
+/// `$`-prefixed names belong to the template context, which declares them
+/// itself.
+fn typed_value_binding(stub: &str) -> Option<&str> {
+    let rest = ["declare const ", "declare let ", "declare var "]
+        .into_iter()
+        .find_map(|prefix| stub.strip_prefix(prefix))?;
+    let (name, annotation) = rest.split_once(':')?;
+    let name = name.trim();
+    let annotation = annotation.trim().trim_end_matches(';').trim();
+    if annotation.is_empty() || annotation == "any" || !is_plain_identifier(name) {
+        return None;
+    }
+    Some(name)
+}
+
+fn is_plain_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == '_')
+        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }
 
 pub(crate) const DEFAULT_LIB_REFERENCES: &[&str] = &["es2022", "dom", "dom.iterable"];

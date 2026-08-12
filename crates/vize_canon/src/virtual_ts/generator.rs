@@ -665,6 +665,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 options_api,
                 Some(&template_usage_names),
                 script_content,
+                options,
+                generation_options,
             );
             template_ref_unwraps.emit_type_captures(&mut ts);
 
@@ -673,13 +675,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
             ts.push_str("  ;(function __template() {\n");
 
-            template_ref_unwraps.emit_template_variables(
-                &mut ts,
-                legacy_vue2,
-                dialect,
-                generic_param.is_some(),
-                hoist_shared_preamble,
-            );
+            template_ref_unwraps.emit_template_variables(&mut ts, generic_param.is_some());
 
             // Vue template context (available in template expressions)
             let template_context = profile!(

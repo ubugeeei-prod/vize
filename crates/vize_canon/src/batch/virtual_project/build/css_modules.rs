@@ -39,6 +39,10 @@ pub(crate) fn virtual_ts_options_for_descriptor(
         template_globals,
         css_modules,
         auto_import_stubs: Vec::new(),
+        // The stubs move to the shared ambient `.d.ts`, but their names must
+        // stay: template scope unwraps auto-imported refs the same way it
+        // unwraps an authored `<script setup>` import (#4146).
+        auto_import_bindings: base.auto_import_binding_names(),
         external_template_bindings: base.external_template_bindings.clone(),
         reference_paths: base.reference_paths.clone(),
     }

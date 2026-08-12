@@ -1,13 +1,22 @@
+mod auto_imports;
+
 use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
-use super::legacy_vue2::ref_unwrap_helper_for_template;
+use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
+use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
 use super::spans::is_local_setup_binding;
 
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
     options_api_setup_bindings: Vec<String>,
+    auto_import_bindings: Vec<String>,
+    /// Dialect and preamble decisions resolved once at collection time; they
+    /// also select the `__U` helper this shadow set is emitted against.
+    legacy_helpers: bool,
+    dialect: VueVersion,
+    hoist_shared_preamble: bool,
 }
 
 impl TemplateRefUnwraps {
@@ -16,7 +25,11 @@ impl TemplateRefUnwraps {
         options_api: bool,
         template_referenced_names: Option<&FxHashSet<String>>,
         script_content: Option<&str>,
+        options: &VirtualTsOptions,
+        generation_options: VirtualTsGenerationOptions<'_>,
     ) -> Self {
+        let legacy_helpers =
+            needs_legacy_vue2_helpers(generation_options.legacy_vue2, generation_options.dialect);
         let options_api_setup_bindings =
             crate::options_api_setup_spread::collect_template_setup_bindings(
                 summary,
@@ -48,9 +61,19 @@ impl TemplateRefUnwraps {
             .collect();
         setup_bindings.sort_unstable();
 
+        let auto_import_bindings = template_referenced_names
+            .map(|referenced| {
+                auto_imports::collect(summary, options, script_content, referenced, legacy_helpers)
+            })
+            .unwrap_or_default();
+
         Self {
             setup_bindings,
             options_api_setup_bindings,
+            auto_import_bindings,
+            legacy_helpers,
+            dialect: generation_options.dialect,
+            hoist_shared_preamble: generation_options.hoist_shared_preamble,
         }
     }
 
@@ -79,6 +102,14 @@ impl TemplateRefUnwraps {
                 );
             }
         }
+        if !self.auto_import_bindings.is_empty() {
+            ts.push_str(
+                "  // Auto-import ref type captures (before template scope shadows them)\n",
+            );
+            for name in &self.auto_import_bindings {
+                append!(ts, "  type __R_{name} = typeof {name};\n");
+            }
+        }
     }
 
     /// Shadow ref bindings with their unwrapped types. `var` allows
@@ -88,29 +119,28 @@ impl TemplateRefUnwraps {
     /// shadow, which is why the conditional types `__U` delegates to are
     /// declared alongside it rather than at module scope — see
     /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
-    pub(super) fn emit_template_variables(
-        &self,
-        mut ts: &mut String,
-        legacy_vue2: bool,
-        dialect: VueVersion,
-        has_generic_param: bool,
-        hoist_shared_preamble: bool,
-    ) {
-        if self.setup_bindings.is_empty() && self.options_api_setup_bindings.is_empty() {
+    pub(super) fn emit_template_variables(&self, mut ts: &mut String, has_generic_param: bool) {
+        if self.setup_bindings.is_empty()
+            && self.options_api_setup_bindings.is_empty()
+            && self.auto_import_bindings.is_empty()
+        {
             return;
         }
 
         ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
         ts.push_str(ref_unwrap_helper_for_template(
-            legacy_vue2,
-            dialect,
+            self.legacy_helpers,
+            self.dialect,
             has_generic_param,
-            hoist_shared_preamble,
+            self.hoist_shared_preamble,
         ));
         for name in &self.setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }
         for name in &self.options_api_setup_bindings {
+            append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
+        }
+        for name in &self.auto_import_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }
     }
