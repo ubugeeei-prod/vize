@@ -7,7 +7,7 @@ import {
   remoteTagState,
   rollbackUnpublishedTag,
 } from "../../tools/github/release-tag-rollback.mjs";
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { readRepoFile } from "./support/github-workflows.ts";
 
 const tag = "v0.348.0";
 const commitSha = "a".repeat(40);
@@ -149,6 +149,31 @@ test("rollback refuses a published GitHub Release or inconclusive API response",
   }
 });
 
+test("rollback refuses a Release published during the pre-deletion recheck", async () => {
+  const { calls, git } = fakeGit();
+  let releaseChecks = 0;
+  const fetchImpl = async () => {
+    releaseChecks += 1;
+    if (releaseChecks === 1) return { status: 404, text: async () => "" };
+    assert.equal(
+      calls.some((args) => args[0] === "fetch"),
+      true,
+    );
+    return { status: 200, text: async () => "" };
+  };
+
+  await assert.rejects(
+    rollbackUnpublishedTag({ env: releaseEnv(), fetchImpl, git }),
+    /GitHub Release already exists/,
+  );
+
+  assert.equal(releaseChecks, 2);
+  assert.equal(
+    calls.some((args) => args[0] === "push"),
+    false,
+  );
+});
+
 test("rollback refuses changed remote, event, or fetched tag identities", async () => {
   for (const [options, message] of [
     [{ remoteCommit: "c".repeat(40) }, /not event SHA/],
@@ -192,8 +217,16 @@ test("release calls a credential-minimal hosted rollback workflow after prefligh
 });
 
 test("release stabilizes apt before installing ARM64 cross-compilation tools", () => {
-  const build = workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-cli");
-  const archiveSetup = build.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
-  const aptInstall = build.indexOf("install_cross_compile_tools --");
-  assert.ok(archiveSetup >= 0 && archiveSetup < aptInstall);
+  const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+    jobs: Record<string, { steps: Array<{ run?: string; uses?: string }> }>;
+  };
+  const steps = release.jobs["build-cli"].steps;
+  const archiveSetup = steps.findIndex(
+    (step) => step.uses === "./.github/actions/setup-ubuntu-archive",
+  );
+  const aptInstall = steps.findIndex((step) =>
+    step.run?.includes("install_cross_compile_tools --"),
+  );
+  assert.ok(archiveSetup >= 0);
+  assert.ok(aptInstall > archiveSetup);
 });
