@@ -57,10 +57,9 @@ impl TemplatePropsModel {
             !props.is_empty() || !models.is_empty() || define_props_type_args.is_some();
 
         let setup_scoped = define_props_type_requires_setup_scope(summary);
-        let authored_type_ref = props_type_ref(
-            sfc_generic_param(summary),
-            setup_scoped.then_some("__VizeSetupProps"),
-        );
+        let generic_param = sfc_generic_param(summary);
+        let authored_type_ref =
+            props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
         let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
         for prop in props {
@@ -78,7 +77,16 @@ impl TemplatePropsModel {
         // overload produces, so the template resolves prop reads against the
         // same shape the script does: every declared key present, and Boolean
         // props cast to `boolean` because Vue substitutes `false` when absent.
-        let base_type_ref = cstr!("__DefineProps<{authored_type_ref}>");
+        //
+        // A `<script setup generic="…">` contract is the exception: its keys are
+        // only known once the caller instantiates the type parameter, so the
+        // Boolean key set stays a deferred conditional and every read through it
+        // becomes unresolvable. The authored contract is used as-is there.
+        let base_type_ref = if generic_param.is_some() {
+            authored_type_ref.clone()
+        } else {
+            cstr!("__DefineProps<{authored_type_ref}>")
+        };
         let resolved_type_ref =
             template_props_type_ref(base_type_ref.as_str(), &defaulted_prop_names);
 
