@@ -39,7 +39,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: wasm-bindgen-cli@0.2.121
+          tool: wasm-bindgen-cli@0.2.127
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
