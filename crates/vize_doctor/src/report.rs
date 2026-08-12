@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod tests;
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Deserializer, Serialize, de};
