@@ -192,7 +192,7 @@ pub(super) async fn collect_synced_virtual_result_diagnostics(
     Ok(deduplicate_diagnostics(mapped_diagnostics))
 }
 
-fn deduplicate_diagnostics(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
+pub(super) fn deduplicate_diagnostics(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
     let mut seen = FxHashSet::default();
     diagnostics.retain(|diagnostic| match serde_json::to_vec(diagnostic) {
         Ok(key) => seen.insert(key),

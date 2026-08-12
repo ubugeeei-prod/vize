@@ -10,6 +10,7 @@ use crate::server::ServerState;
 use super::super::{DiagnosticService, sources};
 use super::collect_virtual::{
     collect_synced_virtual_result_diagnostics, collect_virtual_result_diagnostics,
+    deduplicate_diagnostics,
 };
 use vize_canon::{CorsaBridgeError, CorsaVueVirtualDocumentOptions};
 use vize_carton::cstr;
@@ -139,15 +140,21 @@ impl DiagnosticService {
                 },
             )
             .await;
-            collect_virtual_result_diagnostics(
-                &bridge,
-                uri,
-                content.as_str(),
-                cstr!("{}.ts", uri.path()).to_string(),
-                art_virtual.virtual_result,
-            )
-            .await
-            .map_err(|error| classify(&bridge, error))?
+            let mut art_diagnostics = Vec::new();
+            for variant in art_virtual.variants {
+                art_diagnostics.extend(
+                    collect_virtual_result_diagnostics(
+                        &bridge,
+                        uri,
+                        content.as_str(),
+                        super::virtual_ts_art::art_variant_virtual_name(uri, variant.variant_index),
+                        variant.virtual_result,
+                    )
+                    .await
+                    .map_err(|error| classify(&bridge, error))?,
+                );
+            }
+            art_diagnostics
         } else {
             let Ok(source_path) = uri.to_file_path() else {
                 tracing::warn!("cannot derive source path for {}", uri);
@@ -217,7 +224,10 @@ impl DiagnosticService {
             }
         }
 
-        Ok(diagnostics)
+        // One authored problem inside the shared script context is reported by
+        // every variant document that includes it, so the per-document dedup
+        // has to be repeated across the whole set.
+        Ok(deduplicate_diagnostics(diagnostics))
     }
 }
 
