@@ -143,6 +143,14 @@ export async function rollbackUnpublishedTag({
     );
   }
 
+  // Recheck after fetching so a Release created during the tag audit cannot
+  // slip through immediately before the destructive operation.
+  await assertNoGithubRelease({
+    apiUrl: (env.GITHUB_API_URL ?? "https://api.github.com").replace(/\/$/, ""),
+    fetchImpl,
+    ...context,
+  });
+
   git(["push", `--force-with-lease=${tagRef}:${remote.objectSha}`, "origin", `:${tagRef}`]);
   return { deleted: true, tag: context.tag };
 }

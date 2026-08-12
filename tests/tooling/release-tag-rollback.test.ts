@@ -98,13 +98,18 @@ test("remote tag parsing preserves annotated tag object and peeled commit identi
 
 test("rollback deletes the audited tag with an exact force-with-lease", async () => {
   const { calls, git } = fakeGit();
+  let releaseChecks = 0;
   const result = await rollbackUnpublishedTag({
     env: releaseEnv(),
-    fetchImpl: githubResponse(404),
+    fetchImpl: async () => {
+      releaseChecks += 1;
+      return { status: 404, text: async () => "" };
+    },
     git,
   });
 
   assert.deepEqual(result, { deleted: true, tag });
+  assert.equal(releaseChecks, 2);
   assert.deepEqual(calls.at(-1), [
     "push",
     `--force-with-lease=refs/tags/${tag}:${tagObjectSha}`,
