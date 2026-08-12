@@ -75,6 +75,51 @@ defineProps<{ items: T[]; label?: string }>()
 </template>
 "#;
 
+/// A generic SFC whose prop type is a *deferred* conditional over the type
+/// parameter, defaulted through `withDefaults`, and read back through an
+/// authored `as string` cast — the nuxt-ui `Accordion`/`Breadcrumb` shape.
+///
+/// This is the negative control for the resolved model's own helper choice.
+/// Routing this through `__DefineProps` applies
+/// `{ [K in __VizeBooleanKey<T>]-?: boolean }`, and `__VizeBooleanKey` cannot
+/// decide `[ItemKeys<T> | undefined] extends [boolean | undefined]` while `T` is
+/// open, so TypeScript also considers the branch where `labelKey` *is* a boolean
+/// key and resolves it to `ItemKeys<T> & boolean`. The authored cast then fails
+/// with `TS2352` on valid library code. `vue-tsc` reports nothing here.
+const GENERIC_DEFERRED_KEY_DEFAULTS: &str = r#"<script lang="ts">
+type IsPlainObject<T> = T extends object ? (T extends Function ? false : true) : false
+type DotPathKeys<T> = IsPlainObject<T> extends true
+  ? {
+      [K in keyof T & string]: IsPlainObject<NonNullable<T[K]>> extends true
+        ? K | `${K}.${DotPathKeys<NonNullable<T[K]>>}`
+        : K
+    }[keyof T & string]
+  : never
+export type ItemKeys<T> = (keyof Extract<T, object> & string) | DotPathKeys<Extract<T, object>>
+
+export function get(object: Record<string, any>, path: string): string {
+  return String(object[path])
+}
+</script>
+
+<script setup lang="ts" generic="T extends Record<string, any>">
+const props = withDefaults(
+  defineProps<{
+    items?: T[]
+    labelKey?: ItemKeys<T>
+  }>(),
+  { labelKey: 'label' as never },
+)
+</script>
+
+<template>
+  <div v-for="(item, i) in props.items" :key="i">
+    {{ get(item, props.labelKey as string) }}
+    {{ get(item, $props.labelKey as string) }}
+  </div>
+</template>
+"#;
+
 /// A props destructure default is a *local* default: Vue leaves the prop itself
 /// optional, so `vue-tsc` still reports `$props.label` as possibly undefined.
 /// Resolving defaults for the template must not swallow that.
@@ -138,6 +183,7 @@ fn type_only_props_and_defaults_reach_template_dollar_props() {
             ("src/WithDefaultsProps.vue", WITH_DEFAULTS),
             ("src/DestructuredProps.vue", DESTRUCTURED),
             ("src/GenericProps.vue", GENERIC),
+            ("src/GenericDeferredKey.vue", GENERIC_DEFERRED_KEY_DEFAULTS),
             ("src/TypeOnlyInvalid.vue", INVALID),
             ("src/TypeOnlyRepaired.vue", REPAIRED),
         ],

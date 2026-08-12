@@ -35,10 +35,8 @@ pub(super) fn generate_instance_global_refs(
         ts,
         mappings,
         summary,
-        scope_options.virtual_ts_options,
+        scope_options,
         scope_options.setup_spread_bindings,
-        instance_props_type(summary, scope_options),
-        scope_options.legacy_vue2,
     );
     for undef in &summary.undefined_refs {
         let src_start = (template_offset + undef.offset) as usize;
@@ -82,6 +80,9 @@ pub(super) fn generate_instance_global_refs(
 ///
 /// `None` keeps the generic instance-global form, whose `{}` for a component
 /// that declares no props is what `vue-tsc` reports too.
+///
+/// Resolved lazily: building the prop model walks the macro and type tables, and
+/// the overwhelming majority of templates never name `$props` at all.
 fn instance_props_type(
     summary: &Croquis,
     scope_options: &ScopeGenerationOptions<'_, '_>,
@@ -103,16 +104,15 @@ fn instance_props_type(
 struct InstanceGlobalRefsEmitter<'a> {
     ts: &'a mut String,
     mappings: &'a mut Vec<VizeMapping>,
+    summary: &'a Croquis,
+    scope_options: &'a ScopeGenerationOptions<'a, 'a>,
     options: &'a VirtualTsOptions,
     bindings: &'a BindingMetadata,
     synthetic_setup_bindings: FxHashSet<&'a str>,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
-    instance_props_type: Option<String>,
-    /// A Vue 2 dialect: `generate_template_context` already declares the Vue
-    /// 2-only instance members in this same closure, so re-declaring one here
-    /// would be a `TS2451`.
-    legacy_vue2: bool,
+    /// Memoized `instance_props_type`; the outer `Option` is "not resolved yet".
+    instance_props_type: Option<Option<String>>,
     emitted_header: bool,
     emitted_instance_global_alias: bool,
 }
@@ -122,15 +122,15 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         ts: &'a mut String,
         mappings: &'a mut Vec<VizeMapping>,
         summary: &'a Croquis,
-        options: &'a VirtualTsOptions,
+        scope_options: &'a ScopeGenerationOptions<'a, 'a>,
         synthetic_setup_bindings: &'a [String],
-        instance_props_type: Option<String>,
-        legacy_vue2: bool,
     ) -> Self {
         Self {
             ts,
             mappings,
-            options,
+            summary,
+            scope_options,
+            options: scope_options.virtual_ts_options,
             bindings: &summary.bindings,
             synthetic_setup_bindings: synthetic_setup_bindings
                 .iter()
@@ -142,11 +142,16 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 .map(|te| te.name.as_str())
                 .collect(),
             seen_names: FxHashSet::default(),
-            instance_props_type,
-            legacy_vue2,
+            instance_props_type: None,
             emitted_header: false,
             emitted_instance_global_alias: false,
         }
+    }
+
+    fn resolve_instance_props_type(&mut self) -> Option<String> {
+        self.instance_props_type
+            .get_or_insert_with(|| instance_props_type(self.summary, self.scope_options))
+            .clone()
     }
 
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
@@ -155,15 +160,18 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             || self.synthetic_setup_bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)
-            || (self.legacy_vue2 && is_vue2_instance_member(name))
+            || (self.scope_options.legacy_vue2 && is_vue2_instance_member(name))
             || !self.seen_names.insert(name.into())
         {
             return;
         }
 
-        let declared_type = (name == "$props")
-            .then_some(self.instance_props_type.as_deref())
-            .flatten();
+        let declared_type = if name == "$props" {
+            self.resolve_instance_props_type()
+        } else {
+            None
+        };
+        let declared_type = declared_type.as_deref();
 
         if !self.emitted_header {
             self.ts

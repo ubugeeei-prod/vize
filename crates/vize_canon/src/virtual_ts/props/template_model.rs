@@ -1,9 +1,9 @@
 //! The one normalized prop model every template-scope prop surface is built from.
 //!
-//! Vue resolves a component's declarations into exactly one prop contract:
-//! authored types, with runtime `default:`/`withDefaults` values and Boolean
-//! casting applied. The template's `props` const, the bare per-prop bindings and
-//! `$props` are all views of that single contract, so they are all derived from
+//! Vue resolves a component's declarations into exactly one prop contract: the
+//! authored types with its own `default:`/`withDefaults` substitution applied.
+//! The template's `props` const, the bare per-prop bindings and `$props` are all
+//! views of that single contract, so they are all derived from
 //! [`TemplatePropsModel`] rather than from separate scans.
 //!
 //! Before #4145 `$props` was the odd one out: it was emitted as a generic
@@ -38,7 +38,7 @@ pub(crate) struct TemplatePropsModel {
     /// The authored contract: `Props`, `Props<T>`, or the setup-scoped
     /// `__VizeSetupProps` when the type argument only resolves inside `__setup`.
     authored_type_ref: String,
-    /// The authored contract with defaults and Boolean casting applied. This is
+    /// The authored contract with Vue's default substitution applied. This is
     /// what a template read of a prop resolves against.
     resolved_type_ref: String,
     /// Props whose declaration carries a value Vue substitutes when the prop is
@@ -66,9 +66,15 @@ impl TemplatePropsModel {
             props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
         let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
-        for prop in props {
-            if prop.default_value.is_some() {
-                defaulted_prop_names.insert(prop.name.as_str().into());
+        // A runtime `default:` is Vue's own substitution, so the prop is never
+        // `undefined` inside its own template. Only the runtime object form
+        // declares one; the type-only form carries its defaults through
+        // `withDefaults`, already collected above.
+        if define_props_type_args.is_none() {
+            for prop in props {
+                if prop.default_value.is_some() {
+                    defaulted_prop_names.insert(prop.name.as_str().into());
+                }
             }
         }
         for model in models {
@@ -77,19 +83,20 @@ impl TemplatePropsModel {
             }
         }
 
-        // `__DefineProps` is the exact return type the setup-scope `defineProps`
-        // overload produces, so the template resolves prop reads against the
-        // same shape the script does: every declared key present, and Boolean
-        // props cast to `boolean` because Vue substitutes `false` when absent.
-        //
-        // A `<script setup generic="…">` contract is the exception: its keys are
-        // only known once the caller instantiates the type parameter, so the
-        // Boolean key set stays a deferred conditional and every read through it
-        // becomes unresolvable. The authored contract is used as-is there.
-        let base_type_ref = if generic_param.is_some() {
-            authored_type_ref.clone()
-        } else {
+        // `__DefineProps` is the setup macro's own return type, but it applies
+        // `{ [K in __VizeBooleanKey<T>]-?: boolean }`, and that key filter can
+        // only be decided when `keyof T` is concrete. A generic SFC leaves it
+        // deferred, so TypeScript must also consider the branch where a
+        // string-typed prop *is* a boolean key and resolves it to `T[K] &
+        // boolean` — which made authored `as string` casts fail with `TS2352`
+        // across nuxt-ui and reka-ui (#4242). It stays exactly where it already
+        // was: a type-only declaration with no defaults, whose keys are known.
+        // Everywhere else the authored alias is used unwrapped, which also keeps
+        // the generated helper name out of diagnostic text.
+        let base_type_ref = if define_props_type_args.is_some() && defaulted_prop_names.is_empty() {
             cstr!("__DefineProps<{authored_type_ref}>")
+        } else {
+            authored_type_ref.clone()
         };
         let resolved_type_ref =
             template_props_type_ref(base_type_ref.as_str(), &defaulted_prop_names);

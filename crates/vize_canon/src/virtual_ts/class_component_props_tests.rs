@@ -115,9 +115,11 @@ export default class List extends Vue {
         code.contains("offset?: number;"),
         "a defaulted prop is optional for callers:\n{code}",
     );
+    // The runtime `default:` also lands in the resolved template props type, so
+    // the whole `props` object reads the prop as non-undefined too (#4145).
     assert!(
         code.contains(
-            "const offset = props[\"offset\"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, \"offset\">>[\"offset\"], undefined>;"
+            "const offset = props[\"offset\"] as Exclude<__WithDefaultsResult<Props, Pick<Props, \"offset\">>[\"offset\"], undefined>;"
         ),
         "a defaulted prop must stay non-undefined inside its own template:\n{code}",
     );
