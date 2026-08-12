@@ -19,12 +19,11 @@ use super::component_prop_checker::{
 };
 use super::component_prop_navigation;
 use super::context::{ComponentPropsContext, GlobalComponentCheck, VForPropsContext};
-use super::emit::{
-    append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
-};
+use super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::empty_component_props::{
     generate_empty_root_checks, generate_scope_checks, is_empty_props_usage,
 };
+use super::slot_scope::generate_v_slot_props_scope;
 use super::vif_guard::common_vif_guard_prefix_for_guards_outside_v_for;
 
 /// Generate component props type checks (scope-aware).
@@ -282,43 +281,7 @@ fn generate_closure_component_props_recursive(
             }
         }
         ScopeData::VSlot(data) => {
-            let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
-            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-            append!(
-                *ts,
-                "\n{indent}// Component props in v-slot scope: #{}\n",
-                data.name
-            );
-            let props_type = slot_props_type(
-                ctx.summary,
-                ctx.options,
-                data.component.as_deref(),
-                data.name.as_str(),
-                ctx.summary.scopes.is_v_slot_name_static(scope.id),
-            );
-            emit_slot_function_open(
-                ts,
-                indent,
-                cstr!("_slot_props_{safe_slot_name}_{}", scope.id.as_u32()).as_str(),
-                props_pattern,
-                &props_type,
-            );
-            // Mark slot prop variables as used
-            if data.prop_names.is_empty() {
-                append!(*ts, "{inner_indent}void {props_pattern};\n");
-            } else {
-                for prop_name in data.prop_names.iter() {
-                    append!(*ts, "{inner_indent}void {prop_name};\n");
-                }
-            }
-            // Emit component prop checks for this scope
-            generate_scope_checks(ts, mappings, ctx, scope_id, &inner_indent);
-
-            // Recursively handle child closure scopes (v-for and v-slot)
-            recurse_child_closure_scopes(ts, mappings, ctx, scope_id, &inner_indent);
-
-            ts.push_str(indent);
-            ts.push_str("};\n");
+            generate_v_slot_props_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
         }
         _ => {}
     }
@@ -326,7 +289,7 @@ fn generate_closure_component_props_recursive(
 
 /// Recurse into a scope's direct v-for/v-slot child scopes, emitting their
 /// component prop checks at the given indent.
-fn recurse_child_closure_scopes(
+pub(super) fn recurse_child_closure_scopes(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &VForPropsContext<'_>,

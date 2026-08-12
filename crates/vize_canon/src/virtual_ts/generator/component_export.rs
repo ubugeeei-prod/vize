@@ -1,6 +1,7 @@
 use vize_carton::{String, append, cstr};
 
 use super::emits::EmitsInfo;
+use super::generics::split_generic_params;
 
 /// Structural shape of the Vue component options object the SFC's default
 /// export is intersected with, so template/`InstanceType` consumers see the
@@ -45,10 +46,67 @@ pub(super) fn emit_authored_component_aliases(ts: &mut String, preserve_authored
     );
 }
 
+/// The child-side slot resolver a parent's `v-slot` scope calls to instantiate
+/// this component's generic parameters from the authored props (#4147).
+///
+/// Only a generic component whose `Slots` alias actually takes those parameters
+/// needs it: everywhere else the parent's structural `$slots` probe already
+/// yields the exact declared slot map, and a resolver would be an unreferenced
+/// widening of the public shape. The parameter mirrors `__vizeResolveProps`
+/// exactly so both calls infer the same type arguments from the same literal.
+/// The parameters are re-emitted *without* their `= any` defaults: an
+/// uninferable call argument must fall back to the constraint, exactly as it
+/// does through `vue-tsc`'s own generic component signature.
+fn slot_resolver_field(generic_decl: &str, generic_names: &str, slots_is_generic: bool) -> String {
+    if !slots_is_generic {
+        return String::default();
+    }
+    let resolver_decl = strip_generic_defaults(generic_decl);
+    cstr!(
+        "__vizeResolveSlots?: <{resolver_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Slots<{generic_names}>; "
+    )
+}
+
+/// The same parameter list with every `= default` removed.
+///
+/// A *type alias* parameter needs the `= any` default so bare references stay
+/// legal (#3065), but a call signature must not carry one: when a call cannot
+/// infer an argument for a parameter, TypeScript falls back to the default when
+/// there is one and to the constraint when there is not.
+fn strip_generic_defaults(generic_decl: &str) -> String {
+    let mut stripped = String::default();
+    for param in split_generic_params(generic_decl) {
+        if !stripped.is_empty() {
+            stripped.push_str(", ");
+        }
+        stripped.push_str(param_without_default(param).trim());
+    }
+    stripped
+}
+
+/// One parameter declaration with its `= default` suffix removed. `=>` inside a
+/// constraint never terminates the declaration.
+fn param_without_default(param: &str) -> &str {
+    let bytes = param.as_bytes();
+    let mut depth = 0i32;
+    let mut i = 0usize;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'<' => depth += 1,
+            b'>' => depth -= 1,
+            b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
+            b'=' if depth == 0 => return &param[..i],
+            _ => {}
+        }
+        i += 1;
+    }
+    param
+}
+
 pub(super) fn emit_default_export_declaration(
     ts: &mut String,
     emits_info: &EmitsInfo,
-    generic_component_params: Option<(&str, &str)>,
+    generic_component_params: Option<(&str, &str, bool)>,
     has_authored_default: bool,
     static_raw_props_ref: Option<&str>,
 ) {
@@ -75,7 +133,7 @@ pub(super) fn emit_default_export_declaration(
     let static_raw_props_field = static_raw_props_ref
         .map(|props_ref| cstr!("readonly __vizeRawProps?: {props_ref};"))
         .unwrap_or_default();
-    if let Some((generic_decl, generic_names)) = generic_component_params {
+    if let Some((generic_decl, generic_names, slots_is_generic)) = generic_component_params {
         let emit_resolvers = emits_info.generic_emit_resolver_fields(generic_decl, generic_names);
         let event_map_separator = if emit_props_static.is_empty() || event_map_static.is_empty() {
             ""
@@ -83,9 +141,10 @@ pub(super) fn emit_default_export_declaration(
             " "
         };
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
+        let slot_resolver = slot_resolver_field(generic_decl, generic_names, slots_is_generic);
         append!(
             *ts,
-            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {static_raw_props_field} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
+            "declare const __vize_component__: {{ __vizeCheck: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => void; __vizeResolveProps?: <{generic_decl}>(props: Partial<Props<{generic_names}>> & Record<string, unknown>) => Props<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {static_raw_props_field} }} & {authored_component}__VizeGenericComponentConstructor & __VizeComponentConstructor & __VizeVueComponentOptions;\n",
         );
     } else if emits_info.has_emits_for_props {
         let event_map_separator = if event_map_static.is_empty() { "" } else { " " };
@@ -147,4 +206,30 @@ fn contains_identifier(source: &str, name: &str) -> bool {
                 .get(end)
                 .is_none_or(|byte| boundary(*byte))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::strip_generic_defaults;
+
+    #[test]
+    fn generic_defaults_are_stripped_without_touching_constraints() {
+        assert_eq!(
+            strip_generic_defaults("T extends { id: string; } = any").as_str(),
+            "T extends { id: string; }"
+        );
+        assert_eq!(strip_generic_defaults("T = any").as_str(), "T");
+        assert_eq!(
+            strip_generic_defaults("T extends (value: string) => void = any").as_str(),
+            "T extends (value: string) => void"
+        );
+        assert_eq!(
+            strip_generic_defaults("A extends Record<string, any> = any, B = A").as_str(),
+            "A extends Record<string, any>, B"
+        );
+        assert_eq!(
+            strip_generic_defaults("const T extends Tab").as_str(),
+            "const T extends Tab"
+        );
+    }
 }

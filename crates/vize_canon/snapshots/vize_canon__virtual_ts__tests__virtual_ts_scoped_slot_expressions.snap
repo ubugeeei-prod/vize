@@ -56,6 +56,10 @@ type __VizeIsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true :
 type __VizeUsePublicInstance<T> = __VizeIsAny<T> extends true ? true : __VizeIsUnknown<T>;
 type __VizeStrictPublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? never : __EmitFn<T>;
 type __VizeComponentPublicBase = Omit<import('vue').ComponentPublicInstance, '$props' | '$emit' | '$slots'>;
+type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;
+type __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;
+type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;
+type __VizeAnySlotPayload<__S> = { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type __VizeNativeElements = import('vue').NativeElements;
 type __VizeNativeElement<Tag extends PropertyKey> = Tag extends keyof __VizeNativeElements ? __VizeNativeElements[Tag] : unknown;
@@ -64,7 +68,7 @@ declare function __vizeNativeElementProp<__Tag extends PropertyKey, __Prop exten
 // @ts-ignore TS2694/TS2307: a `vue` without `Directive` must degrade custom directive value checks to unchecked, never error. See virtual_ts/expressions/directive_values.rs.
 type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ? V : unknown;
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
-type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
+type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: string | number, index: number | undefined] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
 import MyList from './MyList.vue'
 
@@ -96,7 +100,7 @@ function __setup() {
   // User setup code
   const items = ['a', 'b']
   
-  // @vize-map: 9243:9273 -> 0:59
+  // @vize-map: 10002:10032 -> 0:59
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -113,7 +117,11 @@ function __setup() {
   // @vize-map: expr -> 16:21
 
   // v-slot scope: #default
-  void function _slot_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
+  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotsResolver<typeof MyList>)({
+    "items": items,
+  });
+  void __vize_slot_host_7;
+  void function _slot_default_7({ item }: __VizeSlotPayload<typeof __vize_slot_host_7, "default">) {
     void item;
     void (item); // Interpolation
     // @vize-map: expr -> 64:68
@@ -144,7 +152,11 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #default
-  void function _slot_props_default_7({ item }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
+  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotsResolver<typeof MyList>)({
+    "items": items,
+  });
+  void __vize_slot_props_host_7;
+  void function _slot_props_default_7({ item }: __VizeSlotPayload<typeof __vize_slot_props_host_7, "default">) {
     void item;
   };
 

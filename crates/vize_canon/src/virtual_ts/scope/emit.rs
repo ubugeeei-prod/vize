@@ -42,7 +42,7 @@ pub(super) fn slot_props_type(
     }
 }
 
-fn component_binding_reference(
+pub(super) fn component_binding_reference(
     summary: &Croquis,
     options: &VirtualTsOptions,
     template_name: &str,

@@ -121,7 +121,7 @@ pub(super) fn generic_fallback_args(generic_decl: &str) -> String {
 
 /// Split a generic parameter list at depth-0 commas, tracking `<>` nesting
 /// (the same convention as the sibling parameter helpers in `props`).
-fn split_generic_params(list: &str) -> Vec<&str> {
+pub(super) fn split_generic_params(list: &str) -> Vec<&str> {
     let mut params = Vec::new();
     let mut depth = 0i32;
     let mut start = 0usize;

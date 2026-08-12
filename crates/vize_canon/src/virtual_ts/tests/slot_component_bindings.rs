@@ -26,16 +26,14 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     assert_eq!(
         output
             .code
-            .matches("typeof ElBadge extends { new (): { $slots: infer __S } }")
+            .matches("__VizeSlotsResolver<typeof ElBadge>")
             .count(),
         1,
         "{}",
         output.code,
     );
     assert!(
-        !output
-            .code
-            .contains("typeof el_badge extends { new (): { $slots: infer __S } }"),
+        !output.code.contains("__VizeSlotsResolver<typeof el_badge>"),
         "{}",
         output.code,
     );
@@ -63,7 +61,7 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
     assert_eq!(
         output
             .code
-            .matches("typeof ElBadge extends { new (): { $slots: infer __S } }")
+            .matches("__VizeSlotsResolver<typeof ElBadge>")
             .count(),
         1,
         "{}",
@@ -109,7 +107,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     assert_eq!(
         output
             .code
-            .matches("typeof el_badge extends { new (): { $slots: infer __S } }")
+            .matches("__VizeSlotsResolver<typeof el_badge>")
             .count(),
         1,
         "{}",

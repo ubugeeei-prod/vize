@@ -900,7 +900,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         &emits_info,
         generic_component_params
             .as_ref()
-            .map(|(decl, names)| (decl.as_str(), names.as_str())),
+            .map(|(decl, names)| (decl.as_str(), names.as_str(), slots_is_generic)),
         preserve_authored_component,
         static_raw_props_ref.as_deref(),
     );

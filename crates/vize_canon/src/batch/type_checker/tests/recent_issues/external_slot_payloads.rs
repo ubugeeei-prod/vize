@@ -1,0 +1,324 @@
+//! Scoped-slot payloads coming from an external component (#4147).
+//!
+//! Every expectation here is the *complete* diagnostic list a `vue-tsc` 3.3.4 /
+//! TypeScript 6.0.3 run produced over byte-identical sources, so a payload that
+//! silently widens shows up as a missing entry and one that wrongly narrows
+//! shows up as an extra entry. The sources are reductions of the two release
+//! parity findings the issue names: Misskey's `MkDraggable` / `MkTl` slots and
+//! Vuestic Admin's `VaSelect #content` loop.
+
+use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+use vize_carton::String;
+
+/// `<script setup generic>` child whose slot payload is its type parameter.
+const GENERIC_LIST: &str = r#"<script setup lang="ts" generic="T extends { id: string }">
+defineSlots<{
+  default(props: { item: T; index: number }): any;
+  header(props: { total: number }): any;
+  footer(): any;
+}>();
+
+defineProps<{ items: T[]; label: string }>();
+</script>
+
+<template>
+  <div>
+    <slot name="header" :total="1" />
+    <div v-for="(item, i) in items" :key="item.id">
+      <slot :item="item" :index="i" />
+    </div>
+    <slot name="footer" />
+  </div>
+</template>
+"#;
+
+/// Unconstrained parameter: an uninferable payload is `unknown`, not `any`.
+const UNCONSTRAINED_LIST: &str = r#"<script setup lang="ts" generic="T">
+defineSlots<{
+  row(props: { event: T }): any;
+}>();
+
+defineProps<{ events: T[] }>();
+</script>
+
+<template>
+  <div>
+    <div v-for="(event, i) in events" :key="i">
+      <slot name="row" :event="event" />
+    </div>
+  </div>
+</template>
+"#;
+
+/// Declaration-only and package-style children, typed only through `$slots`.
+///
+/// The declaration-only child lives in a `.ts` module rather than a `.d.ts`
+/// one: a `.vue` importing a sibling `.d.ts` currently resolves to nothing in
+/// the materialized virtual project, which degrades everything it exports to
+/// `any` — a separate defect from this one, recorded in the PR.
+const DECLARED_CHILDREN: &str = r#"import type { DefineComponent } from 'vue';
+
+export declare const DeclaredList: DefineComponent<{ rows: string[] }> & {
+  new (): {
+    $slots: {
+      default(props: { row: string; index: number }): any;
+      empty(props: { reason: string }): any;
+    };
+  };
+};
+"#;
+
+const PACKAGE_CHILD: &str = r#"declare module 'fancy-ui' {
+  export const FancyList: import('vue').DefineComponent<{ entries: number[] }> & {
+    new (): {
+      $slots: {
+        default(props: { entry: number; position: number }): any;
+      };
+    };
+  };
+}
+"#;
+
+#[test]
+fn generic_child_slot_payload_is_instantiated_from_the_authored_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "external-slot-payload-generic",
+        &[
+            ("src/GenericList.vue", GENERIC_LIST),
+            ("src/UnconstrainedList.vue", UNCONSTRAINED_LIST),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import GenericList from './GenericList.vue';
+import UnconstrainedList from './UnconstrainedList.vue';
+
+type Block = { id: string; kind: 'text'; text: string } | { id: string; kind: 'image'; url: string };
+
+const blocks: Block[] = [];
+const untyped: any = null;
+
+function takesNumber(value: number) {
+  return value;
+}
+</script>
+
+<template>
+  <GenericList :items="blocks" label="ok">
+    <template #default="{ item, index }">
+      <span v-if="item.kind === 'text'">{{ item.text }}</span>
+      <span v-else>{{ item.url }}</span>
+      <span>{{ takesNumber(index) }}</span>
+    </template>
+    <template #header="{ total }">{{ takesNumber(total) }}</template>
+    <template #footer>done</template>
+  </GenericList>
+
+  <GenericList :items="blocks" label="alias">
+    <template #default="{ item: row }">{{ row.kind }}</template>
+  </GenericList>
+
+  <GenericList :items="blocks" label="outer">
+    <template #default="{ item: outer }">
+      <GenericList :items="blocks" label="inner">
+        <template #default="{ item: inner }">{{ outer.kind }}{{ inner.kind }}</template>
+      </GenericList>
+    </template>
+  </GenericList>
+
+  <GenericList :items="untyped" label="degraded">
+    <template #default="{ item }">{{ item.kind }}</template>
+  </GenericList>
+
+  <UnconstrainedList :events="untyped">
+    <template #row="{ event }">{{ event.id }}</template>
+  </UnconstrainedList>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    // vue-tsc reports exactly these two and nothing else: the discriminated
+    // union, the aliased binding, the nested payloads, the named slot and the
+    // `v-for` index of the inferable usages all check clean, while the two
+    // usages whose props cannot determine the parameter fall back to the
+    // constraint (`{ id: string }`) and to `unknown` respectively.
+    assert_eq!(
+        snapshot,
+        vec![
+            (
+                String::from("src/App.vue"),
+                Some(2339),
+                String::from(
+                    "39:43:error Property 'kind' does not exist on type '{ id: string; }'."
+                ),
+            ),
+            (
+                String::from("src/App.vue"),
+                Some(18046),
+                String::from("43:35:error 'event' is of type 'unknown'."),
+            ),
+        ]
+    );
+}
+
+#[test]
+fn declaration_only_and_package_child_slot_payloads_stay_exact() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "external-slot-payload-declared",
+        &[
+            ("src/declared.ts", DECLARED_CHILDREN),
+            ("src/fancy-ui.d.ts", PACKAGE_CHILD),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import { DeclaredList } from './declared';
+import { FancyList } from 'fancy-ui';
+
+function takesNumber(value: number) {
+  return value;
+}
+function takesString(value: string) {
+  return value;
+}
+</script>
+
+<template>
+  <DeclaredList :rows="['a']">
+    <template #default="{ row, index }">
+      <span v-if="index > 0">{{ takesString(row) }}{{ takesNumber(index) }}</span>
+    </template>
+    <template #empty="{ reason }">{{ takesString(reason) }}</template>
+  </DeclaredList>
+
+  <DeclaredList :rows="['a']">
+    <template #default="{ row }">{{ takesNumber(row) }}</template>
+  </DeclaredList>
+
+  <FancyList :entries="[1]">
+    <template #default="{ entry, position }">{{ takesNumber(entry) }}{{ takesNumber(position) }}</template>
+  </FancyList>
+
+  <FancyList :entries="[1]">
+    <template #default="{ entry }">{{ takesString(entry) }}</template>
+  </FancyList>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    // The two deliberate misuses are reported and nothing else: the `v-if`
+    // guard, the named `#empty` slot and the exact `row`/`index`/`entry`/
+    // `position` payload members all check clean.
+    assert_eq!(
+        snapshot,
+        vec![
+            (
+                String::from("src/App.vue"),
+                Some(2345),
+                String::from(
+                    "22:49:error Argument of type 'string' is not assignable to parameter of type 'number'."
+                ),
+            ),
+            (
+                String::from("src/App.vue"),
+                Some(2345),
+                String::from(
+                    "30:51:error Argument of type 'number' is not assignable to parameter of type 'string'."
+                ),
+            ),
+        ]
+    );
+}
+
+#[test]
+fn v_for_over_an_untyped_source_keys_like_vue_tsc() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "external-slot-payload-vfor-any",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const anyList: any = null;
+const arrList: string[] = [];
+const objList: Record<string, number> = {};
+const unknownList: unknown = null;
+
+function takesNumber(value: number) {
+  return value;
+}
+</script>
+
+<template>
+  <div v-for="(item, index) in anyList" :key="index">
+    {{ item }}{{ index < arrList.length - 1 ? ',' : '' }}
+  </div>
+  <div v-for="(item2, index2) in arrList" :key="index2">
+    {{ item2 }}{{ index2 < arrList.length - 1 ? ',' : '' }}
+  </div>
+  <div v-for="(value3, key3, index3) in objList" :key="key3">
+    {{ value3 }}{{ takesNumber(index3) }}
+  </div>
+  <div v-for="(item4, key4, index4) in anyList" :key="key4">
+    {{ item4 }}{{ takesNumber(index4) }}
+  </div>
+  <div v-for="(item5, index5) in unknownList" :key="index5">
+    {{ item5 }}{{ takesNumber(index5) }}
+  </div>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    // `vue-tsc` resolves its `v-for` helper's conditional against `any` by
+    // taking every branch, so the second binding is `string | number` and the
+    // third is `number | undefined`. A typed array, an object and an `unknown`
+    // source keep their exact per-kind types and report nothing. The list is
+    // sorted by the snapshot helper, so `TS2345` precedes `TS2365`.
+    assert_eq!(
+        snapshot,
+        vec![
+            (
+                String::from("src/App.vue"),
+                Some(2345),
+                String::from(
+                    "23:31:error Argument of type 'number | undefined' is not assignable to parameter of type 'number'.\nType 'undefined' is not assignable to type 'number'."
+                ),
+            ),
+            (
+                String::from("src/App.vue"),
+                Some(2365),
+                String::from(
+                    "14:18:error Operator '<' cannot be applied to types 'string | number' and 'number'."
+                ),
+            ),
+        ]
+    );
+}
