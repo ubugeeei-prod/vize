@@ -7,6 +7,7 @@ export const realProjectSurfaceNames = [
   "typecheck-dependencies",
   "core-tools",
   "lsp",
+  "lint-divergence",
   "syntax-highlighter",
   "glyph",
   "typecheck-divergence",

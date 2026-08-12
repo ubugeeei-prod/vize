@@ -115,6 +115,9 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   const lsp = steps.find((step) => step.name === "Check real-project LSP lifecycle");
   assert.ok(lsp, "Missing 'Check real-project LSP lifecycle' step");
   const lspIndex = steps.indexOf(lsp);
+  const lintDivergence = steps.find((step) => step.name === "Measure real-project lint divergence");
+  assert.ok(lintDivergence, "Missing 'Measure real-project lint divergence' step");
+  const lintDivergenceIndex = steps.indexOf(lintDivergence);
   const syntaxHighlighter = steps.find(
     (step) => step.name === "Check real-project syntax highlighting",
   );
@@ -189,6 +192,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   for (const [step, id] of [
     [run, "core_tools"],
     [lsp, "lsp"],
+    [lintDivergence, "lint_divergence"],
     [syntaxHighlighter, "syntax_highlighter"],
     [glyphProperties, "glyph"],
     [divergence, "typecheck_divergence"],
@@ -211,6 +215,20 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(lsp.run ?? "", /tests\/tooling\/real-project-lsp\.test\.ts/);
   assert.match(lsp.run ?? "", /--test-concurrency=1/);
   assert.match(lsp.run ?? "", /test -s "\$FIXTURE_REPORT_DIR\/lsp-lifecycle-summary\.json"/);
+  assert.ok(
+    lspIndex < lintDivergenceIndex && lintDivergenceIndex < syntaxHighlighterIndex,
+    "the hydrated fixture corpus must be measured against the lint baseline",
+  );
+  assert.match(lintDivergence.run ?? "", /tools\/fixtures\/lint-divergence-report\.mjs/);
+  assert.match(lintDivergence.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
+  assert.match(lintDivergence.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
+  assert.match(lintDivergence.run ?? "", /--vize-bin target\/ci\/vize/);
+  assert.match(lintDivergence.run ?? "", /--timeout-ms 600000/);
+  assert.match(lintDivergence.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
+  assert.match(
+    lintDivergence.run ?? "",
+    /test -s "\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
+  );
   assert.ok(
     syntaxHighlighterIndex < glyphPropertiesIndex,
     "the hydrated fixture corpus must run through the shipped syntax highlighter",
@@ -274,6 +292,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
     VIZE_CORE_TOOLS_OUTCOME: "${{ steps.core_tools.outcome }}",
     VIZE_LSP_OUTCOME: "${{ steps.lsp.outcome }}",
+    VIZE_LINT_DIVERGENCE_OUTCOME: "${{ steps.lint_divergence.outcome }}",
     VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: "${{ steps.syntax_highlighter.outcome }}",
     VIZE_GLYPH_OUTCOME: "${{ steps.glyph.outcome }}",
     VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "${{ steps.typecheck_divergence.outcome }}",
@@ -297,6 +316,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   for (const [surface, variable] of [
     ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
     ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
+    ["lint-divergence", "VIZE_LINT_DIVERGENCE_OUTCOME"],
     ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
     ["glyph", "VIZE_GLYPH_OUTCOME"],
   ]) {
@@ -314,6 +334,13 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(summary?.run ?? "", /failedProjectCount/);
   assert.match(
     summary?.run ?? "",
+    /lint_divergence="\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
+  );
+  assert.match(summary?.run ?? "", /patinaOnlyRuleFindingCount/);
+  assert.match(summary?.run ?? "", /\*-lint-divergence\.md/);
+  assert.match(summary?.run ?? "", /No lint divergence report was produced/);
+  assert.match(
+    summary?.run ?? "",
     /syntax_divergence="\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
   );
   assert.match(summary?.run ?? "", /if \[\[ -s "\$syntax_divergence" \]\]/);
@@ -324,7 +351,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(summary?.run ?? "", /glyph-waiver-issues\.json/);
   assert.match(summary?.run ?? "", /surface-verdict\.json/);
   const jqPrograms = summary?.run?.match(/jq -r '[^']*'/g) ?? [];
-  assert.equal(jqPrograms.length, 4);
+  assert.equal(jqPrograms.length, 5);
   for (const program of jqPrograms) {
     // A single-quoted shell argument reaches jq verbatim, so an escaped double
     // quote is a jq compile error rather than a nested string delimiter.
