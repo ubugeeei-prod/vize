@@ -24,6 +24,7 @@
 //! - Reporter descriptors are versioned, machine-readable, and deterministically ordered.
 //! - AI context is vendor-neutral, explicitly source-fed, budgeted, and wire-validated.
 //! - Capability cache keys are domain-separated and explain every invalidation boundary.
+//! - Cacheable capability outputs validate provenance and their complete payload identity.
 //!
 //! # Example
 //!
@@ -58,6 +59,7 @@ mod ai_context;
 #[cfg(feature = "application-analysis")]
 pub mod application_analysis;
 mod cache_identity;
+mod capability_snapshot;
 mod contract;
 mod filter;
 mod fingerprint;
@@ -75,6 +77,9 @@ pub use cache_identity::{
     CAPABILITY_CACHE_KEY_PREFIX, CapabilityCacheIdentity, CapabilityCacheIdentityError,
     CapabilityCacheInput, CapabilityCacheKey, CapabilityCacheKeyParseError, CapabilityInvalidation,
     DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
+};
+pub use capability_snapshot::{
+    CapabilitySnapshot, CapabilitySnapshotError, DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION,
 };
 pub use filter::{DoctorFilter, DoctorFilterDimension, DoctorFilterError, DoctorFilterSpec};
 pub use fingerprint::{

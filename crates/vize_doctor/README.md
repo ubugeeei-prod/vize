@@ -98,6 +98,13 @@ capability must include its complete discovery boundary so a newly added or
 removed source also changes the identity. Absolute paths, timestamps, and host
 metadata must not be smuggled into logical identifiers or configuration hashes.
 
+`CapabilitySnapshot` binds an identity to its normalized findings. Construction
+fails unless every finding names the same capability and every provenance input
+has the exact fingerprint declared by the identity. Its wire form repeats the
+derived cache key and includes a domain-separated streaming fingerprint of the
+complete normalized output, so stale keys and accidentally corrupted cache
+payloads fail before findings reach scoring, editors, reporters, or AI clients.
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe

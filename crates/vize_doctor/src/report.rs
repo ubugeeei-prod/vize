@@ -145,32 +145,19 @@ impl DoctorReport {
         workspace: impl Into<String>,
         findings: impl IntoIterator<Item = DoctorFinding>,
     ) -> Self {
-        let mut findings = findings.into_iter().collect::<Vec<_>>();
-        for finding in &mut findings {
-            if finding.fix.is_none() {
-                finding.fix = Some(FindingFix::unavailable(DEFAULT_UNAVAILABLE_FIX_REASON));
-            }
-            finding.related.sort();
-            finding.evidence.sort();
-            finding.provenance.invalidation_inputs.sort();
-            finding.provenance.invalidation_inputs.dedup();
-            finding
-                .provenance
-                .invalidation_fingerprints
-                .retain(|input, _| {
-                    finding
-                        .provenance
-                        .invalidation_inputs
-                        .binary_search(input)
-                        .is_ok()
-                });
-            if let Some(fix) = &mut finding.fix {
-                fix.edits.sort();
-                fix.verification.sort();
-                fix.verification.dedup();
-            }
-        }
-        findings.sort_by(compare_findings);
+        let findings = normalize_findings(findings.into_iter().collect());
+        Self::from_normalized_findings(workspace, findings)
+    }
+
+    /// Scores findings already normalized by [`normalize_findings`].
+    ///
+    /// This crate-private entry point lets validated capability snapshots avoid
+    /// repeating their ordering and deduplication pass when materialized as a
+    /// whole-application report.
+    pub(crate) fn from_normalized_findings(
+        workspace: impl Into<String>,
+        findings: Vec<DoctorFinding>,
+    ) -> Self {
         let summary = DoctorSummary::from_findings(&findings);
         Self {
             format_version: DOCTOR_REPORT_FORMAT_VERSION,
@@ -205,6 +192,35 @@ impl DoctorReport {
     pub const fn summary(&self) -> &DoctorSummary {
         &self.summary
     }
+}
+
+pub(crate) fn normalize_findings(mut findings: Vec<DoctorFinding>) -> Vec<DoctorFinding> {
+    for finding in &mut findings {
+        if finding.fix.is_none() {
+            finding.fix = Some(FindingFix::unavailable(DEFAULT_UNAVAILABLE_FIX_REASON));
+        }
+        finding.related.sort();
+        finding.evidence.sort();
+        finding.provenance.invalidation_inputs.sort();
+        finding.provenance.invalidation_inputs.dedup();
+        finding
+            .provenance
+            .invalidation_fingerprints
+            .retain(|input, _| {
+                finding
+                    .provenance
+                    .invalidation_inputs
+                    .binary_search(input)
+                    .is_ok()
+            });
+        if let Some(fix) = &mut finding.fix {
+            fix.edits.sort();
+            fix.verification.sort();
+            fix.verification.dedup();
+        }
+    }
+    findings.sort_by(compare_findings);
+    findings
 }
 
 #[derive(Deserialize)]
