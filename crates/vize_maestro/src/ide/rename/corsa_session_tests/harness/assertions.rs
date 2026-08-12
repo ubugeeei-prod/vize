@@ -65,5 +65,6 @@ pub(super) fn authored_text(source: &str, range: Range) -> &str {
         .expect("valid source start");
     let end = crate::ide::position_to_offset(source, range.end.line, range.end.character)
         .expect("valid source end");
+    assert!(start <= end, "inverted authored range");
     &source[start..end]
 }

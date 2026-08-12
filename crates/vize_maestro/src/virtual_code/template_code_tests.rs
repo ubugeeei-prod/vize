@@ -10,7 +10,8 @@ use super::TemplateCodeGenerator;
 fn test_template_code_generator() {
     let source = r#"<div>{{ message }}</div>"#;
     let allocator = vize_carton::Bump::new();
-    let (ast, _) = vize_armature::parse(&allocator, source);
+    let (ast, errors) = vize_armature::parse(&allocator, source);
+    assert!(errors.is_empty());
 
     let mut generator = TemplateCodeGenerator::new();
     let doc = generator.generate(&ast, source);
@@ -23,7 +24,8 @@ fn test_template_code_generator() {
 fn test_generator_with_directives() {
     let source = r#"<div v-if="show">test</div>"#;
     let allocator = vize_carton::Bump::new();
-    let (ast, _) = vize_armature::parse(&allocator, source);
+    let (ast, errors) = vize_armature::parse(&allocator, source);
+    assert!(errors.is_empty());
 
     let mut generator = TemplateCodeGenerator::new();
     let doc = generator.generate(&ast, source);
@@ -35,7 +37,8 @@ fn test_generator_with_directives() {
 fn test_event_arrow_expression_is_not_prefixed_as_member() {
     let source = r#"<button @click="() => { count++ }">{{ count }}</button>"#;
     let allocator = vize_carton::Bump::new();
-    let (ast, _) = vize_armature::parse(&allocator, source);
+    let (ast, errors) = vize_armature::parse(&allocator, source);
+    assert!(errors.is_empty());
 
     let mut generator = TemplateCodeGenerator::new();
     let doc = generator.generate(&ast, source);
@@ -59,7 +62,8 @@ fn test_multiline_event_arrow_expression_is_not_prefixed_as_member() {
   {{ count }}
 </button>"#;
     let allocator = vize_carton::Bump::new();
-    let (ast, _) = vize_armature::parse(&allocator, source);
+    let (ast, errors) = vize_armature::parse(&allocator, source);
+    assert!(errors.is_empty());
 
     let mut generator = TemplateCodeGenerator::new();
     let doc = generator.generate(&ast, source);
