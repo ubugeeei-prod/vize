@@ -78,8 +78,7 @@
       "file": "app/components/account/AccountHoverWrapper.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:18:17 [TS2304] Cannot find name 'useElementHover'.",
-        "error:24:24 [TS2591] Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig."
+        "error:18:17 [TS2304] Cannot find name 'useElementHover'."
       ]
     },
     {
@@ -119,6 +118,12 @@
     },
     {
       "file": "app/components/account/AccountPostsFollowers.vue",
+      "diagnostics": [
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+      ]
+    },
+    {
+      "file": "app/components/account/AccountRelationshipIndicator.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
       ]
@@ -220,11 +225,10 @@
       "file": "app/components/common/CommonPaginator.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:1 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:56:29 [TS2554] Expected 2 arguments, but got 1.",
-        "error:69:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:75:36 [TS7006] Parameter 'i' implicitly has an 'any' type.",
-        "error:90:12 [TS2322] Type 'string | number | symbol' is not assignable to type 'KeyFieldValue<any> | undefined'.\nType 'number' is not assignable to type 'KeyFieldValue<any> | undefined'."
+        "error:3:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
+        "error:53:29 [TS2554] Expected 2 arguments, but got 1.",
+        "error:66:39 [TS7006] Parameter 'i' implicitly has an 'any' type.",
+        "error:72:36 [TS7006] Parameter 'i' implicitly has an 'any' type."
       ]
     },
     {
@@ -244,10 +248,6 @@
       "diagnostics": [
         "error:10:15 [TS2304] Cannot find name 'unrefElement'."
       ]
-    },
-    {
-      "file": "app/components/common/CommonTabs.vue",
-      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonTooltip.vue",
@@ -295,6 +295,12 @@
       "diagnostics": []
     },
     {
+      "file": "app/components/content/ContentRich.vue",
+      "diagnostics": [
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
+      ]
+    },
+    {
       "file": "app/components/conversation/ConversationCard.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
@@ -311,7 +317,7 @@
     {
       "file": "app/components/emoji/Emoji.vue",
       "diagnostics": [
-        "error:15:12 [TS2307] Cannot find module 'node-emoji' or its corresponding type declarations."
+        "error:18:12 [TS2307] Cannot find module 'node-emoji' or its corresponding type declarations."
       ]
     },
     {
@@ -398,27 +404,28 @@
         "error:4:28 [TS2307] Cannot find module '@vueuse/gesture' or its corresponding type declarations.",
         "error:5:34 [TS2307] Cannot find module '@vueuse/motion' or its corresponding type declarations.",
         "error:26:29 [TS2552] Cannot find name 'useTimeout'. Did you mean 'setTimeout'?",
-        "error:58:13 [TS7031] Binding element 'first' implicitly has an 'any' type.",
-        "error:58:30 [TS7031] Binding element 'initialDistance' implicitly has an 'any' type.",
-        "error:58:59 [TS7031] Binding element 'deltaDistance' implicitly has an 'any' type.",
-        "error:58:80 [TS7031] Binding element 'distance' implicitly has an 'any' type.",
-        "error:58:91 [TS7031] Binding element 'origin' implicitly has an 'any' type.",
-        "error:58:99 [TS7031] Binding element 'touches' implicitly has an 'any' type.",
-        "error:80:12 [TS7031] Binding element 'movement' implicitly has an 'any' type.",
-        "error:80:22 [TS7031] Binding element 'delta' implicitly has an 'any' type.",
-        "error:80:29 [TS7031] Binding element 'pinching' implicitly has an 'any' type.",
-        "error:80:39 [TS7031] Binding element 'tap' implicitly has an 'any' type.",
-        "error:80:44 [TS7031] Binding element 'last' implicitly has an 'any' type.",
-        "error:80:50 [TS7031] Binding element 'swipe' implicitly has an 'any' type.",
-        "error:80:57 [TS7031] Binding element 'event' implicitly has an 'any' type.",
-        "error:80:64 [TS7031] Binding element 'xy' implicitly has an 'any' type."
+        "error:59:13 [TS7031] Binding element 'first' implicitly has an 'any' type.",
+        "error:59:30 [TS7031] Binding element 'initialDistance' implicitly has an 'any' type.",
+        "error:59:59 [TS7031] Binding element 'deltaDistance' implicitly has an 'any' type.",
+        "error:59:80 [TS7031] Binding element 'distance' implicitly has an 'any' type.",
+        "error:59:91 [TS7031] Binding element 'origin' implicitly has an 'any' type.",
+        "error:59:99 [TS7031] Binding element 'touches' implicitly has an 'any' type.",
+        "error:81:12 [TS7031] Binding element 'movement' implicitly has an 'any' type.",
+        "error:81:22 [TS7031] Binding element 'delta' implicitly has an 'any' type.",
+        "error:81:29 [TS7031] Binding element 'pinching' implicitly has an 'any' type.",
+        "error:81:39 [TS7031] Binding element 'tap' implicitly has an 'any' type.",
+        "error:81:44 [TS7031] Binding element 'last' implicitly has an 'any' type.",
+        "error:81:50 [TS7031] Binding element 'swipe' implicitly has an 'any' type.",
+        "error:81:57 [TS7031] Binding element 'event' implicitly has an 'any' type.",
+        "error:81:64 [TS7031] Binding element 'xy' implicitly has an 'any' type.",
+        "error:96:17 [TS7031] Binding element 'event' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/components/nav/NavBottom.vue",
       "diagnostics": [
-        "error:49:32 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:51:76 [TS7006] Parameter 'name' implicitly has an 'any' type."
+        "error:51:32 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
+        "error:53:76 [TS7006] Parameter 'name' implicitly has an 'any' type."
       ]
     },
     {
@@ -465,6 +472,10 @@
     },
     {
       "file": "app/components/nav/button/Bookmark.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "app/components/nav/button/Collection.vue",
       "diagnostics": []
     },
     {
@@ -527,7 +538,7 @@
       "file": "app/components/notification/NotificationCard.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:39:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeAgo'?"
+        "error:41:17 [TS2552] Cannot find name 'useTimeAgo'. Did you mean 'timeAgo'?"
       ]
     },
     {
@@ -551,8 +562,7 @@
       "file": "app/components/notification/NotificationPaginator.vue",
       "diagnostics": [
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:1 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:145:5 [TS7006] Parameter 'filter' implicitly has an 'any' type."
+        "error:143:5 [TS7006] Parameter 'filter' implicitly has an 'any' type."
       ]
     },
     {
@@ -692,7 +702,7 @@
     {
       "file": "app/components/settings/SettingsBottomNav.vue",
       "diagnostics": [
-        "error:33:31 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:34:31 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
       ]
     },
     {
@@ -718,6 +728,7 @@
       "file": "app/components/settings/SettingsProfileMetadata.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:16:66 [TS7006] Parameter 'f' implicitly has an 'any' type.",
         "error:55:33 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
         "error:56:66 [TS2367] This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.",
         "error:56:83 [TS2345] Argument of type 'number' is not assignable to parameter of type 'string'.",
@@ -843,7 +854,7 @@
       "file": "app/components/status/StatusPoll.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:14:24 [TS2304] Cannot find name 'useTimeAgo'."
+        "error:16:24 [TS2304] Cannot find name 'useTimeAgo'."
       ]
     },
     {
@@ -1024,8 +1035,7 @@
       "file": "app/components/timeline/TimelinePaginator.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:3:1 [TS2578] Unused '@ts-expect-error' directive.",
-        "error:27:49 [TS7006] Parameter 'tag' implicitly has an 'any' type."
+        "error:24:49 [TS7006] Parameter 'tag' implicitly has an 'any' type."
       ]
     },
     {
@@ -1055,8 +1065,7 @@
       "diagnostics": [
         "error:2:15 [TS2440] Import declaration conflicts with local declaration of 'CommonPaginator'.",
         "error:3:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations.",
-        "error:5:1 [TS2578] Unused '@ts-expect-error' directive."
+        "error:4:39 [TS2307] Cannot find module 'vue-component-type-helpers' or its corresponding type declarations."
       ]
     },
     {
@@ -1104,8 +1113,8 @@
       "diagnostics": [
         "error:2:18 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
         "error:17:69 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:47:36 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:94:1 [TS2304] Cannot find name 'onClickOutside'."
+        "error:39:36 [TS7006] Parameter 's' implicitly has an 'any' type.",
+        "error:86:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
     },
     {
@@ -1156,7 +1165,8 @@
     {
       "file": "app/pages/[[server]]/@[account]/[status].vue",
       "diagnostics": [
-        "error:3:1 [TS2578] Unused '@ts-expect-error' directive.",
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:4:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
         "error:8:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
         "error:20:70 [TS2554] Expected 1 arguments, but got 0.",
         "error:26:82 [TS2554] Expected 1 arguments, but got 0.",
@@ -1171,6 +1181,13 @@
         "error:3:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
         "error:11:64 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
         "error:11:217 [TS2554] Expected 1 arguments, but got 0."
+      ]
+    },
+    {
+      "file": "app/pages/[[server]]/@[account]/index/collections.vue",
+      "diagnostics": [
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:3:38 [TS2307] Cannot find module 'masto' or its corresponding type declarations."
       ]
     },
     {
@@ -1196,34 +1213,50 @@
       "diagnostics": []
     },
     {
+      "file": "app/pages/[[server]]/collections.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "app/pages/[[server]]/collections/[id].vue",
+      "diagnostics": [
+        "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
+        "error:17:3 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
+        "error:22:53 [TS2554] Expected 1 arguments, but got 0."
+      ]
+    },
+    {
+      "file": "app/pages/[[server]]/collections/index.vue",
+      "diagnostics": []
+    },
+    {
       "file": "app/pages/[[server]]/explore.vue",
       "diagnostics": []
     },
     {
       "file": "app/pages/[[server]]/explore/index.vue",
       "diagnostics": [
-        "error:9:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:15:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:11:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
+        "error:17:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
       ]
     },
     {
       "file": "app/pages/[[server]]/explore/links.vue",
       "diagnostics": [
-        "error:9:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:15:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:11:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
+        "error:17:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
       ]
     },
     {
       "file": "app/pages/[[server]]/explore/tags.vue",
       "diagnostics": [
-        "error:12:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
-        "error:18:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:14:22 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?",
+        "error:20:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
       ]
     },
     {
       "file": "app/pages/[[server]]/explore/users.vue",
       "diagnostics": [
-        "error:14:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
+        "error:16:34 [TS2552] Cannot find name 'useLocalStorage'. Did you mean 'localStorage'?"
       ]
     },
     {
@@ -1287,7 +1320,7 @@
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:12:51 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
-        "error:12:157 [TS2554] Expected 1 arguments, but got 0.",
+        "error:12:158 [TS2554] Expected 1 arguments, but got 0.",
         "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
       ]
     },
@@ -1437,7 +1470,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 277,
+  "errorCount": 282,
   "warningCount": 0,
-  "fileCount": 256
+  "fileCount": 262
 }
