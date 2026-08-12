@@ -39,12 +39,36 @@ export type SupervisedOptions = {
   readonly capture: boolean;
 };
 
-function killGroup(pgid: number): boolean {
+/** How long a killed group is given to leave the process table. */
+const REAP_TIMEOUT_MS = 2_000;
+const REAP_POLL_MS = 10;
+
+/**
+ * Kill the group and confirm it is gone before claiming it was reaped.
+ *
+ * `SIGKILL` is delivered asynchronously: `process.kill` returning only proves
+ * the signal was queued, so a survivor stays in the table for a short window
+ * afterwards, first running and then as a zombie until `init` reaps it.
+ * Reporting `reaped` off the `kill` call alone made the claim ahead of the
+ * kernel, which left the next phase's baseline racing the last phase's corpses.
+ * Convergence is polled instead, and a group that will not leave is reported as
+ * not reaped rather than assumed clean.
+ */
+async function killGroup(pgid: number, rootPid: number): Promise<boolean> {
   try {
     process.kill(-pgid, "SIGKILL");
-    return true;
   } catch {
     return false;
+  }
+  const deadline = performance.now() + REAP_TIMEOUT_MS;
+  for (;;) {
+    if (guardedSurvivors(readProcessTable(), { pgid, rootPid }).length === 0) {
+      return true;
+    }
+    if (performance.now() >= deadline) {
+      return false;
+    }
+    await new Promise((resolve) => setTimeout(resolve, REAP_POLL_MS));
   }
 }
 
@@ -101,6 +125,7 @@ export async function runSupervised(options: SupervisedOptions): Promise<Supervi
   const settled = readProcessTable();
   const after = sampleTopology("after", { pgid, records: settled, startedAt: options.startedAt });
   const survivors = pgid == null ? [] : guardedSurvivors(settled, { pgid, rootPid: process.pid });
+  const reaped = survivors.length > 0 && pgid != null ? await killGroup(pgid, process.pid) : false;
 
   return {
     argv: [options.command, ...options.args],
@@ -108,7 +133,7 @@ export async function runSupervised(options: SupervisedOptions): Promise<Supervi
     exitCode: exit.code,
     pgid,
     pid: child.pid ?? null,
-    reaped: survivors.length > 0 && pgid != null ? killGroup(pgid) : false,
+    reaped,
     samples: { after, before, peak: peak ?? before },
     signal: exit.signal,
     spawnError: exit.error == null ? null : `${exit.error.name}: ${exit.error.message}`,

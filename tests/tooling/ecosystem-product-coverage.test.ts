@@ -77,6 +77,7 @@ test("ecosystem product fixture is wired into the fixture check script", () => {
   // in the manifest rather than a substring of the package script.
   assert.ok(
     checkFixturePhases.some((phase) => phase.file === "snapshots/check/ecosystem-products.ts"),
+    "the ecosystem-products fixture must stay a phase in the check-fixtures manifest",
   );
   assert.match(appsSource, /export const ecosystemProductsApp/);
   assert.match(runnerSource, /ecosystemProductsApp/);
