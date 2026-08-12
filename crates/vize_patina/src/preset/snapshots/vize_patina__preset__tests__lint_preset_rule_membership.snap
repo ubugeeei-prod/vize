@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/preset.rs
+source: crates/vize_patina/src/preset/tests.rs
 expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {
