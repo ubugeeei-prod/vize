@@ -96,7 +96,7 @@ fn collect_child_bindings(child: &TemplateChildNode<'_>, bindings: &mut NativePr
 }
 
 fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativePropBindings) {
-    if is_native_tag(element.tag.as_str()) {
+    if is_native_tag(element.tag.as_str()) && !renders_as_fragment(element) {
         for prop in &element.props {
             let PropNode::Directive(directive) = prop else {
                 continue;
@@ -109,6 +109,38 @@ fn collect_element_bindings(element: &ElementNode<'_>, bindings: &mut NativeProp
     for child in &element.children {
         collect_child_bindings(child, bindings);
     }
+}
+
+/// Whether this `<template>` stands for a fragment or a slot body rather than
+/// for the DOM element of the same name.
+///
+/// `template` is an HTML tag, so `<template v-for="x in xs" :key="x.text">`
+/// resolved its `key` through the element table, where Vue's own
+/// `ReservedProps` declares `key?: PropertyKey | undefined`. A nullable or
+/// object key is then `TS2322` — the Vize-only shape #4149 reports from
+/// Voicevox's `ToolBar.vue` and Elk's `CommonTabs.vue`.
+///
+/// The dialect never applies that contract there. `vue-tsc` type-checks a
+/// `<template>`'s props only on the path that treats it as an element; a
+/// `<template>` carrying `v-for`, `v-if`/`v-else-if`/`v-else` or `v-slot` is
+/// compiled as a fragment or a slot body, whose props reach no element type at
+/// all — `<template v-for="x in xs" :id="1">` is as silent there as the key is.
+/// A bare `<template :id="1">` still renders the element and stays checked, in
+/// both tools.
+///
+/// The key expression itself keeps being emitted, as an unchecked
+/// `void (...)` statement, so an invalid member inside it is still `TS2339` at
+/// the authored column and the expression stays out of props and event
+/// inference exactly as before.
+fn renders_as_fragment(element: &ElementNode<'_>) -> bool {
+    element.tag == "template"
+        && element.props.iter().any(|prop| match prop {
+            PropNode::Directive(directive) => matches!(
+                directive.name.as_str(),
+                "for" | "if" | "else-if" | "else" | "slot"
+            ),
+            PropNode::Attribute(_) => false,
+        })
 }
 
 /// Every statically named `v-bind` on a native element is a checkable binding.

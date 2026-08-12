@@ -1,4 +1,5 @@
 use tower_lsp::lsp_types::Url;
+use vize_carton::cstr;
 
 use super::router::route_params_for_file;
 
@@ -8,7 +9,7 @@ fn infers_params_from_module_route_file_names() {
     let params = route_params_for_file(&uri);
 
     assert_eq!(
-        format!("{params:?}"),
+        cstr!("{params:?}"),
         r#"[RouteParam { name: "tenant", optional: false, repeatable: false }]"#
     );
 
@@ -16,7 +17,7 @@ fn infers_params_from_module_route_file_names() {
     let params = route_params_for_file(&uri);
 
     assert_eq!(
-        format!("{params:?}"),
+        cstr!("{params:?}"),
         r#"[RouteParam { name: "slug", optional: false, repeatable: true }]"#
     );
 }

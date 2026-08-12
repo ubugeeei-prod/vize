@@ -378,7 +378,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       - name: Clippy
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && bash tools/github/check-maestro-feature-contract.sh
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && bash tools/github/check-maestro-feature-contract.sh
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test

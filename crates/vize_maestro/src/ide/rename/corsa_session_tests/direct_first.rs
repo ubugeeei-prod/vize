@@ -1,5 +1,7 @@
 use std::sync::{Arc, Barrier};
 
+use vize_carton::cstr;
+
 use super::{harness::RealCorsaRenameSession, resolve_tsgo_binary_required};
 
 #[test]
@@ -26,15 +28,15 @@ fn direct_first_renames_survive_twenty_session_shutdown_overlap() {
     let mut pairs = (0..PAIR_COUNT)
         .map(|index| {
             let closing = RealCorsaRenameSession::new_with_shutdown_gate(&corsa_path)
-                .map_err(|error| format!("closing session {index}: {error}"))?;
+                .map_err(|error| cstr!("closing session {index}: {error}"))?;
             closing
                 .assert_prepare_ranges()
-                .map_err(|error| format!("closing session {index} prepare: {error}"))?;
+                .map_err(|error| cstr!("closing session {index} prepare: {error}"))?;
             closing
                 .assert_parent_and_child_renames()
-                .map_err(|error| format!("closing session {index} rename: {error}"))?;
+                .map_err(|error| cstr!("closing session {index} rename: {error}"))?;
             let survivor = RealCorsaRenameSession::new(&corsa_path)
-                .map_err(|error| format!("survivor session {index}: {error}"))?;
+                .map_err(|error| cstr!("survivor session {index}: {error}"))?;
             Ok((index, closing, survivor))
         })
         .collect::<Result<Vec<_>, String>>()
@@ -44,7 +46,7 @@ fn direct_first_renames_survive_twenty_session_shutdown_overlap() {
         .map(|(index, closing, _)| {
             closing
                 .arm_shutdown_gate()
-                .map_err(|error| format!("closing session {index} gate: {error}"))
+                .map_err(|error| cstr!("closing session {index} gate: {error}"))
         })
         .collect::<Result<Vec<_>, _>>()
         .unwrap_or_else(|error| panic!("{error}"));
@@ -58,7 +60,7 @@ fn direct_first_renames_survive_twenty_session_shutdown_overlap() {
                 let shutdown = scope.spawn(move || {
                     closing
                         .shutdown()
-                        .map_err(|error| format!("closing session {index}: {error}"))
+                        .map_err(|error| cstr!("closing session {index}: {error}"))
                 });
                 (index, survivor, shutdown)
             })
@@ -77,7 +79,7 @@ fn direct_first_renames_survive_twenty_session_shutdown_overlap() {
                     rendezvous.wait();
                     survivor
                         .assert_direct_first_child_rename()
-                        .map_err(|error| format!("survivor session {index}: {error}"))?;
+                        .map_err(|error| cstr!("survivor session {index}: {error}"))?;
                     Ok::<_, String>((survivor, shutdown))
                 })
             })

@@ -156,6 +156,7 @@ mod tests {
         TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
     };
     use vize_canon::{LspLocation, LspPosition, LspRange};
+    use vize_carton::cstr;
 
     use super::map_corsa_workspace_edit;
     use crate::{
@@ -283,9 +284,10 @@ mod tests {
     }
 
     fn sfc(value: &str) -> String {
-        format!(
+        cstr!(
             "<script setup lang=\"ts\">\nconst message = '{value}'\n</script>\n<template>😀 {{{{ message }}}}</template>\n"
         )
+        .into()
     }
 
     fn request_uri(uri: &Url) -> Url {

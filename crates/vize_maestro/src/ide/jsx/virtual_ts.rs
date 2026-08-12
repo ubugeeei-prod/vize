@@ -337,6 +337,10 @@ fn flatten_emits(emits: &[JsxEmit], out: &mut Vec<JsxExpr>) {
     }
 }
 
+// `insta`'s snapshot macros expand through the disallowed `std::format!`; the
+// expansion is inside `insta`, so only an allow at the test module can silence
+// it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
+#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
 #[path = "virtual_ts_tests.rs"]
 mod tests;

@@ -7,6 +7,7 @@ use tower_lsp::{
         TextDocumentItem, VersionedTextDocumentIdentifier,
     },
 };
+use vize_carton::cstr;
 
 fn quiet_service() -> tower_lsp::LspService<MaestroServer> {
     let (service, _socket) = LspService::new(MaestroServer::new);
@@ -22,7 +23,7 @@ fn quiet_service() -> tower_lsp::LspService<MaestroServer> {
 }
 
 fn uri(path: &str) -> Url {
-    Url::parse(&format!("file:///{path}")).unwrap()
+    Url::parse(&cstr!("file:///{path}")).unwrap()
 }
 
 fn open_vue(server: &MaestroServer, uri: Url, text: &str, version: i32) {

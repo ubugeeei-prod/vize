@@ -77,7 +77,7 @@ fn a_selection_inside_one_block_leaves_every_other_block_untouched() {
         edits(SOURCE, selection((1, 0), (2, 11))),
         Some(vec![TextEdit {
             range: SCRIPT_CONTENT,
-            new_text: FORMATTED_SCRIPT.to_string(),
+            new_text: FORMATTED_SCRIPT.to_owned(),
         }])
     );
 
@@ -86,7 +86,7 @@ fn a_selection_inside_one_block_leaves_every_other_block_untouched() {
         edits(SOURCE, selection((6, 0), (6, 35))),
         Some(vec![TextEdit {
             range: TEMPLATE_CONTENT,
-            new_text: FORMATTED_TEMPLATE.to_string(),
+            new_text: FORMATTED_TEMPLATE.to_owned(),
         }])
     );
 }
@@ -98,11 +98,11 @@ fn a_selection_spanning_both_blocks_edits_both_in_document_order() {
         Some(vec![
             TextEdit {
                 range: SCRIPT_CONTENT,
-                new_text: FORMATTED_SCRIPT.to_string(),
+                new_text: FORMATTED_SCRIPT.to_owned(),
             },
             TextEdit {
                 range: TEMPLATE_CONTENT,
-                new_text: FORMATTED_TEMPLATE.to_string(),
+                new_text: FORMATTED_TEMPLATE.to_owned(),
             },
         ])
     );
@@ -123,7 +123,7 @@ fn a_caret_with_no_selection_formats_the_block_it_sits_in() {
         edits(SOURCE, selection((1, 5), (1, 5))),
         Some(vec![TextEdit {
             range: SCRIPT_CONTENT,
-            new_text: FORMATTED_SCRIPT.to_string(),
+            new_text: FORMATTED_SCRIPT.to_owned(),
         }])
     );
 }

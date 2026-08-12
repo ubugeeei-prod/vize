@@ -3,6 +3,8 @@
 //! Split from [`super::corsa_overlays_tests`] to stay inside the
 //! per-file line budget; the fixtures are shared from there.
 
+use vize_carton::cstr;
+
 use super::ServerState;
 use super::corsa_overlays_tests::{open, rewrite, uri};
 
@@ -14,7 +16,7 @@ fn a_pass_materializes_only_the_documents_that_changed() {
     let state = ServerState::new();
     let document = "<template>{{ value }}</template>\n".repeat(512);
     for index in 0..40 {
-        open(&state, &format!("C{index}.vue"), &document);
+        open(&state, &cstr!("C{index}.vue"), &document);
     }
 
     // Cold pass reads every open document exactly once.
@@ -31,7 +33,7 @@ fn a_pass_materializes_only_the_documents_that_changed() {
         rewrite(
             &state,
             "C7.vue",
-            &format!("{document}<!-- {keystroke} -->"),
+            &cstr!("{document}<!-- {keystroke} -->"),
             keystroke + 2,
         );
         let _ = state.corsa_overlays();
@@ -63,7 +65,7 @@ fn overlay_pass_cost(
     let state = ServerState::new();
     let document = "<template>{{ value }}</template>\n".repeat(bytes / 33);
     for index in 0..documents {
-        open(&state, &format!("D{index}.vue"), &document);
+        open(&state, &cstr!("D{index}.vue"), &document);
     }
 
     let _ = state.corsa_overlays();
@@ -73,7 +75,7 @@ fn overlay_pass_cost(
         rewrite(
             &state,
             "D3.vue",
-            &format!("{document}<!-- {keystroke} -->"),
+            &cstr!("{document}<!-- {keystroke} -->"),
             keystroke as i32 + 2,
         );
 

@@ -216,6 +216,7 @@ pub(super) fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;
+    use vize_carton::cstr;
 
     use super::{RenameKind, component_event_ranges, semantic_name};
     use crate::ide::IdeContext;
@@ -260,12 +261,12 @@ mod tests {
         .into_iter()
         .enumerate()
         {
-            let source = format!("<script setup lang=\"ts\">{source}</script>");
-            let uri = Url::parse(&format!("file:///Child{index}.vue")).expect("uri");
+            let source = cstr!("<script setup lang=\"ts\">{source}</script>");
+            let uri = Url::parse(&cstr!("file:///Child{index}.vue")).expect("uri");
             let state = ServerState::new();
             state
                 .documents
-                .open(uri.clone(), source.clone(), 1, "vue".to_string());
+                .open(uri.clone(), source.clone().into(), 1, "vue".to_string());
             let offset = source.find(needle).expect("event declaration") + 1;
             let ctx = IdeContext::new(&state, &uri, offset).expect("context");
             assert!(super::query_kind(&ctx).is_some(), "{source}");

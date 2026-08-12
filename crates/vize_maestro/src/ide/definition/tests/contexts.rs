@@ -1,6 +1,7 @@
 use std::fs;
 
 use tower_lsp::lsp_types::Url;
+use vize_carton::cstr;
 
 use super::super::{DefinitionService, script};
 use super::scalar_location;
@@ -195,8 +196,8 @@ fn definition_resolves_class_component_member_in_template_without_flag() {
         ("inc", "inc()"),
         ("title", "title!"),
     ] {
-        let needle = format!("{member} }}}}");
-        let offset = CLASS_COMPONENT_SFC.find(&needle).unwrap();
+        let needle = cstr!("{member} }}}}");
+        let offset = CLASS_COMPONENT_SFC.find(needle.as_str()).unwrap();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let location = scalar_location(
             DefinitionService::definition(&ctx)

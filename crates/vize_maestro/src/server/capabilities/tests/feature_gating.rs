@@ -1,12 +1,16 @@
 use super::*;
 
+/// One gating case: the flag's name, the mutation that disables it, and the
+/// capability probe that must go quiet once it is disabled.
+type FeatureGatingCase = (
+    &'static str,
+    fn(&mut LspFeatureConfig),
+    fn(&ServerCapabilities) -> bool,
+);
+
 #[test]
 fn individual_feature_flags_gate_matching_providers() {
-    let cases: &[(
-        &str,
-        fn(&mut LspFeatureConfig),
-        fn(&ServerCapabilities) -> bool,
-    )] = &[
+    let cases: &[FeatureGatingCase] = &[
         (
             "completion",
             |features| features.completion = false,

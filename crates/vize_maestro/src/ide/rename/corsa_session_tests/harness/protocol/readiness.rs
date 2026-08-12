@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use vize_carton::cstr;
+
 pub(super) fn assert_generation_order(
     path: &Path,
     trace: &[u8],
@@ -14,14 +16,14 @@ pub(super) fn assert_generation_order(
     // readiness request.
     let expected_requests = expected_generations + 1;
     if ready.len() != expected_requests {
-        return Err(format!(
+        return Err(cstr!(
             "expected {expected_requests} readiness requests for {expected_generations} generations, found {} in {}",
             ready.len(),
             path.display()
-        ));
+        ).into());
     }
     let first_ready = ready.first().copied().ok_or_else(|| {
-        format!(
+        cstr!(
             "missing exact document-readiness request before rename in {}",
             path.display()
         )
@@ -30,7 +32,7 @@ pub(super) fn assert_generation_order(
     let first_rename = renames
         .first()
         .copied()
-        .ok_or_else(|| format!("missing rename request in {}", path.display()))?;
+        .ok_or_else(|| cstr!("missing rename request in {}", path.display()))?;
     let first_generation_ready = ready[1];
     if !(did_open < first_ready
         && first_ready < first_generation_ready
@@ -38,10 +40,10 @@ pub(super) fn assert_generation_order(
         && renames.iter().all(|rename| *rename < shutdown)
         && shutdown < exit)
     {
-        return Err(format!(
+        return Err(cstr!(
             "invalid editor LSP lifecycle order in {}: didOpen={did_open}, ready={ready:?}, rename={renames:?}, shutdown={shutdown}, exit={exit}",
             path.display()
-        ));
+        ).into());
     }
     if expected_generations == 2 {
         assert_cross_document_generation(path, trace, &ready, &renames, shutdown)?;
@@ -57,7 +59,7 @@ fn assert_cross_document_generation(
     shutdown: usize,
 ) -> Result<(), String> {
     let did_change = super::find_bytes(trace, b"textDocument/didChange")
-        .ok_or_else(|| format!("missing cross-document didChange in {}", path.display()))?;
+        .ok_or_else(|| cstr!("missing cross-document didChange in {}", path.display()))?;
     let first_generation_ready = ready[1];
     let second_generation_ready = ready[2];
     let first_generation = renames
@@ -80,10 +82,10 @@ fn assert_cross_document_generation(
     {
         return Ok(());
     }
-    Err(format!(
+    Err(cstr!(
         "invalid cross-document readiness order in {}: ready={ready:?}, didChange={did_change}, unarmedRenames={unarmed_renames}, rename={renames:?}, shutdown={shutdown}",
         path.display()
-    ))
+    ).into())
 }
 
 fn find_all_bytes(haystack: &[u8], needle: &[u8]) -> Vec<usize> {
