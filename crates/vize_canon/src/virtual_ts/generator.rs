@@ -161,7 +161,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         has_plain_script_scope,
     );
     namespace_hoist.reconcile_exports(&mut named_value_exports);
-    let script_blocks = ScriptBlockScopes::collect(summary, has_script_setup);
+    let script_blocks = ScriptBlockScopes::collect(summary, script_content, has_script_setup);
     let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content, &script_blocks);
 
     // Classify the main `<script>` default export in one parse. A plain

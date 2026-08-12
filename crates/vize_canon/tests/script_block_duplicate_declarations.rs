@@ -149,6 +149,47 @@ const value: Shape = { size: 2 };
 </template>
 "#;
 
+/// The classic declaration of the same name is a `const`, which only occupies
+/// the value space. The setup `type` therefore shadows nothing and still has to
+/// reach module scope, where the generated `Emits`/`Slots` aliases reference it.
+const CLASSIC_VALUE_AND_SETUP_TYPE: &str = r#"<script lang="ts">
+export const Item = 1;
+</script>
+
+<script lang="ts" setup>
+type Item = { id: number };
+
+defineSlots<{ default(props: { item: Item }): unknown }>();
+const emit = defineEmits<{ (ev: 'pick', item: Item): void }>();
+
+const current: Item = { id: Item };
+
+function pick() {
+  emit('pick', current);
+}
+</script>
+
+<template>
+  <div @click="pick">{{ current.id }}</div>
+</template>
+"#;
+
+/// A parent handing that child a wrongly typed `@pick` handler: the setup
+/// `type Item` has to reach module scope for the generated `Emits` alias to
+/// keep checking the component's contract.
+const CLASSIC_VALUE_CONSUMER: &str = r#"<script setup lang="ts">
+import Child from './ClassicValueAndSetupType.vue';
+
+function wrong(item: string) {
+  void item;
+}
+</script>
+
+<template>
+  <Child @pick="wrong" />
+</template>
+"#;
+
 /// One local name imported by both blocks is a real duplicate binding.
 const SHARED_IMPORT_NAME: &str = r#"<script lang="ts">
 import { ref } from 'vue';
@@ -197,6 +238,10 @@ fn genuine_collisions_and_legal_shadowing_match_vue_tsc() {
             ("src/ShadowingTypeAlias.vue", SHADOWING_TYPE_ALIAS),
             ("src/ShadowingInterface.vue", SHADOWING_INTERFACE),
             ("src/ShadowingClass.vue", SHADOWING_CLASS),
+            (
+                "src/ClassicValueAndSetupType.vue",
+                CLASSIC_VALUE_AND_SETUP_TYPE
+            ),
             ("src/SharedImportName.vue", SHARED_IMPORT_NAME),
             ("src/BadAssignment.vue", BAD_ASSIGNMENT),
         ]),
@@ -211,6 +256,22 @@ fn genuine_collisions_and_legal_shadowing_match_vue_tsc() {
             "src/InvalidCrossBlockRef.vue(2,32): error TS2304: Cannot find name 'setupOnlyValue'.",
             "src/SharedImportName.vue(2,10): error TS2300: Duplicate identifier 'ref'.",
             "src/SharedImportName.vue(8,10): error TS2300: Duplicate identifier 'ref'.",
+        ]
+    );
+}
+
+#[test]
+fn a_setup_type_over_a_classic_value_keeps_checking_the_component_contract() {
+    assert_eq!(
+        project::check(&[
+            (
+                "src/ClassicValueAndSetupType.vue",
+                CLASSIC_VALUE_AND_SETUP_TYPE
+            ),
+            ("src/ClassicValueConsumer.vue", CLASSIC_VALUE_CONSUMER),
+        ]),
+        [
+            "src/ClassicValueConsumer.vue(10,11): error TS2322: Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'Item' is not assignable to type 'string'.",
         ]
     );
 }
