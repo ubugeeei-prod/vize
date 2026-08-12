@@ -19,23 +19,23 @@
 //! canon generator is module-private and its surrounding `Diagnostic`/block
 //! machinery is batch-specific.
 
-use vize_atelier_jsx::{JsxLang, StyleExprSpan, lower_source};
+use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
-use vize_relief::{
-    ExpressionNode, RootNode, TemplateChildNode,
-    elements::PropNode,
-    expressions::{CompoundExpressionChild, CompoundExpressionNode},
-};
 
+mod collect;
 mod component;
 #[cfg(any(test, feature = "native"))]
 mod generate;
+mod slot;
 #[cfg(any(test, feature = "native"))]
 pub(in crate::ide) use generate::{JsxVirtualTs, generate_jsx_virtual_ts};
 
+use collect::{collect_root_expressions, collect_style_expressions, expr_of};
+
 /// A dynamic JSX expression recovered from the lowered tree: its original
 /// source text plus the byte range it occupied in the `.jsx`/`.tsx` source.
+#[derive(Clone)]
 pub(in crate::ide) struct JsxExpr {
     pub(in crate::ide) content: String,
     pub(in crate::ide) start: u32,
@@ -55,6 +55,11 @@ enum JsxEmit {
     /// walk keeps it so both builds share one collector.
     #[cfg_attr(not(any(test, feature = "native")), allow(dead_code))]
     Component(component::JsxComponent),
+    /// A scoped-slot scope: the slot's binding pattern plus the body units
+    /// evaluated with that pattern in scope, typed from the host component's
+    /// declared `$slots`.
+    #[cfg_attr(not(any(test, feature = "native")), allow(dead_code))]
+    SlotScope(slot::JsxSlotScope),
     ForScope {
         source: JsxExpr,
         value_alias: Option<JsxExpr>,
@@ -76,7 +81,7 @@ pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Ve
     let mut exprs = Vec::new();
     for root in &lowered.roots {
         let mut emits = Vec::new();
-        collect_root_expressions(&root.root, &mut emits, false);
+        collect::collect_root_expressions(&root.root, &mut emits, false);
         collect_style_expressions(&root.scoped_style_exprs, &mut emits);
         flatten_emits(&emits, &mut exprs);
     }
@@ -98,203 +103,6 @@ fn push_mapped_expr(out: &mut String, mappings: &mut Vec<VizeMapping>, expr: &Js
         src_range: expr.start as usize..expr.end as usize,
         sub_spans: Vec::new(),
     });
-}
-
-// ---------------------------------------------------------------------------
-// Expression collection: walk the lowered relief tree and gather every dynamic
-// (non-static) expression's source text and byte range. Mirrors the canon
-// batch jsx_codegen walker.
-// ---------------------------------------------------------------------------
-
-fn collect_root_expressions(
-    root: &RootNode<'_>,
-    out: &mut Vec<JsxEmit>,
-    preserve_components: bool,
-) {
-    for child in &root.children {
-        collect_child(child, out, preserve_components);
-    }
-}
-
-fn collect_style_expressions(style_exprs: &[StyleExprSpan], out: &mut Vec<JsxEmit>) {
-    for style_expr in style_exprs {
-        if let Some(expr) = jsx_expr(&style_expr.content, style_expr.start, style_expr.end) {
-            out.push(JsxEmit::Expr(expr));
-        }
-    }
-}
-
-fn collect_child(child: &TemplateChildNode<'_>, out: &mut Vec<JsxEmit>, preserve_components: bool) {
-    match child {
-        TemplateChildNode::Element(element) => {
-            let semantic_component = preserve_components
-                .then(|| component::collect(element))
-                .flatten();
-            let has_semantic_component = semantic_component.is_some();
-            if let Some(component) = semantic_component {
-                out.push(JsxEmit::Component(component));
-            }
-            for prop in &element.props {
-                if !has_semantic_component || !component::captures_prop(element, prop) {
-                    collect_prop(prop, out);
-                }
-            }
-            for child in &element.children {
-                collect_child(child, out, preserve_components);
-            }
-        }
-        TemplateChildNode::Interpolation(interpolation) => {
-            collect_expression(&interpolation.content, out);
-        }
-        TemplateChildNode::CompoundExpression(compound) => {
-            collect_compound(compound, out);
-        }
-        TemplateChildNode::If(node) => {
-            for branch in &node.branches {
-                if let Some(condition) = &branch.condition {
-                    collect_expression(condition, out);
-                }
-                for child in &branch.children {
-                    collect_child(child, out, preserve_components);
-                }
-            }
-        }
-        TemplateChildNode::IfBranch(branch) => {
-            if let Some(condition) = &branch.condition {
-                collect_expression(condition, out);
-            }
-            for child in &branch.children {
-                collect_child(child, out, preserve_components);
-            }
-        }
-        TemplateChildNode::For(node) => {
-            let Some(source) = expr_of(&node.source) else {
-                for child in &node.children {
-                    collect_child(child, out, preserve_components);
-                }
-                return;
-            };
-            let mut body = Vec::new();
-            for child in &node.children {
-                collect_child(child, &mut body, preserve_components);
-            }
-            out.push(JsxEmit::ForScope {
-                source,
-                value_alias: node.value_alias.as_ref().and_then(alias_expr),
-                key_alias: node.key_alias.as_ref().and_then(alias_expr),
-                body,
-            });
-        }
-        TemplateChildNode::TextCall(node) => {
-            collect_text_call(&node.content, out);
-        }
-        TemplateChildNode::Text(_)
-        | TemplateChildNode::Comment(_)
-        | TemplateChildNode::Hoisted(_) => {}
-    }
-}
-
-fn collect_text_call(content: &vize_relief::TextCallContent<'_>, out: &mut Vec<JsxEmit>) {
-    use vize_relief::TextCallContent;
-    match content {
-        TextCallContent::Interpolation(interpolation) => {
-            collect_expression(&interpolation.content, out);
-        }
-        TextCallContent::Compound(compound) => collect_compound(compound, out),
-        TextCallContent::Text(_) => {}
-    }
-}
-
-fn collect_prop(prop: &PropNode<'_>, out: &mut Vec<JsxEmit>) {
-    match prop {
-        // Static `class="a"` style attributes carry only literal text.
-        PropNode::Attribute(_) => {}
-        PropNode::Directive(directive) => {
-            if directive.name.as_str() == "model" {
-                if let Some(exp) = &directive.exp
-                    && let Some(target) = expr_of(exp)
-                {
-                    out.push(JsxEmit::ModelTarget(target));
-                }
-            } else if let Some(exp) = &directive.exp {
-                collect_expression(exp, out);
-            }
-            if let Some(arg) = &directive.arg {
-                collect_expression(arg, out);
-            }
-        }
-    }
-}
-
-fn collect_expression(expression: &ExpressionNode<'_>, out: &mut Vec<JsxEmit>) {
-    match expression {
-        ExpressionNode::Simple(simple) => {
-            if simple.is_static {
-                return;
-            }
-            push_expr(&simple.content, &simple.loc, out);
-        }
-        ExpressionNode::Compound(compound) => collect_compound(compound, out),
-    }
-}
-
-fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit>) {
-    for child in &compound.children {
-        match child {
-            CompoundExpressionChild::Simple(simple) => {
-                if !simple.is_static {
-                    push_expr(&simple.content, &simple.loc, out);
-                }
-            }
-            CompoundExpressionChild::Compound(compound) => collect_compound(compound, out),
-            CompoundExpressionChild::Interpolation(interpolation) => {
-                collect_expression(&interpolation.content, out);
-            }
-            CompoundExpressionChild::Text(_)
-            | CompoundExpressionChild::String(_)
-            | CompoundExpressionChild::Symbol(_) => {}
-        }
-    }
-}
-
-fn push_expr(content: &str, loc: &vize_relief::SourceLocation, out: &mut Vec<JsxEmit>) {
-    if let Some(expr) = jsx_expr(content, loc.start.offset, loc.end.offset) {
-        out.push(JsxEmit::Expr(expr));
-    }
-}
-
-fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
-    match expression {
-        ExpressionNode::Simple(simple) if !simple.is_static => jsx_expr(
-            &simple.content,
-            simple.loc.start.offset,
-            simple.loc.end.offset,
-        ),
-        _ => None,
-    }
-}
-
-fn alias_expr(alias: &ExpressionNode<'_>) -> Option<JsxExpr> {
-    match alias {
-        ExpressionNode::Simple(simple) => {
-            let content = simple.content.trim();
-            (!content.is_empty()).then(|| JsxExpr {
-                content: content.to_string(),
-                start: simple.loc.start.offset,
-                end: simple.loc.end.offset,
-            })
-        }
-        ExpressionNode::Compound(_) => None,
-    }
-}
-
-fn jsx_expr(content: &str, start: u32, end: u32) -> Option<JsxExpr> {
-    let content = content.trim();
-    (!content.is_empty()).then(|| JsxExpr {
-        content: content.to_string(),
-        start,
-        end,
-    })
 }
 
 fn flatten_emits(emits: &[JsxEmit], out: &mut Vec<JsxExpr>) {
@@ -331,6 +139,18 @@ fn flatten_emits(emits: &[JsxEmit], out: &mut Vec<JsxExpr>) {
                     });
                 }
                 flatten_emits(body, out);
+            }
+            // A scoped slot contributes its binding pattern and its body, so
+            // the structural walk sees the same expressions the generator
+            // re-emits inside the slot callback.
+            JsxEmit::SlotScope(scope) => {
+                let params = scope.params();
+                out.push(JsxExpr {
+                    content: params.content.clone(),
+                    start: params.start,
+                    end: params.end,
+                });
+                flatten_emits(scope.body(), out);
             }
             JsxEmit::Component(_) => {}
         }

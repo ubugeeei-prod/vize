@@ -72,6 +72,133 @@ fn jsx_file_mode_is_exact() {
     insta::assert_debug_snapshot!("jsx_file_mode_diagnostics", generated.diagnostics);
 }
 
+/// The rewritten render statement, i.e. the generated line that replaced the
+/// authored JSX root. Asserting this exactly (rather than a substring) keeps the
+/// emitted shape pinned, helper preamble aside.
+fn rendered_statement(source: &str) -> String {
+    let code = generate(source).code;
+    code.lines()
+        .find(|line| line.contains(JSX_EXPR_SINK) && !line.starts_with("declare function"))
+        .unwrap_or_else(|| panic!("no rendered statement in:\n{code}"))
+        .to_string()
+}
+
+/// A scoped slot binds its parameter pattern over the slot body. Re-emitting the
+/// pattern through the ordinary directive walk made it a bare read of an
+/// undeclared name and evaluated the body outside that scope (#4042).
+#[test]
+fn scoped_slot_object_binds_its_pattern_over_the_slot_body() {
+    let source = "import Widget from \"./Widget.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => props.item }}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+    );
+}
+
+#[test]
+fn scoped_slot_render_prop_child_binds_its_pattern_over_the_slot_body() {
+    let source = "import Widget from \"./Widget.vue\";\nexport const view = <Widget fooBar=\"ok\">{(props: { item: string }) => props.item}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+    );
+}
+
+#[test]
+fn scoped_slot_destructured_pattern_and_named_slots_each_get_their_own_scope() {
+    let source = "import Widget from \"./Widget.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: ({ item }: { item: string }) => item, footer: (b: { n: number }) => b.n }}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b) => __vize_jsx_expr__(b.n)));"
+    );
+}
+
+/// A component rendered *inside* a slot body keeps its props contract, so an
+/// invalid prop bound from the slot payload is still checked (#4042): before the
+/// scope existed the payload read resolved to an error type and masked it.
+#[test]
+fn component_inside_a_scoped_slot_body_keeps_its_props_call() {
+    let source = "import Widget from \"./Widget.vue\";\nimport Counter from \"./Counter.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => <Counter count={props.item} /> }}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(__vize_jsx_component__(Counter, {\"count\": props.item}))));"
+    );
+}
+
+/// A slot with no binding pattern introduces no scope, so its body stays in the
+/// enclosing sink exactly as before.
+#[test]
+fn non_scoped_slot_body_stays_in_the_enclosing_scope() {
+    let source = "import Widget from \"./Widget.vue\";\nconst label = 1;\nexport const view = <Widget fooBar=\"ok\">{{ default: () => label }}</Widget>;\n";
+
+    assert_eq!(
+        rendered_statement(source),
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget, {\"fooBar\": \"ok\"}), label);"
+    );
+}
+
+/// The scoped-slot pattern and every body expression stay mapped to their
+/// authored ranges, so diagnostics land on the JSX the user wrote.
+#[test]
+fn scoped_slot_maps_its_pattern_and_body_to_authored_ranges() {
+    let source = "import Widget from \"./Widget.vue\";\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => props.item }}</Widget>;\n";
+    let generated = generate(source);
+
+    let mapped: Vec<&str> = generated
+        .mappings
+        .iter()
+        .map(|mapping| &source[mapping.src_range.clone()])
+        .collect();
+    assert_eq!(
+        mapped,
+        vec![
+            // Verbatim prefix, then the component call: tag, prop value, whole
+            // attribute, and the props object literal (mapped to the tag).
+            "import Widget from \"./Widget.vue\";\nexport const view = ",
+            "Widget",
+            "\"ok\"",
+            "fooBar=\"ok\"",
+            "Widget",
+            // The slot scope maps only the authored binding pattern; the
+            // re-emitted host tag and the slot-name literal are scaffolding and
+            // stay unmapped so a diagnostic on the tag cannot double-report.
+            "props",
+            "props.item",
+            ";\n",
+        ]
+    );
+}
+
+/// Native DOM listeners are not component props: `vue-tsc` rejects
+/// `<Comp onClick={…}/>` unless the component declares it, so the generated
+/// fallthrough contract must not admit them (#4042). Admitting them also printed
+/// the generated helper name inside the user-visible message.
+#[test]
+fn fallthrough_contract_admits_class_style_and_hyphenated_attrs_only() {
+    let helper = crate::virtual_ts::JSX_COMPONENT_HELPER;
+    let fallthrough = helper
+        .lines()
+        .find(|line| line.starts_with("type __VizeJsxFallthroughAttrs"))
+        .expect("the fallthrough contract must be declared");
+
+    assert_eq!(
+        fallthrough,
+        "type __VizeJsxFallthroughAttrs = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown };"
+    );
+    assert!(
+        !helper.contains("__VizeJsxDomListenerProps"),
+        "the DOM-listener whitelist must not reappear:\n{helper}"
+    );
+    assert!(
+        !helper.contains("GlobalEventHandlersEventMap"),
+        "component props must not admit native DOM listeners:\n{helper}"
+    );
+}
+
 #[test]
 fn semantic_component_tags_props_and_spreads_survive_plain_ts_lowering() {
     let source = "import Counter from './Counter.vue';\nconst Library = { Counter };\nconst count = 'wrong';\nconst bag = { enabled: true };\nexport const first = <Counter count={count} is-opened />;\nexport const second = <Library.Counter {...bag} label=\"hello\" />;\n";

@@ -50,15 +50,31 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, 
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.
+///
+/// `__VizeJsxFallthroughAttrs` deliberately admits only what TypeScript's own
+/// JSX checking admits on a Vue component: `class`/`style` (Vue's
+/// `AllowedComponentProps`) plus `data-`/`aria-` attributes, which TypeScript
+/// exempts from excess-property checking because their names are not valid
+/// identifiers. Native DOM listeners are **not** admitted — `vue-tsc` rejects
+/// `<Comp onClick={…}/>` for a component that does not declare it, and admitting
+/// them both hid that error (#4042) and printed a generated helper name inside
+/// the user-visible message.
+///
+/// `__VizeJsxSlotPayload` is the JSX analogue of the `.vue` template path's
+/// `slot_props_type` (`virtual_ts::scope::emit`): a scoped slot's parameter is
+/// typed from the host component's declared `$slots`, falling back to `any`
+/// whenever the host or the slot is untyped so untyped slot hosts never produce
+/// a false positive.
 pub const JSX_COMPONENT_HELPER: &str = "type __VizeJsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${__VizeJsxKebabCase<T>}` : `-${Lowercase<H>}${__VizeJsxKebabCase<T>}` : S;\n\
 type __VizeJsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<__VizeJsxCamelCase<T>>}` : S;\n\
 type __VizeJsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | __VizeJsxKebabCase<K> : K }[keyof R] : never;\n\
 type __VizeJsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? __VizeJsxCamelCase<K> : K]: R[K] } : never;\n\
-type __VizeJsxDomListenerProps = { [K in keyof GlobalEventHandlersEventMap as K extends string ? `on${Capitalize<K>}` : never]?: (event: GlobalEventHandlersEventMap[K]) => void };\n\
-type __VizeJsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown } & Omit<__VizeJsxDomListenerProps, keyof Owned>;\n\
-type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> & __VizeJsxFallthroughAttrs<P> : __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P> : any : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs<P> : any;\n\
+type __VizeJsxFallthroughAttrs = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown };\n\
+type __VizeJsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, __VizeJsxRawPropKeys<R>> & __VizeJsxCanonicalRawProps<R> & __VizeJsxFallthroughAttrs : __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs : any : C extends (props: infer P, ...args: any[]) => any ? __VizeJsxCanonicalRawProps<P> & __VizeJsxFallthroughAttrs : any;\n\
+type __VizeJsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;\n\
 declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
-declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;\n";
+declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;\n\
+declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;\n";
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};
 

@@ -5,7 +5,7 @@ use vize_canon::virtual_ts::VizeMapping;
 use vize_carton::Bump;
 
 use super::{
-    JsxEmit, collect_root_expressions, collect_style_expressions, component, push_mapped_expr,
+    JsxEmit, collect_root_expressions, collect_style_expressions, component, push_mapped_expr, slot,
 };
 
 const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
@@ -95,6 +95,13 @@ fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit
             out.push(')');
         }
         JsxEmit::Component(component) => component::render(out, mappings, component),
+        JsxEmit::SlotScope(scope) => {
+            // `render_open` leaves the helper call open; the trailing `)` below
+            // closes it around the body sink call.
+            slot::render_open(out, mappings, scope);
+            render_sink_call(out, mappings, scope.body());
+            out.push(')');
+        }
         JsxEmit::ForScope {
             source,
             value_alias,
@@ -122,7 +129,9 @@ fn render_emit(out: &mut String, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit
 
 fn emit_contains_component(emit: &JsxEmit) -> bool {
     match emit {
-        JsxEmit::Component(_) => true,
+        // A slot scope is only ever produced under a component host, and its
+        // opening call needs the same helper block.
+        JsxEmit::Component(_) | JsxEmit::SlotScope(_) => true,
         JsxEmit::ForScope { body, .. } => body.iter().any(emit_contains_component),
         JsxEmit::Expr(_) | JsxEmit::ModelTarget(_) => false,
     }

@@ -18,6 +18,14 @@ pub(super) struct JsxComponent {
     props: Vec<JsxComponentProp>,
 }
 
+impl JsxComponent {
+    /// The tag expression, so a scoped slot under this component can type its
+    /// parameter from the component's declared `$slots`.
+    pub(super) fn tag(&self) -> &JsxExpr {
+        &self.tag
+    }
+}
+
 enum JsxComponentProp {
     Property {
         name: PropName,
