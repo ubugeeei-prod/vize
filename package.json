@@ -14,6 +14,7 @@
     "@nuxt/eslint-config": "catalog:nuxt-eslint-oracle",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
+    "@types/vscode": "1.75.0",
     "@typescript/native-preview": "catalog:typescript",
     "@vue/babel-plugin-jsx": "catalog:babel-jsx-oracle",
     "ajv": "catalog:repo-tooling",
@@ -26,6 +27,7 @@
     "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
+    "vscode-languageclient": "9.0.1",
     "yaml": "2.9.0"
   },
   "packageManager": "pnpm@11.21.0"
