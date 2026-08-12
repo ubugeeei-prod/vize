@@ -8,6 +8,7 @@ use super::DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION;
 
 /// A capability snapshot that cannot be trusted for cache reuse.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum CapabilitySnapshotError {
     /// The serialized snapshot version is not supported.
     UnsupportedFormatVersion {
@@ -29,6 +30,10 @@ pub enum CapabilitySnapshotError {
         derived: ContentFingerprint,
     },
     /// Canonical finding serialization could not be completed.
+    ///
+    /// The failure is kept as a formatted message rather than the originating
+    /// `serde_json::Error`, which is neither `Clone`, `PartialEq`, nor `Eq` and
+    /// so cannot be stored in this enum.
     OutputSerialization {
         /// Actionable serialization failure.
         message: String,

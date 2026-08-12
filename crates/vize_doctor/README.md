@@ -100,10 +100,54 @@ metadata must not be smuggled into logical identifiers or configuration hashes.
 
 `CapabilitySnapshot` binds an identity to its normalized findings. Construction
 fails unless every finding names the same capability and every provenance input
-has the exact fingerprint declared by the identity. Its wire form repeats the
-derived cache key and includes a domain-separated streaming fingerprint of the
-complete normalized output, so stale keys and accidentally corrupted cache
-payloads fail before findings reach scoring, editors, reporters, or AI clients.
+has the exact fingerprint declared by the identity. A finding that carries a
+fingerprint for an input it does not declare is rejected as an orphan, so a
+producer cannot widen a finding's invalidation boundary without declaring it.
+Its wire form repeats the derived cache key and includes a domain-separated
+streaming fingerprint of the complete normalized output, so stale keys and
+accidentally corrupted cache payloads fail before findings reach scoring,
+editors, reporters, or AI clients.
+
+```rust
+use std::collections::BTreeMap;
+use vize_doctor::{
+    AnalysisProvenance, CapabilityCacheIdentity, CapabilitySnapshot, ContentFingerprint,
+    DoctorCategory, DoctorFinding, FindingAssessment, FindingConfidence, FindingImpact,
+    FindingSeverity, HealthPenalty, RuleCost, SourceLocation,
+};
+
+let source = ContentFingerprint::digest("<template><li v-for=\"item in items\" /></template>");
+let identity = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    ContentFingerprint::digest("template-analyzer-v2"),
+    ContentFingerprint::digest("strict=true"),
+    [("src/App.vue", source)],
+)?;
+
+let finding = DoctorFinding::new(
+    "VIZE_DOCTOR_TEMPLATE_001",
+    DoctorCategory::Correctness,
+    FindingAssessment::new(
+        FindingSeverity::Warning,
+        FindingConfidence::Certain,
+        FindingImpact::Medium,
+        HealthPenalty::new(10, "List render without a stable key"),
+    ),
+    SourceLocation::new("src/App.vue", 42, 58),
+    "List render has no key",
+    "Add a stable `:key` to the `v-for`.",
+    AnalysisProvenance::new("template-semantics", RuleCost::Low)
+        .with_invalidation_fingerprints(BTreeMap::from([("src/App.vue".into(), source)])),
+);
+
+let snapshot = CapabilitySnapshot::try_new(identity, [finding])?;
+assert_eq!(snapshot.cache_key(), snapshot.identity().cache_key());
+assert_ne!(snapshot.output_fingerprint(), source);
+
+let report = snapshot.into_report("example");
+assert_eq!(report.findings().len(), 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
 
 ## Reporter integrations
 

@@ -218,6 +218,9 @@ fn fingerprint_findings(
 ) -> Result<ContentFingerprint, CapabilitySnapshotError> {
     let mut writer = DigestWriter(Sha256::new());
     writer.0.update(OUTPUT_FINGERPRINT_DOMAIN);
+    writer
+        .0
+        .update(DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION.to_le_bytes());
     serde_json::to_writer(&mut writer, findings).map_err(|error| {
         CapabilitySnapshotError::OutputSerialization {
             message: error.to_compact_string(),
