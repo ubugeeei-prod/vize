@@ -94,6 +94,9 @@ runs:
         cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
         node tools/helix-vize/assert-helix-health.mjs "${RUNNER_TEMP}/helix/hx"
 
+    - name: Stabilize Ubuntu package archive
+      uses: ./.github/actions/setup-ubuntu-archive
+
     - name: Ensure xvfb is available
       shell: bash
       run: command -v xvfb-run || (sudo apt-get update && sudo apt-get install -y xvfb)

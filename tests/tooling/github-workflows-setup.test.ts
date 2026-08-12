@@ -3,6 +3,30 @@ import { test } from "node:test";
 
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
+test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () => {
+  const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
+  assert.match(action, /\/etc\/apt\/blacksmith-ubuntu-mirrors\.txt/);
+  assert.match(action, /http:\/\/archive\.ubuntu\.com\/ubuntu/);
+
+  const row = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const rowSetup = row.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
+  const rowApt = row.indexOf("playwright install-deps chromium");
+  assert.ok(rowSetup >= 0 && rowSetup < rowApt);
+
+  const editor = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const editorSetup = editor.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
+  const editorApt = editor.indexOf("sudo apt-get update");
+  assert.ok(editorSetup >= 0 && editorSetup < editorApt);
+
+  const check = workflowJobBody(
+    readRepoFile(".github", "workflows", "check.yml"),
+    "playground-test",
+  );
+  const playgroundSetup = check.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
+  const playgroundInstall = check.indexOf("Install Playwright browsers");
+  assert.ok(playgroundSetup >= 0 && playgroundSetup < playgroundInstall);
+});
+
 test("deploy-docs deploy job installs MoonBit before running command packages", () => {
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));

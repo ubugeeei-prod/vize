@@ -1,0 +1,15 @@
+name: Stabilize Ubuntu package archive
+description: Avoid unhealthy Blacksmith mirror-list entries before apt-based setup
+
+runs:
+  using: composite
+  steps:
+    - name: Use the canonical Ubuntu archive on Blacksmith
+      shell: bash
+      run: |
+        set -euo pipefail
+        mirror_list=/etc/apt/blacksmith-ubuntu-mirrors.txt
+        if [[ ! -f "$mirror_list" ]]; then
+          exit 0
+        fi
+        printf '%s\n' 'http://archive.ubuntu.com/ubuntu' | sudo tee "$mirror_list" >/dev/null

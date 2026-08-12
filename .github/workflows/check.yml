@@ -582,6 +582,9 @@ jobs:
           name: shared-js-build
           path: .
 
+      - name: Stabilize Ubuntu package archive
+        uses: ./.github/actions/setup-ubuntu-archive
+
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5

@@ -105,6 +105,10 @@ runs:
       shell: bash
       run: cargo build --profile ci -p vize
 
+    - name: Stabilize Ubuntu package archive
+      if: inputs.needs-playwright == 'true'
+      uses: ./.github/actions/setup-ubuntu-archive
+
     - name: Cache Playwright browsers
       id: cache-playwright
       if: inputs.needs-playwright == 'true'
