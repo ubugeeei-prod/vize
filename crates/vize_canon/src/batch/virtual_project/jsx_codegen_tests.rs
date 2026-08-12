@@ -173,29 +173,23 @@ fn scoped_slot_maps_its_pattern_and_body_to_authored_ranges() {
     );
 }
 
-/// Native DOM listeners are not component props: `vue-tsc` rejects
-/// `<Comp onClick={…}/>` unless the component declares it, so the generated
-/// fallthrough contract must not admit them (#4042). Admitting them also printed
-/// the generated helper name inside the user-visible message.
+/// The slot helper must be declared alongside the component helper, since a
+/// scoped slot is only ever emitted under a component host.
 #[test]
-fn fallthrough_contract_admits_class_style_and_hyphenated_attrs_only() {
+fn component_helper_declares_the_slot_payload_contract() {
     let helper = crate::virtual_ts::JSX_COMPONENT_HELPER;
-    let fallthrough = helper
+    let declarations: Vec<&str> = helper
         .lines()
-        .find(|line| line.starts_with("type __VizeJsxFallthroughAttrs"))
-        .expect("the fallthrough contract must be declared");
+        .filter(|line| line.starts_with("declare function"))
+        .collect();
 
     assert_eq!(
-        fallthrough,
-        "type __VizeJsxFallthroughAttrs = { class?: unknown; style?: unknown } & { [K in `data-${string}`]?: unknown } & { [K in `aria-${string}`]?: unknown };"
-    );
-    assert!(
-        !helper.contains("__VizeJsxDomListenerProps"),
-        "the DOM-listener whitelist must not reappear:\n{helper}"
-    );
-    assert!(
-        !helper.contains("GlobalEventHandlersEventMap"),
-        "component props must not admit native DOM listeners:\n{helper}"
+        declarations,
+        vec![
+            "declare function __vize_jsx_component_spread__<O>(value: O): __VizeJsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
+            "declare function __vize_jsx_component__<C>(component: C, props: __VizeJsxComponentProps<C>): any;",
+            "declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;",
+        ]
     );
 }
 

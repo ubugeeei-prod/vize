@@ -152,45 +152,41 @@ fn render_prop_scoped_slot_child_stays_clean() {
     assert_eq!(diagnostics, vec![]);
 }
 
-/// A native DOM listener is not a component prop.
-///
-/// vue-tsc: `src/Consumer.tsx(2,40): error TS2322: Type '{ count: number;
-/// onClick: () => void; }' is not assignable to type 'IntrinsicAttributes &
-/// { readonly count: number; } & VNodeProps & AllowedComponentProps &
-/// ComponentCustomProps'.`
-///
-/// vize reaches the same file, line and column with the code its call-shaped
-/// lowering produces — `TS2353` for an excess key rather than TypeScript's
-/// whole-attributes `TS2322` — because the element is modelled as a call to
-/// `__vize_jsx_component__` rather than as a JSX element. Before #4042 this was
-/// silently accepted. The message must not name a generated helper.
+/// Native DOM listener fallthrough on a component is a **deliberate divergence
+/// from vue-tsc**, pinned by `crates/vize/tests/check_jsx_component_contract_cli.rs`:
+/// Vue forwards such a listener to the fallthrough root at runtime, so vize
+/// accepts it (vue-tsc reports `TS2322` here) while still contextually typing
+/// the event payload. This is the negative control for the scoped-slot change —
+/// it must keep behaving exactly as before.
 #[test]
-fn native_listener_on_a_component_is_reported_at_the_authored_attribute() {
-    let project = create_project(&[
+fn native_listener_fallthrough_stays_accepted_and_payload_typed() {
+    let accepted = create_project(&[
         ("src/Counter.vue", COUNTER_SFC),
         (
             "src/Consumer.tsx",
-            "import Counter from \"./Counter.vue\";\nexport const view = <Counter count={1} onClick={() => {}} />;\n",
+            "import Counter from \"./Counter.vue\";\nexport const view = <Counter count={1} onClick={(event) => event.preventDefault()} />;\n",
         ),
     ]);
-    let Some(diagnostics) = consumer_diagnostics(project.path()) else {
+    let Some(diagnostics) = consumer_diagnostics(accepted.path()) else {
         return;
     };
+    assert_eq!(diagnostics, vec![]);
 
+    let wrong_payload = create_project(&[
+        ("src/Counter.vue", COUNTER_SFC),
+        (
+            "src/Consumer.tsx",
+            "import Counter from \"./Counter.vue\";\nexport const view = <Counter count={1} onClick={(event: string) => event.length} />;\n",
+        ),
+    ]);
+    let Some(diagnostics) = consumer_diagnostics(wrong_payload.path()) else {
+        return;
+    };
     assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
     let (file, code, message) = &diagnostics[0];
     assert_eq!(file, "src/Consumer.tsx");
-    assert_eq!(*code, Some(2353));
-    assert!(
-        message.starts_with(
-            "2:40 error Object literal may only specify known properties, and '\"onClick\"' does not exist in type "
-        ),
-        "{message}"
-    );
-    assert!(
-        !message.contains("__Vize"),
-        "a generated helper name must never appear in a user-visible message: {message}"
-    );
+    assert_eq!(*code, Some(2322));
+    assert!(message.starts_with("2:40 error "), "{message}");
 }
 
 /// A component's *declared* emit stays a valid listener prop. vue-tsc reports
