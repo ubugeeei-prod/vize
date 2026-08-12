@@ -203,6 +203,107 @@ fn legacy_vue2_does_not_require_vue_native_elements() {
     );
 }
 
+/// The `<template>` shapes #4149 is about — one per `renders_as_fragment` arm,
+/// `v-else-if` and `v-else` included — alongside the element and bare
+/// `<template>` shapes that must keep their checks.
+const FRAGMENT_TEMPLATE: &str = concat!(
+    r#"<div v-for="row in rows" :key="row.text" />"#,
+    r#"<template v-for="row in rows" :key="row.text" :id="row.text"><span :id="row.text" /></template>"#,
+    r#"<template v-if="flag" :key="rows"></template>"#,
+    r#"<template v-else-if="flag" :key="rows"></template>"#,
+    r#"<template v-else :id="rows"></template>"#,
+    r#"<template #footer :id="rows"></template>"#,
+    r#"<template :id="rows"></template>"#,
+);
+
+const FRAGMENT_SCRIPT: &str = "const rows: { text: string | null }[] = []\nconst flag = true";
+
+/// A `<template>` that stands for a fragment or a slot body carries no element
+/// prop check, so its `:key` never meets `ReservedProps['key']` — the
+/// `PropertyKey | undefined` that made Voicevox's `<template v-for :key>` over a
+/// `string | null` and Elk's over an object into Vize-only `TS2322` (#4149).
+///
+/// The element and the bare `<template>` keep theirs: `vue-tsc` reports both,
+/// and dropping them would trade a false positive for a false negative.
+#[test]
+fn template_fragments_carry_no_element_prop_check() {
+    let allocator = vize_carton::Bump::new();
+    let (root, summary) = analyze(&allocator, FRAGMENT_SCRIPT, FRAGMENT_TEMPLATE, false);
+    let output = generate_virtual_ts(&summary, Some(FRAGMENT_SCRIPT), Some(&root), 0);
+
+    assert_eq!(
+        native_prop_checks(&output.code),
+        vec![("template", "id"), ("div", "key"), ("span", "id")],
+        "only the element and the bare `<template>` may reach the element table:\n{}",
+        output.code
+    );
+    // Every fragment-hosted binding is still emitted, so an invalid member
+    // inside a key expression stays a diagnostic at its authored range.
+    assert_eq!(
+        unchecked_v_bind_expressions(&output.code),
+        vec!["rows", "rows", "rows", "rows", "row.text", "row.text"],
+        "fragment props must stay checked as ordinary expressions:\n{}",
+        output.code
+    );
+}
+
+/// The Vue 2 dialect emits no element prop check at all, so the same authored
+/// keys reach the checker as ordinary expressions there too.
+#[test]
+fn legacy_vue2_template_fragments_carry_no_element_prop_check() {
+    let allocator = vize_carton::Bump::new();
+    let (root, summary) = analyze(&allocator, FRAGMENT_SCRIPT, FRAGMENT_TEMPLATE, true);
+    let output = generate_virtual_ts_with_offsets_legacy_vue2(
+        &summary,
+        Some(FRAGMENT_SCRIPT),
+        Some(&root),
+        0,
+        0,
+        &VirtualTsOptions::default(),
+    );
+
+    assert_eq!(native_prop_checks(&output.code), vec![]);
+    assert_eq!(
+        unchecked_v_bind_expressions(&output.code),
+        vec![
+            "rows", "rows", "rows", "rows", "rows", "row.text", "row.text", "row.text", "row.text"
+        ],
+        "Vue 2 must keep every authored key expression checkable:\n{}",
+        output.code
+    );
+}
+
+/// Every emitted element prop check, as `(tag, prop)` pairs in generated order.
+/// The ambient `__vizeNativeElementProp` declaration names the same aliases with
+/// type parameters instead of string literals, so the quote anchors exclude it.
+fn native_prop_checks(code: &str) -> Vec<(&str, &str)> {
+    const PREFIX: &str = "__VizeNativeElementProp<__VizeNativeElement<\"";
+    const SEPARATOR: &str = "\">, \"";
+    const SUFFIX: &str = "\">";
+
+    code.match_indices(PREFIX)
+        .map(|(at, _)| {
+            let rest = &code[at + PREFIX.len()..];
+            let separator = rest.find(SEPARATOR).expect("prop check tag terminator");
+            let tag = &rest[..separator];
+            let rest = &rest[separator + SEPARATOR.len()..];
+            let end = rest.find(SUFFIX).expect("prop check name terminator");
+            (tag, &rest[..end])
+        })
+        .collect()
+}
+
+/// Every `v-bind` expression emitted without a prop type, in generated order.
+fn unchecked_v_bind_expressions(code: &str) -> Vec<&str> {
+    code.lines()
+        .filter_map(|line| {
+            line.trim()
+                .strip_suffix("); // VBind")?
+                .strip_prefix("void (")
+        })
+        .collect()
+}
+
 fn analyze<'a>(
     allocator: &'a vize_carton::Bump,
     script: &str,

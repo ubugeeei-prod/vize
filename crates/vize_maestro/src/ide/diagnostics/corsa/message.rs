@@ -44,6 +44,8 @@ fn property_does_not_exist_property(message: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod hint_tests {
+    use vize_carton::cstr;
+
     use super::{property_does_not_exist_property, rewrite_corsa_message};
 
     #[test]
@@ -144,7 +146,7 @@ mod hint_tests {
     #[test]
     fn preserves_authored_vue_ts_and_restores_collision_marker() {
         let marker = vize_canon::batch::AUTHORED_VUE_TS_SENTINEL;
-        let original = format!("Cannot find module './Missing.vue.ts{marker}'.");
+        let original = cstr!("Cannot find module './Missing.vue.ts{marker}'.");
         assert_eq!(
             rewrite_corsa_message(&original, "import './Missing.vue.ts';"),
             "Cannot find module './Missing.vue.ts'."

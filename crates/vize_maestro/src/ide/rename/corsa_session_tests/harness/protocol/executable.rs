@@ -4,6 +4,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use vize_carton::cstr;
+
 fn immutable_wrapper() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/corsa-session-wrapper.sh")
 }
@@ -11,23 +13,25 @@ fn immutable_wrapper() -> PathBuf {
 pub(super) fn link_session_wrapper(path: &Path) -> Result<(), String> {
     let wrapper = immutable_wrapper();
     let metadata = fs::metadata(&wrapper).map_err(|error| {
-        format!(
+        cstr!(
             "inspect immutable Corsa wrapper {}: {error}",
             wrapper.display()
         )
     })?;
     if metadata.permissions().mode() & 0o111 == 0 {
-        return Err(format!(
+        return Err(cstr!(
             "immutable Corsa wrapper is not executable: {}",
             wrapper.display()
-        ));
+        )
+        .into());
     }
     std::os::unix::fs::symlink(&wrapper, path).map_err(|error| {
-        format!(
+        cstr!(
             "link immutable Corsa wrapper {} as {}: {error}",
             wrapper.display(),
             path.display()
         )
+        .into()
     })
 }
 

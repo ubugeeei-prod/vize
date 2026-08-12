@@ -7,6 +7,7 @@ use super::editor_typecheck_fixture::{
 };
 use super::{DiagnosticService, sources};
 use tower_lsp::lsp_types::Url;
+use vize_carton::cstr;
 
 #[test]
 fn sync_collect_does_not_surface_legacy_type_false_positives() {
@@ -184,7 +185,7 @@ fn assert_workspace_package_vue_export_resolves(entry: &str, barrel: Option<&str
     .expect("tsconfig");
     std::fs::write(
         package.join("package.json"),
-        format!(r#"{{"name":"@scope/ui","exports":{{"./widget":"{entry}"}}}}"#),
+        cstr!(r#"{{"name":"@scope/ui","exports":{{"./widget":"{entry}"}}}}"#),
     )
     .expect("package manifest");
     if let Some(barrel) = barrel {

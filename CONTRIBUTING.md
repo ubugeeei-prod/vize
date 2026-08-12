@@ -121,6 +121,35 @@ Prefer the Vite+ tasks when launching multiple local workflow runs in parallel; 
 For Blacksmith Testbox job changes, also validate the workflow shape with
 `node --test tests/tooling/github-workflows.test.ts`.
 
+## Lint Policy
+
+`clippy.toml` bans `std::string::String`, `std::collections::HashMap`/`HashSet`, `Rc`/`Arc`,
+`ToString::to_string`, and `std::format!` across the workspace; the replacements live in
+`vize_carton` (`String`, `FxHashMap`, `FxHashSet`, `cstr!`, `append!`, `appends!`). That policy is a
+production invariant and is not relaxed for tests. CI enforces the workspace lint with
+`cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports` and the maestro test targets
+with `cargo clippy -p vize_maestro --tests -- -D warnings`.
+
+In test code, reach for the real replacement before an allow:
+
+- `format!("…")` → `vize_carton::cstr!("…")`. In a function returning `Result<_, String>` the `?`
+  operator performs the `CompactString` → `String` conversion for you; at a bare `return Err(…)`
+  add `.into()`.
+- `some_str.to_string()` → `some_str.to_owned()`.
+- A `lsp_types` field you cannot retype: build the value with `cstr!` and `.into()` it at the
+  boundary, or let inference name the type instead of writing `String` out.
+
+### Snapshot assertions in test targets
+
+`insta::assert_snapshot!` and `insta::assert_debug_snapshot!` expand through `std::format!` inside
+the `insta` crate, so no call-site rewrite can avoid the disallowed macro. Those assertions are the
+one sanctioned exception. Put `#[allow(clippy::disallowed_macros)]` on the `#[cfg(test)] mod …` item
+that hosts the snapshot assertions — never at the crate root, never on the lint globally, and never
+on a module that also contains production code — and leave a comment pointing back to this section.
+When the test module is inline inside an over-budget file, split it out to a sibling file first; keep
+it in the same directory (with `#[path = "…"]` if needed) so `insta` still resolves the recorded
+snapshots.
+
 ## Language Processor Change Discipline
 
 Vize follows compiler-project practice from rustc, TypeScript, TypeScript-Go, and Flow: classify the

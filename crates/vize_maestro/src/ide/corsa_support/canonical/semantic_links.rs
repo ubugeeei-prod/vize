@@ -242,13 +242,15 @@ mod semantic_position_tests {
 
 #[cfg(test)]
 mod tests {
+    use vize_carton::cstr;
+
     use super::linked_offset;
 
     #[test]
     fn links_the_matching_generated_pair_when_authored_text_collides() {
         let pair =
             "type __R_shared = typeof shared;\nvar shared: __U<__R_shared> = undefined as any;\n";
-        let code = format!("{pair}// generated pair\n{pair}");
+        let code = cstr!("{pair}// generated pair\n{pair}");
         let generated_start = code.rfind("typeof shared").unwrap() + "typeof ".len();
         let generated_shadow = code.rfind("var shared").unwrap() + "var ".len();
 

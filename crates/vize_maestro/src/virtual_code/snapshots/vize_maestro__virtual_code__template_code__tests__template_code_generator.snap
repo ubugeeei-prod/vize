@@ -1,5 +1,5 @@
 ---
-source: crates/vize_maestro/src/virtual_code/template_code.rs
+source: crates/vize_maestro/src/virtual_code/template_code_tests.rs
 expression: doc.content.as_str()
 ---
 // Virtual TypeScript for template type checking

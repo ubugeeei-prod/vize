@@ -32,6 +32,28 @@ void props;
 <template><button /></template>
 "#;
 
+/// The Misskey `notifications.notification-config.vue` shape (issue #4151): the
+/// classic block's exported type depends on a classic-block value, so it is
+/// already at module scope next to that value.
+const CLASSIC_EXPORT_COMPONENT: &str = r#"<script lang="ts">
+const notificationConfigTypes = ['all', 'list', 'never'] as const;
+
+export type NotificationConfig = {
+  type: Exclude<typeof notificationConfigTypes[number], 'list'>;
+} | {
+  type: 'list';
+  userListId: string;
+};
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ value: NotificationConfig }>();
+void props;
+</script>
+
+<template><div /></template>
+"#;
+
 const PRIVATE_SETUP_PROPS_COMPONENT: &str = r#"<script setup lang="ts">
 const NATIVE_TYPES = ["button", "submit"] as const;
 type Props = {
@@ -196,6 +218,38 @@ fn private_setup_scoped_props_still_export_a_public_declaration() {
         parsed.diagnostics.is_empty(),
         "a private setup-scoped Props must remain parseable: {:#?}\n{virtual_ts}",
         parsed.diagnostics
+    );
+}
+
+#[test]
+fn a_classic_block_export_keeps_one_authoritative_declaration() {
+    let virtual_ts = type_check_sfc(
+        CLASSIC_EXPORT_COMPONENT,
+        &SfcTypeCheckOptions::new("NotificationConfig.vue").with_virtual_ts(),
+    )
+    .virtual_ts
+    .expect("virtual TypeScript should be generated");
+
+    // One authoritative declaration, emitted verbatim at module scope: the
+    // classic block's values live there too, so no setup-return bridge is
+    // needed and a second alias would be TS2300 on code vue-tsc accepts.
+    assert_eq!(
+        virtual_ts
+            .match_indices("export type NotificationConfig")
+            .count(),
+        1,
+        "a classic-block export must not be re-declared through __setup:\n{virtual_ts}"
+    );
+    assert!(
+        !virtual_ts.contains("__vize_exported_type_NotificationConfig"),
+        "a classic-block export must not be captured as a setup artifact:\n{virtual_ts}"
+    );
+    // Verbatim emission is what keeps the authored diagnostic range intact.
+    assert!(
+        virtual_ts.contains(
+            "export type NotificationConfig = {\n  type: Exclude<typeof notificationConfigTypes[number], 'list'>;\n} | {\n  type: 'list';\n  userListId: string;\n};"
+        ),
+        "the authored declaration must be emitted byte-complete:\n{virtual_ts}"
     );
 }
 

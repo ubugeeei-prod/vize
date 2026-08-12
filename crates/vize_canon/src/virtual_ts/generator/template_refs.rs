@@ -1,4 +1,5 @@
 mod auto_imports;
+mod deferred_bindings;
 
 use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
@@ -12,6 +13,9 @@ pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
     options_api_setup_bindings: Vec<String>,
     auto_import_bindings: Vec<String>,
+    /// Setup bindings whose assignment is deferred past their declaration. See
+    /// `deferred_bindings` for why they need the same shadowing treatment.
+    deferred_bindings: Vec<String>,
     /// Dialect and preamble decisions resolved once at collection time; they
     /// also select the `__U` helper this shadow set is emitted against.
     legacy_helpers: bool,
@@ -75,10 +79,24 @@ impl TemplateRefUnwraps {
             })
             .unwrap_or_default();
 
+        // Shadowing a name twice would redeclare it with a conflicting type,
+        // so the deferred set excludes everything already shadowed above.
+        let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
+            summary,
+            script_content,
+            template_referenced_names,
+            |name| {
+                setup_bindings.iter().any(|shadowed| shadowed == name)
+                    || auto_import_bindings.iter().any(|shadowed| shadowed == name)
+                    || options_api_setup_binding_names.contains(name)
+            },
+        );
+
         Self {
             setup_bindings,
             options_api_setup_bindings,
             auto_import_bindings,
+            deferred_bindings,
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
@@ -90,6 +108,7 @@ impl TemplateRefUnwraps {
     }
 
     pub(super) fn emit_type_captures(&self, mut ts: &mut String) {
+        deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
         if !self.setup_bindings.is_empty() {
             ts.push_str("  // Ref type captures (before template scope shadows them)\n");
             for name in &self.setup_bindings {
@@ -128,6 +147,7 @@ impl TemplateRefUnwraps {
     /// declared alongside it rather than at module scope — see
     /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
     pub(super) fn emit_template_variables(&self, mut ts: &mut String, has_generic_param: bool) {
+        deferred_bindings::emit_template_variables(ts, &self.deferred_bindings);
         if self.setup_bindings.is_empty()
             && self.options_api_setup_bindings.is_empty()
             && self.auto_import_bindings.is_empty()
