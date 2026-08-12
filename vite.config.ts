@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { UserConfig } from "vite-plus";
 import { defineConfig } from "vite-plus";
 import { floatingPromiseTestPatterns } from "./tools/vite-plus/task-inputs.ts";
@@ -33,6 +34,15 @@ const vscodeExtensionLintIgnorePatterns = [
   "editors/vscode/test-fixtures/**",
   "editors/vscode/typescript-vue-plugin/**",
 ];
+
+/**
+ * Vite+ evaluates this root config for the extension's nested run as well, so
+ * the working directory the run was started from is the only signal that tells
+ * the two apart. Lint policy that exists purely to compensate for the missing
+ * extension toolchain must stay out of the nested run, which has the real
+ * dependencies installed.
+ */
+const isVscodeExtensionRun = process.cwd() === path.resolve(import.meta.dirname, "editors/vscode");
 
 /**
  * Oxfmt 0.61 formats Markdown tables containing translated prose and literal
@@ -95,16 +105,20 @@ const config = {
        * The repo-wide lint analyses the VS Code extension without its isolated
        * dependency install, so `vscode` and `vscode-languageclient` imports
        * resolve to error types and every union mentioning them is reported as a
-       * redundant constituent. Vite+ merges this override into the extension's
-       * own nested run as well, which is the accepted trade for keeping the
-       * repository zero-warning budget free of unresolved-type false positives.
+       * redundant constituent. The extension's own nested run resolves those
+       * types for real, so the suppression is scoped to the repo-wide run and
+       * the rule keeps guarding the extension sources where it is meaningful.
        */
-      {
-        files: ["editors/vscode/**"],
-        rules: {
-          "typescript/no-redundant-type-constituents": "off",
-        },
-      },
+      ...(isVscodeExtensionRun
+        ? []
+        : [
+            {
+              files: ["editors/vscode/**"],
+              rules: {
+                "typescript/no-redundant-type-constituents": "off",
+              },
+            },
+          ]),
       {
         files: floatingPromiseTestPatterns,
         rules: {
