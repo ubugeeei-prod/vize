@@ -1,13 +1,13 @@
-import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
-import "monaco-editor/esm/vs/language/html/monaco.contribution";
-import "monaco-editor/esm/vs/language/css/monaco.contribution";
-import "monaco-editor/esm/vs/language/json/monaco.contribution";
+import "monaco-editor/language/typescript/monaco.contribution";
+import "monaco-editor/language/html/monaco.contribution";
+import "monaco-editor/language/css/monaco.contribution";
+import "monaco-editor/language/json/monaco.contribution";
 
-import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
-import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
-import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import editorWorker from "monaco-editor/editor/editor.worker?worker";
+import tsWorker from "monaco-editor/language/typescript/ts.worker?worker";
+import htmlWorker from "monaco-editor/language/html/html.worker?worker";
+import cssWorker from "monaco-editor/language/css/css.worker?worker";
+import jsonWorker from "monaco-editor/language/json/json.worker?worker";
 
 self.MonacoEnvironment = {
   getWorker(_, label) {
