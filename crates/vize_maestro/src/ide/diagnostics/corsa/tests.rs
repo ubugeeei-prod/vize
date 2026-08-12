@@ -1,3 +1,5 @@
+use vize_carton::cstr;
+
 use super::mapping::{line_character_to_byte_offset, source_offset_to_position};
 
 #[test]
@@ -275,7 +277,7 @@ const speakerOptions = computed(() =>
         if bridge.spawn().await.is_err() {
             return None;
         }
-        let virtual_name = format!("{}.ts", vue_path.display());
+        let virtual_name = cstr!("{}.ts", vue_path.display());
         let open_result = bridge
             .open_or_update_virtual_document(&virtual_name, &virtual_result.code)
             .await;

@@ -1,5 +1,7 @@
 //! Shared request-parameter builders for the handler guard tests.
 
+use vize_carton::cstr;
+
 use super::*;
 
 pub(super) fn service_with_options(
@@ -31,7 +33,7 @@ pub(super) fn options(pairs: &[(&str, bool)]) -> serde_json::Value {
 }
 
 pub(super) fn uri(path: &str) -> Url {
-    Url::parse(&format!("file:///{path}")).unwrap()
+    Url::parse(&cstr!("file:///{path}")).unwrap()
 }
 
 pub(super) fn open_vue(server: &MaestroServer, uri: &Url, source: &str) {

@@ -1,3 +1,5 @@
+use vize_carton::cstr;
+
 use super::ServerState;
 
 #[test]
@@ -41,7 +43,7 @@ fn language_server_legacy_vue2_reaches_logged_lsp_feature_payload() {
     );
     assert!(state.options_api_enabled());
 
-    let logged_payload = format!("{features:?}");
+    let logged_payload = cstr!("{features:?}");
     assert!(logged_payload.contains("legacy_vue2: true"));
     assert!(logged_payload.contains("options_api: true"));
 }
@@ -73,7 +75,7 @@ fn disabled_language_server_clears_logged_legacy_vue2_feature() {
         "disabled LSP feature config should not log implied Options API support"
     );
 
-    let logged_payload = format!("{features:?}");
+    let logged_payload = cstr!("{features:?}");
     assert!(logged_payload.contains("legacy_vue2: false"));
     assert!(logged_payload.contains("options_api: false"));
 }

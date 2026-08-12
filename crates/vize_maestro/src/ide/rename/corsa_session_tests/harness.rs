@@ -4,12 +4,15 @@ use std::{
     sync::Arc,
 };
 
-use tower_lsp::lsp_types::{PrepareRenameResponse, Range, Url, WorkspaceEdit};
+use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
+use vize_carton::cstr;
 
+use self::assertions::{assert_exact_event_edit, authored_text, prepare_range, strict_rename};
 use super::super::canonical;
 use crate::{ide::IdeContext, server::ServerState};
 
+mod assertions;
 pub(in crate::ide) mod evidence;
 mod generation;
 pub(in crate::ide) mod protocol;
@@ -51,7 +54,7 @@ impl RealCorsaRenameSession {
     fn new_inner(corsa_path: &Path, observe_shutdown: bool) -> Result<Self, String> {
         let root = tempfile::TempDir::new().map_err(|error| error.to_string())?;
         let canonical_root = root.path().canonicalize().map_err(|error| {
-            format!(
+            cstr!(
                 "canonicalize session root {}: {error}",
                 root.path().display()
             )
@@ -78,9 +81,9 @@ impl RealCorsaRenameSession {
         fs::write(&child_path, CHILD_SOURCE).map_err(|error| error.to_string())?;
         fs::write(&parent_path, PARENT_SOURCE).map_err(|error| error.to_string())?;
         let child_uri = Url::from_file_path(&child_path)
-            .map_err(|()| format!("invalid child path {}", child_path.display()))?;
+            .map_err(|()| cstr!("invalid child path {}", child_path.display()))?;
         let parent_uri = Url::from_file_path(&parent_path)
-            .map_err(|()| format!("invalid parent path {}", parent_path.display()))?;
+            .map_err(|()| cstr!("invalid parent path {}", parent_path.display()))?;
 
         let state = ServerState::new();
         state.set_workspace_root(canonical_root.clone());
@@ -126,22 +129,23 @@ impl RealCorsaRenameSession {
             .ok_or_else(|| "parent event marker missing".to_owned())?;
         for relative in 0.."save-item".len() {
             let ctx = IdeContext::new(&self.state, &self.parent_uri, event_start + relative)
-                .ok_or_else(|| format!("missing parent context at cursor {relative}"))?;
+                .ok_or_else(|| cstr!("missing parent context at cursor {relative}"))?;
             let prepared = crate::runtime::block_on(canonical::prepare_strict(
                 &ctx,
                 Some(self.bridge.as_ref()),
             ))
-            .map_err(|error| format!("strict prepare failed at cursor {relative}: {error}"))?;
+            .map_err(|error| cstr!("strict prepare failed at cursor {relative}: {error}"))?;
             let canonical::Answer::Available(Some(prepared)) = prepared else {
-                return Err(format!(
+                return Err(cstr!(
                     "strict prepare returned no canonical answer at cursor {relative}"
-                ));
+                )
+                .into());
             };
             let selected = authored_text(PARENT_SOURCE, prepare_range(&prepared));
             if selected != "save-item" {
-                return Err(format!(
-                    "strict prepare selected {selected:?} at cursor {relative}"
-                ));
+                return Err(
+                    cstr!("strict prepare selected {selected:?} at cursor {relative}").into(),
+                );
             }
         }
         Ok(())
@@ -158,18 +162,17 @@ impl RealCorsaRenameSession {
             "direct-event",
             Some(self.bridge.as_ref()),
         ));
-        let answer =
-            answer.map_err(|error| format!("strict rename failed: {error}; {stages:#?}"))?;
+        let answer = answer.map_err(|error| cstr!("strict rename failed: {error}; {stages:#?}"))?;
         let canonical::Answer::Available(Some(edit)) = answer else {
-            return Err(format!(
-                "strict rename returned no canonical edit; stages={stages:#?}"
-            ));
+            return Err(
+                cstr!("strict rename returned no canonical edit; stages={stages:#?}").into(),
+            );
         };
         if !matches!(
             stages.last(),
             Some(canonical::CanonicalRenameStage::Complete)
         ) {
-            return Err(format!("rename did not complete; stages={stages:#?}"));
+            return Err(cstr!("rename did not complete; stages={stages:#?}").into());
         }
         assert_exact_event_edit(
             &edit,
@@ -238,22 +241,24 @@ impl RealCorsaRenameSession {
             .get_workspace_root()
             .ok_or_else(|| "session state lost its workspace root".to_owned())?;
         if state_root != self.canonical_root {
-            return Err(format!(
+            return Err(cstr!(
                 "state root {} != canonical root {}",
                 state_root.display(),
                 self.canonical_root.display()
-            ));
+            )
+            .into());
         }
         for uri in [&self.child_uri, &self.parent_uri] {
             let path = uri
                 .to_file_path()
-                .map_err(|()| format!("non-file session URI: {uri}"))?;
+                .map_err(|()| cstr!("non-file session URI: {uri}"))?;
             if !path.starts_with(&self.canonical_root) {
-                return Err(format!(
+                return Err(cstr!(
                     "document {} escaped canonical root {}",
                     path.display(),
                     self.canonical_root.display()
-                ));
+                )
+                .into());
             }
         }
         self.assert_platform_root_spelling()
@@ -265,19 +270,21 @@ impl RealCorsaRenameSession {
             && !(self.root.path().starts_with("/var")
                 && self.canonical_root.starts_with("/private/var"))
         {
-            return Err(format!(
+            return Err(cstr!(
                 "unexpected macOS temp root spellings: logical={}, canonical={}",
                 self.root.path().display(),
                 self.canonical_root.display()
-            ));
+            )
+            .into());
         }
         #[cfg(target_os = "linux")]
         if self.root.path() != self.canonical_root {
-            return Err(format!(
+            return Err(cstr!(
                 "Linux temp root should already be canonical: logical={}, canonical={}",
                 self.root.path().display(),
                 self.canonical_root.display()
-            ));
+            )
+            .into());
         }
         Ok(())
     }
@@ -290,61 +297,4 @@ impl Drop for RealCorsaRenameSession {
             self.shutdown_complete = true;
         }
     }
-}
-
-fn strict_rename(
-    ctx: &IdeContext<'_>,
-    bridge: &CorsaBridge,
-    new_name: &str,
-) -> Result<WorkspaceEdit, String> {
-    let answer = crate::runtime::block_on(canonical::rename_strict(ctx, new_name, Some(bridge)))
-        .map_err(|error| format!("strict rename failed: {error}"))?;
-    let canonical::Answer::Available(Some(edit)) = answer else {
-        return Err("strict rename returned no canonical edit".to_owned());
-    };
-    Ok(edit)
-}
-
-fn assert_exact_event_edit(
-    edit: &WorkspaceEdit,
-    parent: (&Url, &str, &str, &str),
-    child: (&Url, &str, &str, &str),
-) -> Result<(), String> {
-    let changes = edit
-        .changes
-        .as_ref()
-        .ok_or_else(|| "rename did not return plain workspace changes".to_owned())?;
-    if changes.len() != 2 || !changes.contains_key(parent.0) || !changes.contains_key(child.0) {
-        return Err(format!("unexpected rename URI set: {changes:#?}"));
-    }
-    for (uri, source, old_name, new_name) in [parent, child] {
-        let edits = changes
-            .get(uri)
-            .ok_or_else(|| format!("missing edit for {uri}"))?;
-        if edits.len() != 1
-            || authored_text(source, edits[0].range) != old_name
-            || edits[0].new_text != new_name
-        {
-            return Err(format!(
-                "expected one exact {old_name} -> {new_name} edit: {changes:#?}"
-            ));
-        }
-    }
-    Ok(())
-}
-
-fn prepare_range(response: &PrepareRenameResponse) -> Range {
-    match response {
-        PrepareRenameResponse::Range(range)
-        | PrepareRenameResponse::RangeWithPlaceholder { range, .. } => *range,
-        PrepareRenameResponse::DefaultBehavior { .. } => panic!("expected an authored range"),
-    }
-}
-
-fn authored_text(source: &str, range: Range) -> &str {
-    let start = crate::ide::position_to_offset(source, range.start.line, range.start.character)
-        .expect("valid source start");
-    let end = crate::ide::position_to_offset(source, range.end.line, range.end.character)
-        .expect("valid source end");
-    &source[start..end]
 }

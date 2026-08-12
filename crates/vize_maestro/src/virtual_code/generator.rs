@@ -8,8 +8,14 @@ mod binding;
 mod block;
 mod inline_art;
 
+// Both test modules below: `insta`'s snapshot macros expand through the
+// disallowed `std::format!`, and the expansion is inside `insta`, so only an
+// allow at the test module can silence it. See CONTRIBUTING.md, "Snapshot
+// assertions in test targets".
+#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
 mod tests;
+#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
 mod tests_semantic_bindings;
 

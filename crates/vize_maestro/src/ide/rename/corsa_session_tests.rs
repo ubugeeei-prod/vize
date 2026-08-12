@@ -1,6 +1,7 @@
 use std::sync::{Arc, Barrier};
 
 use harness::RealCorsaRenameSession;
+use vize_carton::cstr;
 
 mod direct_first;
 pub(in crate::ide) mod harness;
@@ -17,10 +18,10 @@ fn concurrent_real_corsa_rename_sessions_are_isolated() {
     let sessions = (0..SESSION_COUNT)
         .map(|session_index| {
             let session = RealCorsaRenameSession::new(&corsa_path)
-                .map_err(|error| format!("session {session_index} setup: {error}"))?;
+                .map_err(|error| cstr!("session {session_index} setup: {error}"))?;
             session
                 .assert_root_identity()
-                .map_err(|error| format!("session {session_index} root identity: {error}"))?;
+                .map_err(|error| cstr!("session {session_index} root identity: {error}"))?;
             Ok((session_index, session))
         })
         .collect::<Result<Vec<_>, String>>()
@@ -41,17 +42,17 @@ fn concurrent_real_corsa_rename_sessions_are_isolated() {
                     session
                         .assert_direct_first_child_rename()
                         .map_err(|error| {
-                            format!(
+                            cstr!(
                                 "session {session_index} direct-first rename: {error}; {}",
                                 harness::evidence::describe_server_frames(&session)
                             )
                         })?;
                     for round in 0..ASSERTED_ROUNDS {
                         session.assert_prepare_ranges().map_err(|error| {
-                            format!("session {session_index} round {round} prepare: {error}")
+                            cstr!("session {session_index} round {round} prepare: {error}")
                         })?;
                         session.assert_parent_and_child_renames().map_err(|error| {
-                            format!("session {session_index} round {round} rename: {error}")
+                            cstr!("session {session_index} round {round} rename: {error}")
                         })?;
                     }
                     Ok((session_index, session))
@@ -90,7 +91,7 @@ fn shutdown_sessions(sessions: Vec<(usize, RealCorsaRenameSession)>) {
                 scope.spawn(move || {
                     session
                         .shutdown()
-                        .map_err(|error| format!("session {session_index} shutdown: {error}"))
+                        .map_err(|error| cstr!("session {session_index} shutdown: {error}"))
                 })
             })
             .collect::<Vec<_>>()

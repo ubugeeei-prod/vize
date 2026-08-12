@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use vize_carton::cstr;
+
 use super::*;
 use crate::ide::jsx::position::source_offset_to_virtual_position;
 
@@ -9,9 +11,9 @@ fn generate(source: &str) -> JsxVirtualTs {
 
 fn assert_virtual_ts_snapshot(name: &str, source: &str) {
     let generated = generate(source);
-    insta::assert_snapshot!(format!("{name}_code"), generated.code.as_str());
+    insta::assert_snapshot!(cstr!("{name}_code").as_str(), generated.code.as_str());
     insta::assert_debug_snapshot!(
-        format!("{name}_mappings"),
+        cstr!("{name}_mappings").as_str(),
         mapping_summary(source, &generated)
     );
 }

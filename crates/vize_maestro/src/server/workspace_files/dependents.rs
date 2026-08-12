@@ -77,6 +77,7 @@ mod tests {
     #![allow(clippy::disallowed_methods)]
 
     use tower_lsp::lsp_types::Url;
+    use vize_carton::cstr;
 
     use super::{ServerState, versioned_open_typecheck_dependents};
 
@@ -120,7 +121,7 @@ mod tests {
     fn write_manifest(package: &std::path::Path, target: &str) {
         std::fs::write(
             package.join("package.json"),
-            format!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}"),
+            cstr!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}"),
         )
         .unwrap();
     }

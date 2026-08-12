@@ -29,6 +29,10 @@ mod dedup_tests;
 mod split_component_props_tests;
 #[cfg(test)]
 mod template_event_tests;
+// `insta`'s snapshot macros expand through the disallowed `std::format!`; the
+// expansion is inside `insta`, so only an allow at the test module can silence
+// it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
+#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
 mod tests;
 

@@ -56,7 +56,7 @@ fn open_secondary_variant(state: &ServerState, dir: &std::path::Path) -> (Url, u
 
 fn variant_info(ctx: &IdeContext<'_>) -> ArtVariantInfo {
     match ctx.block_type {
-        Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) => info.clone(),
+        Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) => *info,
         ref other => panic!("expected an art variant context, got {other:?}"),
     }
 }
