@@ -14,6 +14,7 @@ import {
 } from "./support/check-fixtures/phase-runner.ts";
 import { readProcessTable } from "./support/check-fixtures/process-table.ts";
 import { REPORT_SCHEMA } from "./support/check-fixtures/report.ts";
+import { settleGuardedTasks } from "./support/check-fixtures/supervised-command.ts";
 import { runSupervisor } from "./support/check-fixtures/supervisor.ts";
 import { root } from "./support/github-workflows.ts";
 
@@ -101,6 +102,30 @@ test("the descendant guard stays quiet when a phase reaps its children", async (
   assert.deepEqual(outcome.survivors, []);
   assert.equal(outcome.reaped, false);
   assert.equal(outcome.samples.after.group.processes.length, 0);
+});
+
+// A `tsgo` that exits with its phase is still in the table for a moment, first
+// running and then as a zombie until it is reaped. Judging on the instant the
+// phase closed failed the lane for those corpses, so the guard waits for the
+// group to settle. What it must not do is settle away a task that only left
+// because it was killed, which is the leak it exists to catch.
+test("a task that exits on its own is not a leak, and one that stays is", async () => {
+  const leaked = { command: "tsgo", pgid: 4242, pid: 4243, ppid: 1, state: "Z", threads: 1 };
+  let reads = 0;
+  const exiting = await settleGuardedTasks(4242, 1, () => {
+    reads += 1;
+    return reads === 1 ? [leaked] : [];
+  });
+  assert.deepEqual(exiting.survivors, [], "a task already on its way out is not a leak");
+  assert.ok(reads > 1, "the guard must re-read rather than trust the first sample");
+
+  const staying = await settleGuardedTasks(4242, 1, () => [leaked], 30);
+  assert.deepEqual(
+    staying.survivors.map((record) => record.pid),
+    [4243],
+    "a task that outlasts the settle window is still reported",
+  );
+  assert.deepEqual(staying.records, [leaked], "the artifact reads the same table as the verdict");
 });
 
 // The lane never meets these because it starts from a task runner, but the

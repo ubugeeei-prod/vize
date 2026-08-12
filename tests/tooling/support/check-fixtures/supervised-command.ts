@@ -21,7 +21,7 @@ export type SupervisedResult = {
     readonly peak: TopologySample;
     readonly after: TopologySample;
   };
-  /** Guarded tasks still alive once the child returned. */
+  /** Guarded tasks still present after the group was given time to settle. */
   readonly survivors: readonly TaskRecord[];
   /** Whether the group had to be killed to restore the baseline. */
   readonly reaped: boolean;
@@ -42,6 +42,41 @@ export type SupervisedOptions = {
 /** How long a killed group is given to leave the process table. */
 const REAP_TIMEOUT_MS = 2_000;
 const REAP_POLL_MS = 10;
+
+/** How long a task that is already exiting is given to leave on its own. */
+const SETTLE_TIMEOUT_MS = 1_000;
+
+/**
+ * Read the table once the group has stopped changing.
+ *
+ * A task that exits at the same moment its phase does is still in the table for
+ * a short window: first as a running process, then as a zombie until its parent
+ * reaps it, or `init` does once the exiting phase orphans it. Judging the phase
+ * on the instant the child closed therefore reported already-dead `tsgo` corpses
+ * as leaks, which is a verdict about scheduling luck rather than about the
+ * phase.
+ *
+ * Only tasks that outlast this window are leaks. The wait is bounded and only
+ * paid when something is still there, and it deliberately happens *before* the
+ * group is killed: a task that has to be killed to disappear is exactly the leak
+ * this guard exists to catch, so it must never be settled away.
+ */
+export async function settleGuardedTasks(
+  pgid: number,
+  rootPid: number,
+  read: () => readonly TaskRecord[] = readProcessTable,
+  timeoutMs: number = SETTLE_TIMEOUT_MS,
+): Promise<{ records: readonly TaskRecord[]; survivors: readonly TaskRecord[] }> {
+  let records = read();
+  let survivors = guardedSurvivors(records, { pgid, rootPid });
+  const deadline = performance.now() + timeoutMs;
+  while (survivors.length > 0 && performance.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, REAP_POLL_MS));
+    records = read();
+    survivors = guardedSurvivors(records, { pgid, rootPid });
+  }
+  return { records, survivors };
+}
 
 /**
  * Kill the group and confirm it is gone before claiming it was reaped.
@@ -121,15 +156,20 @@ export async function runSupervised(options: SupervisedOptions): Promise<Supervi
 
   const durationMs = Math.round(performance.now() - beganAt);
   // One read backs both the `after` sample and the guard, so the artifact can
-  // never disagree with the verdict drawn from it.
-  const settled = readProcessTable();
+  // never disagree with the verdict drawn from it. That read is taken once the
+  // group has settled, so the artifact records what the phase actually left
+  // behind rather than what was still on its way out.
+  const settled =
+    pgid == null
+      ? { records: readProcessTable(), survivors: [] as readonly TaskRecord[] }
+      : await settleGuardedTasks(pgid, process.pid);
   const after = sampleTopology("after", {
     pgid,
-    records: settled,
+    records: settled.records,
     runner,
     startedAt: options.startedAt,
   });
-  const survivors = pgid == null ? [] : guardedSurvivors(settled, { pgid, rootPid: process.pid });
+  const survivors = settled.survivors;
   const reaped = survivors.length > 0 && pgid != null ? await killGroup(pgid, process.pid) : false;
 
   return {
