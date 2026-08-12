@@ -124,12 +124,23 @@ export const view = <Counter count={1} is-opened data-id={1} onSelect={(value) =
 "#,
         "toUpperCase",
     );
-    assert_broken(
+    // A native DOM listener is not a component prop: `vue-tsc` rejects
+    // `<Comp onClick={…}/>` unless the component declares the emit, so the
+    // fallthrough contract admits only `class`/`style` and hyphenated
+    // attributes (#4042). vize reports the excess key at the authored
+    // attribute rather than TypeScript's whole-attributes `TS2322`, because the
+    // element is lowered to a component call.
+    let native_listener = assert_broken(
         &project,
         r#"import Counter from './Counter.vue';
 export const view = <Counter count={1} is-opened data-id={1} onClick={(event: string) => event.toUpperCase()} />;
 "#,
-        "not assignable",
+        "does not exist in type",
+    );
+    assert!(
+        native_listener.stdout.contains("error:2:62") && native_listener.stdout.contains("onClick"),
+        "{}",
+        native_listener.stdout
     );
     assert_broken(
         &project,
@@ -161,7 +172,6 @@ export const view = (
     style="color: red"
     data-role="counter"
     aria-label="Counter"
-    onClick={(event) => event.preventDefault()}
     onSelect={(value) => value.toFixed(0)}
   />
 );
