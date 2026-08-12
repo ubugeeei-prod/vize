@@ -53,9 +53,9 @@ void test("Vue 2 static preview builds without a createApp runtime export", asyn
       ],
     });
 
-    const bundledJs = await readOutputJs(outDir);
-    assert.doesNotMatch(bundledJs, /\bcreateApp\b/);
-    assert.match(bundledJs, /\bnew Vue\b/);
+    const previewJs = await readVue2PreviewJs(outDir);
+    assert.doesNotMatch(previewJs, /\bcreateApp\b/);
+    assert.match(previewJs, /\bnew Vue\b/);
     assert.equal(await fileExists(path.join(outDir, "__musea__", "api", "static.json")), true);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
@@ -168,12 +168,12 @@ export const h = (...args) => ({ args });
 `;
 }
 
-async function readOutputJs(dir: string): Promise<string> {
-  const chunks: string[] = [];
-  for (const file of await collectFiles(dir)) {
-    if (file.endsWith(".js")) chunks.push(await fs.promises.readFile(file, "utf8"));
-  }
-  return chunks.join("\n");
+async function readVue2PreviewJs(dir: string): Promise<string> {
+  const previewFiles = (await collectFiles(dir)).filter(
+    (file) => path.basename(file).startsWith("Tag.art-") && file.endsWith(".js"),
+  );
+  assert.equal(previewFiles.length, 1, "the Vue 2 art should emit one preview chunk");
+  return fs.promises.readFile(previewFiles[0]!, "utf8");
 }
 
 async function collectFiles(dir: string): Promise<string[]> {
