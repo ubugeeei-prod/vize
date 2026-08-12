@@ -7,8 +7,8 @@ use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
 use crate::batch::declaration_path::is_declaration_file;
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::executor::diagnostics::{
-    DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk, restore_authored_paths,
-    should_skip_diagnostic, should_skip_original_diagnostic,
+    DiagnosticMapper, dedup_diagnostics, relative_module_resolves_on_disk,
+    restore_authored_paths_in_messages, should_skip_diagnostic, should_skip_original_diagnostic,
 };
 use vize_carton::{FxHashMap, profile};
 use vize_carton::{String, cstr};
@@ -437,26 +437,10 @@ fn parse_output_diagnostics(output: &Output, project: &VirtualProject) -> Vec<Di
     #[allow(clippy::disallowed_types)]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
     parse_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut diagnostics);
-    // Restore authored paths once, over every message this output produced.
-    //
-    // Doing it here rather than per producer is what makes the coverage total: a
-    // CLI message is assembled from three sources — the diagnostic line itself,
-    // a project-level line with no file position, and the raw continuation lines
-    // a multi-line explanation appends below it (`TS6307`'s "The file is in the
-    // program because:" chain). Only the first ever passed through the mapper,
-    // so the other two printed `node_modules/.vize/canon/projects/<hash>/…`
-    // paths the author never wrote (#3227).
-    for diagnostic in &mut diagnostics {
-        diagnostic.message = restore_authored_paths(
-            &diagnostic.message,
-            project.virtual_root(),
-            project.project_root(),
-        );
-    }
     // A single template error surfaces twice — the dynamic prop binding it sits
     // on is generated at two virtual positions that map back to the same source
     // attribute span (#1389). Collapse exact duplicates at the collection point.
-    dedup_diagnostics(diagnostics)
+    dedup_diagnostics(restore_authored_paths_in_messages(diagnostics, project))
 }
 
 fn parse_cli_diagnostics(

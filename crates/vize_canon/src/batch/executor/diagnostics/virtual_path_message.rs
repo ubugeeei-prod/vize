@@ -24,7 +24,32 @@
 
 use std::path::Path;
 
+use super::{Diagnostic, VirtualProject};
 use vize_carton::{String, ToCompactString};
+
+/// Restore authored paths across every message one checker output produced.
+///
+/// Doing it here rather than per producer is what makes the coverage total: a
+/// CLI message is assembled from three sources — the diagnostic line itself, a
+/// project-level line with no file position, and the raw continuation lines a
+/// multi-line explanation appends below it (`TS6307`'s "The file is in the
+/// program because:" chain). Only the first ever passes through
+/// [`DiagnosticMapper`](super::DiagnosticMapper), so without this the other two
+/// print `node_modules/.vize/canon/projects/<hash>/…` paths the author never
+/// wrote (#3227).
+pub(in crate::batch::executor) fn restore_authored_paths_in_messages(
+    mut diagnostics: Vec<Diagnostic>,
+    project: &VirtualProject,
+) -> Vec<Diagnostic> {
+    for diagnostic in &mut diagnostics {
+        diagnostic.message = restore_authored_paths(
+            &diagnostic.message,
+            project.virtual_root(),
+            project.project_root(),
+        );
+    }
+    diagnostics
+}
 
 /// Rewrite every virtual-root-prefixed path in `message` to its authored path.
 ///
