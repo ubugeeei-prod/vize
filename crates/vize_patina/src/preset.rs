@@ -340,7 +340,10 @@ mod tests {
             }
         }
         for script_rule in crate::linter::script_rules::builtin_script_rules() {
-            severities.insert(script_rule.name, severity_name(script_rule.default_severity));
+            severities.insert(
+                script_rule.name,
+                severity_name(script_rule.default_severity),
+            );
         }
         let ecosystem: BTreeSet<&'static str> = ecosystem_rule_names().into_iter().collect();
 

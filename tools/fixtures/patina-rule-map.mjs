@@ -14,6 +14,10 @@ export const ruleMapPath = path.join(
 
 const upstreamPackage = "eslint-plugin-vue";
 const trackingIssue = 3223;
+// Code-point ordering, not localeCompare: the rule map is a checked-in artifact
+// that must be byte-identical across runners regardless of the host's ICU locale
+// data, and the Rust-side drift test reads it as written.
+const byCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 const explicitPatinaAliases = new Map([
   ["vue/attributes-order", "vue/attribute-order"],
   ["vue/block-order", "vue/sfc-element-order"],
@@ -73,7 +77,7 @@ async function loadPatinaRules() {
     assert.ok(Array.isArray(rule.presets), `${rule.name} must record its presets`);
     rules.set(rule.name, {
       defaultSeverity: rule.defaultSeverity,
-      presets: [...rule.presets].sort(),
+      presets: [...rule.presets].sort(byCodePoint),
     });
   }
   return rules;
@@ -172,7 +176,7 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
       );
       assert.deepEqual(
         entry.patinaPresets,
-        [...entry.patinaPresets].sort(),
+        [...entry.patinaPresets].sort(byCodePoint),
         `${ruleId} must list presets in sorted order`,
       );
       mapped += 1;
