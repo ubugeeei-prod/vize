@@ -169,6 +169,15 @@ defineExpose<{ close(): void }>();
 </template>
 "#;
 
+/// Consumed by nothing but the project itself, on purpose: a generic SFC carries
+/// no options index signature, so its own generated module must still check clean
+/// in both lanes above (neither expectation carries a `GenericList.vue` row).
+/// Member access on a generic component is not asserted here, because
+/// `InstanceType<typeof GenericList>` is a recorded vue-tsc divergence (vue-tsc
+/// reports `TS2344` for it, vize resolves the non-generic instance) while this
+/// suite asserts byte-exact vue-tsc parity. The exclusion rule itself is asserted
+/// on the generated module by
+/// `component_options_index_signature::generic_component_options_omit_the_string_index_signature`.
 const GENERIC_LIST: &str = r#"<script setup lang="ts" generic="T extends { id: string }">
 const props = defineProps<{ items: T[] }>();
 
