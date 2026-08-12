@@ -2,7 +2,7 @@ name: Release tag rollback
 on:
   workflow_call:
     inputs:
-      preflight-result:
+      preflight_result:
         required: true
         type: string
 permissions: { contents: read }
@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 5
     permissions: { contents: write }
     env:
-      RELEASE_PREFLIGHT_RESULT: ${{ inputs.preflight-result }}
+      RELEASE_PREFLIGHT_RESULT: ${{ inputs.preflight_result }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, fetch-tags: true }

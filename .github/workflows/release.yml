@@ -539,7 +539,7 @@ jobs:
     needs: release-preflight
     permissions: { contents: write }
     uses: ./.github/workflows/release-tag-rollback.yml
-    with: { preflight-result: "${{ needs.release-preflight.result }}" }
+    with: { preflight_result: "${{ needs.release-preflight.result }}" }
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04

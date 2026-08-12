@@ -172,7 +172,7 @@ test("release calls a credential-minimal hosted rollback workflow after prefligh
   assert.deepEqual(caller.permissions, { contents: "write" });
   assert.equal(caller.uses, "./.github/workflows/release-tag-rollback.yml");
   assert.deepEqual(caller.with, {
-    "preflight-result": "${{ needs.release-preflight.result }}",
+    preflight_result: "${{ needs.release-preflight.result }}",
   });
 
   const called = parse(readRepoFile(".github", "workflows", "release-tag-rollback.yml")) as {
