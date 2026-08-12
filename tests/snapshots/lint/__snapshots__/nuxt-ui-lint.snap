@@ -62,17 +62,6 @@
     "file": "src/runtime/components/Avatar.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'UChip' is registered but never used in template",
-        "line": 99,
-        "column": 11,
-        "endLine": 100,
-        "endColumn": 5,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -85,7 +74,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/AvatarGroup.vue",

@@ -8168,17 +8168,6 @@
     "file": "src/components/MkPagination.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkPullToRefresh' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 15,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8268,7 +8257,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "src/components/MkPaginationControl.vue",
@@ -10854,28 +10843,6 @@
     "file": "src/components/MkStreamingNotesTimeline.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkButton' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 8,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkPullToRefresh' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 15,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -11020,22 +10987,11 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 15
+    "warningCount": 13
   },
   {
     "file": "src/components/MkStreamingNotificationsTimeline.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkPullToRefresh' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 15,
-        "help": "Remove the unused import or use the component in your template"
-      },
       {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -11137,7 +11093,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 10
+    "warningCount": 9
   },
   {
     "file": "src/components/MkSubNoteContent.vue",
@@ -14812,17 +14768,6 @@
     "file": "src/components/global/MkAvatar.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkA' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 3,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -14879,7 +14824,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 5
+    "warningCount": 4
   },
   {
     "file": "src/components/global/MkCondensedLine.vue",
@@ -19784,17 +19729,6 @@
     "file": "src/pages/admin/modlog.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkPullToRefresh' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 15,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -19862,7 +19796,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "src/pages/admin/object-storage.vue",
@@ -32701,17 +32635,6 @@
     "file": "src/pages/user/home.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'MkPullToRefresh' is registered but never used in template",
-        "line": 6,
-        "column": 11,
-        "endLine": 7,
-        "endColumn": 15,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/attribute-hyphenation",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -32856,7 +32779,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 14
+    "warningCount": 13
   },
   {
     "file": "src/pages/user/index.activity.vue",

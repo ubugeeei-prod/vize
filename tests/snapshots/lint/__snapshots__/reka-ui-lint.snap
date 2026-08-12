@@ -6009,28 +6009,6 @@
     "file": "packages/core/src/Select/SelectContentImpl.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'SelectItemAlignedPosition' is registered but never used in template",
-        "line": 273,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'SelectPopperPosition' is registered but never used in template",
-        "line": 273,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 1,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "a11y/interactive-supports-focus",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -6065,7 +6043,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Select/SelectGroup.vue",
@@ -6394,32 +6372,9 @@
   },
   {
     "file": "packages/core/src/Slider/SliderRoot.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'SliderHorizontal' is registered but never used in template",
-        "line": 170,
-        "column": 11,
-        "endLine": 171,
-        "endColumn": 16,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'SliderVertical' is registered but never used in template",
-        "line": 170,
-        "column": 11,
-        "endLine": 171,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Slider/SliderThumb.vue",
@@ -7739,32 +7694,9 @@
   },
   {
     "file": "packages/core/src/Tooltip/TooltipContent.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'TooltipContentHoverable' is registered but never used in template",
-        "line": 30,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 23,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'TooltipContentImpl' is registered but never used in template",
-        "line": 30,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 18,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Tooltip/TooltipContentHoverable.vue",

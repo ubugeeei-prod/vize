@@ -10016,39 +10016,6 @@
     "file": "site/src/layouts/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'RightBottomAd' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 13,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Sponsors' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 8,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'WWAdsVue' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 8,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -10138,7 +10105,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 8
   },
   {
     "file": "site/src/theme/template/IconDisplay/CopyableIcon.vue",
