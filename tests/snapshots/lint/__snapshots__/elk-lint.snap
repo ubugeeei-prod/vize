@@ -130,9 +130,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <label> is deprecated",
-        "line": 214,
+        "line": 215,
         "column": 9,
-        "endLine": 214,
+        "endLine": 215,
         "endColumn": 24,
         "help": "Use CSS border instead."
       },
@@ -141,9 +141,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
-        "line": 216,
+        "line": 217,
         "column": 9,
-        "endLine": 216,
+        "endLine": 217,
         "endColumn": 52
       },
       {
@@ -151,9 +151,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
-        "line": 225,
+        "line": 226,
         "column": 9,
-        "endLine": 225,
+        "endLine": 226,
         "endColumn": 32
       },
       {
@@ -161,9 +161,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <textarea> is an interactive element and cannot be nested inside another interactive element",
-        "line": 235,
+        "line": 236,
         "column": 11,
-        "endLine": 244,
+        "endLine": 245,
         "endColumn": 13
       },
       {
@@ -171,9 +171,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 272,
+        "line": 273,
         "column": 1,
-        "endLine": 272,
+        "endLine": 273,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
@@ -302,6 +302,24 @@
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountRelationshipIndicator.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <span> is deprecated",
+        "line": 14,
+        "column": 5,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
   },
   {
     "file": "app/components/account/AccountRolesIndicator.vue",
@@ -624,10 +642,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 87,
-        "column": 11,
-        "endLine": 87,
-        "endColumn": 43,
+        "line": 83,
+        "column": 28,
+        "endLine": 83,
+        "endColumn": 52,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -717,24 +735,6 @@
     "warningCount": 0
   },
   {
-    "file": "app/components/common/CommonTabs.vue",
-    "messages": [
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
-        "line": 49,
-        "column": 8,
-        "endLine": 55,
-        "endColumn": 8,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
     "file": "app/components/common/CommonTooltip.vue",
     "messages": [],
     "errorCount": 0,
@@ -808,9 +808,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 21,
+        "line": 25,
         "column": 39,
-        "endLine": 21,
+        "endLine": 25,
         "endColumn": 59,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       }
@@ -820,6 +820,12 @@
   },
   {
     "file": "app/components/content/ContentMentionGroup.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/content/ContentRich.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -1207,9 +1213,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 282,
+        "line": 302,
         "column": 11,
-        "endLine": 282,
+        "endLine": 302,
         "endColumn": 45,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -1225,9 +1231,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <nav> is deprecated",
-        "line": 60,
+        "line": 62,
         "column": 10,
-        "endLine": 60,
+        "endLine": 62,
         "endColumn": 25,
         "help": "Use CSS border instead."
       }
@@ -1397,6 +1403,24 @@
         "column": 13,
         "endLine": 8,
         "endColumn": 28,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/nav/button/Collection.vue",
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 9,
+        "column": 5,
+        "endLine": 9,
+        "endColumn": 22,
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
     ],
@@ -1597,9 +1621,9 @@
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
         "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 149,
+        "line": 151,
         "column": 33,
-        "endLine": 149,
+        "endLine": 151,
         "endColumn": 54,
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       }
@@ -1690,9 +1714,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Slot prop 'update' from slot 'updater' is defined but never used",
-        "line": 184,
+        "line": 182,
         "column": 15,
-        "endLine": 184,
+        "endLine": 182,
         "endColumn": 21,
         "help": "Consider removing unused slot props or prefix with underscore"
       },
@@ -1701,9 +1725,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'eventType' should be 'event-type' (kebab-case)",
-        "line": 181,
+        "line": 179,
         "column": 5,
-        "endLine": 181,
+        "endLine": 179,
         "endColumn": 29,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
@@ -1712,9 +1736,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'virtualScroller' should be 'virtual-scroller' (kebab-case)",
-        "line": 182,
+        "line": 180,
         "column": 5,
-        "endLine": 182,
+        "endLine": 180,
         "endColumn": 39,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
@@ -1723,9 +1747,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 181,
+        "line": 179,
         "column": 5,
-        "endLine": 181,
+        "endLine": 179,
         "endColumn": 29,
         "help": "Use kebab-case for attribute names"
       },
@@ -1734,9 +1758,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 182,
+        "line": 180,
         "column": 5,
-        "endLine": 182,
+        "endLine": 180,
         "endColumn": 39,
         "help": "Use kebab-case for attribute names"
       },
@@ -1745,9 +1769,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 185,
+        "line": 183,
         "column": 44,
-        "endLine": 185,
+        "endLine": 183,
         "endColumn": 59,
         "help": "Use CSS border instead."
       }
@@ -2313,9 +2337,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 100,
+        "line": 101,
         "column": 51,
-        "endLine": 100,
+        "endLine": 101,
         "endColumn": 74,
         "help": "Use CSS border instead."
       }
@@ -2638,9 +2662,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 121,
+        "line": 127,
         "column": 34,
-        "endLine": 121,
+        "endLine": 127,
         "endColumn": 49,
         "help": "Use CSS border instead."
       },
@@ -2649,9 +2673,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 122,
+        "line": 128,
         "column": 34,
-        "endLine": 122,
+        "endLine": 128,
         "endColumn": 49,
         "help": "Use CSS border instead."
       },
@@ -2660,9 +2684,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 123,
+        "line": 129,
         "column": 34,
-        "endLine": 123,
+        "endLine": 129,
         "endColumn": 49,
         "help": "Use CSS border instead."
       },
@@ -2671,9 +2695,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 125,
+        "line": 131,
         "column": 29,
-        "endLine": 125,
+        "endLine": 131,
         "endColumn": 44,
         "help": "Use CSS border instead."
       },
@@ -2682,9 +2706,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 177,
+        "line": 183,
         "column": 24,
-        "endLine": 177,
+        "endLine": 183,
         "endColumn": 39,
         "help": "Use CSS border instead."
       }
@@ -2864,9 +2888,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 67,
+        "line": 69,
         "column": 5,
-        "endLine": 67,
+        "endLine": 69,
         "endColumn": 122,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -2875,9 +2899,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <form> is a static element and should not have interactive event handlers",
-        "line": 67,
+        "line": 69,
         "column": 5,
-        "endLine": 67,
+        "endLine": 69,
         "endColumn": 122,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
@@ -2958,9 +2982,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 99,
+        "line": 102,
         "column": 11,
-        "endLine": 99,
+        "endLine": 102,
         "endColumn": 122,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
@@ -2969,9 +2993,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 105,
+        "line": 108,
         "column": 11,
-        "endLine": 105,
+        "endLine": 108,
         "endColumn": 74,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
@@ -2980,9 +3004,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 116,
+        "line": 119,
         "column": 11,
-        "endLine": 116,
+        "endLine": 119,
         "endColumn": 68,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       },
@@ -2991,9 +3015,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 117,
+        "line": 120,
         "column": 13,
-        "endLine": 117,
+        "endLine": 120,
         "endColumn": 93,
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
@@ -3002,9 +3026,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
-        "line": 117,
+        "line": 120,
         "column": 13,
-        "endLine": 117,
+        "endLine": 120,
         "endColumn": 93,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
@@ -3013,9 +3037,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 117,
+        "line": 120,
         "column": 74,
-        "endLine": 117,
+        "endLine": 120,
         "endColumn": 92,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -3024,9 +3048,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 124,
+        "line": 127,
         "column": 13,
-        "endLine": 124,
+        "endLine": 127,
         "endColumn": 99,
         "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       },
@@ -3035,9 +3059,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
-        "line": 124,
+        "line": 127,
         "column": 13,
-        "endLine": 124,
+        "endLine": 127,
         "endColumn": 99,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
@@ -3046,9 +3070,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 124,
+        "line": 127,
         "column": 72,
-        "endLine": 124,
+        "endLine": 127,
         "endColumn": 98,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -3218,17 +3242,6 @@
     "file": "app/components/status/StatusScheduledCard.vue",
     "messages": [
       {
-        "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 71,
-        "column": 12,
-        "endLine": 71,
-        "endColumn": 37,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -3241,7 +3254,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/status/StatusSpoiler.vue",
@@ -3412,9 +3425,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 35,
+        "line": 32,
         "column": 44,
-        "endLine": 35,
+        "endLine": 32,
         "endColumn": 59,
         "help": "Use CSS border instead."
       },
@@ -3423,9 +3436,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 56,
+        "line": 51,
         "column": 11,
-        "endLine": 60,
+        "endLine": 55,
         "endColumn": 12,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
@@ -3465,9 +3478,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
-        "line": 37,
+        "line": 33,
         "column": 44,
-        "endLine": 37,
+        "endLine": 33,
         "endColumn": 59,
         "help": "Use CSS border instead."
       },
@@ -3476,9 +3489,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 60,
+        "line": 55,
         "column": 11,
-        "endLine": 64,
+        "endLine": 59,
         "endColumn": 12,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
@@ -3595,9 +3608,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 102,
+        "line": 94,
         "column": 12,
-        "endLine": 102,
+        "endLine": 94,
         "endColumn": 35,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -3606,9 +3619,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 114,
+        "line": 106,
         "column": 9,
-        "endLine": 114,
+        "endLine": 106,
         "endColumn": 24,
         "help": "Use CSS border instead."
       },
@@ -3617,9 +3630,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
-        "line": 121,
+        "line": 113,
         "column": 9,
-        "endLine": 136,
+        "endLine": 128,
         "endColumn": 10,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       },
@@ -3628,9 +3641,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
-        "line": 140,
+        "line": 132,
         "column": 27,
-        "endLine": 140,
+        "endLine": 132,
         "endColumn": 42,
         "help": "Use CSS border instead."
       },
@@ -3639,9 +3652,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 170,
+        "line": 162,
         "column": 11,
-        "endLine": 170,
+        "endLine": 162,
         "endColumn": 125,
         "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
@@ -3705,41 +3718,19 @@
     "file": "app/layouts/default.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 71,
-        "column": 15,
-        "endLine": 71,
-        "endColumn": 61,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
-        "line": 71,
-        "column": 15,
-        "endLine": 71,
-        "endColumn": 61,
-        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 71,
-        "column": 30,
+        "column": 61,
         "endLine": 71,
-        "endColumn": 60,
+        "endColumn": 90,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/layouts/none.vue",
@@ -3775,12 +3766,18 @@
         "line": 99,
         "column": 15,
         "endLine": 99,
-        "endColumn": 47,
+        "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
     "warningCount": 2
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/collections.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/pages/[[server]]/@[account]/index/followers.vue",
@@ -3819,6 +3816,36 @@
     "warningCount": 0
   },
   {
+    "file": "app/pages/[[server]]/collections/[id].vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 53,
+        "column": 16,
+        "endLine": 53,
+        "endColumn": 31,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/[[server]]/collections/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/collections.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/pages/[[server]]/explore/index.vue",
     "messages": [],
     "errorCount": 0,
@@ -3852,41 +3879,19 @@
     "file": "app/pages/[[server]]/index.vue",
     "messages": [
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 13,
-        "column": 5,
-        "endLine": 13,
-        "endColumn": 80,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
-        "line": 13,
-        "column": 5,
-        "endLine": 13,
-        "endColumn": 80,
-        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
         "line": 13,
-        "column": 50,
+        "column": 52,
         "endLine": 13,
-        "endColumn": 79,
+        "endColumn": 81,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",

@@ -269,6 +269,12 @@
     "warningCount": 0
   },
   {
+    "file": "packages/core/src/Autocomplete/story/AutocompleteDefault.story.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "packages/core/src/Autocomplete/story/_Autocomplete.vue",
     "messages": [
       {
@@ -276,9 +282,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Autocomplete' should be PascalCase",
-        "line": 20,
+        "line": 21,
         "column": 11,
-        "endLine": 20,
+        "endLine": 21,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -731,9 +737,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"checkbox\" must be focusable (add tabindex=\"0\")",
-        "line": 136,
+        "line": 147,
         "column": 3,
-        "endLine": 156,
+        "endLine": 167,
         "endColumn": 4,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       }
@@ -849,6 +855,42 @@
         "line": 13,
         "column": 11,
         "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/Checkbox/story/_NoScopeCheckbox.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_NoScopeCheckbox' should be PascalCase",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/Checkbox/story/_ScopedCheckbox.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedCheckbox' should be PascalCase",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -1210,32 +1252,9 @@
   },
   {
     "file": "packages/core/src/Combobox/ComboboxContentImpl.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
-        "line": 113,
-        "column": 9,
-        "endLine": 117,
-        "endColumn": 11,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
-        "line": 120,
-        "column": 9,
-        "endLine": 124,
-        "endColumn": 11,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Combobox/ComboboxEmpty.vue",
@@ -1489,6 +1508,35 @@
     "warningCount": 1
   },
   {
+    "file": "packages/core/src/Combobox/story/_ComboboxTagsInput.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxTagsInput' should be PascalCase",
+        "line": 22,
+        "column": 11,
+        "endLine": 22,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 29,
+        "column": 9,
+        "endLine": 29,
+        "endColumn": 38,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "packages/core/src/ConfigProvider/ConfigProvider.vue",
     "messages": [],
     "errorCount": 0,
@@ -1640,9 +1688,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 59,
+        "line": 64,
         "column": 5,
-        "endLine": 66,
+        "endLine": 77,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -2324,9 +2372,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 63,
+        "line": 66,
         "column": 5,
-        "endLine": 70,
+        "endLine": 76,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -2785,9 +2833,21 @@
   },
   {
     "file": "packages/core/src/Dialog/DialogContent.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 42,
+        "column": 5,
+        "endLine": 42,
+        "endColumn": 25,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/DialogContentImpl.vue",
@@ -2809,9 +2869,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 36,
+        "line": 54,
         "column": 5,
-        "endLine": 58,
+        "endLine": 76,
         "endColumn": 7,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -2827,9 +2887,21 @@
   },
   {
     "file": "packages/core/src/Dialog/DialogOverlay.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 28,
+        "column": 5,
+        "endLine": 28,
+        "endColumn": 25,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/DialogOverlayImpl.vue",
@@ -3159,6 +3231,172 @@
     "warningCount": 2
   },
   {
+    "file": "packages/core/src/Drawer/DrawerClose.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerContent.vue",
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
+        "line": 70,
+        "column": 7,
+        "endLine": 75,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
+        "line": 81,
+        "column": 7,
+        "endLine": 81,
+        "endColumn": 56,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerContentImpl.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerDescription.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerHandle.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerIndent.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerIndentBackground.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerOverlay.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerOverlayImpl.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerPortal.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerProvider.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerRoot.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerSwipeArea.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerTitle.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerTrigger.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/DrawerViewport.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Drawer/story/Drawer.story.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/anchor-is-valid",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/anchor-is-valid] <a> element has href=\"#\" which is not a valid navigation target",
+        "line": 487,
+        "column": 21,
+        "endLine": 487,
+        "endColumn": 29,
+        "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 503,
+        "column": 1,
+        "endLine": 503,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "packages/core/src/Drawer/story/_Drawer.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_Drawer' should be PascalCase",
+        "line": 24,
+        "column": 11,
+        "endLine": 24,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
     "file": "packages/core/src/DropdownMenu/DropdownMenuArrow.vue",
     "messages": [],
     "errorCount": 0,
@@ -3268,9 +3506,32 @@
   },
   {
     "file": "packages/core/src/DropdownMenu/DropdownMenuTrigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "line": 48,
+        "column": 7,
+        "endLine": 60,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 61,
+        "column": 7,
+        "endLine": 71,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/DropdownMenu/story/DropdownMenu.story.vue",
@@ -3538,9 +3799,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 104,
+        "line": 111,
         "column": 7,
-        "endLine": 111,
+        "endLine": 118,
         "endColumn": 9,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -3549,9 +3810,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 104,
+        "line": 111,
         "column": 7,
-        "endLine": 111,
+        "endLine": 118,
         "endColumn": 9,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -3643,9 +3904,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_HoverCard' should be PascalCase",
-        "line": 14,
+        "line": 18,
         "column": 11,
-        "endLine": 14,
+        "endLine": 18,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -3661,9 +3922,21 @@
   },
   {
     "file": "packages/core/src/Label/Label.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "line": 24,
+        "column": 5,
+        "endLine": 27,
+        "endColumn": 7,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/ListboxContent.vue",
@@ -3721,9 +3994,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 396,
+        "line": 426,
         "column": 5,
-        "endLine": 402,
+        "endLine": 432,
         "endColumn": 7,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -3884,9 +4157,43 @@
   },
   {
     "file": "packages/core/src/Menu/MenuItem.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 59,
+        "column": 5,
+        "endLine": 68,
+        "endColumn": 6,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 69,
+        "column": 5,
+        "endLine": 84,
+        "endColumn": 6,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 69,
+        "column": 5,
+        "endLine": 84,
+        "endColumn": 6,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Menu/MenuItemImpl.vue",
@@ -3896,9 +4203,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 84,
+        "line": 89,
         "column": 7,
-        "endLine": 91,
+        "endLine": 96,
         "endColumn": 8,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -4019,9 +4326,43 @@
   },
   {
     "file": "packages/core/src/Menu/MenuSubTrigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
+        "line": 135,
+        "column": 7,
+        "endLine": 142,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "line": 147,
+        "column": 7,
+        "endLine": 158,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 147,
+        "column": 7,
+        "endLine": 158,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Menu/story/MenuCheckboxItems.story.vue",
@@ -4082,6 +4423,24 @@
         "line": 20,
         "column": 11,
         "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/Menu/story/_MenuWithSubmenu.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithSubmenu' should be PascalCase",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -4235,9 +4594,21 @@
   },
   {
     "file": "packages/core/src/Menubar/MenubarTrigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 80,
+        "column": 11,
+        "endLine": 90,
+        "endColumn": 13,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menubar/story/Menubar.story.vue",
@@ -4548,6 +4919,12 @@
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/NavigationMenu/__test__/NavigationMenuUnmountOnHideFalse.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuAlignment.story.vue",
@@ -5137,16 +5514,27 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 39,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
+        "line": 40,
         "column": 5,
-        "endLine": 42,
+        "endLine": 43,
+        "endColumn": 7,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 40,
+        "column": 5,
+        "endLine": 43,
         "endColumn": 7,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Popper/PopperContent.vue",
@@ -5396,6 +5784,24 @@
         "line": 11,
         "column": 11,
         "endLine": 11,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/RadioGroup/story/_ScopedRadioGroup.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedRadioGroup' should be PascalCase",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -5750,9 +6156,21 @@
   },
   {
     "file": "packages/core/src/RovingFocus/RovingFocusItem.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "line": 110,
+        "column": 7,
+        "endLine": 118,
+        "endColumn": 8,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RovingFocus/story/RovingFocusBasic.story.vue",
@@ -6015,7 +6433,7 @@
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
         "line": 295,
         "column": 9,
-        "endLine": 327,
+        "endLine": 328,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
@@ -6023,10 +6441,10 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
         "line": 303,
         "column": 11,
-        "endLine": 313,
+        "endLine": 314,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -6037,13 +6455,24 @@
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 303,
         "column": 11,
-        "endLine": 313,
+        "endLine": 314,
+        "endColumn": 12,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 303,
+        "column": 11,
+        "endLine": 314,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Select/SelectGroup.vue",
@@ -6125,9 +6554,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <option> element is empty but expects visible content",
-        "line": 215,
+        "line": 218,
         "column": 7,
-        "endLine": 218,
+        "endLine": 221,
         "endColumn": 9,
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
@@ -6136,9 +6565,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <option> element is empty but expects visible content",
-        "line": 219,
+        "line": 222,
         "column": 7,
-        "endLine": 223,
+        "endLine": 226,
         "endColumn": 9,
         "help": "Add text content, child elements, or use aria-label for accessible content."
       }
@@ -6177,38 +6606,16 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 72,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 129,
         "column": 7,
-        "endLine": 81,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 72,
-        "column": 7,
-        "endLine": 81,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 82,
-        "column": 7,
-        "endLine": 104,
+        "endLine": 142,
         "endColumn": 8,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Select/SelectValue.vue",
@@ -6218,6 +6625,12 @@
   },
   {
     "file": "packages/core/src/Select/SelectViewport.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Select/__test__/SelectUnmountCleanup.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -6331,6 +6744,17 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 32,
+        "column": 5,
+        "endLine": 48,
+        "endColumn": 7,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 49,
         "column": 5,
@@ -6362,7 +6786,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Slider/SliderRange.vue",
@@ -6617,6 +7041,35 @@
     "warningCount": 1
   },
   {
+    "file": "packages/core/src/Stepper/story/_StepperDynamic.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_StepperDynamic' should be PascalCase",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 15,
+        "column": 5,
+        "endLine": 15,
+        "endColumn": 28,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "packages/core/src/Switch/Switch.story.vue",
     "messages": [],
     "errorCount": 0,
@@ -6690,9 +7143,21 @@
   },
   {
     "file": "packages/core/src/Tabs/TabsTrigger.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
+        "line": 54,
+        "column": 7,
+        "endLine": 64,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tabs/story/Tabs.story.vue",
@@ -6809,6 +7274,24 @@
     "warningCount": 1
   },
   {
+    "file": "packages/core/src/TagsInput/story/_TagsInputDisabled.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputDisabled' should be PascalCase",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
     "file": "packages/core/src/TagsInput/story/_TagsInputObject.vue",
     "messages": [
       {
@@ -6840,9 +7323,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 61,
+        "line": 64,
         "column": 5,
-        "endLine": 71,
+        "endLine": 77,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -7159,9 +7642,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 63,
+        "line": 66,
         "column": 5,
-        "endLine": 70,
+        "endLine": 76,
         "endColumn": 12,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -7277,9 +7760,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 17,
+        "line": 16,
         "column": 5,
-        "endLine": 21,
+        "endLine": 20,
         "endColumn": 7,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -7399,9 +7882,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
-        "line": 204,
+        "line": 213,
         "column": 9,
-        "endLine": 204,
+        "endLine": 213,
         "endColumn": 47,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -7410,9 +7893,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 214,
+        "line": 223,
         "column": 9,
-        "endLine": 243,
+        "endLine": 252,
         "endColumn": 11,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -7421,9 +7904,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 244,
+        "line": 253,
         "column": 9,
-        "endLine": 271,
+        "endLine": 280,
         "endColumn": 11,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
@@ -7444,10 +7927,10 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 175,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
+        "line": 177,
         "column": 7,
-        "endLine": 178,
+        "endLine": 181,
         "endColumn": 9,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -7456,15 +7939,37 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 199,
+        "line": 177,
         "column": 7,
-        "endLine": 202,
+        "endLine": 181,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
+        "line": 202,
+        "column": 7,
+        "endLine": 206,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 202,
+        "column": 7,
+        "endLine": 206,
         "endColumn": 9,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Toast/story/ToastDemo.story.vue",
@@ -7540,9 +8045,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 41,
+        "line": 44,
         "column": 7,
-        "endLine": 41,
+        "endLine": 44,
         "endColumn": 25,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -7561,6 +8066,24 @@
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/ToggleGroup/story/_ScopedToggleGroup.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name '_ScopedToggleGroup' should be PascalCase",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ToggleGroup/story/_ToggleGroup.vue",
@@ -7810,9 +8333,32 @@
   },
   {
     "file": "packages/core/src/Tree/TreeItem.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 198,
+        "column": 7,
+        "endLine": 198,
+        "endColumn": 135,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
+        "line": 199,
+        "column": 7,
+        "endLine": 199,
+        "endColumn": 134,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Tree/TreeRoot.vue",

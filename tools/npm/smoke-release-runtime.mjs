@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { runFreshProjectInitChecks } from "./smoke-release-init-fresh.mjs";
 import { runInitTypecheckChecks } from "./smoke-release-init-typecheck.mjs";
 
 export const RUNTIME_PEER_DEPENDENCIES = {
@@ -169,7 +170,11 @@ export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
   console.log("runtime: packed vize Content Mapper check and declaration emit");
 }
 
-export function runRuntimeChecks(installDir, packages, { repoRoot, resolveInstalledBin, run }) {
+export function runRuntimeChecks(
+  installDir,
+  packages,
+  { repoRoot, resolveInstalledBin, run, tempDir },
+) {
   writeRuntimeSmokeProject(installDir);
 
   if (packages.some((pkg) => pkg.name === "@vizejs/native")) {
@@ -219,6 +224,15 @@ export function runRuntimeChecks(installDir, packages, { repoRoot, resolveInstal
     );
     console.log("runtime: vize lint");
     runInitTypecheckChecks(installDir, vizeBin, repoRoot, RUNTIME_PEER_DEPENDENCIES);
+    runFreshProjectInitChecks({
+      installDir,
+      packed: new Map(packages.map((pkg) => [pkg.name, pkg.tarball])),
+      peers: RUNTIME_PEER_DEPENDENCIES,
+      repoRoot,
+      tempDir,
+      versions: new Map(packages.map((pkg) => [pkg.name, pkg.version])),
+      vizeBin,
+    });
   }
 
   if (packages.some((pkg) => pkg.name === "@vizejs/vite-plugin")) {

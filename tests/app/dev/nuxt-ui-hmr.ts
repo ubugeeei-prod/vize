@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -12,6 +12,14 @@ import { installSourceRestore } from "./source-restore";
 
 const OPTIMIZE_RELOAD = /optimized dependencies changed\. reloading/i;
 const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;
+
+// Nuxt serves the playground from its own Vite root (`playgrounds/nuxt/app`),
+// so the authored SFC is addressed by a root-relative module URL instead of its
+// repo-relative path. Match the root-relative suffix, which also holds if Nuxt
+// ever serves the file through `/@fs/<absolute path>`.
+const PROBE_MODULE_PATH = "/components/Matrix.vue.ts";
+const PROBE_HMR_UPDATE = /hmr update .*\/components\/Matrix\.vue\.ts\?vue&vize/;
+const PROBE_HOT_UPDATED = /\[vite\] hot updated: .*\/components\/Matrix\.vue\.ts\?vue&vize/;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -77,6 +85,55 @@ export async function waitForNuxtUiHmrReady(
   throw new Error("Nuxt UI client kept reloading throughout the 120s readiness window");
 }
 
+/**
+ * Nuxt 4.5 rewrites `.nuxt/route-rules.mjs` on the first app generation that
+ * follows an authored source change and reloads the page through that virtual
+ * module. The reload races the SSR render, so the client can come back on the
+ * pre-edit module graph with the HMR patch already discarded. Nuxt only rewrites
+ * that template once per dev server, so spend it on a throwaway edit instead of
+ * letting it swallow the update under test.
+ */
+async function absorbNuxtTemplateRegeneration(options: {
+  devServer: ChildProcess;
+  sourcePath: string;
+  originalSource: string;
+  updatedSource: string;
+  original: Locator;
+  updated: Locator;
+  waitForHydration: () => Promise<void>;
+}): Promise<void> {
+  const {
+    devServer,
+    sourcePath,
+    originalSource,
+    updatedSource,
+    original,
+    updated,
+    waitForHydration,
+  } = options;
+  const logStart = getProcessLogs(devServer).length;
+  const deadline = Date.now() + 30_000;
+  fs.writeFileSync(sourcePath, updatedSource);
+  try {
+    while (Date.now() < deadline) {
+      if (
+        getProcessLogs(devServer)
+          .slice(logStart)
+          .some((line) => ROUTE_RULES_RELOAD.test(line))
+      )
+        break;
+      // A patch that lands on its own means there is no regeneration to absorb.
+      if ((await updated.count().catch(() => 0)) > 0) break;
+      await sleep(250);
+    }
+  } finally {
+    fs.writeFileSync(sourcePath, originalSource);
+  }
+  await expect(original).toBeVisible({ timeout: 60_000 });
+  await expect(updated).toHaveCount(0, { timeout: 60_000 });
+  await waitForHydration();
+}
+
 export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page: Page;
   devServer: ChildProcess;
@@ -89,9 +146,16 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
 }): Promise<void> {
   const { page, devServer, startupLogStart, cwd, mountSelector, appName, goto, waitForHydration } =
     options;
-  const originalText = 'data-slot="base"';
-  const updatedText = `${originalText}\n      data-vize-hmr-probe="updated"`;
-  const sourcePath = path.join(cwd, "src/runtime/components/Button.vue");
+  // Nuxt UI 4.5 watches its published component directory and regenerates
+  // Nuxt templates when a library component changes. That upstream watcher
+  // reloads route-rules.mjs, which cannot prove that Vize accepted an authored
+  // SFC update without a page reload. Probe the playground-owned Matrix SFC
+  // rendered by the same route instead; it exercises Vize HMR without crossing
+  // the library template-regeneration boundary. Nuxt still rewrites that
+  // template once per dev server, which the warm-up edit below absorbs.
+  const originalText = '<div class="flex items-start gap-2 min-h-0">';
+  const updatedText = '<div data-vize-hmr-probe="updated" class="flex items-start gap-2 min-h-0">';
+  const sourcePath = path.join(cwd, "playgrounds/nuxt/app/components/Matrix.vue");
   const originalSource = fs.readFileSync(sourcePath, "utf8");
   expect(originalSource.split(originalText)).toHaveLength(2);
   const updatedSource = originalSource.replace(originalText, updatedText);
@@ -104,7 +168,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
       const url = new URL(response.url());
       return (
         response.ok() &&
-        url.pathname.endsWith("/src/runtime/components/Button.vue.ts") &&
+        url.pathname.endsWith(PROBE_MODULE_PATH) &&
         url.searchParams.has("vize") &&
         !url.searchParams.has("vize-ssr")
       );
@@ -129,25 +193,37 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (
-      url.pathname.endsWith("/src/runtime/components/Button.vue.ts") &&
+      url.pathname.endsWith(PROBE_MODULE_PATH) &&
       url.searchParams.has("t") &&
       url.searchParams.has("vize")
     )
       hmrRequests.push(url.href);
   });
   page.on("console", (message) => {
-    if (
-      /\[vite\] hot updated: .*\/src\/runtime\/components\/Button\.vue\.ts\?vue&vize/.test(
-        message.text(),
-      )
-    )
-      completedHmrUpdates.push(message.text());
+    if (PROBE_HOT_UPDATED.test(message.text())) completedHmrUpdates.push(message.text());
   });
+  // A killed worker skips `finally`, so keep a process-level source restore too.
+  const restoreGuard = installSourceRestore(sourcePath, originalSource);
+  try {
+    await absorbNuxtTemplateRegeneration({
+      devServer,
+      sourcePath,
+      originalSource,
+      updatedSource,
+      original,
+      updated,
+      waitForHydration,
+    });
+  } catch (error) {
+    fs.writeFileSync(sourcePath, originalSource);
+    restoreGuard.markRestored();
+    restoreGuard.detach();
+    throw error;
+  }
+
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;
   let forwardCompleted = false;
-  // A killed worker skips `finally`, so keep a process-level source restore too.
-  const restoreGuard = installSourceRestore(sourcePath, originalSource);
   try {
     await page.evaluate((value) => {
       (window as Window & { __vizeNuxtUiHmrProbe?: string }).__vizeNuxtUiHmrProbe = value;
@@ -191,7 +267,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   ).toBe(probe);
   expect(fs.readFileSync(sourcePath, "utf8")).toBe(originalSource);
   const updateLogs = getProcessLogs(devServer).slice(updateLogStart).join("\n");
-  expect(updateLogs).toMatch(/hmr update .*\/src\/runtime\/components\/Button\.vue\.ts\?vue&vize/);
+  expect(updateLogs).toMatch(PROBE_HMR_UPDATE);
   expect(updateLogs).not.toMatch(/page reload/i);
   expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
   expect(hydrationErrors).toHaveLength(0);

@@ -85,6 +85,11 @@ test("full and readiness plans preserve every isolated execution row", () => {
     )?.timeout,
     "75m",
   );
+  assert.equal(
+    readinessRows.find((row) => row.shard === "lint")?.timeout,
+    "5m",
+    "updated fixture setup must fit inside the readiness lint budget",
+  );
 });
 
 test("planned tasks, fixtures, and mutable identities are exact and unique", () => {

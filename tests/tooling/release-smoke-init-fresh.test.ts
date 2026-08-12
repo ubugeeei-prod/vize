@@ -1,0 +1,204 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { parse } from "yaml";
+
+import { projectEnv } from "../../tools/npm/smoke-release-init-project.mjs";
+import {
+  FRESH_INIT_MATRIX,
+  PACKAGE_MANAGERS,
+  PROJECT_SHAPES,
+} from "../../tools/npm/smoke-release-init-shapes.mjs";
+import { readRepoFile } from "./support/github-workflows.ts";
+
+const SHAPE_KEYS = [
+  "addedScripts",
+  "createdFiles",
+  "detection",
+  "expectedDevDependencies",
+  "expectedFiles",
+  "expectedScripts",
+  "features",
+  "initFlags",
+  "plannedDependencies",
+  "reconfiguredDetection",
+  "reconfiguredFeatures",
+  "requires",
+  "updatedFiles",
+];
+
+/** Code-unit order, matching the driver's own comparison of installed names. */
+const byCodeUnit = (left: string, right: string): number =>
+  left < right ? -1 : left > right ? 1 : 0;
+
+const MANAGER_KEYS = [
+  "bootstrapArgs",
+  "installArgs",
+  "installFlags",
+  "lockfile",
+  "redirect",
+  "runScriptArgs",
+];
+
+test("the fresh-project matrix is data, so new cells need no driver change", () => {
+  assert.ok(FRESH_INIT_MATRIX.length > 0, "the fresh-project matrix must run at least one cell");
+  for (const cell of FRESH_INIT_MATRIX) {
+    const manager = PACKAGE_MANAGERS[cell.packageManager];
+    const shape = PROJECT_SHAPES[cell.shape];
+    assert.ok(manager, `unknown package manager ${cell.packageManager}`);
+    assert.ok(shape, `unknown project shape ${cell.shape}`);
+    for (const key of MANAGER_KEYS) {
+      assert.ok(key in manager, `${cell.packageManager} is missing ${key}`);
+    }
+    for (const key of SHAPE_KEYS) {
+      assert.ok(key in shape, `${cell.shape} is missing ${key}`);
+    }
+    // The plan the smoke asserts must be the plan it installs, and the install
+    // must leave the project declaring nothing beyond it.
+    for (const name of shape.plannedDependencies) {
+      assert.ok(
+        shape.expectedDevDependencies.includes(name),
+        `${cell.shape} plans ${name} but does not expect it in devDependencies`,
+      );
+      assert.ok(shape.requires.includes(name), `${cell.shape} plans unpacked ${name}`);
+    }
+    assert.deepEqual(
+      [...shape.expectedDevDependencies].sort(byCodeUnit),
+      shape.expectedDevDependencies,
+      `${cell.shape} devDependency expectation must be sorted for a stable comparison`,
+    );
+  }
+});
+
+test("every shape drives a clean, broken, and repaired check", () => {
+  for (const shape of Object.values(PROJECT_SHAPES)) {
+    const broken = Object.keys(shape.check.broken);
+    assert.ok(broken.length > 0, `${shape.id} has no broken variant`);
+    const authored = Object.keys(shape.files({ typescript: "0", vite: "0", vue: "0" }));
+    for (const name of broken) {
+      assert.ok(authored.includes(name), `${shape.id} breaks ${name}, which it never authored`);
+    }
+    const reported = shape.check.brokenDiagnostics.map((entry) => entry.file);
+    assert.deepEqual(reported, broken, `${shape.id} must assert every broken file's diagnostics`);
+    for (const entry of shape.check.brokenDiagnostics) {
+      assert.ok(
+        entry.diagnostics.length > 0,
+        `${shape.id} expects no diagnostics for ${entry.file}`,
+      );
+      for (const diagnostic of entry.diagnostics) {
+        // Full authored position and message, never a code-only assertion.
+        assert.match(diagnostic, /^error:\d+:\d+ \[TS\d+\] .+\.$/u);
+      }
+    }
+  }
+});
+
+test("the smoke only passes init flags the guide documents", () => {
+  const guide = readRepoFile("docs", "content", "guide", "init.md");
+  const documented = new Set([...guide.matchAll(/`(--?[a-z-]+)`/gu)].map((match) => match[1]));
+  // Added by the driver itself around the shape's own flag set.
+  for (const flag of ["--dry-run", "--no-install"]) {
+    assert.ok(documented.has(flag), `docs/content/guide/init.md must document ${flag}`);
+  }
+  for (const shape of Object.values(PROJECT_SHAPES)) {
+    for (const flag of shape.initFlags) {
+      assert.ok(documented.has(flag), `${shape.id} passes undocumented init flag ${flag}`);
+    }
+  }
+  // The idempotent run the smoke asserts is the one the guide prints verbatim.
+  assert.ok(guide.includes("[vize init] nothing to do; the project is already configured"));
+
+  // The guide's non-interactive example is the invocation the smoke stands in
+  // for, so every feature it names must be answered explicitly -- either taken
+  // or refused. A deferred feature then shows up as a visible `--no-` flag
+  // rather than as a silent gap in coverage.
+  const example = guide.match(/^vpx vize init (--[^\n]+)$/mu);
+  assert.ok(example, "docs/content/guide/init.md must show a non-interactive example");
+  for (const shape of Object.values(PROJECT_SHAPES)) {
+    for (const flag of example[1].split(" ")) {
+      const refused = `--no-${flag.replace(/^--/u, "")}`;
+      assert.ok(
+        shape.initFlags.includes(flag) || shape.initFlags.includes(refused),
+        `${shape.id} neither takes nor refuses the documented ${flag}`,
+      );
+    }
+  }
+});
+
+/** Arguments of every `smoke-release-install.mjs` step in a workflow. */
+function smokeInstallInvocations(workflow: string): string[][] {
+  const parsed = parse(readRepoFile(".github", "workflows", workflow)) as {
+    jobs?: Record<string, { steps?: Array<{ run?: string }> }>;
+  };
+  const invocations: string[][] = [];
+  for (const job of Object.values(parsed.jobs ?? {})) {
+    for (const step of job.steps ?? []) {
+      if (!step.run?.includes("smoke-release-install.mjs")) continue;
+      invocations.push(step.run.replace(/\\\n/gu, " ").trim().split(/\s+/u));
+    }
+  }
+  assert.ok(invocations.length > 0, `${workflow} runs no smoke-release-install.mjs step`);
+  return invocations;
+}
+
+test("the release runtime smoke runs the fresh-project matrix", () => {
+  const runtime = readRepoFile("tools", "npm", "smoke-release-runtime.mjs");
+  // The context keys the fresh-project driver needs, independent of the order
+  // and line breaks the call site happens to use.
+  const freshCall = /runFreshProjectInitChecks\(\{([^}]*)\}\)/u.exec(runtime);
+  assert.ok(freshCall, "the runtime smoke must call runFreshProjectInitChecks");
+  const context = new Set(
+    freshCall[1]
+      .split(",")
+      .map((entry) => entry.split(":")[0].trim())
+      .filter((name) => name.length > 0),
+  );
+  for (const key of ["tempDir", "vizeBin"]) {
+    assert.ok(context.has(key), `runFreshProjectInitChecks must receive ${key}`);
+  }
+  assert.match(runtime, /from "\.\/smoke-release-init-fresh\.mjs"/u);
+
+  const project = readRepoFile("tools", "npm", "smoke-release-init-project.mjs");
+  // The isolation contract: outside the install tree, outside the checkout, and
+  // no ancestor that could resolve `vize` for the project.
+  assert.match(project, /is inside the install tree/u);
+  assert.match(project, /is inside the Vize checkout/u);
+  assert.match(project, /would leak into the fresh project/u);
+  assert.match(project, /installed vize did not bring @typescript\/native-preview/u);
+  assert.match(project, /a missing Corsa runtime silently disabled type checking/u);
+
+  for (const workflow of ["release.yml", "native-smoke.yml"]) {
+    // Assert the step's own arguments, so reflowing the YAML command cannot
+    // silently drop the packed CLI from the runtime smoke.
+    const runtimeSmokeArgs = smokeInstallInvocations(workflow).filter((args) =>
+      args.includes("--runtime-checks"),
+    );
+    assert.ok(
+      runtimeSmokeArgs.some(
+        (args) => args.includes("--prepare-manifests") && args.includes("npm/cli"),
+      ),
+      `${workflow} must run the runtime smoke over the packed CLI`,
+    );
+  }
+});
+
+test("the fresh project runs with the host's Corsa overrides stripped", () => {
+  // A host that exported these would let its own runtime satisfy the check and
+  // hide a packaging failure, so assert the environment the driver hands out.
+  const overrides = ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"];
+  const host = Object.fromEntries(overrides.map((name) => [name, "/host/corsa"]));
+  const previous = overrides.map((name) => [name, process.env[name]] as const);
+  try {
+    Object.assign(process.env, host);
+    const stripped = projectEnv();
+    for (const name of overrides) {
+      assert.ok(!(name in stripped), `projectEnv must drop the host's ${name}`);
+    }
+    // An override the smoke passes on purpose still reaches the child.
+    assert.equal(projectEnv({ CORSA_PATH: "/missing" }).CORSA_PATH, "/missing");
+  } finally {
+    for (const [name, value] of previous) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+});

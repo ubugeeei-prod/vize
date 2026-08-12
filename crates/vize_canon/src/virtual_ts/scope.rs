@@ -22,9 +22,11 @@ mod expression_scanner;
 mod globals;
 mod handler_shape;
 mod inline_callback_classifier;
+mod slot_scope;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;
 pub(crate) use component_prop_checker::is_inline_callback_prop;
 pub(crate) use context::{GlobalComponentCheck, ScopeGenerationOptions};
+pub(crate) use slot_scope::emit_slot_payload_helpers;
 pub(crate) use vif_guard::remove_enclosing_vif_guard_prefix;

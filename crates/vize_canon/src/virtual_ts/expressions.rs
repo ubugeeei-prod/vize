@@ -19,6 +19,7 @@ mod native_props_tests;
 #[cfg(test)]
 mod prop_name_casing_tests;
 mod prop_sources;
+mod props_literal;
 mod reserved_props;
 #[cfg(test)]
 mod sequence_prop_tests;
@@ -31,6 +32,7 @@ mod vif_chain;
 mod tests;
 
 pub(crate) use component_props::{ComponentPropSource, generate_component_prop_checks};
+pub(crate) use generic_props_call::generate_slot_host_binding;
 pub(crate) use reserved_props::rewrite_reserved_template_prop;
 pub(crate) use statements::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,

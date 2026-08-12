@@ -14,7 +14,6 @@ use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, TemplateValueCheckTables, generate_expressions,
     generate_expressions_in_enclosing_guard,
 };
-use crate::virtual_ts::helpers::to_safe_identifier_fragment;
 use crate::virtual_ts::types::VizeMapping;
 
 use super::children::generate_child_scopes;
@@ -22,11 +21,10 @@ use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
-use super::emit::{
-    append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
-};
+use super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
+use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
 /// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
@@ -311,58 +309,7 @@ pub(super) fn generate_scope_node(
             }
         }
         ScopeData::VSlot(data) => {
-            append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
-            let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
-            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
-            let props_type = slot_props_type(
-                ctx.summary,
-                ctx.virtual_ts_options,
-                data.component.as_deref(),
-                data.name.as_str(),
-                ctx.summary.scopes.is_v_slot_name_static(scope.id),
-            );
-            emit_slot_function_open(
-                ts,
-                indent,
-                cstr!("_slot_{safe_slot_name}_{scope_id}").as_str(),
-                props_pattern,
-                &props_type,
-            );
-            if data.prop_names.is_empty() {
-                // Simple identifier (no destructuring)
-                append!(*ts, "{inner_indent}void {props_pattern};\n");
-            } else {
-                // Destructured: void each extracted prop name
-                for prop_name in data.prop_names.iter() {
-                    append!(*ts, "{inner_indent}void {prop_name};\n");
-                }
-            }
-
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
-                && ctx.check_options.check_template_bindings
-            {
-                generate_expressions(
-                    ts,
-                    mappings,
-                    exprs,
-                    ctx.template_prop_names,
-                    &ExpressionListEmitContext::new(
-                        ctx.skipped_expression_ranges,
-                        ctx.template_offset,
-                        &inner_indent,
-                        ctx.checks,
-                    ),
-                );
-            }
-
-            // Recursively generate child scopes inside this closure
-            profile!(
-                "canon.virtual_ts.child_scopes",
-                generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent)
-            );
-
-            ts.push_str(indent);
-            ts.push_str("};\n");
+            generate_v_slot_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);
         }
         ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
             generate_event_handler_scope(ts, mappings, ctx, scope, data, indent, &inner_indent);

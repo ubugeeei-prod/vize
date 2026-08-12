@@ -259,11 +259,11 @@ const items = ref(['a', 'b', 'c'])
 </template>"#;
 
         let virtual_ts = generate_virtual_ts_from_sfc(source);
+        // Payload instantiated from the authored props (#4147).
         assert!(
             virtual_ts.contains(r#"void function _slot_default_"#)
-                && virtual_ts.contains(
-                    r#"({ item, index }: typeof MyList extends { new (): { $slots: infer __S } } ? ("default" extends keyof __S ? (NonNullable<__S["default"]> extends (props: infer __P"#
-                ),
+                && virtual_ts
+                    .contains(r#"({ item, index }: __VizeSlotPayload<typeof __vize_slot_host_"#),
             "<template #default> slot props should be typed from the owning component:\n{virtual_ts}"
         );
         assert!(

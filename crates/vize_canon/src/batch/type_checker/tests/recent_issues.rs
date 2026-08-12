@@ -5,6 +5,7 @@ mod directive_anchors;
 mod directive_values;
 mod empty_required_props;
 mod exact_optional_props;
+mod external_slot_payloads;
 mod global_component_callbacks;
 mod native_prop_anchors;
 mod optional_boolean_props;
