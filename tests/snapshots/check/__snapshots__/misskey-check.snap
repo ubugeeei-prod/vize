@@ -1866,9 +1866,7 @@
     },
     {
       "file": "src/pages/follow-requests.vue",
-      "diagnostics": [
-        "error:9:29 [TS2454] Variable 'paginator' is used before being assigned."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/gallery/edit.root.vue",
@@ -3221,7 +3219,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 30,
+  "errorCount": 29,
   "warningCount": 0,
   "fileCount": 794
 }

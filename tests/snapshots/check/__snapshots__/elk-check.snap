@@ -1007,8 +1007,7 @@
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:4:40 [TS2304] Cannot find name 'useNetwork'.",
-        "error:9:29 [TS7006] Parameter 'client' implicitly has an 'any' type.",
-        "error:26:40 [TS2454] Variable 'followedTags' is used before being assigned."
+        "error:9:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
       ]
     },
     {
@@ -1039,16 +1038,14 @@
       "file": "app/components/timeline/TimelinePublic.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type.",
-        "error:20:40 [TS2454] Variable 'followedTags' is used before being assigned."
+        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
       ]
     },
     {
       "file": "app/components/timeline/TimelinePublicLocal.vue",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
-        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type.",
-        "error:20:40 [TS2454] Variable 'followedTags' is used before being assigned."
+        "error:5:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
       ]
     },
     {
@@ -1293,8 +1290,7 @@
         "error:2:31 [TS2307] Cannot find module 'masto' or its corresponding type declarations.",
         "error:12:51 [TS2345] Argument of type '() => string' is not assignable to parameter of type 'string'.",
         "error:12:157 [TS2554] Expected 1 arguments, but got 0.",
-        "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type.",
-        "error:50:42 [TS2454] Variable 'followedTags' is used before being assigned."
+        "error:15:29 [TS7006] Parameter 'client' implicitly has an 'any' type."
       ]
     },
     {
@@ -1443,7 +1439,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 282,
+  "errorCount": 278,
   "warningCount": 0,
   "fileCount": 256
 }
