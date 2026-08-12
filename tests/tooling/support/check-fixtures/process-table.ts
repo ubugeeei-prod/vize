@@ -31,6 +31,20 @@ export type TaskRecord = {
 
 const PROC_ROOT = "/proc";
 
+/**
+ * Thread names a runtime writes over the executable name in `comm`.
+ *
+ * `comm` is the name of a *thread*, not of a binary, and a runtime may set it:
+ * Node >= 24 names its main thread `MainThread` through V8, so every live
+ * `node` process on Linux reports `MainThread` in `/proc/<pid>/stat`. A guard
+ * that trusted `comm` alone would never recognise a leaked `node` at all, which
+ * is the one survivor these phases produce most.
+ */
+const THREAD_NAME_COMMANDS: ReadonlyMap<string, string> = new Map([["MainThread", "node"]]);
+
+/** `/proc/<pid>/exe` keeps naming a replaced binary, with this suffix. */
+const DELETED_SUFFIX = " (deleted)";
+
 /** `/proc/<pid>/stat` field offsets counted from the field after `comm`. */
 const STAT_PPID = 1;
 const STAT_PGRP = 2;
@@ -70,6 +84,38 @@ export function parseProcStat(content: string): TaskRecord | null {
   };
 }
 
+/**
+ * The executable base name behind a task whose `comm` is a thread name.
+ *
+ * `exe` and `cmdline` name the real binary, so they are preferred wherever the
+ * kernel still exposes them. A zombie has neither, and falls back to the
+ * documented mapping: an unreaped `node` still holds a slot in `RLIMIT_NPROC`
+ * and in the cgroup `pids` controller, so it has to stay countable.
+ */
+export function resolveTaskCommand(pid: number, comm: string): string {
+  const aliased = THREAD_NAME_COMMANDS.get(comm);
+  if (aliased == null) {
+    return comm;
+  }
+  try {
+    const exe = fs.readlinkSync(path.join(PROC_ROOT, String(pid), "exe"));
+    return path.basename(exe.endsWith(DELETED_SUFFIX) ? exe.slice(0, -DELETED_SUFFIX.length) : exe);
+  } catch {
+    // A zombie, or a process this user may not inspect.
+  }
+  try {
+    const argv0 = fs
+      .readFileSync(path.join(PROC_ROOT, String(pid), "cmdline"), "utf8")
+      .split("\0")[0];
+    if (argv0 != null && argv0.length > 0) {
+      return path.basename(argv0);
+    }
+  } catch {
+    // Same: the task exited, so only the thread name is left to go on.
+  }
+  return aliased;
+}
+
 /** Parse `ps -A -o pid=,ppid=,pgid=,state=,comm=` output. */
 export function parsePsTable(stdout: string): TaskRecord[] {
   const records: TaskRecord[] = [];
@@ -85,8 +131,9 @@ export function parsePsTable(stdout: string): TaskRecord[] {
     if (!Number.isInteger(pid) || !Number.isInteger(ppid) || !Number.isInteger(pgid)) {
       continue;
     }
+    const base = path.basename(fields.slice(4).join(" "));
     records.push({
-      command: path.basename(fields.slice(4).join(" ")),
+      command: THREAD_NAME_COMMANDS.get(base) ?? base,
       pgid,
       pid,
       ppid,
@@ -112,7 +159,10 @@ function readProcTable(): TaskRecord[] {
     }
     const record = parseProcStat(content);
     if (record != null) {
-      records.push(record);
+      records.push({
+        ...record,
+        command: resolveTaskCommand(record.pid, record.command),
+      });
     }
   }
   return records;

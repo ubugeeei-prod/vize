@@ -13,6 +13,7 @@ import {
   parseProcStat,
   parsePsTable,
   readProcessTable,
+  resolveTaskCommand,
   type TaskRecord,
   tasksInGroup,
 } from "./support/check-fixtures/process-table.ts";
@@ -74,6 +75,30 @@ test("ps table parsing reduces executable paths to their base name", () => {
     { command: "launchd", pgid: 1, pid: 1, ppid: 0, state: "S", threads: null },
     { command: "tsgo", pgid: 42, pid: 42, ppid: 1, state: "S", threads: null },
   ]);
+});
+
+// `comm` names a *thread*, not a binary, and Node >= 24 writes `MainThread`
+// over it through V8. Reading it verbatim made the guard blind to the one
+// survivor these phases actually leak: every live `node` looked like an
+// unguarded command, so a leaked checker was reported as a clean phase.
+test("the live table names node tasks by their executable, not their thread", () => {
+  const table = readProcessTable();
+  assert.equal(
+    table.find((record) => record.pid === process.pid)?.command,
+    "node",
+    "the reader must recognise itself as `node`",
+  );
+  assert.deepEqual(
+    table.filter((record) => record.command === "MainThread"),
+    [],
+    "a runtime thread name must never reach the guard",
+  );
+  assert.equal(resolveTaskCommand(process.pid, "MainThread"), "node");
+  assert.equal(resolveTaskCommand(process.pid, "tsgo"), "tsgo", "a real `comm` is left alone");
+  // A zombie exposes neither `exe` nor `cmdline`, so the thread name is all
+  // that is left, and it still has to resolve to a guarded command: an
+  // unreaped task holds its slot in `RLIMIT_NPROC` and in `pids.current`.
+  assert.equal(resolveTaskCommand(-1, "MainThread"), "node");
 });
 
 test("live task counting adds threads and falls back to one task per process", () => {
