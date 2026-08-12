@@ -32,9 +32,11 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpecifier, TSType};
+use oxc_ast::ast::{
+    Expression, IdentifierReference, ImportDeclaration, ImportDeclarationSpecifier, TSType,
+};
 use oxc_ast_visit::{Visit, walk::walk_ts_type};
-use oxc_parser::Parser;
+use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, ToCompactString};
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
@@ -42,14 +44,28 @@ use vize_croquis::{Croquis, ScopeData};
 use vize_relief::BindingType;
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
-/// Whether a directive expression is a quoted string literal.
-fn is_string_literal(content: &str) -> bool {
-    let content = content.trim();
-    let mut characters = content.chars();
-    let (Some(open), Some(close)) = (characters.next(), content.chars().last()) else {
+/// Whether a directive expression statically names a component.
+///
+/// The expression is parsed rather than inspected by its delimiters: matching
+/// quotes get `` `${name}` `` wrong in one direction (interpolated, so the name
+/// is only known at runtime) and `('MyPanel')` wrong in the other (a literal
+/// wearing parentheses).
+fn names_a_component(content: &str) -> bool {
+    let allocator = Allocator::default();
+    let Ok(expression) = Parser::new(&allocator, content, SourceType::ts())
+        .with_options(ParseOptions {
+            preserve_parens: false,
+            ..ParseOptions::default()
+        })
+        .parse_expression()
+    else {
         return false;
     };
-    content.len() >= 2 && open == close && matches!(open, '\'' | '"' | '`')
+    match expression {
+        Expression::StringLiteral(_) => true,
+        Expression::TemplateLiteral(template) => template.expressions.is_empty(),
+        _ => false,
+    }
 }
 
 static META: RuleMeta = RuleMeta {
@@ -138,20 +154,33 @@ impl NoUnusedComponents {
     /// A literal (`:is="'MyPanel'"`) is exempt: it names its component, so the
     /// registration is still checkable. A static `is="MyPanel"` attribute is not
     /// a binding at all and does not suppress anything.
-    fn has_dynamic_is_binding(nodes: &[TemplateChildNode<'_>]) -> bool {
-        nodes.iter().any(|node| match node {
-            TemplateChildNode::Element(element) => {
-                element.props.iter().any(Self::is_dynamic_is_prop)
-                    || Self::has_dynamic_is_binding(&element.children)
+    ///
+    /// The walk is an explicit worklist rather than recursion: the template
+    /// parser accepts up to `MAX_ELEMENT_NESTING_DEPTH` nested elements, and a
+    /// stack overflow on a valid file would take the LSP process down with it.
+    fn has_dynamic_is_binding<'a>(nodes: &'a [TemplateChildNode<'a>]) -> bool {
+        let mut worklist: Vec<&'a [TemplateChildNode<'a>]> = vec![nodes];
+        while let Some(children) = worklist.pop() {
+            for node in children {
+                match node {
+                    TemplateChildNode::Element(element) => {
+                        if element.props.iter().any(Self::is_dynamic_is_prop) {
+                            return true;
+                        }
+                        worklist.push(&element.children);
+                    }
+                    TemplateChildNode::If(node) => worklist.extend(
+                        node.branches
+                            .iter()
+                            .map(|branch| branch.children.as_slice()),
+                    ),
+                    TemplateChildNode::IfBranch(branch) => worklist.push(&branch.children),
+                    TemplateChildNode::For(node) => worklist.push(&node.children),
+                    _ => {}
+                }
             }
-            TemplateChildNode::If(node) => node
-                .branches
-                .iter()
-                .any(|branch| Self::has_dynamic_is_binding(&branch.children)),
-            TemplateChildNode::IfBranch(branch) => Self::has_dynamic_is_binding(&branch.children),
-            TemplateChildNode::For(node) => Self::has_dynamic_is_binding(&node.children),
-            _ => false,
-        })
+        }
+        false
     }
 
     fn is_dynamic_is_prop(prop: &PropNode<'_>) -> bool {
@@ -173,7 +202,7 @@ impl NoUnusedComponents {
         }
         !matches!(
             directive.exp.as_ref(),
-            Some(ExpressionNode::Simple(expression)) if is_string_literal(expression.content.as_str())
+            Some(ExpressionNode::Simple(expression)) if names_a_component(expression.content.as_str())
         )
     }
 

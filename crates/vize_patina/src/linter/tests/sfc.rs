@@ -476,6 +476,63 @@ import Child from './DynamicChild.vue'
     assert!(result.diagnostics[0].message.contains("Child"));
 }
 
+/// Parentheses do not make a literal dynamic: the expression is parsed, not
+/// matched on its delimiters.
+#[test]
+fn test_lint_sfc_no_unused_components_still_reports_under_parenthesized_literal_is() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+</script>
+
+<template>
+  <component :is="('SomethingElse')" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(result.diagnostics[0].message.contains("Child"));
+}
+
+/// An interpolated template literal only names its component at runtime, so it
+/// is a dynamic binding and suppresses like any other.
+#[test]
+fn test_lint_sfc_no_unused_components_ignores_interpolated_template_literal_is() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+
+const name = 'SomethingElse'
+</script>
+
+<template>
+  <component :is="`${name}`" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+/// A substitution-free template literal still names its component.
+#[test]
+fn test_lint_sfc_no_unused_components_still_reports_under_plain_template_literal_is() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+import Child from './DynamicChild.vue'
+</script>
+
+<template>
+  <component :is="`SomethingElse`" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(result.diagnostics[0].message.contains("Child"));
+}
+
 /// A static `is="..."` attribute is not a binding and suppresses nothing.
 #[test]
 fn test_lint_sfc_no_unused_components_still_reports_under_static_is() {
