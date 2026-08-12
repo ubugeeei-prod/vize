@@ -14,6 +14,7 @@ export default defineConfig({
     entry: ["src/extension.ts"],
     outDir: "dist",
     format: "cjs",
+    dts: false,
     platform: "node",
     minify: true,
     deps: {

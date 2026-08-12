@@ -116,9 +116,9 @@ catalogs:
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:
-    vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
-    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
-    vite-plus: "0.1.21"
+    vite: "npm:@voidzero-dev/vite-plus-core@0.1.24"
+    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
+    vite-plus: "0.1.24"
     tsdown: "0.22.14"
     "@vitejs/plugin-vue": "6.0.7"
     vite-node: "6.0.0"

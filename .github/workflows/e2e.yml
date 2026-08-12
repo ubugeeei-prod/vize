@@ -234,7 +234,7 @@ jobs:
       - run: npm install --global @pkl-community/pkl@0.27.2
       - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
-          tool: wasm-bindgen-cli@0.2.121
+          tool: wasm-bindgen-cli@0.2.127
       - uses: useblacksmith/run-testbox@5ca05834db1d3813554d1dd109e5f2087a8d7cbc # v2
         if: ${{ always() && steps.begin-testbox.outcome == 'success' }}
 
