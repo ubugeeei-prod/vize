@@ -3,16 +3,19 @@ use std::fs;
 use std::path::Path;
 
 use tower_lsp::lsp_types::{FileRename, RenameFilesParams, Url};
+use vize_carton::cstr;
 use vize_maestro::ide::FileRenameService;
 use vize_maestro::runtime;
 use vize_maestro::server::ServerState;
 
-fn file_uri(path: &Path) -> String {
-    Url::from_file_path(path).unwrap().to_string()
+fn file_uri(path: &Path) -> vize_carton::String {
+    cstr!("{}", Url::from_file_path(path).unwrap())
 }
 
 fn normalize_edit(root: &Path, edit: &tower_lsp::lsp_types::WorkspaceEdit) -> serde_json::Value {
-    let mut files = BTreeMap::<String, Vec<serde_json::Value>>::new();
+    // Inferred from the `insert` below so the `lsp_types`-side key type never
+    // has to be named here.
+    let mut files = BTreeMap::new();
 
     for (uri, edits) in edit.changes.as_ref().unwrap() {
         let path = uri.to_file_path().unwrap();
@@ -70,8 +73,8 @@ fn assert_declaration_rename(extension: &str) {
     fs::create_dir_all(&types_dir).unwrap();
 
     let entry_path = src_dir.join("entry.ts");
-    let old_declaration = types_dir.join(format!("schema.{extension}"));
-    let new_declaration = types_dir.join(format!("generated-schema.{extension}"));
+    let old_declaration = types_dir.join(cstr!("schema.{extension}"));
+    let new_declaration = types_dir.join(cstr!("generated-schema.{extension}"));
 
     fs::write(
         &entry_path,
@@ -91,8 +94,8 @@ fn assert_declaration_rename(extension: &str) {
         &state,
         &RenameFilesParams {
             files: vec![FileRename {
-                old_uri: file_uri(&old_declaration),
-                new_uri: file_uri(&new_declaration),
+                old_uri: file_uri(&old_declaration).into(),
+                new_uri: file_uri(&new_declaration).into(),
             }],
         },
     ))

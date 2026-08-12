@@ -2,10 +2,12 @@ use super::{LspFeatureConfig, workspace_file_operations};
 
 #[test]
 fn workspace_symbols_register_vue_file_events_without_typechecking_or_rename() {
-    let mut features = LspFeatureConfig::default();
-    features.typecheck = false;
-    features.workspace_symbols = true;
-    features.file_rename = false;
+    let features = LspFeatureConfig {
+        typecheck: false,
+        workspace_symbols: true,
+        file_rename: false,
+        ..LspFeatureConfig::default()
+    };
 
     let operations = workspace_file_operations(features)
         .expect("workspace symbol lifecycle should be advertised");
@@ -27,10 +29,12 @@ fn workspace_symbols_register_vue_file_events_without_typechecking_or_rename() {
 
 #[test]
 fn typechecking_registers_directory_events_without_workspace_symbols() {
-    let mut features = LspFeatureConfig::default();
-    features.typecheck = true;
-    features.workspace_symbols = false;
-    features.file_rename = false;
+    let features = LspFeatureConfig {
+        typecheck: true,
+        workspace_symbols: false,
+        file_rename: false,
+        ..LspFeatureConfig::default()
+    };
 
     let operations = workspace_file_operations(features).expect("typechecking should be tracked");
     for options in [

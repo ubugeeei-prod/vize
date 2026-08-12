@@ -50,7 +50,9 @@ fn dedent(line: u32, width: u32) -> Option<Vec<TextEdit>> {
                 character: width,
             },
         },
-        new_text: String::new(),
+        // `TextEdit::new_text` is `lsp_types`' own `std::string::String`, so the
+        // empty deletion text is spelled without naming the disallowed type.
+        new_text: Default::default(),
     }])
 }
 

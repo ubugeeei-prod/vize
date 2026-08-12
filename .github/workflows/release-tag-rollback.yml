@@ -1,0 +1,24 @@
+name: Release tag rollback
+on:
+  workflow_call:
+    inputs:
+      preflight_result:
+        required: true
+        type: string
+permissions: { contents: read }
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  rollback:
+    name: Roll back unpublished release tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: { contents: write }
+    env:
+      RELEASE_PREFLIGHT_RESULT: ${{ inputs.preflight_result }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, fetch-tags: true }
+      - name: Delete unchanged unpublished tag
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: node tools/github/release-tag-rollback.mjs

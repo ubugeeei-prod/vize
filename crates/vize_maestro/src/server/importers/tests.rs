@@ -4,6 +4,7 @@ use super::{indexed_dependency_paths, open_importers, resolve_import};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;
 use vize_canon::PackageRouteResolver;
+use vize_carton::cstr;
 
 #[test]
 fn index_tracks_and_removes_open_vue_imports() {
@@ -214,10 +215,13 @@ fn index_tracks_workspace_package_vue_source_and_manifest_retarget() {
         "<script setup lang=\"ts\">import Widget from '@scope/ui/widget'; void Widget</script>";
 
     state.update_virtual_docs(&parent_uri, source);
-    assert_eq!(open_importers(&state, &original_uri), [parent_uri.clone()]);
+    assert_eq!(
+        open_importers(&state, &original_uri),
+        std::slice::from_ref(&parent_uri)
+    );
     assert_eq!(
         open_importers(&state, &manifest_uri),
-        [parent_uri.clone()],
+        std::slice::from_ref(&parent_uri),
         "package.json changes must refresh the importing Vue document",
     );
 
@@ -249,7 +253,7 @@ fn index_keeps_missing_package_link_and_manifest_addressable_for_creation() {
     state.update_virtual_docs(&parent_uri, source);
     assert_eq!(
         open_importers(&state, &logical_manifest_uri),
-        [parent_uri.clone()],
+        std::slice::from_ref(&parent_uri),
         "an unresolved lookup must index the logical manifest candidate",
     );
 
@@ -270,7 +274,7 @@ fn index_keeps_missing_package_link_and_manifest_addressable_for_creation() {
 fn write_package_manifest(package: &std::path::Path, target: &str) {
     std::fs::write(
         package.join("package.json"),
-        format!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}"),
+        cstr!("{{\"name\":\"@scope/ui\",\"exports\":{{\"./widget\":\"./src/{target}\"}}}}"),
     )
     .unwrap();
 }

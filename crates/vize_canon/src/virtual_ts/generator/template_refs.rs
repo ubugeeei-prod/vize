@@ -2,12 +2,17 @@ use vize_carton::config::VueVersion;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
+mod deferred_bindings;
+
 use super::legacy_vue2::ref_unwrap_helper_for_template;
 use super::spans::is_local_setup_binding;
 
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
     options_api_setup_bindings: Vec<String>,
+    /// Setup bindings whose assignment is deferred past their declaration. See
+    /// `deferred_bindings` for why they need the same shadowing treatment.
+    deferred_bindings: Vec<String>,
 }
 
 impl TemplateRefUnwraps {
@@ -48,9 +53,22 @@ impl TemplateRefUnwraps {
             .collect();
         setup_bindings.sort_unstable();
 
+        // Shadowing a name twice would redeclare it with a conflicting type,
+        // so the deferred set excludes everything already shadowed above.
+        let deferred_bindings = deferred_bindings::collect_deferred_setup_bindings(
+            summary,
+            script_content,
+            template_referenced_names,
+            |name| {
+                setup_bindings.iter().any(|shadowed| shadowed == name)
+                    || options_api_setup_binding_names.contains(name)
+            },
+        );
+
         Self {
             setup_bindings,
             options_api_setup_bindings,
+            deferred_bindings,
         }
     }
 
@@ -59,6 +77,7 @@ impl TemplateRefUnwraps {
     }
 
     pub(super) fn emit_type_captures(&self, mut ts: &mut String) {
+        deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
         if !self.setup_bindings.is_empty() {
             ts.push_str("  // Ref type captures (before template scope shadows them)\n");
             for name in &self.setup_bindings {
@@ -96,6 +115,7 @@ impl TemplateRefUnwraps {
         has_generic_param: bool,
         hoist_shared_preamble: bool,
     ) {
+        deferred_bindings::emit_template_variables(ts, &self.deferred_bindings);
         if self.setup_bindings.is_empty() && self.options_api_setup_bindings.is_empty() {
             return;
         }

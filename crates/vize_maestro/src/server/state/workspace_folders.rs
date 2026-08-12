@@ -147,7 +147,7 @@ fn deepest_enclosing_folder<'a>(
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::{Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-    use vize_carton::config::LintRuleSeverity;
+    use vize_carton::{config::LintRuleSeverity, cstr};
 
     use crate::server::ServerState;
 
@@ -168,10 +168,8 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let parent = std::env::temp_dir().join(format!(
-            "vize-folder-configs-{}-{nonce}",
-            std::process::id()
-        ));
+        let parent =
+            std::env::temp_dir().join(cstr!("vize-folder-configs-{}-{nonce}", std::process::id()));
         let strict = parent.join("strict-root");
         std::fs::create_dir_all(&strict).unwrap();
         let relaxed = folder_with_config(
@@ -208,10 +206,8 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let parent = std::env::temp_dir().join(format!(
-            "vize-folder-removal-{}-{nonce}",
-            std::process::id()
-        ));
+        let parent =
+            std::env::temp_dir().join(cstr!("vize-folder-removal-{}-{nonce}", std::process::id()));
         let relaxed = folder_with_config(
             &parent,
             "relaxed-root",
@@ -227,7 +223,7 @@ mod tests {
             Some(&LintRuleSeverity::Off),
         );
 
-        state.update_workspace_folders(Vec::new(), &[relaxed.clone()]);
+        state.update_workspace_folders(Vec::new(), std::slice::from_ref(&relaxed));
         let (config, _) = state.linter_settings_for_uri(&uri);
         assert_eq!(config.rules.get("vue/require-v-for-key"), None);
 
@@ -240,7 +236,7 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let parent = std::env::temp_dir().join(format!(
+        let parent = std::env::temp_dir().join(cstr!(
             "vize-folder-revalidation-{}-{nonce}",
             std::process::id()
         ));

@@ -1,5 +1,7 @@
 use std::fs;
 
+use vize_carton::cstr;
+
 use super::RealCorsaRenameSession;
 
 pub(in crate::ide::rename::corsa_session_tests) fn describe_server_frames(
@@ -19,7 +21,7 @@ pub(in crate::ide) fn describe_server_frames_in(trace_dir: &std::path::Path) -> 
                     .is_some_and(|name| name.starts_with("server-") && name.ends_with(".raw"))
             })
             .collect::<Vec<_>>(),
-        Err(error) => return format!("read server traces: {error}"),
+        Err(error) => return cstr!("read server traces: {error}").into(),
     };
     paths.sort();
 
@@ -28,7 +30,7 @@ pub(in crate::ide) fn describe_server_frames_in(trace_dir: &std::path::Path) -> 
     for path in paths {
         let bytes = match fs::read(&path) {
             Ok(bytes) => bytes,
-            Err(error) => return format!("read {}: {error}", path.display()),
+            Err(error) => return cstr!("read {}: {error}", path.display()).into(),
         };
         match inspect_stream(&bytes) {
             Ok(frame_count) => valid += frame_count,
@@ -38,18 +40,19 @@ pub(in crate::ide) fn describe_server_frames_in(trace_dir: &std::path::Path) -> 
                 error,
                 body,
             }) => {
-                return format!(
+                return cstr!(
                     "invalid server frame {}#{frame} declared={declared_length}: {error}; body={body:?}",
                     path.display()
-                );
+                ).into();
             }
-            Err(error) => incomplete.push(format!("{}: {error}", path.display())),
+            Err(error) => incomplete.push(cstr!("{}: {error}", path.display())),
         }
     }
-    format!(
+    cstr!(
         "server frames valid={valid}, incomplete=[{}]",
         incomplete.join(", ")
     )
+    .into()
 }
 
 fn inspect_stream(bytes: &[u8]) -> Result<usize, StreamError> {
@@ -154,7 +157,8 @@ mod tests {
     #[test]
     fn server_frame_evidence_rejects_trailing_json_inside_one_body() {
         let body = br#"{"jsonrpc":"2.0","id":1,"result":null}{}"#;
-        let stream = format!("Content-Length: {}\r\n\r\n", body.len())
+        let stream = cstr!("Content-Length: {}\r\n\r\n", body.len())
+            .into_string()
             .into_bytes()
             .into_iter()
             .chain(body.iter().copied())
@@ -182,7 +186,8 @@ mod tests {
         let stream = bodies
             .into_iter()
             .flat_map(|body| {
-                format!("Content-Length: {}\r\n\r\n", body.len())
+                cstr!("Content-Length: {}\r\n\r\n", body.len())
+                    .into_string()
                     .into_bytes()
                     .into_iter()
                     .chain(body.iter().copied())

@@ -56,6 +56,9 @@ jobs:
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
+      - name: Stabilize Ubuntu package archive (Linux ARM64)
+        if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
+        uses: ./.github/actions/setup-ubuntu-archive
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
         run: moon run --target native tools/moon/cmd/github/install_cross_compile_tools --
@@ -531,10 +534,12 @@ jobs:
   release-preflight:
     permissions: { actions: write, contents: read, issues: read }
     uses: ./.github/workflows/release-preflight.yml
-
-  # npm Trusted Publishing/provenance currently rejects self-hosted runners.
-
-  # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
+  rollback-unpublished-tag:
+    if: ${{ always() && needs.release-preflight.result != 'success' }}
+    needs: release-preflight
+    permissions: { contents: write }
+    uses: ./.github/workflows/release-tag-rollback.yml
+    with: { preflight_result: "${{ needs.release-preflight.result }}" }
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04
@@ -743,7 +748,6 @@ jobs:
       - name: Publish @vizejs/ui
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/ui/core --provenance
 
-  # Build and publish unplugin package (using Trusted Publishing / OIDC)
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-24.04
@@ -764,7 +768,6 @@ jobs:
       - name: Publish @vizejs/unplugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/unplugin --provenance
 
-  # Build and publish Fresco package (using Trusted Publishing / OIDC)
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-24.04
@@ -786,7 +789,6 @@ jobs:
       - name: Publish @vizejs/fresco
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/fresco --provenance
 
-  # Build and publish Musea MCP server (using Trusted Publishing / OIDC)
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-24.04
@@ -807,7 +809,6 @@ jobs:
       - name: Publish @vizejs/musea-mcp-server
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/mcp-musea --provenance
 
-  # Build and publish Vite plugin for Musea (using Trusted Publishing / OIDC)
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-24.04
@@ -828,7 +829,6 @@ jobs:
       - name: Publish @vizejs/vite-plugin-musea
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite-musea --provenance
 
-  # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-24.04
@@ -849,7 +849,6 @@ jobs:
       - name: Publish @vizejs/rspack-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/rspack --provenance
 
-  # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-24.04

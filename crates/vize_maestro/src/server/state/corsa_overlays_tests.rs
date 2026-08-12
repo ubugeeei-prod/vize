@@ -7,11 +7,12 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url};
+use vize_carton::cstr;
 
 use super::ServerState;
 
 pub(super) fn uri(name: &str) -> Url {
-    Url::parse(&format!("file:///project/{name}")).expect("uri")
+    Url::parse(&cstr!("file:///project/{name}")).expect("uri")
 }
 
 pub(super) fn path(name: &str) -> PathBuf {
@@ -215,7 +216,7 @@ fn concurrent_edits_and_snapshots_finish_with_the_latest_text() {
     });
 
     for version in 2..=128 {
-        rewrite(&state, "A.vue", &format!("version {version}"), version);
+        rewrite(&state, "A.vue", &cstr!("version {version}"), version);
     }
     snapshots.join().expect("snapshot thread");
 

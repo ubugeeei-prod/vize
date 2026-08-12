@@ -14,6 +14,7 @@ mod options_api;
 mod options_api_bridge;
 mod options_api_props_identifiers;
 mod options_api_support;
+mod script_blocks;
 mod script_module;
 mod setup_helpers;
 mod setup_props;
@@ -42,13 +43,11 @@ use self::options_api::{find_default_export_targets, generate_options_api_variab
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
+use self::script_blocks::ScriptBlockScopes;
 use self::setup_helpers::emit_setup_helpers;
 use self::setup_props::{generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
-use self::spans::{
-    DEFINE_COMPONENT_REF, merge_overlapping_spans, rewrite_export_default_for_module_scope,
-    template_usage,
-};
+use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
 use super::{
     helpers::{SETUP_SCOPE_HELPER_NAMES, generate_template_context, to_safe_identifier},
     import_meta::emit_import_meta_augmentation,
@@ -162,7 +161,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         has_plain_script_scope,
     );
     namespace_hoist.reconcile_exports(&mut named_value_exports);
-    let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content);
+    let script_blocks = ScriptBlockScopes::collect(summary, script_content, has_script_setup);
+    let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content, &script_blocks);
 
     // Classify the main `<script>` default export in one parse. A plain
     // `export default { ... }` (Options API shape) gets wrapped with Vue's
@@ -205,20 +205,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         for re in &summary.re_exports {
             module_spans.push((re.start, re.end));
         }
-        if has_script_setup {
-            module_spans.extend(summary.scopes.iter().filter_map(|scope| {
-                matches!(scope.kind, ScopeKind::NonScriptSetup)
-                    .then_some((scope.span.start, scope.span.end))
-            }));
-        }
-        for te in &summary.type_exports {
-            // Non-hoisted types reference setup-scope values via `typeof`
-            // and must stay inside `__setup` so TS can resolve them.
-            if te.hoisted {
-                module_spans.push((te.start, te.end));
-            }
-        }
-        merge_overlapping_spans(module_spans)
+        script_blocks.module_spans(summary, script_content, module_spans)
     });
 
     // Re-declare SFC generics on hoisted declarations with safe defaults.
@@ -233,12 +220,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         (defaults, names)
     });
     let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
-        summary
-            .type_exports
-            .iter()
-            .filter(|te| te.hoisted)
-            .map(|te| ((te.start, te.end), te.name.as_str()))
-            .collect()
+        script_blocks.hoisted_type_spans(summary, script_content)
     } else {
         FxHashMap::default()
     };

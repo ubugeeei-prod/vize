@@ -68,6 +68,10 @@ fn eof_position(content: &str) -> Position {
     Position::new(line, character)
 }
 
+// `insta`'s snapshot macros expand through the disallowed `std::format!`; the
+// expansion is inside `insta`, so only an allow at the test module can silence
+// it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
+#[allow(clippy::disallowed_macros)]
 #[cfg(all(test, feature = "glyph"))]
 mod tests {
     use super::{eof_position, format_document};

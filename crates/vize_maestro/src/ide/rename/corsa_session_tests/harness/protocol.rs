@@ -7,6 +7,8 @@ use std::{
     time::Duration,
 };
 
+use vize_carton::cstr;
+
 mod executable;
 mod proxy;
 mod readiness;
@@ -22,7 +24,7 @@ pub(in crate::ide) struct ShutdownGate {
 impl ShutdownGate {
     pub(in crate::ide::rename::corsa_session_tests) fn arm(mut self) -> Result<Self, String> {
         fs::write(&self.sentinel, b"armed").map_err(|error| {
-            format!(
+            cstr!(
                 "arm editor shutdown gate {}: {error}",
                 self.sentinel.display()
             )
@@ -48,16 +50,17 @@ impl ShutdownGate {
             Ok(Ok(stream)) => stream,
             Ok(Err(error)) => {
                 let _ = acceptor.join();
-                return Err(format!("accept editor shutdown observation: {error}"));
+                return Err(cstr!("accept editor shutdown observation: {error}").into());
             }
             Err(error) => {
                 // Wake the owned accept thread so the test reports the
                 // missing protocol phase instead of leaking a blocked helper.
                 let _ = TcpStream::connect(address);
                 let _ = acceptor.join();
-                return Err(format!(
+                return Err(cstr!(
                     "editor shutdown was not observed within the bridge deadline: {error}"
-                ));
+                )
+                .into());
             }
         };
         acceptor
@@ -69,9 +72,9 @@ impl ShutdownGate {
         let mut marker = [0_u8; 1];
         stream
             .read_exact(&mut marker)
-            .map_err(|error| format!("read editor shutdown observation: {error}"))?;
+            .map_err(|error| cstr!("read editor shutdown observation: {error}"))?;
         if marker != *b"S" {
-            return Err(format!("invalid editor shutdown marker: {marker:?}"));
+            return Err(cstr!("invalid editor shutdown marker: {marker:?}").into());
         }
         self.stream = Some(stream);
         Ok(())
@@ -83,7 +86,7 @@ impl ShutdownGate {
         };
         stream
             .write_all(b"R")
-            .map_err(|error| format!("release editor shutdown gate: {error}"))
+            .map_err(|error| cstr!("release editor shutdown gate: {error}").into())
     }
 }
 
@@ -103,7 +106,7 @@ pub(in crate::ide) fn traced_corsa_executable(
     let trace_dir = root.join("protocol-traces");
     fs::create_dir(&trace_dir).map_err(|error| error.to_string())?;
     let actual = corsa_path.canonicalize().map_err(|error| {
-        format!(
+        cstr!(
             "canonicalize Corsa executable {}: {error}",
             corsa_path.display()
         )
@@ -112,7 +115,7 @@ pub(in crate::ide) fn traced_corsa_executable(
         .to_str()
         .filter(|path| !path.contains('\n'))
         .ok_or_else(|| {
-            format!(
+            cstr!(
                 "Corsa executable path is not shell-safe: {}",
                 actual.display()
             )
@@ -157,13 +160,14 @@ fn assert_shutdown_gate_runtime() -> Result<(), String> {
         ])
         .output()
         .map_err(|error| {
-            format!("editor shutdown gate requires perl with IO::Socket::INET: {error}")
+            cstr!("editor shutdown gate requires perl with IO::Socket::INET: {error}")
         })?;
     if !probe.status.success() {
-        return Err(format!(
+        return Err(cstr!(
             "editor shutdown gate requires perl with IO::Socket::INET: {}",
             String::from_utf8_lossy(&probe.stderr).trim()
-        ));
+        )
+        .into());
     }
     Ok(())
 }
@@ -190,37 +194,39 @@ pub(super) fn assert_graceful_lsp_lifecycle(
         }
     }
     if lsp_traces.len() != 1 {
-        return Err(format!(
+        return Err(cstr!(
             "expected one editor LSP trace containing rename, found {} in {}",
             lsp_traces.len(),
             trace_dir.display()
-        ));
+        )
+        .into());
     }
     let (path, trace) = &lsp_traces[0];
     if find_bytes(trace, canonical_root_uri.as_bytes()).is_none() {
-        return Err(format!(
+        return Err(cstr!(
             "editor LSP trace {} did not use canonical root URI {canonical_root_uri}",
             path.display()
-        ));
+        )
+        .into());
     }
     if logical_root_uri != canonical_root_uri
         && find_bytes(trace, logical_root_uri.as_bytes()).is_some()
     {
-        return Err(format!(
+        return Err(cstr!(
             "editor LSP trace {} mixed logical root URI {logical_root_uri} with canonical {canonical_root_uri}",
             path.display()
-        ));
+        ).into());
     }
     let did_open = find_bytes(trace, b"textDocument/didOpen")
-        .ok_or_else(|| format!("missing didOpen in {}", path.display()))?;
+        .ok_or_else(|| cstr!("missing didOpen in {}", path.display()))?;
     let shutdown = find_bytes(trace, b"\"shutdown\"").ok_or_else(|| {
-        format!(
+        cstr!(
             "raw-closed editor LSP without shutdown in {}",
             path.display()
         )
     })?;
     let exit = find_bytes(trace, b"\"exit\"")
-        .ok_or_else(|| format!("closed editor LSP without exit in {}", path.display()))?;
+        .ok_or_else(|| cstr!("closed editor LSP without exit in {}", path.display()))?;
     readiness::assert_generation_order(
         path,
         trace,
@@ -233,40 +239,41 @@ pub(super) fn assert_graceful_lsp_lifecycle(
         .file_stem()
         .and_then(|name| name.to_str())
         .and_then(|name| name.strip_prefix("client-"))
-        .ok_or_else(|| format!("unexpected protocol trace name: {}", path.display()))?;
+        .ok_or_else(|| cstr!("unexpected protocol trace name: {}", path.display()))?;
     assert_clean_stderr(trace_dir, pid)?;
     assert_reaped(trace_dir, pid)
 }
 
 fn assert_clean_stderr(trace_dir: &Path, pid: &str) -> Result<(), String> {
-    let path = trace_dir.join(format!("server-{pid}.stderr"));
+    let path = trace_dir.join(cstr!("server-{pid}.stderr"));
     let stderr = fs::read_to_string(&path)
-        .map_err(|error| format!("read editor LSP stderr {}: {error}", path.display()))?;
+        .map_err(|error| cstr!("read editor LSP stderr {}: {error}", path.display()))?;
     for forbidden in [
         "RequestCancelled",
         "error handling method 'textDocument/didOpen': context canceled",
         "error handling method 'textDocument/rename': context canceled",
     ] {
         if stderr.contains(forbidden) {
-            return Err(format!(
+            return Err(cstr!(
                 "editor LSP emitted {forbidden:?} in {}: {stderr}",
                 path.display()
-            ));
+            )
+            .into());
         }
     }
     Ok(())
 }
 
 fn assert_reaped(trace_dir: &Path, pid: &str) -> Result<(), String> {
-    let path = trace_dir.join(format!("process-{pid}.reaped"));
+    let path = trace_dir.join(cstr!("process-{pid}.reaped"));
     let status = fs::read_to_string(&path).map_err(|error| {
-        format!(
+        cstr!(
             "editor LSP wrapper or descendant was not reaped before shutdown returned ({}): {error}",
             path.display()
         )
     })?;
     status.trim().parse::<i32>().map_err(|error| {
-        format!(
+        cstr!(
             "invalid editor LSP reap marker {} ({status:?}): {error}",
             path.display()
         )

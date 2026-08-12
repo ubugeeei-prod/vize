@@ -3,6 +3,8 @@ use std::borrow::Cow;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
+use super::script_blocks::ScriptBlockScopes;
+
 fn skip_trivia(source: &str, mut at: usize) -> usize {
     let bytes = source.as_bytes();
     loop {
@@ -65,7 +67,11 @@ pub(super) struct SetupTypeExportsPlan {
 }
 
 impl SetupTypeExportsPlan {
-    pub(super) fn new(summary: &Croquis, script: Option<&str>) -> Self {
+    pub(super) fn new(
+        summary: &Croquis,
+        script: Option<&str>,
+        script_blocks: &ScriptBlockScopes,
+    ) -> Self {
         let mut export_starts = Vec::new();
         let mut exports = Vec::new();
         let mut captured_names: FxHashSet<String> = FxHashSet::default();
@@ -78,6 +84,13 @@ impl SetupTypeExportsPlan {
                     continue;
                 };
                 if !source.starts_with("export") {
+                    continue;
+                }
+                // A classic `<script>` declaration is emitted verbatim at module
+                // scope, `export` modifier and all, next to the module-scope
+                // values it depends on. Capturing it as well would re-declare
+                // the same authored name — TS2300 on code `vue-tsc` accepts.
+                if script_blocks.owns(declaration.start) {
                     continue;
                 }
 
@@ -181,7 +194,7 @@ impl SetupTypeExportsPlan {
 
 #[cfg(test)]
 mod tests {
-    use super::{SetupTypeExportsPlan, exported_type_is_generic};
+    use super::{ScriptBlockScopes, SetupTypeExportsPlan, exported_type_is_generic};
     use vize_croquis::{Croquis, TypeExport, TypeExportKind};
 
     #[test]
@@ -204,7 +217,7 @@ mod tests {
             hoisted: false,
         });
 
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script));
+        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
         let mut line = std::borrow::Cow::Borrowed("export type Public = typeof value;");
         plan.strip_modifiers(&mut line, public_start);
         assert_eq!(line, " type Public = typeof value;");
@@ -235,7 +248,7 @@ mod tests {
             });
         }
 
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script));
+        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
         let mut line = std::borrow::Cow::Borrowed(script);
         plan.strip_modifiers(&mut line, 0);
         assert_eq!(
@@ -257,7 +270,7 @@ mod tests {
             end: source.len() as u32,
             hoisted: false,
         });
-        let plan = SetupTypeExportsPlan::new(&summary, Some(source));
+        let plan = SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default());
         // The `export` modifier is still stripped: a non-hoisted generic stays
         // inside `__setup`, where a retained modifier would be TS1184.
         let mut line = std::borrow::Cow::Borrowed(source);
@@ -292,7 +305,7 @@ mod tests {
             });
         }
 
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script));
+        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
 
         // Both `export` modifiers are stripped so neither merged declaration is
         // illegal inside `__setup`.

@@ -134,7 +134,7 @@ mod tests {
         );
         let context = IdeContext::new(&state, &host_uri, 0).unwrap();
         let location = vize_canon::LspLocation {
-            uri: Url::from_file_path(mirror).unwrap().to_string().into(),
+            uri: Url::from_file_path(mirror).unwrap().to_string(),
             range: vize_canon::LspRange {
                 start: vize_canon::LspPosition {
                     line: 0,
