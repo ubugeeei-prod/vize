@@ -15,9 +15,9 @@ expression: diagnostic_snapshots(diagnostics)
         ),
         message: "<script> should come before <style>\n\nHelp: Recommended order: <script> and <template> (either order) -> <style>",
         range: (
-            6,
+            3,
             0,
-            8,
+            5,
             9,
         ),
     },

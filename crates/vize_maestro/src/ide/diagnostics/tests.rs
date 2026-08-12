@@ -261,8 +261,7 @@ fn collect_surfaces_sfc_level_lint_diagnostics() {
     let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
     state.documents.open(
         uri.clone(),
-        "<template><div></div></template>\n<style scoped>.a {}</style>\n<script setup>const count = 1</script>"
-            .to_string(),
+        "<style scoped>.a {}</style>\n<script setup>const count = 1</script>".to_string(),
         1,
         "vue".to_string(),
     );
@@ -277,7 +276,7 @@ fn collect_surfaces_sfc_level_lint_diagnostics() {
         })
         .expect("SFC-level lint diagnostic");
 
-    assert_eq!(diagnostic.range.start.line, 2);
+    assert_eq!(diagnostic.range.start.line, 1);
     assert!(diagnostic.message.contains("<script> should come before"));
 }
 
@@ -784,8 +783,7 @@ fn collect_lint_only_equals_lint_subset_of_collect() {
     let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
     state.documents.open(
         uri.clone(),
-        "<template><div></div></template>\n<style scoped>.a {}</style>\n<script setup>const count = 1</script>"
-            .to_string(),
+        "<style scoped>.a {}</style>\n<script setup>const count = 1</script>".to_string(),
         1,
         "vue".to_string(),
     );
@@ -847,10 +845,7 @@ fn collect_keeps_dependent_diagnostics_after_recoverable_template_repair() {
         r#"<template>
   <span />
   {{ missing }}
-</template>
-<style scoped>
-.a {}
-</style>
+</template><style scoped>.a {}</style>
 <script setup lang="ts">
 const count = 1
 </script>
@@ -876,10 +871,7 @@ fn collect_lint_only_keeps_lint_after_recoverable_template_repair() {
         uri.clone(),
         r#"<template>
   <span />
-</template>
-<style scoped>
-.a {}
-</style>
+</template><style scoped>.a {}</style>
 <script setup lang="ts">
 const count = 1;
 </script>
