@@ -178,7 +178,7 @@ fn compiler_output(command: &mut Command) -> (bool, String) {
     (output.status.success(), rendered)
 }
 
-fn resolve_javascript_tsc() -> Option<PathBuf> {
+pub(super) fn resolve_javascript_tsc() -> Option<PathBuf> {
     if let Some(path) = std::env::var_os("VIZE_TEST_JAVASCRIPT_TSC").map(PathBuf::from)
         && path.is_file()
     {
@@ -195,7 +195,7 @@ fn resolve_javascript_tsc() -> Option<PathBuf> {
     candidate.is_file().then_some(candidate)
 }
 
-fn assert_downstream_compiler(compiler: &Path, downstream: &Path) {
+pub(super) fn assert_downstream_compiler(compiler: &Path, downstream: &Path) {
     let (success, output) = compiler_output(
         Command::new(compiler)
             .arg("--ignoreConfig")

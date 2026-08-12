@@ -55,16 +55,21 @@ function __setup() {
   // Reference setup bindings (used in template/CSS v-bind)
   void defineComponent;
   })();
+
+  return { __default__ };
 }
 
 // Invoke setup to verify types
 __setup();
 
+type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>["__default__"];
+type __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};
+
 export type Emits = {};
 export type Slots = {};
 
 // ========== Default Export ==========
-type __VizeComponentInstance = {
+type __VizeComponentInstance = Omit<__VizeAuthoredInstance, '$props' | '$emit' | '$slots'> & {
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: __VizeStrictPublicEmit<Emits>;
@@ -97,5 +102,5 @@ type __VizeVueComponentOptions = {
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
 };
-declare const __vize_component__: { readonly __vizeRawProps?: Props; } & __VizeComponentConstructor & __VizeVueComponentOptions;
+declare const __vize_component__: { readonly __vizeRawProps?: Props; } & __VizeAuthoredComponent & __VizeComponentConstructor & __VizeVueComponentOptions;
 export default __vize_component__;

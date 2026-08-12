@@ -5,6 +5,11 @@
 
 use std::ops::Range;
 
+mod vue2_members;
+
+use vue2_members::VUE2_INSTANCE_MEMBERS;
+pub(crate) use vue2_members::is_vue2_instance_member;
+
 use super::types::VirtualTsOptions;
 use vize_carton::config::VueVersion;
 use vize_carton::{String, append};
@@ -213,28 +218,6 @@ pub const DECLARATION_HELPERS_DTS: &str = concat!(
     vue_type_aliases_text!(),
     emit_overload_helpers_text!(),
 );
-
-/// Vue 2-only public-instance members that are absent from Vue 3's
-/// `ComponentPublicInstance`.
-///
-/// In a Vue 2 / 2.7 dialect, template (and `this`) references such as
-/// `$listeners`, `$children`, `$scopedSlots`, the `$on`/`$off`/`$once` event
-/// emitter, `$set`/`$delete`, and `$createElement`/`_c` are valid but resolve
-/// to nothing on the Vue 3 instance type, so Corsa would false-error on them.
-/// They are emitted as permissive `any` bindings so v2 templates type-check.
-/// Vue 3 output never emits these, so it stays byte-identical.
-const VUE2_INSTANCE_MEMBERS: &[&str] = &[
-    "$listeners",
-    "$children",
-    "$scopedSlots",
-    "$on",
-    "$off",
-    "$once",
-    "$set",
-    "$delete",
-    "$createElement",
-    "_c",
-];
 
 /// Generate Vue template context declarations dynamically.
 ///

@@ -136,13 +136,15 @@ defineArt("./Button.vue", { title: "Button" });
   </variant>
 </art>"#;
 
-    let result = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
+    let generated = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
         &uri,
         content,
         &vize_canon::virtual_ts::VirtualTsOptions::default(),
     )
-    .expect("virtual TS generated")
-    .virtual_result;
+    .expect("virtual TS generated");
+    assert_eq!(generated.variants.len(), 1);
+    assert_eq!(generated.variants[0].variant_index, 0);
+    let result = &generated.variants[0].virtual_result;
 
     assert!(
         result

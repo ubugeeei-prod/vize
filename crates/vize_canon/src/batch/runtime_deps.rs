@@ -23,16 +23,23 @@ pub(crate) use stubs::{
     VUE_FACADE_JSX_GLOBAL_TYPES, VUE_FACADE_JSX_RUNTIME_TYPES, VUE_RUNTIME_DOM_STUB_TYPES,
 };
 
+/// Materialize Canon's own runtime dependency entries.
+///
+/// `preserved_entries` are entries directly below the mirror's `node_modules`
+/// that Canon owns for another reason — today, shared package shadow scopes
+/// hoisted to the mirror root (#4153). Pruning them here would delete and
+/// rewrite the same tree on every check and defeat warm reuse.
 pub(super) fn materialize_runtime_dependencies(
     project_root: &Path,
     virtual_root: &Path,
+    preserved_entries: &[PathBuf],
 ) -> CorsaResult<()> {
     let node_modules_dir = virtual_root.join("node_modules");
     ensure_dir(&node_modules_dir)?;
 
     materialize_vue_support(project_root, &node_modules_dir)?;
     materialize_vite_support(project_root, &node_modules_dir)?;
-    prune_runtime_node_modules(&node_modules_dir)?;
+    prune_runtime_node_modules(&node_modules_dir, preserved_entries)?;
 
     Ok(())
 }
@@ -228,11 +235,15 @@ fn prune_stub_dir(dir: &Path, file_names: &[&str]) -> std::io::Result<()> {
     prune_dir_entries(dir, &expected_files)
 }
 
-fn prune_runtime_node_modules(node_modules_dir: &Path) -> std::io::Result<()> {
+fn prune_runtime_node_modules(
+    node_modules_dir: &Path,
+    preserved_entries: &[PathBuf],
+) -> std::io::Result<()> {
     let expected_files = FxHashSet::default();
     let preserved_roots = ["vue", "vite", "@vue"]
         .into_iter()
         .map(|name| node_modules_dir.join(name))
+        .chain(preserved_entries.iter().cloned())
         .filter(|path| path.exists() || path.is_symlink())
         .collect::<Vec<_>>();
     super::materialize_fs::prune_unexpected_entries(

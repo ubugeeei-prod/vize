@@ -4,6 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { checkFixturePhases } from "./support/check-fixtures/manifest.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixtureDir = path.join(root, "tests", "_fixtures", "_projects", "ecosystem-products");
 const sourceDir = path.join(fixtureDir, "src");
@@ -33,10 +35,6 @@ const requestedProducts = [
   { name: "FormKit", tokens: ["@formkit/vue", "FormKit"] },
   { name: "TresJS", tokens: ["@tresjs/core", "TresCanvas"] },
 ] as const;
-
-function readJsonFile<T>(...segments: string[]): T {
-  return JSON.parse(fs.readFileSync(path.join(root, ...segments), "utf8")) as T;
-}
 
 function readSourceTree(dir: string): string {
   return fs
@@ -69,14 +67,18 @@ test("ecosystem product fixture covers the requested Vue ecosystem packages", ()
 });
 
 test("ecosystem product fixture is wired into the fixture check script", () => {
-  const pkg = readJsonFile<{ scripts: Record<string, string> }>("tests", "package.json");
   const appsSource = fs.readFileSync(path.join(root, "tests", "_helpers", "apps.ts"), "utf8");
   const runnerSource = fs.readFileSync(
     path.join(root, "tests", "snapshots", "check", "ecosystem-products.ts"),
     "utf8",
   );
 
-  assert.match(pkg.scripts["test:check:fixtures"], /snapshots\/check\/ecosystem-products\.ts/);
+  // The fixture lane is manifest-driven since #4126, so membership is a phase
+  // in the manifest rather than a substring of the package script.
+  assert.ok(
+    checkFixturePhases.some((phase) => phase.file === "snapshots/check/ecosystem-products.ts"),
+    "the ecosystem-products fixture must stay a phase in the check-fixtures manifest",
+  );
   assert.match(appsSource, /export const ecosystemProductsApp/);
   assert.match(runnerSource, /ecosystemProductsApp/);
 });

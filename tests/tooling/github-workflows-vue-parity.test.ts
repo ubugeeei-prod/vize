@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import {
+  CHECK_FIXTURE_ENV,
+  CHECK_FIXTURE_NODE_ARGS,
+  checkFixturePhases,
+} from "./support/check-fixtures/manifest.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 type CompositeActionStep = {
@@ -60,30 +65,50 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     steps.find((step) => step.name === "Build vize CLI")?.run,
     "cargo build --profile ci -p vize --features legacy",
   );
+  // The first step of the action writes the process-budget baseline, so the
+  // always-uploaded artifact exists even when a later step is killed by the
+  // spawn exhaustion this lane is guarding against (#4126).
+  assert.equal(steps[0]?.name, "Record runner process budget baseline");
+  for (const fact of ["nproc", "ulimit -u", "ulimit -Hu", "pids.current", "pids.max", "Threads:"]) {
+    assert.ok((steps[0]?.run ?? "").includes(fact), `the runner baseline must record ${fact}`);
+  }
+
   const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
   assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
+  const phaseFiles = checkFixturePhases.map((phase) => phase.file);
   // The per-PR drop-in compatibility ratchet must ride the same lane: it is
   // the only pre-merge gate holding the vize/vue-tsc divergence ledger.
-  assert.match(
-    testsPackage.scripts["test:check:fixtures"],
-    /tooling\/compat-ratchet\.test\.ts/,
+  assert.ok(
+    phaseFiles.includes("tooling/compat-ratchet.test.ts"),
     "test:check:fixtures must run the per-PR compat ratchet",
   );
-  assert.match(
-    testsPackage.scripts["test:check:fixtures"],
-    /^VIZE_TEST_REQUIRE_TSGO=1 /,
+  assert.deepEqual(
+    { ...CHECK_FIXTURE_ENV },
+    { VIZE_TEST_REQUIRE_TSGO: "1" },
     "typecheck parity must fail closed when tsgo is unavailable",
   );
-  assert.match(
-    testsPackage.scripts["test:check:fixtures"],
-    /snapshots\/check\/vue-benchmarks-correctness-plants\.ts/,
+  assert.ok(
+    CHECK_FIXTURE_NODE_ARGS.includes("--test-concurrency=1"),
+    "typecheck parity phases must stay serial",
+  );
+  assert.ok(
+    phaseFiles.includes("snapshots/check/vue-benchmarks-correctness-plants.ts"),
     "typecheck parity must run the upstream correctness plants",
   );
-  assert.match(
-    testsPackage.scripts["test:check:fixtures"],
-    /snapshots\/check\/zz-intentional-errors-fixtures\.ts/,
+  assert.ok(
+    phaseFiles.includes("snapshots/check/zz-intentional-errors-fixtures.ts"),
     "typecheck parity must run the batch broken-to-repaired oracle",
+  );
+
+  const cycles = steps.find(
+    (step) => step.name === "Bound fixture process topology under a constrained PID budget",
+  );
+  assert.deepEqual(cycles?.env, { VIZE_TEST_BIN: "target/ci/vize" });
+  assert.equal(cycles?.run, "vp run --filter './tests' test:check:fixtures:cycles");
+  assert.equal(
+    testsPackage.scripts["test:check:fixtures:cycles"],
+    "node tooling/support/check-fixtures/cycles.ts",
   );
   // A bare text match would also pass on a mention in a comment or a leftover
   // import, so pin the two facts that make the Tier-L project actually run:
@@ -162,10 +187,22 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
 
   const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");
-  assert.match(
-    summary?.run ?? "",
-    /vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn/,
-  );
+  // Asserted one directory at a time: a single ordered pattern fails without
+  // saying which suite went missing, and it breaks on a harmless reordering.
+  const summarisedDirectories = [
+    "check-fixtures-topology",
+    "check-fixtures-cycles",
+    "vben-batch-incremental",
+    "misskey-lsp-incremental",
+    "vben-lsp-incremental",
+    "misskey-lsp-churn",
+  ];
+  for (const directory of summarisedDirectories) {
+    assert.ok(
+      (summary?.run ?? "").includes(directory),
+      `the summary step must publish the ${directory} metrics directory`,
+    );
+  }
   assert.match(summary?.run ?? "", /summary\.md/);
   assert.match(summary?.run ?? "", /GITHUB_STEP_SUMMARY/);
 
@@ -186,6 +223,28 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
       "retention-days": 14,
     });
   }
+
+  // The topology artifact is the one upload that may not be missing: its first
+  // rows are written before anything can fail, so an empty directory means the
+  // evidence was lost rather than never produced.
+  const topology = steps.find((step) => step.name === "Upload fixture process topology");
+  assert.equal(topology?.if, "${{ always() }}");
+  assert.match(topology?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+  assert.deepEqual(topology?.with, {
+    name: "check-fixtures-topology",
+    path: "target/vize-tests/metrics/check-fixtures-topology/",
+    "if-no-files-found": "error",
+    "retention-days": 14,
+  });
+  const cycleUpload = steps.find((step) => step.name === "Upload fixture process budget cycles");
+  assert.equal(cycleUpload?.if, "${{ always() }}");
+  assert.match(cycleUpload?.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+  assert.deepEqual(cycleUpload?.with, {
+    name: "check-fixtures-cycles",
+    path: "target/vize-tests/metrics/check-fixtures-cycles/",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
   assert.equal(
     testsPackage.scripts["test:performance:lsp-incremental"],
     "node --test --test-concurrency=1 performance/misskey-lsp-incremental.test.ts performance/vben-lsp-incremental.test.ts",

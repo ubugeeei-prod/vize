@@ -92,7 +92,11 @@ impl VirtualProject {
 
         profile!(
             "canon.project.runtime_deps",
-            materialize_runtime_dependencies(&self.project_root, &self.virtual_root)
+            materialize_runtime_dependencies(
+                &self.project_root,
+                &self.virtual_root,
+                &self.root_package_shadow_scope_entries(),
+            )
         )?;
 
         profile!(

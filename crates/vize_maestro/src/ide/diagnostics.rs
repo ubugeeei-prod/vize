@@ -7,6 +7,8 @@
 //! - Future: vize_canon (type checker)
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+#[cfg(all(test, feature = "native"))]
+mod art_variant_typecheck_tests;
 mod builder;
 mod collectors;
 mod component_props;

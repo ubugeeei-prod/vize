@@ -78,11 +78,14 @@ pub use package_route_reachability::{
 mod package_shadow;
 mod package_shadow_owners;
 mod package_shadow_runtime;
+mod package_shadow_scope;
 mod package_source_index;
 mod passthrough;
 mod paths;
 mod project;
 mod setup_props;
+mod topology;
+pub use topology::BatchTopologyMetrics;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
     TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,
@@ -206,6 +209,12 @@ pub struct VirtualProject {
     package_shadow_source_paths: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
     package_shadow_dirty_keys: FxHashSet<crate::package_route::PackageRouteKey>,
     package_shadows_initialized: bool,
+
+    /// Package name -> the directories whose `node_modules` host the shadow
+    /// scopes shared by every importer that resolved that name to the same
+    /// physical package. Names without a single project-wide identity are
+    /// absent and keep their per-importer scopes (#4153).
+    package_shadow_scopes: FxHashMap<CompactString, Vec<PathBuf>>,
 
     /// Materialized paths touched by the next persistent patch. Cold
     /// materialization clears this set; warm checks write/hash only these

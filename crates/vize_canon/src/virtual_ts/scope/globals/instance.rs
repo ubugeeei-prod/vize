@@ -11,18 +11,28 @@
 //! Names the caller already declared, including the ones mined out of a
 //! generated `ComponentCustomProperties`, never reach either form: they are
 //! filtered by `is_declared_template_context_name`.
+//!
+//! `$props` is neither form: it is the component's *own* prop contract, and
+//! reading it off `ComponentPublicInstance` resolves that helper's default `P`,
+//! which is `{}` — so every declared prop read through `$props` reported
+//! `TS2339 … does not exist on type '{}'` (#4145). It is declared from the one
+//! template prop model instead.
 
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifiers_oxc};
+use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifier_refs_oxc};
 
+use crate::virtual_ts::helpers::is_vue2_instance_member;
+use crate::virtual_ts::props::TemplatePropsModel;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::super::context::ScopeGenerationOptions;
-use super::{is_declared_template_context_name, is_template_instance_global_name};
+use super::{
+    has_script_setup, is_declared_template_context_name, is_template_instance_global_name,
+};
 
 #[cfg(test)]
 mod tests;
@@ -42,7 +52,7 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         ts,
         mappings,
         summary,
-        scope_options.virtual_ts_options,
+        scope_options,
         scope_options.setup_spread_bindings,
     );
     for undef in &summary.undefined_refs {
@@ -52,21 +62,67 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
     }
 
     for expr in &summary.template_expressions {
-        for ident in extract_identifiers_oxc(expr.content.as_str()) {
-            let name = ident.as_str();
-            let Some(relative_offset) = expr.content.find(name) else {
-                continue;
-            };
-            let src_start = (template_offset + expr.start) as usize + relative_offset;
+        // Only a `$`-prefixed name survives `emit`, so an expression without a
+        // `$` never needs a parse. A real template holds thousands of
+        // interpolations and directive expressions and almost none of them read
+        // an instance global, so the byte scan keeps the parse off that path.
+        if !expr.content.as_str().contains('$') {
+            continue;
+        }
+        // The identifier's own span, not `content.find(name)`: the first
+        // occurrence of `$props` in `$propsList && $props` is the `$propsList`
+        // prefix, and mapping to it would point diagnostics at the wrong
+        // template range.
+        for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
+            let name = ident.name.as_str();
+            let src_start = (template_offset + expr.start + ident.offset) as usize;
             let src_end = src_start + name.len();
             emitter.emit(name, src_start, src_end);
         }
     }
 }
 
+/// The type the template's `$props` resolves against.
+///
+/// A `<script setup>` component reads it off the one template prop model, so
+/// `$props`, the local `props` const and the bare per-prop bindings cannot drift
+/// apart.
+///
+/// A plain Options API component declares no macro props, so its `$props` comes
+/// off the authored default export's own instance type — the same value
+/// `generate_undefined_refs` resolves unknown template names against, and under
+/// the same conditions: a `<script setup>` block alongside the plain script owns
+/// the template's bindings, and legacy Vue 2's default export is an options
+/// object rather than a constructor.
+///
+/// `None` keeps the generic instance-global form, whose `{}` for a component
+/// that declares no props is what `vue-tsc` reports too.
+///
+/// Resolved lazily: building the prop model walks the macro and type tables, and
+/// the overwhelming majority of templates never name `$props` at all.
+fn instance_props_type(
+    summary: &Croquis,
+    scope_options: &ScopeGenerationOptions<'_, '_>,
+) -> Option<String> {
+    if let Some(props_type) = TemplatePropsModel::new(summary).instance_props_type() {
+        return Some(props_type);
+    }
+    let resolve_on_instance = scope_options.options_api
+        && scope_options.has_default_alias
+        && !scope_options.legacy_vue2
+        && !has_script_setup(summary);
+    resolve_on_instance.then(|| {
+        String::from(
+            "(typeof __default__ extends abstract new (...args: any) => infer __I ? __I extends { $props: infer __P } ? __P : {} : {})",
+        )
+    })
+}
+
 struct InstanceGlobalRefsEmitter<'a> {
     ts: &'a mut String,
     mappings: &'a mut Vec<VizeMapping>,
+    summary: &'a Croquis,
+    scope_options: &'a ScopeGenerationOptions<'a, 'a>,
     options: &'a VirtualTsOptions,
     bindings: &'a BindingMetadata,
     synthetic_setup_bindings: FxHashSet<&'a str>,
@@ -77,7 +133,10 @@ struct InstanceGlobalRefsEmitter<'a> {
     /// it deduplicates by position; the two collection passes above can reach the
     /// same occurrence twice.
     seen_occurrences: FxHashSet<(String, usize)>,
+    /// Memoized `instance_props_type`; the outer `Option` is "not resolved yet".
+    instance_props_type: Option<Option<String>>,
     emitted_header: bool,
+    emitted_instance_global_alias: bool,
 }
 
 impl<'a> InstanceGlobalRefsEmitter<'a> {
@@ -85,13 +144,15 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         ts: &'a mut String,
         mappings: &'a mut Vec<VizeMapping>,
         summary: &'a Croquis,
-        options: &'a VirtualTsOptions,
+        scope_options: &'a ScopeGenerationOptions<'a, 'a>,
         synthetic_setup_bindings: &'a [String],
     ) -> Self {
         Self {
             ts,
             mappings,
-            options,
+            summary,
+            scope_options,
+            options: scope_options.virtual_ts_options,
             bindings: &summary.bindings,
             synthetic_setup_bindings: synthetic_setup_bindings
                 .iter()
@@ -104,8 +165,16 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 .collect(),
             seen_names: FxHashSet::default(),
             seen_occurrences: FxHashSet::default(),
+            instance_props_type: None,
             emitted_header: false,
+            emitted_instance_global_alias: false,
         }
+    }
+
+    fn resolve_instance_props_type(&mut self) -> Option<String> {
+        self.instance_props_type
+            .get_or_insert_with(|| instance_props_type(self.summary, self.scope_options))
+            .clone()
     }
 
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
@@ -114,11 +183,21 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             || self.synthetic_setup_bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)
+            || (self.scope_options.legacy_vue2 && is_vue2_instance_member(name))
         {
             return;
         }
 
-        let strict = self.options.strict_instance_globals;
+        // `$props` resolves against the component's own prop contract, and is
+        // declared once whatever the strictness: strict resolution exists to
+        // report an *undeclared* global, and `$props` is always declared.
+        let declared_type = if name == "$props" {
+            self.resolve_instance_props_type()
+        } else {
+            None
+        };
+
+        let strict = self.options.strict_instance_globals && declared_type.is_none();
         // Strict resolution keeps every authored occurrence so an undeclared
         // name reports once per use, the way `vue-tsc` does. The permissive form
         // declares the name once and every later use resolves to that binding.
@@ -137,21 +216,28 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         if !self.emitted_header {
             self.ts
                 .push_str("\n  // Instance globals from ComponentPublicInstance:\n");
-            if !strict {
-                self.ts.push_str(
-                    "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
-                );
-            }
             self.emitted_header = true;
+        }
+        // The `__VizeInstanceGlobal` alias is only emitted for names that
+        // actually read the public instance: an alias declared and never used
+        // is a `TS6196` under `noUnusedLocals`.
+        if !strict && declared_type.is_none() && !self.emitted_instance_global_alias {
+            self.ts.push_str(
+                "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
+            );
+            self.emitted_instance_global_alias = true;
         }
 
         let gen_start = self.ts.len();
-        let stmt = match (strict, already_declared) {
-            (false, _) => {
+        let stmt = match (declared_type.as_deref(), strict, already_declared) {
+            (Some(props_type), _, _) => {
+                cstr!("  const {name}: {props_type} = undefined as any;\n")
+            }
+            (None, false, _) => {
                 cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n")
             }
-            (true, false) => cstr!("  const {name} = __ctx.{name};\n"),
-            (true, true) => cstr!("  void (__ctx.{name});\n"),
+            (None, true, false) => cstr!("  const {name} = __ctx.{name};\n"),
+            (None, true, true) => cstr!("  void (__ctx.{name});\n"),
         };
         // The strict forms read the name off `__ctx`, and that access is where
         // TypeScript reports an undeclared global, so the mapping anchors to the

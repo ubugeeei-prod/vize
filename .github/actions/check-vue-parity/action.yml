@@ -4,6 +4,29 @@ description: Gate compiler fixtures and incremental LSP behavior against pinned 
 runs:
   using: composite
   steps:
+    # First, so the process-budget artifact exists no matter which later step
+    # fails. `Failed to spawn process: Resource temporarily unavailable` kills
+    # this job mid-step (#4126), and evidence written only on a clean exit is
+    # missing exactly when it is needed.
+    - name: Record runner process budget baseline
+      shell: bash
+      run: |
+        mkdir -p target/vize-tests/metrics/check-fixtures-topology
+        {
+          echo "cpus=$(nproc)"
+          echo "ulimit_u=$(ulimit -u)"
+          echo "ulimit_Hu=$(ulimit -Hu)"
+          echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"
+          echo "pids_current=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo unavailable)"
+          echo "pids_max=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo unavailable)"
+          # `grep -s` reads the files rather than `awk`: a process that exits
+          # between the glob expanding and the read makes `awk` fail without
+          # running `END`, which discarded the whole thread count. `grep`
+          # reports a vanished file as a skipped input instead.
+          echo "threads_total=$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+        } > target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
+        cat target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
+
     - name: Hydrate fixtures and install JS dependencies
       shell: bash
       run: |
@@ -30,6 +53,12 @@ runs:
       env:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
+
+    - name: Bound fixture process topology under a constrained PID budget
+      shell: bash
+      env:
+        VIZE_TEST_BIN: target/ci/vize
+      run: vp run --filter './tests' test:check:fixtures:cycles
 
     - name: Check Tier-L batch incremental session reuse
       shell: bash
@@ -72,11 +101,32 @@ runs:
       if: ${{ always() }}
       shell: bash
       run: |
-        for suite in vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
+        for suite in check-fixtures-topology check-fixtures-cycles vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
           if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
             cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
         done
+
+    # `if-no-files-found: error` rather than `warn`: the runner baseline is
+    # written by the first step of this action, so an empty artifact means the
+    # evidence was lost, which is the failure mode #4126 exists to close.
+    - name: Upload fixture process topology
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: check-fixtures-topology
+        path: target/vize-tests/metrics/check-fixtures-topology/
+        if-no-files-found: error
+        retention-days: 14
+
+    - name: Upload fixture process budget cycles
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: check-fixtures-cycles
+        path: target/vize-tests/metrics/check-fixtures-cycles/
+        if-no-files-found: warn
+        retention-days: 14
 
     - name: Upload Misskey incremental LSP metrics
       if: ${{ always() }}

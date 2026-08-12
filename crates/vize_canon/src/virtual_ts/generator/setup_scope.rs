@@ -90,7 +90,7 @@ fn setup_scoped_type_names(summary: &Croquis) -> Vec<String> {
         .collect()
 }
 
-pub(super) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
+pub(in crate::virtual_ts) fn define_props_type_requires_setup_scope(summary: &Croquis) -> bool {
     let Some(type_args) = summary
         .macros
         .define_props()

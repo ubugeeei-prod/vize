@@ -4,6 +4,8 @@
 //! LSP bridge to collect type-checking diagnostics.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+#[cfg(test)]
+mod art_variant_tests;
 pub(in crate::ide) mod collect;
 mod collect_virtual;
 pub(in crate::ide) use collect_virtual::corsa_diagnostic_code;

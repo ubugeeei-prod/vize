@@ -132,14 +132,14 @@ pub use corsa_bridge::{
 // Re-export batch type checker
 #[cfg(feature = "native")]
 pub use batch::{
-    BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic, ContentMapperSpan,
-    ContentMapperTransform, ContentMapperTransformOptions, CorsaError, CorsaExecutor,
-    CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
-    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, IncrementalCheckMetrics,
-    PackageManager, TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait,
-    VirtualFile, VirtualProject, VirtualTsGenerator, generate_vue_content_mapper_transform,
-    generate_vue_content_mapper_transform_with_options, project_virtual_lock_paths,
-    project_virtual_root, snapshot_tsconfig_compiler_options,
+    BatchTopologyMetrics, BatchTypeChecker, BatchTypeCheckerOptions, ContentMapperDiagnostic,
+    ContentMapperSpan, ContentMapperTransform, ContentMapperTransformOptions, CorsaError,
+    CorsaExecutor, CorsaNotFoundError, DeclarationEmitOptions, DeclarationEmitResult,
+    DeclarationOutput, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
+    IncrementalCheckMetrics, PackageManager, TypeCheckResult as BatchTypeCheckResult,
+    TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject, VirtualTsGenerator,
+    generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
+    project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
 };
 
 #[cfg(feature = "native")]

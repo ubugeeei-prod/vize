@@ -278,6 +278,25 @@ impl VirtualTsGenerationOptions<'_> {
         }
         (script_offset as usize).saturating_add(offset)
     }
+
+    /// Whether the authored default export survives into the emitted component.
+    ///
+    /// It does only when a plain `<script>` actually declared `__default__` and
+    /// no `<script setup>` sits beside it. A default export paired with
+    /// `<script setup>` carries just the options `<script setup>` cannot express
+    /// (`inheritAttrs`, `name`, helper re-exports, ...), so it is an options
+    /// fragment rather than the component. Intersecting that fragment into
+    /// `__vize_component__` costs the export its usable construct-signature
+    /// inference, and consumers reading the component's emits off it lose every
+    /// listener's contextual type (`TS7006` on
+    /// `popup(MkAutocomplete, props, { done: res => ... })` in Misskey).
+    pub(crate) fn preserves_authored_component(
+        self,
+        declared_default_alias: bool,
+        has_script_setup: bool,
+    ) -> bool {
+        self.preserve_authored_component && declared_default_alias && !has_script_setup
+    }
 }
 
 /// Default plugin globals.
