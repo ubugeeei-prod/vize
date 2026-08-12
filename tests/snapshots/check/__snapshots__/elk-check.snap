@@ -247,9 +247,7 @@
     },
     {
       "file": "app/components/common/CommonTabs.vue",
-      "diagnostics": [
-        "error:40:39 [TS2322] Type '{ name: string; icon?: string | undefined; display: string; }' is not assignable to type 'PropertyKey | undefined'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "app/components/common/CommonTooltip.vue",
@@ -1439,7 +1437,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 278,
+  "errorCount": 277,
   "warningCount": 0,
   "fileCount": 256
 }
