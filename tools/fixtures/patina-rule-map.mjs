@@ -167,7 +167,7 @@ export function validateRuleMap(ruleMap = readRuleMap()) {
       ]);
       // Shape only. The recorded values are enforced against the live registry
       // by `eslint_vue_rule_map_matches_registered_patina_rules` in
-      // `crates/vize_patina/src/preset.rs`, which needs no native binding and so
+      // `crates/vize_patina/src/preset/tests.rs`, which needs no native binding and so
       // can run on every PR.
       assert.match(entry.patinaSeverity, /^(?:error|warning)$/u, `${ruleId} needs a severity`);
       assert.ok(

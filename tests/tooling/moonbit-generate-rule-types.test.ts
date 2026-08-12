@@ -10,6 +10,7 @@ const lintRuleSnapshotPath = path.join(
   "crates",
   "vize_patina",
   "src",
+  "preset",
   "snapshots",
   "vize_patina__preset__tests__lint_preset_rule_membership.snap",
 );

@@ -90,7 +90,7 @@ fn run_app() -> Int {
   }
   let snapshot_path = @tool.join_path(
     repo_root,
-    "crates/vize_patina/src/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
   )
   let output_path = @tool.join_path(repo_root, "npm/cli/src/types/rules.ts")
   let snapshot = match @tool.read_file_to_string(snapshot_path) {
