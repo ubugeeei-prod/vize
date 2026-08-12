@@ -9,6 +9,7 @@ mod jsx;
 mod jsx_fallback;
 mod no_mutating_props;
 mod no_top_level_ref;
+mod no_unused_components;
 mod nuxt;
 mod nuxt_config_order;
 mod nuxt_prefer_nuxt_link;
