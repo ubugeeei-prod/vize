@@ -16,7 +16,7 @@ const optionsCountIsAny: false = null as unknown as IsAny<OptionsInstance["count
 // @ts-expect-error data member keeps its exact type
 const optionsCountAsString: string = options.count;
 // @ts-expect-error undeclared members stay absent
-void options.missingMember;
+const optionsMissingMember: unknown = options.missingMember;
 
 declare const data: InstanceType<typeof Data>;
 const dataCount: number = data.count;
@@ -109,6 +109,7 @@ void [
   optionsCount,
   optionsCountIsAny,
   optionsCountAsString,
+  optionsMissingMember,
   dataCount,
   dataLabel,
   dataFlag,
