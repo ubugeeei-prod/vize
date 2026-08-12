@@ -535,15 +535,12 @@ jobs:
       - build-js-packages
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
       # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
-
       - uses: ./.github/actions/setup-moonbit
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: playground-test
