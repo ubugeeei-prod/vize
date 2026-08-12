@@ -15,7 +15,7 @@ test("AIRI fixture pins its complete Vue monorepo surface", () => {
   const project = registry.projects.find((candidate) => candidate.id === "airi");
 
   assert.ok(project);
-  assert.equal(project.revision, "b43b8944bfba4113233ccfc090f373a6e869dff6");
+  assert.equal(project.revision, "b6011381bc34a6b85ad669363513cb1a2eea6438");
   assert.equal(project.tsconfig, "tsconfig.json");
   assert.deepEqual(project.vueGlobs, [
     "apps/**/*.vue",
