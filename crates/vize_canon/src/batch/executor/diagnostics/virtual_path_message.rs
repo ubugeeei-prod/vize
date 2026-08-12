@@ -82,41 +82,60 @@ pub(in crate::batch::executor) fn restore_authored_paths(
     rewritten
 }
 
-/// Replace `root` with `replacement` only where it spans a whole directory
-/// name, so a sibling whose name merely starts with the root's — the virtual
-/// root is `…/projects/8c5cb99f`, the sibling `…/projects/8c5cb99f-backup` — is
-/// left alone rather than rewritten to `<project_root>-backup`.
+/// Replace `root` with `replacement` only where it spans whole path
+/// components on both sides, so neither a sibling whose name merely starts
+/// with the root's — the virtual root is `…/projects/8c5cb99f`, the sibling
+/// `…/projects/8c5cb99f-backup` — nor an unrelated directory the root's
+/// spelling is embedded in (`/backup<root>/a.ts`) is rewritten.
+///
+/// `preceding` carries the last character already emitted, because a match at
+/// the very start of `rest` is only at the start of the *message* on the first
+/// iteration; afterwards the character before it is the tail of the previous
+/// match.
 fn replace_root_prefix(message: &str, root: &str, replacement: &str) -> String {
     let mut rewritten = String::with_capacity(message.len());
     let mut rest = message;
+    let mut preceding = None;
     while let Some(at) = rest.find(root) {
         let (before, matched) = rest.split_at(at);
         let after = &matched[root.len()..];
         rewritten.push_str(before);
-        if ends_a_path_component(after) {
-            rewritten.push_str(replacement);
+        let emitted = if starts_a_path_component(before.chars().next_back().or(preceding))
+            && ends_a_path_component(after)
+        {
+            replacement
         } else {
-            rewritten.push_str(root);
-        }
+            root
+        };
+        rewritten.push_str(emitted);
+        preceding = emitted.chars().next_back();
         rest = after;
     }
     rewritten.push_str(rest);
     rewritten
 }
 
+/// Whether the character before a match opens the matched path: the start of
+/// the message, a separator, or the punctuation and whitespace a checker
+/// message opens a path with (`project '<path>'.`).
+fn starts_a_path_component(before: Option<char>) -> bool {
+    before.is_none_or(delimits_a_path)
+}
+
 /// Whether the text following a match ends the matched directory name: a
 /// separator, the end of the message, or the punctuation and whitespace a
 /// checker message closes a path with (`project '<path>'.`).
 fn ends_a_path_component(after: &str) -> bool {
-    after.is_empty()
-        || after.starts_with(|next: char| {
-            matches!(next, '/' | '\\')
-                || next.is_whitespace()
-                || matches!(
-                    next,
-                    '\'' | '"' | '`' | '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>' | ',' | ';'
-                )
-        })
+    after.is_empty() || after.starts_with(delimits_a_path)
+}
+
+fn delimits_a_path(character: char) -> bool {
+    matches!(character, '/' | '\\')
+        || character.is_whitespace()
+        || matches!(
+            character,
+            '\'' | '"' | '`' | '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>' | ',' | ';'
+        )
 }
 
 /// The trailing path component of the virtual root, used as a cheap pre-filter
@@ -221,6 +240,29 @@ mod tests {
         assert_eq!(
             restored.as_str(),
             format!("File '{PROJECT}/a.ts' shadows '{VIRTUAL}-backup/a.ts'."),
+        );
+    }
+
+    /// A directory the root's spelling is merely embedded in is a different
+    /// directory too, so the match needs a component boundary on its left as
+    /// well — otherwise `/backup<root>/a.ts` collapses to `/backup/repo/a.ts`.
+    #[test]
+    fn leaves_a_directory_whose_name_ends_with_the_root_untouched() {
+        let message = format!("File '/backup{VIRTUAL}/a.ts' is not a module.");
+        assert_eq!(restore(&message).as_str(), message.as_str());
+    }
+
+    /// Rejecting one match must not desensitize the ones after it: the second
+    /// path here opens on a quote, so it still restores.
+    #[test]
+    fn restores_a_virtual_path_following_an_embedded_root_spelling() {
+        let message = format!("File '/backup{VIRTUAL}/a.ts' shadows '{VIRTUAL}/a.ts'.");
+
+        let restored = restore(&message);
+
+        assert_eq!(
+            restored.as_str(),
+            format!("File '/backup{VIRTUAL}/a.ts' shadows '{PROJECT}/a.ts'."),
         );
     }
 
