@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -85,6 +85,51 @@ export async function waitForNuxtUiHmrReady(
   throw new Error("Nuxt UI client kept reloading throughout the 120s readiness window");
 }
 
+/**
+ * Nuxt 4.5 rewrites `.nuxt/route-rules.mjs` on the first app generation that
+ * follows an authored source change and reloads the page through that virtual
+ * module. The reload races the SSR render, so the client can come back on the
+ * pre-edit module graph with the HMR patch already discarded. Nuxt only rewrites
+ * that template once per dev server, so spend it on a throwaway edit instead of
+ * letting it swallow the update under test.
+ */
+async function absorbNuxtTemplateRegeneration(options: {
+  devServer: ChildProcess;
+  sourcePath: string;
+  originalSource: string;
+  updatedSource: string;
+  original: Locator;
+  updated: Locator;
+  waitForHydration: () => Promise<void>;
+}): Promise<void> {
+  const {
+    devServer,
+    sourcePath,
+    originalSource,
+    updatedSource,
+    original,
+    updated,
+    waitForHydration,
+  } = options;
+  const logStart = getProcessLogs(devServer).length;
+  const deadline = Date.now() + 30_000;
+  fs.writeFileSync(sourcePath, updatedSource);
+  try {
+    while (Date.now() < deadline) {
+      if (getProcessLogs(devServer).slice(logStart).some((line) => ROUTE_RULES_RELOAD.test(line)))
+        break;
+      // A patch that lands on its own means there is no regeneration to absorb.
+      if ((await updated.count().catch(() => 0)) > 0) break;
+      await sleep(250);
+    }
+  } finally {
+    fs.writeFileSync(sourcePath, originalSource);
+  }
+  await expect(original).toBeVisible({ timeout: 60_000 });
+  await expect(updated).toHaveCount(0, { timeout: 60_000 });
+  await waitForHydration();
+}
+
 export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page: Page;
   devServer: ChildProcess;
@@ -102,7 +147,8 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   // reloads route-rules.mjs, which cannot prove that Vize accepted an authored
   // SFC update without a page reload. Probe the playground-owned Matrix SFC
   // rendered by the same route instead; it exercises Vize HMR without crossing
-  // the library template-regeneration boundary.
+  // the library template-regeneration boundary. Nuxt still rewrites that
+  // template once per dev server, which the warm-up edit below absorbs.
   const originalText = '<div class="flex items-start gap-2 min-h-0">';
   const updatedText = '<div data-vize-hmr-probe="updated" class="flex items-start gap-2 min-h-0">';
   const sourcePath = path.join(cwd, "playgrounds/nuxt/app/components/Matrix.vue");
@@ -152,11 +198,28 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page.on("console", (message) => {
     if (PROBE_HOT_UPDATED.test(message.text())) completedHmrUpdates.push(message.text());
   });
+  // A killed worker skips `finally`, so keep a process-level source restore too.
+  const restoreGuard = installSourceRestore(sourcePath, originalSource);
+  try {
+    await absorbNuxtTemplateRegeneration({
+      devServer,
+      sourcePath,
+      originalSource,
+      updatedSource,
+      original,
+      updated,
+      waitForHydration,
+    });
+  } catch (error) {
+    fs.writeFileSync(sourcePath, originalSource);
+    restoreGuard.markRestored();
+    restoreGuard.detach();
+    throw error;
+  }
+
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;
   let forwardCompleted = false;
-  // A killed worker skips `finally`, so keep a process-level source restore too.
-  const restoreGuard = installSourceRestore(sourcePath, originalSource);
   try {
     await page.evaluate((value) => {
       (window as Window & { __vizeNuxtUiHmrProbe?: string }).__vizeNuxtUiHmrProbe = value;
