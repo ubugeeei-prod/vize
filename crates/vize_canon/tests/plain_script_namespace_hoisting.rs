@@ -19,6 +19,11 @@ const BRIDGE_END: &str = "export type Emits =";
 /// because each one has an object-literal `export default`.
 const DEFINE_COMPONENT_HELPER: &str =
     "declare const __vizeDefineComponent: typeof import('vue').defineComponent;\n";
+/// Closes the bridge region in every fixture here: each one declares
+/// `__default__`, so the batch lane keeps the authored component alive for
+/// declaration emit (#4010). Unrelated to namespace relocation, but part of the
+/// region these assertions compare in full.
+const AUTHORED_COMPONENT_ALIASES: &str = "type __VizeAuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];\ntype __VizeAuthoredInstance = __VizeAuthoredComponent extends abstract new (...args: any[]) => infer __I ? __I : {};\n\n";
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
@@ -106,7 +111,10 @@ export default { name: "Namespaces" };
         "namespace Bare {\n  export const a = 1;\n}\nexport namespace Named {\n  export type T = string;\n  export const b = 2;\n}\nexport namespace A.B.C {\n  export const d = 4;\n}\ndeclare namespace Ambient {\n  const e: number;\n}\n\n// ========== Exported Types ==========\nexport type Props = {};\n\n"
     );
     // No value crossed the setup boundary, so the bridge stays a bare call.
-    assert_eq!(bridge, "__setup();\n\n");
+    assert_eq!(
+        bridge,
+        format!("__setup();\n\n{AUTHORED_COMPONENT_ALIASES}")
+    );
 }
 
 #[test]
@@ -129,7 +137,10 @@ export default { name: "Namespaces" };
         module,
         "export module Legacy {\n  export const a = 1;\n}\n\n// ========== Exported Types ==========\nexport type Props = {};\n\n"
     );
-    assert_eq!(bridge, "__setup();\n\n");
+    assert_eq!(
+        bridge,
+        format!("__setup();\n\n{AUTHORED_COMPONENT_ALIASES}")
+    );
 }
 
 #[test]
@@ -154,7 +165,10 @@ export default { name: "Namespaces" };
         module,
         "export namespace Twice {\n  export const one = 1;\n}\nexport namespace Twice {\n  export type Two = string;\n}\n\n// ========== Exported Types ==========\nexport type Props = {};\n\n"
     );
-    assert_eq!(bridge, "__setup();\n\n");
+    assert_eq!(
+        bridge,
+        format!("__setup();\n\n{AUTHORED_COMPONENT_ALIASES}")
+    );
 }
 
 #[test]
@@ -198,7 +212,9 @@ export default { name: "Namespaces" };
     // bridge, and it keeps the value-only shape #3382 established.
     assert_eq!(
         bridge,
-        "const __vize_plain_script_exports = __setup();\nexport const untouched = __vize_plain_script_exports.untouched;\n\n"
+        format!(
+            "const __vize_plain_script_exports = __setup();\nexport const untouched = __vize_plain_script_exports.untouched;\n\n{AUTHORED_COMPONENT_ALIASES}"
+        )
     );
 }
 
@@ -232,5 +248,8 @@ export default { name: "Namespaces" };
     );
     // `shared` keeps only its type-space obligations here; its value side is the
     // ambient alias above, so the bridge must not declare the name twice.
-    assert_eq!(bridge, "__setup();\n\n");
+    assert_eq!(
+        bridge,
+        format!("__setup();\n\n{AUTHORED_COMPONENT_ALIASES}")
+    );
 }

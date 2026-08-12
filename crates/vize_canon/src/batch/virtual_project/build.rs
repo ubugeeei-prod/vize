@@ -146,7 +146,16 @@ pub(super) fn build_vue_registered_file(
                 check_options: context.virtual_ts_check_options,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
-                preserve_authored_component: false,
+                // The batch project is the source of truth for both `vize
+                // check` and `--declaration`, so it must keep the authored
+                // default export the same way the content mapper does. Without
+                // it the emitted constructor is rebuilt from `Props`/`Emits`/
+                // `Slots` alone and every Options API `data`/`computed`/
+                // `methods`/setup-return member disappears from
+                // `InstanceType<typeof Component>` (#4010). Costs nothing for a
+                // `<script setup>` SFC: the aliases are gated on a plain script
+                // actually declaring `__default__`.
+                preserve_authored_component: true,
                 component_name: None,
                 preserve_event_navigation: false,
                 legacy_vue2: context.legacy_vue2,
