@@ -1,0 +1,113 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import {
+  findStep,
+  readShardSummaryScript,
+  realProjectMatrixSteps,
+  shardSummaryScriptPath,
+} from "./support/real-project-matrix-workflow.ts";
+
+test("real-project workflow gates every measured surface on one verdict", () => {
+  const steps = realProjectMatrixSteps();
+  const divergenceIndex = steps.indexOf(findStep(steps, "Enforce typechecker baseline divergence"));
+  const verdict = findStep(steps, "Enforce all real-project surface verdicts");
+  const verdictIndex = steps.indexOf(verdict);
+  const summaryIndex = steps.indexOf(findStep(steps, "Publish shard summary"));
+
+  assert.ok(divergenceIndex < verdictIndex && verdictIndex < summaryIndex);
+  assert.equal(verdict.if, "${{ always() }}");
+  assert.equal(verdict.shell, "bash");
+  assert.deepEqual(verdict.env, {
+    BUDGET_MODE: "${{ inputs.budget_mode || 'enforce' }}",
+    CORE_TOOLS_MODE: "${{ inputs.core_tools_mode || 'enforce' }}",
+    LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
+    VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
+    VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
+    VIZE_CORE_TOOLS_OUTCOME: "${{ steps.core_tools.outcome }}",
+    VIZE_LSP_OUTCOME: "${{ steps.lsp.outcome }}",
+    VIZE_LINT_DIVERGENCE_OUTCOME: "${{ steps.lint_divergence.outcome }}",
+    VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: "${{ steps.syntax_highlighter.outcome }}",
+    VIZE_GLYPH_OUTCOME: "${{ steps.glyph.outcome }}",
+    VIZE_TYPECHECK_DIVERGENCE_OUTCOME: "${{ steps.typecheck_divergence.outcome }}",
+  });
+  for (const pattern of [
+    /real-project-surface-verdict\.mjs/,
+    /surface-verdict\.json/,
+    /core_tools_verdict="\$VIZE_CORE_TOOLS_OUTCOME"/,
+    /\[\[ "\$CORE_TOOLS_MODE" == "record-only"/,
+    /--surface "core-tools=\$core_tools_verdict"/,
+    /lsp_verdict="\$VIZE_LSP_OUTCOME"/,
+    /\[\[ "\$LSP_MODE" == "record-only"/,
+    /--surface "lsp=\$lsp_verdict"/,
+    /typecheck_divergence_verdict="\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
+    /\[\[ "\$BUDGET_MODE" == "record-only"/,
+    /--surface "typecheck-divergence=\$typecheck_divergence_verdict"/,
+  ]) {
+    assert.match(verdict.run ?? "", pattern);
+  }
+  for (const [surface, variable] of [
+    ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
+    ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
+    ["lint-divergence", "VIZE_LINT_DIVERGENCE_OUTCOME"],
+    ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
+    ["glyph", "VIZE_GLYPH_OUTCOME"],
+  ]) {
+    assert.match(verdict.run ?? "", new RegExp(`--surface "${surface}=\\$${variable}"`));
+  }
+});
+
+test("real-project workflow publishes and uploads the shard evidence it produced", () => {
+  const steps = realProjectMatrixSteps();
+  const summary = findStep(steps, "Publish shard summary");
+  const upload = findStep(steps, "Upload shard report");
+
+  assert.ok(steps.indexOf(summary) < steps.indexOf(upload));
+  assert.equal(summary.if, "${{ always() }}");
+  assert.equal(summary.shell, "bash");
+  assert.equal(summary.run, `bash ${shardSummaryScriptPath}`);
+  assert.equal(upload.if, "${{ always() }}");
+  assert.match(upload.uses ?? "", /^actions\/upload-artifact@[0-9a-f]{40}$/);
+  assert.deepEqual(upload.with, {
+    name: "real-project-matrix-${{ matrix.shard }}",
+    path: "${{ env.FIXTURE_REPORT_DIR }}",
+    "if-no-files-found": "error",
+    "retention-days": 30,
+  });
+});
+
+test("shard summary script records every surface, present or missing", () => {
+  const script = readShardSummaryScript();
+
+  for (const pattern of [
+    /summary\.md/,
+    /lsp-lifecycle-summary\.json/,
+    /authoredFeatureProjectCount/,
+    /missingAuthoredFeatureProjectIds/,
+    /actualFileCount/,
+    /No LSP lifecycle report was produced/,
+    /syntax-highlighter-summary\.json/,
+    /failedProjectCount/,
+    /lint_divergence="\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
+    /patinaOnlyRuleFindingCount/,
+    /\*-lint-divergence\.md/,
+    /No lint divergence report was produced/,
+    /syntax_divergence="\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
+    /if \[\[ -s "\$syntax_divergence" \]\]/,
+    /cat "\$syntax_divergence" >> "\$GITHUB_STEP_SUMMARY"/,
+    /No syntax-highlighter divergence report was produced/,
+    /\*-typecheck-divergence\.md/,
+    /divergence_reports\[@\]/,
+    /glyph-waiver-issues\.json/,
+    /surface-verdict\.json/,
+  ]) {
+    assert.match(script, pattern);
+  }
+  const jqPrograms = script.match(/jq -r '[^']*'/g) ?? [];
+  assert.equal(jqPrograms.length, 5);
+  for (const program of jqPrograms) {
+    // A single-quoted shell argument reaches jq verbatim, so an escaped double
+    // quote is a jq compile error rather than a nested string delimiter.
+    assert.doesNotMatch(program, /\\"/, `jq program escapes a double quote: ${program}`);
+  }
+});
