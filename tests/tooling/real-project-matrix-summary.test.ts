@@ -1,12 +1,43 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   findStep,
-  readShardSummaryScript,
   realProjectMatrixSteps,
   shardSummaryScriptPath,
 } from "./support/real-project-matrix-workflow.ts";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+/**
+ * Runs the publish step against a throwaway report directory and returns the
+ * step summary it rendered, so the assertions read the emitted metrics rather
+ * than the shell source that produced them.
+ */
+function renderShardSummary(artifacts: Record<string, string>): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-shard-summary-"));
+  try {
+    for (const [name, contents] of Object.entries(artifacts)) {
+      fs.writeFileSync(path.join(dir, name), contents);
+    }
+    const stepSummary = path.join(dir, "step-summary.md");
+    fs.writeFileSync(stepSummary, "");
+    const run = spawnSync("bash", [shardSummaryScriptPath], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, FIXTURE_REPORT_DIR: dir, GITHUB_STEP_SUMMARY: stepSummary },
+    });
+    assert.equal(run.status, 0, `shard summary script failed: ${run.stderr}`);
+    return fs.readFileSync(stepSummary, "utf8");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 test("real-project workflow gates every measured surface on one verdict", () => {
   const steps = realProjectMatrixSteps();
@@ -76,38 +107,71 @@ test("real-project workflow publishes and uploads the shard evidence it produced
   });
 });
 
-test("shard summary script records every surface, present or missing", () => {
-  const script = readShardSummaryScript();
+test("shard summary script reads every artifact and reports its metrics", () => {
+  const summary = renderShardSummary({
+    "summary.md": "# fixture tool report\n",
+    "lsp-lifecycle-summary.json": JSON.stringify({
+      summary: {
+        projectCount: 3,
+        actualFileCount: 41,
+        authoredFeatureProjectCount: 2,
+        vueFileCount: 27,
+        failedProjectCount: 1,
+        missingAuthoredFeatureProjectIds: ["nuxt-app", "vitepress"],
+      },
+    }),
+    "syntax-highlighter-summary.json": JSON.stringify({
+      summary: { projectCount: 4, fileCount: 52, lineCount: 900, failedProjectCount: 0 },
+    }),
+    "lint-divergence-summary.json": JSON.stringify({
+      projectCount: 5,
+      totals: {
+        sharedCount: 12,
+        falsePositiveCount: 3,
+        falseNegativeCount: 4,
+        patinaOnlyRuleFindingCount: 7,
+      },
+    }),
+    "nuxt-app-lint-divergence.md": "## lint divergence detail\n",
+    "syntax-highlighter-divergence.md": "## syntax divergence detail\n",
+    "nuxt-app-typecheck-divergence.md": "## typecheck divergence detail\n",
+    "glyph-waiver-issues.json": JSON.stringify({ waiverCount: 2, issues: [{ number: 1 }] }),
+    "surface-verdict.json": JSON.stringify({ status: "failed", failedSurfaceNames: ["lsp"] }),
+  });
 
-  for (const pattern of [
-    /summary\.md/,
-    /lsp-lifecycle-summary\.json/,
-    /authoredFeatureProjectCount/,
-    /missingAuthoredFeatureProjectIds/,
-    /actualFileCount/,
-    /No LSP lifecycle report was produced/,
-    /syntax-highlighter-summary\.json/,
-    /failedProjectCount/,
-    /lint_divergence="\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
-    /patinaOnlyRuleFindingCount/,
-    /\*-lint-divergence\.md/,
-    /No lint divergence report was produced/,
-    /syntax_divergence="\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
-    /if \[\[ -s "\$syntax_divergence" \]\]/,
-    /cat "\$syntax_divergence" >> "\$GITHUB_STEP_SUMMARY"/,
-    /No syntax-highlighter divergence report was produced/,
-    /\*-typecheck-divergence\.md/,
-    /divergence_reports\[@\]/,
-    /glyph-waiver-issues\.json/,
-    /surface-verdict\.json/,
+  assert.match(summary, /# fixture tool report/);
+  assert.match(
+    summary,
+    /LSP lifecycle: 3 project\(s\), 41 actual file\(s\), 2 authored feature oracle\(s\), 27 Vue file\(s\), 1 failed project\(s\); missing authored oracles: nuxt-app, vitepress/,
+  );
+  assert.match(
+    summary,
+    /Syntax highlighter: 4 project\(s\), 52 file\(s\), 900 line\(s\), 0 failed project\(s\)/,
+  );
+  assert.match(
+    summary,
+    /Lint divergence: 5 project\(s\), 12 shared, 3 false positive\(s\), 4 false negative\(s\), 7 patina-only finding\(s\)/,
+  );
+  assert.match(summary, /## lint divergence detail/);
+  assert.match(summary, /## syntax divergence detail/);
+  assert.match(summary, /## typecheck divergence detail/);
+  assert.match(summary, /Formatter waivers: 2 precise waiver\(s\), 1 open owner Issue\(s\)/);
+  assert.match(summary, /Surface verdict: failed; failed: lsp/);
+});
+
+test("shard summary script records surfaces that produced no artifact", () => {
+  const summary = renderShardSummary({});
+
+  for (const missing of [
+    "No fixture tool report was produced.",
+    "No LSP lifecycle report was produced.",
+    "No syntax-highlighter report was produced.",
+    "No lint divergence report was produced.",
+    "No syntax-highlighter divergence report was produced.",
+    "No unique typecheck divergence report was produced.",
+    "No formatter waiver owner report was produced.",
+    "No real-project surface verdict was produced.",
   ]) {
-    assert.match(script, pattern);
-  }
-  const jqPrograms = script.match(/jq -r '[^']*'/g) ?? [];
-  assert.equal(jqPrograms.length, 5);
-  for (const program of jqPrograms) {
-    // A single-quoted shell argument reaches jq verbatim, so an escaped double
-    // quote is a jq compile error rather than a nested string delimiter.
-    assert.doesNotMatch(program, /\\"/, `jq program escapes a double quote: ${program}`);
+    assert.ok(summary.includes(missing), `missing surface line: ${missing}`);
   }
 });

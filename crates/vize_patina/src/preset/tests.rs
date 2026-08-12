@@ -206,7 +206,7 @@ fn eslint_vue_rule_map_matches_registered_patina_rules() {
 /// upstream finding into a false negative — so drift has to fail here rather
 /// than quietly skew a divergence report.
 #[test]
-fn eslint_vue_rule_map_records_current_severity_and_ecosystem_membership() {
+fn eslint_vue_rule_map_records_current_severity_and_preset_membership() {
     let rule_map: serde_json::Value = serde_json::from_str(include_str!(
         "../../../../tests/_fixtures/patina-eslint-vue-rule-map.json"
     ))
@@ -225,7 +225,7 @@ fn eslint_vue_rule_map_records_current_severity_and_ecosystem_membership() {
             severity_name(script_rule.default_severity),
         );
     }
-    let ecosystem: BTreeSet<&'static str> = ecosystem_rule_names().into_iter().collect();
+    let membership = plugin_preset_membership();
 
     for (eslint_rule, entry) in rule_map["entries"].as_object().unwrap() {
         if entry["status"] != "mapped" {
@@ -244,11 +244,61 @@ fn eslint_vue_rule_map_records_current_severity_and_ecosystem_membership() {
             .map(|preset| preset.as_str().unwrap())
             .collect();
         assert_eq!(
-            recorded.contains(&"ecosystem"),
-            ecosystem.contains(target),
-            "{eslint_rule} records stale ecosystem membership for {target}"
+            recorded,
+            membership.get(target).cloned().unwrap_or_default(),
+            "{eslint_rule} records stale preset membership for {target}"
         );
     }
+}
+
+/// Rebuilds the preset membership the napi binding writes into the rule map,
+/// keyed by rule name. `collect_patina_rule_metadata` in
+/// `crates/vize_vitrine/src/napi/lint.rs` spells the presets the way the plugin
+/// exposes them — `happy-path` is published as `general-recommended`, and
+/// `incremental` never reaches a template rule — and the fixture generator sorts
+/// each list, so mirror both here. `vize_patina` sits below `vize_vitrine`, so
+/// the expectation has to be rebuilt rather than imported.
+fn plugin_preset_membership() -> BTreeMap<&'static str, Vec<&'static str>> {
+    const PLUGIN_PRESET_NAMES: [&str; 4] = ["ecosystem", "essential", "nuxt", "opinionated"];
+
+    let mut membership: BTreeMap<&'static str, BTreeSet<&'static str>> = BTreeMap::new();
+    for (preset, plugin_name) in [
+        (LintPreset::Essential, "essential"),
+        (LintPreset::HappyPath, "general-recommended"),
+        (LintPreset::Nuxt, "nuxt"),
+        (LintPreset::Opinionated, "opinionated"),
+    ] {
+        for rule in RuleRegistry::with_preset(preset).rules() {
+            membership
+                .entry(rule.meta().name)
+                .or_default()
+                .insert(plugin_name);
+        }
+    }
+    for rule in RuleRegistry::with_ecosystem().rules() {
+        membership
+            .entry(rule.meta().name)
+            .or_default()
+            .insert("ecosystem");
+    }
+    for script_rule in crate::linter::script_rules::builtin_script_rules() {
+        for preset in script_rule.presets {
+            assert!(
+                PLUGIN_PRESET_NAMES.contains(preset),
+                "{} declares preset {preset}, which the napi binding renames before the fixture records it",
+                script_rule.name
+            );
+        }
+        membership.insert(
+            script_rule.name,
+            script_rule.presets.iter().copied().collect(),
+        );
+    }
+
+    membership
+        .into_iter()
+        .map(|(rule, presets)| (rule, presets.into_iter().collect()))
+        .collect()
 }
 
 const fn severity_name(severity: Severity) -> &'static str {

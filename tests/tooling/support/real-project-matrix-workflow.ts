@@ -50,7 +50,3 @@ export function findStep(steps: WorkflowStep[], name: string): WorkflowStep {
   assert.ok(step, `Missing '${name}' step`);
   return step;
 }
-
-export function readShardSummaryScript(): string {
-  return readRepoFile(...shardSummaryScriptPath.split("/"));
-}
