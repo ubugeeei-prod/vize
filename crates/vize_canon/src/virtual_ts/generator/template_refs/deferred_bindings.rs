@@ -34,7 +34,7 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Statement, VariableDeclarationKind};
-use oxc_parser::Parser;
+use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
@@ -102,7 +102,7 @@ pub(super) fn emit_template_variables(mut ts: &mut String, names: &[String]) {
 /// template, so it can never be the one TypeScript flags.
 fn collect_uninitialized_bindings(script: &str) -> Vec<String> {
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    let parsed = parse_script(&allocator, script);
     if parsed.panicked {
         return Vec::new();
     }
@@ -129,4 +129,25 @@ fn collect_uninitialized_bindings(script: &str) -> Vec<String> {
         }
     }
     names
+}
+
+/// Parses the setup body under whichever dialect it actually is.
+///
+/// `<script setup lang="tsx">` is not valid TypeScript — `<span />` parses as a
+/// type assertion — while a `lang="ts"` generic arrow (`<T>(x: T) => x`) is not
+/// valid TSX, so neither dialect can serve both. TS is tried first and TSX is
+/// kept only when it parses strictly better; a TS parse that merely recovered
+/// would otherwise drop the declarations after the error and leave the deferred
+/// set incomplete, re-exposing those template reads to TS2454.
+fn parse_script<'a>(allocator: &'a Allocator, script: &'a str) -> ParserReturn<'a> {
+    let as_ts = Parser::new(allocator, script, SourceType::ts()).parse();
+    if !as_ts.panicked && as_ts.diagnostics.is_empty() {
+        return as_ts;
+    }
+    let as_tsx = Parser::new(allocator, script, SourceType::tsx()).parse();
+    if (as_tsx.panicked, as_tsx.diagnostics.len()) < (as_ts.panicked, as_ts.diagnostics.len()) {
+        as_tsx
+    } else {
+        as_ts
+    }
 }

@@ -151,6 +151,25 @@ fn deferred_shadow_captures_the_declared_type_verbatim() {
     );
 }
 
+/// A `lang="tsx"` setup body must be scanned as TSX: parsed as plain
+/// TypeScript, the JSX ahead of the declaration derails the parse and the
+/// binding silently loses its shadow.
+#[test]
+fn tsx_setup_bindings_get_the_deferred_shadow() {
+    let result = type_check_sfc(
+        fixtures::TSX_CONDITIONAL_SFC,
+        &SfcTypeCheckOptions::new("TsxConditional.vue").with_virtual_ts(),
+    );
+    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+    assert_eq!(
+        virtual_ts
+            .matches("  type __D_paginator = typeof paginator;\n")
+            .count(),
+        1,
+        "a TSX setup body should still capture the declared type:\n{virtual_ts}"
+    );
+}
+
 /// A `const` binding keeps its setup narrowing: it is never shadowed.
 #[test]
 fn initialized_bindings_get_no_deferred_shadow() {

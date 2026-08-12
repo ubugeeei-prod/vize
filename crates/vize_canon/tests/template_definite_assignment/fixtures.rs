@@ -146,6 +146,22 @@ if (flag) {
 </template>
 "#;
 
+/// JSX in the setup body: `<span />` is a type assertion under `lang="ts"`, so
+/// the deferred-binding scan has to parse this one as TSX to see `paginator`.
+pub(crate) const TSX_CONDITIONAL_SFC: &str = r#"<script setup lang="tsx">
+import { Paginator, flag } from './support'
+const icon = () => <span class="icon" />
+let paginator: Paginator
+if (flag) {
+  paginator = new Paginator('a')
+}
+</script>
+
+<template>
+  <div>{{ paginator.key }}<component :is="icon" /></div>
+</template>
+"#;
+
 pub(crate) const SCRIPT_CONDITIONAL_SFC: &str = r#"<script setup lang="ts">
 import { Paginator, flag } from './support'
 let paginator: Paginator
