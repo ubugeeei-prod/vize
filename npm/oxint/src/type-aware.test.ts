@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { resetFixtureDir } from "./test-support/fixture-dir.ts";
+
 const packageDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(packageDir, "../../..");
 const pluginEntry = path.join(workspaceRoot, "npm/oxint/dist/index.mjs");
@@ -62,8 +64,7 @@ function runOxlint(args: readonly string[]) {
   };
 }
 
-fs.rmSync(fixtureDir, { force: true, recursive: true });
-fs.mkdirSync(fixtureDir, { recursive: true });
+resetFixtureDir(fixtureDir);
 fs.writeFileSync(
   path.join(fixtureDir, ".oxlintrc.json"),
   JSON.stringify(
