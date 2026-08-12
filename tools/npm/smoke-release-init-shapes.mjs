@@ -19,6 +19,11 @@
  * prints. `redirect` forces every *transitive* resolution of a packed package
  * onto its tarball; direct dependencies are redirected on the command line
  * instead, because npm rejects an override that collides with a direct spec.
+ *
+ * `installFlags` deliberately omits `--legacy-peer-deps`, which the umbrella
+ * install in `smoke-release-install.mjs` needs: a real user installing the plan
+ * does not pass it, so a genuine peer conflict in the published packages has to
+ * red-light here.
  */
 export const PACKAGE_MANAGERS = {
   npm: {
@@ -28,7 +33,7 @@ export const PACKAGE_MANAGERS = {
     lockfile: "package-lock.json",
     bootstrapArgs: ["install", "--no-audit", "--fund=false", "--include=optional"],
     installArgs: ["install", "-D"],
-    installFlags: ["--no-audit", "--fund=false", "--include=optional", "--legacy-peer-deps"],
+    installFlags: ["--no-audit", "--fund=false", "--include=optional"],
     runScriptArgs: (script, extra) =>
       extra.length === 0
         ? ["run", "--silent", script]
