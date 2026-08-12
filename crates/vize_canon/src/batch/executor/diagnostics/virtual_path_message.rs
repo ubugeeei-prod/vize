@@ -70,17 +70,53 @@ pub(in crate::batch::executor) fn restore_authored_paths(
         return message.to_compact_string();
     }
 
-    let mut rewritten = String::from(message.replace(virtual_root, project_root).as_str());
+    let mut rewritten = replace_root_prefix(message, virtual_root, project_root);
     let virtual_alternate = flip_separators(virtual_root);
     if virtual_alternate.as_str() != virtual_root {
-        rewritten = rewritten
-            .replace(
-                virtual_alternate.as_str(),
-                flip_separators(project_root).as_str(),
-            )
-            .into();
+        rewritten = replace_root_prefix(
+            rewritten.as_str(),
+            virtual_alternate.as_str(),
+            flip_separators(project_root).as_str(),
+        );
     }
     rewritten
+}
+
+/// Replace `root` with `replacement` only where it spans a whole directory
+/// name, so a sibling whose name merely starts with the root's — the virtual
+/// root is `…/projects/8c5cb99f`, the sibling `…/projects/8c5cb99f-backup` — is
+/// left alone rather than rewritten to `<project_root>-backup`.
+fn replace_root_prefix(message: &str, root: &str, replacement: &str) -> String {
+    let mut rewritten = String::with_capacity(message.len());
+    let mut rest = message;
+    while let Some(at) = rest.find(root) {
+        let (before, matched) = rest.split_at(at);
+        let after = &matched[root.len()..];
+        rewritten.push_str(before);
+        if ends_a_path_component(after) {
+            rewritten.push_str(replacement);
+        } else {
+            rewritten.push_str(root);
+        }
+        rest = after;
+    }
+    rewritten.push_str(rest);
+    rewritten
+}
+
+/// Whether the text following a match ends the matched directory name: a
+/// separator, the end of the message, or the punctuation and whitespace a
+/// checker message closes a path with (`project '<path>'.`).
+fn ends_a_path_component(after: &str) -> bool {
+    after.is_empty()
+        || after.starts_with(|next: char| {
+            matches!(next, '/' | '\\')
+                || next.is_whitespace()
+                || matches!(
+                    next,
+                    '\'' | '"' | '`' | '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>' | ',' | ';'
+                )
+        })
 }
 
 /// The trailing path component of the virtual root, used as a cheap pre-filter
@@ -165,6 +201,27 @@ mod tests {
     fn leaves_an_authored_path_sharing_the_root_stem_untouched() {
         let message = format!("File '{PROJECT}/src/8c5cb99f/index.ts' is not a module.");
         assert_eq!(restore(&message).as_str(), message.as_str());
+    }
+
+    /// A sibling directory whose name starts with the virtual root's full name
+    /// is a different directory, so the prefix must match a whole component.
+    #[test]
+    fn leaves_a_sibling_directory_extending_the_root_name_untouched() {
+        let message = format!("File '{VIRTUAL}-backup/a.ts' is not a module.");
+        assert_eq!(restore(&message).as_str(), message.as_str());
+    }
+
+    /// The same message can carry both, and only the real virtual path moves.
+    #[test]
+    fn restores_the_virtual_path_beside_a_sibling_that_extends_the_root_name() {
+        let message = format!("File '{VIRTUAL}/a.ts' shadows '{VIRTUAL}-backup/a.ts'.");
+
+        let restored = restore(&message);
+
+        assert_eq!(
+            restored.as_str(),
+            format!("File '{PROJECT}/a.ts' shadows '{VIRTUAL}-backup/a.ts'."),
+        );
     }
 
     #[test]
