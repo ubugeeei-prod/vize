@@ -116,7 +116,11 @@ async function absorbNuxtTemplateRegeneration(options: {
   fs.writeFileSync(sourcePath, updatedSource);
   try {
     while (Date.now() < deadline) {
-      if (getProcessLogs(devServer).slice(logStart).some((line) => ROUTE_RULES_RELOAD.test(line)))
+      if (
+        getProcessLogs(devServer)
+          .slice(logStart)
+          .some((line) => ROUTE_RULES_RELOAD.test(line))
+      )
         break;
       // A patch that lands on its own means there is no regeneration to absorb.
       if ((await updated.count().catch(() => 0)) > 0) break;
