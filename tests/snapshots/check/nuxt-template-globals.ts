@@ -126,6 +126,22 @@ function diagnosticsFor(result: VizeCheckJson, file: string): string[] {
 
 // The rendered instance type inside Vize's TS2339 text. Pinned so the message
 // keeps naming Vue's own public type and never leaks a generated helper name.
+//
+// Why the two tools word this differently, and why that is left alone: Vue
+// Language Tools builds an anonymous object type per component that inlines the
+// setup bindings and then spreads the public-instance members, so its message
+// names that structural type and the component's own bindings appear inside it.
+// Vize resolves a template instance global on
+// `import('vue').ComponentPublicInstance`, which already merges
+// `ComponentCustomProperties` (the interface Nuxt's generated types and
+// packages like vue-i18n augment), so the same missing property is reported
+// against Vue's own public type. Matching vue-tsc's wording would mean
+// synthesizing and naming a per-component structural clone of the instance
+// purely so an error message can quote it: it changes nothing about which names
+// resolve, and it would put a generated per-component type name in front of
+// users. This rendering applies to every TS2339 Vize reports on an undeclared
+// `$`-prefixed template global (#913). The code, severity, and authored range
+// agree, which is exactly what the vue-tsc comparisons above assert.
 const INSTANCE_TYPE =
   "ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, " +
   "any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>," +

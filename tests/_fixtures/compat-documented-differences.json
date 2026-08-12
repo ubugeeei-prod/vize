@@ -18,23 +18,6 @@
       },
       "issue": 3358,
       "reason": "vue-tsc loses the spelling hint here because TypeScript's checker stops offering suggestions once a program has produced maximumSuggestionCount = 10 unresolved-name errors (onFailedToResolveSymbol in checker.ts increments the counter on every failed name resolution, including the ones generated virtual code never surfaces). Corsa does not implement that cap, so vize keeps the hint. The symbol tables agree: renaming this SFC so it is checked first makes vue-tsc 3.3.4 emit the identical TS2552 on an otherwise byte-identical program, and vize's virtual TypeScript for this file is byte-identical whether the sibling SFCs are in the program or not. Matching vue-tsc would mean rewriting TS2552 to TS2304 from a program-global, file-order-dependent counter, which is unstable under incremental checking and would silently drop genuine hints after the tenth unresolved name in any project."
-    },
-    {
-      "project": "nuxt-i18n-undeclared-globals",
-      "file": "pages/index.vue",
-      "severity": "error",
-      "line": 11,
-      "column": 9,
-      "vize": {
-        "code": 2339,
-        "message": "Property '$t' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'."
-      },
-      "baseline": {
-        "code": 2339,
-        "message": "Property '$t' does not exist on type '{ localePath: (path: string) => string; t: (key: string) => string; locale: string; $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; ... 9 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: T extends (...args: any) => infer R ? (args_0: R, args_1: R, args_2: O...'."
-      },
-      "issue": 913,
-      "reason": "Same code, same severity, same authored range: only the rendered type inside the message differs, and it differs because the two tools describe the template context with different constructs. Vue Language Tools builds an anonymous object type per component that inlines the setup bindings and then spreads the public-instance members, so its message names that structural type and the component's own bindings appear inside it. Vize resolves a template instance global on import('vue').ComponentPublicInstance, which already merges ComponentCustomProperties, the interface Nuxt's generated types and packages like vue-i18n augment, so the same missing property is reported against Vue's own public type. Matching vue-tsc's wording would mean synthesizing and naming a per-component structural clone of the instance purely so an error message can quote it: it changes nothing about which names resolve, and it would put a generated per-component type name in front of users. This rendering applies to every TS2339 Vize reports on an undeclared $-prefixed template global, not only to this row."
     }
   ]
 }
