@@ -69,24 +69,21 @@ export function useMonacoTypeCheck({
   function applyTypeScriptDefaults() {
     if (hasConfiguredTypeScript) return;
 
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.ESNext,
-      module: monaco.languages.typescript.ModuleKind.ESNext,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+    monaco.typescript.typescriptDefaults.setCompilerOptions({
+      target: monaco.typescript.ScriptTarget.ESNext,
+      module: monaco.typescript.ModuleKind.ESNext,
+      moduleResolution: monaco.typescript.ModuleResolutionKind.NodeJs,
       strict: strictMode.value,
       noEmit: true,
       allowJs: true,
       checkJs: false,
       esModuleInterop: true,
       skipLibCheck: true,
-      jsx: monaco.languages.typescript.JsxEmit.Preserve,
+      jsx: monaco.typescript.JsxEmit.Preserve,
       noImplicitAny: false,
       strictNullChecks: strictMode.value,
     });
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      VUE_GLOBALS_DECLARATIONS,
-      "vue.d.ts",
-    );
+    monaco.typescript.typescriptDefaults.addExtraLib(VUE_GLOBALS_DECLARATIONS, "vue.d.ts");
     hasConfiguredTypeScript = true;
   }
 
@@ -101,7 +98,7 @@ export function useMonacoTypeCheck({
 
     for (let attempt = 0; attempt < 10; attempt++) {
       try {
-        const worker = await monaco.languages.typescript.getTypeScriptWorker();
+        const worker = await monaco.typescript.getTypeScriptWorker();
         await worker(VIRTUAL_TS_URI);
         return true;
       } catch (error) {
@@ -144,7 +141,7 @@ export function useMonacoTypeCheck({
     if (!virtualTsModel) return null;
     if (!(await ensureTypeScriptReady())) return null;
     try {
-      const worker = await monaco.languages.typescript.getTypeScriptWorker();
+      const worker = await monaco.typescript.getTypeScriptWorker();
       const client = await worker(VIRTUAL_TS_URI);
       const quickInfo = await client.getQuickInfoAtPosition(VIRTUAL_TS_URI.toString(), genOffset);
       if (!quickInfo) return null;
@@ -279,7 +276,7 @@ export function useMonacoTypeCheck({
     if (!(await ensureTypeScriptReady())) return [];
 
     try {
-      const worker = await monaco.languages.typescript.getTypeScriptWorker();
+      const worker = await monaco.typescript.getTypeScriptWorker();
       const client = await worker(VIRTUAL_TS_URI);
 
       const [semanticDiags, syntacticDiags] = await Promise.all([
