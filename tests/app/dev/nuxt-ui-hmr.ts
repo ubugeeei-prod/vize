@@ -13,6 +13,14 @@ import { installSourceRestore } from "./source-restore";
 const OPTIMIZE_RELOAD = /optimized dependencies changed\. reloading/i;
 const ROUTE_RULES_RELOAD = /page reload virtual:nuxt:.*route-rules\.mjs/i;
 
+// Nuxt serves the playground from its own Vite root (`playgrounds/nuxt/app`),
+// so the authored SFC is addressed by a root-relative module URL instead of its
+// repo-relative path. Match the root-relative suffix, which also holds if Nuxt
+// ever serves the file through `/@fs/<absolute path>`.
+const PROBE_MODULE_PATH = "/components/Matrix.vue.ts";
+const PROBE_HMR_UPDATE = /hmr update .*\/components\/Matrix\.vue\.ts\?vue&vize/;
+const PROBE_HOT_UPDATED = /\[vite\] hot updated: .*\/components\/Matrix\.vue\.ts\?vue&vize/;
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -110,7 +118,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
       const url = new URL(response.url());
       return (
         response.ok() &&
-        url.pathname.endsWith("/playgrounds/nuxt/app/components/Matrix.vue.ts") &&
+        url.pathname.endsWith(PROBE_MODULE_PATH) &&
         url.searchParams.has("vize") &&
         !url.searchParams.has("vize-ssr")
       );
@@ -135,19 +143,14 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (
-      url.pathname.endsWith("/playgrounds/nuxt/app/components/Matrix.vue.ts") &&
+      url.pathname.endsWith(PROBE_MODULE_PATH) &&
       url.searchParams.has("t") &&
       url.searchParams.has("vize")
     )
       hmrRequests.push(url.href);
   });
   page.on("console", (message) => {
-    if (
-      /\[vite\] hot updated: .*\/playgrounds\/nuxt\/app\/components\/Matrix\.vue\.ts\?vue&vize/.test(
-        message.text(),
-      )
-    )
-      completedHmrUpdates.push(message.text());
+    if (PROBE_HOT_UPDATED.test(message.text())) completedHmrUpdates.push(message.text());
   });
   const probe = `hmr-${Date.now()}`;
   const updateLogStart = getProcessLogs(devServer).length;
@@ -197,9 +200,7 @@ export async function verifyNuxtUiAuthoredSourceHmr(options: {
   ).toBe(probe);
   expect(fs.readFileSync(sourcePath, "utf8")).toBe(originalSource);
   const updateLogs = getProcessLogs(devServer).slice(updateLogStart).join("\n");
-  expect(updateLogs).toMatch(
-    /hmr update .*\/playgrounds\/nuxt\/app\/components\/Matrix\.vue\.ts\?vue&vize/,
-  );
+  expect(updateLogs).toMatch(PROBE_HMR_UPDATE);
   expect(updateLogs).not.toMatch(/page reload/i);
   expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
   expect(hydrationErrors).toHaveLength(0);
