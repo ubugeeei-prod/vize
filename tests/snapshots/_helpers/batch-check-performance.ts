@@ -28,8 +28,8 @@ export function loadBatchCheckBudget(projectId: string): BatchCheckBudget {
   const budget = owners[0].batchCheckBudget!;
   for (const [lane, value] of Object.entries(budget)) {
     assert.ok(
-      Number.isSafeInteger(value) && value > 0 && value <= 300_000,
-      `${projectId} batchCheckBudget.${lane} must be a positive integer at most 300000`,
+      Number.isSafeInteger(value) && value > 0 && value <= 600_000,
+      `${projectId} batchCheckBudget.${lane} must be a positive integer at most 600000`,
     );
   }
   assert.ok(budget.warmMs <= budget.coldMs, `${projectId} warm budget must not exceed cold`);

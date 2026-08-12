@@ -143,21 +143,21 @@ fn read_payload(path : String) -> Json? {
 }
 
 async fn run_app() -> Int {
-  let event_path = match @sys.get_env_var("GITHUB_EVENT_PATH") {
+  let event_path = match @env.get_env_var("GITHUB_EVENT_PATH") {
     Some(value) if value != "" => value
     _ => {
       println("GITHUB_EVENT_PATH is required")
       return 1
     }
   }
-  let event_name = match @sys.get_env_var("GITHUB_EVENT_NAME") {
+  let event_name = match @env.get_env_var("GITHUB_EVENT_NAME") {
     Some(value) if value != "" => value
     _ => {
       println("GITHUB_EVENT_NAME is required")
       return 1
     }
   }
-  let repository = match @sys.get_env_var("GITHUB_REPOSITORY") {
+  let repository = match @env.get_env_var("GITHUB_REPOSITORY") {
     Some(value) if value.contains("/") => value
     _ => {
       println("GITHUB_REPOSITORY must be owner/name")

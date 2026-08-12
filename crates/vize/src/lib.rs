@@ -34,6 +34,11 @@ pub mod source_write {
     pub use crate::commands::atomic_write::atomic_write;
 }
 
+/// Headless performance harness for the interactive Doctor workspace.
+#[cfg(feature = "profiling")]
+#[doc(hidden)]
+pub use crate::commands::doctor::DoctorTuiBenchmark;
+
 /// Shared allocator, string, hash, and utility types.
 pub use vize_carton as carton;
 

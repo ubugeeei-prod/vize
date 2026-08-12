@@ -253,9 +253,9 @@ Key options:
 
 Exit status `0` means the gate passed, `1` means a certain or high-confidence error, and `2` means
 discovery, parsing, analysis, serialization, or output failed. Warnings and lower-confidence findings
-affect the health score but do not block by default. The deterministic `--format json` report carries
-explicit format and scoring versions and is the preferred interface for CI, editors, dashboards, and
-AI tooling:
+affect the health score but do not block by default. See [Doctor diagnostics](doctor.md) for precise
+filter, changed-file, scoring, and automation contracts. The deterministic `--format json` report
+carries explicit format and scoring versions and is the preferred interface for CI and AI tooling:
 
 ```bash
 vize doctor src --format json > doctor-report.json

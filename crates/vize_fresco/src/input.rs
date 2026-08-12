@@ -12,5 +12,5 @@ mod mouse;
 
 pub use event::{Event, poll, poll_nonblocking, read_event};
 pub use ime::ImeState;
-pub use keyboard::{Key, KeyEvent, KeyModifiers};
+pub use keyboard::{Key, KeyEvent, KeyEventKind, KeyModifiers};
 pub use mouse::{MouseButton, MouseEvent, MouseEventKind};

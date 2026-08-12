@@ -2,5 +2,4 @@ import {
   "moonbitlang/core/env",
   "moonbitlang/x/fs" @xfs,
   "moonbitlang/x/path",
-  "moonbitlang/x/sys",
 }

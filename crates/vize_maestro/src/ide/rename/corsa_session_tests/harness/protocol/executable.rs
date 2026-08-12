@@ -48,8 +48,12 @@ mod tests {
         let root = tempfile::TempDir::new().expect("temp root");
         let traces = root.path().join("protocol-traces");
         fs::create_dir(&traces).expect("trace directory");
-        std::os::unix::fs::symlink("/usr/bin/true", root.path().join("actual-tsgo"))
-            .expect("fake tsgo");
+        fs::write(root.path().join("actual-tsgo.path"), "/usr/bin/true").expect("fake tsgo path");
+        fs::write(
+            root.path().join("trace-stdio.pl"),
+            super::super::proxy::TRACE_STDIO_PROXY,
+        )
+        .expect("stdio trace proxy");
         let wrapper = root.path().join("traced-tsgo");
         link_session_wrapper(&wrapper).expect("link session wrapper");
         let mut dynamic_file = OpenOptions::new()
@@ -70,6 +74,18 @@ mod tests {
             .output()
             .expect("execute wrapper");
         assert!(output.status.success(), "wrapper stderr: {output:?}");
+        let trace_count = fs::read_dir(&traces).expect("trace files").count();
+        let api = Command::new(&wrapper)
+            .arg("--api")
+            .current_dir(root.path())
+            .output()
+            .expect("execute API bypass");
+        assert!(api.status.success(), "API bypass stderr: {api:?}");
+        assert_eq!(
+            fs::read_dir(&traces).expect("trace files").count(),
+            trace_count,
+            "the editor byte proxy must not alter the MsgPack API transport"
+        );
         drop(dynamic_file);
     }
 

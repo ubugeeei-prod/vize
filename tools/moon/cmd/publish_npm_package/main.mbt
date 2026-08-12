@@ -158,7 +158,7 @@ fn positive_int_or(value : String, fallback : Int) -> Int {
 
 /// Reads a retry-related integer from the environment with a validated default.
 fn env_positive_int(name : String, fallback : Int) -> Int {
-  match @sys.get_env_var(name) {
+  match @env.get_env_var(name) {
     Some(value) if value != "" => positive_int_or(value, fallback)
     _ => fallback
   }
@@ -169,7 +169,7 @@ fn env_positive_int(name : String, fallback : Int) -> Int {
 /// tag explicitly. Otherwise, prerelease suffixes map to the conventional
 /// `alpha`, `beta`, and `rc` tags, while stable releases use `latest`.
 fn npm_tag(version : String) -> String {
-  match @sys.get_env_var("NPM_TAG") {
+  match @env.get_env_var("NPM_TAG") {
     Some(value) if value != "" => value
     _ =>
       if version.contains("-alpha") {
@@ -214,7 +214,7 @@ fn child_script_command(
 /// specs to concrete npm-compatible strings. This keeps the publish path
 /// deterministic and removes a class of release-only pnpm failures.
 async fn prepare_publish_manifest(directory : String) -> Int {
-  let start_dir = match @sys.get_env_var("VIZE_REPO_ROOT") {
+  let start_dir = match @env.get_env_var("VIZE_REPO_ROOT") {
     Some(value) if value != "" => @tool.resolve_path(value)
     _ => @tool.resolve_path(@env.current_dir().unwrap_or("."))
   }

@@ -1,12 +1,8 @@
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-
-use tower_lsp::lsp_types::Url;
-use vize_canon::{CorsaBridge, CorsaBridgeConfig};
+mod fixture;
 
 use super::{SignatureHelpService, SignatureHelpStage};
-use crate::ide::{IdeContext, JsxService};
-use crate::server::ServerState;
+use crate::ide::IdeContext;
+use fixture::{Fixture, resolve_tsgo_binary};
 
 #[test]
 fn signature_help_maps_sfc_script_and_template_with_crlf_and_utf16() {
@@ -52,7 +48,7 @@ fn signature_help_maps_art_variant_template() {
         let Some(corsa_path) = resolve_tsgo_binary() else {
             return;
         };
-        let fixture = Fixture::new(&corsa_path);
+        let fixture = Fixture::new_traced(&corsa_path);
         let source = "<script setup lang=\"ts\">\nfunction format(value: string, precision: number): string { return value.repeat(precision) }\nformat('script', )\n</script>\n\n<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"Empty\">\n    <p>Nothing to call</p>\n  </variant>\n  <variant name=\"Primary\">\n    <p>{{ format('art', ) }}</p>\n  </variant>\n</art>\n";
         let (state, uri) = fixture.vue("Button.art.vue", source);
         let bridge = fixture.bridge();
@@ -66,7 +62,12 @@ fn signature_help_maps_art_variant_template() {
             Some(bridge.clone()),
         )
         .await;
-        let help = help.unwrap_or_else(|| panic!("signature help in art script setup: {stages:?}"));
+        let help = help.unwrap_or_else(|| {
+            panic!(
+                "signature help in art script setup: {stages:?}; {}",
+                fixture.describe_server_frames()
+            )
+        });
         assert_eq!(
             stages,
             [
@@ -113,7 +114,12 @@ fn signature_help_maps_art_variant_template() {
         let (help, stages) =
             SignatureHelpService::signature_help_with_corsa_traced(&ctx, Some(bridge.clone()))
                 .await;
-        let help = help.unwrap_or_else(|| panic!("signature help in art variant: {stages:?}"));
+        let help = help.unwrap_or_else(|| {
+            panic!(
+                "signature help in art variant: {stages:?}; {}",
+                fixture.describe_server_frames()
+            )
+        });
         assert_eq!(
             stages,
             [
@@ -133,7 +139,7 @@ fn signature_help_maps_tsx_calls() {
         let Some(corsa_path) = resolve_tsgo_binary() else {
             return;
         };
-        let fixture = Fixture::new(&corsa_path);
+        let fixture = Fixture::new_traced(&corsa_path);
         let source = "function format(value: string, precision: number): string { return value.repeat(precision) }\nexport default () => <p>{format('tsx', )}</p>;\n";
         let (state, uri) = fixture.tsx("Component.tsx", source);
         let bridge = fixture.bridge();
@@ -142,9 +148,21 @@ fn signature_help_maps_tsx_calls() {
         let marker = "format('tsx', ";
         let offset = source.find(marker).unwrap() + marker.len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let help = JsxService::signature_help(&ctx, Some(bridge.clone()))
-            .await
-            .expect("signature help in TSX");
+        let (help, stages) =
+            crate::ide::jsx::signature_help_traced(&ctx, Some(bridge.clone()), None).await;
+        let help = help.unwrap_or_else(|| {
+            panic!(
+                "signature help in TSX: {stages:?}; {}",
+                fixture.describe_server_frames()
+            )
+        });
+        assert_eq!(
+            stages,
+            [
+                SignatureHelpStage::VirtualOpened,
+                SignatureHelpStage::RequestSome,
+            ]
+        );
         assert_signature(help, "format", 1);
 
         bridge.shutdown().await.unwrap();
@@ -225,109 +243,4 @@ fn assert_signature_type(help: &tower_lsp::lsp_types::SignatureHelp, expected: &
         "{}",
         help.signatures[0].label
     );
-}
-
-struct Fixture {
-    root: tempfile::TempDir,
-    corsa_path: PathBuf,
-}
-
-impl Fixture {
-    fn new(corsa_path: &Path) -> Self {
-        let root = tempfile::tempdir().unwrap();
-        std::fs::create_dir_all(root.path().join("src")).unwrap();
-        write_project(root.path());
-        Self {
-            root,
-            corsa_path: corsa_path.to_path_buf(),
-        }
-    }
-
-    fn vue(&self, name: &str, source: &str) -> (ServerState, Url) {
-        self.open(name, source, "vue")
-    }
-
-    fn tsx(&self, name: &str, source: &str) -> (ServerState, Url) {
-        self.open(name, source, "typescriptreact")
-    }
-
-    fn open(&self, name: &str, source: &str, language_id: &str) -> (ServerState, Url) {
-        let path = self.root.path().join("src").join(name);
-        std::fs::write(&path, source).unwrap();
-        let uri = Url::from_file_path(path).unwrap();
-        let state = ServerState::new();
-        state.set_workspace_root(self.root.path().to_path_buf());
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, language_id.to_string());
-        state.update_virtual_docs(&uri, source);
-        (state, uri)
-    }
-
-    fn bridge(&self) -> Arc<CorsaBridge> {
-        Arc::new(CorsaBridge::with_config(CorsaBridgeConfig {
-            corsa_path: Some(self.corsa_path.clone()),
-            working_dir: Some(self.root.path().to_path_buf()),
-            timeout_ms: 30_000,
-            ..Default::default()
-        }))
-    }
-}
-
-fn write_project(root: &Path) {
-    std::fs::write(
-        root.join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
-    "noEmit": true
-  },
-  "include": ["src/**/*"]
-}"#,
-    )
-    .unwrap();
-    let vue = root.join("node_modules/vue");
-    std::fs::create_dir_all(&vue).unwrap();
-    std::fs::write(
-        vue.join("package.json"),
-        r#"{"name":"vue","version":"3.0.0","types":"index.d.ts"}"#,
-    )
-    .unwrap();
-    std::fs::write(
-        vue.join("index.d.ts"),
-        r#"export type DefineComponent<P = any, _B = any, _D = any> = { new(): { $props: P } };
-export interface ComponentPublicInstance {
-  $attrs: Record<string, unknown>;
-  $slots: Record<string, unknown>;
-  $refs: Record<string, unknown>;
-  $emit: (...args: unknown[]) => void;
-}
-export interface Ref<T = unknown, _Raw = T> { value: T }
-export interface ShallowRef<T = unknown> extends Ref<T> {}
-"#,
-    )
-    .unwrap();
-}
-
-fn resolve_tsgo_binary() -> Option<PathBuf> {
-    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
-        return None;
-    }
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)?;
-    [
-        workspace_root.parent()?.join("corsa-bind/.cache/tsgo"),
-        workspace_root
-            .parent()?
-            .join("corsa-bind/ref/corsa-upstream/.cache/tsgo"),
-        workspace_root.join("node_modules/.bin/tsgo"),
-    ]
-    .into_iter()
-    .find(|candidate| candidate.exists())
-    .or_else(|| vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root))
 }

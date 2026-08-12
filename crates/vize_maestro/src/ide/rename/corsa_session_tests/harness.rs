@@ -10,8 +10,9 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 use super::super::canonical;
 use crate::{ide::IdeContext, server::ServerState};
 
+pub(in crate::ide) mod evidence;
 mod generation;
-mod protocol;
+pub(in crate::ide) mod protocol;
 
 const CHILD_SOURCE: &str = r#"<script setup lang="ts">
 defineEmits<{ saveItem: [id: string] }>();

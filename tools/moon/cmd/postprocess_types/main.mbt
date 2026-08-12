@@ -81,7 +81,7 @@ fn postprocess_generated_types(content : String) -> String {
 /// disk. Returning an exit code keeps `main` trivial and makes tests exercise the
 /// same control flow as the CLI invocation.
 fn run_app() -> Int {
-  let repo_root = match @sys.get_env_var("VIZE_REPO_ROOT") {
+  let repo_root = match @env.get_env_var("VIZE_REPO_ROOT") {
     Some(value) => {
       let path : @path.Path = value
       path.resolve().to_string()

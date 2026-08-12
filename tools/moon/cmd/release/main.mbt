@@ -389,7 +389,7 @@ fn stage_files(files : Array[String]) -> Array[String] {
 /// Runs the shared immutable-tag and current-main guard before any mutation.
 /// Tests may override the script path while exercising isolated repositories.
 async fn run_local_release_guard(tag : String) -> Bool {
-  let script = match @sys.get_env_var(
+  let script = match @env.get_env_var(
     "VIZE_RELEASE_GUARD_SCRIPT",
   ) {
     Some(value) if value != "" => value

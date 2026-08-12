@@ -27,7 +27,7 @@ fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
 
 ///|
 fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
-  match @sys.get_env_var(name) {
+  match @env.get_env_var(name) {
     Some(value) if value != "" => int_at_least_or(value, minimum, fallback)
     _ => fallback
   }
@@ -175,7 +175,7 @@ async fn run_app() -> Int {
       return 1
     }
   }
-  let vp_bin = match @sys.get_env_var("VP_BIN") {
+  let vp_bin = match @env.get_env_var("VP_BIN") {
     Some(value) if value != "" => value
     _ => "vp"
   }

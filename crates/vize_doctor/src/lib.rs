@@ -20,6 +20,10 @@
 //! - A blocking proven error remains blocking regardless of its health score.
 //! - The optional `application-analysis` adapter is disabled by default.
 //! - Enabled adapters reuse registered whole-project analysis without reparsing.
+//! - Reporters are registered explicitly and never mutate global process state.
+//! - Reporter descriptors are versioned, machine-readable, and deterministically ordered.
+//! - AI context is vendor-neutral, explicitly source-fed, budgeted, and wire-validated.
+//! - Capability cache keys are domain-separated and explain every invalidation boundary.
 //!
 //! # Example
 //!
@@ -50,11 +54,32 @@
 //! assert_eq!(report.findings().len(), 1);
 //! ```
 
+mod ai_context;
 #[cfg(feature = "application-analysis")]
 pub mod application_analysis;
+mod cache_identity;
+mod contract;
+mod filter;
+mod fingerprint;
 mod model;
 mod report;
+mod reporter;
 
+pub use ai_context::{
+    AiContextBudget, AiContextError, AiContextOmissions, AiContextPacket, AiEditOperation,
+    AiEditPlan, AiEvidenceEdge, AiEvidenceGraph, AiEvidenceNode, AiEvidenceNodeKind,
+    AiEvidenceRelation, AiFindingContext, AiSourceSnippet, AiVerificationStep,
+    DOCTOR_AI_CONTEXT_FORMAT_VERSION, build_ai_context,
+};
+pub use cache_identity::{
+    CAPABILITY_CACHE_KEY_PREFIX, CapabilityCacheIdentity, CapabilityCacheIdentityError,
+    CapabilityCacheInput, CapabilityCacheKey, CapabilityCacheKeyParseError, CapabilityInvalidation,
+    DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
+};
+pub use filter::{DoctorFilter, DoctorFilterDimension, DoctorFilterError, DoctorFilterSpec};
+pub use fingerprint::{
+    CONTENT_FINGERPRINT_PREFIX, ContentFingerprint, ContentFingerprintParseError,
+};
 pub use model::{
     AnalysisProvenance, DEFAULT_UNAVAILABLE_FIX_REASON, DoctorCategory, DoctorFinding,
     EvidenceKind, FindingAssessment, FindingConfidence, FindingContext, FindingEvidence,
@@ -64,4 +89,11 @@ pub use model::{
 pub use report::{
     CategoryHealth, DOCTOR_REPORT_FORMAT_VERSION, DOCTOR_SCORING_VERSION, DoctorReport,
     DoctorSummary, FindingCounts,
+};
+pub use reporter::{
+    DOCTOR_REPORTER_CONTRACT_VERSION, DoctorReporter, JsonReporter, ReporterAudience,
+    ReporterCapability, ReporterContractError, ReporterDescriptor, ReporterError,
+    ReporterErrorKind, ReporterFailure, ReporterOutput, ReporterReceipt, ReporterRegistrationError,
+    ReporterSet, ReporterTransport, SarifMissingSourcePolicy, SarifReporter, SarifSource,
+    SarifSourceError, render_report,
 };

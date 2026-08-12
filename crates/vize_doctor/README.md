@@ -25,6 +25,179 @@ When enabled, the adapter converts an existing Vize whole-project analysis into
 source-aware findings and reports without reparsing files. It fails closed if a
 diagnostic references a stale file or a path outside the declared workspace.
 
+## Finding filters
+
+`DoctorFilterSpec` is a serializable, provider-neutral query shared by CLI,
+TUI, editor, CI, and AI clients. Enum values within a dimension are ORed,
+populated dimensions are ANDed, and string dimensions support validated shell
+globs. Applying a compiled filter produces a newly scored `DoctorReport` while
+leaving the source report unchanged.
+
+```rust
+use vize_doctor::{
+    DoctorCategory, DoctorFilterSpec, DoctorReport, FindingSeverity,
+};
+
+# let report = DoctorReport::new("example", []);
+let filter = DoctorFilterSpec {
+    categories: vec![DoctorCategory::Correctness],
+    severities: vec![FindingSeverity::Error],
+    paths: vec!["packages/**/src/*.vue".into()],
+    changed_files: vec!["packages/account/**".into()],
+    ..DoctorFilterSpec::default()
+}
+.compile()?;
+let focused = filter.apply(&report);
+
+assert!(focused
+    .findings()
+    .iter()
+    .all(|finding| filter.matches(finding)));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+Primary `paths` are intentionally distinct from `changed_files`. Changed-file
+matching traverses primary, related, evidence, fix-edit, and invalidation-input
+paths so dependent findings stay visible when a shared contract changes.
+
+## Capability cache identities
+
+`CapabilityCacheIdentity` gives each independently reusable analysis product a
+domain-separated cache key. The key covers the stable capability identifier,
+an implementation fingerprint, a configuration fingerprint, and the complete
+set of logical input fingerprints. Input order cannot affect the key; ambiguous
+or duplicate input identities fail closed. Comparing two identities reports
+added, removed, and content-changed inputs separately in linear time.
+
+```rust
+use vize_doctor::{CapabilityCacheIdentity, ContentFingerprint};
+
+let implementation = ContentFingerprint::digest("template-analyzer-v2");
+let configuration = ContentFingerprint::digest("strict=true");
+let previous = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    implementation,
+    configuration,
+    [("src/App.vue", ContentFingerprint::digest("before"))],
+)?;
+let current = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    implementation,
+    configuration,
+    [("src/App.vue", ContentFingerprint::digest("after"))],
+)?;
+
+let invalidation = current.invalidation_from(&previous);
+assert_eq!(invalidation.changed_inputs(), ["src/App.vue"]);
+assert_ne!(current.cache_key(), previous.cache_key());
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The input set is a producer contract, not an automatic filesystem scan. A
+capability must include its complete discovery boundary so a newly added or
+removed source also changes the identity. Absolute paths, timestamps, and host
+metadata must not be smuggled into logical identifiers or configuration hashes.
+
+## Reporter integrations
+
+External CI, editor, code-hosting, and AI integrations implement the object-safe
+`DoctorReporter` trait and advertise a versioned `ReporterDescriptor`. Reporters
+are installed into an explicitly owned `ReporterSet`; there is no process-global
+registry for one integration to replace or reorder another. `render_report`
+streams to any `std::io::Write` destination and returns the reporter identity,
+format versions, finding count, and exact accepted byte count.
+
+Descriptors declare their media type, delivery transport, intended audiences,
+and the Doctor semantics preserved by the output. Registration rejects invalid
+contracts and duplicate stable identifiers. Identical reports and explicit
+reporter configuration must produce identical bytes.
+
+```rust
+use std::io::Write;
+use vize_doctor::{
+    DoctorReport, DoctorReporter, ReporterAudience, ReporterCapability,
+    ReporterDescriptor, ReporterError, ReporterOutput, ReporterTransport,
+    render_report,
+};
+
+struct AgentContextReporter {
+    descriptor: ReporterDescriptor,
+}
+
+impl AgentContextReporter {
+    fn new() -> Self {
+        Self {
+            descriptor: ReporterDescriptor::new(
+                "example.agent-context",
+                "Example agent context",
+                "application/vnd.example.agent-context+json",
+                ReporterTransport::Document,
+            )
+            .with_file_extension("json")
+            .with_audiences([ReporterAudience::Ai])
+            .with_capabilities([
+                ReporterCapability::Findings,
+                ReporterCapability::Evidence,
+                ReporterCapability::Fixes,
+                ReporterCapability::Provenance,
+            ]),
+        }
+    }
+}
+
+impl DoctorReporter for AgentContextReporter {
+    fn descriptor(&self) -> &ReporterDescriptor {
+        &self.descriptor
+    }
+
+    fn write_report(
+        &self,
+        report: &DoctorReport,
+        output: &mut ReporterOutput<'_>,
+    ) -> Result<(), ReporterError> {
+        writeln!(output, "{}", report.summary().overall_score)?;
+        Ok(())
+    }
+}
+
+# let report = DoctorReport::new("example", []);
+let reporter = AgentContextReporter::new();
+let mut bytes = Vec::new();
+let receipt = render_report(&reporter, &report, &mut bytes)?;
+assert_eq!(receipt.reporter_id(), "example.agent-context");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+### SARIF code-host annotations
+
+`SarifReporter` emits OASIS SARIF 2.1.0 plus Errata 01 without depending on a
+specific code host. Doctor spans are UTF-8 byte offsets, so the caller injects
+the exact source text that was analyzed. This makes Unicode line and column
+conversion deterministic and keeps the reporter free of filesystem access.
+Missing or stale sources fail before output by default; callers must opt in to
+artifact-only locations when precise annotations are intentionally unavailable.
+
+```rust
+use vize_doctor::{DoctorReport, DoctorReporter, SarifReporter, SarifSource, render_report};
+
+let report = DoctorReport::new("example", []);
+let reporter = SarifReporter::new().with_sources([
+    SarifSource::new("src/App.vue", "<template><main /></template>"),
+])?;
+let mut sarif = Vec::new();
+let receipt = render_report(&reporter, &report, &mut sarif)?;
+
+assert_eq!(receipt.reporter_id(), "vize.sarif");
+assert_eq!(reporter.descriptor().media_type(), "application/sarif+json");
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+The CLI wires its already-discovered sources into the same reporter:
+
+```sh
+vize doctor src --format sarif > vize-doctor.sarif
+```
+
 ## Example
 
 ```rust

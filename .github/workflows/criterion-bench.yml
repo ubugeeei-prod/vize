@@ -6,11 +6,14 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "crates/**"
+      - "benchmarks/**"
       - ".cargo/**"
       - "Cargo.lock"
       - "Cargo.toml"
       - "bench/criterion-ab.mjs"
+      - "bench/criterion-baselines.mjs"
       - "bench/criterion-impact.mjs"
+      - "bench/criterion-summary.mjs"
       - "bench/dialect-guard.mjs"
       - "bench/generate.mjs"
       - "rust-toolchain.toml"
@@ -23,10 +26,11 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # Report-only: criterion micro-benchmarks are noisy on shared CI runners, so
-  # the A/B table is surfaced for review but the empty threshold keeps it from
-  # blocking a PR. The dialect guard below is a hard gate because byte-identical
-  # codegen is deterministic and not subject to timing jitter.
+  # Relative Criterion comparisons remain report-only because shared-runner
+  # jitter makes one global percentage threshold unreliable. Individual suites
+  # may additionally declare conservative absolute median budgets; those are
+  # hard gates on the reference runner. The dialect guard below is also a hard
+  # gate because byte-identical codegen is deterministic.
   #
   # The A/B sweep covers the four JSX cost dimensions #1501 requires — parser/
   # lowering (jsx_lower), Croquis analysis (jsx_croquis_analyze), Patina rule

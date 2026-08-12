@@ -14,7 +14,7 @@ fn last_lines(text : String, count : Int) -> String {
 }
 
 async fn run_app() -> Int {
-  let summary_path = match @sys.get_env_var("GITHUB_STEP_SUMMARY") {
+  let summary_path = match @env.get_env_var("GITHUB_STEP_SUMMARY") {
     Some(path) if path != "" => path
     _ => {
       println("GITHUB_STEP_SUMMARY is not set")

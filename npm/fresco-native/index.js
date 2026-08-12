@@ -324,6 +324,7 @@ const {
   getTerminalInfo,
   clearScreen,
   flushTerminal,
+  flushTerminalMeasured,
   syncTerminalSize,
 } = nativeBinding;
 
@@ -363,4 +364,5 @@ module.exports.restoreTerminal = restoreTerminal;
 module.exports.getTerminalInfo = getTerminalInfo;
 module.exports.clearScreen = clearScreen;
 module.exports.flushTerminal = flushTerminal;
+module.exports.flushTerminalMeasured = flushTerminalMeasured;
 module.exports.syncTerminalSize = syncTerminalSize;

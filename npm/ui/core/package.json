@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/ui",
-  "version": "0.346.0",
+  "version": "0.347.7",
   "description": "Accessible, headless, Native CSS-first UI primitives",
   "keywords": [
     "accessibility",
@@ -44,6 +44,16 @@
       "import": "./dist/checkbox.mjs",
       "default": "./dist/checkbox.mjs"
     },
+    "./collection": {
+      "types": "./dist/collection.d.mts",
+      "import": "./dist/collection.mjs",
+      "default": "./dist/collection.mjs"
+    },
+    "./composite-navigation": {
+      "types": "./dist/composite-navigation.d.mts",
+      "import": "./dist/composite-navigation.mjs",
+      "default": "./dist/composite-navigation.mjs"
+    },
     "./context": {
       "types": "./dist/context.d.mts",
       "import": "./dist/context.mjs",
@@ -53,6 +63,71 @@
       "types": "./dist/controllable-state.d.mts",
       "import": "./dist/controllable-state.mjs",
       "default": "./dist/controllable-state.mjs"
+    },
+    "./id": {
+      "types": "./dist/id.d.mts",
+      "import": "./dist/id.mjs",
+      "default": "./dist/id.mjs"
+    },
+    "./inert-outside": {
+      "types": "./dist/inert-outside.d.mts",
+      "import": "./dist/inert-outside.mjs",
+      "default": "./dist/inert-outside.mjs"
+    },
+    "./interaction-modality": {
+      "types": "./dist/interaction-modality.d.mts",
+      "import": "./dist/interaction-modality.mjs",
+      "default": "./dist/interaction-modality.mjs"
+    },
+    "./focus": {
+      "types": "./dist/focus.d.mts",
+      "import": "./dist/focus.mjs",
+      "default": "./dist/focus.mjs"
+    },
+    "./focus-scope": {
+      "types": "./dist/focus-scope.d.mts",
+      "import": "./dist/focus-scope.mjs",
+      "default": "./dist/focus-scope.mjs"
+    },
+    "./focus-guards": {
+      "types": "./dist/focus-guards.d.mts",
+      "import": "./dist/focus-guards.mjs",
+      "default": "./dist/focus-guards.mjs"
+    },
+    "./hover": {
+      "types": "./dist/hover.d.mts",
+      "import": "./dist/hover.mjs",
+      "default": "./dist/hover.mjs"
+    },
+    "./long-press": {
+      "types": "./dist/long-press.d.mts",
+      "import": "./dist/long-press.mjs",
+      "default": "./dist/long-press.mjs"
+    },
+    "./move": {
+      "types": "./dist/move.d.mts",
+      "import": "./dist/move.mjs",
+      "default": "./dist/move.mjs"
+    },
+    "./press": {
+      "types": "./dist/press.d.mts",
+      "import": "./dist/press.mjs",
+      "default": "./dist/press.mjs"
+    },
+    "./scroll-lock": {
+      "types": "./dist/scroll-lock.d.mts",
+      "import": "./dist/scroll-lock.mjs",
+      "default": "./dist/scroll-lock.mjs"
+    },
+    "./spatial-navigation": {
+      "types": "./dist/spatial-navigation.d.mts",
+      "import": "./dist/spatial-navigation.mjs",
+      "default": "./dist/spatial-navigation.mjs"
+    },
+    "./typeahead": {
+      "types": "./dist/typeahead.d.mts",
+      "import": "./dist/typeahead.mjs",
+      "default": "./dist/typeahead.mjs"
     },
     "./primitive": {
       "types": "./dist/primitive.d.mts",
@@ -87,12 +162,13 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "lint:sfc": "vp exec node scripts/lint-sfc.ts src",
-    "pretest": "vp pack && pnpm check:size",
+    "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
+    "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
     "test": "vp test run",
-    "check": "vp check src scripts vite.config.ts",
-    "check:fix": "vp check --fix src scripts vite.config.ts",
+    "check": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "check:size": "node scripts/check-size.mjs",
+    "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "devDependencies": {
@@ -106,7 +182,8 @@
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "vue-tsc": "catalog:typescript"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

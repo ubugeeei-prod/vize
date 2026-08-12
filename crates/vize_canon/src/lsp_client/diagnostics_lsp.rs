@@ -106,3 +106,69 @@ pub(super) fn request_lsp_document_diagnostic_ack(
     .map(|_| ())
     .map_err(|error| cstr!("{error}"))
 }
+
+#[cfg(all(test, feature = "native", unix))]
+mod tests {
+    use std::{
+        io::{BufReader, Write},
+        os::unix::net::UnixStream,
+        thread,
+        time::Duration,
+    };
+
+    use corsa::runtime::block_on;
+    use corsa_lsp::jsonrpc::{
+        JsonRpcConnection, JsonRpcConnectionOptions, RpcHandlerMap, read_frame,
+    };
+    use serde_json::json;
+
+    #[test]
+    fn malformed_readiness_response_fails_at_jsonrpc_frame_reader() {
+        let (client_socket, mut server_socket) = UnixStream::pair().unwrap();
+        let client = JsonRpcConnection::try_spawn_with_options(
+            BufReader::new(client_socket.try_clone().unwrap()),
+            client_socket,
+            RpcHandlerMap::default(),
+            JsonRpcConnectionOptions::new().with_request_timeout(Some(Duration::from_secs(5))),
+        )
+        .unwrap();
+        let server_reader = server_socket.try_clone().unwrap();
+        let server = thread::spawn(move || {
+            let mut reader = BufReader::new(server_reader);
+            let request_payload = read_frame(&mut reader).unwrap();
+            let request: serde_json::Value = serde_json::from_slice(&request_payload).unwrap();
+            assert_eq!(request["method"], json!("textDocument/diagnostic"));
+            assert_eq!(
+                request["params"]["textDocument"]["uri"],
+                json!("file:///workspace/App.vue.ts")
+            );
+
+            let id = &request["id"];
+            let body = format!(r#"{{"jsonrpc":"2.0","id":{id},"result":null}}{{}}"#);
+            write!(
+                server_socket,
+                "Content-Length: {}\r\n\r\n{}",
+                body.len(),
+                body
+            )
+            .unwrap();
+            server_socket.flush().unwrap();
+        });
+
+        let error = block_on(client.request_value(
+            "textDocument/diagnostic",
+            json!({
+                "textDocument": {
+                    "uri": "file:///workspace/App.vue.ts",
+                },
+            }),
+        ))
+        .unwrap_err();
+        server.join().unwrap();
+        let error = error.to_string();
+        assert!(
+            error.contains("trailing characters"),
+            "malformed readiness response escaped the frame reader: {error}"
+        );
+    }
+}

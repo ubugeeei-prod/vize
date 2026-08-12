@@ -118,3 +118,17 @@ pub(crate) struct DiagnosticFetch {
     pub(crate) diagnostics: Vec<Diagnostic>,
     pub(crate) used_cache: bool,
 }
+
+/// Return whether an LSP request failed because its reusable transport became
+/// unusable rather than because the request itself was invalid.
+///
+/// The transport crates currently expose these failures as formatted strings,
+/// so this classifier is deliberately narrow. Callers may rebuild a session
+/// once for these cases; semantic and configuration errors must propagate.
+fn lsp_transport_error_is_transient(error: &str) -> bool {
+    error.contains("protocol error: EOF")
+        || error.contains("EOF while parsing")
+        || error.contains("process is closed: jsonrpc reader")
+        || error.contains("Broken pipe")
+        || error.contains("broken pipe")
+}

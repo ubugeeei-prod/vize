@@ -5,20 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import {
-  CRITERION_SUITES,
-  criterionBenchRunOptions,
-  renderSummary,
-  resolveSuiteSelection,
-} from "../../bench/criterion-ab.mjs";
-import {
-  compareBaselineExports,
-  criterionEnvironment,
-  critcmpArgs,
-  critcmpExportArgs,
-  parseCritcmpExport,
-  validateComparisonTable,
-} from "../../bench/criterion-baselines.mjs";
+import { CRITERION_SUITES, resolveSuiteSelection } from "../../bench/criterion-ab.mjs";
 import {
   changedPathsBetween,
   parseNameStatusZ,
@@ -45,15 +32,19 @@ function metadata(dependencies: Record<string, string[]> = {}) {
   const packages = names.map((name) => ({
     id: `${name}@0.1.0`,
     name,
-    manifest_path: `${repoDir}/crates/${name}/Cargo.toml`,
+    manifest_path:
+      name === "vize_benchmarks"
+        ? `${repoDir}/benchmarks/vize/Cargo.toml`
+        : `${repoDir}/crates/${name}/Cargo.toml`,
   }));
+  const effectiveDependencies = { vize_benchmarks: ["vize"], ...dependencies };
   return {
     packages,
     workspace_members: packages.map((pkg) => pkg.id),
     resolve: {
       nodes: packages.map((pkg) => ({
         id: pkg.id,
-        dependencies: (dependencies[pkg.name] ?? []).map((name) => `${name}@0.1.0`),
+        dependencies: (effectiveDependencies[pkg.name] ?? []).map((name) => `${name}@0.1.0`),
       })),
     },
   };
@@ -97,6 +88,54 @@ test("direct Criterion package changes select only their suite", () => {
   assert.deepEqual(result.selected, ["vize_glyph"]);
 });
 
+test("Doctor reporter benchmarks are enrolled in scoped Criterion A/B runs", () => {
+  const suite = CRITERION_SUITES.find(({ package: packageName }) => packageName === "vize_doctor");
+  assert.deepEqual(suite, {
+    package: "vize_doctor",
+    benches: ["reporter"],
+    label: "Doctor reporters",
+  });
+
+  const result = selectCriterionSuites({
+    changedPaths: ["crates/vize_doctor/src/reporter/json.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+
+  assert.equal(result.mode, "scoped");
+  assert.deepEqual(result.selected, ["vize_doctor"]);
+});
+
+test("Doctor TUI benchmarks carry explicit reference-runner latency budgets", () => {
+  const suite = CRITERION_SUITES.find(
+    ({ package: packageName }) => packageName === "vize_benchmarks",
+  );
+  assert.deepEqual(suite, {
+    package: "vize_benchmarks",
+    benches: ["doctor_tui"],
+    label: "Doctor TUI",
+    absoluteBudgets: [
+      { name: "doctor_tui_10k/first_frame_120x40", maxMedianNs: 20_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/selection", maxMedianNs: 1_000_000 },
+      { name: "doctor_tui_input_to_frame_10k/search", maxMedianNs: 1_000_000 },
+    ],
+  });
+
+  const direct = selectCriterionSuites({
+    changedPaths: ["benchmarks/vize/doctor_tui.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(direct.selected, ["vize_benchmarks"]);
+
+  const dependency = selectCriterionSuites({
+    changedPaths: ["crates/vize/src/commands/doctor/tui.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(dependency.selected, ["vize_benchmarks"]);
+});
+
 test("reverse dependency impact selects every suite that consumes a changed package", () => {
   const dependencies = Object.fromEntries(suiteNames.map((name) => [name, ["vize_atelier_core"]]));
   const result = selectCriterionSuites({
@@ -109,9 +148,9 @@ test("reverse dependency impact selects every suite that consumes a changed pack
   assert.deepEqual(result.skipped, []);
 });
 
-test("CLI-only changes skip unrelated Criterion suites", () => {
+test("non-Rust CLI fixture changes skip unrelated Criterion suites", () => {
   const result = selectCriterionSuites({
-    changedPaths: ["crates/vize/src/build/input.rs"],
+    changedPaths: ["docs/cli.md"],
     metadata: metadata(),
     repoDir,
   });
@@ -119,11 +158,16 @@ test("CLI-only changes skip unrelated Criterion suites", () => {
   assert.equal(result.mode, "scoped");
   assert.deepEqual(result.selected, []);
   assert.deepEqual(result.skipped, suiteNames);
-  assert.match(result.reason, /vize/);
+  assert.match(result.reason, /none/);
 });
 
 test("lockfiles and shared benchmark infrastructure select the full inventory", () => {
-  for (const changedPath of ["Cargo.lock", "bench/criterion-ab.mjs"]) {
+  for (const changedPath of [
+    "Cargo.lock",
+    "bench/criterion-ab.mjs",
+    "bench/criterion-baselines.mjs",
+    "bench/criterion-summary.mjs",
+  ]) {
     const result = selectCriterionSuites({
       changedPaths: [changedPath],
       metadata: metadata(),
@@ -173,85 +217,3 @@ test("Criterion driver validates scoped suite manifests", () => {
     /unknown suites/,
   );
 });
-
-test("Criterion driver snapshots both baselines before comparing them", () => {
-  assert.deepEqual(
-    criterionBenchRunOptions({
-      checkoutDir: "/work/head",
-      targetDir: "/work/head/target",
-    }),
-    {
-      cwd: "/work/head",
-      env: { CARGO_TARGET_DIR: "/work/head/target" },
-      capture: true,
-    },
-  );
-  assert.deepEqual(criterionEnvironment("/work/head/target"), {
-    CARGO_TARGET_DIR: "/work/head/target",
-  });
-  assert.deepEqual(critcmpExportArgs({ targetDir: "/work/head/target", baseline: "base" }), [
-    "--target-dir",
-    "/work/head/target",
-    "--export",
-    "base",
-  ]);
-  assert.deepEqual(
-    critcmpArgs({
-      targetDir: "/work/head/target",
-      baselinePaths: ["/work/base.json", "/work/head.json"],
-    }),
-    ["--target-dir", "/work/head/target", "/work/base.json", "/work/head.json"],
-  );
-});
-
-test("Criterion baseline comparison fails closed and uses exported medians", () => {
-  const base = parseCritcmpExport(baselineExport("base", { shared: 100 }), "base");
-  const head = parseCritcmpExport(baselineExport("head", { shared: 125 }), "head");
-
-  assert.deepEqual(compareBaselineExports(base, head, 10), [{ name: "shared", changePercent: 25 }]);
-  assert.throws(
-    () => parseCritcmpExport(baselineExport("base", {}), "base"),
-    /contains no benchmarks/,
-  );
-  assert.throws(
-    () =>
-      compareBaselineExports(
-        base,
-        parseCritcmpExport(baselineExport("head", { other: 90 }), "head"),
-        10,
-      ),
-    /no shared benchmarks/,
-  );
-});
-
-test("Criterion comparison table requires both base and head columns", () => {
-  assert.doesNotThrow(() =>
-    validateComparisonTable("group  base  head\n-----  ----  ----\nshared  1.00  1.12\n"),
-  );
-  assert.throws(
-    () => validateComparisonTable("group  head\n-----  ----\nshared  1.00\n"),
-    /did not produce base\/head columns/,
-  );
-});
-
-test("Criterion driver reports a useful summary when no suite is affected", () => {
-  const selection = resolveSuiteSelection({ selected: [], reason: "CLI-only change." });
-  const summary = renderSummary({ table: "", threshold: undefined, regressions: [], selection });
-
-  assert.match(summary, /Selection: CLI-only change\./);
-  assert.match(summary, /Ran: none/);
-  assert.match(summary, /Skipped: vize_atelier_sfc, vize_atelier_jsx/);
-  assert.match(summary, /timing execution was skipped/);
-});
-
-function baselineExport(name: string, medians: Record<string, number>): string {
-  return JSON.stringify({
-    name,
-    benchmarks: Object.fromEntries(
-      Object.entries(medians).map(([benchmark, pointEstimate]) => [
-        benchmark,
-        { criterion_estimates_v1: { median: { point_estimate: pointEstimate } } },
-      ]),
-    ),
-  });
-}

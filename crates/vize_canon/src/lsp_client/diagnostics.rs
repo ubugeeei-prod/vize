@@ -401,7 +401,7 @@ impl CorsaProjectClient {
             match self.request_diagnostics_batch_via_lsp_chunk_once(uris) {
                 Err(error)
                     if attempts < LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES
-                        && lsp_diagnostics_error_is_transient(&error) =>
+                        && super::lsp_transport_error_is_transient(&error) =>
                 {
                     attempts += 1;
                     std::thread::sleep(Duration::from_millis(25));
@@ -517,14 +517,6 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
         || error.contains("Unsupported")
         || error.contains("unsupported")
         || error.contains("not supported")
-}
-
-fn lsp_diagnostics_error_is_transient(error: &str) -> bool {
-    error.contains("protocol error: EOF")
-        || error.contains("EOF while parsing")
-        || error.contains("process is closed: jsonrpc reader")
-        || error.contains("Broken pipe")
-        || error.contains("broken pipe")
 }
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {

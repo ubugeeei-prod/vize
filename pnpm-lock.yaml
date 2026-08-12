@@ -91,29 +91,29 @@ catalogs:
       version: 1.64.0
   native-binaries:
     '@vizejs/native-darwin-arm64':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-darwin-x64':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-linux-arm64-gnu':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-linux-arm64-musl':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-linux-x64-gnu':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-linux-x64-musl':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-win32-arm64-msvc':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
     '@vizejs/native-win32-x64-msvc':
-      specifier: 0.346.0
-      version: 0.346.0
+      specifier: 0.347.7
+      version: 0.347.7
   nuxt-eslint-oracle:
     '@nuxt/eslint':
       specifier: 1.16.0
@@ -1020,6 +1020,9 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
+      vue-tsc:
+        specifier: catalog:typescript
+        version: 3.3.4(typescript@6.0.3)
 
   npm/ui/tooling:
     dependencies:

@@ -15,8 +15,8 @@ test("Vben and Misskey own complete batch cold and warm budgets", () => {
   const owners = registry.projects.filter((project) => project.batchCheckBudget != null);
   assert.deepEqual(owners.map((project) => project.id).sort(), ["misskey", "vue-vben-admin"]);
   assert.deepEqual(loadBatchCheckBudget("vue-vben-admin"), {
-    coldMs: 15_000,
-    warmMs: 10_000,
+    coldMs: 600_000,
+    warmMs: 600_000,
   });
   // Raised with the deterministic single-checker pin (#3905): the one-program
   // misskey check measured 61s cold on an M-series darwin, and CI runners

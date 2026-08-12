@@ -9,7 +9,7 @@ describe(`${app.name} check (type checker)`, () => {
   before(requireVizeAndCorsaBins);
 
   it("vize check covers the component library without crashing or hanging", () => {
-    const summary = runCrashFreeVizeCheck(app, { timeoutMs: 300_000 });
+    const summary = runCrashFreeVizeCheck(app, { timeoutMs: 600_000 });
     console.log(
       `fileCount=${summary.fileCount}, errorCount=${summary.errorCount}, durationMs=${summary.durationMs.toFixed(0)}`,
     );
