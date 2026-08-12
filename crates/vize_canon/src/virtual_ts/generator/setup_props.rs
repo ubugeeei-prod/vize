@@ -106,24 +106,12 @@ impl SetupPropsPlan {
         &self,
         ts: &mut String,
         source: PropsSource<'_>,
-        generic_param: Option<&str>,
         check_props: bool,
     ) {
         let summary = source.summary;
         let mut binding_mappings =
             PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
-        generate_props_variables(
-            ts,
-            &mut binding_mappings,
-            summary,
-            generic_param,
-            self.template_props_type_ref(),
-            check_props,
-        );
-    }
-
-    pub(super) fn template_props_type_ref(&self) -> Option<&'static str> {
-        self.defer.then_some("__VizeSetupProps")
+        generate_props_variables(ts, &mut binding_mappings, summary, check_props);
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {

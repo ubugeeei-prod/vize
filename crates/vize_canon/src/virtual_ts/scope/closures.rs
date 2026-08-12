@@ -26,8 +26,8 @@ use super::emit::{
     append_v_for_comment, emit_slot_function_open, emit_v_for_loop_open, slot_props_type,
 };
 use super::event_scope::generate_event_handler_scope;
-use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
+use super::{globals::generate_undefined_refs, instance_globals::generate_instance_global_refs};
 
 /// Generates the Croquis scope chain as a recursive tree so nested v-for/v-slot
 /// scopes remain contained within their parent closures.

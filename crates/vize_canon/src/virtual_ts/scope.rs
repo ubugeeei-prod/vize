@@ -22,6 +22,7 @@ mod expression_scanner;
 mod globals;
 mod handler_shape;
 mod inline_callback_classifier;
+mod instance_globals;
 mod vif_guard;
 
 pub(crate) use closures::generate_scope_closures;

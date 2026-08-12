@@ -1,4 +1,4 @@
-//! Generation of undefined-reference checks and instance-global declarations.
+//! Generation of undefined-reference checks for template names.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -9,7 +9,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_croquis::{BindingMetadata, Croquis, ScopeKind, analyzer::extract_identifiers_oxc};
+use vize_croquis::{Croquis, ScopeKind};
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
@@ -148,7 +148,7 @@ pub(super) fn generate_undefined_refs(
 /// Whether the SFC authored a `<script setup>` block: its bindings are the
 /// template's real surface, and the plain script's default export next to it
 /// carries only the options the setup form cannot express.
-fn has_script_setup(summary: &Croquis) -> bool {
+pub(super) fn has_script_setup(summary: &Croquis) -> bool {
     summary
         .scopes
         .iter()
@@ -183,120 +183,7 @@ fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     None
 }
 
-pub(super) fn generate_instance_global_refs(
-    ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
-    summary: &Croquis,
-    template_offset: u32,
-    scope_options: &ScopeGenerationOptions<'_, '_>,
-) {
-    if summary.undefined_refs.is_empty() && summary.template_expressions.is_empty() {
-        return;
-    }
-
-    let mut emitter = InstanceGlobalRefsEmitter::new(
-        ts,
-        mappings,
-        summary,
-        scope_options.virtual_ts_options,
-        scope_options.setup_spread_bindings,
-    );
-    for undef in &summary.undefined_refs {
-        let src_start = (template_offset + undef.offset) as usize;
-        let src_end = src_start + undef.name.len();
-        emitter.emit(undef.name.as_str(), src_start, src_end);
-    }
-
-    for expr in &summary.template_expressions {
-        for ident in extract_identifiers_oxc(expr.content.as_str()) {
-            let name = ident.as_str();
-            let Some(relative_offset) = expr.content.find(name) else {
-                continue;
-            };
-            let src_start = (template_offset + expr.start) as usize + relative_offset;
-            let src_end = src_start + name.len();
-            emitter.emit(name, src_start, src_end);
-        }
-    }
-}
-
-struct InstanceGlobalRefsEmitter<'a> {
-    ts: &'a mut String,
-    mappings: &'a mut Vec<VizeMapping>,
-    options: &'a VirtualTsOptions,
-    bindings: &'a BindingMetadata,
-    synthetic_setup_bindings: FxHashSet<&'a str>,
-    type_export_names: FxHashSet<&'a str>,
-    seen_names: FxHashSet<String>,
-    emitted_header: bool,
-}
-
-impl<'a> InstanceGlobalRefsEmitter<'a> {
-    fn new(
-        ts: &'a mut String,
-        mappings: &'a mut Vec<VizeMapping>,
-        summary: &'a Croquis,
-        options: &'a VirtualTsOptions,
-        synthetic_setup_bindings: &'a [String],
-    ) -> Self {
-        Self {
-            ts,
-            mappings,
-            options,
-            bindings: &summary.bindings,
-            synthetic_setup_bindings: synthetic_setup_bindings
-                .iter()
-                .map(|name| name.as_str())
-                .collect(),
-            type_export_names: summary
-                .type_exports
-                .iter()
-                .map(|te| te.name.as_str())
-                .collect(),
-            seen_names: FxHashSet::default(),
-            emitted_header: false,
-        }
-    }
-
-    fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
-        if !is_template_instance_global_name(name)
-            || self.bindings.contains(name)
-            || self.synthetic_setup_bindings.contains(name)
-            || self.type_export_names.contains(name)
-            || is_declared_template_context_name(name, self.options)
-            || !self.seen_names.insert(name.into())
-        {
-            return;
-        }
-
-        if !self.emitted_header {
-            self.ts
-                .push_str("\n  // Instance globals from ComponentPublicInstance:\n");
-            self.ts.push_str(
-                "  type __VizeInstanceGlobal<K extends string> = K extends keyof __Ctx ? __Ctx[K] : any;\n",
-            );
-            self.emitted_header = true;
-        }
-
-        let gen_start = self.ts.len();
-        let stmt = cstr!("  const {name}: __VizeInstanceGlobal<'{name}'> = undefined as any;\n");
-        let gen_name_start = gen_start + stmt.find(name).unwrap_or(0);
-        let gen_name_end = gen_name_start + name.len();
-
-        self.ts.push_str(&stmt);
-        self.mappings.push(VizeMapping {
-            gen_range: gen_name_start..gen_name_end,
-            src_range: src_start..src_end,
-            sub_spans: Vec::new(),
-        });
-        append!(
-            *self.ts,
-            "  // @vize-map: {gen_name_start}:{gen_name_end} -> {src_start}:{src_end}\n",
-        );
-    }
-}
-
-fn is_template_instance_global_name(name: &str) -> bool {
+pub(super) fn is_template_instance_global_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix('$') else {
         return false;
     };
@@ -306,7 +193,7 @@ fn is_template_instance_global_name(name: &str) -> bool {
             .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
-fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
+pub(super) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
     matches!(name, "$attrs" | "$slots" | "$refs" | "$emit" | "$event")
         || options
             .template_globals

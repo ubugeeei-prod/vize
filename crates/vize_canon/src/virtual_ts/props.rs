@@ -3,139 +3,20 @@ mod mappings;
 mod options_api;
 mod setup_scoped;
 mod template_bindings;
+mod template_model;
 mod template_names;
 mod with_defaults;
-use super::helpers::to_safe_identifier;
-use keyed_template_names::collect_keyed_template_prop_names;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
 pub(crate) use options_api::OptionsApiPropsSource;
 pub(crate) use options_api::append_default_props;
 use options_api::emit_options_api_props_type;
+use setup_scoped::unused_generic_comment;
 pub(crate) use setup_scoped::{PropsTypeEmission, generate_setup_scoped_props_artifact};
-use setup_scoped::{props_type_ref, unused_generic_comment};
-use template_bindings::{emit_macro_template_prop_bindings, should_skip_template_prop_binding};
+pub(crate) use template_model::{TemplatePropsModel, generate_props_variables};
 pub(crate) use template_names::collect_template_prop_names;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
-use vize_croquis::macros::{MacroKind, ModelDefinition};
-use with_defaults::{collect_with_defaults_default_names_from_source, template_props_type_ref};
-
-fn emit_keyed_template_prop_binding(
-    ts: &mut String,
-    props_type_ref: &str,
-    key_type_ref: &str,
-    prop_name: &str,
-    has_default: bool,
-) {
-    let binding_name = to_safe_identifier(prop_name);
-    if has_default {
-        append!(
-            *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
-        );
-    } else {
-        append!(
-            *ts,
-            "  const {binding_name} = props[(\"{prop_name}\" satisfies keyof {key_type_ref})];\n"
-        );
-    }
-    append!(*ts, "  void {binding_name};\n");
-}
-fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
-    let binding_name = to_safe_identifier(prop_name);
-    append!(
-        *ts,
-        "  const {binding_name} = (props as Record<string, unknown>)[\"{prop_name}\"];\n"
-    );
-    append!(*ts, "  void {binding_name};\n");
-}
-
-fn should_emit_keyed_template_prop_bindings(
-    summary: &Croquis,
-    type_name: &str,
-    emitted_names: &FxHashSet<String>,
-) -> bool {
-    if has_top_level_type_operator(type_name) {
-        return true;
-    }
-    if is_plain_inline_type_literal(type_name) {
-        return false;
-    }
-    let base_name = strip_generic_params(type_name).trim();
-    if summary.types.definitions().has_interface_extends(base_name) {
-        return true;
-    }
-    if let Some(body) = summary.types.definitions().resolve(base_name) {
-        return has_top_level_type_operator(body.as_str())
-            || !is_plain_inline_type_literal(body.as_str());
-    }
-    emitted_names.is_empty() && !summary.types.definitions().is_defined(base_name)
-}
-fn is_plain_inline_type_literal(type_name: &str) -> bool {
-    let type_name = type_name.trim();
-    if !type_name.starts_with('{') {
-        return false;
-    }
-
-    let mut depth = 0i32;
-    for (idx, c) in type_name.char_indices() {
-        match c {
-            '{' => depth += 1,
-            '}' => {
-                depth -= 1;
-                if depth == 0 {
-                    return type_name[idx + c.len_utf8()..].trim().is_empty();
-                }
-            }
-            _ => {}
-        }
-    }
-    false
-}
-
-fn has_top_level_type_operator(type_name: &str) -> bool {
-    let mut angle_depth = 0i32;
-    let mut brace_depth = 0i32;
-    let mut paren_depth = 0i32;
-    let mut bracket_depth = 0i32;
-
-    for c in type_name.chars() {
-        match c {
-            '<' => angle_depth += 1,
-            '>' => angle_depth -= 1,
-            '{' => brace_depth += 1,
-            '}' => brace_depth -= 1,
-            '(' => paren_depth += 1,
-            ')' => paren_depth -= 1,
-            '[' => bracket_depth += 1,
-            ']' => bracket_depth -= 1,
-            '&' | '|'
-                if angle_depth == 0
-                    && brace_depth == 0
-                    && paren_depth == 0
-                    && bracket_depth == 0 =>
-            {
-                return true;
-            }
-            _ => {}
-        }
-    }
-    false
-}
-
-fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
-    let mut names = FxHashSet::default();
-    for call in summary.macros.all_calls() {
-        if call.kind != MacroKind::WithDefaults {
-            continue;
-        }
-        let Some(runtime_args) = &call.runtime_args else {
-            continue;
-        };
-        collect_with_defaults_default_names_from_source(runtime_args.as_str(), &mut names);
-    }
-    names
-}
+use vize_croquis::macros::ModelDefinition;
 
 fn model_prop_type(model: &ModelDefinition) -> &str {
     model.model_type.as_deref().unwrap_or("unknown")
@@ -240,124 +121,6 @@ pub(crate) fn generate_props_type(
     ts.push('\n');
 }
 
-pub(crate) fn generate_props_variables(
-    ts: &mut String,
-    binding_mappings: &mut PropBindingMappings<'_>,
-    summary: &Croquis,
-    generic_param: Option<&str>,
-    props_type_ref_override: Option<&str>,
-    check_props: bool,
-) {
-    let props = summary.macros.props();
-    let has_props = !props.is_empty();
-    let models = summary.macros.models();
-    let has_models = !models.is_empty();
-    let define_props_type_args = summary
-        .macros
-        .define_props()
-        .and_then(|m| m.type_args.as_ref());
-
-    let props_type_ref = props_type_ref(generic_param, props_type_ref_override);
-    let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
-    for model in models {
-        if model.default_value.is_some() {
-            defaulted_prop_names.insert(model.name.as_str().into());
-        }
-    }
-    let template_base_props_type_ref =
-        if define_props_type_args.is_some() && defaulted_prop_names.is_empty() {
-            cstr!("__DefineProps<{props_type_ref}>")
-        } else {
-            props_type_ref.clone()
-        };
-    let template_props_type_ref =
-        template_props_type_ref(template_base_props_type_ref.as_str(), &defaulted_prop_names);
-
-    if has_props || define_props_type_args.is_some() || has_models {
-        ts.push_str("  // Props are available in template as variables\n");
-        ts.push_str("  // Access via `propName` or `props.propName`\n");
-        append!(
-            *ts,
-            "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
-        );
-        ts.push_str("  void props; // Mark as used to avoid TS6133\n");
-
-        let mut emitted_names = FxHashSet::default();
-        if let Some(type_args) = define_props_type_args {
-            let type_name = strip_outer_angle_brackets(type_args.trim());
-
-            let type_properties = summary
-                .types
-                .extract_properties(type_reference_lookup_key(type_name));
-            for prop in &type_properties {
-                if should_skip_template_prop_binding(summary, prop.name.as_str()) {
-                    continue;
-                }
-                binding_mappings.emit(
-                    ts,
-                    template_props_type_ref.as_str(),
-                    prop.name.as_str(),
-                    defaulted_prop_names.contains(&prop.name),
-                );
-                emitted_names.insert(prop.name.as_str().into());
-            }
-            if has_props {
-                emit_macro_template_prop_bindings(
-                    ts,
-                    binding_mappings,
-                    summary,
-                    template_props_type_ref.as_str(),
-                    props,
-                    &defaulted_prop_names,
-                    &mut emitted_names,
-                );
-            }
-
-            if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
-                for name in collect_keyed_template_prop_names(summary, &emitted_names) {
-                    if check_props {
-                        emit_keyed_template_prop_binding(
-                            ts,
-                            template_props_type_ref.as_str(),
-                            props_type_ref.as_str(),
-                            name.as_str(),
-                            defaulted_prop_names.contains(&name),
-                        );
-                    } else {
-                        emit_unchecked_template_prop_binding(ts, name.as_str());
-                    }
-                }
-            }
-        } else if has_props {
-            // Runtime-declared props: generate individual variables
-            emit_macro_template_prop_bindings(
-                ts,
-                binding_mappings,
-                summary,
-                template_props_type_ref.as_str(),
-                props,
-                &defaulted_prop_names,
-                &mut emitted_names,
-            );
-        }
-        for model in models {
-            if emitted_names.contains(model.name.as_str())
-                || should_skip_template_prop_binding(summary, model.name.as_str())
-            {
-                continue;
-            }
-            binding_mappings.emit(
-                ts,
-                template_props_type_ref.as_str(),
-                model.name.as_str(),
-                model.default_value.is_some(),
-            );
-            emitted_names.insert(model.name.as_str().into());
-        }
-        ts.push('\n');
-    }
-}
-
 /// Lookup key for a `defineProps<...>` type argument when resolving its fields
 /// through the croquis `TypeResolver`.
 ///
@@ -400,7 +163,7 @@ pub(crate) fn strip_outer_angle_brackets(s: &str) -> &str {
 
 /// Strip generic parameters from a type name for interface lookup.
 /// e.g., `"ContextMenuContentProps<T>"` → `"ContextMenuContentProps"`
-fn strip_generic_params(type_name: &str) -> &str {
+pub(super) fn strip_generic_params(type_name: &str) -> &str {
     match type_name.find('<') {
         Some(pos) => &type_name[..pos],
         None => type_name,
@@ -570,9 +333,10 @@ fn append_param_with_default(result: &mut String, param: &str) {
 
 #[cfg(test)]
 mod tests {
+    use super::with_defaults::template_props_type_ref;
     use super::{
         add_generic_defaults, extract_generic_names, strip_const_modifiers,
-        template_props_type_ref, type_reference_lookup_key,
+        type_reference_lookup_key,
     };
     use vize_carton::{FxHashSet, String};
 

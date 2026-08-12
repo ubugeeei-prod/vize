@@ -117,8 +117,8 @@ export default class List extends Vue {
     );
     assert!(
         code.contains(
-            "const offset = props[\"offset\"] as Exclude<__DefineProps<Props>[\"offset\"], undefined>;"
-        ) || code.contains("const offset = props[\"offset\"] as Exclude<Props[\"offset\"], undefined>;"),
+            "const offset = props[\"offset\"] as Exclude<__WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, \"offset\">>[\"offset\"], undefined>;"
+        ),
         "a defaulted prop must stay non-undefined inside its own template:\n{code}",
     );
 }

@@ -124,7 +124,7 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __WithDefaultsResult<Props, Pick<Props, "count">> = {} as __WithDefaultsResult<Props, Pick<Props, "count">>;
+  const props: __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "count">> = {} as __WithDefaultsResult<__DefineProps<Props>, Pick<__DefineProps<Props>, "count">>;
   void props; // Mark as used to avoid TS6133
   const modelValue = props["modelValue"];
   void modelValue;
