@@ -36,7 +36,7 @@ impl CssRule for NoDisplayNone {
     fn check<'i>(
         &self,
         _source: &'i str,
-        stylesheet: &StyleSheet<'i, 'i>,
+        stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {

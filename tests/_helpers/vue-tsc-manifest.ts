@@ -19,7 +19,7 @@ export function resolveVueTscManifestPath(binaryPath: string): string | undefine
     } catch {
       continue;
     }
-    for (let directory = path.dirname(resolved); ; ) {
+    for (let directory = path.dirname(resolved); ;) {
       const manifestPath = path.join(directory, "package.json");
       if (readPackageName(manifestPath) === "vue-tsc") return manifestPath;
       const parent = path.dirname(directory);

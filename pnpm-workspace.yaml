@@ -20,18 +20,19 @@ packages:
 
 minimumReleaseAgeExclude:
   - "hono@4.12.34"
-  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0"
-  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0"
-  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0"
-  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0"
-  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0"
-  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0"
-  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0"
-  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0"
+  - "@vizejs/native-darwin-arm64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-darwin-x64@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-linux-arm64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-linux-arm64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-linux-x64-gnu@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-linux-x64-musl@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-win32-arm64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
+  - "@vizejs/native-win32-x64-msvc@0.333.0 || 0.340.0 || 0.347.7 || 0.348.0"
 
 overrides:
   "@azure/msal-node>uuid": "11.1.1"
   "@hono/node-server": "2.0.11"
+  "@babel/plugin-syntax-jsx": "7.29.7"
   # Must stay on the v3 line: nuxt 4.5.1 pulls unhead 3.x and its generated
   # `.nuxt/unhead-options.mjs` imports `legacyPlugins`, which only @unhead/vue
   # v3 exports. Pinning v2 here broke every Nuxt fixture build.
@@ -52,7 +53,7 @@ overrides:
   nanotar: "0.3.0"
   nitropack: "2.13.4"
   node-forge: "1.4.0"
-  "postcss@>=8.0.0 <8.5.23": "8.5.23"
+  "postcss@>=8.0.0 <8.5.26": "8.5.26"
   nuxt: "4.5.1"
   qs: "6.15.2"
   "readdir-glob>minimatch": "10.2.5"
@@ -71,7 +72,7 @@ catalogs:
   # Bump deliberately: a version change re-records the committed ground truth.
   babel-jsx-oracle:
     "@babel/core": "7.29.0"
-    "@babel/plugin-syntax-typescript": "7.28.6"
+    "@babel/plugin-syntax-typescript": "7.29.7"
     "@vue/babel-plugin-jsx": "2.0.1"
 
   # Official legacy Vue compiler baselines used by the formatter's
@@ -86,8 +87,8 @@ catalogs:
   # Nuxt lint config port (npm/framework/nuxt/test/nuxt-eslint-compat).
   # Bump deliberately: a version change re-records the committed ground truth.
   nuxt-eslint-oracle:
-    "@nuxt/eslint": "1.16.0"
-    "@nuxt/eslint-config": "1.16.0"
+    "@nuxt/eslint": "1.17.0"
+    "@nuxt/eslint-config": "1.17.0"
 
   # Independent Pug compiler used by the real-project formatter semantic
   # oracle. Bump deliberately because its generated HTML is ground truth.
@@ -101,37 +102,37 @@ catalogs:
     ajv: "8.20.0"
     glob: "13.0.6"
     json-schema-to-typescript: "15.0.4"
-    pkg-pr-new: "0.0.73"
-    prettier: "3.8.3"
-    tinyglobby: "0.2.16"
+    pkg-pr-new: "0.0.87"
+    prettier: "3.9.6"
+    tinyglobby: "0.2.17"
 
   # TypeScript toolchain shared across workspace packages.
   typescript:
-    "@types/node": "25.9.2"
-    "@typescript/native-preview": "7.0.0-dev.20260603.1"
-    tsx: "4.22.4"
+    "@types/node": "24.13.3"
+    "@typescript/native-preview": "7.0.0-dev.20260707.2"
+    tsx: "4.23.12"
     typescript: "6.0.3"
-    vue-tsc: "3.3.4"
+    vue-tsc: "3.3.9"
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:
-    vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
-    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
-    vite-plus: "0.1.21"
-    tsdown: "0.22.0"
-    "@vitejs/plugin-vue": "6.0.7"
+    vite: "npm:@voidzero-dev/vite-plus-core@0.2.8"
+    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.24"
+    vite-plus: "0.2.8"
+    tsdown: "0.22.14"
+    "@vitejs/plugin-vue": "6.0.8"
     vite-node: "6.0.0"
     vite-plugin-inspect: "11.4.1"
-    unplugin: "3.0.0"
+    unplugin: "3.3.0"
 
   # Stable Vue ecosystem packages used by shipping examples and integrations.
   vue-stable:
-    vue: "3.5.35"
-    "@vue/compiler-dom": "3.5.35"
-    "@vue/compiler-sfc": "3.5.35"
-    "@vue/runtime-core": "3.5.35"
-    "@vue/test-utils": "2.4.10"
-    vue-router: "4.5.1"
+    vue: "3.5.41"
+    "@vue/compiler-dom": "3.5.41"
+    "@vue/compiler-sfc": "3.5.41"
+    "@vue/runtime-core": "3.5.41"
+    "@vue/test-utils": "2.4.11"
+    vue-router: "4.6.4"
 
   # Vue beta track used by the playground and benchmark harnesses.
   vue-beta:
@@ -141,30 +142,30 @@ catalogs:
 
   # Test runners and browser automation.
   testing:
-    "@playwright/test": "1.60.0"
-    happy-dom: "20.11.0"
-    playwright: "1.60.0"
+    "@playwright/test": "1.62.1"
+    happy-dom: "20.11.2"
+    playwright: "1.62.1"
 
   # Lint and formatting toolchain.
   linting:
-    oxfmt: "0.49.0"
-    oxlint: "1.64.0"
-    "@oxlint/plugins": "1.64.0"
+    oxfmt: "0.63.0"
+    oxlint: "1.78.0"
+    "@oxlint/plugins": "1.78.0"
 
   # Bundlers beyond the Vite stack.
   bundlers:
-    "@rspack/cli": "2.0.3"
-    "@rspack/core": "2.0.3"
+    "@rspack/cli": "2.1.8"
+    "@rspack/core": "2.1.8"
     esbuild: "0.28.1"
-    rollup: "4.61.1"
-    webpack: "5.107.2"
+    rollup: "4.62.4"
+    webpack: "5.109.2"
 
   # External framework integrations and native build helpers.
   integrations:
-    "@modelcontextprotocol/sdk": "1.29.0"
+    "@modelcontextprotocol/sdk": "1.30.0"
     "@napi-rs/cli": "3.6.2"
-    "@nuxt/kit": "4.4.8"
-    "@ox-content/vite-plugin": "2.68.0"
+    "@nuxt/kit": "4.5.2"
+    "@ox-content/vite-plugin": "2.81.0"
 
   # Runtime kit loaded by @vizejs/nuxt. Keep this aligned with Nuxt 2 Bridge's
   # kit line so Nuxt 2's module loader does not pull in Nuxt 4-only syntax.
@@ -174,20 +175,20 @@ catalogs:
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"
-    "@tsdown/css": "0.22.0"
+    "@tsdown/css": "0.22.14"
     "@types/pngjs": "6.0.5"
     highlight.js: "11.11.1"
-    marked: "18.0.5"
+    marked: "18.0.9"
     marked-highlight: "2.2.4"
-    monaco-editor: "0.55.1"
+    monaco-editor: "0.56.0"
     pngjs: "7.0.0"
-    shiki: "4.0.2"
-    three: "0.184.0"
+    shiki: "4.4.3"
+    three: "0.185.1"
 
   # JS-side OXC transform bridge.
   oxc:
-    oxc-parser: "0.133.0"
-    oxc-transform: "0.130.0"
+    oxc-parser: "0.144.0"
+    oxc-transform: "0.144.0"
 
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:

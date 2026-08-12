@@ -224,8 +224,7 @@ onUnmounted(() => {
               <pre
                 v-for="(warning, index) in activeCodeOutput.warnings"
                 :key="`${codeOutputTarget}-warning-${index}`"
-                >{{ warning }}</pre
-              >
+                >{{ warning }}</pre>
             </div>
             <CodeHighlight
               v-if="activeCodeOutput.isTypeScript && codeViewMode === 'js'"

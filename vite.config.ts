@@ -22,6 +22,17 @@ const editorScenarioFixtureIgnorePattern =
   "editors/vscode/test-fixtures/extension-host/real-vue/src/Scenario.vue";
 
 /**
+ * Oxfmt 0.61 formats Markdown tables containing translated prose and literal
+ * pipe characters as if every pipe were a column separator. Keep authored
+ * documentation, parser fixtures, and generated Playwright output byte-stable.
+ */
+const formatterSensitiveContentIgnorePatterns = [
+  "crates/**/tests/fixtures/**",
+  "docs/content/**/*.md",
+  "examples/vite-musea/playwright-report/**",
+];
+
+/**
  * Root Vite+ configuration.
  *
  * The root config intentionally stays small: task helpers, package inputs, and
@@ -50,6 +61,7 @@ const config = {
       "**/__ubugeeei__/**",
       "tests/_fixtures/**",
       editorScenarioFixtureIgnorePattern,
+      ...formatterSensitiveContentIgnorePatterns,
     ],
   },
   lint: {

@@ -166,7 +166,7 @@ function scheduleEdgeBatch() {
 
     const batch = [];
     let characterCount = 0;
-    for (let index = 0; index < edgeBatchQueue.length && batch.length < 50; ) {
+    for (let index = 0; index < edgeBatchQueue.length && batch.length < 50;) {
       const request = edgeBatchQueue[index];
       const taggedLength = request.text.length + 30;
       if (request.locale !== locale || characterCount + taggedLength > 45_000) {

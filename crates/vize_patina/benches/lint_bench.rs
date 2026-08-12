@@ -1,6 +1,8 @@
 //! Benchmark for vize_patina linter.
 
-use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
+use std::hint::black_box;
+
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use vize_carton::append;
 use vize_patina::Linter;
 use vize_patina::rules::musea::MuseaLinter;

@@ -28,5 +28,5 @@
     "vite-plus": "catalog:vite-stack",
     "yaml": "2.9.0"
   },
-  "packageManager": "pnpm@11.13.1"
+  "packageManager": "pnpm@11.21.0"
 }

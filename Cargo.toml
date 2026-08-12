@@ -79,81 +79,81 @@ oxc_formatter = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc
 oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 
 # Serialization and schema formats
-serde = { version = "=1.0.228", features = ["derive"] }
-serde_json = "=1.0.149"
-toml = "=1.1.2"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+toml = "=1.1.4"
 lsp-types = "=0.97.0"
 pklrust = "=0.9.0"
 
 # CLI, async, and IDE runtime
-clap = { version = "=4.6.1", features = ["derive"] }
-futures = "=0.3.32"
+clap = { version = "=4.6.6", features = ["derive"] }
+futures = "=0.3.34"
 tower = { version = "=0.4.13", default-features = false }
 tower-lsp = { version = "=0.20.0", default-features = false, features = ["runtime-agnostic"] }
-async-trait = "=0.1.89"
+async-trait = "=0.1.92"
 tracing = "=0.1.44"
 tracing-subscriber = "=0.3.23"
 parking_lot = "=0.12.5"
 ropey = "=1.6.1"
 dirs = "=6.0.0"
-which = "=8.0.2"
+which = "=8.0.5"
 walkdir = "=2.5.0"
-ignore = "=0.4.25"
-glob = "=0.3.3"
-globset = "=0.4.18"
+ignore = "=0.4.33"
+glob = "=0.3.4"
+globset = "=0.4.20"
 rayon = "=1.12.0"
 regex-lite = "=0.1.9"
 tempfile = "=3.27.0"
 
 # NAPI / WASM / Web
-napi = { version = "=3.9.0", default-features = false, features = ["napi8", "serde-json"] }
-napi-derive = "=3.5.6"
-napi-build = "=2.3.2"
-wasm-bindgen = "=0.2.121"
+napi = { version = "=3.12.1", default-features = false, features = ["napi8", "serde-json"] }
+napi-derive = "=3.6.3"
+napi-build = "=2.4.1"
+wasm-bindgen = "=0.2.127"
 serde-wasm-bindgen = "=0.6.5"
-js-sys = "=0.3.98"
-web-sys = { version = "=0.3.98", features = ["console"] }
+js-sys = "=0.3.104"
+web-sys = { version = "=0.3.104", features = ["console"] }
 getrandom = { version = "=0.3.4", features = ["wasm_js"] }
 
 # Arena allocation
-bumpalo = { version = "=3.20.2", features = ["collections", "boxed"] }
+bumpalo = { version = "=3.20.3", features = ["collections", "boxed"] }
 
 # Utilities
-thiserror = "=2.0.18"
-rustc-hash = "=2.1.2"
+thiserror = "=2.0.20"
+rustc-hash = "=2.1.3"
 bitflags = { version = "=2.13.1", features = ["serde"] }
 once_cell = "=1.21.4"
 compact_str = { version = "=0.9.0", features = ["serde"] }
 phf = { version = "=0.13.1", features = ["macros"] }
 memoffset = "=0.9.1"
 memchr = "=2.8.3"
-regex = "=1.12.3"
+regex = "=1.13.1"
 smallvec = { version = "=1.15.2", features = ["union"] }
-dashmap = "=6.1.0"
-xxhash-rust = { version = "=0.8.15", features = ["xxh3"] }
+dashmap = "=6.2.1"
+xxhash-rust = { version = "=0.8.18", features = ["xxh3"] }
 sha2 = "=0.11.0"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
-libc = "=0.2.186"
+libc = "=0.2.189"
 # Moves a recursive AST pass onto a heap-allocated stack when the thread stack
 # runs low, so template nesting depth costs heap instead of stack. See
 # `vize_carton::recursion` for why the compiler needs it.
-stacker = "=0.1.24"
+stacker = "=0.1.25"
 
 # Allocator
 mimalloc = "=0.1.52"
 
 # CSS
-lightningcss = "=1.0.0-alpha.71"
-parcel_selectors = "=0.28.2"
+lightningcss = "=1.0.0-alpha.72"
+parcel_selectors = "=0.28.3"
 
 # Terminal / layout
 crossterm = "=0.29.0"
 taffy = "=0.10.1"
 unicode-width = "=0.2.2"
-unicode-segmentation = "=1.13.2"
+unicode-segmentation = "=1.13.3"
 
 # Testing and benchmarking
-insta = { version = "=1.47.2", features = ["toml"] }
+insta = { version = "=1.48.0", features = ["toml"] }
 criterion = "=0.8.2"
 
 # Published corsa crates

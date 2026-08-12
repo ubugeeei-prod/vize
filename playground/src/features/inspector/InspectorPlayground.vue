@@ -429,8 +429,7 @@ onUnmounted(() => {
             v-for="(warning, index) in inspectorMessages"
             :key="index"
             class="inspector-warning"
-            >{{ warning }}</pre
-          >
+            >{{ warning }}</pre>
         </div>
 
         <div v-if="activeOutputTab === 'compare'" class="inspector-tab-panel">

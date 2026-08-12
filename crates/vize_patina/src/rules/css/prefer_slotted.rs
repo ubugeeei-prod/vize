@@ -48,7 +48,7 @@ impl CssRule for PreferSlotted {
     fn check<'i>(
         &self,
         source: &'i str,
-        _stylesheet: &StyleSheet<'i, 'i>,
+        _stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {

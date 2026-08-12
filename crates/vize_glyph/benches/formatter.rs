@@ -1,6 +1,8 @@
 //! Benchmarks for vize_glyph formatter
 
-use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
+use std::hint::black_box;
+
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use vize_glyph::{
     Allocator, FormatOptions, format_script, format_sfc, format_sfc_with_allocator, format_template,
 };

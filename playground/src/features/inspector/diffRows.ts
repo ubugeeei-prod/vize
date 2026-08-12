@@ -46,7 +46,7 @@ export function renderPlainDiffLines(lines: DiffLine[]): HighlightedDiffLine[] {
 export function buildSplitDiffRows(lines: HighlightedDiffLine[]): SplitDiffRow[] {
   const rows: SplitDiffRow[] = [];
 
-  for (let index = 0; index < lines.length; ) {
+  for (let index = 0; index < lines.length;) {
     const line = lines[index]!;
     if (line.kind === "same") {
       rows.push({

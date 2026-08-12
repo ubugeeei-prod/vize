@@ -61,7 +61,7 @@ function globToRegExp(pattern: string): RegExp {
 function globSource(pattern: string): string {
   let source = "";
 
-  for (let index = 0; index < pattern.length; ) {
+  for (let index = 0; index < pattern.length;) {
     const char = pattern[index];
     const next = pattern[index + 1];
     const afterNext = pattern[index + 2];

@@ -76,12 +76,12 @@ impl<'a> StyleDocument<'a> {
 #[derive(Clone, Copy)]
 pub struct ParsedStyleSheet<'a, 'i> {
     document: &'a StyleDocument<'i>,
-    stylesheet: &'a StyleSheet<'i, 'i>,
+    stylesheet: &'a StyleSheet<'i>,
 }
 
 impl<'a, 'i> ParsedStyleSheet<'a, 'i> {
     /// Create a parsed stylesheet view.
-    pub const fn new(document: &'a StyleDocument<'i>, stylesheet: &'a StyleSheet<'i, 'i>) -> Self {
+    pub const fn new(document: &'a StyleDocument<'i>, stylesheet: &'a StyleSheet<'i>) -> Self {
         Self {
             document,
             stylesheet,
@@ -104,7 +104,7 @@ impl<'a, 'i> ParsedStyleSheet<'a, 'i> {
     }
 
     /// Access to the underlying parsed stylesheet.
-    pub const fn raw(&self) -> &'a StyleSheet<'i, 'i> {
+    pub const fn raw(&self) -> &'a StyleSheet<'i> {
         self.stylesheet
     }
 

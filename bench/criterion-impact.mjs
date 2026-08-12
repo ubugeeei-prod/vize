@@ -68,7 +68,7 @@ export function parseNameStatusZ(output) {
   const fields = output.split("\0");
   if (fields.at(-1) === "") fields.pop();
   const paths = [];
-  for (let index = 0; index < fields.length; ) {
+  for (let index = 0; index < fields.length;) {
     const status = fields[index++];
     if (!/^(?:[ACDMRTUXB]|R\d+|C\d+)$/.test(status ?? "")) {
       throw new Error(`Malformed git diff status: ${status ?? "<missing>"}`);

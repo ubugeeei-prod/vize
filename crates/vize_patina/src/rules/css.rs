@@ -103,7 +103,7 @@ pub trait CssRule: Send + Sync {
     fn check<'i>(
         &self,
         source: &'i str,
-        stylesheet: &StyleSheet<'i, 'i>,
+        stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     );

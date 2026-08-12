@@ -1,9 +1,9 @@
 //! Render benchmarks.
 #![allow(deprecated)]
 
-use std::io;
+use std::{hint::black_box, io};
 
-use criterion::{Criterion, Throughput, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 
 use vize_fresco::component::{
     BoxNode, DiagnosticPresentation, DiagnosticPresentationKind, DiagnosticPresentationProfile,

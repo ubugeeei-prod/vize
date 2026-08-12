@@ -6,7 +6,9 @@ const count = ref(0);
 const CounterPreview = ({ label }: { label: string }) => (
   <section class="counter-preview">
     <p>
-      {label}: {count.value}
+      {label}
+      :{" "}
+      {count.value}
     </p>
     <button type="button" onClick={() => (count.value += 1)}>
       Increment

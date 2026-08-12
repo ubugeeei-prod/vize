@@ -86,7 +86,7 @@ function stripRelativePrefix(pattern: string): string {
 
 function globBodyToRegExp(pattern: string): string {
   let source = "";
-  for (let i = 0; i < pattern.length; ) {
+  for (let i = 0; i < pattern.length;) {
     const char = pattern[i];
     if (char === "*") {
       if (pattern[i + 1] === "*") {
