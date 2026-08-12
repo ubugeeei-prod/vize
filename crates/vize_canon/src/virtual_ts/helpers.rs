@@ -236,6 +236,13 @@ const VUE2_INSTANCE_MEMBERS: &[&str] = &[
     "_c",
 ];
 
+/// Whether `generate_template_context` declares this name itself in a Vue 2
+/// dialect. The instance-global emitter shares the list so it never emits a
+/// second declaration for the same name in the same template closure.
+pub(crate) fn is_vue2_instance_member(name: &str) -> bool {
+    VUE2_INSTANCE_MEMBERS.contains(&name)
+}
+
 /// Generate Vue template context declarations dynamically.
 ///
 /// Uses Vue's `ComponentPublicInstance` for Vue 3. In legacy Vue 2 mode, emits

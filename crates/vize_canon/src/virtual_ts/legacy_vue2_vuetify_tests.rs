@@ -232,3 +232,37 @@ defineProps<Props>()
         "Vue 2 dialect keyed prop fallback should not reject Vuetify/mixin names:\n{vue2}"
     );
 }
+
+/// A Vue 2 dialect declares `$listeners` and friends in the template context,
+/// so the instance-global emitter must not declare them a second time in the
+/// same closure (`TS2451`). Vue 3 has no such declaration, so there the
+/// instance-global form stays the only one.
+#[test]
+fn vue2_instance_members_are_declared_once() {
+    let script = "";
+    let template = r#"<div>{{ $listeners }} {{ $scopedSlots }}</div>"#;
+
+    for vue2 in [
+        legacy_virtual_ts(script, template, &VirtualTsOptions::default()),
+        dialect_virtual_ts(
+            script,
+            template,
+            &VirtualTsOptions::default(),
+            VueVersion::V2_7,
+        ),
+    ] {
+        for declaration in ["const $listeners", "const $scopedSlots"] {
+            assert_eq!(
+                vue2.matches(declaration).count(),
+                1,
+                "`{declaration}` should be emitted exactly once:\n{vue2}"
+            );
+        }
+    }
+
+    let standard = standard_virtual_ts(script, template, &VirtualTsOptions::default());
+    assert!(
+        standard.contains("const $listeners: __VizeInstanceGlobal<'$listeners'>"),
+        "Vue 3 should still resolve $listeners through the instance-global form:\n{standard}"
+    );
+}

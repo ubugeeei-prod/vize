@@ -9,8 +9,9 @@
 //! `TS2339 … does not exist on type '{}'` (#4145).
 
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifiers_oxc};
+use vize_croquis::{BindingMetadata, Croquis, analyzer::extract_identifier_refs_oxc};
 
+use crate::virtual_ts::helpers::is_vue2_instance_member;
 use crate::virtual_ts::props::TemplatePropsModel;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
@@ -37,6 +38,7 @@ pub(super) fn generate_instance_global_refs(
         scope_options.virtual_ts_options,
         scope_options.setup_spread_bindings,
         instance_props_type(summary, scope_options),
+        scope_options.legacy_vue2,
     );
     for undef in &summary.undefined_refs {
         let src_start = (template_offset + undef.offset) as usize;
@@ -45,12 +47,20 @@ pub(super) fn generate_instance_global_refs(
     }
 
     for expr in &summary.template_expressions {
-        for ident in extract_identifiers_oxc(expr.content.as_str()) {
-            let name = ident.as_str();
-            let Some(relative_offset) = expr.content.find(name) else {
-                continue;
-            };
-            let src_start = (template_offset + expr.start) as usize + relative_offset;
+        // Only a `$`-prefixed name survives `emit`, so an expression without a
+        // `$` never needs a parse. A real template holds thousands of
+        // interpolations and directive expressions and almost none of them read
+        // an instance global, so the byte scan keeps the parse off that path.
+        if !expr.content.as_str().contains('$') {
+            continue;
+        }
+        // The identifier's own span, not `content.find(name)`: the first
+        // occurrence of `$props` in `$propsList && $props` is the `$propsList`
+        // prefix, and mapping to it would point diagnostics at the wrong
+        // template range.
+        for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
+            let name = ident.name.as_str();
+            let src_start = (template_offset + expr.start + ident.offset) as usize;
             let src_end = src_start + name.len();
             emitter.emit(name, src_start, src_end);
         }
@@ -99,6 +109,10 @@ struct InstanceGlobalRefsEmitter<'a> {
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
     instance_props_type: Option<String>,
+    /// A Vue 2 dialect: `generate_template_context` already declares the Vue
+    /// 2-only instance members in this same closure, so re-declaring one here
+    /// would be a `TS2451`.
+    legacy_vue2: bool,
     emitted_header: bool,
     emitted_instance_global_alias: bool,
 }
@@ -111,6 +125,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
         options: &'a VirtualTsOptions,
         synthetic_setup_bindings: &'a [String],
         instance_props_type: Option<String>,
+        legacy_vue2: bool,
     ) -> Self {
         Self {
             ts,
@@ -128,6 +143,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
                 .collect(),
             seen_names: FxHashSet::default(),
             instance_props_type,
+            legacy_vue2,
             emitted_header: false,
             emitted_instance_global_alias: false,
         }
@@ -139,6 +155,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             || self.synthetic_setup_bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)
+            || (self.legacy_vue2 && is_vue2_instance_member(name))
             || !self.seen_names.insert(name.into())
         {
             return;
