@@ -43,11 +43,11 @@
       "falseNegativeRatio": 0
     },
     "nuxt-ui": {
-      "revision": "390060cabc40c886f9d743c91c477ca6ad4d0c32",
+      "revision": "3dbca020969582d577c7df9698dc8cd484f76dc1",
       "accepted": true,
-      "vizeDiagnosticCount": 12,
-      "baselineDiagnosticCount": 12,
-      "sharedCount": 11,
+      "vizeDiagnosticCount": 13,
+      "baselineDiagnosticCount": 13,
+      "sharedCount": 12,
       "messageMismatchCount": 0,
       "documentedDifferenceCount": 1,
       "falsePositiveCount": 0,

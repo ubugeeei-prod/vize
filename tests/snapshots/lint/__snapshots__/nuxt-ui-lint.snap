@@ -7,9 +7,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 108,
+        "line": 116,
         "column": 7,
-        "endLine": 108,
+        "endLine": 116,
         "endColumn": 24,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -19,32 +19,9 @@
   },
   {
     "file": "src/runtime/components/Alert.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 128,
-        "column": 10,
-        "endLine": 128,
-        "endColumn": 96,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 137,
-        "column": 11,
-        "endLine": 137,
-        "endColumn": 23,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/App.vue",
@@ -66,10 +43,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 111,
+        "line": 120,
         "column": 7,
-        "endLine": 111,
-        "endColumn": 17,
+        "endLine": 120,
+        "endColumn": 23,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
@@ -90,21 +67,9 @@
   },
   {
     "file": "src/runtime/components/Banner.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 190,
-        "column": 13,
-        "endLine": 190,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/BlogPost.vue",
@@ -126,9 +91,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 96,
+        "line": 106,
         "column": 18,
-        "endLine": 96,
+        "endLine": 106,
         "endColumn": 51,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -144,9 +109,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 121,
+        "line": 140,
         "column": 5,
-        "endLine": 121,
+        "endLine": 140,
         "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -162,10 +127,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 165,
+        "line": 309,
         "column": 5,
-        "endLine": 165,
-        "endColumn": 32,
+        "endLine": 309,
+        "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
@@ -173,10 +138,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 179,
-        "column": 25,
-        "endLine": 179,
-        "endColumn": 50,
+        "line": 328,
+        "column": 23,
+        "endLine": 328,
+        "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
@@ -184,15 +149,26 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"gridcell\" must be focusable (add tabindex=\"0\")",
-        "line": 219,
+        "line": 385,
         "column": 13,
-        "endLine": 224,
+        "endLine": 390,
         "endColumn": 14,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 401,
+        "column": 17,
+        "endLine": 401,
+        "endColumn": 30,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "src/runtime/components/Card.vue",
@@ -214,9 +190,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 139,
+        "line": 147,
         "column": 23,
-        "endLine": 139,
+        "endLine": 147,
         "endColumn": 42,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -244,9 +220,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 2,
         "message": "[vize:a11y/aria-role] 'assistant' is not a valid ARIA role",
-        "line": 316,
+        "line": 353,
         "column": 7,
-        "endLine": 316,
+        "endLine": 353,
         "endColumn": 23,
         "help": "Why: Invalid ARIA roles prevent assistive technologies from conveying the intended meaning to users.\nValid ARIA roles are defined in the WAI-ARIA specification:\nhttps://www.w3.org/TR/wai-aria/#role_definitions\nCommon roles:\n  <!-- Widget roles -->\n  <div role=\"button\">Click me</div>\n  <div role=\"dialog\">Modal content</div>\n  <div role=\"checkbox\">Toggle</div>\n  \n  <!-- Landmark roles -->\n  <nav role=\"navigation\">...</nav>\n  <main role=\"main\">...</main>\n  <aside role=\"complementary\">...</aside>\n  \n  <!-- Document structure roles -->\n  <div role=\"heading\" aria-level=\"2\">Title</div>\n  <div role=\"list\">...</div>"
       }
@@ -271,6 +247,48 @@
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/ChatReasoning.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 186,
+        "column": 5,
+        "endLine": 186,
+        "endColumn": 30,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "src/runtime/components/ChatShimmer.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/ChatTool.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 141,
+        "column": 5,
+        "endLine": 141,
+        "endColumn": 30,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Checkbox.vue",
@@ -298,9 +316,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 52,
+        "line": 54,
         "column": 20,
-        "endLine": 52,
+        "endLine": 54,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -322,9 +340,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 457,
+        "line": 520,
         "column": 23,
-        "endLine": 457,
+        "endLine": 520,
         "endColumn": 54,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -333,9 +351,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 458,
+        "line": 521,
         "column": 12,
-        "endLine": 458,
+        "endLine": 521,
         "endColumn": 45,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -344,10 +362,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 487,
-        "column": 190,
-        "endLine": 487,
-        "endColumn": 213,
+        "line": 550,
+        "column": 192,
+        "endLine": 550,
+        "endColumn": 215,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
@@ -355,48 +373,37 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 490,
-        "column": 199,
-        "endLine": 490,
-        "endColumn": 223,
+        "line": 553,
+        "column": 201,
+        "endLine": 553,
+        "endColumn": 225,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 560,
-        "column": 19,
-        "endLine": 560,
-        "endColumn": 48,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 563,
-        "column": 15,
-        "endLine": 563,
-        "endColumn": 27,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 558,
+        "column": 171,
+        "endLine": 558,
+        "endColumn": 200,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
         "ruleId": "vue/v-slot-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 583,
+        "line": 647,
         "column": 11,
-        "endLine": 583,
+        "endLine": 647,
         "endColumn": 49,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
-    "warningCount": 7
+    "warningCount": 6
   },
   {
     "file": "src/runtime/components/Container.vue",
@@ -418,9 +425,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 78,
+        "line": 82,
         "column": 23,
-        "endLine": 78,
+        "endLine": 82,
         "endColumn": 55,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -429,10 +436,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 172,
-        "column": 27,
-        "endLine": 172,
-        "endColumn": 60,
+        "line": 177,
+        "column": 29,
+        "endLine": 177,
+        "endColumn": 62,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -513,9 +520,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 156,
+        "line": 188,
         "column": 21,
-        "endLine": 156,
+        "endLine": 188,
         "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -531,9 +538,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 90,
+        "line": 129,
         "column": 23,
-        "endLine": 90,
+        "endLine": 129,
         "endColumn": 55,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -542,10 +549,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 186,
-        "column": 27,
-        "endLine": 186,
-        "endColumn": 60,
+        "line": 242,
+        "column": 29,
+        "endLine": 242,
+        "endColumn": 62,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -614,9 +621,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 290,
+        "line": 308,
         "column": 19,
-        "endLine": 290,
+        "endLine": 308,
         "endColumn": 47,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -638,9 +645,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 90,
+        "line": 92,
         "column": 22,
-        "endLine": 90,
+        "endLine": 92,
         "endColumn": 55,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -686,9 +693,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 166,
+        "line": 170,
         "column": 27,
-        "endLine": 166,
+        "endLine": 170,
         "endColumn": 54,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -697,9 +704,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 184,
+        "line": 187,
         "column": 5,
-        "endLine": 184,
+        "endLine": 187,
         "endColumn": 26,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -715,9 +722,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 520,
+        "line": 605,
         "column": 23,
-        "endLine": 520,
+        "endLine": 605,
         "endColumn": 47,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -726,9 +733,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 576,
+        "line": 662,
         "column": 5,
-        "endLine": 576,
+        "endLine": 662,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -737,9 +744,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 590,
+        "line": 676,
         "column": 9,
-        "endLine": 590,
+        "endLine": 676,
         "endColumn": 38,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -748,10 +755,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 686,
-        "column": 15,
-        "endLine": 686,
-        "endColumn": 53,
+        "line": 773,
+        "column": 17,
+        "endLine": 773,
+        "endColumn": 55,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -765,6 +772,35 @@
     "warningCount": 0
   },
   {
+    "file": "src/runtime/components/InputRating.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 121,
+        "column": 5,
+        "endLine": 121,
+        "endColumn": 23,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 133,
+        "column": 7,
+        "endLine": 133,
+        "endColumn": 25,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "src/runtime/components/InputTags.vue",
     "messages": [
       {
@@ -772,9 +808,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 159,
+        "line": 163,
         "column": 5,
-        "endLine": 159,
+        "endLine": 163,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -790,15 +826,26 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 142,
+        "line": 184,
+        "column": 27,
+        "endLine": 184,
+        "endColumn": 54,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 201,
         "column": 5,
-        "endLine": 142,
+        "endLine": 201,
         "endColumn": 26,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/Kbd.vue",
@@ -814,10 +861,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 187,
-        "column": 13,
-        "endLine": 187,
-        "endColumn": 92,
+        "line": 261,
+        "column": 35,
+        "endLine": 261,
+        "endColumn": 114,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -829,6 +876,46 @@
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/Listbox.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 303,
+        "column": 23,
+        "endLine": 303,
+        "endColumn": 47,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "a11y/role-has-required-aria-props",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"separator\" must have the 'aria-valuenow' attribute",
+        "line": 308,
+        "column": 5,
+        "endLine": 308,
+        "endColumn": 177,
+        "help": "Role separator requires: aria-valuenow\nExample:\n  <div role=\"separator\" aria-valuenow=\"...\">\n  Content\n  </div>"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 392,
+        "column": 9,
+        "endLine": 392,
+        "endColumn": 47,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
   },
   {
     "file": "src/runtime/components/Main.vue",
@@ -850,9 +937,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 142,
+        "line": 150,
         "column": 15,
-        "endLine": 142,
+        "endLine": 150,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -868,9 +955,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 339,
+        "line": 348,
         "column": 23,
-        "endLine": 339,
+        "endLine": 348,
         "endColumn": 55,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -879,9 +966,9 @@
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
-        "line": 373,
+        "line": 382,
         "column": 9,
-        "endLine": 373,
+        "endLine": 382,
         "endColumn": 60,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
@@ -890,9 +977,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 393,
+        "line": 402,
         "column": 23,
-        "endLine": 393,
+        "endLine": 402,
         "endColumn": 73,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -901,9 +988,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 402,
+        "line": 412,
         "column": 48,
-        "endLine": 402,
+        "endLine": 412,
         "endColumn": 81,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -912,9 +999,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 429,
+        "line": 439,
         "column": 28,
-        "endLine": 429,
+        "endLine": 439,
         "endColumn": 79,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -923,9 +1010,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 461,
+        "line": 471,
         "column": 24,
-        "endLine": 461,
+        "endLine": 471,
         "endColumn": 75,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -953,9 +1040,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 68,
+        "line": 70,
         "column": 16,
-        "endLine": 68,
+        "endLine": 70,
         "endColumn": 49,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1025,9 +1112,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 76,
+        "line": 78,
         "column": 16,
-        "endLine": 76,
+        "endLine": 78,
         "endColumn": 49,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1049,9 +1136,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 67,
+        "line": 68,
         "column": 11,
-        "endLine": 67,
+        "endLine": 68,
         "endColumn": 26,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -1073,9 +1160,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 144,
+        "line": 151,
         "column": 19,
-        "endLine": 144,
+        "endLine": 151,
         "endColumn": 47,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1084,9 +1171,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 145,
+        "line": 152,
         "column": 21,
-        "endLine": 145,
+        "endLine": 152,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1108,9 +1195,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 119,
+        "line": 124,
         "column": 19,
-        "endLine": 119,
+        "endLine": 124,
         "endColumn": 82,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1138,9 +1225,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 152,
+        "line": 153,
         "column": 23,
-        "endLine": 152,
+        "endLine": 153,
         "endColumn": 40,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1149,9 +1236,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 229,
+        "line": 232,
         "column": 26,
-        "endLine": 229,
+        "endLine": 232,
         "endColumn": 52,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1160,9 +1247,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
-        "line": 250,
+        "line": 253,
         "column": 11,
-        "endLine": 250,
+        "endLine": 253,
         "endColumn": 17,
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
@@ -1171,9 +1258,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
-        "line": 277,
+        "line": 280,
         "column": 13,
-        "endLine": 282,
+        "endLine": 285,
         "endColumn": 15,
         "help": "Add text content, child elements, or use aria-label for accessible content."
       }
@@ -1207,9 +1294,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 299,
+        "line": 335,
         "column": 5,
-        "endLine": 299,
+        "endLine": 335,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1225,9 +1312,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 511,
+        "line": 553,
         "column": 23,
-        "endLine": 511,
+        "endLine": 553,
         "endColumn": 47,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1236,9 +1323,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 568,
+        "line": 610,
         "column": 5,
-        "endLine": 568,
+        "endLine": 610,
         "endColumn": 34,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1247,10 +1334,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 651,
-        "column": 17,
-        "endLine": 651,
-        "endColumn": 55,
+        "line": 701,
+        "column": 19,
+        "endLine": 701,
+        "endColumn": 57,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],
@@ -1259,6 +1346,12 @@
   },
   {
     "file": "src/runtime/components/Separator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/Sidebar.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -1277,9 +1370,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 140,
+        "line": 148,
         "column": 15,
-        "endLine": 140,
+        "endLine": 148,
         "endColumn": 39,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1313,9 +1406,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 526,
+        "line": 546,
         "column": 22,
-        "endLine": 526,
+        "endLine": 546,
         "endColumn": 45,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1324,9 +1417,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 527,
+        "line": 547,
         "column": 5,
-        "endLine": 545,
+        "endLine": 566,
         "endColumn": 6,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -1335,15 +1428,37 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <tr> is a static element and should not have interactive event handlers",
-        "line": 527,
+        "line": 547,
         "column": 5,
-        "endLine": 545,
+        "endLine": 566,
         "endColumn": 6,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
+        "line": 646,
+        "column": 15,
+        "endLine": 646,
+        "endColumn": 68,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
+        "line": 656,
+        "column": 15,
+        "endLine": 656,
+        "endColumn": 68,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 5
   },
   {
     "file": "src/runtime/components/Tabs.vue",
@@ -1371,9 +1486,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 132,
+        "line": 135,
         "column": 5,
-        "endLine": 139,
+        "endLine": 142,
         "endColumn": 6,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -1382,9 +1497,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 132,
+        "line": 135,
         "column": 5,
-        "endLine": 139,
+        "endLine": 142,
         "endColumn": 6,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
@@ -1400,48 +1515,15 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 126,
+        "line": 140,
         "column": 5,
-        "endLine": 126,
-        "endColumn": 43,
+        "endLine": 140,
+        "endColumn": 58,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 167,
-        "column": 10,
-        "endLine": 167,
-        "endColumn": 96,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 176,
-        "column": 19,
-        "endLine": 176,
-        "endColumn": 48,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
-        "line": 179,
-        "column": 13,
-        "endLine": 179,
-        "endColumn": 25,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/Toaster.vue",
@@ -1457,9 +1539,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 83,
+        "line": 90,
         "column": 16,
-        "endLine": 83,
+        "endLine": 90,
         "endColumn": 33,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1475,9 +1557,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 255,
+        "line": 260,
         "column": 23,
-        "endLine": 255,
+        "endLine": 260,
         "endColumn": 54,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1486,9 +1568,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 261,
+        "line": 266,
         "column": 9,
-        "endLine": 261,
+        "endLine": 266,
         "endColumn": 89,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1497,9 +1579,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 359,
+        "line": 364,
         "column": 23,
-        "endLine": 359,
+        "endLine": 364,
         "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1508,9 +1590,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 365,
+        "line": 370,
         "column": 5,
-        "endLine": 365,
+        "endLine": 370,
         "endColumn": 30,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1519,9 +1601,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 378,
+        "line": 383,
         "column": 7,
-        "endLine": 378,
+        "endLine": 383,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1543,9 +1625,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 23,
+        "line": 25,
         "column": 51,
-        "endLine": 23,
+        "endLine": 25,
         "endColumn": 63,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -1554,9 +1636,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 24,
+        "line": 26,
         "column": 51,
-        "endLine": 24,
+        "endLine": 26,
         "endColumn": 62,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -1578,9 +1660,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 25,
+        "line": 27,
         "column": 35,
-        "endLine": 25,
+        "endLine": 27,
         "endColumn": 54,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -1589,9 +1671,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 26,
+        "line": 28,
         "column": 35,
-        "endLine": 26,
+        "endLine": 28,
         "endColumn": 53,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -1619,9 +1701,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 169,
+        "line": 174,
         "column": 23,
-        "endLine": 169,
+        "endLine": 174,
         "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1630,9 +1712,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 236,
+        "line": 255,
         "column": 18,
-        "endLine": 236,
+        "endLine": 255,
         "endColumn": 51,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1660,9 +1742,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 85,
+        "line": 96,
         "column": 23,
-        "endLine": 85,
+        "endLine": 96,
         "endColumn": 57,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1678,9 +1760,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 149,
+        "line": 264,
         "column": 23,
-        "endLine": 149,
+        "endLine": 264,
         "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1689,9 +1771,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 165,
+        "line": 280,
         "column": 26,
-        "endLine": 165,
+        "endLine": 280,
         "endColumn": 43,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1700,9 +1782,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 179,
+        "line": 305,
         "column": 20,
-        "endLine": 179,
+        "endLine": 305,
         "endColumn": 37,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1724,9 +1806,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'A' should be PascalCase",
-        "line": 38,
+        "line": 40,
         "column": 11,
-        "endLine": 38,
+        "endLine": 40,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       },
@@ -1735,10 +1817,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 39,
+        "line": 41,
         "column": 10,
-        "endLine": 39,
-        "endColumn": 22,
+        "endLine": 41,
+        "endColumn": 28,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
@@ -1825,9 +1907,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 198,
+        "line": 199,
         "column": 23,
-        "endLine": 198,
+        "endLine": 199,
         "endColumn": 48,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
@@ -1836,9 +1918,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 206,
+        "line": 207,
         "column": 9,
-        "endLine": 206,
+        "endLine": 207,
         "endColumn": 44,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
@@ -1878,9 +1960,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H1' should be PascalCase",
-        "line": 39,
+        "line": 47,
         "column": 11,
-        "endLine": 39,
+        "endLine": 47,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -1896,9 +1978,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H2' should be PascalCase",
-        "line": 40,
+        "line": 49,
         "column": 11,
-        "endLine": 40,
+        "endLine": 49,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -1914,9 +1996,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H3' should be PascalCase",
-        "line": 40,
+        "line": 49,
         "column": 11,
-        "endLine": 40,
+        "endLine": 49,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -1932,9 +2014,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H4' should be PascalCase",
-        "line": 39,
+        "line": 48,
         "column": 11,
-        "endLine": 39,
+        "endLine": 48,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -1962,9 +2044,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 68,
+        "line": 77,
         "column": 7,
-        "endLine": 68,
+        "endLine": 77,
         "endColumn": 24,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -1973,9 +2055,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 80,
+        "line": 89,
         "column": 7,
-        "endLine": 80,
+        "endLine": 89,
         "endColumn": 24,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -1984,10 +2066,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 87,
-        "column": 27,
-        "endLine": 87,
-        "endColumn": 45,
+        "line": 96,
+        "column": 33,
+        "endLine": 96,
+        "endColumn": 51,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
@@ -1995,10 +2077,10 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 98,
+        "line": 107,
         "column": 9,
-        "endLine": 98,
-        "endColumn": 91,
+        "endLine": 107,
+        "endColumn": 93,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
       {
@@ -2006,10 +2088,10 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 98,
+        "line": 107,
         "column": 9,
-        "endLine": 98,
-        "endColumn": 91,
+        "endLine": 107,
+        "endColumn": 93,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
     ],
@@ -2042,9 +2124,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'P' should be PascalCase",
-        "line": 35,
+        "line": 37,
         "column": 11,
-        "endLine": 35,
+        "endLine": 37,
         "endColumn": 11,
         "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
       }
@@ -2054,21 +2136,15 @@
   },
   {
     "file": "src/runtime/components/prose/Pre.vue",
-    "messages": [
-      {
-        "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 72,
-        "column": 1,
-        "endLine": 72,
-        "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
+  },
+  {
+    "file": "src/runtime/components/prose/Prompt.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/prose/Script.vue",
@@ -2234,10 +2310,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
-        "line": 185,
-        "column": 17,
-        "endLine": 185,
-        "endColumn": 87,
+        "line": 184,
+        "column": 42,
+        "endLine": 184,
+        "endColumn": 112,
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       }
     ],

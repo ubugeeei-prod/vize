@@ -26,6 +26,8 @@ mod generated_tests;
 #[cfg(test)]
 mod legacy_template_globals_tests;
 #[cfg(test)]
+mod strict_globals_tests;
+#[cfg(test)]
 mod tests;
 
 use fallback::{collect_fallback_stubs, collect_module_fallback_stubs};
@@ -97,13 +99,10 @@ pub(in crate::commands::check) fn detect(
     // Surface the degraded fallback: without generated Nuxt types,
     // auto-imports resolve to permissive `any` stubs that hide real type
     // errors. detect_nuxt_auto_imports runs once per check, so this warns once.
-    let legacy_generated_type_guidance =
-        legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
-    if let Some(message) = missing_generated_types_warning(
-        has_generated_imports,
-        &generated_dir,
-        legacy_generated_type_guidance,
-    ) {
+    let vue2_dialect = legacy_vue2 || matches!(dialect, VueVersion::V2 | VueVersion::V2_7);
+    if let Some(message) =
+        missing_generated_types_warning(has_generated_imports, &generated_dir, vue2_dialect)
+    {
         eprintln!("{message}");
     }
     collect_plugin_injection_stubs(cwd, &mut collected, &mut seen_names);
@@ -119,7 +118,29 @@ pub(in crate::commands::check) fn detect(
     if legacy_vue2 {
         legacy_template_globals::collect(options);
     }
-    collect_generated_template_globals(&generated_dir, options, &seen_names);
+    // With Nuxt's generated types present, that graph is the authority on which
+    // `$`-prefixed template globals exist: a name it never declares resolves on
+    // the component instance, so an undeclared one reports the way the Vue
+    // toolchain reports it instead of silently widening to `any`.
+    //
+    // Without generated types the project is in the documented degraded mode the
+    // warning above describes, and the inferred globals stay: turning them into
+    // errors there would report names the project never got a chance to declare.
+    // The Vue 2 dialect keeps the permissive form too, because its template
+    // context is a structural fallback that carries almost none of the real
+    // instance surface.
+    //
+    // Names the generated `ComponentCustomProperties` does declare keep their
+    // own declaration either way. Those come from files whose `declare module
+    // "vue"` does not always merge into the checked program, so reading them off
+    // the instance would invent diagnostics for globals the project declared.
+    options.strict_instance_globals = has_generated_imports && !vue2_dialect;
+    collect_generated_template_globals(
+        &generated_dir,
+        options,
+        &seen_names,
+        !options.strict_instance_globals,
+    );
 
     for stub in &collected {
         if let Some(name) = declared_name(stub)

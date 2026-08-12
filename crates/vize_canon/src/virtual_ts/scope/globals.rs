@@ -1,4 +1,4 @@
-//! Generation of undefined-reference checks for template names.
+//! Generation of undefined-reference checks and instance-global declarations.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -14,6 +14,9 @@ use vize_croquis::{Croquis, ScopeKind};
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use super::context::ScopeGenerationOptions;
+
+mod instance;
+pub(super) use instance::generate_instance_global_refs;
 
 /// Handle undefined references from template.
 ///
@@ -148,7 +151,7 @@ pub(super) fn generate_undefined_refs(
 /// Whether the SFC authored a `<script setup>` block: its bindings are the
 /// template's real surface, and the plain script's default export next to it
 /// carries only the options the setup form cannot express.
-pub(super) fn has_script_setup(summary: &Croquis) -> bool {
+fn has_script_setup(summary: &Croquis) -> bool {
     summary
         .scopes
         .iter()
@@ -183,7 +186,7 @@ fn script_top_level_binding_names(script: &str) -> Option<FxHashSet<String>> {
     None
 }
 
-pub(super) fn is_template_instance_global_name(name: &str) -> bool {
+fn is_template_instance_global_name(name: &str) -> bool {
     let Some(rest) = name.strip_prefix('$') else {
         return false;
     };
@@ -193,7 +196,7 @@ pub(super) fn is_template_instance_global_name(name: &str) -> bool {
             .all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
-pub(super) fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
+fn is_declared_template_context_name(name: &str, options: &VirtualTsOptions) -> bool {
     matches!(name, "$attrs" | "$slots" | "$refs" | "$emit" | "$event")
         || options
             .template_globals

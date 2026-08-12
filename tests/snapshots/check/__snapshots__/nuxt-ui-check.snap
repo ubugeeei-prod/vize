@@ -5,7 +5,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/accordion' or its corresponding type declarations.",
-        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:134:83 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"accordion\"> | Record<string, never>) & { accordion?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"accordion\"> & { accordion?: any; }'."
       ]
     },
     {
@@ -13,7 +14,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/alert' or its corresponding type declarations.",
-        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:79:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:143:50 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"alert\"> | Record<string, never>) & { alert?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"alert\"> & { alert?: any; }'."
       ]
     },
     {
@@ -25,7 +27,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/auth-form' or its corresponding type declarations.",
-        "error:109:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:119:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:313:72 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'.",
+        "error:313:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"authForm\"> | Record<string, never>) & { authForm?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"authForm\"> & { authForm?: any; }'."
       ]
     },
     {
@@ -33,10 +37,10 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar' or its corresponding type declarations.",
-        "error:42:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:44:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
-        "error:74:31 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ '3xs': number; '2xs': number; xs: number; sm: number; md: number; lg: number; xl: number; '2xl': number; '3xl': number; }'."
+        "error:47:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:48:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:49:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations.",
+        "error:86:61 [TS7006] Parameter 'c' implicitly has an 'any' type."
       ]
     },
     {
@@ -44,7 +48,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/avatar-group' or its corresponding type declarations.",
-        "error:35:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:39:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -60,7 +64,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/banner' or its corresponding type declarations.",
-        "error:70:39 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:72:39 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:198:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"banner\"> | Record<string, never>) & { banner?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"banner\"> & { banner?: any; }'."
       ]
     },
     {
@@ -68,8 +73,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/blog-post' or its corresponding type declarations.",
-        "error:62:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:63:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:68:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -85,7 +90,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/breadcrumb' or its corresponding type declarations.",
-        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:93:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
+        "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'."
       ]
     },
     {
@@ -93,7 +100,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/button' or its corresponding type declarations.",
-        "error:47:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:48:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:49:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
@@ -101,9 +108,18 @@
       "file": "src/runtime/components/Calendar.vue",
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
-        "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:7:19 [TS2307] Cannot find module '#build/ui/calendar' or its corresponding type declarations.",
-        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:6:41 [TS2307] Cannot find module '@internationalized/date' or its corresponding type declarations.",
+        "error:7:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:8:19 [TS2307] Cannot find module '#build/ui/calendar' or its corresponding type declarations.",
+        "error:148:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:286:95 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:286:134 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:288:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:288:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:290:95 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:290:135 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:292:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'.",
+        "error:292:131 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"calendar\"> | Record<string, never>) & { calendar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"calendar\"> & { calendar?: any; }'."
       ]
     },
     {
@@ -111,7 +127,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/card' or its corresponding type declarations.",
-        "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:37:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -126,15 +142,18 @@
         "error:10:38 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
         "error:11:49 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations.",
         "error:12:19 [TS2307] Cannot find module '#build/ui/carousel' or its corresponding type declarations.",
-        "error:119:30 [TS2307] Cannot find module 'embla-carousel-vue' or its corresponding type declarations.",
-        "error:122:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:162:43 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<CarouselProps<T>>, \"active\" | \"align\" | \"arrows\" | \"autoHeight\" | \"autoScroll\" | \"autoplay\" | \"breakpoints\" | \"classNames\" | ... 16 more ... | \"wheelGestures\"> & { ...; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:202:41 [TS2307] Cannot find module 'embla-carousel-autoplay' or its corresponding type declarations.",
-        "error:207:43 [TS2307] Cannot find module 'embla-carousel-auto-scroll' or its corresponding type declarations.",
-        "error:212:43 [TS2307] Cannot find module 'embla-carousel-auto-height' or its corresponding type declarations.",
-        "error:217:43 [TS2307] Cannot find module 'embla-carousel-class-names' or its corresponding type declarations.",
-        "error:222:37 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
-        "error:227:50 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations."
+        "error:121:30 [TS2307] Cannot find module 'embla-carousel-vue' or its corresponding type declarations.",
+        "error:124:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:171:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
+        "error:171:119 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
+        "error:173:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
+        "error:173:118 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"carousel\"> | Record<string, never>) & { carousel?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"carousel\"> & { carousel?: any; }'.",
+        "error:209:41 [TS2307] Cannot find module 'embla-carousel-autoplay' or its corresponding type declarations.",
+        "error:214:43 [TS2307] Cannot find module 'embla-carousel-auto-scroll' or its corresponding type declarations.",
+        "error:219:43 [TS2307] Cannot find module 'embla-carousel-auto-height' or its corresponding type declarations.",
+        "error:224:43 [TS2307] Cannot find module 'embla-carousel-class-names' or its corresponding type declarations.",
+        "error:229:37 [TS2307] Cannot find module 'embla-carousel-fade' or its corresponding type declarations.",
+        "error:234:50 [TS2307] Cannot find module 'embla-carousel-wheel-gestures' or its corresponding type declarations."
       ]
     },
     {
@@ -142,8 +161,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/changelog-version' or its corresponding type declarations.",
-        "error:62:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:63:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
+        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:68:28 [TS2307] Cannot find module '#build/ui-image-component' or its corresponding type declarations."
       ]
     },
     {
@@ -161,19 +180,26 @@
       "file": "src/runtime/components/ChatMessage.vue",
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:4:32 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
+        "error:4:78 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/chat-message' or its corresponding type declarations.",
-        "error:61:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:88:40 [TS2339] Property 'parts' does not exist on type 'ChatMessageProps<TMetadata, TDataParts, TTools>'.",
+        "error:88:55 [TS7006] Parameter 'part' implicitly has an 'any' type.",
+        "error:89:40 [TS2339] Property 'parts' does not exist on type 'ChatMessageProps<TMetadata, TDataParts, TTools>'.",
+        "error:89:55 [TS7006] Parameter 'part' implicitly has an 'any' type.",
+        "error:105:47 [TS2339] Property 'role' does not exist on type 'ChatMessageProps<TMetadata, TDataParts, TTools>'.",
+        "error:130:77 [TS2339] Property 'id' does not exist on type 'ChatMessageProps<TMetadata, TDataParts, TTools>'."
       ]
     },
     {
       "file": "src/runtime/components/ChatMessages.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:5:44 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
+        "error:5:66 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/chat-messages' or its corresponding type declarations.",
-        "error:80:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:82:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:90:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:92:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:373:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatMessages\"> | Record<string, never>) & { chatMessages?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatMessages\"> & { chatMessages?: any; }'."
       ]
     },
     {
@@ -189,7 +215,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt' or its corresponding type declarations.",
-        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -198,8 +224,39 @@
         "error:2:33 [TS2307] Cannot find module 'ai' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt-submit' or its corresponding type declarations.",
-        "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:117:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: string | number | symbol | undefined; variant: string | number | symbol | undefined; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | ... 1 more ... | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'."
+        "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:122:42 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ ready: { icon: any; color: string | number | symbol | undefined; variant: string | number | symbol | undefined; type: \"submit\"; }; submitted: { icon: any; color: string | number | symbol; variant: string | ... 1 more ... | symbol; onClick(e: MouseEvent): void; }; streaming: { ...; }; error: { ...; }; }'.",
+        "error:124:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
+        "error:130:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
+        "error:138:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
+        "error:146:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'."
+      ]
+    },
+    {
+      "file": "src/runtime/components/ChatReasoning.vue",
+      "diagnostics": [
+        "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:5:19 [TS2307] Cannot find module '#build/ui/chat-reasoning' or its corresponding type declarations.",
+        "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:164:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatReasoning\"> | Record<string, never>) & { chatReasoning?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatReasoning\"> & { chatReasoning?: any; }'."
+      ]
+    },
+    {
+      "file": "src/runtime/components/ChatShimmer.vue",
+      "diagnostics": [
+        "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:3:19 [TS2307] Cannot find module '#build/ui/chat-shimmer' or its corresponding type declarations.",
+        "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+      ]
+    },
+    {
+      "file": "src/runtime/components/ChatTool.vue",
+      "diagnostics": [
+        "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:5:19 [TS2307] Cannot find module '#build/ui/chat-tool' or its corresponding type declarations.",
+        "error:85:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:134:78 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatTool\"> | Record<string, never>) & { chatTool?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatTool\"> & { chatTool?: any; }'.",
+        "error:136:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatTool\"> | Record<string, never>) & { chatTool?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatTool\"> & { chatTool?: any; }'."
       ]
     },
     {
@@ -207,8 +264,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox' or its corresponding type declarations.",
-        "error:67:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:116:54 [TS2304] Cannot find name 'as'."
+        "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:133:100 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"checkbox\"> | Record<string, never>) & { checkbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"checkbox\"> & { checkbox?: any; }'.",
+        "error:134:61 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"checkbox\"> | Record<string, never>) & { checkbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"checkbox\"> & { checkbox?: any; }'."
       ]
     },
     {
@@ -216,8 +274,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/checkbox-group' or its corresponding type declarations.",
-        "error:85:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:168:4 [TS2345] Argument of type '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 19 more ...; readonly \"onUpdate:modelValue\"?: ((value: AcceptableValue[]) => any) | undefined; } & Record<...>'.\nType '{ required: boolean; loop: boolean; as?: any; modelValue: UnwrapRefSimple<GetItemValue<T, VK, undefined, NestedItem<T>>>[] | undefined; ... 6 more ...; orientation: string | ... 1 more ... | symbol; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 19 more ...; readonly \"onUpdate:modelValue\"?: ((value: AcceptableValue[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'Orientation$1 | undefined'.\nType 'string' is not assignable to type 'Orientation$1 | undefined'."
+        "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -233,7 +290,7 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/collapsible' or its corresponding type declarations.",
-        "error:32:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -242,9 +299,9 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/color-picker' or its corresponding type declarations.",
         "error:6:32 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
-        "error:75:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
-        "error:76:33 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
-        "error:77:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:77:26 [TS2307] Cannot find module '@vueuse/shared' or its corresponding type declarations.",
+        "error:78:33 [TS2307] Cannot find module 'colortranslator' or its corresponding type declarations.",
+        "error:79:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -254,13 +311,19 @@
         "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:7:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/command-palette' or its corresponding type declarations.",
-        "error:216:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:218:25 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
-        "error:219:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:341:57 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
-        "error:341:62 [TS7006] Parameter 'result' implicitly has an 'any' type.",
-        "error:383:53 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
-        "error:585:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
+        "error:235:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:237:25 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
+        "error:238:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:372:57 [TS7006] Parameter 'acc' implicitly has an 'any' type.",
+        "error:372:62 [TS7006] Parameter 'result' implicitly has an 'any' type.",
+        "error:414:53 [TS2345] Argument of type 'unknown' is not assignable to parameter of type '(T & { matches?: any; })[]'.",
+        "error:531:83 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:570:61 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:583:66 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:602:79 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:612:53 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:629:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
+        "error:649:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
       ]
     },
     {
@@ -276,7 +339,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:116:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -284,7 +347,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -300,7 +363,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-navbar' or its corresponding type declarations.",
-        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -323,10 +386,14 @@
       "file": "src/runtime/components/DashboardSearch.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:5:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
-        "error:6:19 [TS2307] Cannot find module '#build/ui/dashboard-search' or its corresponding type declarations.",
-        "error:83:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:85:77 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:5:19 [TS2307] Cannot find module '#build/ui/dashboard-search' or its corresponding type declarations.",
+        "error:6:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
+        "error:16:115 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"unmountOnHide\"' is not assignable to type 'keyof ModalProps'.",
+        "error:77:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:79:77 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:146:28 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearch\"> | Record<string, never>) & { dashboardSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearch\"> & { dashboardSearch?: any; }'.",
+        "error:153:28 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearch\"> | Record<string, never>) & { dashboardSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearch\"> & { dashboardSearch?: any; }'.",
+        "error:160:28 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearch\"> | Record<string, never>) & { dashboardSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearch\"> & { dashboardSearch?: any; }'."
       ]
     },
     {
@@ -334,8 +401,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
-        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'."
       ]
     },
     {
@@ -343,8 +411,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar' or its corresponding type declarations.",
-        "error:56:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:58:56 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:60:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:62:56 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -352,7 +420,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-collapse' or its corresponding type declarations.",
-        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:61:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarCollapse\"> | Record<string, never>) & { dashboardSidebarCollapse?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarCollapse\"> & { dashboardSidebarCollapse?: any; }'.",
+        "error:61:93 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarCollapse\"> | Record<string, never>) & { dashboardSidebarCollapse?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarCollapse\"> & { dashboardSidebarCollapse?: any; }'."
       ]
     },
     {
@@ -360,7 +430,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-sidebar-toggle' or its corresponding type declarations.",
-        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:31:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:63:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarToggle\"> | Record<string, never>) & { dashboardSidebarToggle?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarToggle\"> & { dashboardSidebarToggle?: any; }'.",
+        "error:63:84 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSidebarToggle\"> | Record<string, never>) & { dashboardSidebarToggle?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSidebarToggle\"> & { dashboardSidebarToggle?: any; }'."
       ]
     },
     {
@@ -377,9 +449,10 @@
         "error:3:55 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/drawer' or its corresponding type declarations.",
-        "error:12:18 [TS2430] Interface 'DrawerProps' incorrectly extends interface 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.\nProperty 'nested' is optional in type 'DrawerProps' but required in type 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.",
-        "error:69:151 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
-        "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:15:18 [TS2430] Interface 'DrawerProps' incorrectly extends interface 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.\nProperty 'nested' is optional in type 'DrawerProps' but required in type 'Pick<DrawerRootProps, \"activeSnapPoint\" | \"closeThreshold\" | \"defaultOpen\" | \"direction\" | \"dismissible\" | \"fixed\" | \"handleOnly\" | \"modal\" | \"nested\" | \"noBodyStyles\" | \"open\" | \"preventScrollRestoration\" | \"scrollLockTimeout\" | \"setBackgroundColorOnScale\" | \"shouldScaleBackground\" | \"snapPoints\">'.",
+        "error:87:164 [TS2307] Cannot find module 'vaul-vue' or its corresponding type declarations.",
+        "error:89:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:197:66 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"drawer\"> | Record<string, never>) & { drawer?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"drawer\"> & { drawer?: any; }'."
       ]
     },
     {
@@ -387,8 +460,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
-        "error:123:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:126:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -396,7 +469,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:24 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
-        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:62:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -408,19 +482,19 @@
         "error:8:35 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
         "error:9:37 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
         "error:10:19 [TS2307] Cannot find module '#build/ui/editor' or its corresponding type declarations.",
-        "error:89:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:91:33 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations.",
-        "error:92:18 [TS2307] Cannot find module '@tiptap/extension-code' or its corresponding type declarations.",
-        "error:93:28 [TS2307] Cannot find module '@tiptap/extension-horizontal-rule' or its corresponding type declarations.",
-        "error:94:19 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
-        "error:95:21 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
-        "error:96:25 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
-        "error:97:26 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
-        "error:101:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:202:3 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'Partial<EditorOptions>'.",
-        "error:219:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:239:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
-        "error:252:48 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'SetContentOptions'."
+        "error:90:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:92:33 [TS2307] Cannot find module '@tiptap/core' or its corresponding type declarations.",
+        "error:93:18 [TS2307] Cannot find module '@tiptap/extension-code' or its corresponding type declarations.",
+        "error:94:28 [TS2307] Cannot find module '@tiptap/extension-horizontal-rule' or its corresponding type declarations.",
+        "error:95:19 [TS2307] Cannot find module '@tiptap/extension-image' or its corresponding type declarations.",
+        "error:96:21 [TS2307] Cannot find module '@tiptap/extension-mention' or its corresponding type declarations.",
+        "error:97:25 [TS2307] Cannot find module '@tiptap/extension-placeholder' or its corresponding type declarations.",
+        "error:98:26 [TS2307] Cannot find module '@tiptap/markdown' or its corresponding type declarations.",
+        "error:102:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:242:3 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'Partial<EditorOptions>'.",
+        "error:263:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
+        "error:283:24 [TS2339] Property 'getMarkdown' does not exist on type 'Editor'.",
+        "error:296:48 [TS2353] Object literal may only specify known properties, and 'contentType' does not exist in type 'SetContentOptions'."
       ]
     },
     {
@@ -430,11 +504,11 @@
         "error:4:42 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
         "error:6:38 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/editor-drag-handle' or its corresponding type declarations.",
-        "error:50:24 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
-        "error:53:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:75:51 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<EditorDragHandleProps>, \"color\" | \"size\" | \"variant\"> & { color: string | number | symbol; size: string | number | symbol; variant: string | ... 1 more ... | symbol; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:83:14 [TS7031] Binding element 'rects' implicitly has an 'any' type."
+        "error:52:24 [TS2307] Cannot find module '@tiptap/extension-drag-handle-vue-3' or its corresponding type declarations.",
+        "error:54:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:86:14 [TS7031] Binding element 'rects' implicitly has an 'any' type.",
+        "error:165:44 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"editorDragHandle\"> | Record<string, never>) & { editorDragHandle?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"editorDragHandle\"> & { editorDragHandle?: any; }'."
       ]
     },
     {
@@ -450,7 +524,7 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/editor-mention-menu' or its corresponding type declarations.",
-        "error:36:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:37:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -468,9 +542,9 @@
         "error:6:44 [TS2307] Cannot find module '@tiptap/extension-bubble-menu' or its corresponding type declarations.",
         "error:7:46 [TS2307] Cannot find module '@tiptap/extension-floating-menu' or its corresponding type declarations.",
         "error:8:19 [TS2307] Cannot find module '#build/ui/editor-toolbar' or its corresponding type declarations.",
-        "error:101:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:126:48 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nArgument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type '{ ui?: any; }'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' has no properties in common with type '{ ui?: any; }'."
+        "error:104:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:129:73 [TS2345] Argument of type '(Omit<__LooseRequired<EditorToolbarBaseProps<T> & { layout?: \"fixed\" | undefined; }>, \"activeColor\" | \"activeVariant\" | \"color\" | \"layout\" | \"size\" | \"variant\"> & { ...; }) | (Omit<...> & { ...; }) | (Omit<...> & { ...; })' is not assignable to parameter of type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarProps<T>'.\nType 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' is not assignable to type 'EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }'.\nProperty 'editor' is missing in type 'Omit<__LooseRequired<EditorToolbarBaseProps<T> & Partial<Omit<BubbleMenuPluginProps, \"editor\" | \"element\">> & { layout?: \"bubble\" | undefined; }>, \"activeColor\" | ... 4 more ... | \"variant\"> & { ...; }' but required in type 'EditorToolbarBaseProps<T>'."
       ]
     },
     {
@@ -478,7 +552,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/empty' or its corresponding type declarations.",
-        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:77:84 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"empty\"> | Record<string, never>) & { empty?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"empty\"> & { empty?: any; }'."
       ]
     },
     {
@@ -487,7 +562,7 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:32 [TS2307] Cannot find module '#app' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/error' or its corresponding type declarations.",
-        "error:45:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:52:42 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -503,7 +578,11 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/file-upload' or its corresponding type declarations.",
-        "error:137:41 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:145:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:309:57 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'.",
+        "error:345:72 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'.",
+        "error:382:84 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'.",
+        "error:383:65 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"fileUpload\"> | Record<string, never>) & { fileUpload?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"fileUpload\"> & { fileUpload?: any; }'."
       ]
     },
     {
@@ -519,7 +598,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/footer-columns' or its corresponding type declarations.",
-        "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:54:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:104:82 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"footerColumns\"> | Record<string, never>) & { footerColumns?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"footerColumns\"> & { footerColumns?: any; }'."
       ]
     },
     {
@@ -543,13 +623,18 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/header' or its corresponding type declarations.",
-        "error:65:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:67:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:69:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:71:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:143:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"header\"> | Record<string, never>) & { header?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"header\"> & { header?: any; }'.",
+        "error:143:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"header\"> | Record<string, never>) & { header?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"header\"> & { header?: any; }'."
       ]
     },
     {
       "file": "src/runtime/components/Icon.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:2:37 [TS2307] Cannot find module '@nuxt/icon' or its corresponding type declarations.",
+        "error:15:22 [TS2307] Cannot find module '@nuxt/icon/runtime/components/index.js' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/Input.vue",
@@ -564,8 +649,9 @@
       "file": "src/runtime/components/InputDate.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:8:19 [TS2307] Cannot find module '#build/ui/input-date' or its corresponding type declarations.",
-        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:9:19 [TS2307] Cannot find module '#build/ui/input-date' or its corresponding type declarations.",
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:205:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputDate\"> | Record<string, never>) & { inputDate?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputDate\"> & { inputDate?: any; }'."
       ]
     },
     {
@@ -573,11 +659,14 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-menu' or its corresponding type declarations.",
-        "error:229:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:230:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:279:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
-        "error:575:4 [TS2345] Argument of type '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 29 more ...; readonly \"onUpdate:open\"?: ((value: boolean) => any) | undefined; } & Record<...>'.\nType '{ highlightOnHover: boolean; by: string | ((a: T, b: T) => boolean) | undefined; open: boolean; defaultOpen: boolean; openOnFocus: boolean; openOnClick: boolean; as?: any; required: boolean; ... 8 more ...; resetSearchTermOnSelect?: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 29 more ...; readonly \"onUpdate:open\"?: ((value: boolean) => any) | undefined; }'.\nTypes of property 'by' are incompatible.\nType 'string | ((a: T, b: T) => boolean) | undefined' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type '(a: AcceptableValue, b: AcceptableValue) => boolean'.\nTypes of parameters 'a' and 'a' are incompatible.\nType 'AcceptableValue' is not assignable to type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'AcceptableValue'."
+        "error:243:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:244:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:246:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:312:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:327:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
+        "error:653:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
+        "error:695:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'.",
+        "error:740:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputMenu\"> | Record<string, never>) & { inputMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputMenu\"> & { inputMenu?: any; }'."
       ]
     },
     {
@@ -585,7 +674,25 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-number' or its corresponding type declarations.",
-        "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:93:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:141:112 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
+        "error:141:138 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
+        "error:143:112 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'.",
+        "error:143:139 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputNumber\"> | Record<string, never>) & { inputNumber?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputNumber\"> & { inputNumber?: any; }'."
+      ]
+    },
+    {
+      "file": "src/runtime/components/InputRating.vue",
+      "diagnostics": [
+        "error:3:15 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRootProps'.",
+        "error:3:32 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRootEmits'.",
+        "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:5:19 [TS2307] Cannot find module '#build/ui/input-rating' or its corresponding type declarations.",
+        "error:64:10 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingRoot'.",
+        "error:64:22 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingItem'.",
+        "error:64:34 [TS2305] Module '\"reka-ui\"' has no exported member 'RatingItemIndicator'.",
+        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:107:60 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputRating\"> | Record<string, never>) & { inputRating?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputRating\"> & { inputRating?: any; }'."
       ]
     },
     {
@@ -593,9 +700,10 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
-        "error:74:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:157:4 [TS2345] Argument of type '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required: boolean; addOnPaste: boolean; addOnTab: boolean; addOnBlur: boolean; duplicate: boolean; delimiter: string | RegExp; max: number; convertValue: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
-        "error:167:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and 'payload' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'."
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:161:4 [TS2345] Argument of type '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
+        "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and 'payload' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
+        "error:190:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTags\"> | Record<string, never>) & { inputTags?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTags\"> & { inputTags?: any; }'."
       ]
     },
     {
@@ -603,7 +711,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-time' or its corresponding type declarations.",
-        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:88:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:219:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTime\"> | Record<string, never>) & { inputTime?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTime\"> & { inputTime?: any; }'."
       ]
     },
     {
@@ -619,14 +728,27 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
-        "error:110:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:112:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:114:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:119:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
+        "error:121:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:122:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:124:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
       "file": "src/runtime/components/LinkBase.vue",
       "diagnostics": []
+    },
+    {
+      "file": "src/runtime/components/Listbox.vue",
+      "diagnostics": [
+        "error:6:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:7:19 [TS2307] Cannot find module '#build/ui/listbox' or its corresponding type declarations.",
+        "error:167:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:168:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:208:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:351:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"listbox\"> | Record<string, never>) & { listbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"listbox\"> & { listbox?: any; }'.",
+        "error:381:59 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"listbox\"> | Record<string, never>) & { listbox?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"listbox\"> & { listbox?: any; }'."
+      ]
     },
     {
       "file": "src/runtime/components/Main.vue",
@@ -649,7 +771,10 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/modal' or its corresponding type declarations.",
-        "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:116:87 [TS2345] Argument of type '\"unmountOnHide\"' is not assignable to parameter of type '\"class\" | \"close\" | \"closeIcon\" | \"content\" | \"defaultOpen\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"open\" | \"overlay\" | \"portal\" | \"scrollable\" | \"title\" | \"transition\" | \"ui\" | (\"class\" | ... 14 more ... | \"ui\")[]'.",
+        "error:201:60 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"modal\"> | Record<string, never>) & { modal?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"modal\"> & { modal?: any; }'.",
+        "error:229:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<ModalProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"transition\"> & { close: boolean | Omit<ButtonProps, LinkPropsKeys>; ... 4 more ...; transition: boolean; }'."
       ]
     },
     {
@@ -657,8 +782,13 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/navigation-menu' or its corresponding type declarations.",
-        "error:230:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:237:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:239:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:373:162 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
+        "error:395:313 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
+        "error:447:187 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
+        "error:480:185 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"navigationMenu\"> | Record<string, never>) & { navigationMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"navigationMenu\"> & { navigationMenu?: any; }'.",
+        "error:520:4 [TS2345] Argument of type '{ style?: StyleValue; as?: any; delayDuration?: number | undefined; skipDelayDuration?: number | undefined; orientation?: O | undefined; disableClickTrigger?: boolean | undefined; ... 7 more ...; class: any; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 20 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; } & Record<...>'.\nType '{ style?: StyleValue; as?: any; delayDuration?: number | undefined; skipDelayDuration?: number | undefined; orientation?: O | undefined; disableClickTrigger?: boolean | undefined; ... 7 more ...; class: any; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 20 more ...; readonly \"onUpdate:modelValue\"?: ((value: string) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'O | undefined' is not assignable to type 'Orientation | undefined'.\nType 'O' is not assignable to type 'Orientation | undefined'.\nType 'string | number | symbol' is not assignable to type 'Orientation | undefined'.\nType 'string' is not assignable to type 'Orientation | undefined'."
       ]
     },
     {
@@ -678,7 +808,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-anchors' or its corresponding type declarations.",
-        "error:44:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:84:76 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pageAnchors\"> | Record<string, never>) & { pageAnchors?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pageAnchors\"> & { pageAnchors?: any; }'."
       ]
     },
     {
@@ -710,7 +841,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-card' or its corresponding type declarations.",
-        "error:75:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -726,7 +857,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-feature' or its corresponding type declarations.",
-        "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -758,7 +889,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-links' or its corresponding type declarations.",
-        "error:46:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:90:76 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pageLinks\"> | Record<string, never>) & { pageLinks?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pageLinks\"> & { pageLinks?: any; }'."
       ]
     },
     {
@@ -782,7 +914,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/page-section' or its corresponding type declarations.",
-        "error:69:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -790,7 +922,16 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pagination' or its corresponding type declarations.",
-        "error:108:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:110:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:138:89 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:138:129 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:140:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:140:121 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:142:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:142:120 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:144:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:144:126 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'.",
+        "error:181:138 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pagination\"> | Record<string, never>) & { pagination?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pagination\"> & { pagination?: any; }'."
       ]
     },
     {
@@ -798,9 +939,9 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/pin-input' or its corresponding type declarations.",
-        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:130:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
-        "error:131:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
+        "error:68:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:162:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | null | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | null | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.",
+        "error:163:6 [TS2322] Type 'PinInputValue<T>' is not assignable to type 'string[] | undefined'.\nType 'string[] | number[]' is not assignable to type 'string[] | undefined'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'.\nType 'PinInputValue<T>' is not assignable to type 'string[]'.\nType 'string[] | number[]' is not assignable to type 'string[]'.\nType 'number[]' is not assignable to type 'string[]'.\nType 'number' is not assignable to type 'string'."
       ]
     },
     {
@@ -808,8 +949,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/popover' or its corresponding type declarations.",
-        "error:64:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:68:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:12:119 [TS2344] Type '\"closeDelay\" | \"enableTouch\" | \"openDelay\"' does not satisfy the constraint 'keyof HoverCardRootProps'.\nType '\"enableTouch\"' is not assignable to type 'keyof HoverCardRootProps'.",
+        "error:66:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:71:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -817,8 +959,9 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/pricing-plan' or its corresponding type declarations.",
-        "error:116:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:231:148 [TS2322] Type '((event: MouseEvent) => void | Promise<void>)[] | ((event: MouseEvent) => void | Promise<void>) | undefined' is not assignable to type '((...args: any[]) => any) | null | undefined'.\nType '((event: MouseEvent) => void | Promise<void>)[]' is not assignable to type '(...args: any[]) => any'.\nType '((event: MouseEvent) => void | Promise<void>)[]' provides no match for the signature '(...args: any[]): any'."
+        "error:118:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:216:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingPlan\"> | Record<string, never>) & { pricingPlan?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingPlan\"> & { pricingPlan?: any; }'.",
+        "error:236:162 [TS2322] Type '((event: MouseEvent) => void)[] | ((event: MouseEvent) => void) | undefined' is not assignable to type '((...args: any[]) => any) | null | undefined'.\nType '((event: MouseEvent) => void)[]' is not assignable to type '(...args: any[]) => any'.\nType '((event: MouseEvent) => void)[]' provides no match for the signature '(...args: any[]): any'."
       ]
     },
     {
@@ -834,7 +977,9 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-table' or its corresponding type declarations.",
-        "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:234:85 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
+        "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'."
       ]
     },
     {
@@ -842,7 +987,7 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/progress' or its corresponding type declarations.",
-        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -850,8 +995,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/radio-group' or its corresponding type declarations.",
-        "error:95:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:181:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:97:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:187:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -860,9 +1005,10 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:54 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/scroll-area' or its corresponding type declarations.",
-        "error:86:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:87:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:88:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:98:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:99:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:100:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:134:7 [TS2322] Type '() => string | number | symbol' is not assignable to type 'MaybeRefOrGetter<\"horizontal\" | \"vertical\"> | undefined'.\nType '() => string | number | symbol' is not assignable to type '() => \"horizontal\" | \"vertical\"'.\nType 'string | number | symbol' is not assignable to type '\"horizontal\" | \"vertical\"'.\nType 'string' is not assignable to type '\"horizontal\" | \"vertical\"'."
       ]
     },
     {
@@ -870,8 +1016,11 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select' or its corresponding type declarations.",
-        "error:153:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:155:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:156:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:158:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:187:130 [TS2345] Argument of type '\"nullableValue\"' is not assignable to parameter of type '(keyof SelectProps<T, VK, M, Mod>)[] | keyof SelectProps<T, VK, M, Mod>'.",
+        "error:204:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'.",
+        "error:433:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"select\"> | Record<string, never>) & { select?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"select\"> & { select?: any; }'."
       ]
     },
     {
@@ -879,10 +1028,12 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/select-menu' or its corresponding type declarations.",
-        "error:230:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:232:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:281:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
-        "error:566:4 [TS2345] Argument of type '{ id: string | undefined; } & { [K in keyof ReactivePickReturn<Omit<__LooseRequired<SelectMenuProps<T, VK, M, Mod, C>>, \"autofocusDelay\" | \"descriptionKey\" | ... 6 more ... | \"virtualize\"> & { ...; }, \"by\" | ... 9 more ... | \"resetSearchTermOnSelect\"> as ...]?: ReactivePickReturn<...>[K] | undefined; } & { [K_1 in k...' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 29 more ...; readonly \"onUpdate:open\"?: ((value: boolean) => any) | undefined; } & Record<...>'.\nType '{ id: string | undefined; } & { [K in keyof ReactivePickReturn<Omit<__LooseRequired<SelectMenuProps<T, VK, M, Mod, C>>, \"autofocusDelay\" | \"descriptionKey\" | ... 6 more ... | \"virtualize\"> & { ...; }, \"by\" | ... 9 more ... | \"resetSearchTermOnSelect\"> as ...]?: ReactivePickReturn<...>[K] | undefined; } & { [K_1 in k...' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 29 more ...; readonly \"onUpdate:open\"?: ((value: boolean) => any) | undefined; }'.\nTypes of property 'by' are incompatible.\nType 'string | ((a: T, b: T) => boolean) | undefined' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type 'string | ((a: AcceptableValue, b: AcceptableValue) => boolean) | undefined'.\nType '(a: T, b: T) => boolean' is not assignable to type '(a: AcceptableValue, b: AcceptableValue) => boolean'.\nTypes of parameters 'a' and 'a' are incompatible.\nType 'AcceptableValue' is not assignable to type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'AcceptableValue'."
+        "error:236:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:238:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:288:56 [TS2345] Argument of type 'NonNullable<string | number | symbol | undefined>' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:304:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'.",
+        "error:601:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'.",
+        "error:651:56 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"selectMenu\"> | Record<string, never>) & { selectMenu?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"selectMenu\"> & { selectMenu?: any; }'."
       ]
     },
     {
@@ -890,8 +1041,18 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/separator' or its corresponding type declarations.",
-        "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:81:4 [TS2345] Argument of type '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; } & Record<...>'.\nType '{ decorative: boolean; as?: any; dataSlot: string; class: any; orientation: string | number | symbol; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:62:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:108:4 [TS2345] Argument of type '{ style?: StyleValue; decorative?: boolean; as?: any; dataSlot: string; class: any; orientation?: string | number | symbol | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; } & Record<...>'.\nType '{ style?: StyleValue; decorative?: boolean; as?: any; dataSlot: string; class: any; orientation?: string | number | symbol | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 11 more ...; readonly decorative?: boolean | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+      ]
+    },
+    {
+      "file": "src/runtime/components/Sidebar.vue",
+      "diagnostics": [
+        "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:19 [TS2307] Cannot find module '#build/ui/sidebar' or its corresponding type declarations.",
+        "error:104:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:106:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:245:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"sidebar\"> | Record<string, never>) & { sidebar?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"sidebar\"> & { sidebar?: any; }'."
       ]
     },
     {
@@ -907,7 +1068,10 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/slideover' or its corresponding type declarations.",
-        "error:86:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:91:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:117:87 [TS2345] Argument of type '\"unmountOnHide\"' is not assignable to parameter of type '\"class\" | \"close\" | \"closeIcon\" | \"content\" | \"defaultOpen\" | \"description\" | \"dismissible\" | \"inset\" | \"modal\" | \"open\" | \"overlay\" | \"portal\" | \"side\" | \"title\" | \"transition\" | \"ui\" | (\"class\" | ... 14 more ... | \"ui\")[]'.",
+        "error:153:85 [TS2339] Property 'unmountOnHide' does not exist on type 'Omit<__LooseRequired<SlideoverProps>, \"close\" | \"dismissible\" | \"modal\" | \"overlay\" | \"portal\" | \"side\" | \"transition\"> & { close: boolean | Omit<...>; ... 5 more ...; transition: boolean; }'.",
+        "error:207:62 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"slideover\"> | Record<string, never>) & { slideover?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"slideover\"> & { slideover?: any; }'."
       ]
     },
     {
@@ -915,8 +1079,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/slider' or its corresponding type declarations.",
-        "error:50:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:110:4 [TS2345] Argument of type '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; } & Record<...>'.\nType '{ inverted: boolean; minStepsBetweenThumbs: number; as?: any; id: string | undefined; modelValue: number[]; name: string | undefined; disabled: boolean | undefined; dataSlot: string; class: any; ... 4 more ...; step: number; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:51:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:113:4 [TS2345] Argument of type '{ inverted?: boolean; min?: number; max?: number; step?: number; minStepsBetweenThumbs?: number; as?: any; orientation?: Slider['variants']['orientation']; id: string | undefined; modelValue: number[]; ... 4 more ...; defaultValue: number[] | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; } & Record<...>'.\nType '{ inverted?: boolean; min?: number; max?: number; step?: number; minStepsBetweenThumbs?: number; as?: any; orientation?: Slider['variants']['orientation']; id: string | undefined; modelValue: number[]; ... 4 more ...; defaultValue: number[] | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 24 more ...; readonly onValueCommit?: ((payload: number[]) => any) | undefined; }'.\nTypes of property 'orientation' are incompatible.\nType 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -925,7 +1089,7 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
         "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:147:63 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:150:63 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -933,7 +1097,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/switch' or its corresponding type declarations.",
-        "error:64:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:67:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:127:80 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"switch\"> | Record<string, never>) & { switch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"switch\"> & { switch?: any; }'."
       ]
     },
     {
@@ -944,13 +1109,12 @@
         "error:42:41 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
         "error:43:19 [TS2307] Cannot find module '#build/ui/table' or its corresponding type declarations.",
         "error:47:16 [TS2664] Invalid module name in augmentation, module '@tanstack/table-core' cannot be found.",
-        "error:230:28 [TS2307] Cannot find module 'scule' or its corresponding type declarations.",
-        "error:231:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:232:119 [TS2307] Cannot find module '@tanstack/vue-table' or its corresponding type declarations.",
-        "error:233:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
-        "error:235:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:252:40 [TS2769] No overload matches this call.\nThe last overload gave the following error.\nType 'Omit<__LooseRequired<TableProps<T>>, \"virtualize\" | \"watchOptions\"> & { virtualize: boolean | (Partial<Omit<VirtualizerOptions<Element, Element>, \"count\" | ... 2 more ... | \"overscan\">> & { ...; }); watchOptions: WatchOptions<...>; }' has no properties in common with type '{ ui?: any; }'.",
-        "error:267:21 [TS7031] Binding element 'getValue' implicitly has an 'any' type."
+        "error:235:28 [TS2307] Cannot find module 'scule' or its corresponding type declarations.",
+        "error:236:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:237:119 [TS2307] Cannot find module '@tanstack/vue-table' or its corresponding type declarations.",
+        "error:238:32 [TS2307] Cannot find module '@tanstack/vue-virtual' or its corresponding type declarations.",
+        "error:240:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:277:21 [TS7031] Binding element 'getValue' implicitly has an 'any' type."
       ]
     },
     {
@@ -958,8 +1122,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
-        "error:97:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:145:6 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:154:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -972,15 +1136,17 @@
     },
     {
       "file": "src/runtime/components/Theme.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:3:18 [TS2307] Cannot find module 'defu' or its corresponding type declarations."
+      ]
     },
     {
       "file": "src/runtime/components/Timeline.vue",
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/timeline' or its corresponding type declarations.",
-        "error:75:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:156:12 [TS2322] Type 'string | number | symbol' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:159:12 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
       ]
     },
     {
@@ -988,7 +1154,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toast' or its corresponding type declarations.",
-        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:90:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:194:52 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"toast\"> | Record<string, never>) & { toast?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"toast\"> & { toast?: any; }'."
       ]
     },
     {
@@ -997,8 +1164,8 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/toaster' or its corresponding type declarations.",
         "error:53:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:156:43 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
-        "error:157:30 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
+        "error:159:49 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'.",
+        "error:160:36 [TS2339] Property 'startsWith' does not exist on type 'string | number | symbol'.\nProperty 'startsWith' does not exist on type 'number'."
       ]
     },
     {
@@ -1006,8 +1173,8 @@
       "diagnostics": [
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/tooltip' or its corresponding type declarations.",
-        "error:53:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:56:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1015,10 +1182,13 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tree' or its corresponding type declarations.",
-        "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:149:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:189:18 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.\nNo index signature with a parameter of type 'string' was found on type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.",
-        "error:197:54 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'."
+        "error:149:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:150:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:193:18 [TS7053] Element implicitly has an 'any' type because expression of type 'string | number | symbol' can't be used to index type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.\nNo index signature with a parameter of type 'string' was found on type '{ xs: { base: number; perLevel: number; }; sm: { base: number; perLevel: number; }; md: { base: number; perLevel: number; }; lg: { base: number; perLevel: number; }; xl: { base: number; perLevel: number; }; }'.",
+        "error:201:54 [TS2345] Argument of type 'string | number | symbol' is not assignable to parameter of type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.\nType 'string' is not assignable to type '\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\"'.",
+        "error:304:75 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
+        "error:304:132 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'.",
+        "error:342:63 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"tree\"> | Record<string, never>) & { tree?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"tree\"> & { tree?: any; }'."
       ]
     },
     {
@@ -1026,7 +1196,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/user' or its corresponding type declarations.",
-        "error:47:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:49:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1064,18 +1234,21 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:44 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-navigation' or its corresponding type declarations.",
-        "error:98:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:144:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
-        "error:175:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:175:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:176:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:176:68 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:176:77 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:177:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:177:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:180:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:180:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:229:65 [TS18048] 'slotData' is possibly 'undefined'."
+        "error:101:40 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:149:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
+        "error:180:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:180:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:181:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:181:68 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:181:77 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:182:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:182:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:185:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:185:68 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
+        "error:185:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
+        "error:199:123 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
+        "error:215:82 [TS2339] Property 'path' does not exist on type 'T'.",
+        "error:248:65 [TS18048] 'slotData' is possibly 'undefined'."
       ]
     },
     {
@@ -1085,8 +1258,12 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:37 [TS2307] Cannot find module '@vueuse/integrations/useFuse' or its corresponding type declarations.",
         "error:7:19 [TS2307] Cannot find module '#build/ui/content/content-search' or its corresponding type declarations.",
-        "error:115:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:117:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:63:111 [TS2344] Type '\"content\" | \"description\" | \"dismissible\" | \"fullscreen\" | \"modal\" | \"overlay\" | \"portal\" | \"title\" | \"transition\" | \"unmountOnHide\"' does not satisfy the constraint 'keyof ModalProps'.\nType '\"unmountOnHide\"' is not assignable to type 'keyof ModalProps'.",
+        "error:140:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:142:61 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:286:26 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearch\"> | Record<string, never>) & { contentSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearch\"> & { contentSearch?: any; }'.",
+        "error:293:26 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearch\"> | Record<string, never>) & { contentSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearch\"> & { contentSearch?: any; }'.",
+        "error:300:26 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearch\"> | Record<string, never>) & { contentSearch?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearch\"> & { contentSearch?: any; }'."
       ]
     },
     {
@@ -1094,8 +1271,9 @@
       "diagnostics": [
         "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:3:19 [TS2307] Cannot find module '#build/ui/content/content-search-button' or its corresponding type declarations.",
-        "error:55:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:57:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'."
       ]
     },
     {
@@ -1105,8 +1283,12 @@
         "error:4:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/content/content-surround' or its corresponding type declarations.",
         "error:58:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:86:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
-        "error:96:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
+        "error:90:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
+        "error:90:119 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
+        "error:92:87 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
+        "error:92:118 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSurround\"> | Record<string, never>) & { contentSurround?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSurround\"> & { contentSurround?: any; }'.",
+        "error:97:34 [TS2339] Property 'path' does not exist on type 'ContentSurroundLink'.",
+        "error:107:21 [TS2339] Property 'title' does not exist on type 'ContentSurroundLink'."
       ]
     },
     {
@@ -1115,7 +1297,8 @@
         "error:4:30 [TS2307] Cannot find module '@nuxt/content' or its corresponding type declarations.",
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/content/content-toc' or its corresponding type declarations.",
-        "error:73:53 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:78:53 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:289:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentToc\"> | Record<string, never>) & { contentToc?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentToc\"> & { contentToc?: any; }'."
       ]
     },
     {
@@ -1167,7 +1350,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/callout' or its corresponding type declarations.",
-        "error:29:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:30:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:68:73 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"callout\"> | Record<string, never>) & { callout?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"callout\"> | Record<string, never>) & { callout?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1175,7 +1359,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/card' or its corresponding type declarations.",
-        "error:32:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:74:73 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"card\"> | Record<string, never>) & { card?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"card\"> | Record<string, never>) & { card?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1199,7 +1384,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/code-collapse' or its corresponding type declarations.",
-        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:71:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeCollapse\"> | Record<string, never>) & { codeCollapse?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeCollapse\"> | Record<string, never>) & { codeCollapse?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1232,7 +1418,10 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/code-tree' or its corresponding type declarations.",
-        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:55:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:218:46 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.",
+        "error:218:78 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.",
+        "error:233:35 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"codeTree\"> | Record<string, never>) & { codeTree?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1240,7 +1429,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/collapsible' or its corresponding type declarations.",
-        "error:42:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:43:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:68:50 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"collapsible\"> | Record<string, never>) & { collapsible?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"collapsible\"> | Record<string, never>) & { collapsible?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1272,7 +1462,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/h1' or its corresponding type declarations.",
-        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:27:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1280,7 +1470,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/h2' or its corresponding type declarations.",
-        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:53:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"h2\"> | Record<string, never>) & { h2?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"h2\"> | Record<string, never>) & { h2?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1288,7 +1479,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/h3' or its corresponding type declarations.",
-        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:53:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"h3\"> | Record<string, never>) & { h3?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"h3\"> | Record<string, never>) & { h3?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1296,7 +1488,7 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:5:19 [TS2307] Cannot find module '#build/ui/prose/h4' or its corresponding type declarations.",
-        "error:22:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:28:48 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1328,9 +1520,9 @@
     {
       "file": "src/runtime/components/prose/Kbd.vue",
       "diagnostics": [
-        "error:2:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
-        "error:3:19 [TS2307] Cannot find module '#build/ui/prose/kbd' or its corresponding type declarations.",
-        "error:17:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:19 [TS2307] Cannot find module '#build/ui/prose/kbd' or its corresponding type declarations.",
+        "error:22:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1362,7 +1554,19 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/prose/pre' or its corresponding type declarations.",
-        "error:30:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:38:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:79:36 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.",
+        "error:79:67 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"pre\"> | Record<string, never>) & { pre?: any; }) | undefined; }'."
+      ]
+    },
+    {
+      "file": "src/runtime/components/prose/Prompt.vue",
+      "diagnostics": [
+        "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
+        "error:4:19 [TS2307] Cannot find module '#build/ui/prose/prompt' or its corresponding type declarations.",
+        "error:33:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:95:38 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.",
+        "error:95:69 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"prose\"> | Record<string, never>) & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"prose\"> & { prose?: ((Omit<{}, \"prompt\"> | Record<string, never>) & { prompt?: any; }) | undefined; }'."
       ]
     },
     {
@@ -1488,10 +1692,6 @@
       ]
     },
     {
-      "file": "src/runtime/composables/internal/useFilter.ts",
-      "diagnostics": []
-    },
-    {
       "file": "src/runtime/composables/useAvatarGroup.ts",
       "diagnostics": []
     },
@@ -1502,11 +1702,10 @@
       ]
     },
     {
-      "file": "src/runtime/composables/useComponentUI.ts",
+      "file": "src/runtime/composables/useComponentProps.ts",
       "diagnostics": [
-        "error:2:33 [TS2307] Cannot find module 'tailwind-variants' or its corresponding type declarations.",
-        "error:4:18 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:7:26 [TS2307] Cannot find module '#build/ui' or its corresponding type declarations."
+        "error:3:18 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
+        "error:5:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -1522,12 +1721,13 @@
         "error:3:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:5:33 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
         "error:6:42 [TS2307] Cannot find module '@floating-ui/dom' or its corresponding type declarations.",
-        "error:9:38 [TS2307] Cannot find module '@tiptap/suggestion' or its corresponding type declarations.",
+        "error:9:57 [TS2307] Cannot find module '@tiptap/suggestion' or its corresponding type declarations.",
         "error:10:24 [TS2307] Cannot find module '@tiptap/suggestion' or its corresponding type declarations.",
         "error:11:27 [TS2307] Cannot find module '@tiptap/pm/state' or its corresponding type declarations.",
-        "error:250:16 [TS7031] Binding element 'x' implicitly has an 'any' type.",
-        "error:250:19 [TS7031] Binding element 'y' implicitly has an 'any' type.",
-        "error:250:22 [TS7031] Binding element 'strategy' implicitly has an 'any' type."
+        "error:12:29 [TS2307] Cannot find module '@tiptap/pm/state' or its corresponding type declarations.",
+        "error:255:16 [TS7031] Binding element 'x' implicitly has an 'any' type.",
+        "error:255:19 [TS7031] Binding element 'y' implicitly has an 'any' type.",
+        "error:255:22 [TS7031] Binding element 'strategy' implicitly has an 'any' type."
       ]
     },
     {
@@ -1539,7 +1739,19 @@
       "diagnostics": []
     },
     {
+      "file": "src/runtime/composables/useFilter.ts",
+      "diagnostics": []
+    },
+    {
       "file": "src/runtime/composables/useFormField.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/runtime/composables/useForwardProps.ts",
+      "diagnostics": []
+    },
+    {
+      "file": "src/runtime/composables/useIMEGuard.ts",
       "diagnostics": []
     },
     {
@@ -1561,10 +1773,20 @@
       "diagnostics": []
     },
     {
+      "file": "src/runtime/composables/usePrefix.ts",
+      "diagnostics": [
+        "error:1:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+      ]
+    },
+    {
       "file": "src/runtime/composables/useResizable.ts",
       "diagnostics": [
         "error:4:27 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
+    },
+    {
+      "file": "src/runtime/composables/useScrollShadow.ts",
+      "diagnostics": []
     },
     {
       "file": "src/runtime/composables/useScrollspy.ts",
@@ -1591,7 +1813,10 @@
         "error:3:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:4:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:4:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:4:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
+        "error:4:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:5:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:5:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:5:1 [TS2308] Module '../components/content/ContentNavigation.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
       ]
     },
     {
@@ -1669,6 +1894,7 @@
         "error:19:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:19:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:19:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:19:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:20:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:20:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:20:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1718,7 +1944,6 @@
         "error:35:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:35:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:35:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:35:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:36:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:36:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:36:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1728,6 +1953,7 @@
         "error:38:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:38:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:38:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:38:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:39:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:39:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:39:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1743,7 +1969,6 @@
         "error:43:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:43:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:43:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:43:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:44:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:44:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:44:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1753,6 +1978,7 @@
         "error:46:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:46:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:46:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:46:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:47:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:47:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:47:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1771,7 +1997,6 @@
         "error:52:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:52:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:52:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:52:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:53:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:53:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:53:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1791,18 +2016,16 @@
         "error:58:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:58:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:58:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:58:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:59:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:59:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:59:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:59:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:60:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:60:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:60:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:60:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:61:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:61:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:61:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:61:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:62:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:62:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:62:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1818,15 +2041,18 @@
         "error:65:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:65:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:65:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:65:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:66:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:66:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:66:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:67:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:67:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:67:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:67:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:68:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:68:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:68:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:68:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:69:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:69:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:69:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1884,7 +2110,6 @@
         "error:87:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:87:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:87:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:87:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:88:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:88:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:88:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1900,21 +2125,19 @@
         "error:92:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:92:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:92:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:92:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:93:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:93:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:93:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:94:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:94:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:94:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:94:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:95:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:95:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:95:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:95:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:96:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:96:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:96:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:96:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:97:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:97:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:97:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1924,9 +2147,11 @@
         "error:99:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:99:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:99:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:99:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:100:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:100:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:100:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:100:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:101:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:101:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:101:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1937,15 +2162,12 @@
         "error:103:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:103:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:103:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:103:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:104:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:104:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:104:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:104:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:105:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:105:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:105:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:105:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:106:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:106:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:106:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1959,6 +2181,7 @@
         "error:109:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:109:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:109:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:109:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:110:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:110:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:110:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1966,12 +2189,14 @@
         "error:111:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:111:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:111:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:111:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:112:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:112:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:112:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:113:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:113:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:113:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:113:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:114:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:114:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:114:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
@@ -1981,16 +2206,35 @@
         "error:116:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:116:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:116:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:116:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:117:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:117:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:117:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:118:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:118:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:118:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:118:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:119:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:119:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:119:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:120:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:120:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:120:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:121:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:121:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:121:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:122:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:122:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:122:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:123:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:123:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:123:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
+        "error:123:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:124:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:124:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:124:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:124:1 [TS2308] Module '../components/AuthForm.vue' has already exported a member named 'Exposed'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:129:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:129:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:129:1 [TS2308] Module '../components/Accordion.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
       ]
     },
     {
@@ -2126,7 +2370,16 @@
         "error:41:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:42:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
         "error:42:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
-        "error:42:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
+        "error:42:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:43:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Emits'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:43:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Props'. Consider explicitly re-exporting to resolve the ambiguity.",
+        "error:43:1 [TS2308] Module '../components/prose/A.vue' has already exported a member named 'Slots'. Consider explicitly re-exporting to resolve the ambiguity."
+      ]
+    },
+    {
+      "file": "src/runtime/types/theme.ts",
+      "diagnostics": [
+        "error:2:26 [TS2307] Cannot find module '#build/ui' or its corresponding type declarations."
       ]
     },
     {
@@ -2170,13 +2423,6 @@
       ]
     },
     {
-      "file": "src/runtime/utils/fuse.ts",
-      "diagnostics": [
-        "error:1:50 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
-        "error:66:22 [TS7006] Parameter 'region' implicitly has an 'any' type."
-      ]
-    },
-    {
       "file": "src/runtime/utils/index.ts",
       "diagnostics": [
         "error:1:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
@@ -2187,8 +2433,8 @@
       "file": "src/runtime/utils/link.ts",
       "diagnostics": [
         "error:2:31 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
-        "error:61:49 [TS7006] Parameter 'filtered' implicitly has an 'any' type.",
-        "error:61:59 [TS7006] Parameter 'q' implicitly has an 'any' type."
+        "error:62:49 [TS7006] Parameter 'filtered' implicitly has an 'any' type.",
+        "error:62:59 [TS7006] Parameter 'q' implicitly has an 'any' type."
       ]
     },
     {
@@ -2200,10 +2446,17 @@
       "diagnostics": []
     },
     {
+      "file": "src/runtime/utils/search.ts",
+      "diagnostics": [
+        "error:1:50 [TS2307] Cannot find module 'fuse.js' or its corresponding type declarations.",
+        "error:74:22 [TS7006] Parameter 'region' implicitly has an 'any' type."
+      ]
+    },
+    {
       "file": "src/runtime/utils/tv.ts",
       "diagnostics": [
-        "error:1:26 [TS2307] Cannot find module 'tailwind-variants' or its corresponding type declarations.",
-        "error:2:36 [TS2307] Cannot find module 'tailwind-variants' or its corresponding type declarations.",
+        "error:1:35 [TS2307] Cannot find module 'tailwind-variants' or its corresponding type declarations.",
+        "error:2:113 [TS2307] Cannot find module 'tailwind-variants' or its corresponding type declarations.",
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations."
       ]
     },
@@ -2214,7 +2467,9 @@
     {
       "file": "src/runtime/vue/components/Icon.vue",
       "diagnostics": [
-        "error:10:37 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations."
+        "error:2:40 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:10:37 [TS2307] Cannot find module '@iconify/vue' or its corresponding type declarations.",
+        "error:11:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -2253,8 +2508,8 @@
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:75:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:76:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:77:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
       ]
     },
     {
@@ -2269,7 +2524,7 @@
       ]
     }
   ],
-  "errorCount": 1199,
+  "errorCount": 1395,
   "warningCount": 0,
-  "fileCount": 219
+  "fileCount": 231
 }

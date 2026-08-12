@@ -76,7 +76,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/hoppscotch",
       "repository": "https://github.com/hoppscotch/hoppscotch",
-      "revision": "e067ee0b3224c675ba4b9bcd98366d0f1b6be3ee",
+      "revision": "1acb8a3a7581e4db32ba0d529170c4669a2e1053",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE"]
@@ -142,7 +142,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/ant-design-vue",
       "repository": "https://github.com/vueComponent/ant-design-vue",
-      "revision": "f0c2a92f935789581bca4b011fe491bc493fd9d5",
+      "revision": "7483836f0adac76516e527df893c3d84a7cd4005",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE"]
@@ -165,7 +165,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/reka-ui",
       "repository": "https://github.com/unovue/reka-ui",
-      "revision": "cf31bdd17e5004763fdc6797fbd70380653c5f83",
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE"]
@@ -262,7 +262,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/primevue",
       "repository": "https://github.com/primefaces/primevue",
-      "revision": "0394f1e4157de7698048a255a38a9983bf689a34",
+      "revision": "d4374cb7c1267f35eba7cee5d0a266f50ca8ec84",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE.md"]
@@ -301,7 +301,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vuetify",
       "repository": "https://github.com/vuetifyjs/vuetify",
-      "revision": "ea293786199d5ce5711bf98354cd473eedaa64f9",
+      "revision": "2c05206eda516e5f5236b846b7b1718802cd8e3c",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE.md"]
@@ -334,7 +334,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/naive-ui",
       "repository": "https://github.com/tusen-ai/naive-ui",
-      "revision": "7a12097edc91962712d78f8cd9e301928eb5e558",
+      "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE"]
@@ -357,7 +357,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/voicevox",
       "repository": "https://github.com/VOICEVOX/voicevox",
-      "revision": "10e8a478167d82202fee682e4c95d75b612c7a96",
+      "revision": "0a7fcc8523410ad294b51b70a46575c4d21371ac",
       "license": {
         "spdx": "LGPL-3.0-or-later OR LicenseRef-VOICEVOX-Commercial",
         "files": ["LICENSE", "LGPL_LICENSE"]
@@ -391,7 +391,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/elk",
       "repository": "https://github.com/elk-zone/elk",
-      "revision": "e0aaee6868d870a5af431bf71d75fcfbc3c4f25a",
+      "revision": "8aa2b4650760eeba4ea1fdd9dc18d8a88ca5d7f0",
       "license": {
         "spdx": "MIT",
         "files": ["LICENSE"]
@@ -634,7 +634,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/directus",
       "repository": "https://github.com/directus/directus",
-      "revision": "e0444f46909d530c4af243313a5320571992a30c",
+      "revision": "8030b7053927e1d87b4d42575c35636738ce3d77",
       "license": { "spdx": "LicenseRef-MSCL-1.0-GPL", "files": ["license", "app/license"] },
       "vueGlobs": ["app/src/**/*.vue"],
       "tsconfig": "app/tsconfig.json",
@@ -660,7 +660,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/shadcn-vue",
       "repository": "https://github.com/unovue/shadcn-vue",
-      "revision": "fd513ebaabf5d6493717bc8e3c6bf249cd026567",
+      "revision": "3f048dfb495703f39e191b25a69307fba72822eb",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": [
         "apps/**/*.vue",
@@ -678,7 +678,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/inspira-ui",
       "repository": "https://github.com/unovue/inspira-ui",
-      "revision": "9e5379f0d224764903fbeed039d152826ab7b384",
+      "revision": "5650bfd050743ffaee02a471a1406b58c98b2ef5",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["app/**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -769,7 +769,7 @@
       "kind": "library",
       "fixturePath": "tests/_fixtures/_git/vue-tui",
       "repository": "https://github.com/vuejs-ai/vue-tui",
-      "revision": "25df36d8751cde4677a50ec7ceb6c7f6eff97411",
+      "revision": "9b9d417913cdf2a568deff28ba826c6a147878bf",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["packages/**/*.vue", "examples/**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -782,7 +782,7 @@
       "kind": "library",
       "fixturePath": "tests/_fixtures/_git/vue-termui",
       "repository": "https://github.com/vue-terminal/vue-termui",
-      "revision": "e75c37aca88446f9d76cd7bffe38edef86ebf282",
+      "revision": "26b9b8e402132ca440d7c80e7e8521e1a90175be",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": [
         "src/**/*.vue",
@@ -873,7 +873,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/filebrowser",
       "repository": "https://github.com/filebrowser/filebrowser",
-      "revision": "fe7efb2e6afe66774cd86a5b0a03033bd514d0c0",
+      "revision": "833d908884d5c801f30f5c098d7977177eb3a36b",
       "license": { "spdx": "Apache-2.0", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "frontend/tsconfig.json",
@@ -886,7 +886,7 @@
       "kind": "tooling",
       "fixturePath": "tests/_fixtures/_git/docsify",
       "repository": "https://github.com/docsifyjs/docsify",
-      "revision": "e6ab47cff0f3d201bb7f2504a5fa46419f4824eb",
+      "revision": "a8f151ed79dff0ad8d857f99f073ef7969c14d80",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "expectedVueFileCount": 0,
@@ -899,7 +899,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/dashy",
       "repository": "https://github.com/lissy93/dashy",
-      "revision": "4a12ff09bbc23ec9d2e8b9e75746a7d77b271ce7",
+      "revision": "9b72c045e6368517f1e81c42d757835f88f2c272",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -924,7 +924,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vant",
       "repository": "https://github.com/youzan/vant",
-      "revision": "b394b4b8c39be85981ab6109078adf4dabb5a223",
+      "revision": "29cd8c2119139851495550b9bf6bd5bd9f678b2f",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
@@ -962,7 +962,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/vue-pure-admin",
       "repository": "https://github.com/pure-admin/vue-pure-admin",
-      "revision": "2ad835b1093572edebc24750b4e66f4dac592c9f",
+      "revision": "e40eb37d606174099906aecfa891159b2d5b434e",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -1012,7 +1012,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/koel",
       "repository": "https://github.com/koel/koel",
-      "revision": "f46c91bec3a9f3d08aecc11875460ce3f44ce18c",
+      "revision": "dfec91ff290509c622ff7cf392fb5e506841ee2b",
       "license": { "spdx": "MIT", "files": ["LICENSE.md"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "resources/assets/tsconfig.json",
@@ -1049,7 +1049,7 @@
       "kind": "library",
       "fixturePath": "tests/_fixtures/_git/scalar",
       "repository": "https://github.com/scalar/scalar",
-      "revision": "6e7cc3a7ba2aa985026187117e430e6945b39a5c",
+      "revision": "62753f5528c30d7cef9cfd9461b6611bc5a2b4de",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
@@ -1097,7 +1097,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/habitica",
       "repository": "https://github.com/HabitRPG/habitica",
-      "revision": "94f1961f8c6a44ee9c4e93e9c8e1684cfd4bfe23",
+      "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
       "license": { "spdx": "GPL-3.0-only AND CC-BY-SA-3.0 AND CC-BY-NC-SA-3.0", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
@@ -1121,7 +1121,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/mealie",
       "repository": "https://github.com/mealie-recipes/mealie",
-      "revision": "6dab679002c70c2315bedd2230712df519ca3dad",
+      "revision": "b9b3ac9b286a61527f6cf821453933af577b628f",
       "license": { "spdx": "AGPL-3.0-only", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "frontend/tsconfig.json",
@@ -1147,7 +1147,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/douyin",
       "repository": "https://github.com/zyronon/douyin",
-      "revision": "808fd06d3f66e68da2ae959bababc740366a68ca",
+      "revision": "8cc6172c737dfaf0c914a2b27cdfee4eb2306f2e",
       "license": { "spdx": "GPL-3.0-only", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -1183,8 +1183,8 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/vue-storefront",
       "repository": "https://github.com/vuestorefront/vue-storefront",
-      "revision": "220341f4c15d9f6ddb8d5e4c2fd225f5dd4d6f76",
-      "license": { "spdx": "MIT", "files": ["LICENSE.md"] },
+      "revision": "16167a4c7d1fb1b77fcafb3ca7e49560f489aecc",
+      "license": { "spdx": "NONE", "files": [] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
@@ -1195,7 +1195,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vue-virtual-scroller",
       "repository": "https://github.com/Akryum/vue-virtual-scroller",
-      "revision": "d6eb943fa9bd53fb6a85ab0c70330ac7b7a36bb9",
+      "revision": "bc1ada96dc3b7831d8931b9e9b84139bfac98200",
       "license": { "spdx": "MIT", "files": ["packages/vue-virtual-scroller/LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "packages/vue-virtual-scroller/tsconfig.json",
@@ -1208,7 +1208,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vue-echarts",
       "repository": "https://github.com/ecomfe/vue-echarts",
-      "revision": "c3a9172c84495224cfc6a7df044075fa676a1e6e",
+      "revision": "4d70d2f86d9fbf08798fc2d87f73b06621f58bfe",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "tsconfig.json",
@@ -1234,7 +1234,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/dbx",
       "repository": "https://github.com/t8y2/dbx",
-      "revision": "8710bc90698bc2daab5088b4e2a9bef392241fc8",
+      "revision": "5173bbafd1e2dcb67a3be557c569adcc15021193",
       "license": {
         "spdx": "Apache-2.0",
         "files": [
@@ -1312,7 +1312,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/buefy",
       "repository": "https://github.com/buefy/buefy",
-      "revision": "4277a4d17f8946fa2ec02a989cac67253448340e",
+      "revision": "4f094cd51a229a0ac16097c77bf537ab4e94f701",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -1364,7 +1364,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/youtube-dl-gui",
       "repository": "https://github.com/jely2002/youtube-dl-gui",
-      "revision": "83facb4da079dfb663b644981daceb03f329b337",
+      "revision": "c402ee39c0eabab68934c48f8b787ff37a1577b0",
       "license": {
         "spdx": "AGPL-3.0-only",
         "files": [
@@ -1390,7 +1390,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/solidtime",
       "repository": "https://github.com/solidtime-io/solidtime",
-      "revision": "f0de89b0e8a546870d3cfe746908e897e6fa6687",
+      "revision": "de13c07855bbaacb1cced918003a0a15b5a48aba",
       "license": {
         "spdx": "AGPL-3.0-only",
         "files": [
@@ -1495,7 +1495,7 @@
       "kind": "library",
       "fixturePath": "tests/_fixtures/_git/inertia",
       "repository": "https://github.com/inertiajs/inertia",
-      "revision": "2f33ed08f53603a27b106c604b165a6f5e75f502",
+      "revision": "59bb8cbff028b9b405cf606588f1f713806f9187",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -1521,7 +1521,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/gui-for-singbox",
       "repository": "https://github.com/GUI-for-Cores/GUI.for.SingBox",
-      "revision": "b0d273bf0100f5af89f00aecd896069c901123a8",
+      "revision": "1be4816dea1e8793d8e08ae4f8f016c28101672d",
       "license": {
         "spdx": "GPL-3.0-only",
         "files": [
@@ -1547,7 +1547,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/vue-fabric-editor",
       "repository": "https://github.com/ikuaitu/vue-fabric-editor",
-      "revision": "cabddbd6d07f17fe8ed1a16494f800971ac7cec9",
+      "revision": "b3bdcfb0bd6d8f98e7483cf561ac03ba56c0d889",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -1651,7 +1651,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/vuetorrent",
       "repository": "https://github.com/VueTorrent/VueTorrent",
-      "revision": "01e456b6671dc09aae9236befcfb5d86848dab6e",
+      "revision": "e92249f36ea40e2c71c68439831143a6d9517ae9",
       "license": {
         "spdx": "GPL-3.0-only",
         "files": [
@@ -1703,7 +1703,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/frpc-desktop",
       "repository": "https://github.com/luckjiawei/frpc-desktop",
-      "revision": "cc2eff777ebfb7c2b4f5229eeef9bcc3bd9cf98d",
+      "revision": "2c971ba7238cdfe2d1033e4ffe2e20eb7266ef17",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -1755,7 +1755,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/music-website",
       "repository": "https://github.com/Yin-Hongwei/music-website",
-      "revision": "2854bb111fc06fe0a6e9ea013cb27e3d8ed5fdae",
+      "revision": "93e78b1b42e2963b19e08a0d9258c8b32184cdca",
       "license": {
         "spdx": "CC-BY-NC-4.0",
         "files": [
@@ -1885,7 +1885,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/sigma-file-manager",
       "repository": "https://github.com/aleksey-hoffman/sigma-file-manager",
-      "revision": "00190b6d8d6834dcc2fa1b4cd3ac9f62b728ebde",
+      "revision": "1a9108db3719a90152243dba3e014620f9a13c63",
       "license": {
         "spdx": "GPL-3.0-or-later",
         "files": [
@@ -2036,7 +2036,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/varlet",
       "repository": "https://github.com/varletjs/varlet",
-      "revision": "0e7693257b7fd2ac80c6327f71ea92a8260bc119",
+      "revision": "1007097bde3f6c06326e0057ac6a7cf4ab7ff519",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -2166,7 +2166,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vue-bits",
       "repository": "https://github.com/DavidHDev/vue-bits",
-      "revision": "33103d89034f12266cd88f7d1647774dbf1a62b2",
+      "revision": "05668fee962070e4edc4c4fbfed53893d7987d6d",
       "license": {
         "spdx": "MIT AND LicenseRef-Commons-Clause-1.0",
         "files": [
@@ -2244,7 +2244,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/tdesign",
       "repository": "https://github.com/Tencent/tdesign",
-      "revision": "cb8548e45c92c77c6bc119fe179b239b040ca15d",
+      "revision": "11c76ad6c632e55843f921b683f16ea3c01eecda",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -2478,7 +2478,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/frappe-crm",
       "repository": "https://github.com/frappe/crm",
-      "revision": "2f8c8343ffd75cdf8d6fd9f5f29c172d0f7e3be2",
+      "revision": "2e6a6a216af7cdbd17a1468389686cd2f8452a45",
       "license": {
         "spdx": "AGPL-3.0-only",
         "files": [
@@ -2582,7 +2582,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/vue-data-ui",
       "repository": "https://github.com/graphieros/vue-data-ui",
-      "revision": "3b7d82352cf7d0cf1f74557e2a5aaeb6b658c810",
+      "revision": "14628946a8185252a7051b40be931e93a0b480a1",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -2660,7 +2660,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/frappe-builder",
       "repository": "https://github.com/frappe/builder",
-      "revision": "0d6d37327c2c98fd92a8e3aa367f150a4dcfcda6",
+      "revision": "ed705f9dddc9a78867fb672c342ee025368ac6a1",
       "license": {
         "spdx": "AGPL-3.0-only",
         "files": [
@@ -2764,7 +2764,7 @@
       "kind": "component-library",
       "fixturePath": "tests/_fixtures/_git/multiple-select",
       "repository": "https://github.com/wenzhixin/multiple-select",
-      "revision": "a09f2fc759caf6d8c4bdfe57c347a5de8458e4d6",
+      "revision": "47a3a3b621b1a7a07e078ad306506d4db8fd0011",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -2790,7 +2790,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/alexandrie",
       "repository": "https://github.com/Smaug6739/Alexandrie",
-      "revision": "8188f996c8302775fea5ddd59c5a1f6b4b33fdde",
+      "revision": "4624adefe95c9ab19c85255c6ffff532c739a119",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -2920,7 +2920,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/jellyfin-vue",
       "repository": "https://github.com/jellyfin/jellyfin-vue",
-      "revision": "a1e76a972ac29ffe4a7dc0bd7821a12e0748b73f",
+      "revision": "6b35d977335cab224c4536d18dc22d15a63d5185",
       "license": {
         "spdx": "GPL-3.0-only",
         "files": [
@@ -3024,7 +3024,7 @@
       "kind": "tooling",
       "fixturePath": "tests/_fixtures/_git/vue-vine",
       "repository": "https://github.com/vue-vine/vue-vine",
-      "revision": "bc0602c49efb667e18a1105fcbddeeb7a1d592b5",
+      "revision": "65980df127ec4b834ebd7d0ce72b19e562684fe3",
       "license": {
         "spdx": "MIT",
         "files": [
@@ -3205,7 +3205,7 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/airi",
       "repository": "https://github.com/moeru-ai/airi",
-      "revision": "b43b8944bfba4113233ccfc090f373a6e869dff6",
+      "revision": "b6011381bc34a6b85ad669363513cb1a2eea6438",
       "license": {
         "spdx": "MIT",
         "files": [

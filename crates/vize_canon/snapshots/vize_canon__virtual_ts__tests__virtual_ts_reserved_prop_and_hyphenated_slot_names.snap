@@ -66,6 +66,9 @@ type __VizeDirectiveValue<D> = D extends import('vue').Directive<any, infer V> ?
 declare function __vizeDirectiveValue<__D>(value: __VizeDirectiveValue<__D>): void;
 type __VForEntry<T> = __VizeIsAny<T> extends true ? [item: any, key: number, index: number] : T extends readonly (infer U)[] ? [item: U, key: number, index: number] : T extends number ? [item: number, key: number, index: number] : T extends string ? [item: string, key: number, index: number] : T extends Iterable<infer U> ? [item: U, key: number, index: number] : T extends object ? [item: T[keyof T], key: keyof T, index: number] : [item: any, key: number, index: number];
 declare function __vForList<T>(source: T | undefined | null): readonly __VForEntry<NonNullable<T>>[];
+type __VizeStructuralSlots<C> = C extends { new (): { $slots: infer __S } } ? __S : any;
+type __VizeSlotsResolver<C> = __VizeIsAny<C> extends true ? (props: any) => any : C extends { __vizeResolveSlots?: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => __VizeStructuralSlots<C>) : (props: any) => __VizeStructuralSlots<C>;
+type __VizeSlotPayload<__S, __K extends PropertyKey> = __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any;
 import TrendChart from './TrendChart.vue'
 
 // ========== Exported Types ==========
@@ -100,7 +103,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 9269:9314 -> 0:78
+  // @vize-map: 9790:9835 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -124,7 +127,11 @@ function __setup() {
   // @vize-map: expr -> 20:25
 
   // v-slot scope: #area-gradient
-  void function _slot_area_gradient_7({ id }: typeof TrendChart extends { new (): { $slots: infer __S } } ? ("area-gradient" extends keyof __S ? (NonNullable<__S["area-gradient"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
+  const __vize_slot_host_7 = (undefined as unknown as __VizeSlotsResolver<typeof TrendChart>)({
+    "class": props["class"],
+  });
+  void __vize_slot_host_7;
+  void function _slot_area_gradient_7({ id }: __VizeSlotPayload<typeof __vize_slot_host_7, "area-gradient">) {
     void id;
     void (id); // Interpolation
     // @vize-map: expr -> 72:74
@@ -155,7 +162,11 @@ function __setup() {
   });
 
   // Component props in v-slot scope: #area-gradient
-  void function _slot_props_area_gradient_7({ id }: typeof TrendChart extends { new (): { $slots: infer __S } } ? ("area-gradient" extends keyof __S ? (NonNullable<__S["area-gradient"]> extends (props: infer __P, ...args: any[]) => any ? __P : any) : any) : any) {
+  const __vize_slot_props_host_7 = (undefined as unknown as __VizeSlotsResolver<typeof TrendChart>)({
+    "class": props["class"],
+  });
+  void __vize_slot_props_host_7;
+  void function _slot_props_area_gradient_7({ id }: __VizeSlotPayload<typeof __vize_slot_props_host_7, "area-gradient">) {
     void id;
   };
 

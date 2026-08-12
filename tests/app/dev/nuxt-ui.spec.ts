@@ -112,21 +112,36 @@ async function warmUpNuxtUiInBrowser(browser: Browser): Promise<void> {
  * Navigate to a nuxt-ui route, reloading if the dev server serves a transient
  * optimize-deps error (504 / failed dynamic import / SSR 500) instead of the
  * playground. Bounded retries keep this from masking real failures.
+ *
+ * A navigation that never reaches `load` is the same churn in its worst form:
+ * the HMR suite's authored-source edits make Nuxt regenerate its templates, so
+ * the next route Vite serves re-transforms the (very heavy) module graph and can
+ * full-reload the page mid-navigation. Retry those the same way, bounded by an
+ * overall budget so a genuinely stuck page still fails with its own timeout.
  */
 async function gotoNuxtUi(page: Page, pathname = "/") {
   const target = new URL(pathname, app.url).toString();
   const maxAttempts = 6;
+  const deadline = Date.now() + 120_000;
   let response: Awaited<ReturnType<Page["goto"]>> = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    response = await page.goto(target, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
+    let status = 0;
+    let churning: boolean;
+    try {
+      response = await page.goto(target, {
+        waitUntil: app.waitUntil ?? "networkidle",
+        timeout: 30_000,
+      });
 
-    const status = response?.status() ?? 0;
-    const html = await page.content().catch(() => "");
-    const churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
+      status = response?.status() ?? 0;
+      const html = await page.content().catch(() => "");
+      churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
+    } catch (error) {
+      const navigationTimedOut = error instanceof Error && error.name === "TimeoutError";
+      if (!navigationTimedOut || attempt === maxAttempts || Date.now() >= deadline) throw error;
+      churning = true;
+    }
 
     if (!churning) {
       return response;

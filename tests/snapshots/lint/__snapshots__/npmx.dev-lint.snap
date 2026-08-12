@@ -3,15 +3,44 @@
     "file": "app/app.vue",
     "messages": [
       {
+        "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 153,
+        "column": 25,
+        "endLine": 153,
+        "endColumn": 45,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 155,
+        "line": 182,
         "column": 1,
-        "endLine": 155,
+        "endLine": 182,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/About/GovernanceList.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 27,
+        "column": 11,
+        "endLine": 27,
+        "endColumn": 45,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
@@ -25,10 +54,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 14,
-        "column": 10,
-        "endLine": 14,
-        "endColumn": 20,
+        "line": 15,
+        "column": 7,
+        "endLine": 15,
+        "endColumn": 17,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
@@ -36,9 +65,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 18,
+        "line": 24,
         "column": 7,
-        "endLine": 18,
+        "endLine": 24,
         "endColumn": 22,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -47,9 +76,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 27,
+        "line": 33,
         "column": 7,
-        "endLine": 27,
+        "endLine": 33,
         "endColumn": 22,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -58,9 +87,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 34,
+        "line": 40,
         "column": 7,
-        "endLine": 34,
+        "endLine": 40,
         "endColumn": 23,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -76,9 +105,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 29,
+        "line": 35,
         "column": 9,
-        "endLine": 29,
+        "endLine": 35,
         "endColumn": 25,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -87,9 +116,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 36,
+        "line": 42,
         "column": 23,
-        "endLine": 36,
+        "endLine": 42,
         "endColumn": 39,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -98,9 +127,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 55,
+        "line": 65,
         "column": 15,
-        "endLine": 55,
+        "endLine": 65,
         "endColumn": 36,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -109,9 +138,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 62,
+        "line": 72,
         "column": 29,
-        "endLine": 62,
+        "endLine": 72,
         "endColumn": 50,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -120,17 +149,23 @@
     "warningCount": 4
   },
   {
+    "file": "app/components/Alert.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/components/AppFooter.vue",
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 45,
-        "column": 13,
-        "endLine": 45,
-        "endColumn": 58,
+        "message": "[vize:vue/prop-name-casing] Prop 'noUnderline' should be 'no-underline' (kebab-case)",
+        "line": 164,
+        "column": 17,
+        "endLine": 164,
+        "endColumn": 28,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -138,15 +173,37 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 45,
-        "column": 13,
-        "endLine": 45,
-        "endColumn": 58,
+        "line": 164,
+        "column": 17,
+        "endLine": 164,
+        "endColumn": 28,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
+        "line": 195,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 52,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 195,
+        "column": 7,
+        "endLine": 195,
+        "endColumn": 52,
         "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 4
   },
   {
     "file": "app/components/AppHeader.vue",
@@ -156,10 +213,10 @@
         "ruleDocsPath": "docs/content/rules/ecosystem.md",
         "severity": 1,
         "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
-        "line": 206,
-        "column": 9,
-        "endLine": 206,
-        "endColumn": 15,
+        "line": 227,
+        "column": 11,
+        "endLine": 227,
+        "endColumn": 17,
         "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
       },
       {
@@ -167,9 +224,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'inputClass' should be 'input-class' (kebab-case)",
-        "line": 255,
+        "line": 296,
         "column": 11,
-        "endLine": 255,
+        "endLine": 296,
         "endColumn": 57,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
@@ -178,9 +235,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 255,
+        "line": 296,
         "column": 11,
-        "endLine": 255,
+        "endLine": 296,
         "endColumn": 57,
         "help": "Use kebab-case for attribute names"
       }
@@ -195,23 +252,89 @@
     "warningCount": 0
   },
   {
-    "file": "app/components/BaseCard.vue",
+    "file": "app/components/AppMark.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/components/BlueskyPostEmbed.client.vue",
+    "file": "app/components/AuthorAvatar.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 37,
+        "column": 7,
+        "endLine": 37,
+        "endColumn": 27,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/AuthorList.vue",
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 63,
-        "column": 5,
-        "endLine": 63,
-        "endColumn": 27,
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 36,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/BackButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/BaseCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/BlogPostListCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'topics' is defined but never used",
+        "line": 10,
+        "column": 3,
+        "endLine": 10,
+        "endColumn": 19,
+        "help": "Remove unused prop or use it in your template/script"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/BlueskyComment.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 57,
+        "column": 7,
+        "endLine": 57,
+        "endColumn": 66,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
@@ -219,26 +342,204 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 72,
+        "line": 65,
         "column": 9,
-        "endLine": 72,
-        "endColumn": 47,
+        "endLine": 65,
+        "endColumn": 37,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 89,
+        "column": 11,
+        "endLine": 89,
+        "endColumn": 70,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 99,
-        "column": 9,
-        "endLine": 99,
-        "endColumn": 28,
+        "line": 96,
+        "column": 13,
+        "endLine": 96,
+        "endColumn": 41,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 111,
+        "column": 11,
+        "endLine": 111,
+        "endColumn": 70,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
+        "line": 119,
+        "column": 9,
+        "endLine": 124,
+        "endColumn": 10,
+        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 120,
+        "column": 11,
+        "endLine": 120,
+        "endColumn": 47,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+        "line": 130,
+        "column": 7,
+        "endLine": 130,
+        "endColumn": 62,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 134,
+        "column": 13,
+        "endLine": 134,
+        "endColumn": 32,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
+        "line": 149,
+        "column": 9,
+        "endLine": 156,
+        "endColumn": 10,
+        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 152,
+        "column": 11,
+        "endLine": 152,
+        "endColumn": 31,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 158,
+        "column": 13,
+        "endLine": 158,
+        "endColumn": 29,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 169,
+        "column": 9,
+        "endLine": 169,
+        "endColumn": 43,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 176,
+        "column": 11,
+        "endLine": 176,
+        "endColumn": 46,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 224,
+        "column": 11,
+        "endLine": 224,
+        "endColumn": 53,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 15
+  },
+  {
+    "file": "app/components/BlueskyComments.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 25,
+        "column": 13,
+        "endLine": 25,
+        "endColumn": 68,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 32,
+        "column": 15,
+        "endLine": 32,
+        "endColumn": 39,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 50,
+        "column": 13,
+        "endLine": 50,
+        "endColumn": 28,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
     "warningCount": 3
+  },
+  {
+    "file": "app/components/Brand/Customize.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/BuildEnvironment.vue",
@@ -266,9 +567,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 49,
+        "line": 50,
         "column": 7,
-        "endLine": 54,
+        "endLine": 55,
         "endColumn": 8,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -277,9 +578,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 49,
+        "line": 50,
         "column": 7,
-        "endLine": 54,
+        "endLine": 55,
         "endColumn": 8,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
@@ -288,15 +589,126 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 65,
+        "line": 66,
         "column": 11,
-        "endLine": 65,
+        "endLine": 66,
         "endColumn": 28,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
     "warningCount": 3
+  },
+  {
+    "file": "app/components/Changelog/Card.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Changelog/ErrorMsg.vue",
+    "messages": [
+      {
+        "ruleId": "vue/valid-v-slot",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
+        "line": 11,
+        "column": 50,
+        "endLine": 11,
+        "endColumn": 57,
+        "help": "Use v-slot on a component or a template element inside a component"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Changelog/Markdown.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Changelog/Releases.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Changelog/Skeleton.vue",
+    "messages": [
+      {
+        "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
+        "line": 4,
+        "column": 22,
+        "endLine": 4,
+        "endColumn": 37,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Chart/CopyPngButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Chart/SplitSparkline.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/mouse-events-have-key-events] @mouseleave/@mouseout must be paired with @blur for keyboard accessibility",
+        "line": 185,
+        "column": 7,
+        "endLine": 185,
+        "endColumn": 100,
+        "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 185,
+        "column": 7,
+        "endLine": 185,
+        "endColumn": 100,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'selectedIndex' should be 'selected-index' (kebab-case)",
+        "line": 224,
+        "column": 11,
+        "endLine": 224,
+        "endColumn": 25,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 224,
+        "column": 11,
+        "endLine": 224,
+        "endColumn": 25,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
   },
   {
     "file": "app/components/Code/DirectoryListing.vue",
@@ -306,9 +718,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 91,
+        "line": 93,
         "column": 22,
-        "endLine": 91,
+        "endLine": 93,
         "endColumn": 83,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -317,9 +729,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 118,
+        "line": 124,
         "column": 19,
-        "endLine": 118,
+        "endLine": 124,
         "endColumn": 133,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
@@ -335,9 +747,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
-        "line": 53,
+        "line": 60,
         "column": 5,
-        "endLine": 53,
+        "endLine": 60,
         "endColumn": 47,
         "help": "Add text content, child elements, or use aria-label for accessible content."
       },
@@ -346,9 +758,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 72,
+        "line": 83,
         "column": 15,
-        "endLine": 72,
+        "endLine": 83,
         "endColumn": 134,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -357,15 +769,21 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 98,
+        "line": 128,
         "column": 18,
-        "endLine": 98,
+        "endLine": 128,
         "endColumn": 75,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
     "warningCount": 3
+  },
+  {
+    "file": "app/components/Code/Header.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/Code/MobileTreeDrawer.vue",
@@ -375,9 +793,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 47,
+        "line": 45,
         "column": 5,
-        "endLine": 47,
+        "endLine": 45,
         "endColumn": 99,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -386,15 +804,21 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 47,
+        "line": 45,
         "column": 5,
-        "endLine": 47,
+        "endLine": 45,
         "endColumn": 99,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
     ],
     "errorCount": 0,
     "warningCount": 2
+  },
+  {
+    "file": "app/components/Code/SkeletonLoader.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/Code/Viewer.vue",
@@ -409,16 +833,147 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/ColorScheme/Img.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 9,
+        "column": 3,
+        "endLine": 13,
+        "endColumn": 5,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 9,
+        "column": 3,
+        "endLine": 13,
+        "endColumn": 5,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 10,
+        "column": 5,
+        "endLine": 10,
+        "endColumn": 25,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 16,
+        "column": 1,
+        "endLine": 16,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
     "file": "app/components/ColumnPicker.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
+    "file": "app/components/CommandPalette.client.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
+        "line": 292,
+        "column": 7,
+        "endLine": 292,
+        "endColumn": 48,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modalSubtitle' should be 'modal-subtitle' (kebab-case)",
+        "line": 293,
+        "column": 7,
+        "endLine": 293,
+        "endColumn": 41,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 292,
+        "column": 7,
+        "endLine": 292,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 293,
+        "column": 7,
+        "endLine": 293,
+        "endColumn": 41,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
     "file": "app/components/Compare/ComparisonGrid.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "app/components/Compare/FacetBarChart.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 300,
+        "column": 13,
+        "endLine": 306,
+        "endColumn": 14,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 364,
+        "column": 1,
+        "endLine": 364,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
   },
   {
     "file": "app/components/Compare/FacetCard.vue",
@@ -431,6 +986,46 @@
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "app/components/Compare/FacetScatterChart.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 310,
+        "column": 11,
+        "endLine": 310,
+        "endColumn": 38,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 324,
+        "column": 11,
+        "endLine": 324,
+        "endColumn": 38,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 418,
+        "column": 17,
+        "endLine": 427,
+        "endColumn": 18,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
   },
   {
     "file": "app/components/Compare/FacetSelector.vue",
@@ -452,9 +1047,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 246,
+        "line": 251,
         "column": 11,
-        "endLine": 246,
+        "endLine": 251,
         "endColumn": 25,
         "help": "Reorder attributes to follow the recommended order"
       }
@@ -466,19 +1061,52 @@
     "file": "app/components/Compare/ReplacementSuggestion.vue",
     "messages": [
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
-        "line": 38,
-        "column": 7,
-        "endLine": 38,
-        "endColumn": 44,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 51,
+        "column": 49,
+        "endLine": 51,
+        "endColumn": 80,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 66,
+        "column": 49,
+        "endLine": 66,
+        "endColumn": 80,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 74,
+        "column": 42,
+        "endLine": 74,
+        "endColumn": 73,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 81,
+        "column": 17,
+        "endLine": 81,
+        "endColumn": 48,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 4
   },
   {
     "file": "app/components/CopyToClipboardButton.vue",
@@ -494,6 +1122,135 @@
   },
   {
     "file": "app/components/DependencyPathPopup.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Diff/FileTree.vue",
+    "messages": [
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
+        "line": 130,
+        "column": 5,
+        "endLine": 130,
+        "endColumn": 47,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Diff/Hunk.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Diff/Line.vue",
+    "messages": [
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
+        "line": 84,
+        "column": 5,
+        "endLine": 84,
+        "endColumn": 34,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 101,
+        "column": 11,
+        "endLine": 101,
+        "endColumn": 28,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/Diff/MobileSidebarDrawer.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 42,
+        "column": 5,
+        "endLine": 42,
+        "endColumn": 95,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 42,
+        "column": 5,
+        "endLine": 42,
+        "endColumn": 95,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/Diff/SidebarPanel.vue",
+    "messages": [
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <select> is an interactive element and cannot be nested inside another interactive element",
+        "line": 222,
+        "column": 11,
+        "endLine": 226,
+        "endColumn": 12
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Diff/SkipBlock.vue",
+    "messages": [
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
+        "line": 14,
+        "column": 5,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Diff/Table.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Diff/ViewerPanel.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -575,10 +1332,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 67,
-        "column": 10,
-        "endLine": 67,
-        "endColumn": 46,
+        "line": 74,
+        "column": 5,
+        "endLine": 74,
+        "endColumn": 41,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -586,10 +1343,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 67,
-        "column": 10,
-        "endLine": 67,
-        "endColumn": 46,
+        "line": 74,
+        "column": 5,
+        "endLine": 74,
+        "endColumn": 41,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -597,10 +1354,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 67,
-        "column": 64,
-        "endLine": 67,
-        "endColumn": 79,
+        "line": 76,
+        "column": 5,
+        "endLine": 76,
+        "endColumn": 20,
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
@@ -615,9 +1372,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 50,
+        "line": 70,
         "column": 5,
-        "endLine": 50,
+        "endLine": 70,
         "endColumn": 46,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
@@ -626,9 +1383,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 50,
+        "line": 70,
         "column": 5,
-        "endLine": 50,
+        "endLine": 70,
         "endColumn": 46,
         "help": "Use kebab-case for attribute names"
       },
@@ -637,9 +1394,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <label> is an interactive element and cannot be nested inside another interactive element",
-        "line": 183,
+        "line": 160,
         "column": 13,
-        "endLine": 186,
+        "endLine": 163,
         "endColumn": 14
       }
     ],
@@ -654,9 +1411,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 123,
+        "line": 131,
         "column": 19,
-        "endLine": 123,
+        "endLine": 131,
         "endColumn": 35,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
@@ -665,9 +1422,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 148,
+        "line": 156,
         "column": 19,
-        "endLine": 148,
+        "endLine": 156,
         "endColumn": 44,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -763,15 +1520,48 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
-        "line": 34,
+        "line": 51,
         "column": 47,
-        "endLine": 34,
+        "endLine": 51,
         "endColumn": 77,
         "help": "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
+        "line": 77,
+        "column": 13,
+        "endLine": 77,
+        "endColumn": 33,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 77,
+        "column": 13,
+        "endLine": 77,
+        "endColumn": 33,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "a11y/no-aria-hidden-on-focusable",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 2,
+        "message": "[vize:a11y/no-aria-hidden-on-focusable] aria-hidden=\"true\" must not be used on focusable elements",
+        "line": 79,
+        "column": 11,
+        "endLine": 86,
+        "endColumn": 12,
+        "help": "Remove aria-hidden=\"true\" or make the element non-focusable with tabindex=\"-1\""
       }
     ],
-    "errorCount": 0,
-    "warningCount": 1
+    "errorCount": 1,
+    "warningCount": 3
   },
   {
     "file": "app/components/Input/Base.vue",
@@ -781,15 +1571,33 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
-        "line": 38,
+        "line": 56,
         "column": 3,
-        "endLine": 54,
+        "endLine": 73,
         "endColumn": 5,
         "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
       }
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "app/components/InstantSearch.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Landing/IntroHeader.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/LicenseChangeWarning.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/LicenseDisplay.vue",
@@ -822,19 +1630,365 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/LogoContextMenu.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 94,
+        "column": 9,
+        "endLine": 102,
+        "endColumn": 10,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
     "file": "app/components/Modal.client.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/components/OgImage/Default.vue",
+    "file": "app/components/Noodle/Artemis/Logo.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/components/OgImage/Package.vue",
+    "file": "app/components/Noodle/EmojiDay/Logo.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'emojiSets' should be 'emoji-sets' (kebab-case)",
+        "line": 3,
+        "column": 51,
+        "endLine": 3,
+        "endColumn": 73,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 3,
+        "column": 51,
+        "endLine": 3,
+        "endColumn": 73,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'emojiSets' should be 'emoji-sets' (kebab-case)",
+        "line": 4,
+        "column": 24,
+        "endLine": 4,
+        "endColumn": 47,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 4,
+        "column": 24,
+        "endLine": 4,
+        "endColumn": 47,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
+    "file": "app/components/Noodle/EmojiDay/ThemedLogo.vue",
+    "messages": [
+      {
+        "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 5,
+        "column": 1,
+        "endLine": 5,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      },
+      {
+        "ruleId": "vue/sfc-element-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/sfc-element-order] <script> should come before <style>",
+        "line": 13,
+        "column": 1,
+        "endLine": 100,
+        "endColumn": 10,
+        "help": "Recommended order: <script> and <template> (either order) -> <style>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/Noodle/GifDay/GifText.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/GifDay/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Kawaii/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Lens.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 150,
+        "column": 9,
+        "endLine": 161,
+        "endColumn": 10,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 187,
+        "column": 17,
+        "endLine": 187,
+        "endColumn": 33,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/Noodle/ListCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Nodejs/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Press/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Pride1/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Pride2/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Pride3/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/Tetris/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Noodle/TransgenderVisibility/Logo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgBrand.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/BlogPost.takumi.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 91,
+        "column": 15,
+        "endLine": 91,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/OgImage/Compare.takumi.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/Noodle.takumi.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 47,
+        "column": 11,
+        "endLine": 47,
+        "endColumn": 26,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 60,
+        "column": 11,
+        "endLine": 60,
+        "endColumn": 24,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/OgImage/Package.takumi.vue",
+    "messages": [
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 341,
+        "column": 13,
+        "endLine": 344,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 349,
+        "column": 13,
+        "endLine": 352,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 357,
+        "column": 13,
+        "endLine": 360,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 380,
+        "column": 5,
+        "endLine": 385,
+        "endColumn": 7,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 380,
+        "column": 5,
+        "endLine": 385,
+        "endColumn": 7,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 382,
+        "column": 7,
+        "endLine": 382,
+        "endColumn": 26,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 3,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/OgImage/Page.takumi.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/Profile.takumi.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/Splash.takumi.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/UserProfile.takumi.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgLayout.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -887,9 +2041,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <button> is an interactive element and cannot be nested inside another interactive element",
-        "line": 428,
+        "line": 427,
         "column": 11,
-        "endLine": 433,
+        "endLine": 432,
         "endColumn": 12
       }
     ],
@@ -932,6 +2086,24 @@
     "warningCount": 2
   },
   {
+    "file": "app/components/Package/ActionBar.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 31,
+        "column": 7,
+        "endLine": 31,
+        "endColumn": 25,
+        "help": "Reorder attributes to follow the recommended order"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
     "file": "app/components/Package/Card.vue",
     "messages": [
       {
@@ -939,10 +2111,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
-        "line": 42,
-        "column": 13,
-        "endLine": 42,
-        "endColumn": 41,
+        "line": 47,
+        "column": 36,
+        "endLine": 47,
+        "endColumn": 64,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -950,10 +2122,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 42,
-        "column": 13,
-        "endLine": 42,
-        "endColumn": 41,
+        "line": 47,
+        "column": 36,
+        "endLine": 47,
+        "endColumn": 64,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -961,10 +2133,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 85,
-        "column": 17,
-        "endLine": 85,
-        "endColumn": 40,
+        "line": 78,
+        "column": 13,
+        "endLine": 78,
+        "endColumn": 36,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
@@ -972,62 +2144,11 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
-        "line": 163,
+        "line": 125,
         "column": 5,
-        "endLine": 168,
+        "endLine": 130,
         "endColumn": 6,
         "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 4
-  },
-  {
-    "file": "app/components/Package/ChartModal.vue",
-    "messages": [
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
-        "line": 14,
-        "column": 5,
-        "endLine": 14,
-        "endColumn": 59,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'modalSubtitle' should be 'modal-subtitle' (kebab-case)",
-        "line": 15,
-        "column": 5,
-        "endLine": 15,
-        "endColumn": 35,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 14,
-        "column": 5,
-        "endLine": 14,
-        "endColumn": 59,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 15,
-        "column": 5,
-        "endLine": 15,
-        "endColumn": 35,
-        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 0,
@@ -1081,6 +2202,59 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Package/DownloadButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Package/ExternalLinks.vue",
+    "messages": [
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
+        "line": 156,
+        "column": 5,
+        "endLine": 156,
+        "endColumn": 40,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Package/Header.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
+        "line": 261,
+        "column": 23,
+        "endLine": 261,
+        "endColumn": 35,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 261,
+        "column": 23,
+        "endLine": 261,
+        "endColumn": 35,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "app/components/Package/InstallScripts.vue",
     "messages": [],
     "errorCount": 0,
@@ -1099,6 +2273,24 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Package/Likes.vue",
+    "messages": [
+      {
+        "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 255,
+        "column": 1,
+        "endLine": 255,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
     "file": "app/components/Package/List.vue",
     "messages": [],
     "errorCount": 0,
@@ -1112,9 +2304,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 79,
+        "line": 78,
         "column": 7,
-        "endLine": 79,
+        "endLine": 78,
         "endColumn": 24,
         "help": "Reorder attributes to follow the recommended order"
       }
@@ -1130,9 +2322,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 167,
+        "line": 166,
         "column": 13,
-        "endLine": 167,
+        "endLine": 166,
         "endColumn": 29,
         "help": "Reorder attributes to follow the recommended order"
       }
@@ -1154,9 +2346,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
-        "line": 133,
+        "line": 142,
         "column": 7,
-        "endLine": 146,
+        "endLine": 156,
         "endColumn": 8,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
@@ -1165,9 +2357,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
-        "line": 147,
+        "line": 157,
         "column": 9,
-        "endLine": 160,
+        "endLine": 170,
         "endColumn": 10,
         "help": "Why: Keyboard and touch users cannot trigger mouse events.\nFix:\n  <div\n  @mouseenter=\"show\"\n  @mouseleave=\"hide\"\n  @focus=\"show\"\n  @blur=\"hide\"\n  tabindex=\"0\"\n  >\n  Hover or focus me\n  </div>"
       },
@@ -1176,9 +2368,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
-        "line": 147,
+        "line": 157,
         "column": 9,
-        "endLine": 160,
+        "endLine": 170,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       },
@@ -1187,9 +2379,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 174,
+        "line": 184,
         "column": 1,
-        "endLine": 174,
+        "endLine": 184,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
@@ -1211,9 +2403,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 130,
+        "line": 147,
         "column": 11,
-        "endLine": 130,
+        "endLine": 147,
         "endColumn": 32,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -1222,9 +2414,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 175,
+        "line": 192,
         "column": 9,
-        "endLine": 181,
+        "endLine": 198,
         "endColumn": 10,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
@@ -1233,9 +2425,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 184,
+        "line": 201,
         "column": 15,
-        "endLine": 184,
+        "endLine": 201,
         "endColumn": 31,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
@@ -1247,33 +2439,84 @@
     "file": "app/components/Package/Replacement.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 82,
-        "column": 9,
-        "endLine": 82,
-        "endColumn": 23,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 36,
+        "column": 47,
+        "endLine": 36,
+        "endColumn": 78,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 51,
+        "column": 47,
+        "endLine": 51,
+        "endColumn": 78,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 61,
+        "column": 15,
+        "endLine": 61,
+        "endColumn": 46,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 64,
+        "column": 15,
+        "endLine": 64,
+        "endColumn": 46,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 92,
+        "line": 71,
         "column": 9,
-        "endLine": 92,
-        "endColumn": 24,
+        "endLine": 71,
+        "endColumn": 28,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 5
+  },
+  {
+    "file": "app/components/Package/SelectionCheckbox.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Package/SelectionView.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/Package/Sidebar.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Package/SizeDecrease.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -1292,10 +2535,10 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h1> elements must have accessible content",
-        "line": 14,
-        "column": 11,
-        "endLine": 14,
-        "endColumn": 66,
+        "line": 8,
+        "column": 7,
+        "endLine": 8,
+        "endColumn": 62,
         "help": "Why: Empty headings confuse screen reader users and break document structure.\nFix:\n  <!-- Add text content -->\n  <h2>Section Title</h2>\n  \n  <!-- Or use aria-label for dynamic content -->\n  <h2 aria-label=\"Loading...\"><Spinner /></h2>"
       }
     ],
@@ -1304,32 +2547,9 @@
   },
   {
     "file": "app/components/Package/SkillsCard.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-properties] Prop 'packageName' is defined but never used",
-        "line": 6,
-        "column": 3,
-        "endLine": 6,
-        "endColumn": 22,
-        "help": "Remove unused prop or use it in your template/script"
-      },
-      {
-        "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-properties] Prop 'version' is defined but never used",
-        "line": 7,
-        "column": 3,
-        "endLine": 7,
-        "endColumn": 19,
-        "help": "Remove unused prop or use it in your template/script"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/Package/SkillsModal.vue",
@@ -1345,9 +2565,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
-        "line": 118,
+        "line": 112,
         "column": 11,
-        "endLine": 136,
+        "endLine": 130,
         "endColumn": 12,
         "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
       },
@@ -1356,9 +2576,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
-        "line": 118,
+        "line": 112,
         "column": 11,
-        "endLine": 136,
+        "endLine": 130,
         "endColumn": 12,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
@@ -1367,9 +2587,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
-        "line": 171,
+        "line": 165,
         "column": 11,
-        "endLine": 190,
+        "endLine": 184,
         "endColumn": 12,
         "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
       },
@@ -1378,9 +2598,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
-        "line": 171,
+        "line": 165,
         "column": 11,
-        "endLine": 190,
+        "endLine": 184,
         "endColumn": 12,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
@@ -1389,9 +2609,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
-        "line": 209,
+        "line": 203,
         "column": 11,
-        "endLine": 228,
+        "endLine": 222,
         "endColumn": 12,
         "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
       },
@@ -1400,9 +2620,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
-        "line": 209,
+        "line": 203,
         "column": 11,
-        "endLine": 228,
+        "endLine": 222,
         "endColumn": 12,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
@@ -1417,6 +2637,391 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Package/TimelineChart.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
+        "line": 907,
+        "column": 22,
+        "endLine": 907,
+        "endColumn": 78,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 907,
+        "column": 22,
+        "endLine": 907,
+        "endColumn": 78,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'timeLabel' should be 'time-label' (kebab-case)",
+        "line": 950,
+        "column": 13,
+        "endLine": 950,
+        "endColumn": 23,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'activeTab' should be 'active-tab' (kebab-case)",
+        "line": 954,
+        "column": 13,
+        "endLine": 954,
+        "endColumn": 23,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'totalSize' should be 'total-size' (kebab-case)",
+        "line": 955,
+        "column": 13,
+        "endLine": 957,
+        "endColumn": 14,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'dependencyCount' should be 'dependency-count' (kebab-case)",
+        "line": 958,
+        "column": 13,
+        "endLine": 962,
+        "endColumn": 14,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 950,
+        "column": 13,
+        "endLine": 950,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 954,
+        "column": 13,
+        "endLine": 954,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 955,
+        "column": 13,
+        "endLine": 957,
+        "endColumn": 14,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 958,
+        "column": 13,
+        "endLine": 962,
+        "endColumn": 14,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'activeVersionPlot' should be 'active-version-plot' (kebab-case)",
+        "line": 982,
+        "column": 13,
+        "endLine": 982,
+        "endColumn": 94,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'markersPositive' should be 'markers-positive' (kebab-case)",
+        "line": 990,
+        "column": 13,
+        "endLine": 990,
+        "endColumn": 88,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'markersNegative' should be 'markers-negative' (kebab-case)",
+        "line": 991,
+        "column": 13,
+        "endLine": 991,
+        "endColumn": 88,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'gradientColors' should be 'gradient-colors' (kebab-case)",
+        "line": 993,
+        "column": 13,
+        "endLine": 993,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'pauseAnimations' should be 'pause-animations' (kebab-case)",
+        "line": 994,
+        "column": 13,
+        "endLine": 994,
+        "endColumn": 69,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isCopyingPng' should be 'is-copying-png' (kebab-case)",
+        "line": 995,
+        "column": 13,
+        "endLine": 995,
+        "endColumn": 26,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 982,
+        "column": 13,
+        "endLine": 982,
+        "endColumn": 94,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 990,
+        "column": 13,
+        "endLine": 990,
+        "endColumn": 88,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 991,
+        "column": 13,
+        "endLine": 991,
+        "endColumn": 88,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 993,
+        "column": 13,
+        "endLine": 993,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 994,
+        "column": 13,
+        "endLine": 994,
+        "endColumn": 69,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 995,
+        "column": 13,
+        "endLine": 995,
+        "endColumn": 26,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'activeVersionPlot' should be 'active-version-plot' (kebab-case)",
+        "line": 1091,
+        "column": 13,
+        "endLine": 1091,
+        "endColumn": 86,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'pauseAnimations' should be 'pause-animations' (kebab-case)",
+        "line": 1093,
+        "column": 13,
+        "endLine": 1093,
+        "endColumn": 69,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'isCopyingPng' should be 'is-copying-png' (kebab-case)",
+        "line": 1094,
+        "column": 13,
+        "endLine": 1094,
+        "endColumn": 26,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1091,
+        "column": 13,
+        "endLine": 1091,
+        "endColumn": 86,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1093,
+        "column": 13,
+        "endLine": 1093,
+        "endColumn": 69,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1094,
+        "column": 13,
+        "endLine": 1094,
+        "endColumn": 26,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'timeLabel' should be 'time-label' (kebab-case)",
+        "line": 1102,
+        "column": 13,
+        "endLine": 1102,
+        "endColumn": 23,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1102,
+        "column": 13,
+        "endLine": 1102,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 30
+  },
+  {
+    "file": "app/components/Package/TimelineChartDepSizeSvgSlot.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 16,
+        "column": 68,
+        "endLine": 16,
+        "endColumn": 86,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Package/TimelineChartDepSizeTooltip.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Package/TimelineChartXySvgSlot.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 27,
+        "column": 68,
+        "endLine": 27,
+        "endColumn": 86,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Package/TimelineChartXyTooltip.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/components/Package/TrendsChart.vue",
     "messages": [
       {
@@ -1424,20 +3029,97 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 1694,
+        "line": 1402,
         "column": 5,
-        "endLine": 1694,
+        "endLine": 1402,
         "endColumn": 22,
         "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
+        "line": 1411,
+        "column": 16,
+        "endLine": 1411,
+        "endColumn": 67,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1411,
+        "column": 16,
+        "endLine": 1411,
+        "endColumn": 67,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 1510,
+        "column": 11,
+        "endLine": 1510,
+        "endColumn": 42,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'datetimeFormatterOptions' should be 'datetime-formatter-options' (kebab-case)",
+        "line": 1681,
+        "column": 13,
+        "endLine": 1681,
+        "endColumn": 38,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1681,
+        "column": 13,
+        "endLine": 1681,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'showLastDatapointEstimation' should be 'show-last-datapoint-estimation' (kebab-case)",
+        "line": 1682,
+        "column": 13,
+        "endLine": 1682,
+        "endColumn": 98,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 1682,
+        "column": 13,
+        "endLine": 1682,
+        "endColumn": 98,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 1914,
+        "line": 1718,
         "column": 17,
-        "endLine": 1914,
+        "endLine": 1718,
         "endColumn": 49,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
@@ -1446,9 +3128,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 1918,
+        "line": 1722,
         "column": 34,
-        "endLine": 1918,
+        "endLine": 1722,
         "endColumn": 70,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
@@ -1457,9 +3139,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 1921,
+        "line": 1725,
         "column": 43,
-        "endLine": 1921,
+        "endLine": 1725,
         "endColumn": 75,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
@@ -1468,26 +3150,48 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 1926,
+        "line": 1730,
         "column": 17,
-        "endLine": 1926,
-        "endColumn": 93,
+        "endLine": 1737,
+        "endColumn": 18,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 1990,
+        "column": 9,
+        "endLine": 1990,
+        "endColumn": 32,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 2039,
+        "column": 17,
+        "endLine": 2039,
+        "endColumn": 32,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 2120,
+        "line": 2063,
         "column": 1,
-        "endLine": 2120,
+        "endLine": 2063,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 15
   },
   {
     "file": "app/components/Package/VersionDistribution.vue",
@@ -1497,9 +3201,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 346,
+        "line": 341,
         "column": 5,
-        "endLine": 346,
+        "endLine": 341,
         "endColumn": 30,
         "help": "Reorder attributes to follow the recommended order"
       },
@@ -1508,9 +3212,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
-        "line": 351,
+        "line": 346,
         "column": 9,
-        "endLine": 351,
+        "endLine": 346,
         "endColumn": 82,
         "help": "Fix options:\n1. Use for attribute:\n  <label for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\">\n2. Wrap form control:\n  <label>Name <input type=\"text\"></label>"
       },
@@ -1519,9 +3223,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
-        "line": 373,
+        "line": 368,
         "column": 9,
-        "endLine": 375,
+        "endLine": 370,
         "endColumn": 10,
         "help": "Fix options:\n1. Use for attribute:\n  <label for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\">\n2. Wrap form control:\n  <label>Name <input type=\"text\"></label>"
       },
@@ -1530,9 +3234,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
-        "line": 410,
+        "line": 405,
         "column": 9,
-        "endLine": 412,
+        "endLine": 407,
         "endColumn": 10,
         "help": "Fix options:\n1. Use for attribute:\n  <label for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\">\n2. Wrap form control:\n  <label>Name <input type=\"text\"></label>"
       },
@@ -1541,9 +3245,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 463,
+        "line": 470,
         "column": 43,
-        "endLine": 463,
+        "endLine": 470,
         "endColumn": 92,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
@@ -1552,10 +3256,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 468,
+        "line": 475,
         "column": 17,
-        "endLine": 468,
-        "endColumn": 93,
+        "endLine": 482,
+        "endColumn": 18,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
@@ -1563,9 +3267,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 649,
+        "line": 705,
         "column": 1,
-        "endLine": 649,
+        "endLine": 705,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
@@ -1587,9 +3291,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-heading\" which does not exist in the template",
-        "line": 73,
+        "line": 75,
         "column": 5,
-        "endLine": 73,
+        "endLine": 75,
         "endColumn": 40,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
@@ -1598,9 +3302,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-error\" which does not exist in the template",
-        "line": 214,
+        "line": 216,
         "column": 43,
-        "endLine": 214,
+        "endLine": 216,
         "endColumn": 76,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
@@ -1609,9 +3313,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 153,
+        "line": 155,
         "column": 19,
-        "endLine": 153,
+        "endLine": 155,
         "endColumn": 35,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
@@ -1623,129 +3327,19 @@
     "file": "app/components/Package/WeeklyDownloadStats.vue",
     "messages": [
       {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'weeklyDownloads' should be 'weekly-downloads' (kebab-case)",
-        "line": 373,
-        "column": 9,
-        "endLine": 373,
-        "endColumn": 43,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 373,
-        "column": 9,
-        "endLine": 373,
-        "endColumn": 43,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'inModal' should be 'in-modal' (kebab-case)",
-        "line": 374,
-        "column": 9,
-        "endLine": 374,
-        "endColumn": 24,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 374,
-        "column": 9,
-        "endLine": 374,
-        "endColumn": 24,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
-        "line": 375,
-        "column": 9,
-        "endLine": 375,
-        "endColumn": 41,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 375,
-        "column": 9,
-        "endLine": 375,
-        "endColumn": 41,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
-        "line": 376,
-        "column": 9,
-        "endLine": 376,
-        "endColumn": 33,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 376,
-        "column": 9,
-        "endLine": 376,
-        "endColumn": 33,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/prop-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
-        "line": 377,
-        "column": 9,
-        "endLine": 377,
-        "endColumn": 33,
-        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
-      },
-      {
-        "ruleId": "vue/attribute-hyphenation",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 377,
-        "column": 9,
-        "endLine": 377,
-        "endColumn": 33,
-        "help": "Use kebab-case for attribute names"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 406,
+        "line": 407,
         "column": 1,
-        "endLine": 406,
+        "endLine": 407,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 1
   },
   {
     "file": "app/components/PackageProvenanceSection.vue",
@@ -1755,9 +3349,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 33,
+        "line": 31,
         "column": 11,
-        "endLine": 33,
+        "endLine": 31,
         "endColumn": 42,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -1806,15 +3400,21 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 157,
+        "line": 153,
         "column": 11,
-        "endLine": 157,
+        "endLine": 153,
         "endColumn": 25,
         "help": "Reorder attributes to follow the recommended order"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "app/components/ProgressBar.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "app/components/ProvenanceBadge.vue",
@@ -1882,9 +3482,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
-        "line": 177,
+        "line": 198,
         "column": 7,
-        "endLine": 188,
+        "endLine": 211,
         "endColumn": 8,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       }
@@ -1976,44 +3576,28 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Settings/FgThemePicker.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/components/Settings/Toggle.client.vue",
     "messages": [
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <label> element is empty but expects visible content",
-        "line": 28,
-        "column": 3,
-        "endLine": 37,
-        "endColumn": 4,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
         "ruleId": "a11y/role-has-required-aria-props",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"switch\" must have the 'aria-checked' attribute",
-        "line": 39,
-        "column": 7,
-        "endLine": 46,
-        "endColumn": 9,
-        "help": "Role switch requires: aria-checked\nExample:\n  <div role=\"switch\" aria-checked=\"...\">\n  Content\n  </div>"
-      },
-      {
-        "ruleId": "a11y/role-has-required-aria-props",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"switch\" must have the 'aria-checked' attribute",
-        "line": 85,
-        "column": 7,
-        "endLine": 92,
-        "endColumn": 9,
+        "line": 56,
+        "column": 5,
+        "endLine": 63,
+        "endColumn": 7,
         "help": "Role switch requires: aria-checked\nExample:\n  <div role=\"switch\" aria-checked=\"...\">\n  Content\n  </div>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/Settings/Toggle.server.vue",
@@ -2029,9 +3613,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 120,
+        "line": 118,
         "column": 11,
-        "endLine": 120,
+        "endLine": 118,
         "endColumn": 39,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
@@ -2040,9 +3624,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 130,
+        "line": 128,
         "column": 11,
-        "endLine": 130,
+        "endLine": 128,
         "endColumn": 39,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
@@ -2063,6 +3647,42 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Tab/Item.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Tab/List.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 39,
+        "column": 3,
+        "endLine": 45,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/Tab/Panel.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/Tab/Root.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/components/Tag/RadioButton.vue",
     "messages": [],
     "errorCount": 0,
@@ -2076,39 +3696,15 @@
   },
   {
     "file": "app/components/Terminal/Execute.vue",
-    "messages": [
-      {
-        "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 85,
-        "column": 1,
-        "endLine": 85,
-        "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Terminal/Install.vue",
-    "messages": [
-      {
-        "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 314,
-        "column": 1,
-        "endLine": 314,
-        "endColumn": 8,
-        "help": "Add scoped attribute: <style scoped>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/Tooltip/Announce.vue",
@@ -2147,9 +3743,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
-        "line": 53,
+        "line": 55,
         "column": 5,
-        "endLine": 53,
+        "endLine": 55,
         "endColumn": 15,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
@@ -2158,9 +3754,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 53,
+        "line": 55,
         "column": 5,
-        "endLine": 53,
+        "endLine": 55,
         "endColumn": 15,
         "help": "Use kebab-case for attribute names"
       }
@@ -2175,6 +3771,12 @@
     "warningCount": 0
   },
   {
+    "file": "app/components/Translation/StatusByFile.unused.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/components/User/Avatar.vue",
     "messages": [
       {
@@ -2182,9 +3784,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 24,
+        "line": 56,
         "column": 7,
-        "endLine": 24,
+        "endLine": 56,
         "endColumn": 25,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
@@ -2240,9 +3842,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
-        "line": 515,
+        "line": 576,
         "column": 11,
-        "endLine": 531,
+        "endLine": 592,
         "endColumn": 12,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
       }
@@ -2251,139 +3853,180 @@
     "warningCount": 1
   },
   {
+    "file": "app/components/VideoPlayer.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/media-has-caption",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
+        "line": 51,
+        "column": 3,
+        "endLine": 51,
+        "endColumn": 38,
+        "help": "Fix:\n  <video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n  </video>\nAlternatives:\n- Add muted attribute for decorative media\n- Add aria-label for described media"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 51,
+        "column": 25,
+        "endLine": 51,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "app/components/ViewModeToggle.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/components/diff/FileTree.vue",
+    "file": "app/components/global/BlogPostFederatedArticles.vue",
     "messages": [
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
-        "line": 132,
-        "column": 5,
-        "endLine": 132,
-        "endColumn": 47,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "app/components/diff/Hunk.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "app/components/diff/Line.vue",
-    "messages": [
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
-        "line": 86,
-        "column": 5,
-        "endLine": 86,
-        "endColumn": 34,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
-      },
-      {
-        "ruleId": "vue/no-v-html",
+        "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 103,
-        "column": 11,
-        "endLine": 103,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 53,
+        "column": 9,
+        "endLine": 53,
         "endColumn": 28,
-        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 2
-  },
-  {
-    "file": "app/components/diff/MobileSidebarDrawer.vue",
-    "messages": [
-      {
-        "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 40,
-        "column": 5,
-        "endLine": 40,
-        "endColumn": 95,
-        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 40,
-        "column": 5,
-        "endLine": 40,
-        "endColumn": 95,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 2
-  },
-  {
-    "file": "app/components/diff/SidebarPanel.vue",
-    "messages": [
-      {
-        "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/permitted-contents] <select> is an interactive element and cannot be nested inside another interactive element",
-        "line": 212,
-        "column": 11,
-        "endLine": 216,
-        "endColumn": 12
-      }
-    ],
-    "errorCount": 1,
-    "warningCount": 0
-  },
-  {
-    "file": "app/components/diff/SkipBlock.vue",
-    "messages": [
-      {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
-        "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
-        "line": 14,
-        "column": 5,
-        "endLine": 14,
-        "endColumn": 11,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
   },
   {
-    "file": "app/components/diff/Table.vue",
+    "file": "app/components/global/BlogPostWrapper.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/components/diff/ViewerPanel.vue",
-    "messages": [],
+    "file": "app/components/global/BlueskyPostEmbed.client.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
+        "line": 131,
+        "column": 5,
+        "endLine": 137,
+        "endColumn": 6,
+        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 132,
+        "column": 7,
+        "endLine": 132,
+        "endColumn": 29,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 149,
+        "column": 9,
+        "endLine": 149,
+        "endColumn": 47,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 172,
+        "column": 9,
+        "endLine": 172,
+        "endColumn": 28,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 187,
+        "column": 9,
+        "endLine": 187,
+        "endColumn": 40,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 194,
+        "column": 11,
+        "endLine": 194,
+        "endColumn": 43,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'playsInline' should be 'plays-inline' (kebab-case)",
+        "line": 215,
+        "column": 11,
+        "endLine": 215,
+        "endColumn": 22,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 215,
+        "column": 11,
+        "endLine": 215,
+        "endColumn": 22,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 218,
+        "column": 11,
+        "endLine": 218,
+        "endColumn": 37,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 232,
+        "column": 11,
+        "endLine": 232,
+        "endColumn": 30,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 10
   },
   {
     "file": "app/error.vue",
@@ -2395,25 +4038,25 @@
     "file": "app/pages/about.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/attribute-order",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 202,
-        "column": 19,
-        "endLine": 202,
-        "endColumn": 53,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 148,
+        "column": 37,
+        "endLine": 148,
+        "endColumn": 50,
+        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 277,
-        "column": 19,
-        "endLine": 277,
-        "endColumn": 47,
+        "line": 251,
+        "column": 21,
+        "endLine": 251,
+        "endColumn": 49,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
@@ -2421,10 +4064,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 284,
-        "column": 21,
-        "endLine": 284,
-        "endColumn": 60,
+        "line": 258,
+        "column": 23,
+        "endLine": 258,
+        "endColumn": 62,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
@@ -2438,10 +4081,79 @@
     "warningCount": 0
   },
   {
-    "file": "app/pages/compare.vue",
+    "file": "app/pages/blog/index.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
+  },
+  {
+    "file": "app/pages/brand.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 119,
+        "column": 23,
+        "endLine": 119,
+        "endColumn": 38,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 189,
+        "column": 23,
+        "endLine": 189,
+        "endColumn": 55,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 320,
+        "column": 19,
+        "endLine": 320,
+        "endColumn": 48,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/pages/compare.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaLabel' should be 'aria-label' (kebab-case)",
+        "line": 383,
+        "column": 22,
+        "endLine": 383,
+        "endColumn": 76,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 383,
+        "column": 22,
+        "endLine": 383,
+        "endColumn": 76,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
   },
   {
     "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
@@ -2451,6 +4163,115 @@
   },
   {
     "file": "app/pages/index.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"instant-search-advisory\" which does not exist in the template",
+        "line": 67,
+        "column": 19,
+        "endLine": 67,
+        "endColumn": 61,
+        "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'ariaKeyshortcuts' should be 'aria-keyshortcuts' (kebab-case)",
+        "line": 70,
+        "column": 19,
+        "endLine": 70,
+        "endColumn": 39,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 70,
+        "column": 19,
+        "endLine": 70,
+        "endColumn": 39,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/pages/leaderboard/likes.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 158,
+        "column": 23,
+        "endLine": 158,
+        "endColumn": 54,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 259,
+        "column": 23,
+        "endLine": 259,
+        "endColumn": 54,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 355,
+        "column": 23,
+        "endLine": 355,
+        "endColumn": 51,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 372,
+        "column": 27,
+        "endLine": 372,
+        "endColumn": 55,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
+    "file": "app/pages/noodles/[slug].vue",
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-prefer-named-link",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 1,
+        "message": "[vize:ecosystem/vue-router-prefer-named-link] Prefer a named route object for RouterLink targets",
+        "line": 79,
+        "column": 11,
+        "endLine": 79,
+        "endColumn": 24,
+        "help": "Use :to=\"{ name: 'route-name' }\" so route params and Vue Router 5 typed routes stay visible to the editor."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/noodles/index.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
@@ -2463,9 +4284,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 176,
+        "line": 191,
         "column": 15,
-        "endLine": 176,
+        "endLine": 191,
         "endColumn": 61,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }
@@ -2486,6 +4307,12 @@
     "warningCount": 0
   },
   {
+    "file": "app/pages/package/[[org]]/[name]/versions.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
     "file": "app/pages/package/[[org]]/[name].vue",
     "messages": [
       {
@@ -2493,76 +4320,65 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 759,
+        "line": 547,
         "column": 7,
-        "endLine": 759,
+        "endLine": 547,
         "endColumn": 34,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/attribute-order",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 766,
-        "column": 9,
-        "endLine": 766,
-        "endColumn": 21,
-        "help": "Reorder attributes to follow the recommended order"
       },
       {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 956,
-        "column": 21,
-        "endLine": 956,
-        "endColumn": 44,
+        "line": 568,
+        "column": 23,
+        "endLine": 568,
+        "endColumn": 46,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
       },
       {
-        "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
-        "line": 985,
-        "column": 13,
-        "endLine": 985,
+        "message": "[vize:vue/prop-name-casing] Prop 'jsrInfo' should be 'jsr-info' (kebab-case)",
+        "line": 575,
+        "column": 40,
+        "endLine": 575,
         "endColumn": 48,
-        "help": "Add text content, child elements, or use aria-label for accessible content."
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 575,
+        "column": 40,
+        "endLine": 575,
+        "endColumn": 48,
+        "help": "Use kebab-case for attribute names"
       },
       {
         "ruleId": "vue/no-v-html",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
-        "line": 1067,
-        "column": 19,
-        "endLine": 1067,
-        "endColumn": 52,
+        "line": 597,
+        "column": 21,
+        "endLine": 597,
+        "endColumn": 54,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 1435,
-        "column": 13,
-        "endLine": 1435,
-        "endColumn": 34,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       },
       {
         "ruleId": "vue/prop-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
-        "line": 1496,
-        "column": 13,
-        "endLine": 1496,
-        "endColumn": 25,
+        "line": 967,
+        "column": 15,
+        "endLine": 967,
+        "endColumn": 38,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -2570,10 +4386,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
-        "line": 1497,
-        "column": 13,
-        "endLine": 1497,
-        "endColumn": 53,
+        "line": 969,
+        "column": 15,
+        "endLine": 969,
+        "endColumn": 55,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -2581,10 +4397,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
-        "line": 1498,
-        "column": 13,
-        "endLine": 1498,
-        "endColumn": 31,
+        "line": 970,
+        "column": 15,
+        "endLine": 970,
+        "endColumn": 33,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -2592,9 +4408,94 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1496,
-        "column": 13,
-        "endLine": 1496,
+        "line": 967,
+        "column": 15,
+        "endLine": 967,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 969,
+        "column": 15,
+        "endLine": 969,
+        "endColumn": 55,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 970,
+        "column": 15,
+        "endLine": 970,
+        "endColumn": 33,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 1079,
+        "column": 15,
+        "endLine": 1079,
+        "endColumn": 36,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 12
+  },
+  {
+    "file": "app/pages/package-changelog/[[org]]/[name]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package-changelog/[[org]]/[name]/v/[version].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package-changelog/[[org]]/[name].vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'versionUrlPattern' should be 'version-url-pattern' (kebab-case)",
+        "line": 112,
+        "column": 7,
+        "endLine": 112,
+        "endColumn": 25,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'latestVersion' should be 'latest-version' (kebab-case)",
+        "line": 114,
+        "column": 7,
+        "endLine": 114,
+        "endColumn": 21,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 112,
+        "column": 7,
+        "endLine": 112,
         "endColumn": 25,
         "help": "Use kebab-case for attribute names"
       },
@@ -2603,10 +4504,43 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1497,
-        "column": 13,
-        "endLine": 1497,
-        "endColumn": 53,
+        "line": 114,
+        "column": 7,
+        "endLine": 114,
+        "endColumn": 21,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'goToVersion' should be 'go-to-version' (kebab-case)",
+        "line": 145,
+        "column": 9,
+        "endLine": 145,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'resolveVersionPending' should be 'resolve-version-pending' (kebab-case)",
+        "line": 146,
+        "column": 9,
+        "endLine": 146,
+        "endColumn": 50,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 145,
+        "column": 9,
+        "endLine": 145,
+        "endColumn": 51,
         "help": "Use kebab-case for attribute names"
       },
       {
@@ -2614,44 +4548,209 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 1498,
-        "column": 13,
-        "endLine": 1498,
+        "line": 146,
+        "column": 9,
+        "endLine": 146,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/valid-v-slot",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
+        "line": 147,
+        "column": 9,
+        "endLine": 147,
+        "endColumn": 15,
+        "help": "Use v-slot on a component or a template element inside a component"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'pkgName' should be 'pkg-name' (kebab-case)",
+        "line": 150,
+        "column": 11,
+        "endLine": 150,
         "endColumn": 31,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'viewOnGit' should be 'view-on-git' (kebab-case)",
+        "line": 152,
+        "column": 11,
+        "endLine": 152,
+        "endColumn": 38,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 150,
+        "column": 11,
+        "endLine": 150,
+        "endColumn": 31,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 152,
+        "column": 11,
+        "endLine": 152,
+        "endColumn": 38,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'tpTarget' should be 'tp-target' (kebab-case)",
+        "line": 158,
+        "column": 9,
+        "endLine": 158,
+        "endColumn": 26,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'goToVersion' should be 'go-to-version' (kebab-case)",
+        "line": 159,
+        "column": 9,
+        "endLine": 159,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'resolveVersionPending' should be 'resolve-version-pending' (kebab-case)",
+        "line": 160,
+        "column": 9,
+        "endLine": 160,
+        "endColumn": 50,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 158,
+        "column": 9,
+        "endLine": 158,
+        "endColumn": 26,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 159,
+        "column": 9,
+        "endLine": 159,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 160,
+        "column": 9,
+        "endLine": 160,
+        "endColumn": 50,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/valid-v-slot",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/valid-v-slot] v-slot can only be used on components or template elements",
+        "line": 161,
+        "column": 9,
+        "endLine": 161,
+        "endColumn": 15,
+        "help": "Use v-slot on a component or a template element inside a component"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'pkgName' should be 'pkg-name' (kebab-case)",
+        "line": 164,
+        "column": 11,
+        "endLine": 164,
+        "endColumn": 31,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'viewOnGit' should be 'view-on-git' (kebab-case)",
+        "line": 166,
+        "column": 11,
+        "endLine": 166,
+        "endColumn": 38,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 164,
+        "column": 11,
+        "endLine": 164,
+        "endColumn": 31,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 166,
+        "column": 11,
+        "endLine": 166,
+        "endColumn": 38,
         "help": "Use kebab-case for attribute names"
       }
     ],
-    "errorCount": 0,
-    "warningCount": 12
+    "errorCount": 2,
+    "warningCount": 22
   },
   {
     "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
     "messages": [
       {
-        "ruleId": "vue/attribute-order",
+        "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
-        "line": 426,
-        "column": 9,
-        "endLine": 426,
-        "endColumn": 31,
-        "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 495,
-        "column": 17,
-        "endLine": 495,
-        "endColumn": 93,
-        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 621,
+        "column": 1,
+        "endLine": 621,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/pages/package-docs/[...path].vue",
@@ -2661,9 +4760,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
-        "line": 215,
+        "line": 211,
         "column": 1,
-        "endLine": 215,
+        "endLine": 211,
         "endColumn": 8,
         "help": "Add scoped attribute: <style scoped>"
       }
@@ -2672,22 +4771,152 @@
     "warningCount": 1
   },
   {
+    "file": "app/pages/package-stats/[[org]]/[packageName].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/package-timeline/[[org]]/[packageName].vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'sizeCache' should be 'size-cache' (kebab-case)",
+        "line": 358,
+        "column": 13,
+        "endLine": 358,
+        "endColumn": 23,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'versionSubEvents' should be 'version-sub-events' (kebab-case)",
+        "line": 359,
+        "column": 13,
+        "endLine": 359,
+        "endColumn": 30,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'timelineEntries' should be 'timeline-entries' (kebab-case)",
+        "line": 360,
+        "column": 13,
+        "endLine": 360,
+        "endColumn": 29,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'selectedVersion' should be 'selected-version' (kebab-case)",
+        "line": 361,
+        "column": 13,
+        "endLine": 361,
+        "endColumn": 29,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 358,
+        "column": 13,
+        "endLine": 358,
+        "endColumn": 23,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 359,
+        "column": 13,
+        "endLine": 359,
+        "endColumn": 30,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 360,
+        "column": 13,
+        "endLine": 360,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 361,
+        "column": 13,
+        "endLine": 361,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 8
+  },
+  {
+    "file": "app/pages/pds.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+        "line": 173,
+        "column": 21,
+        "endLine": 173,
+        "endColumn": 70,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+        "line": 180,
+        "column": 23,
+        "endLine": 180,
+        "endColumn": 41,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
     "file": "app/pages/privacy.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "app/pages/profile/[handle]/index.vue",
+    "file": "app/pages/profile/[identity]/index.vue",
     "messages": [
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"displayName\" which does not exist in the template",
-        "line": 115,
+        "line": 195,
         "column": 16,
-        "endLine": 115,
+        "endLine": 195,
         "endColumn": 33,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
@@ -2696,9 +4925,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"description\" which does not exist in the template",
-        "line": 125,
+        "line": 205,
         "column": 16,
-        "endLine": 125,
+        "endLine": 205,
         "endColumn": 33,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
@@ -2707,9 +4936,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"website\" which does not exist in the template",
-        "line": 135,
+        "line": 215,
         "column": 16,
-        "endLine": 135,
+        "endLine": 215,
         "endColumn": 29,
         "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
       },
@@ -2718,10 +4947,10 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'packageUrl' should be 'package-url' (kebab-case)",
-        "line": 198,
-        "column": 56,
-        "endLine": 198,
-        "endColumn": 91,
+        "line": 280,
+        "column": 30,
+        "endLine": 280,
+        "endColumn": 48,
         "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
       },
       {
@@ -2729,25 +4958,14 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
-        "line": 198,
-        "column": 56,
-        "endLine": 198,
-        "endColumn": 91,
+        "line": 280,
+        "column": 30,
+        "endLine": 280,
+        "endColumn": 48,
         "help": "Use kebab-case for attribute names"
-      },
-      {
-        "ruleId": "vue/require-v-for-key",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <PackageLikeCard>",
-        "line": 198,
-        "column": 26,
-        "endLine": 198,
-        "endColumn": 55,
-        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 5
   },
   {
@@ -2770,9 +4988,9 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"search-provider-select\" found in template",
-        "line": 176,
+        "line": 215,
         "column": 21,
-        "endLine": 176,
+        "endLine": 215,
         "endColumn": 48,
         "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
       },
@@ -2781,14 +4999,48 @@
         "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"language-select\" found in template",
-        "line": 234,
+        "line": 281,
         "column": 21,
-        "endLine": 234,
+        "endLine": 281,
         "endColumn": 41,
         "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'modelValue' should be 'model-value' (kebab-case)",
+        "line": 172,
+        "column": 15,
+        "endLine": 172,
+        "endColumn": 51,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 172,
+        "column": 15,
+        "endLine": 172,
+        "endColumn": 51,
+        "help": "Use kebab-case for attribute names"
       }
     ],
     "errorCount": 2,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/sponsors.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/translation-status.vue",
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   },
   {
@@ -2799,9 +5051,9 @@
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
-        "line": 155,
+        "line": 157,
         "column": 15,
-        "endLine": 155,
+        "endLine": 157,
         "endColumn": 59,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
       }

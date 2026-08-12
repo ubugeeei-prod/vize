@@ -266,10 +266,18 @@ fn collect_global_component_stubs(
     }
 }
 
+/// Declare the `$`-prefixed template globals the generated Nuxt types name.
+///
+/// `infer_i18n_globals` adds the vue-i18n instance properties whenever an i18n
+/// composable is auto-imported. That inference is only sound while the project
+/// has no generated type graph to consult: once it has one, an auto-imported
+/// `useI18n` says nothing about whether `$t` is declared, and inventing it hides
+/// the `TS2339` the Vue toolchain reports for every authored use.
 pub(super) fn collect_generated_template_globals(
     generated_dir: &NuxtGeneratedDir,
     options: &mut VirtualTsOptions,
     seen_auto_imports: &FxHashSet<String>,
+    infer_i18n_globals: bool,
 ) {
     let mut seen_globals = options
         .template_globals
@@ -296,7 +304,9 @@ pub(super) fn collect_generated_template_globals(
         }
     }
 
-    if seen_auto_imports.contains("useI18n") || seen_auto_imports.contains("useLocalePath") {
+    if infer_i18n_globals
+        && (seen_auto_imports.contains("useI18n") || seen_auto_imports.contains("useLocalePath"))
+    {
         collect_i18n_template_globals(options, &mut seen_globals);
     }
 }
