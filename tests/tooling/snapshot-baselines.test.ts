@@ -146,13 +146,39 @@ test("check snapshots are complete JSON baselines", () => {
     assert.equal(typeof baseline.errorCount, "number", snapshot);
     assert.equal(typeof baseline.warningCount, "number", snapshot);
 
+    const severities = new Map<string, number>();
     for (const file of baseline.files) {
       assert.ok(file && typeof file === "object", snapshot);
       const entry = file as { file?: unknown; virtualTs?: unknown; diagnostics?: unknown };
       assert.equal(typeof entry.file, "string", snapshot);
       assert.ok(entry.virtualTs === undefined || typeof entry.virtualTs === "string", snapshot);
       assert.ok(Array.isArray(entry.diagnostics), snapshot);
+
+      for (const diagnostic of entry.diagnostics as unknown[]) {
+        assert.equal(typeof diagnostic, "string", snapshot);
+        const severity = /^(error|warning|info|hint):/.exec(diagnostic as string)?.[1];
+        assert.ok(severity, `${snapshot}: unrecognized severity in ${String(diagnostic)}`);
+        severities.set(severity, (severities.get(severity) ?? 0) + 1);
+      }
     }
+
+    // The summary counters are derived from the rows, so a baseline edit that
+    // drops a row must drop the count with it. Two PRs each removing one
+    // diagnostic and each writing `30 -> 29` merged cleanly into a wrong `29`
+    // (#4239 and #4241 both landed before the other's CI could observe it),
+    // which only surfaced on the next PR to run against both. `info` and
+    // `hint` rows are deliberately counted by neither field — `vize check`
+    // reports only errors and warnings in its summary.
+    assert.equal(
+      severities.get("error") ?? 0,
+      baseline.errorCount,
+      `${snapshot}: errorCount must equal the number of error rows`,
+    );
+    assert.equal(
+      severities.get("warning") ?? 0,
+      baseline.warningCount,
+      `${snapshot}: warningCount must equal the number of warning rows`,
+    );
   }
 });
 
