@@ -87,6 +87,16 @@ pub struct VirtualTsOptions {
     /// Ambient declaration files that editor virtual documents must load.
     /// Paths are emitted as triple-slash references before generated code.
     pub reference_paths: Vec<String>,
+    /// Resolve `$`-prefixed template instance globals by reading them off the
+    /// component public instance instead of declaring them with a permissive
+    /// `any` fallback.
+    ///
+    /// Set only when the project publishes an authoritative ambient declaration
+    /// graph for those names — Nuxt's generated `.nuxt` types. A name that graph
+    /// does not declare then reports the `TS2339` `vue-tsc` reports for it,
+    /// instead of silently resolving to `any`, and a name it does declare
+    /// resolves to its real declared type rather than a widened stand-in.
+    pub strict_instance_globals: bool,
 }
 
 impl Default for VirtualTsOptions {
@@ -97,6 +107,7 @@ impl Default for VirtualTsOptions {
             auto_import_stubs: Vec::new(),
             external_template_bindings: Vec::new(),
             reference_paths: Vec::new(),
+            strict_instance_globals: false,
         }
     }
 }

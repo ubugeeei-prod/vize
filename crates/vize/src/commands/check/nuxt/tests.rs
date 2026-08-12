@@ -175,20 +175,19 @@ export {}
             options.auto_import_stubs
         );
     }
-    assert!(
+    // The generated graph is present, so it is the authority: the `$t` its
+    // `.nuxt/types` declares keeps its declaration, while the rest of the
+    // vue-i18n instance surface an auto-imported `useI18n` used to imply is no
+    // longer invented and resolves on the component instance instead.
+    assert!(options.strict_instance_globals);
+    assert_eq!(
         options
             .template_globals
             .iter()
-            .any(|global| global.name == "$t"),
-        "expected $t template global, got: {:#?}",
-        options.template_globals
-    );
-    assert!(
-        options
-            .template_globals
-            .iter()
-            .any(|global| global.name == "$te"),
-        "expected i18n fallback template globals, got: {:#?}",
+            .map(|global| global.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["$t"],
+        "expected only the declared template global, got: {:#?}",
         options.template_globals
     );
 

@@ -39,6 +39,8 @@ const assertionOnlyCheckTests = {
     "framework patch oracle asserts generated Nuxt ambient and #imports virtual-module types across editor revisions",
   "nuxt-no-tsconfig-oracle":
     "framework patch oracle asserts clean, broken, and repaired Nuxt checking without a root tsconfig",
+  "nuxt-template-globals":
+    "template-global oracle asserts exact vue-tsc agreement on declared, undeclared, and repaired Nuxt instance globals",
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
   "typescript-go-module-resolution-determinism":

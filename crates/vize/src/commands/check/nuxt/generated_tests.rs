@@ -83,12 +83,18 @@ export {}
         !stubs.contains("declare function useRouter(): any;"),
         "imports.d.mts should count as generated imports and suppress fallback stubs:\n{stubs}"
     );
-    assert!(
+    // `$modern` is declared by the generated `ComponentCustomProperties`, so it
+    // keeps its own declaration. Everything the generated graph does not declare
+    // resolves on the component instance instead.
+    assert!(options.strict_instance_globals);
+    assert_eq!(
         options
             .template_globals
             .iter()
-            .any(|global| global.name == "$modern"),
-        "expected ComponentCustomProperties from .d.cts, got: {:#?}",
+            .map(|global| global.name.as_str())
+            .collect::<Vec<_>>(),
+        vec!["$modern"],
+        "expected only the declared ComponentCustomProperties global, got: {:#?}",
         options.template_globals
     );
 
