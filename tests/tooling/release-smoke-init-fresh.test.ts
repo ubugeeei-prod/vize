@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
+import { projectEnv } from "../../tools/npm/smoke-release-init-project.mjs";
 import {
   FRESH_INIT_MATRIX,
   PACKAGE_MANAGERS,
@@ -122,9 +124,37 @@ test("the smoke only passes init flags the guide documents", () => {
   }
 });
 
+/** Arguments of every `smoke-release-install.mjs` step in a workflow. */
+function smokeInstallInvocations(workflow: string): string[][] {
+  const parsed = parse(readRepoFile(".github", "workflows", workflow)) as {
+    jobs?: Record<string, { steps?: Array<{ run?: string }> }>;
+  };
+  const invocations: string[][] = [];
+  for (const job of Object.values(parsed.jobs ?? {})) {
+    for (const step of job.steps ?? []) {
+      if (!step.run?.includes("smoke-release-install.mjs")) continue;
+      invocations.push(step.run.replace(/\\\n/gu, " ").trim().split(/\s+/u));
+    }
+  }
+  assert.ok(invocations.length > 0, `${workflow} runs no smoke-release-install.mjs step`);
+  return invocations;
+}
+
 test("the release runtime smoke runs the fresh-project matrix", () => {
   const runtime = readRepoFile("tools", "npm", "smoke-release-runtime.mjs");
-  assert.match(runtime, /runFreshProjectInitChecks\(\{[\s\S]*?tempDir,[\s\S]*?vizeBin,\n\s*\}\);/u);
+  // The context keys the fresh-project driver needs, independent of the order
+  // and line breaks the call site happens to use.
+  const freshCall = /runFreshProjectInitChecks\(\{([^}]*)\}\)/u.exec(runtime);
+  assert.ok(freshCall, "the runtime smoke must call runFreshProjectInitChecks");
+  const context = new Set(
+    freshCall[1]
+      .split(",")
+      .map((entry) => entry.split(":")[0].trim())
+      .filter((name) => name.length > 0),
+  );
+  for (const key of ["tempDir", "vizeBin"]) {
+    assert.ok(context.has(key), `runFreshProjectInitChecks must receive ${key}`);
+  }
   assert.match(runtime, /from "\.\/smoke-release-init-fresh\.mjs"/u);
 
   const project = readRepoFile("tools", "npm", "smoke-release-init-project.mjs");
@@ -135,15 +165,40 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
   assert.match(project, /would leak into the fresh project/u);
   assert.match(project, /installed vize did not bring @typescript\/native-preview/u);
   assert.match(project, /a missing Corsa runtime silently disabled type checking/u);
-  // Host Corsa overrides must be stripped, or a packaging failure stays hidden.
-  assert.match(project, /CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE/u);
 
   for (const workflow of ["release.yml", "native-smoke.yml"]) {
-    const source = readRepoFile(".github", "workflows", workflow);
-    assert.match(
-      source,
-      /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*?npm\/cli/u,
+    // Assert the step's own arguments, so reflowing the YAML command cannot
+    // silently drop the packed CLI from the runtime smoke.
+    const runtimeSmokeArgs = smokeInstallInvocations(workflow).filter((args) =>
+      args.includes("--runtime-checks"),
+    );
+    assert.ok(
+      runtimeSmokeArgs.some(
+        (args) => args.includes("--prepare-manifests") && args.includes("npm/cli"),
+      ),
       `${workflow} must run the runtime smoke over the packed CLI`,
     );
+  }
+});
+
+test("the fresh project runs with the host's Corsa overrides stripped", () => {
+  // A host that exported these would let its own runtime satisfy the check and
+  // hide a packaging failure, so assert the environment the driver hands out.
+  const overrides = ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"];
+  const host = Object.fromEntries(overrides.map((name) => [name, "/host/corsa"]));
+  const previous = overrides.map((name) => [name, process.env[name]] as const);
+  try {
+    Object.assign(process.env, host);
+    const stripped = projectEnv();
+    for (const name of overrides) {
+      assert.ok(!(name in stripped), `projectEnv must drop the host's ${name}`);
+    }
+    // An override the smoke passes on purpose still reaches the child.
+    assert.equal(projectEnv({ CORSA_PATH: "/missing" }).CORSA_PATH, "/missing");
+  } finally {
+    for (const [name, value] of previous) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
   }
 });
