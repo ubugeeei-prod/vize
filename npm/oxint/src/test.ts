@@ -552,7 +552,11 @@ assert.doesNotMatch(
   /^  [|│] Source:/mu,
   "The inline source snippet should be gone",
 );
-assert.match(defaultRun.output, /\bHelp: Why:/u, "Default output should still include help text");
+assert.match(
+  defaultRun.output,
+  /Help:(?:%0A|\s|[|│])*Why:/u,
+  "Default output should still include help text",
+);
 
 const stylishRun = runOxlint(["-c", ".oxlintrc.no-help.json", "-f", "stylish", "App.vue"]);
 assert.notEqual(stylishRun.exitCode, 0, "stylish formatter should still report Patina failures");
