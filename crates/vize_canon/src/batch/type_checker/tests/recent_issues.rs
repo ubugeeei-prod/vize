@@ -1,4 +1,5 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+mod component_options_index_signature;
 mod component_prop_regressions;
 mod css_module_classes;
 mod directive_anchors;
@@ -7,6 +8,7 @@ mod empty_required_props;
 mod exact_optional_props;
 mod external_slot_payloads;
 mod global_component_callbacks;
+mod imported_component_ref_expose;
 mod native_prop_anchors;
 mod optional_boolean_props;
 mod options_api_bridge_anchors;

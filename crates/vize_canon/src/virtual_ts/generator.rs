@@ -871,7 +871,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         .then(|| {
             setup_props_plan.component_value_props_type_ref(generic_component_params.as_ref())
         });
-    ts.push_str(self::component_export::VUE_COMPONENT_OPTIONS_TYPE);
     emit_default_export_declaration(
         &mut ts,
         &emits_info,

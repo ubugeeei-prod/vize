@@ -179,6 +179,7 @@ type __VizeComponentConstructor = new <__VizeAuthoredProps = unknown>(props?: __
 $props: __VizeAuthoredKeyWitness<__VizeAuthoredProps> & __VizeComponentInput<Props, {}, __VizeAuthoredProps>;
 };
 type __VizeVueComponentOptions = {
+  [key: string]: any;
   name?: string;
   __name?: string;
   __file?: string;

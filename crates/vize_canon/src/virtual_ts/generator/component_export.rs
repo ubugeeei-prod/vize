@@ -3,11 +3,33 @@ use vize_carton::{String, append, cstr};
 use super::emits::EmitsInfo;
 use super::generics::split_generic_params;
 
+/// The string index signature Vue's own component options carry, emitted ahead
+/// of [`VUE_COMPONENT_OPTIONS_MEMBERS`] for non-generic components.
+///
+/// `ComponentOptionsBase` — and therefore every `DefineComponent` — extends
+/// `LegacyOptions`, which declares:
+///
+/// ```ts
+/// interface LegacyOptions<...> {
+///   compatConfig?: CompatConfig;
+///   [key: string]: any;
+///   ...
+/// }
+/// ```
+///
+/// That is what makes `typeof SomeComponent` accept arbitrary members under
+/// `vue-tsc`. Without it, the classic `ref<typeof Child | null>(null)` template
+/// ref reports `TS2339` on every member of the child's expose surface (#4150).
+/// Declared members still win over the index signature, so the `never` markers
+/// keep excluding Fragment/Teleport/Suspense, and the *instance* type is
+/// untouched: `InstanceType<typeof Child>` keeps reporting a genuinely absent
+/// member exactly as `vue-tsc` does.
+const COMPONENT_OPTIONS_INDEX_SIGNATURE: &str = "  [key: string]: any;\n";
+
 /// Structural shape of the Vue component options object the SFC's default
 /// export is intersected with, so template/`InstanceType` consumers see the
 /// runtime option keys alongside the constructor.
-pub(super) const VUE_COMPONENT_OPTIONS_TYPE: &str = "type __VizeVueComponentOptions = {
-  name?: string;
+const VUE_COMPONENT_OPTIONS_MEMBERS: &str = "  name?: string;
   __name?: string;
   __file?: string;
   __vccOpts?: any;
@@ -31,6 +53,21 @@ pub(super) const VUE_COMPONENT_OPTIONS_TYPE: &str = "type __VizeVueComponentOpti
   __isBuiltIn?: boolean;
 };
 ";
+
+/// Emit the `__VizeVueComponentOptions` alias the default export references.
+///
+/// A generic SFC is *not* a `DefineComponent` for `vue-tsc`: it compiles to a
+/// bare generic function component, so member access on its value type reports
+/// `TS2339` for everything but `Function`'s own members. Only the non-generic
+/// spelling therefore carries [`COMPONENT_OPTIONS_INDEX_SIGNATURE`], which
+/// keeps generic components reporting exactly what `vue-tsc` reports.
+fn emit_vue_component_options_type(ts: &mut String, has_generic_params: bool) {
+    ts.push_str("type __VizeVueComponentOptions = {\n");
+    if !has_generic_params {
+        ts.push_str(COMPONENT_OPTIONS_INDEX_SIGNATURE);
+    }
+    ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS);
+}
 
 /// Alias the authored default export and its instance type so the generated
 /// component keeps the declarations the SFC itself wrote.
@@ -110,6 +147,7 @@ pub(super) fn emit_default_export_declaration(
     has_authored_default: bool,
     static_raw_props_ref: Option<&str>,
 ) {
+    emit_vue_component_options_type(ts, generic_component_params.is_some());
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
     let authored_component = if has_authored_default {

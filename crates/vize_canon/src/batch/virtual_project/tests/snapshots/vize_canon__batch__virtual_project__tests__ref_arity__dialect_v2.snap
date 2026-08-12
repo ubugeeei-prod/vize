@@ -171,6 +171,7 @@ type __VizeComponentInstance = {
 } & __VizeVue2ComponentInstance;
 type __VizeComponentConstructor = new (...args: any[]) => __VizeComponentInstance;
 type __VizeVueComponentOptions = {
+  [key: string]: any;
   name?: string;
   __name?: string;
   __file?: string;
