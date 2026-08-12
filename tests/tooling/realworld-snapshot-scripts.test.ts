@@ -4,6 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { CHECK_FIXTURE_NODE_ARGS } from "./support/check-fixtures/manifest.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 const realworldSnapshotApps = [
@@ -31,7 +33,12 @@ test("real-world check and lint snapshots are wired into e2e scripts", () => {
 
   assert.match(pkg.scripts["test:build"], serialTestConcurrency);
   assert.match(pkg.scripts["test:check"], serialTestConcurrency);
-  assert.match(pkg.scripts["test:check:fixtures"], serialTestConcurrency);
+  // The fixture lane runs through the supervisor now (#4126), so the flag it
+  // passes every phase lives in the manifest rather than in the script string.
+  assert.ok(
+    CHECK_FIXTURE_NODE_ARGS.some((argument) => serialTestConcurrency.test(argument)),
+    "test:check:fixtures phases should stay serial",
+  );
 
   for (const app of realworldSnapshotApps) {
     assert.match(
