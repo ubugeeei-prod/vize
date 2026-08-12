@@ -5,7 +5,13 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { CHECK_FIXTURE_ENV, CHECK_FIXTURE_NODE_ARGS } from "./support/check-fixtures/manifest.ts";
-import { classifyPhase, describePhase, runPhase } from "./support/check-fixtures/phase-runner.ts";
+import { LEAK_PID_FILE_ENV } from "./support/check-fixtures/control-fixtures.ts";
+import {
+  classifyPhase,
+  describePhase,
+  phaseEnv,
+  runPhase,
+} from "./support/check-fixtures/phase-runner.ts";
 import { readProcessTable } from "./support/check-fixtures/process-table.ts";
 import { REPORT_SCHEMA } from "./support/check-fixtures/report.ts";
 import { runSupervisor } from "./support/check-fixtures/supervisor.ts";
@@ -13,11 +19,11 @@ import { root } from "./support/github-workflows.ts";
 
 const FIXTURE_DIR = "tests/tooling/support/check-fixtures";
 
-function phaseOptions(overrides: { capture?: boolean } = {}) {
+function phaseOptions(env: NodeJS.ProcessEnv = {}) {
   return {
-    capture: overrides.capture ?? true,
+    capture: true,
     cwd: root,
-    env: { ...process.env, ...CHECK_FIXTURE_ENV },
+    env: { ...process.env, ...CHECK_FIXTURE_ENV, ...env },
     nodeArgs: CHECK_FIXTURE_NODE_ARGS,
     sampleIntervalMs: 25,
     startedAt: performance.now(),
@@ -28,6 +34,10 @@ function pidIsLive(pid: number): boolean {
   return readProcessTable().some((task) => task.pid === pid && task.state !== "Z");
 }
 
+function tempFile(name: string): string {
+  return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "vize-check-fixtures-")), name);
+}
+
 // The negative control. A phase that passes every assertion it makes and still
 // abandons a `node` child has to fail the lane, or the supervisor would be a
 // telemetry collector rather than a guard. The leaked child is spawned into the
@@ -35,16 +45,31 @@ function pidIsLive(pid: number): boolean {
 // `init` owns it and no parent link remains — exactly the case that makes a
 // descendant-only guard blind.
 test("the descendant guard turns red when a phase leaks a node child", async () => {
+  const pidFile = tempFile("leaked.pid");
   const outcome = await runPhase(
     { file: `${FIXTURE_DIR}/leaked-child-fixture.ts`, id: "leaked-child" },
-    phaseOptions(),
+    phaseOptions({ [LEAK_PID_FILE_ENV]: pidFile }),
   );
 
   assert.equal(outcome.exitCode, 0, `the leaking phase must pass its own tests: ${outcome.output}`);
   assert.equal(outcome.signal, null);
   assert.equal(outcome.spawnError, null);
+  // A phase that silently ran nothing would leak nothing and look green, so the
+  // control proves it executed before it judges the guard.
+  assert.ok(
+    fs.existsSync(pidFile),
+    `the phase must actually run its fixture; its output was:\n${outcome.output}`,
+  );
+  const leakedPid = Number.parseInt(fs.readFileSync(pidFile, "utf8"), 10);
+  assert.ok(Number.isInteger(leakedPid));
+
+  assert.ok(
+    outcome.survivors.some((survivor) => survivor.pid === leakedPid),
+    `the guard must report pid ${leakedPid}; it reported ${JSON.stringify(outcome.survivors)}` +
+      `, phase pgid ${String(outcome.pgid)}, and the live row for that pid is ` +
+      `${JSON.stringify(readProcessTable().find((task) => task.pid === leakedPid) ?? null)}`,
+  );
   assert.equal(outcome.status, "leaked");
-  assert.ok(outcome.survivors.length > 0, "the leaked child must be reported");
   assert.deepEqual(
     [...new Set(outcome.survivors.map((task) => task.command))],
     ["node"],
@@ -76,6 +101,27 @@ test("the descendant guard stays quiet when a phase reaps its children", async (
   assert.deepEqual(outcome.survivors, []);
   assert.equal(outcome.reaped, false);
   assert.equal(outcome.samples.after.group.processes.length, 0);
+});
+
+// The lane never meets these because it starts from a task runner, but the
+// guard's own tests supervise a phase from inside another `node --test`, and a
+// child that inherits the outer run's context exits zero without executing
+// anything — a green phase that checked nothing.
+test("a phase does not inherit another runner's context", () => {
+  const stripped = phaseEnv({
+    NODE_CHANNEL_FD: "3",
+    NODE_OPTIONS: "--disable-warning=DEP0040",
+    NODE_TEST_CONTEXT: "child-v8",
+    NODE_UNIQUE_ID: "1",
+    NODE_V8_COVERAGE: "/tmp/coverage",
+    PATH: "/usr/bin",
+    VIZE_TEST_REQUIRE_TSGO: "1",
+  });
+  assert.deepEqual(stripped, {
+    NODE_OPTIONS: "--disable-warning=DEP0040",
+    PATH: "/usr/bin",
+    VIZE_TEST_REQUIRE_TSGO: "1",
+  });
 });
 
 test("phase classification separates assertion failures, leaks, and spawn failures", () => {
@@ -128,11 +174,13 @@ test("the supervisor artifact records the whole process budget for every phase",
     sampleIntervalMs: 25,
   });
 
-  assert.equal(report.status, "failed", "a leaked phase must fail the whole lane");
+  const verdicts = report.phases.map((phase) => `${phase.id}:${phase.status}`);
+  const outputs = report.phases.map((phase) => `${phase.id}:\n${phase.output}`).join("\n");
+  assert.equal(report.status, "failed", `a leaked phase must fail the whole lane\n${outputs}`);
   assert.deepEqual(
-    report.phases.map((phase) => `${phase.id}:${phase.status}`),
+    verdicts,
     ["clean-child:passed", "leaked-child:leaked"],
-    "a failing phase must not stop later phases from being recorded",
+    `a failing phase must not stop later phases from being recorded\n${outputs}`,
   );
 
   const written = JSON.parse(

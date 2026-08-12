@@ -1,11 +1,12 @@
 //! One focused cycle under an explicit constrained PID budget (#4126).
 
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
 import { checkArgv, type CycleTarget } from "./cycle-targets.ts";
 import type { TaskRecord } from "./process-table.ts";
-import { readUlimitProcessesHard } from "./runner-facts.ts";
+import { parseProcLimits, parseUlimitProcesses, readUlimitProcessesHard } from "./runner-facts.ts";
 import { runSupervised } from "./supervised-command.ts";
 import { sampleTopology, type TopologySample } from "./topology.ts";
 
@@ -20,8 +21,10 @@ export type PidBudget = {
   readonly baselineTasks: number;
   /** Documented headroom the cycle is allowed on top of the baseline. */
   readonly taskBudget: number;
-  /** Soft `RLIMIT_NPROC` the cycle actually ran under. */
+  /** Soft `RLIMIT_NPROC` the cycle was asked to run under. */
   readonly ulimitProcesses: number;
+  /** Soft limit read back from a child spawned through the same prologue. */
+  readonly applied: number | "unlimited" | null;
   /** Whether the hard ceiling forced a looser limit than requested. */
   readonly clamped: boolean;
 };
@@ -39,6 +42,14 @@ export type CycleRecord = {
   readonly peakGroupLiveTasks: number;
   readonly peakCorsaProcesses: number;
   readonly reportedEagain: boolean;
+  /**
+   * The checker's own words, kept only when the cycle is red.
+   *
+   * A red cycle whose artifact holds a hash and nothing else cannot be
+   * diagnosed without a rerun, which is the position this whole issue started
+   * from.
+   */
+  readonly stderrExcerpt: string | null;
   readonly survivors: readonly TaskRecord[];
   readonly samples: {
     readonly before: TopologySample;
@@ -93,16 +104,48 @@ export function outputFailures(
   return failures;
 }
 
+/** Exit status the budget prologue uses when it cannot lower the limit. */
+export const BUDGET_NOT_APPLIED_EXIT = 97;
+
 /**
  * Lower `RLIMIT_NPROC` for the cycle, then `exec` the checker in its place.
  *
  * `ulimit` is applied by the shell and inherited across `exec`, so the `sh`
- * process is replaced rather than left in the group. When the budget cannot be
- * applied the shell exits non-zero instead of running unconstrained, which is
- * what keeps the constraint from silently disappearing.
+ * process is replaced rather than left in the group. Both spellings are tried
+ * because `/bin/sh` on Ubuntu is dash, which names `RLIMIT_NPROC` `-p` and
+ * rejects bash's `-u`; when neither applies the shell exits
+ * `BUDGET_NOT_APPLIED_EXIT` rather than running the cycle unconstrained, so a
+ * missing constraint can never read as a passing cycle.
  */
 export function budgetedArgv(budget: number, command: string, args: readonly string[]): string[] {
-  return ["-c", `ulimit -u ${budget} && exec "$@"`, "sh", command, ...args];
+  const prologue =
+    `ulimit -u ${budget} 2>/dev/null || ulimit -p ${budget} 2>/dev/null || ` +
+    `exit ${BUDGET_NOT_APPLIED_EXIT}`;
+  return ["-c", `${prologue}; exec "$@"`, "sh", command, ...args];
+}
+
+/**
+ * Read back the soft limit a budgeted child actually runs under.
+ *
+ * The prologue returning zero only proves a shell builtin accepted the flag;
+ * this proves the kernel applied it. A cycle that cannot demonstrate its own
+ * constraint is not evidence of anything, so the reading is asserted rather
+ * than assumed.
+ */
+export function verifyBudget(budget: number): number | "unlimited" | null {
+  const reader =
+    process.platform === "linux"
+      ? { args: ["/proc/self/limits"], command: "cat" }
+      : { args: ["-c", "ulimit -u 2>/dev/null || ulimit -p"], command: "/bin/sh" };
+  const result = spawnSync("/bin/sh", budgetedArgv(budget, reader.command, reader.args), {
+    encoding: "utf8",
+  });
+  if (result.status !== 0 || typeof result.stdout !== "string") {
+    return null;
+  }
+  return process.platform === "linux"
+    ? parseProcLimits(result.stdout, "Max processes").soft
+    : parseUlimitProcesses(result.stdout);
 }
 
 /**
@@ -117,15 +160,18 @@ export function resolveBudget(
   baselineTasks: number,
   taskBudget: number,
   hardLimit: number | "unlimited" | null = readUlimitProcessesHard(),
+  verify: (budget: number) => number | "unlimited" | null = verifyBudget,
 ): PidBudget {
   const hard = hardLimit;
   const requested = baselineTasks + taskBudget;
   const clamped = typeof hard === "number" && hard < requested;
+  const ulimitProcesses = clamped ? (hard as number) : requested;
   return {
+    applied: verify(ulimitProcesses),
     baselineTasks,
     clamped,
     taskBudget,
-    ulimitProcesses: clamped ? (hard as number) : requested,
+    ulimitProcesses,
   };
 }
 
@@ -170,6 +216,14 @@ export async function runCycle(
 
   if (result.spawnError != null) {
     failures.push(`spawn failed: ${result.spawnError}`);
+  }
+  if (budget.applied !== budget.ulimitProcesses) {
+    failures.push(
+      `constrained budget not applied: asked for ulimit -u ${budget.ulimitProcesses}, read back ${String(budget.applied)}`,
+    );
+  }
+  if (result.exitCode === BUDGET_NOT_APPLIED_EXIT) {
+    failures.push(`the budget prologue could not lower RLIMIT_NPROC to ${budget.ulimitProcesses}`);
   }
   if (reportedEagain) {
     failures.push(
@@ -224,6 +278,8 @@ export async function runCycle(
     reportedEagain,
     samples: result.samples,
     signal: result.signal,
+    stderrExcerpt:
+      failures.length === 0 ? null : `${result.stderr}${result.stdout}`.slice(0, 2000).trim(),
     survivors: result.survivors,
   };
 }

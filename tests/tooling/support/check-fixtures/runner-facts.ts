@@ -43,9 +43,47 @@ export function parseUlimitProcesses(stdout: string): number | "unlimited" | nul
   return Number.isInteger(parsed) ? parsed : null;
 }
 
-/** Read `RLIMIT_NPROC` through the shell, which is the only portable reader. */
+/**
+ * Parse one row of `/proc/self/limits`.
+ *
+ * This is read in preference to `ulimit` because the shell spelling is not
+ * portable: `/bin/sh` on Ubuntu is dash, whose `ulimit` names `RLIMIT_NPROC`
+ * `-p` and rejects bash's `-u` outright. `/proc` has no such dialect.
+ */
+export function parseProcLimits(
+  content: string,
+  name: string,
+): {
+  soft: number | "unlimited" | null;
+  hard: number | "unlimited" | null;
+} {
+  for (const line of content.split("\n")) {
+    if (!line.startsWith(name)) {
+      continue;
+    }
+    const rest = line.slice(name.length).trim();
+    const [soft, hard] = rest.split(/\s{2,}/);
+    return { hard: parseUlimitProcesses(hard ?? ""), soft: parseUlimitProcesses(soft ?? "") };
+  }
+  return { hard: null, soft: null };
+}
+
+const MAX_PROCESSES = "Max processes";
+
+function readProcLimits(): {
+  soft: number | "unlimited" | null;
+  hard: number | "unlimited" | null;
+} {
+  try {
+    return parseProcLimits(fs.readFileSync("/proc/self/limits", "utf8"), MAX_PROCESSES);
+  } catch {
+    return { hard: null, soft: null };
+  }
+}
+
+/** Read the soft `RLIMIT_NPROC`, i.e. what `ulimit -u` reports under bash. */
 export function readUlimitProcesses(): number | "unlimited" | null {
-  return readUlimit("-u");
+  return readProcLimits().soft ?? readUlimit();
 }
 
 /**
@@ -56,11 +94,17 @@ export function readUlimitProcesses(): number | "unlimited" | null {
  * applied rather than discovered from a failing `ulimit`.
  */
 export function readUlimitProcessesHard(): number | "unlimited" | null {
-  return readUlimit("-Hu");
+  return readProcLimits().hard ?? readUlimit("-H");
 }
 
-function readUlimit(flag: string): number | "unlimited" | null {
-  const result = spawnSync("/bin/sh", ["-c", `ulimit ${flag}`], { encoding: "utf8" });
+function readUlimit(prefix = ""): number | "unlimited" | null {
+  const result = spawnSync(
+    "/bin/sh",
+    ["-c", `ulimit ${prefix}u 2>/dev/null || ulimit ${prefix}p`],
+    {
+      encoding: "utf8",
+    },
+  );
   if (result.status !== 0 || typeof result.stdout !== "string") {
     return null;
   }

@@ -111,7 +111,10 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
         `[check-fixtures-cycles] ${target.id} cycle ${index}/${cycles}: ${record.durationMs}ms, ` +
           `peak ${record.peakGroupProcesses} procs / ${record.peakGroupLiveTasks} tasks, ` +
           `${record.peakCorsaProcesses} corsa, ulimit -u ${record.budget.ulimitProcesses}` +
-          (record.failures.length === 0 ? "" : ` — ${record.failures.join("; ")}`),
+          (record.failures.length === 0 ? "" : ` — ${record.failures.join("; ")}`) +
+          (record.stderrExcerpt == null || record.stderrExcerpt.length === 0
+            ? ""
+            : `\n  child output: ${record.stderrExcerpt}`),
       );
       writeCyclesReport(metricsDir, report);
     }

@@ -70,18 +70,25 @@ export function classifyPhase(result: {
 }
 
 /**
- * Strip Node's test-runner context from a phase's environment.
+ * Environment keys a fresh top-level `node --test` must not inherit.
  *
- * A phase is always a fresh top-level `node --test`. Inherit `NODE_TEST_*` and
- * the child decides it is already inside a run, prints "run() is being called
- * recursively within a test file. skipping running files", and exits zero
- * without executing anything — a green phase that checked nothing. The lane
- * never sees this because it is launched from a task runner, which is exactly
- * why the guard's own tests have to.
+ * Inherit `NODE_TEST_CONTEXT` and the child decides it is already inside a run,
+ * prints "run() is being called recursively within a test file. skipping
+ * running files", and exits zero without executing anything — a green phase
+ * that checked nothing. `NODE_CHANNEL_FD` and `NODE_UNIQUE_ID` point at a
+ * parent runner's IPC channel that does not exist in this child, and
+ * `NODE_V8_COVERAGE` would make every phase write into the outer run's
+ * coverage directory. The lane never meets any of these because it is launched
+ * from a task runner, which is exactly why the guard's own tests have to.
  */
+const INHERITED_RUNNER_KEYS = ["NODE_CHANNEL_FD", "NODE_UNIQUE_ID", "NODE_V8_COVERAGE"];
+
+/** Strip another runner's context from a phase's environment. */
 export function phaseEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return Object.fromEntries(
-    Object.entries(env).filter(([key]) => !key.startsWith("NODE_TEST_")),
+    Object.entries(env).filter(
+      ([key]) => !key.startsWith("NODE_TEST_") && !INHERITED_RUNNER_KEYS.includes(key),
+    ),
   ) as NodeJS.ProcessEnv;
 }
 
