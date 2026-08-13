@@ -120,7 +120,7 @@ function runFreshProjectCell(context, cell) {
 
   const clean = checkReport(projectRoot);
   assert.equal(clean.status, 0, `clean project failed vize:check\n${clean.rendered}`);
-  assert.deepEqual(reportedDiagnostics(clean.report), []);
+  assert.deepEqual(reportedDiagnostics(clean.report, projectRoot), []);
   assert.equal(clean.report.errorCount, 0);
   // The documented command, run exactly as `docs/content/guide/init.md` and the
   // generated script spell it, with no extra arguments.
@@ -141,7 +141,7 @@ function runFreshProjectCell(context, cell) {
   writeFiles(projectRoot, shape.check.broken);
   const broken = checkReport(projectRoot);
   assert.notEqual(broken.status, 0, "the broken project passed vize:check");
-  assert.deepEqual(reportedDiagnostics(broken.report), shape.check.brokenDiagnostics);
+  assert.deepEqual(reportedDiagnostics(broken.report, projectRoot), shape.check.brokenDiagnostics);
   assert.equal(
     broken.report.errorCount,
     shape.check.brokenDiagnostics.reduce((total, file) => total + file.diagnostics.length, 0),
@@ -151,7 +151,7 @@ function runFreshProjectCell(context, cell) {
   writeFiles(projectRoot, Object.fromEntries(repairs));
   const repaired = checkReport(projectRoot);
   assert.equal(repaired.status, 0, `repaired project failed vize:check\n${repaired.rendered}`);
-  assert.deepEqual(reportedDiagnostics(repaired.report), []);
+  assert.deepEqual(reportedDiagnostics(repaired.report, projectRoot), []);
 
   assertMissingCorsaGuidance(projectRoot, manager);
   console.log(`runtime: fresh ${shape.id} project via ${manager.id} (init, install, check triple)`);

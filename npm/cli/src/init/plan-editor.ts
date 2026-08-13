@@ -6,7 +6,7 @@ import type { ProjectDetection } from "./detect.js";
 import type { FeatureResult } from "./plan-types.js";
 import { renderVscodeExtensions, VSCODE_EXTENSION_ID } from "./templates.js";
 
-const EXTENSIONS_FILE = path.join(".vscode", "extensions.json");
+const EXTENSIONS_FILE = ".vscode/extensions.json";
 
 /**
  * Plans the editor recommendation.

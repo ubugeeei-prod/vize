@@ -269,6 +269,12 @@ test("--dry-run reports the plan and writes nothing", async () => {
   assert.equal(exists(root, "vize.config.ts"), false);
   assert.deepEqual(result.plan?.createdFiles, ["vize.config.ts", ".vscode/extensions.json"]);
   assert.deepEqual(result.plan?.updatedFiles, ["vite.config.ts", "package.json"]);
+  assert.match(
+    result.output,
+    /  editor    configured writes \.vscode\/extensions\.json recommending ubugeeei\.vize\n/,
+  );
+  assert.match(result.output, /\[vize init\] would create \.vscode\/extensions\.json\n/);
+  assert.doesNotMatch(result.output, /\.vscode\\extensions\.json/);
 });
 
 test("a non-TTY stdin without --yes refuses to prompt instead of hanging", async () => {
