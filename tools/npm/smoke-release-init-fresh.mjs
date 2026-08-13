@@ -7,8 +7,8 @@
  * module joins the two halves the issue names: it creates a project *outside*
  * that tree, runs `vize init` from the packed CLI the way `npx` would, installs
  * exactly the dependency plan the run printed, and then drives the generated
- * `vize:check` script through the clean/broken/repaired triple using only the
- * project's own `node_modules`.
+ * project-local `vize check` through the clean/broken/repaired triple using
+ * only the project's own `node_modules`.
  *
  * Nothing here reads the Vize checkout after the tarballs are packed; the
  * isolation assertions in `smoke-release-init-project.mjs` are what keep that
@@ -118,7 +118,7 @@ function runFreshProjectCell(context, cell) {
     "the install added dependencies the plan did not name",
   );
 
-  const clean = checkReport(projectRoot, manager);
+  const clean = checkReport(projectRoot);
   assert.equal(clean.status, 0, `clean project failed vize:check\n${clean.rendered}`);
   assert.deepEqual(reportedDiagnostics(clean.report), []);
   assert.equal(clean.report.errorCount, 0);
@@ -139,7 +139,7 @@ function runFreshProjectCell(context, cell) {
   );
 
   writeFiles(projectRoot, shape.check.broken);
-  const broken = checkReport(projectRoot, manager);
+  const broken = checkReport(projectRoot);
   assert.notEqual(broken.status, 0, "the broken project passed vize:check");
   assert.deepEqual(reportedDiagnostics(broken.report), shape.check.brokenDiagnostics);
   assert.equal(
@@ -149,7 +149,7 @@ function runFreshProjectCell(context, cell) {
 
   const repairs = Object.keys(shape.check.broken).map((name) => [name, authored[name]]);
   writeFiles(projectRoot, Object.fromEntries(repairs));
-  const repaired = checkReport(projectRoot, manager);
+  const repaired = checkReport(projectRoot);
   assert.equal(repaired.status, 0, `repaired project failed vize:check\n${repaired.rendered}`);
   assert.deepEqual(reportedDiagnostics(repaired.report), []);
 

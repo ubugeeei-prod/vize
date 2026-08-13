@@ -239,14 +239,42 @@ export function runGeneratedCheck(projectRoot, manager, extra, env = {}) {
   });
 }
 
-export function checkReport(projectRoot, manager) {
-  const result = runGeneratedCheck(projectRoot, manager, ["--format", "json", "--quiet"]);
+export function projectLocalVizeBin(projectRoot) {
+  return path.join(projectRoot, "node_modules", "vize", "bin", "vize");
+}
+
+export function runProjectLocalCheck(projectRoot, extra, env = {}) {
+  return runResult(process.execPath, [projectLocalVizeBin(projectRoot), "check", ...extra], {
+    cwd: projectRoot,
+    env: projectEnv(env),
+  });
+}
+
+function renderInvocation(command, args, cwd, result) {
   const rendered = renderOutput(result);
+  return [
+    `command: ${JSON.stringify([command, ...args])}`,
+    `cwd: ${cwd}`,
+    `status: ${result.status ?? "<null>"}`,
+    `signal: ${result.signal ?? "<none>"}`,
+    rendered === "" ? "stdout/stderr: <empty>" : rendered,
+  ].join("\n");
+}
+
+export function checkReport(projectRoot) {
+  const args = [projectLocalVizeBin(projectRoot), "check", "--format", "json", "--quiet"];
+  const result = runResult(process.execPath, args, {
+    cwd: projectRoot,
+    env: projectEnv(),
+  });
+  const rendered = renderInvocation(process.execPath, args, projectRoot, result);
   let report;
   try {
     report = JSON.parse(result.stdout);
   } catch (error) {
-    throw new Error(`vize:check did not produce JSON\n${rendered}`, { cause: error });
+    throw new Error(`project-local vize check did not produce JSON\n${rendered}`, {
+      cause: error,
+    });
   }
   return { rendered, report, status: result.status };
 }
@@ -269,11 +297,7 @@ export function reportedDiagnostics(report) {
  */
 export function assertMissingCorsaGuidance(projectRoot, manager) {
   const missing = path.join(projectRoot, "no-such-corsa-runtime");
-  const direct = runResult(
-    process.execPath,
-    [path.join(projectRoot, "node_modules", "vize", "bin", "vize"), "check", "--quiet"],
-    { cwd: projectRoot, env: projectEnv({ CORSA_PATH: missing }) },
-  );
+  const direct = runProjectLocalCheck(projectRoot, ["--quiet"], { CORSA_PATH: missing });
   assert.notEqual(direct.status, 0, "a missing Corsa runtime silently disabled type checking");
   const message = renderOutput(direct).replaceAll(ANSI_SGR, "").replaceAll("\\", "/");
   assert.equal(
