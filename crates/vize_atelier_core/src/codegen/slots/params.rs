@@ -33,6 +33,7 @@ pub(super) fn prefix_slot_defaults(source: &str) -> String {
     wrapped.push_str(source);
     wrapped.push_str(") => null");
 
+    crate::expr_parse_probe::note_expr_parse();
     let allocator = Allocator::default();
     let parser = Parser::new(&allocator, &wrapped, SourceType::ts().with_module(true));
     let Ok(Expression::ArrowFunctionExpression(arrow)) = parser.parse_expression() else {

@@ -416,6 +416,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         result
     }
 
+    crate::expr_parse_probe::note_expr_parse();
     let allocator = OxcAllocator::default();
     let source_type = SourceType::default().with_module(true);
 
@@ -446,6 +447,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         }
         Err(_) => {
             // Expression parsing failed -- try parsing as a program
+            crate::expr_parse_probe::note_expr_parse();
             let allocator2 = OxcAllocator::default();
             let parser2 = Parser::new(&allocator2, content, source_type);
             let parse_result2 = parser2.parse();

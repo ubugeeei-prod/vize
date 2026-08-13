@@ -109,6 +109,7 @@ pub fn prefix_identifiers_in_expression(content: &str) -> String {
     if !super::expression_is_safe_to_parse(content) {
         return String::new(content);
     }
+    crate::expr_parse_probe::note_expr_parse();
     let allocator = OxcAllocator::default();
     let source_type = SourceType::default().with_module(true);
 

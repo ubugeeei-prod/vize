@@ -11,7 +11,7 @@
 
 - [x] P0-1 Bench harness with memory metrics
 - [x] P0-2 Template-pipeline microbenches, front half (armature, croquis)
-- [ ] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
+- [x] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
 - [ ] P0-4 Bench baselines and CI gating (`budgets.toml`)
 - [ ] P0-5 Corpus baseline snapshot + diff tool
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
@@ -71,13 +71,20 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `crates/vize_atelier_core/benches/davinci.rs`: `transform` (lane only, pre-parsed AST input) per fixture
-- [ ] `crates/vize_atelier_dom/benches/davinci.rs`: `compile_template` split into `transform` vs `codegen` timings (wrap stages with harness timers, not one blob)
-- [ ] `crates/vize_atelier_vapor/benches/davinci.rs`: `lower` and `generate` separately — this pins the cost of today's run-then-discard double transform as a number
-- [ ] `crates/vize_atelier_ssr/benches/davinci.rs`: `codegen`
-- [ ] Record the current expression re-parse count per fixture (temporary counter hook; becomes the `davinci.expr.parses` baseline for P1-13)
+- [x] `crates/vize_atelier_core/benches/davinci.rs`: `transform` (lane only, pre-parsed AST input) per fixture — via the `davinci_harness::stage` window (transform mutates in place, so setup is rebuilt per iteration outside the measured section)
+- [x] `crates/vize_atelier_dom/benches/davinci.rs`: `compile_template` split into `transform` vs `codegen` timings (wrap stages with harness timers, not one blob) — plus a fused `compile` case pinning the end-to-end number
+- [x] `crates/vize_atelier_vapor/benches/davinci.rs`: `lower` and `generate` separately — plus `transform` (the VDOM lane on the vapor path), pinning the cost of today's run-then-discard double transform as a number
+- [x] `crates/vize_atelier_ssr/benches/davinci.rs`: `codegen`
+- [x] Record the current expression re-parse count per fixture (temporary counter hook `vize_atelier_core::expr_parse_probe`, 18 sites; baseline committed at [expr-reparse-baseline.md](./expr-reparse-baseline.md); becomes the `davinci.expr.parses` baseline for P1-13)
 
 **Acceptance:** as P0-2, for four crates; vapor bench JSON shows `transform`/`lower`/`generate` as separate entries; expr-reparse baseline committed.
+Measured note (2026-08-13, macOS M-series): loop-style cases hold the < 5%
+run-to-run bar; **stage-windowed cases (µs-scale transforms with
+per-iteration setup) show a 5–7% noise floor with rotating outliers across
+three consecutive runs**, while allocation counts are identical across all
+runs and cases. P0-4 budgets therefore gate stage-window wall at 10%
+tolerance and lean on the deterministic alloc counts for tight regression
+detection.
 
 **Deps:** P0-1.
 

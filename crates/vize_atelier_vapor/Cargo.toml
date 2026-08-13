@@ -24,8 +24,14 @@ serde = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
 # The DOM backend is compiled alongside Vapor in the cross-backend agreement
 # tests (`<template>` children must lower the same way in both backends).
 vize_atelier_dom = { workspace = true }
 
 insta = { workspace = true }
+
+[[bench]]
+name = "davinci"
+harness = false

@@ -34,6 +34,7 @@ pub(crate) fn generate_model_assignment_handler(
 ) -> String {
     let is_legacy_conditional =
         ctx.template_syntax_quirks() && super::expression::expression_is_safe_to_parse(value) && {
+            crate::expr_parse_probe::note_expr_parse();
             let allocator = oxc_allocator::Allocator::default();
             let source_type = if ctx.options.is_ts {
                 SourceType::ts().with_module(true)

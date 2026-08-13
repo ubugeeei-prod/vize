@@ -220,6 +220,7 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
         return String::new(content);
     }
 
+    crate::expr_parse_probe::note_expr_parse();
     let allocator = OxcAllocator::default();
     let source_type = SourceType::ts();
 

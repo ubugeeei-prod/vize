@@ -126,6 +126,7 @@ pub(super) fn report_invalid_expression(
 fn parses_as_typescript(content: &str) -> bool {
     let source_type = SourceType::ts().with_module(true);
 
+    crate::expr_parse_probe::note_expr_parse();
     let expr_allocator = OxcAllocator::default();
     let mut wrapped = String::with_capacity(content.len() + 2);
     wrapped.push('(');
@@ -138,6 +139,7 @@ fn parses_as_typescript(content: &str) -> bool {
         return true;
     }
 
+    crate::expr_parse_probe::note_expr_parse();
     let program_allocator = OxcAllocator::default();
     Parser::new(&program_allocator, content, source_type)
         .parse()
@@ -146,6 +148,7 @@ fn parses_as_typescript(content: &str) -> bool {
 }
 
 fn parse_as_params(content: &str, source_type: SourceType) -> Result<(), String> {
+    crate::expr_parse_probe::note_expr_parse();
     let allocator = OxcAllocator::default();
     let mut wrapped = String::with_capacity(content.len() + 12);
     wrapped.push('(');
@@ -208,6 +211,7 @@ pub(crate) fn rewrite_expression(
     }
 
     // Try to parse as a JavaScript expression
+    crate::expr_parse_probe::note_expr_parse();
     let oxc_allocator = OxcAllocator::default();
     let source_type = SourceType::default().with_module(true);
 
@@ -268,6 +272,7 @@ pub(crate) fn rewrite_expression(
         }
         Err(expression_errors) => {
             // Expression parsing failed - try parsing as a program (multi-statement handlers)
+            crate::expr_parse_probe::note_expr_parse();
             let oxc_allocator2 = OxcAllocator::default();
             let parser2 = Parser::new(&oxc_allocator2, &js_content, source_type);
             let parse_result2 = parser2.parse();

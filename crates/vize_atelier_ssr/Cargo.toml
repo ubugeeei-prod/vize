@@ -18,7 +18,13 @@ vize_croquis = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
 insta = { workspace = true }
 
 [lints.clippy]
 all = "warn"
+
+[[bench]]
+name = "davinci"
+harness = false

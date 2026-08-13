@@ -17,6 +17,9 @@ pub mod runtime_helpers;
 pub mod test_macros;
 pub mod lane;
 pub mod steps;
+// Davinci P0-3 instrumentation; deleted when phase 1 retains parsed expressions.
+#[doc(hidden)]
+pub mod expr_parse_probe;
 
 // Re-export from vize_relief (AST, errors, options)
 pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};

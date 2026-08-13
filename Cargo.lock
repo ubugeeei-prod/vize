@@ -3616,6 +3616,8 @@ version = "0.348.0"
 dependencies = [
  "bumpalo",
  "compact_str 0.9.0",
+ "criterion",
+ "davinci_harness",
  "insta",
  "memoffset",
  "oxc_allocator",
@@ -3641,6 +3643,8 @@ dependencies = [
 name = "vize_atelier_dom"
 version = "0.348.0"
 dependencies = [
+ "criterion",
+ "davinci_harness",
  "insta",
  "phf 0.13.1",
  "serde",
@@ -3712,6 +3716,8 @@ dependencies = [
 name = "vize_atelier_ssr"
 version = "0.348.0"
 dependencies = [
+ "criterion",
+ "davinci_harness",
  "insta",
  "serde",
  "vize_armature",
@@ -3725,6 +3731,8 @@ dependencies = [
 name = "vize_atelier_vapor"
 version = "0.348.0"
 dependencies = [
+ "criterion",
+ "davinci_harness",
  "insta",
  "oxc_allocator",
  "oxc_ast",
