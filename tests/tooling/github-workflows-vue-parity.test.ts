@@ -1,80 +1,13 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
-import { parse } from "yaml";
 
 import {
   CHECK_FIXTURE_ENV,
   CHECK_FIXTURE_NODE_ARGS,
   checkFixturePhases,
 } from "./support/check-fixtures/manifest.ts";
+import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
-
-type CompositeActionStep = {
-  env?: Record<string, string>;
-  if?: string;
-  name?: string;
-  run?: string;
-  uses?: string;
-  with?: Record<string, number | string>;
-};
-
-const vueParityAction = () =>
-  parse(readRepoFile(".github", "actions", "check-vue-parity", "action.yml")) as {
-    runs?: { steps?: CompositeActionStep[]; using?: string };
-  };
-
-const keyValues = (contents: string): Map<string, string> =>
-  new Map(
-    contents
-      .split("\n")
-      .filter((line) => line.includes("="))
-      .map((line) => {
-        const separator = line.indexOf("=");
-        return [line.slice(0, separator), line.slice(separator + 1)] as [string, string];
-      }),
-  );
-
-// The runner profile branch is only worth what it emits: run the step the way
-// the runner does (`bash -e -o pipefail`, a scratch workspace, a fresh
-// GITHUB_ENV file) and read back the two artifacts later steps depend on.
-const recordRunnerBaseline = (script: string, runnerEnvironment: string) => {
-  const workdir = mkdtempSync(join(tmpdir(), "vize-vue-parity-baseline-"));
-  try {
-    const scriptPath = join(workdir, "record-runner-baseline.sh");
-    const githubEnvPath = join(workdir, "github-env");
-    writeFileSync(scriptPath, script);
-    writeFileSync(githubEnvPath, "");
-    // A cap inherited from this test process would mask an accidental
-    // hosted-only value on the self-hosted branch, so start from a clean slate.
-    const env = {
-      ...process.env,
-      RAYON_NUM_THREADS: undefined,
-      GOMAXPROCS: undefined,
-      RUNNER_ENVIRONMENT: runnerEnvironment,
-      GITHUB_ENV: githubEnvPath,
-    };
-    execFileSync("bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", scriptPath], {
-      cwd: workdir,
-      env,
-      stdio: "pipe",
-    });
-    return {
-      githubEnv: keyValues(readFileSync(githubEnvPath, "utf8")),
-      baseline: keyValues(
-        readFileSync(
-          join(workdir, "target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt"),
-          "utf8",
-        ),
-      ),
-    };
-  } finally {
-    rmSync(workdir, { recursive: true, force: true });
-  }
-};
 
 test("the typecheck divergence ratchet runs on every pull request", () => {
   // Dimension 1 of the vue-tsc parity scorecard (#3222) is a *per-PR* ratchet:
@@ -93,69 +26,6 @@ test("the typecheck divergence ratchet runs on every pull request", () => {
     /^ {4}if:/m,
     "vue-parity must stay unconditional: it is the only pre-merge gate on the divergence ledger",
   );
-});
-
-test("the vue-parity runner baseline caps process pools only on GitHub-hosted runners", () => {
-  const step = vueParityAction().runs?.steps?.[0];
-  assert.equal(step?.name, "Record runner process budget baseline");
-  const script = step?.run ?? "";
-  assert.doesNotMatch(
-    script,
-    /\$\{\{/,
-    "the baseline script must read its inputs from env, so both runner profiles stay executable",
-  );
-
-  const hosted = recordRunnerBaseline(script, "github-hosted");
-  assert.equal(
-    hosted.githubEnv.get("RAYON_NUM_THREADS"),
-    "1",
-    "GitHub-hosted runners must export a single Rayon worker to every later step",
-  );
-  assert.equal(
-    hosted.githubEnv.get("GOMAXPROCS"),
-    "1",
-    "GitHub-hosted runners must export Corsa's Go runtime cap to every later step",
-  );
-  assert.equal(hosted.baseline.get("runner_environment"), "github-hosted");
-  assert.equal(hosted.baseline.get("rayon_num_threads"), "1");
-  assert.equal(hosted.baseline.get("gomaxprocs"), "1");
-  // The settle step compares live pressure against this number, so it has to be
-  // an integer and it has to be the same count the artifact reports.
-  assert.match(hosted.githubEnv.get("VIZE_RUNNER_BASELINE_THREADS") ?? "", /^[0-9]+$/);
-  assert.equal(
-    hosted.githubEnv.get("VIZE_RUNNER_BASELINE_THREADS"),
-    hosted.baseline.get("threads_total"),
-    "the exported thread baseline must match the count recorded in the artifact",
-  );
-
-  const selfHosted = recordRunnerBaseline(script, "self-hosted");
-  assert.equal(
-    selfHosted.githubEnv.get("RAYON_NUM_THREADS"),
-    "4",
-    "self-hosted runners must keep the established Rayon cap",
-  );
-  assert.equal(
-    selfHosted.githubEnv.has("GOMAXPROCS"),
-    false,
-    "the hosted-runner Go runtime cap must not leak onto self-hosted runners",
-  );
-  assert.equal(selfHosted.baseline.get("runner_environment"), "self-hosted");
-  assert.equal(selfHosted.baseline.get("rayon_num_threads"), "4");
-  assert.equal(selfHosted.baseline.get("gomaxprocs"), "unset");
-
-  // The artifact is the only evidence left when a later step is killed by the
-  // spawn exhaustion of #4126, so every process-budget fact must be emitted.
-  for (const fact of [
-    "cpus",
-    "ulimit_u",
-    "ulimit_Hu",
-    "cgroup",
-    "pids_current",
-    "pids_max",
-    "threads_total",
-  ]) {
-    assert.ok(hosted.baseline.has(fact), `the runner baseline must record ${fact}`);
-  }
 });
 
 test("Vue parity structurally gates compiler fixtures and incremental LSP behavior", () => {
