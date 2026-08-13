@@ -59,12 +59,20 @@ const NPMX_E2E_ENV = {
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
   VIZE_E2E_DISABLE_LUNARIA: "1",
 } as const;
+export const FRONTEND_PHPCON_E2E_API_BASE = "/__vize_e2e/api";
+export const FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH = path.join(
+  "server",
+  "routes",
+  "__vize_e2e",
+  "api",
+  "staff.get.ts",
+);
 const VUEFES_E2E_ENV = {
   AUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
   NEXTAUTH_SECRET: "e2e-test-dummy-auth-secret-32chars!",
 } as const;
 const FRONTEND_PHPCON_E2E_ENV = {
-  NUXT_PUBLIC_API_BASE: "/__vize_e2e/api",
+  NUXT_PUBLIC_API_BASE: FRONTEND_PHPCON_E2E_API_BASE,
   NUXT_TELEMETRY_DISABLED: "1",
 } as const;
 const VUE_BETA_OVERRIDES = {
@@ -83,20 +91,58 @@ const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
 );
+
+function readDotenvValue(filePath: string, key: string): string | undefined {
+  if (!fs.existsSync(filePath)) {
+    return undefined;
+  }
+
+  const prefix = `${key}=`;
+  for (const line of fs.readFileSync(filePath, "utf-8").split(/\r?\n/)) {
+    if (!line.startsWith(prefix)) {
+      continue;
+    }
+    const value = line.slice(prefix.length);
+    const quote = value.at(0);
+    if ((quote === "'" || quote === '"') && value.endsWith(quote)) {
+      return value.slice(1, -1);
+    }
+    return value;
+  }
+  return undefined;
+}
+
 interface PnpmInstallOptions {
   env?: NodeJS.ProcessEnv;
   ignoreScripts?: boolean;
   timeout?: number;
 }
+
+function execNpxCommand(
+  args: string[],
+  opts: { cwd: string; env?: NodeJS.ProcessEnv; timeout?: number },
+): void {
+  const executable = process.platform === "win32" ? (process.env.ComSpec ?? "cmd.exe") : "npx";
+  const executableArgs =
+    process.platform === "win32" ? ["/d", "/s", "/c", "npx.cmd", ...args] : args;
+  execFileSync(executable, executableArgs, {
+    cwd: opts.cwd,
+    env: opts.env,
+    stdio: "inherit",
+    timeout: opts.timeout ?? 600_000,
+  });
+}
+
+export function npmxGeneratorTaskArgs(task: "generate:lexicons" | "generate:sprite"): string[] {
+  return ["-y", "pnpm@10", "exec", "vp", "run", task];
+}
+
 export function installPnpmDependencies(cwd: string, options: PnpmInstallOptions = {}): void {
   console.log(`[vize:setup] pnpm install in ${cwd}...`);
   const args = ["-y", "pnpm@10", "install", "--no-frozen-lockfile"];
   if (options.ignoreScripts) args.push("--ignore-scripts");
   args.push("--prefer-offline");
-  const executable = process.platform === "win32" ? (process.env.ComSpec ?? "cmd.exe") : "npx";
-  const executableArgs =
-    process.platform === "win32" ? ["/d", "/s", "/c", "npx.cmd", ...args] : args;
-  execFileSync(executable, executableArgs, {
+  execNpxCommand(args, {
     cwd,
     env: {
       ...process.env,
@@ -105,7 +151,6 @@ export function installPnpmDependencies(cwd: string, options: PnpmInstallOptions
       HUSKY: "0",
       SKIP_INSTALL_SIMPLE_GIT_HOOKS: "1",
     },
-    stdio: "inherit",
     timeout: options.timeout ?? 600_000,
   });
 }
@@ -649,6 +694,8 @@ const VOICEVOX_DIR = path.join(GIT_DIR, "voicevox");
 
 const ELK_E2E_ENV = {
   NUXT_STORAGE_DRIVER: "fs",
+  CONTEXT: "dev",
+  MOCK_USER: readDotenvValue(path.join(GIT_DIR, "elk", ".env.mock"), "MOCK_USER") ?? "",
   VIZE_E2E_BUILD_TIME: "1767225600000",
 } as const;
 
@@ -1168,11 +1215,10 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     ignoreScripts: true,
     timeout: 300_000,
   });
-  for (const script of ["generate:lexicons", "generate:sprite"]) {
-    console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm ${script}...`);
-    execSync(`npx -y pnpm@10 ${script}`, {
+  for (const task of ["generate:lexicons", "generate:sprite"] as const) {
+    console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] vp run ${task}...`);
+    execNpxCommand(npmxGeneratorTaskArgs(task), {
       cwd: npmxDir,
-      stdio: "inherit",
       timeout: 120_000,
       env: {
         ...process.env,
@@ -1417,6 +1463,41 @@ function patchFrontendPhpconVisualFixture(frontendDir: string): void {
           id: "8e55bc66-2146-4115-8d7c-55eb4cfc83bc",
           name: "Filtered Booth Sponsor",
           url: "https://example.com/booth",
+        },
+      ],
+    },
+  ],
+}));
+`,
+  );
+  ensureFileContent(
+    path.join(frontendDir, FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH),
+    `export default defineEventHandler(() => ({
+  staff_types: [
+    {
+      name: "実行委員長",
+      name_en: "Chair",
+      staff: [
+        {
+          id: "chair-1",
+          name: "Hokkaido Chair",
+          url: "https://example.com/staff/chair",
+        },
+      ],
+    },
+    {
+      name: "コアスタッフ",
+      name_en: "Core Staff",
+      staff: [
+        {
+          id: "core-1",
+          name: "Core Staff A",
+          url: "https://example.com/staff/core-a",
+        },
+        {
+          id: "core-2",
+          name: "Core Staff B",
+          url: "https://example.com/staff/core-b",
         },
       ],
     },

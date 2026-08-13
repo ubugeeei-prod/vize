@@ -6,6 +6,14 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  FRONTEND_PHPCON_E2E_API_BASE,
+  FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH,
+  elkApp,
+  frontendPhpconApp,
+  npmxApp,
+  npmxGeneratorTaskArgs,
+} from "../_helpers/apps.ts";
+import {
   createAppE2ePlanEvidence,
   fullAppE2eRows,
   planAppE2eRows,
@@ -89,6 +97,42 @@ test("full and readiness plans preserve every isolated execution row", () => {
     readinessRows.find((row) => row.shard === "lint")?.timeout,
     "5m",
     "updated fixture setup must fit inside the readiness lint budget",
+  );
+});
+
+test("upstream app fixtures keep deterministic CI setup", () => {
+  const rawMockUser = fs
+    .readFileSync(path.join(root, "tests/_fixtures/_git/elk/.env.mock"), "utf8")
+    .split(/\r?\n/)
+    .find((line) => line.startsWith("MOCK_USER="));
+  assert.ok(rawMockUser);
+  const quotedMockUser = rawMockUser.slice("MOCK_USER=".length);
+  assert.equal(elkApp.env?.CONTEXT, "dev");
+  assert.equal(elkApp.env?.MOCK_USER, quotedMockUser.slice(1, -1));
+  assert.match(elkApp.args.join(" "), /pnpm@10 exec nuxt dev/);
+
+  assert.deepEqual(npmxGeneratorTaskArgs("generate:lexicons"), [
+    "-y",
+    "pnpm@10",
+    "exec",
+    "vp",
+    "run",
+    "generate:lexicons",
+  ]);
+  assert.deepEqual(npmxGeneratorTaskArgs("generate:sprite"), [
+    "-y",
+    "pnpm@10",
+    "exec",
+    "vp",
+    "run",
+    "generate:sprite",
+  ]);
+  assert.equal(npmxApp.env?.VIZE_E2E_DISABLE_LUNARIA, "1");
+
+  assert.equal(frontendPhpconApp.env?.NUXT_PUBLIC_API_BASE, FRONTEND_PHPCON_E2E_API_BASE);
+  assert.equal(
+    FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH,
+    path.join("server", "routes", "__vize_e2e", "api", "staff.get.ts"),
   );
 });
 

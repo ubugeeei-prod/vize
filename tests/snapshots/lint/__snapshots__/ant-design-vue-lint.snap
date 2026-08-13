@@ -9754,21 +9754,10 @@
         "endLine": 56,
         "endColumn": 96,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener\" or rel=\"noreferrer\" is a security risk",
-        "line": 91,
-        "column": 15,
-        "endLine": 91,
-        "endColumn": 81,
-        "help": "Add rel=\"noopener\" (or rel=\"noreferrer\") to links that open in a new tab to prevent reverse tabnabbing via window.opener"
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "site/src/layouts/Iframe.vue",
@@ -10086,9 +10075,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 33,
+        "line": 54,
         "column": 9,
-        "endLine": 33,
+        "endLine": 54,
         "endColumn": 67,
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
@@ -10097,9 +10086,9 @@
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
-        "line": 33,
+        "line": 54,
         "column": 9,
-        "endLine": 33,
+        "endLine": 54,
         "endColumn": 67,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       }
