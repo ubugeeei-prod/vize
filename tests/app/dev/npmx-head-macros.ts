@@ -1,5 +1,8 @@
 import { expect, type Page } from "@playwright/test";
-import { readNpmxHeadSourceEvidence } from "./npmx-head-contract.ts";
+import {
+  readNpmxHeadFixtureContent,
+  readNpmxHeadSourceEvidence,
+} from "./npmx-head-contract.ts";
 
 type HeadState = {
   canonical: string[];
@@ -22,10 +25,6 @@ export type RouteSnapshot = {
   params: Record<string, unknown>;
   path: string;
 };
-
-const ABOUT_DESCRIPTION =
-  "npmx is a fast, modern browser for the npm registry. A better UX/DX for exploring npm packages.";
-const ACCESSIBILITY_DESCRIPTION = "We want npmx to be usable by as many people as possible.";
 
 function expectedHead(
   title: string,
@@ -160,10 +159,18 @@ export async function verifyNpmxHeadMacros(
   fixtureRoot: string,
 ): Promise<void> {
   const sourceEvidence = readNpmxHeadSourceEvidence(fixtureRoot);
-  const aboutHead = expectedHead("About - npmx", ABOUT_DESCRIPTION);
-  const accessibilityHead = expectedHead("accessibility - npmx", ACCESSIBILITY_DESCRIPTION, {
-    includeSocial: false,
-  });
+  const fixtureContent = readNpmxHeadFixtureContent(fixtureRoot);
+  const aboutHead = expectedHead(
+    `${fixtureContent.aboutTitle} - npmx`,
+    fixtureContent.aboutDescription,
+  );
+  const accessibilityHead = expectedHead(
+    `${fixtureContent.accessibilityTitle} - npmx`,
+    fixtureContent.accessibilityDescription,
+    {
+      includeSocial: false,
+    },
+  );
 
   try {
     expect(await fetchHead(page, `${baseUrl}/about`)).toEqual(aboutHead);

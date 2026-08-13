@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   assertNpmxHeadMacroAnchors,
   NPMX_HEAD_SOURCE_CONTRACTS,
+  readNpmxHeadFixtureContent,
 } from "../app/dev/npmx-head-contract.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -36,6 +38,34 @@ test("npmx authored head macro contracts fail closed for every macro family", ()
   }
 });
 
+test("npmx head fixture content comes from the pinned locale file", (t) => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-npmx-head-"));
+  t.after(() => fs.rmSync(fixtureRoot, { recursive: true, force: true }));
+
+  const localeDir = path.join(fixtureRoot, "i18n/locales");
+  fs.mkdirSync(localeDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(localeDir, "en.json"),
+    JSON.stringify({
+      about: {
+        meta_description: "A current fixture description.",
+        title: "Fixture About",
+      },
+      a11y: {
+        title: "fixture accessibility",
+        welcome: "We want {app} to stay source-owned.",
+      },
+    }),
+  );
+
+  assert.deepEqual(readNpmxHeadFixtureContent(fixtureRoot), {
+    aboutDescription: "A current fixture description.",
+    aboutTitle: "Fixture About",
+    accessibilityDescription: "We want npmx to stay source-owned.",
+    accessibilityTitle: "fixture accessibility",
+  });
+});
+
 test("npmx head runtime oracle is wired and cannot mutate authored sources", () => {
   const spec = fs.readFileSync(path.join(root, "tests/app/dev/npmx.spec.ts"), "utf8");
   const runtimeOracle = fs.readFileSync(
@@ -51,6 +81,8 @@ test("npmx head runtime oracle is wired and cannot mutate authored sources", () 
   assert.match(spec, /verifyNpmxHeadMacros\(page, app\.url, app\.cwd\)/);
   assert.match(packageJson.scripts?.["test:dev:npmx"] ?? "", /app\/dev\/npmx\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/npmx\.spec\.ts/);
+  assert.match(runtimeOracle, /readNpmxHeadFixtureContent\(fixtureRoot\)/);
+  assert.doesNotMatch(runtimeOracle, /better UX\/DX/);
   assert.doesNotMatch(
     runtimeOracle,
     /\b(?:appendFile|copyFile|rename|rm|truncate|unlink|writeFile)(?:Sync)?\b/,
