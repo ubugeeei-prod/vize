@@ -184,6 +184,7 @@ test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
       ".github/workflows/check.yml",
       ".github/workflows/criterion-bench.yml",
       "bench/criterion-ab.mjs",
+      "crates/vize_canon/tests/tier_l_incremental.rs",
       "tests/tooling/criterion-baselines.test.ts",
     ],
     metadata: metadata(),

@@ -126,12 +126,24 @@ function dependsOnAny(packageId, changedIds, graph) {
   return false;
 }
 
+function isCrateBenchmarkSubjectPath(path) {
+  const parts = path.split("/");
+  if (parts[0] !== "crates" || parts.length < 3) return false;
+  const cratePath = parts.slice(2).join("/");
+  return (
+    cratePath === "Cargo.toml" ||
+    cratePath === "build.rs" ||
+    cratePath.startsWith("src/") ||
+    cratePath.startsWith("benches/")
+  );
+}
+
 function isRustBenchmarkSubjectPath(path) {
   return (
     RUST_BENCHMARK_SUBJECT_PATHS.has(path) ||
     path.startsWith(".cargo/") ||
     path.startsWith("benchmarks/") ||
-    path.startsWith("crates/")
+    isCrateBenchmarkSubjectPath(path)
   );
 }
 
