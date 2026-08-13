@@ -2,6 +2,7 @@ use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diag
 mod component_options_index_signature;
 mod component_prop_regressions;
 mod css_module_classes;
+mod diagnostic_normalization;
 mod directive_anchors;
 mod directive_values;
 mod empty_required_props;
