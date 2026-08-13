@@ -5,6 +5,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { nuxtUiApp, CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
+import { normalizeTargetParameterLabels } from "../_helpers/diagnostics.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
@@ -34,7 +35,7 @@ describe(`${app.name} check (type checker)`, () => {
       }
     }
 
-    const parsed = JSON.parse(stdout);
+    const parsed = normalizeTargetParameterLabels(JSON.parse(stdout));
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 

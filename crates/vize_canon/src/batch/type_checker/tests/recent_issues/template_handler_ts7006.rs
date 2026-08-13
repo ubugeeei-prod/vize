@@ -6,6 +6,61 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+type DiagnosticSnapshot = Vec<(vize_carton::String, Option<u32>, vize_carton::String)>;
+
+/// Normalize TypeScript's target-side parameter labels in function assignment
+/// diagnostics while keeping the authored parameter, code, anchor, and type
+/// text exact.
+fn normalize_target_parameter_names(
+    snapshot: Option<DiagnosticSnapshot>,
+) -> Option<DiagnosticSnapshot> {
+    snapshot.map(|rows| {
+        rows.into_iter()
+            .map(|(file, code, message)| {
+                (
+                    file,
+                    code,
+                    normalize_target_parameter_name(message.as_str()),
+                )
+            })
+            .collect()
+    })
+}
+
+/// Replace only the generated side of `Types of parameters ...` diagnostic
+/// rows. TypeScript may report that side as a tuple label, callback parameter,
+/// or rest parameter name without changing the assignability behavior.
+fn normalize_target_parameter_name(message: &str) -> vize_carton::String {
+    let marker = "Types of parameters '";
+    let separator = "' and '";
+    let suffix = "' are incompatible.";
+    let mut normalized = std::string::String::with_capacity(message.len());
+    let mut rest = message;
+
+    while let Some(marker_start) = rest.find(marker) {
+        let parameter_start = marker_start + marker.len();
+        let Some(separator_start) = rest[parameter_start..].find(separator) else {
+            break;
+        };
+        let target_start = parameter_start + separator_start + separator.len();
+        let Some(target_end) = rest[target_start..].find(suffix) else {
+            break;
+        };
+        let target_end = target_start + target_end;
+
+        normalized.push_str(&rest[..target_start]);
+        normalized.push_str("<target>");
+        rest = &rest[target_end..];
+    }
+
+    if normalized.is_empty() {
+        vize_carton::String::from(message)
+    } else {
+        normalized.push_str(rest);
+        vize_carton::String::from(normalized)
+    }
+}
+
 #[test]
 fn slot_outlet_callbacks_use_declared_slot_props() {
     if resolve_test_tsgo_binary().is_none() {
@@ -31,7 +86,7 @@ function onDragstart(ev: DragEvent, item: T) {}
         )],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -62,7 +117,7 @@ fn untyped_slot_outlet_callbacks_remain_implicit_any() {
         )],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -114,7 +169,7 @@ const props = {
         ],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -124,7 +179,7 @@ const props = {
             Some(2322),
             vize_carton::String::from(
                 "12:57:error Type '(value: string) => string' is not assignable to type '(value: number | null) => any'.\n\
-                 Types of parameters 'value' and 'args' are incompatible.\n\
+                 Types of parameters 'value' and '<target>' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'string'.\n\
                  Type 'null' is not assignable to type 'string'.",
             ),
@@ -164,7 +219,7 @@ function numberOnly(value: number) { value.toFixed() }
         ],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -174,7 +229,7 @@ function numberOnly(value: number) { value.toFixed() }
             Some(2322),
             vize_carton::String::from(
                 "7:42:error Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\n\
-                 Types of parameters 'value' and 'args' are incompatible.\n\
+                 Types of parameters 'value' and '<target>' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'number'.\n\
                  Type 'null' is not assignable to type 'number'.",
             ),
@@ -209,7 +264,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
         )],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -220,7 +275,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
                 Some(2322),
                 vize_carton::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
-                     Types of parameters 'el' and 'args' are incompatible.\n\
+                     Types of parameters 'el' and '<target>' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),
@@ -262,7 +317,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
         )],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root);
+    let snapshot = normalize_target_parameter_names(snapshot_project_diagnostics(&project_root));
     let _ = std::fs::remove_dir_all(&project_root);
 
     assert_eq!(
@@ -273,7 +328,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
                 Some(2322),
                 vize_carton::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
-                     Types of parameters 'el' and 'args' are incompatible.\n\
+                     Types of parameters 'el' and '<target>' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),
