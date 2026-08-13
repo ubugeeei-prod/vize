@@ -1,4 +1,4 @@
-use corsa::lsp::LspClient;
+use corsa_lsp::LspClient;
 use serde_json::{Value, json};
 
 pub struct RawReferences;

@@ -3,8 +3,7 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use corsa::jsonrpc::InboundEvent;
-use corsa::lsp::{LspClient, LspSpawnConfig, VirtualDocument};
+use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::{FileChangeType, Uri};
 use serde_json::{Value, json};
 
@@ -335,7 +334,7 @@ const value = 1;
             notify_file_changes(&client, &[(renamed_uri.as_str(), FileChangeType::DELETED)]);
             assert!(try_pull_diagnostics(&client, &renamed_uri).await.is_err());
             stop.store(true, Ordering::Relaxed);
-            client.close().await.unwrap();
+            client.graceful_close().await.unwrap();
             responder.join().unwrap();
         });
     });

@@ -1,7 +1,9 @@
+#![allow(dead_code)]
+
 use std::path::Path;
 use std::str::FromStr;
 
-use corsa::lsp::{LspClient, LspOverlay};
+use corsa_lsp::{LspClient, LspOverlay};
 use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
 use vize_carton::String as CompactString;
@@ -208,7 +210,7 @@ pub async fn pull_diagnostics(client: &LspClient, uri: &str) -> Value {
     try_pull_diagnostics(client, uri).await.unwrap()
 }
 
-pub async fn try_pull_diagnostics(client: &LspClient, uri: &str) -> corsa::Result<Value> {
+pub async fn try_pull_diagnostics(client: &LspClient, uri: &str) -> corsa_lsp::Result<Value> {
     client
         .request::<RawDocumentDiagnostic>(json!({ "textDocument": { "uri": uri } }))
         .await

@@ -3532,6 +3532,7 @@ version = "0.348.0"
 dependencies = [
  "clap",
  "corsa",
+ "corsa_lsp 1.7.1",
  "dirs",
  "futures",
  "glob",

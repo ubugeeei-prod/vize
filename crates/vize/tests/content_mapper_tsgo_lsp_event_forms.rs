@@ -3,8 +3,7 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use corsa::jsonrpc::InboundEvent;
-use corsa::lsp::{LspClient, LspSpawnConfig, VirtualDocument};
+use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::Uri;
 use serde_json::{Value, json};
 use vize_carton::FxHashSet;
@@ -278,7 +277,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
             }
 
             stop.store(true, Ordering::Relaxed);
-            client.close().await.unwrap();
+            client.graceful_close().await.unwrap();
             responder.join().unwrap();
         });
     });
