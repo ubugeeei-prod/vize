@@ -16,9 +16,10 @@ use cases::EVENT_CASES;
 
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
-    EditorResponder, assert_completion, assert_prop_navigation, contains_location,
-    contains_location_range, contains_text_edit, copy_fixture, editor_capabilities, file_uri,
-    install_packages, position, pull_diagnostics, references, rename, workspace_root,
+    EditorResponder, assert_completion, assert_no_generated_uri_or_zero_range,
+    assert_prop_navigation, contains_location, contains_location_range, contains_text_edit,
+    copy_fixture, editor_capabilities, file_uri, install_packages, position, pull_diagnostics,
+    references, rename, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -195,6 +196,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 }
                 assert_prop_navigation(&client, &app_uri, usage, name, ty, uri, declaration).await;
                 let references = references(&client, &app_uri, usage).await;
+                assert_no_generated_uri_or_zero_range(&references);
                 assert!(
                     contains_location_range(&references, &app_uri, usage, usage_end),
                     "{references:#}"
@@ -209,6 +211,7 @@ fn standard_tsgo_lsp_maps_event_symbol_navigation() {
                 );
                 let rename = rename(&client, &app_uri, usage, renamed).await;
                 if *rename_supported {
+                    assert_no_generated_uri_or_zero_range(&rename);
                     assert!(
                         contains_text_edit(&rename, &app_uri, usage, usage_end, renamed),
                         "{rename:#}"

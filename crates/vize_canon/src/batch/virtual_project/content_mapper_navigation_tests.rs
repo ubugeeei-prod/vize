@@ -59,7 +59,7 @@ import Child from "./Child.vue";
                 && mapping.0[1] == "saveItem".len()
                 && mapping.0[2] == original
                 && mapping.0[3] == "save-item".len()
-                && mapping.0[4] == ContentMapperSpanKind::Atom as usize
+                && mapping.0[4] == ContentMapperSpanKind::Alias as usize
                 && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
         }),
         "{:#?}",

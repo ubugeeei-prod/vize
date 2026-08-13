@@ -12,6 +12,10 @@ use crate::batch::Diagnostic;
 use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, to_safe_identifier};
 
+#[path = "content_mapper_alias.rs"]
+mod alias;
+use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
+
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
 };
@@ -30,6 +34,7 @@ use span_features::content_mapper_span_features;
 enum ContentMapperSpanKind {
     Verbatim = 0,
     Atom = 1,
+    Alias = 2,
 }
 
 /// A TypeScript content-mapper transform result.
@@ -308,7 +313,9 @@ fn candidate(
 
     let generated_text = &generated[generated_range.clone()];
     let original_text = &source[original_range.clone()];
-    if let Some(relative_start) = generated_text.find(original_text) {
+    if !is_synthetic_content_mapper_identifier(generated_text)
+        && let Some(relative_start) = generated_text.find(original_text)
+    {
         let start = generated_range.start + relative_start;
         return Some(SpanCandidate {
             generated: start..start + original_text.len(),
@@ -320,7 +327,11 @@ fn candidate(
     Some(SpanCandidate {
         generated: generated_range,
         original: original_range,
-        kind: ContentMapperSpanKind::Atom,
+        kind: if is_alias_projection(generated_text, original_text) {
+            ContentMapperSpanKind::Alias
+        } else {
+            ContentMapperSpanKind::Atom
+        },
     })
 }
 

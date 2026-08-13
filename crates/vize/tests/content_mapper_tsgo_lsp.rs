@@ -11,9 +11,10 @@ use serde_json::{Value, json};
 mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
     EditorResponder, assert_component_completions, assert_component_members,
-    assert_component_navigation, completion, contains_location, copy_fixture, definition,
-    editor_capabilities, file_uri, hover, install_packages, notify_file_changes, position,
-    pull_diagnostics, try_pull_diagnostics, workspace_root,
+    assert_component_navigation, assert_no_generated_uri_or_zero_range, completion,
+    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
+    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
+    workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -194,6 +195,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             );
 
             let definition = definition(&client, &child_uri, &symbol_position).await;
+            assert_no_generated_uri_or_zero_range(&definition);
             let definition_text = serde_json::to_string(&definition).unwrap();
             assert!(
                 definition_text.contains(child_uri.as_str()),
@@ -213,6 +215,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 }))
                 .await
                 .unwrap();
+            assert_no_generated_uri_or_zero_range(&references);
             let references_text = serde_json::to_string(&references).unwrap();
             assert!(
                 references_text.matches(child_uri.as_str()).count() >= 2,
@@ -228,6 +231,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
                 }))
                 .await
                 .unwrap();
+            assert_no_generated_uri_or_zero_range(&rename);
             let rename_text = serde_json::to_string(&rename).unwrap();
             assert!(rename_text.contains(child_uri.as_str()), "{rename:#}");
             assert!(

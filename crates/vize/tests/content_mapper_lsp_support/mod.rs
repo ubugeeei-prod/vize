@@ -6,9 +6,11 @@ use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
 use vize_carton::String as CompactString;
 
+mod leak_assertions;
 #[allow(dead_code)]
 mod navigation;
 mod responder;
+pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
 #[allow(unused_imports)]
 pub use navigation::{contains_location_range, contains_text_edit, references, rename};
 pub use responder::EditorResponder;
@@ -90,6 +92,7 @@ pub async fn assert_completion(
         .unwrap_or_else(|| panic!("{response:#}"));
     let resolved = client.request::<RawCompletionResolve>(item).await.unwrap();
     assert_eq!(resolved["label"], label, "{resolved:#}");
+    assert_no_generated_uri(&resolved);
     let resolved_text = serde_json::to_string(&resolved).unwrap();
     assert!(
         resolved_fragments
@@ -149,6 +152,7 @@ pub async fn assert_component_navigation(
         "{component_hover:#}"
     );
     let component_definition = definition(client, uri, position).await;
+    assert_no_generated_uri(&component_definition);
     let definition_text = serde_json::to_string(&component_definition).unwrap();
     assert!(
         definition_text.contains(target_uri),
@@ -176,18 +180,9 @@ pub async fn assert_prop_navigation(
         "{prop_hover:#}"
     );
     let prop_definition = definition(client, uri, position).await;
+    assert_no_generated_uri_or_zero_range(&prop_definition);
     assert!(
         contains_location(&prop_definition, target_uri, target_start),
-        "{prop_definition:#}"
-    );
-    assert!(
-        !contains_location(&prop_definition, uri, position),
-        "definition must not point back to its usage: {prop_definition:#}"
-    );
-    assert!(
-        !serde_json::to_string(&prop_definition)
-            .unwrap()
-            .contains(".vue.ts"),
         "{prop_definition:#}"
     );
 }

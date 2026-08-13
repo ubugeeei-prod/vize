@@ -28,7 +28,7 @@ defineModel<string>("title", { required: true });
                 && mapping.0[1] == "\"update:title\"".len()
                 && mapping.0[2] == original
                 && mapping.0[3] == "\"title\"".len()
-                && mapping.0[4] == ContentMapperSpanKind::Atom as usize
+                && mapping.0[4] == ContentMapperSpanKind::Alias as usize
                 && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
         }),
         "text:\n{}\n\nmappings:\n{:#?}",

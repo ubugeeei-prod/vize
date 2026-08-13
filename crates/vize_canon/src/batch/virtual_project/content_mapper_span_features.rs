@@ -77,6 +77,77 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL: usize = ContentMappe
     | ContentMapperSpanFeature::References as usize
     | ContentMapperSpanFeature::DocumentHighlights as usize;
 
+/// Navigation-only features for generated type-level references that can appear
+/// as target locations but should not answer source-side hover/completion.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET: usize =
+    ContentMapperSpanFeature::Definition as usize
+        | ContentMapperSpanFeature::TypeDefinition as usize
+        | ContentMapperSpanFeature::Implementation as usize
+        | ContentMapperSpanFeature::SourceDefinition as usize
+        | ContentMapperSpanFeature::References as usize
+        | ContentMapperSpanFeature::DocumentHighlights as usize;
+
+#[cfg(test)]
+pub(super) const CONTENT_MAPPER_SPAN_FEATURE_BITS: [(&str, usize); 21] = [
+    ("Hover", ContentMapperSpanFeature::Hover as usize),
+    (
+        "SignatureHelp",
+        ContentMapperSpanFeature::SignatureHelp as usize,
+    ),
+    ("Completion", ContentMapperSpanFeature::Completion as usize),
+    ("Definition", ContentMapperSpanFeature::Definition as usize),
+    (
+        "TypeDefinition",
+        ContentMapperSpanFeature::TypeDefinition as usize,
+    ),
+    (
+        "Implementation",
+        ContentMapperSpanFeature::Implementation as usize,
+    ),
+    (
+        "SourceDefinition",
+        ContentMapperSpanFeature::SourceDefinition as usize,
+    ),
+    ("References", ContentMapperSpanFeature::References as usize),
+    (
+        "DocumentHighlights",
+        ContentMapperSpanFeature::DocumentHighlights as usize,
+    ),
+    ("Rename", ContentMapperSpanFeature::Rename as usize),
+    (
+        "CallHierarchy",
+        ContentMapperSpanFeature::CallHierarchy as usize,
+    ),
+    (
+        "CodeActions",
+        ContentMapperSpanFeature::CodeActions as usize,
+    ),
+    ("Formatting", ContentMapperSpanFeature::Formatting as usize),
+    ("InlayHints", ContentMapperSpanFeature::InlayHints as usize),
+    (
+        "SemanticTokens",
+        ContentMapperSpanFeature::SemanticTokens as usize,
+    ),
+    (
+        "FoldingRanges",
+        ContentMapperSpanFeature::FoldingRanges as usize,
+    ),
+    (
+        "SelectionRanges",
+        ContentMapperSpanFeature::SelectionRanges as usize,
+    ),
+    (
+        "LinkedEditing",
+        ContentMapperSpanFeature::LinkedEditing as usize,
+    ),
+    ("AutoInsert", ContentMapperSpanFeature::AutoInsert as usize),
+    (
+        "DocumentSymbols",
+        ContentMapperSpanFeature::DocumentSymbols as usize,
+    ),
+    ("CodeLens", ContentMapperSpanFeature::CodeLens as usize),
+];
+
 pub(super) fn content_mapper_span_features(
     generated: &str,
     start: usize,
@@ -84,6 +155,12 @@ pub(super) fn content_mapper_span_features(
 ) -> usize {
     if is_diagnostic_handler_anchor(generated, start, kind) {
         return 0;
+    }
+    if is_component_prop_check_anchor(generated, start, kind) {
+        return CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET;
+    }
+    if is_component_prop_alias_key(generated, start) {
+        return CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET;
     }
     let prefix = projection_prefix(generated, start);
     match (kind, prefix) {
@@ -99,6 +176,7 @@ pub(super) fn content_mapper_span_features(
         }
         (ContentMapperSpanKind::Verbatim, _) => CONTENT_MAPPER_SPAN_FEATURES_ALL,
         (ContentMapperSpanKind::Atom, _) => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
+        (ContentMapperSpanKind::Alias, _) => CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
     }
 }
 
@@ -116,6 +194,23 @@ fn is_diagnostic_handler_anchor(
     }
     let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
     generated[line_start..start].trim_start() == "const "
+}
+
+fn is_component_prop_alias_key(generated: &str, start: usize) -> bool {
+    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
+    let prefix = generated[line_start..start].trim_start();
+    prefix.contains("__VizePropValue<") && prefix.ends_with(", '")
+}
+
+fn is_component_prop_check_anchor(
+    generated: &str,
+    start: usize,
+    kind: ContentMapperSpanKind,
+) -> bool {
+    kind == ContentMapperSpanKind::Atom
+        && generated
+            .get(start..)
+            .is_some_and(|suffix| suffix.starts_with("__vize_prop_check_"))
 }
 
 fn projection_prefix(generated: &str, start: usize) -> Option<&str> {

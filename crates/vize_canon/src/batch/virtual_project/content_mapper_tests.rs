@@ -2,8 +2,9 @@ use std::path::Path;
 
 use super::ContentMapperSpanKind;
 use super::span_features::{
-    CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_ATOM,
-    CONTENT_MAPPER_SPAN_FEATURES_COMPLETION, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
+    CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
+    CONTENT_MAPPER_SPAN_FEATURES_ATOM, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
+    CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
     content_mapper_span_features,
 };
 use crate::batch::{
@@ -17,67 +18,10 @@ mod component_exports;
 mod models;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
+#[path = "content_mapper_protocol_tests.rs"]
+mod protocol;
 #[path = "content_mapper_scoped_event_navigation_tests.rs"]
 mod scoped_event_navigation;
-
-#[test]
-fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
-    let generated = "  const __vize_handler_1_2: unknown = handler;";
-    let start = generated.find("__vize_handler_").unwrap();
-
-    assert_eq!(
-        content_mapper_span_features(generated, start, ContentMapperSpanKind::Atom),
-        0
-    );
-    assert_eq!(
-        content_mapper_span_features(generated, start, ContentMapperSpanKind::Verbatim),
-        CONTENT_MAPPER_SPAN_FEATURES_ALL
-    );
-}
-
-#[test]
-fn emits_protocol_v1_spans_with_all_features_and_without_forbidden_overlaps() {
-    let source = r#"<script setup lang="ts">
-const message = "hello"
-</script>
-<template>{{ message }}</template>
-"#;
-    let result =
-        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
-
-    assert!(result.text.contains("const message = \"hello\""));
-    assert!(
-        !result
-            .text
-            .contains("/// <reference types=\"vite/client\" />")
-    );
-    assert!(!result.mappings.is_empty());
-    for pair in result.mappings.windows(2) {
-        let left = pair[0].0;
-        let right = pair[1].0;
-        assert!(left[0] + left[1] <= right[0], "{left:?} overlaps {right:?}");
-    }
-    for (index, left) in result.mappings.iter().enumerate() {
-        for right in &result.mappings[index + 1..] {
-            let left = left.0;
-            let right = right.0;
-            let originals_overlap = left[2] < right[2] + right[3] && right[2] < left[2] + left[3];
-            let originals_match = left[2] == right[2] && left[3] == right[3];
-            assert!(
-                !originals_overlap || originals_match,
-                "{left:?} partially overlaps {right:?}"
-            );
-        }
-    }
-    assert!(result.mappings.iter().all(|mapping| {
-        mapping.0[5]
-            == if mapping.0[4] == ContentMapperSpanKind::Verbatim as usize {
-                CONTENT_MAPPER_SPAN_FEATURES_ALL
-            } else {
-                CONTENT_MAPPER_SPAN_FEATURES_ATOM
-            }
-    }));
-}
 
 #[test]
 fn keeps_mapper_offsets_in_utf8_bytes() {
