@@ -18,6 +18,7 @@ import { waitForMountedAppContent } from "../../_helpers/assertions";
 
 interface VisualRoute {
   action?: (page: Page) => Promise<void>;
+  maxDiffPixels?: number;
   maxDiffRatio?: number;
   name: string;
   path: string;
@@ -33,11 +34,20 @@ const OUTPUT_DIR =
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const FRONTEND_PHPCON_VRT_TIMEOUT = 900_000;
+const MOBILE_HOME_MAX_DIFF_PIXELS = 45_000;
 const modes: VisualMode[] = ["dev", "preview"];
 
 const routes: VisualRoute[] = [
   { name: "home", path: "/", maxDiffRatio: 0.004 },
-  { name: "home-mobile", path: "/", viewport: MOBILE_VIEWPORT, maxDiffRatio: 0.004 },
+  {
+    name: "home-mobile",
+    path: "/",
+    viewport: MOBILE_VIEWPORT,
+    maxDiffRatio: 0.004,
+    // Match the desktop route's absolute budget for stable Linux text
+    // anti-aliasing deltas without allowing a missing page section.
+    maxDiffPixels: MOBILE_HOME_MAX_DIFF_PIXELS,
+  },
   {
     name: "mobile-menu",
     path: "/",
@@ -143,6 +153,7 @@ async function compareRoute(
     ]);
 
     await expectVisualParity(referencePage, candidatePage, {
+      maxDiffPixels: route.maxDiffPixels,
       maxDiffRatio: route.maxDiffRatio,
       name: `${mode}-${route.name}`,
       outputDir: OUTPUT_DIR,
