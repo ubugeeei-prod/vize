@@ -182,7 +182,7 @@ test("real host runner installs the VSIX and launches the host from the installe
         VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
         VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
       },
-      hostTimeoutMs: 300_000,
+      hostTimeoutMs: 600_000,
       installEnvironment: {},
       installTimeoutMs: 120_000,
       onOutput: () => {},

@@ -45,6 +45,7 @@ const forbiddenTemplateCompletionLabels = [
 ];
 
 exports.run = async function run() {
+  logProgress("start");
   const serverPath = getRealServer();
   const extension = vscode.extensions.getExtension(extensionId);
   assert.ok(extension, `missing extension: ${extensionId}`);
@@ -65,17 +66,28 @@ exports.run = async function run() {
   const mismatchDocument = await openWorkspaceDocument("src", "App.vue");
   await vscode.window.showTextDocument(mismatchDocument);
 
+  logProgress("diagnostics");
   await runRealDiagnosticSmoke(mismatchDocument, cleanDocument);
+  logProgress("completion");
   await runRealCompletionSmoke(mismatchDocument);
+  logProgress("hover");
   await runRealHoverSmoke(mismatchDocument);
+  logProgress("didChange repair");
   await runRealDidChangeRepairSmoke(mismatchDocument, extension);
+  logProgress("pinned create-vue oracle");
   await runPinnedCreateVuePatchOracle(extension);
 
+  logProgress("scorecard scenario");
   await runRealServerScenario();
 
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
+  logProgress("done");
 };
+
+function logProgress(label) {
+  console.log(`[vize-host-real] ${label}`);
+}
 
 async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
   const diagnostics = await waitForDiagnostics(
