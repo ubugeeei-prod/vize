@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
+use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive};
 
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
@@ -101,14 +101,8 @@ fn maybe_promote_element_to_component(
         return;
     }
 
-    let has_is = has_is_attribute(el);
-    if has_is {
+    if has_is_attribute(el) {
         el.tag_type = ElementType::Component;
-        return;
-    }
-
-    if is_native_tag(&el.tag) {
-        return;
     }
 }
 
