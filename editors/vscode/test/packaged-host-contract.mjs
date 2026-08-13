@@ -24,6 +24,7 @@ export function createPackagedHostLaunchArgs({
   return [
     "--no-sandbox",
     "--disable-gpu-sandbox",
+    "--disable-extensions",
     "--disable-updates",
     "--disable-workspace-trust",
     "--skip-welcome",

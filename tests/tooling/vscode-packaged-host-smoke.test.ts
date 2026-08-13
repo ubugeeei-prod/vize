@@ -40,6 +40,7 @@ test("packaged VS Code host smoke installs the VSIX before launching its tests",
   assert.deepEqual(launchArgs, [
     "--no-sandbox",
     "--disable-gpu-sandbox",
+    "--disable-extensions",
     "--disable-updates",
     "--disable-workspace-trust",
     "--skip-welcome",
@@ -51,7 +52,7 @@ test("packaged VS Code host smoke installs the VSIX before launching its tests",
     "/repo/editors/vscode/.vscode-test/workspaces/real-vue",
   ]);
   assert.equal(launchArgs.includes("--extensionDevelopmentPath=/repo/editors/vscode"), false);
-  assert.equal(launchArgs.includes("--disable-extensions"), false);
+  assert.equal(launchArgs.includes("--disable-extensions"), true);
 });
 
 test("the real-server fixture workspace turns off the built-in AI code actions", () => {
@@ -203,6 +204,7 @@ test("real host runner installs the VSIX and launches the host from the installe
       installedExtensionPath,
       fs.realpathSync(path.join(extensionsPath, "ubugeeei.vize-0.311.0")),
     );
+    assert.ok(launchArgs.includes("--disable-extensions"));
     assert.ok(launchArgs.includes(`--extensionDevelopmentPath=${installedExtensionPath}`));
     assert.equal(launchArgs.includes(`--extensionDevelopmentPath=${sourceExtensionPath}`), false);
     assert.deepEqual(invocations[1].environment, {
