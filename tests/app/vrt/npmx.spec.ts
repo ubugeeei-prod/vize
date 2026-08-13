@@ -16,7 +16,7 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
-import { setupNpmxCompareMocks } from "../../_helpers/mocking";
+import { setupNpmxCompareMocks } from "../../_helpers/mocking-npmx-compare";
 
 interface VisualRoute {
   action?: (page: Page) => Promise<void>;
