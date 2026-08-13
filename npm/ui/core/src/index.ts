@@ -4,6 +4,7 @@ export * from "./composite-navigation.ts";
 export * from "./context.ts";
 export * from "./controllable-state.ts";
 export * from "./button.ts";
+export * from "./dismissable-layer.ts";
 export * from "./id.ts";
 export * from "./inert-outside.ts";
 export * from "./interaction-modality.ts";

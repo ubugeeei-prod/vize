@@ -1,6 +1,38 @@
 /** Headless component fixtures compiled by every supported renderer lane. */
 export const rendererFixtures = [
   {
+    filename: "DismissableLayerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import { useDismissableLayer } from "./dismissable-layer.ts";
+
+const root = ref<HTMLElement | null>(null);
+const branch = ref<HTMLElement | null>(null);
+const layer = useDismissableLayer({
+  root,
+  branches: () => (branch.value ? [branch.value] : []),
+  onDismiss(event) {
+    void event.reason;
+  },
+});
+</script>
+
+<template>
+  <section
+    ref="root"
+    v-bind="layer.layerProps"
+    :data-active="layer.isActive.value || undefined"
+    :data-top-layer="layer.isTopLayer.value || undefined"
+  >
+    <button type="button">Inside</button>
+  </section>
+  <aside ref="branch" v-bind="layer.branchProps">
+    Portalled branch
+  </aside>
+</template>
+`,
+  },
+  {
     filename: "FocusGuardsConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import { ref } from "vue";

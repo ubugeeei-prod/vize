@@ -64,6 +64,11 @@
       "import": "./dist/controllable-state.mjs",
       "default": "./dist/controllable-state.mjs"
     },
+    "./dismissable-layer": {
+      "types": "./dist/dismissable-layer.d.mts",
+      "import": "./dist/dismissable-layer.mjs",
+      "default": "./dist/dismissable-layer.mjs"
+    },
     "./catalog": {
       "types": "./dist/catalog.d.mts",
       "import": "./dist/catalog.mjs",

@@ -21,6 +21,7 @@ export default defineConfig({
       "composite-navigation": "src/composite-navigation.ts",
       context: "src/context.ts",
       "controllable-state": "src/controllable-state.ts",
+      "dismissable-layer": "src/dismissable-layer.ts",
       catalog: "src/family-catalog.ts",
       id: "src/id.ts",
       "inert-outside": "src/inert-outside.ts",

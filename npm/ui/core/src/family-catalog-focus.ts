@@ -7,6 +7,38 @@ import {
 
 export const focusFamilyCatalog = [
   {
+    canonicalName: "dismissable-layer",
+    title: "Dismissable Layer",
+    packageSubpath: "./dismissable-layer",
+    entryFile: "src/dismissable-layer.ts",
+    sourceFiles: [
+      "src/dismissable-layer.ts",
+      "src/dismissable-layer-internal.ts",
+      "src/dismissable-layer-stack.ts",
+      "src/dismissable-layer-types.ts",
+    ],
+    behaviorContract: "src/dismissable-layer.behavior.md",
+    tests: ["src/dismissable-layer.test.ts", "src/dismissable-layer-ssr.test.ts"],
+    typeTests: ["src/dismissable-layer.types.test-d.ts"],
+    rendererFixture: "DismissableLayerConsumer.vue",
+    qualityGates: interactionQualityGates,
+    bundleBudget: {
+      exportName: "createDismissableLayer",
+      retainedSignature: "VIZE_UI_DISMISSABLE_LAYER_DISPOSED",
+      maximumJavaScriptGzipBytes: 2_850,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["dismissible layer", "outside interaction", "escape routing", "overlay stack"],
+    upstreamCoverage: [
+      "Radix DismissableLayer",
+      "React Aria overlay dismissal",
+      "Reka UI DismissableLayer",
+    ],
+    dependencies: [],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
     canonicalName: "focus",
     title: "Focus Interactions",
     packageSubpath: "./focus",
