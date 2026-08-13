@@ -29,11 +29,11 @@ import {
   byCodeUnit,
   checkReport,
   expectedInitOutput,
-  managerBinary,
   projectEnv,
   readJson,
   reportedDiagnostics,
   runGeneratedCheck,
+  runManager,
   snapshotFiles,
   writeFiles,
 } from "./smoke-release-init-project.mjs";
@@ -72,9 +72,8 @@ function installPlannedDependencies(context, projectRoot, manager, shape) {
     const tarball = context.packed.get(name);
     return tarball === undefined ? name : `${name}@file:${tarball}`;
   });
-  run(managerBinary(manager), [...manager.installArgs, ...specs, ...manager.installFlags], {
+  runManager(manager, [...manager.installArgs, ...specs, ...manager.installFlags], {
     cwd: projectRoot,
-    env: projectEnv(),
   });
 }
 
@@ -88,7 +87,7 @@ function runFreshProjectCell(context, cell) {
   fs.mkdirSync(projectRoot, { recursive: true });
   writeFiles(projectRoot, authored);
   assertFreshProject(projectRoot, context);
-  run(managerBinary(manager), manager.bootstrapArgs, { cwd: projectRoot, env: projectEnv() });
+  runManager(manager, manager.bootstrapArgs, { cwd: projectRoot });
   assert.ok(fs.existsSync(path.join(projectRoot, manager.lockfile)), `no ${manager.lockfile}`);
 
   const beforeInit = snapshotFiles(projectRoot, tracked);

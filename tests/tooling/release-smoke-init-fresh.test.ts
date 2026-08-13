@@ -2,43 +2,22 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { projectEnv } from "../../tools/npm/smoke-release-init-project.mjs";
+import {
+  managerCommand,
+  managerEnv,
+  projectEnv,
+  runManager,
+} from "../../tools/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../tools/npm/smoke-release-init-managers.mjs";
 import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "../../tools/npm/smoke-release-init-shapes.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
+import {
+  COREPACK_MANAGER_SPECS,
+  MANAGER_KEYS,
+  SHAPE_KEYS,
+  byCodeUnit,
+} from "./support/release-smoke-init-contract.ts";
 
-const SHAPE_KEYS = [
-  "addedScripts",
-  "createdFiles",
-  "detection",
-  "expectedDevDependencies",
-  "expectedFiles",
-  "expectedScripts",
-  "features",
-  "initFlags",
-  "plannedDependencies",
-  "reconfiguredDetection",
-  "reconfiguredFeatures",
-  "requires",
-  "updatedFiles",
-];
-
-/** Code-unit order, matching the driver's own comparison of installed names. */
-const byCodeUnit = (left: string, right: string): number =>
-  left < right ? -1 : left > right ? 1 : 0;
-
-const MANAGER_KEYS = [
-  "bootstrapArgs",
-  "corsaInstallCommand",
-  "detectedPackageManager",
-  "installArgs",
-  "installFlags",
-  "lockfile",
-  "projectFiles",
-  "redirect",
-  "redirectPlannedDependencies",
-  "runScriptArgs",
-];
 const RUNTIME_PACKAGE_MANAGER_ACTION = "./.github/actions/setup-runtime-package-managers";
 
 test("the fresh-project matrix is data, so new cells need no driver change", () => {
@@ -85,6 +64,37 @@ test("the fresh-project matrix covers every documented package manager", () => {
   for (const manager of documented) {
     assert.ok(matrixManagers.has(manager), `fresh-project matrix does not cover ${manager}`);
   }
+});
+
+test("fresh-project package managers use exact Corepack runners where needed", () => {
+  for (const [managerId, corepackSpec] of Object.entries(COREPACK_MANAGER_SPECS)) {
+    const manager = PACKAGE_MANAGERS[managerId];
+    assert.equal(manager.corepackSpec, corepackSpec);
+    assert.deepEqual(managerCommand(manager, ["install"]), {
+      command: "corepack",
+      args: [corepackSpec, "install"],
+    });
+    assert.equal(managerEnv(manager).COREPACK_ENABLE_PROJECT_SPEC, "0");
+  }
+  assert.equal(
+    managerEnv(PACKAGE_MANAGERS.yarn, { CI: "true" }).YARN_ENABLE_IMMUTABLE_INSTALLS,
+    "false",
+  );
+  assert.equal(
+    managerEnv(PACKAGE_MANAGERS.yarn, { YARN_ENABLE_IMMUTABLE_INSTALLS: "true" })
+      .YARN_ENABLE_IMMUTABLE_INSTALLS,
+    "true",
+  );
+  for (const managerId of ["npm", "bun", "vp"]) {
+    const manager = PACKAGE_MANAGERS[managerId];
+    assert.equal("corepackSpec" in manager, false, `${managerId} should keep its direct runner`);
+    assert.deepEqual(managerCommand(manager, ["install"]), {
+      command: manager.binary,
+      args: ["install"],
+    });
+    assert.equal(managerEnv(manager).COREPACK_ENABLE_PROJECT_SPEC, undefined);
+  }
+  assert.match(runManager(PACKAGE_MANAGERS.npm, ["--version"], { cwd: process.cwd() }), /^\d+\./u);
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {

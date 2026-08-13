@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
-import { renderOutput, runResult } from "./smoke-process.mjs";
+import { renderOutput, run, runResult } from "./smoke-process.mjs";
 
 /** Overrides that would let the host, not the installed package, pick Corsa. */
 const CORSA_ENV_VARS = ["CORSA_PATH", "CORSA_EXECUTABLE", "TSGO_PATH", "TSGO_EXECUTABLE"];
@@ -33,6 +33,17 @@ export function managerBinary(manager) {
   return process.env[manager.binaryEnv] || manager.binary;
 }
 
+export function managerCommand(manager, args) {
+  const envBinary = process.env[manager.binaryEnv];
+  if (envBinary !== undefined) {
+    return { command: envBinary, args };
+  }
+  if (manager.corepackSpec !== undefined) {
+    return { command: "corepack", args: [manager.corepackSpec, ...args] };
+  }
+  return { command: manager.binary, args };
+}
+
 /** Code-unit order, so the comparison is locale-independent across runners. */
 export function byCodeUnit(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -51,6 +62,22 @@ export function projectEnv(extra = {}) {
     if (!(name in extra)) delete env[name];
   }
   return env;
+}
+
+export function managerEnv(manager, extra = {}) {
+  const env = projectEnv({ ...manager.environment, ...extra });
+  if (manager.corepackSpec !== undefined && !("COREPACK_ENABLE_PROJECT_SPEC" in extra)) {
+    env.COREPACK_ENABLE_PROJECT_SPEC = "0";
+  }
+  return env;
+}
+
+export function runManager(manager, args, options = {}) {
+  const runner = managerCommand(manager, args);
+  return run(runner.command, runner.args, {
+    ...options,
+    env: managerEnv(manager, options.env),
+  });
 }
 
 function isOutside(base, target) {
@@ -205,9 +232,10 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
 
 /** Runs the `vize:check` script `init` generated, through the project's manager. */
 export function runGeneratedCheck(projectRoot, manager, extra, env = {}) {
-  return runResult(managerBinary(manager), manager.runScriptArgs("vize:check", extra), {
+  const runner = managerCommand(manager, manager.runScriptArgs("vize:check", extra));
+  return runResult(runner.command, runner.args, {
     cwd: projectRoot,
-    env: projectEnv(env),
+    env: managerEnv(manager, env),
   });
 }
 
