@@ -9,13 +9,14 @@ use vize_atelier_core::{
         transform_with_template_syntax_quirks,
         transform_with_template_syntax_quirks_and_hoisted_scope_id,
     },
-    options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
+    options::{CodegenOptions, TemplateSyntaxMode},
     parser::parse_with_options_and_template_syntax,
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
 
-use crate::namespace::get_namespace;
+mod stage_options;
+
 use crate::options::DomCompilerOptions;
 
 /// Compile a Vue template for DOM with default options
@@ -227,21 +228,7 @@ fn compile_template_inner_with_sections<'a>(
     hoisted_scope_id: Option<String>,
     codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
-    // Create parser options with DOM-specific settings
-    let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            options.custom_elements.clone(),
-        ),
-        custom_renderer: options.custom_renderer,
-        is_pre_tag: |tag| tag == "pre",
-        get_namespace,
-        comments: options.comments,
-        experimental_in_tag_comments: options.experimental_in_tag_comments,
-        dialect: options.dialect,
-        ..ParserOptions::default()
-    };
+    let parser_opts = stage_options::parser_options(&options);
 
     // Parse
     let (mut root, errors) = profile!(
@@ -272,25 +259,7 @@ fn compile_template_inner_with_sections<'a>(
         );
     }
 
-    // Transform with DOM-specific steps.
-    // BindingMetadata is passed directly (no string conversion needed)
-    let transform_opts = TransformOptions {
-        prefix_identifiers: options.prefix_identifiers,
-        hoist_static: options.hoist_static,
-        cache_handlers: options.cache_handlers,
-        scope_id: options.scope_id.clone(),
-        ssr: options.ssr,
-        is_ts: options.is_ts,
-        inline: options.inline,
-        custom_renderer: options.custom_renderer,
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            options.custom_elements,
-        ),
-        experimental_patterned_template: options.experimental_patterned_template,
-        binding_metadata: options.binding_metadata.clone(),
-        dialect: options.dialect,
-        ..Default::default()
-    };
+    let transform_opts = stage_options::transform_options(&options);
     let template_syntax_quirks = template_syntax.is_quirks();
     // Allocate Croquis in the arena so it shares the allocator lifetime
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));

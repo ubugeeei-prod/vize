@@ -1,9 +1,8 @@
 use super::{
-    load_compiler_custom_elements, load_compiler_host_compiler, load_compiler_template_syntax,
-    load_compiler_vue_version, load_config_and_linter_plan_with_lint_features_and_source,
-    load_config_and_linter_with_source, load_config_entry_files_with_source,
-    load_config_entry_ignores_with_source, load_config_with_source, load_linter_config,
-    validate_explicit_config_path,
+    load_compiler_host_compiler, load_compiler_template_syntax, load_compiler_vue_version,
+    load_config_and_linter_plan_with_lint_features_and_source, load_config_and_linter_with_source,
+    load_config_entry_files_with_source, load_config_entry_ignores_with_source,
+    load_config_with_source, load_linter_config, validate_explicit_config_path,
 };
 use crate::config::{LintRuleSeverity, VueVersion};
 
@@ -115,26 +114,6 @@ fn load_config_reads_compiler_template_syntax() {
     assert_eq!(
         load_compiler_template_syntax(Some(&config_path)),
         Some("quirks")
-    );
-}
-
-#[test]
-fn load_config_reads_compiler_custom_elements() {
-    let dir = tempfile::tempdir().unwrap();
-    let config_path = dir.path().join("vize.config.json");
-    std::fs::write(
-        &config_path,
-        r#"{ "compiler": { "customElements": ["Tres*", "primitive"] } }"#,
-    )
-    .unwrap();
-
-    let custom_elements = load_compiler_custom_elements(Some(&config_path));
-    assert_eq!(
-        custom_elements
-            .iter()
-            .map(|pattern| pattern.as_str())
-            .collect::<Vec<_>>(),
-        ["Tres*", "primitive"]
     );
 }
 

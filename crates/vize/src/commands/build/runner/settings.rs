@@ -6,7 +6,7 @@ use vize_carton::String;
 use vize_carton::config::{ConfigFeatureFlags, VueVersion};
 use vize_carton::hash::hash_bytes;
 
-use crate::commands::build::ScriptExtension;
+use crate::commands::build::{BuildArgs, ScriptExtension};
 
 pub(super) struct BuildConfigSettings {
     pub(super) compiler_template_syntax: Option<&'static str>,
@@ -56,6 +56,25 @@ pub(super) struct CompileFileSettings {
 }
 
 impl CompileFileSettings {
+    /// Resolve per-file compile settings from CLI arguments and config file values.
+    pub(super) fn resolve(args: &BuildArgs, build_config: BuildConfigSettings) -> Self {
+        Self {
+            ssr: args.ssr,
+            vapor: args.vapor || build_config.vapor.unwrap_or(false),
+            custom_renderer: args.custom_renderer,
+            custom_elements: build_config.custom_elements,
+            template_syntax: args
+                .template_syntax
+                .map(Into::into)
+                .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
+            experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
+            experimental_patterned_template: build_config.features.experimental_patterned_template,
+            dialect: build_config.dialect.unwrap_or_default(),
+            script_ext: args.script_ext,
+            record_profile_totals: args.profile,
+        }
+    }
+
     /// Packs every compile option that can change stats output into a tiny cache key.
     ///
     /// `record_profile_totals` is intentionally excluded: enabling profiling changes

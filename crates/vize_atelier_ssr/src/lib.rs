@@ -17,6 +17,7 @@
 pub mod codegen;
 pub mod errors;
 pub mod options;
+mod stage_options;
 pub mod steps;
 
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
@@ -36,7 +37,7 @@ pub use vize_atelier_core::{
 
 use vize_atelier_core::{
     lane::{transform as do_transform, transform_with_template_syntax_quirks},
-    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
+    options::TemplateSyntaxMode,
     parser::parse_with_options_and_template_syntax,
 };
 use vize_carton::{Bump, String, profile};
@@ -87,21 +88,7 @@ fn compile_ssr_inner<'a>(
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
 
-    // Create parser options
-    let parser_opts = ParserOptions {
-        is_void_tag: vize_carton::is_void_tag,
-        is_native_tag: Some(vize_carton::is_native_tag),
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            options.custom_elements.clone(),
-        ),
-        custom_renderer: options.custom_renderer,
-        is_pre_tag: |tag| tag == "pre",
-        get_namespace,
-        comments: options.comments,
-        experimental_in_tag_comments: options.experimental_in_tag_comments,
-        dialect: options.dialect,
-        ..ParserOptions::default()
-    };
+    let parser_opts = stage_options::parser_options(&options);
 
     // Parse
     let (mut root, errors) = profile!(
@@ -121,25 +108,7 @@ fn compile_ssr_inner<'a>(
         return (root, errors.to_vec(), codegen_result);
     }
 
-    // Transform with SSR-specific settings
-    // SSR always uses prefix identifiers and disables hoisting/caching
-    let transform_opts = TransformOptions {
-        prefix_identifiers: true, // SSR always uses prefix
-        hoist_static: false,      // No hoisting in SSR
-        cache_handlers: false,    // No caching in SSR
-        scope_id: codegen_options.scope_id.clone(),
-        ssr: true,
-        is_ts: codegen_options.is_ts,
-        inline: codegen_options.inline,
-        custom_renderer: codegen_options.custom_renderer,
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            codegen_options.custom_elements.clone(),
-        ),
-        experimental_patterned_template: codegen_options.experimental_patterned_template,
-        binding_metadata: codegen_options.binding_metadata.clone(),
-        dialect: codegen_options.dialect,
-        ..Default::default()
-    };
+    let transform_opts = stage_options::transform_options(&codegen_options);
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
     let template_syntax_quirks = template_syntax.is_quirks();
     let transform_errors = profile!(
