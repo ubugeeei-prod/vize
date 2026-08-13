@@ -17,19 +17,11 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   const dispatch = workflow.on?.workflow_dispatch;
   assert.ok(dispatch, "Missing workflow_dispatch trigger");
   assert.deepEqual(Object.keys(dispatch.inputs ?? {}), [
-    "budget_mode",
     "core_tools_mode",
     "core_tools_timeout_ms",
     "lint_divergence_mode",
     "lsp_mode",
   ]);
-  assert.deepEqual(dispatch.inputs?.budget_mode, {
-    description: "Typecheck divergence budget handling",
-    required: false,
-    default: "enforce",
-    type: "choice",
-    options: ["enforce", "record-only"],
-  });
   assert.deepEqual(dispatch.inputs?.core_tools_mode, {
     description: "Core tool surface handling",
     required: false,
@@ -241,7 +233,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
   assert.match(divergence.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
-  assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.budget_mode || 'enforce' }}");
+  assert.equal(divergence.env?.BUDGET_MODE, "enforce");
 
   const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");
   assert.match(

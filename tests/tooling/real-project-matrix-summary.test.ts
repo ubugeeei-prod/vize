@@ -19,7 +19,6 @@ test("real-project workflow gates every measured surface on one verdict", () => 
   assert.equal(verdict.if, "${{ always() }}");
   assert.equal(verdict.shell, "bash");
   assert.deepEqual(verdict.env, {
-    BUDGET_MODE: "${{ inputs.budget_mode || 'enforce' }}",
     CORE_TOOLS_MODE: "${{ inputs.core_tools_mode || 'enforce' }}",
     LINT_DIVERGENCE_MODE: "${{ inputs.lint_divergence_mode || 'enforce' }}",
     LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
@@ -44,9 +43,7 @@ test("real-project workflow gates every measured surface on one verdict", () => 
     /lsp_verdict="\$VIZE_LSP_OUTCOME"/,
     /\[\[ "\$LSP_MODE" == "record-only"/,
     /--surface "lsp=\$lsp_verdict"/,
-    /typecheck_divergence_verdict="\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
-    /\[\[ "\$BUDGET_MODE" == "record-only"/,
-    /--surface "typecheck-divergence=\$typecheck_divergence_verdict"/,
+    /--surface "typecheck-divergence=\$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"/,
   ]) {
     assert.match(verdict.run ?? "", pattern);
   }

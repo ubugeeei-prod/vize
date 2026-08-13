@@ -40,6 +40,7 @@ export function renderMarkdown(artifact) {
     `Missing Vue files: ${coverage.missingVueFiles.length}`,
     `Unexpected Vue files: ${coverage.unexpectedVueFiles.length}`,
     `Ignored dependency Vue files: ${coverage.ignoredDependencyVueFileCount}`,
+    `Seeded mutation oracle: ${describeMutationOracle(artifact.mutationOracle)}`,
     `Budget verdict: ${describeVerdict(artifact.budget)}`,
     `Classification: ${describeClassification(artifact)}`,
     `Budget passed: ${artifact.budget.passed}`,
@@ -50,4 +51,11 @@ export function renderMarkdown(artifact) {
 
 function describeVerdict(budget) {
   return budget.unusableReason == null ? budget.verdict : `unusable (${budget.unusableReason})`;
+}
+
+function describeMutationOracle(mutationOracle) {
+  if (mutationOracle?.passed === true) {
+    return `${mutationOracle.verdict} (${mutationOracle.file}:${mutationOracle.span.line}:${mutationOracle.span.column})`;
+  }
+  return `unusable (${mutationOracle?.unusableReason ?? "missing"})`;
 }

@@ -77,6 +77,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "Missing Vue files: 1",
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
+        `Seeded mutation oracle: unusable (${emptyBaselineReason})`,
         `Budget verdict: unusable (${emptyBaselineReason})`,
         `Classification: ${instrumentClassification}`,
         "Budget passed: false",
@@ -124,7 +125,8 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
   try {
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
-    assert.deepEqual(readJson(artifactPath(fixture, "json")).budget, {
+    const artifact = readJson(artifactPath(fixture, "json"));
+    assert.deepEqual(artifact.budget, {
       maxFalsePositiveRatio: 0.05,
       maxFalseNegativeRatio: 0.05,
       falsePositivePassed: true,
@@ -133,6 +135,10 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
       verdict: "passed",
       passed: true,
     });
+    assert.equal(artifact.mutationOracle.verdict, "passed");
+    assert.equal(artifact.mutationOracle.states[1].sharedCount, 1);
+    assert.equal(artifact.mutationOracle.states[1].falsePositiveCount, 0);
+    assert.equal(artifact.mutationOracle.states[1].falseNegativeCount, 0);
   } finally {
     cleanup(fixture);
   }

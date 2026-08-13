@@ -38,7 +38,10 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "baseline",
       "budget",
       "divergence",
+      "enforcement",
       "evidence",
+      "mutationOracle",
+      "preparation",
       "project",
       "revision",
       "schema",
@@ -47,9 +50,31 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "version",
     ]);
     assert.equal(artifact.schema, "vize.fixtureTypecheckDivergenceRun");
-    assert.equal(artifact.version, 3);
+    assert.equal(artifact.version, 4);
     assert.equal(artifact.tsconfig, ".generated/tsconfig.json");
     assert.equal(artifact.evidence.commitSha, commitSha);
+    assert.deepEqual(artifact.enforcement, { budgetMode: "enforce" });
+    const dependencyPath = path.join(fixture.reportDir, "fixture-typecheck-dependencies.json");
+    assert.deepEqual(artifact.preparation, {
+      schema: "vize.fixtureTypecheckPreparationEvidence",
+      version: 1,
+      payloadSha256: createHash("sha256").update(fs.readFileSync(dependencyPath)).digest("hex"),
+      packageManager: { name: "pnpm", version: "10.0.0" },
+      lockfile: {
+        path: "pnpm-lock.yaml",
+        sizeBytes: fs.readFileSync(path.join(fixture.fixtureRoot, "pnpm-lock.yaml")).byteLength,
+        sha256: createHash("sha256")
+          .update(fs.readFileSync(path.join(fixture.fixtureRoot, "pnpm-lock.yaml")))
+          .digest("hex"),
+      },
+      install: {
+        command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+        exitCode: 0,
+        stdoutSha256: createHash("sha256").update("installed").digest("hex"),
+        stderrSha256: createHash("sha256").update("").digest("hex"),
+      },
+      baselinePrepare: null,
+    });
     assert.deepEqual(artifact.source, {
       payloadSha256: createHash("sha256").update(fs.readFileSync(fixture.outputPath)).digest("hex"),
       fileCount: 1,
@@ -107,6 +132,23 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.equal(artifact.divergence.summary.sharedCount, 1);
     assert.equal(artifact.divergence.summary.falsePositiveCount, 0);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.equal(artifact.mutationOracle.schema, "vize.fixtureTypecheckSeededMutationOracle");
+    assert.equal(artifact.mutationOracle.version, 1);
+    assert.equal(artifact.mutationOracle.verdict, "passed");
+    assert.equal(artifact.mutationOracle.passed, true);
+    assert.equal(artifact.mutationOracle.file, "src/App.vue");
+    assert.deepEqual(artifact.mutationOracle.span, { line: 3, column: 1 });
+    assert.deepEqual(
+      artifact.mutationOracle.states.map((state) => state.name),
+      ["clean", "broken", "repaired"],
+    );
+    assert.equal(artifact.mutationOracle.states[1].sharedCount, 1);
+    assert.equal(artifact.mutationOracle.states[1].falsePositiveCount, 0);
+    assert.equal(artifact.mutationOracle.states[1].falseNegativeCount, 0);
+    assert.equal(
+      artifact.mutationOracle.states[2].sourceSha256,
+      artifact.mutationOracle.states[0].sourceSha256,
+    );
     const invocation = readJson(fixture.invocationPath);
     const baselineProject = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
     assert.deepEqual(invocation, {
@@ -140,6 +182,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "utf8",
     );
     assert.match(markdown, /vue-tsc excluded project-level: 0/);
+    assert.match(markdown, /Seeded mutation oracle: passed \(src\/App\.vue:3:1\)/);
     assert.match(markdown, new RegExp(`Digest: ${artifact.divergence.sha256}`));
   } finally {
     cleanup(fixture);
@@ -174,6 +217,46 @@ test("typecheck divergence report fails closed on mismatched matrix artifacts", 
     );
   } finally {
     cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report rejects missing or mismatched preparation evidence", () => {
+  for (const [mutate, message] of [
+    [
+      (fixture: ReturnType<typeof setup>) =>
+        fs.rmSync(path.join(fixture.reportDir, "fixture-typecheck-dependencies.json")),
+      /Missing typecheck dependency preparation evidence/,
+    ],
+    [
+      (fixture: ReturnType<typeof setup>) =>
+        updateJson(
+          path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"),
+          (artifact) => (artifact.evidence.commitSha = "c".repeat(40)),
+        ),
+      /preparation identity is invalid/,
+    ],
+    [
+      (fixture: ReturnType<typeof setup>) =>
+        updateJson(
+          path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"),
+          (artifact) => (artifact.lockfile.sha256 = "0".repeat(64)),
+        ),
+      /lockfile evidence is invalid/,
+    ],
+  ] as const) {
+    const fixture = setup();
+    try {
+      mutate(fixture);
+      const result = run(fixture);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, message);
+      assert.equal(
+        fs.existsSync(path.join(fixture.reportDir, "fixture-typecheck-divergence.json")),
+        false,
+      );
+    } finally {
+      cleanup(fixture);
+    }
   }
 });
 

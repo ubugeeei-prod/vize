@@ -20,6 +20,10 @@ import {
   parseBudgetMode,
 } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
+import {
+  createSeededMutationOracle,
+  readAndValidateDependencyPreparation,
+} from "./typecheck-divergence-provenance.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -49,6 +53,12 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   const summary = readAndValidateSummary(args.reportDir, project);
+  const preparation = readAndValidateDependencyPreparation({
+    reportDir: args.reportDir,
+    project,
+    fixtureRoot,
+    commitSha: summary.evidence.commitSha,
+  });
   const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
   const vueTsc = resolveVueTsc(args.vueTscBin);
   const baselineProject = materializeBaselineProject(
@@ -87,19 +97,30 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     fixtureRoot,
   );
   const configuration = evaluateBaselineConfiguration(baselineOutput);
+  const mutationOracle = createSeededMutationOracle({
+    project,
+    fixtureRoot,
+    vizeReport: vizeRun.payload.parsed,
+    coverage,
+  });
   const budget = evaluateBudget(
     project.typecheckPerformance,
     divergence.summary,
     coverage,
     configuration,
+    mutationOracle,
   );
   const artifact = {
     schema: "vize.fixtureTypecheckDivergenceRun",
-    version: 3,
+    version: 4,
     project: project.id,
     revision: project.revision,
     tsconfig: baselineProject.sourceProject,
     evidence: summary.evidence,
+    enforcement: {
+      budgetMode: args.budgetMode,
+    },
+    preparation,
     source: vizeRun.source,
     baseline: {
       command: displayCommand(vueTsc.path, baselineArgs),
@@ -113,6 +134,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
       stdoutSha256: sha256(baseline.stdout ?? ""),
       stderrSha256: sha256(baseline.stderr ?? ""),
     },
+    mutationOracle,
     budget,
     divergence,
   };

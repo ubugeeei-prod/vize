@@ -136,7 +136,7 @@ function runBaselinePrepare(project, fixtureRoot, timeoutMs) {
   };
 }
 
-function installArguments(manager) {
+export function installArguments(manager) {
   return {
     npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
     pnpm: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],

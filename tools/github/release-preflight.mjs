@@ -19,7 +19,9 @@ import {
   workspaceVersionFromCargoToml,
 } from "./release-preflight-core.mjs";
 import {
+  assertRealProjectMatrixReleaseArtifacts,
   assertRequiredWorkflowJobs,
+  downloadArtifactEntries,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
   workflowRequiresJobEvidence,
@@ -224,6 +226,22 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
         });
         assertRequiredWorkflowJobs(workflowName, jobs);
       }),
+    (async () => {
+      const run = selectedRuns.get("Real Project Matrix");
+      if (run == null) return;
+      const artifacts = await githubApiPages({
+        apiUrl,
+        repository,
+        token,
+        resource: `actions/runs/${run.id}/artifacts`,
+        collection: "artifacts",
+      });
+      await assertRealProjectMatrixReleaseArtifacts({
+        run,
+        artifacts,
+        readArtifactEntries: (artifact) => downloadArtifactEntries({ artifact, token }),
+      });
+    })(),
   ]);
   const blockers = findReleaseBlockers(issues, tag);
   if (blockers.length > 0) {

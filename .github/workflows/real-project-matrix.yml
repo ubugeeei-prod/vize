@@ -4,14 +4,6 @@ run-name: Real Project Matrix @ ${{ github.sha }}
 on:
   workflow_dispatch:
     inputs:
-      budget_mode:
-        description: "Typecheck divergence budget handling"
-        required: false
-        default: "enforce"
-        type: choice
-        options:
-          - enforce
-          - record-only
       core_tools_mode:
         description: "Core tool surface handling"
         required: false
@@ -244,9 +236,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         env:
-          # Weekly sweeps fail on budget drift. Release evidence records
-          # typecheck divergence without blocking the publish on baseline churn.
-          BUDGET_MODE: ${{ inputs.budget_mode || 'enforce' }}
+          BUDGET_MODE: enforce
         run: |
           node tools/fixtures/typecheck-divergence-report.mjs \
             --report-dir "$FIXTURE_REPORT_DIR" \
@@ -260,7 +250,6 @@ jobs:
         if: ${{ always() }}
         shell: bash
         env:
-          BUDGET_MODE: ${{ inputs.budget_mode || 'enforce' }}
           CORE_TOOLS_MODE: ${{ inputs.core_tools_mode || 'enforce' }}
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
           LSP_MODE: ${{ inputs.lsp_mode || 'enforce' }}
@@ -285,10 +274,6 @@ jobs:
           if [[ "$LSP_MODE" == "record-only" && "$lsp_verdict" == "failure" ]]; then
             lsp_verdict=success
           fi
-          typecheck_divergence_verdict="$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"
-          if [[ "$BUDGET_MODE" == "record-only" && "$typecheck_divergence_verdict" == "failure" ]]; then
-            typecheck_divergence_verdict=success
-          fi
           node tools/fixtures/real-project-surface-verdict.mjs \
             --output "$FIXTURE_REPORT_DIR/surface-verdict.json" \
             --surface "waiver-audit=$VIZE_WAIVER_AUDIT_OUTCOME" \
@@ -298,7 +283,7 @@ jobs:
             --surface "lint-divergence=$lint_divergence_verdict" \
             --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
             --surface "glyph=$VIZE_GLYPH_OUTCOME" \
-            --surface "typecheck-divergence=$typecheck_divergence_verdict"
+            --surface "typecheck-divergence=$VIZE_TYPECHECK_DIVERGENCE_OUTCOME"
 
       - name: Publish shard summary
         if: ${{ always() }}

@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -152,6 +153,33 @@ export function setup(options: FixtureOptions = {}) {
       },
     ],
   });
+  writeJson(path.join(reportDir, "fixture-typecheck-dependencies.json"), {
+    schema: "vize.fixtureTypecheckDependencyInstall",
+    version: 2,
+    project: "fixture",
+    revision: project.revision,
+    evidence: {
+      commitSha,
+      runtime: { name: "node", version: process.versions.node },
+    },
+    packageManager: {
+      name: "pnpm",
+      version: "10.0.0",
+    },
+    lockfile: {
+      path: "pnpm-lock.yaml",
+      sizeBytes: fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml")).byteLength,
+      sha256: sha256(fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"))),
+    },
+    install: {
+      command: ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
+      durationMs: 1,
+      exitCode: 0,
+      stdoutSha256: sha256("installed"),
+      stderrSha256: sha256(""),
+    },
+    baselinePrepare: null,
+  });
   const vueTsc = path.join(fakeDir, "vue-tsc.mjs");
   const invocationPath = path.join(fakeDir, "invocation.json");
   writeVueTsc(
@@ -241,4 +269,8 @@ export function updateJson(pathname: string, update: (value: any) => void) {
   const value = readJson(pathname);
   update(value);
   writeJson(pathname, value);
+}
+
+function sha256(value: string | Buffer) {
+  return createHash("sha256").update(value).digest("hex");
 }

@@ -23,10 +23,10 @@ import {
  * Project Matrix job still went green. These tests execute the failure path the
  * gate had never taken.
  *
- * #3513: the same gate then had to learn two more things. It is the *weekly*
- * gate, so `--budget-mode record-only` records a verdict on the release-evidence
- * dispatch without failing it; and a comparison whose two sides never met is a
- * measurement failure that may never render as a pass.
+ * #3513: the same gate then had to learn that a comparison whose two sides
+ * never met is a measurement failure that may never render as a pass. The
+ * script still supports `--budget-mode record-only` for ad hoc local capture,
+ * but the release workflow is not allowed to use that path.
  */
 
 const vizeOnly = "error:2:1 [TS2345] vize only";
@@ -98,6 +98,7 @@ test("a false-positive budget breach fails the divergence report", () => {
         "Missing Vue files: 0",
         "Unexpected Vue files: 0",
         "Ignored dependency Vue files: 0",
+        "Seeded mutation oracle: passed (src/App.vue:3:1)",
         "Budget verdict: breached",
         `Classification: ${divergenceClassification(1)}`,
         "Budget passed: false",
@@ -180,9 +181,8 @@ test("a ratio exactly at the budget still passes", () => {
 });
 
 test("--budget-mode record-only records a breach without failing the job", () => {
-  // The release path. `real-project-matrix.yml` is dispatched as a required
-  // release gate as well as run weekly, so a breach has to stay visible without
-  // blocking a release: the artifacts and the warning land, the exit code is 0.
+  // Ad hoc capture still records the same failing verdict and leaves a warning,
+  // but release evidence is pinned separately to enforce mode.
   const fixture = setup({ vizeDiagnostics: [sharedVizeDiagnostic, vizeOnly] });
   try {
     const result = run(fixture, {}, ["--budget-mode", "record-only"]);

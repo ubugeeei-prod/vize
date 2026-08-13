@@ -81,7 +81,6 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         workflowId: "real-project-matrix.yml",
         ref: "v1.2.3",
         inputs: {
-          budget_mode: "record-only",
           core_tools_mode: "record-only",
           core_tools_timeout_ms: "600000",
           lsp_mode: "record-only",
@@ -179,13 +178,12 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   assert.equal(matrix.name, "Real Project Matrix");
   const dispatchInputs = matrix.on?.workflow_dispatch?.inputs ?? {};
   assert.deepEqual(Object.keys(dispatchInputs), [
-    "budget_mode",
     "core_tools_mode",
     "core_tools_timeout_ms",
     "lint_divergence_mode",
     "lsp_mode",
   ]);
-  for (const mode of ["budget_mode", "core_tools_mode", "lint_divergence_mode", "lsp_mode"]) {
+  for (const mode of ["core_tools_mode", "lint_divergence_mode", "lsp_mode"]) {
     assert.equal(dispatchInputs[mode]?.default, "enforce");
     assert.deepEqual(dispatchInputs[mode]?.options, ["enforce", "record-only"]);
   }

@@ -10,18 +10,17 @@
  *    fixture's project configuration, when `vue-tsc --listFiles` proves the two
  *    tools checked different Vue corpora, or when two non-empty diagnostic
  *    streams have no mapped position in common.
- * 2. `assertBudgetPassed` enforces on the weekly sweep and records everywhere
- *    else — see `parseBudgetMode`.
+ * 2. `assertBudgetPassed` enforces by default. `record-only` exists only for
+ *    explicit ad hoc evidence capture, never for release evidence.
  */
 
 /**
  * `enforce` fails the run on anything that is not a clean pass. `record-only`
  * writes the same verdict into the artifact and annotates the run, but exits 0.
  *
- * `enforce` is the default so that a caller which forgets the flag fails closed;
- * only `.github/workflows/real-project-matrix.yml` opts out, and only on the
- * release-evidence dispatch. An unrecognised value is rejected rather than
- * treated as "do not enforce", so a typo cannot silently disarm the gate.
+ * `enforce` is the default so that a caller which forgets the flag fails closed.
+ * An unrecognised value is rejected rather than treated as "do not enforce", so
+ * a typo cannot silently disarm the gate.
  */
 const budgetModes = ["enforce", "record-only"];
 
@@ -32,7 +31,7 @@ export function parseBudgetMode(value) {
   return value;
 }
 
-export function evaluateBudget(performance, summary, coverage, configuration) {
+export function evaluateBudget(performance, summary, coverage, configuration, mutationOracle) {
   const falsePositivePassed = summary.falsePositiveRatio <= performance.maxFalsePositiveRatio;
   const falseNegativePassed = summary.falseNegativeRatio <= performance.maxFalseNegativeRatio;
   // Configuration first: it is the *cause* a coverage or mapping failure would
@@ -41,6 +40,7 @@ export function evaluateBudget(performance, summary, coverage, configuration) {
   const unusableReason =
     configuration.unusableReason ??
     coverage.unusableReason ??
+    mutationOracleUnusableReason(mutationOracle) ??
     diagnosticMappingUnusableReason(summary);
   const verdict =
     unusableReason != null
@@ -57,6 +57,11 @@ export function evaluateBudget(performance, summary, coverage, configuration) {
     verdict,
     passed: verdict === "passed",
   };
+}
+
+function mutationOracleUnusableReason(mutationOracle) {
+  if (mutationOracle?.passed === true && mutationOracle.verdict === "passed") return null;
+  return mutationOracle?.unusableReason ?? "seeded mutation oracle evidence is missing";
 }
 
 /**
@@ -84,12 +89,9 @@ function diagnosticMappingUnusableReason(summary) {
  * it, so a matrix-wide breach reported `Budget passed: false` and the weekly job
  * still went green.
  *
- * It is the *weekly* gate. `real-project-matrix.yml` is also dispatched as a
- * required release gate, and while the ecosystem baseline is unusable on most of
- * the corpus (#3513) a breach there would block every release on a broken
- * instrument, so the release dispatch passes `--budget-mode record-only`: the
- * verdict is still computed, written to both artifacts and raised as a workflow
- * warning, it just does not fail the job.
+ * It is also a required release gate, so release dispatches use the default
+ * `enforce` mode and preflight rejects artifacts that were captured in
+ * `record-only` mode.
  *
  * Either way this runs after both artifacts are written, so a breach is uploaded
  * and reviewable — the run fails with the evidence attached, not instead of it.
