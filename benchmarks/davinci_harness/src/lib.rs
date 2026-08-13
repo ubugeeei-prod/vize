@@ -25,7 +25,12 @@
 //! davinci_harness::main!(groups);
 //! ```
 
+// Same test-only relaxation vize_croquis uses: assertion messages render
+// errors with `to_string`, which the production ban list disallows.
+#![cfg_attr(test, allow(clippy::disallowed_methods))]
+
 pub mod alloc;
+pub mod fixtures;
 pub mod report;
 pub mod rss;
 

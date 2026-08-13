@@ -31,3 +31,12 @@ oxc_allocator.workspace = true
 tempfile.workspace = true
 vize_armature.workspace = true
 insta.workspace = true
+criterion.workspace = true
+davinci_harness.workspace = true
+# Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
+# permits it, and the davinci bench needs the descriptor-level orchestration.
+vize_atelier_sfc.workspace = true
+
+[[bench]]
+name = "davinci"
+harness = false

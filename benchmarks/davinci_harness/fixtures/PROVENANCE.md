@@ -1,0 +1,17 @@
+# Fixture ladder provenance (P0-2)
+
+Every fixture is committed as a static file; benches embed them with
+`include_str!`, so a fixture edit is a bench-identity change and must be
+treated as a new baseline. Corpus extracts are byte-identical copies from
+MIT-licensed corpus projects pinned in
+`tests/_fixtures/vue-ecosystem-fixtures.json`; AGPL/GPL corpus projects are
+never extracted into this repository.
+
+| Fixture | Lines | Source |
+| ------- | ----- | ------ |
+| `small.vue` | 31 | Synthetic: a typical `<script setup lang="ts">` counter component (props/emits/ref/computed, one event binding, scoped style). Written for this ladder. |
+| `medium.vue` | 181 | Byte-identical copy of `src/views/dashboard/admin/components/PanelGroup.vue` from [vue-element-admin](https://github.com/PanJiaChen/vue-element-admin) @ `6858a9ad67483025f6a9432a926beb9327037be3` (MIT). Options-API component with a template-heavy card grid. |
+| `large.vue` | 963 | Byte-identical copy of `src/components/vue-ui-dashboard.vue` from [vue-data-ui](https://github.com/graphieros/vue-data-ui) @ `14628946a8185252a7051b40be931e93a0b480a1` (MIT). Large `<script setup>` component with an SVG-heavy template. Its relative imports are not resolved by per-file analysis, which is the same condition the production pipeline sees. |
+| `stress-deep.vue` | 130 | Synthetic: 64 nested elements; every 8th level carries `v-if` + a bound attribute, every 8th+4 level a bound class + `@click`. Generated once by the deterministic rule described here and committed as a static file. |
+| `stress-wide.vue` | 206 | Synthetic: one element with exactly 200 attributes - 100 static (`data-static-NNN`), 50 bindings (`:bound-NN`), 50 events (`@event-NN`). |
+| `stress-interp.vue` | 104 | Synthetic: 500 interpolations as 100 paragraphs x 5 `{{ itemNNN }}` cells. |

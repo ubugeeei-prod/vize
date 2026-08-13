@@ -3600,6 +3600,8 @@ name = "vize_armature"
 version = "0.348.0"
 dependencies = [
  "compact_str 0.9.0",
+ "criterion",
+ "davinci_harness",
  "htmlize",
  "insta",
  "serde",
@@ -3811,7 +3813,9 @@ dependencies = [
 name = "vize_croquis"
 version = "0.348.0"
 dependencies = [
+ "criterion",
  "dashmap 6.1.0",
+ "davinci_harness",
  "insta",
  "once_cell",
  "oxc_allocator",
@@ -3827,6 +3831,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "vize_armature",
+ "vize_atelier_sfc",
  "vize_carton",
  "vize_relief",
 ]

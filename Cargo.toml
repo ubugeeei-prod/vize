@@ -56,6 +56,7 @@ vize_marquette = { path = "crates/vize_marquette", version = "=0.348.0" }
 vize_doctor = { path = "crates/vize_doctor", version = "=0.348.0" }
 
 # Workspace-only internal crates (always use the local path)
+davinci_harness = { path = "benchmarks/davinci_harness" }
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
 vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }

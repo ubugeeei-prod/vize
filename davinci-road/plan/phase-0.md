@@ -10,7 +10,7 @@
 ## TODO index
 
 - [x] P0-1 Bench harness with memory metrics
-- [ ] P0-2 Template-pipeline microbenches, front half (armature, croquis)
+- [x] P0-2 Template-pipeline microbenches, front half (armature, croquis)
 - [ ] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
 - [ ] P0-4 Bench baselines and CI gating (`budgets.toml`)
 - [ ] P0-5 Corpus baseline snapshot + diff tool
@@ -53,10 +53,10 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] Fixture ladder at `benchmarks/davinci_harness/fixtures/`: `small.vue` (~30 lines), `medium.vue` (~200 lines, real corpus extract), `large.vue` (~1k lines, corpus extract), `stress-deep.vue` (64-deep nesting), `stress-wide.vue` (200 attributes), `stress-interp.vue` (500 interpolations) — each with a `PROVENANCE.md` naming source project + commit
-- [ ] `crates/vize_armature/benches/davinci.rs`: `tokenize` and `parse` cases per fixture (add `[[bench]]` + `davinci_harness` dev-dep to `crates/vize_armature/Cargo.toml`)
-- [ ] `crates/vize_croquis/benches/davinci.rs`: `analyze_sfc_descriptor` with `SfcCroquisOptions::full()` and `::for_compile()` per fixture
-- [ ] Confirm `clippy.toml` bans hold in bench code (use `vize_carton` types)
+- [x] Fixture ladder at `benchmarks/davinci_harness/fixtures/`: `small.vue` (~30 lines), `medium.vue` (~200 lines, real corpus extract), `large.vue` (~1k lines, corpus extract), `stress-deep.vue` (64-deep nesting), `stress-wide.vue` (200 attributes), `stress-interp.vue` (500 interpolations) — each with a `PROVENANCE.md` naming source project + commit (extracts come from MIT-licensed corpus projects only; identity pinned by exact-length tests in `davinci_harness::fixtures`)
+- [x] `crates/vize_armature/benches/davinci.rs`: `tokenize` and `parse` cases per fixture (add `[[bench]]` + `davinci_harness` dev-dep to `crates/vize_armature/Cargo.toml`)
+- [x] `crates/vize_croquis/benches/davinci.rs`: `analyze_sfc_descriptor` with `SfcCroquisOptions::full()` and `::for_compile()` per fixture (the entry point lives in `vize_atelier_sfc::croquis`; the bench takes a dev-only dependency cycle on `vize_atelier_sfc`, which cargo permits)
+- [x] Confirm `clippy.toml` bans hold in bench code (use `vize_carton` types)
 
 **Acceptance:**
 

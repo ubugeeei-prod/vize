@@ -26,6 +26,12 @@ htmlize = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
+criterion = { workspace = true }
+davinci_harness = { workspace = true }
+
+[[bench]]
+name = "davinci"
+harness = false
 
 [package.metadata.cargo-semver-checks.lints]
 # `LegacyDialectCapabilities` (in the `legacy`-gated module) lists one `bool`
