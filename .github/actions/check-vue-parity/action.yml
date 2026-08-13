@@ -10,13 +10,25 @@ runs:
     # missing exactly when it is needed.
     - name: Record runner process budget baseline
       shell: bash
+      env:
+        RUNNER_ENVIRONMENT: ${{ runner.environment }}
       run: |
-        export RAYON_NUM_THREADS=4
+        if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          export RAYON_NUM_THREADS=1
+          export GOMAXPROCS=1
+        else
+          export RAYON_NUM_THREADS=4
+        fi
         echo "RAYON_NUM_THREADS=$RAYON_NUM_THREADS" >> "$GITHUB_ENV"
+        if [ -n "${GOMAXPROCS:-}" ]; then
+          echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
+        fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
         {
+          echo "runner_environment=$RUNNER_ENVIRONMENT"
           echo "cpus=$(nproc)"
           echo "rayon_num_threads=$RAYON_NUM_THREADS"
+          echo "gomaxprocs=${GOMAXPROCS:-unset}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
           echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"

@@ -69,10 +69,26 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   // always-uploaded artifact exists even when a later step is killed by the
   // spawn exhaustion this lane is guarding against (#4126).
   assert.equal(steps[0]?.name, "Record runner process budget baseline");
+  assert.deepEqual(steps[0]?.env, { RUNNER_ENVIRONMENT: "${{ runner.environment }}" });
+  assert.match(
+    steps[0]?.run ?? "",
+    /\[ "\$RUNNER_ENVIRONMENT" = "github-hosted" \]/,
+    "the hosted-runner fallback must use GitHub's runner environment context",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
+    /export RAYON_NUM_THREADS=1/,
+    "vue-parity must use a single Rayon worker on GitHub-hosted runners",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
+    /export GOMAXPROCS=1/,
+    "vue-parity must cap Corsa's Go runtime while release blockers use GitHub-hosted runners",
+  );
   assert.match(
     steps[0]?.run ?? "",
     /export RAYON_NUM_THREADS=4/,
-    "vue-parity must cap Vize's Rayon fan-out under the runner task budget",
+    "self-hosted runners must keep the established Rayon cap",
   );
   assert.match(
     steps[0]?.run ?? "",
@@ -81,8 +97,23 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   );
   assert.match(
     steps[0]?.run ?? "",
+    /echo "GOMAXPROCS=\$GOMAXPROCS" >> "\$GITHUB_ENV"/,
+    "the hosted-runner Corsa runtime cap must apply to later composite-action steps",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
+    /echo "runner_environment=\$RUNNER_ENVIRONMENT"/,
+    "the runner baseline must record which runner profile selected the process caps",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
     /echo "rayon_num_threads=\$RAYON_NUM_THREADS"/,
     "the runner baseline must record the emitted Rayon cap",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
+    /echo "gomaxprocs=\$\{GOMAXPROCS:-unset\}"/,
+    "the runner baseline must record the emitted Go runtime cap",
   );
   for (const fact of ["nproc", "ulimit -u", "ulimit -Hu", "pids.current", "pids.max", "Threads:"]) {
     assert.ok((steps[0]?.run ?? "").includes(fact), `the runner baseline must record ${fact}`);
