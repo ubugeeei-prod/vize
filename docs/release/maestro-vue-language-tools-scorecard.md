@@ -23,8 +23,9 @@ Each row in the fixture has:
   completions, non-renamable directive edits, unrelated code-action kinds, plain-text semantic token
   leakage, stale document structure, external rename rewrites, and stale workspace symbols.
 
-The same test also executes a representative real `vize lsp` session that checks positive and
-negative oracles across the matrix, rather than relying only on metadata.
+`tests/tooling/lsp-vue-language-tools-oracles.test.ts` also executes a representative real
+`vize lsp` session that checks positive and negative oracles across the matrix, rather than relying
+only on metadata.
 
 ## Editor Breadth
 
