@@ -182,6 +182,7 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
     "budget_mode",
     "core_tools_mode",
     "core_tools_timeout_ms",
+    "lint_divergence_mode",
     "lsp_mode",
   ]);
   assert.equal(dispatchInputs.budget_mode?.default, "enforce");
@@ -190,6 +191,8 @@ test("Real Project Matrix dispatch identifies its immutable target", () => {
   assert.deepEqual(dispatchInputs.core_tools_mode?.options, ["enforce", "record-only"]);
   assert.equal(dispatchInputs.core_tools_timeout_ms?.default, "2400000");
   assert.equal(dispatchInputs.core_tools_timeout_ms?.type, "string");
+  assert.equal(dispatchInputs.lint_divergence_mode?.default, "enforce");
+  assert.deepEqual(dispatchInputs.lint_divergence_mode?.options, ["enforce", "record-only"]);
   assert.equal(dispatchInputs.lsp_mode?.default, "enforce");
   assert.deepEqual(dispatchInputs.lsp_mode?.options, ["enforce", "record-only"]);
   assert.match(matrix["run-name"] ?? "", /^Real Project Matrix @ /);

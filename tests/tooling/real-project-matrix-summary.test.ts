@@ -21,6 +21,7 @@ test("real-project workflow gates every measured surface on one verdict", () => 
   assert.deepEqual(verdict.env, {
     BUDGET_MODE: "${{ inputs.budget_mode || 'enforce' }}",
     CORE_TOOLS_MODE: "${{ inputs.core_tools_mode || 'enforce' }}",
+    LINT_DIVERGENCE_MODE: "${{ inputs.lint_divergence_mode || 'enforce' }}",
     LSP_MODE: "${{ inputs.lsp_mode || 'enforce' }}",
     VIZE_WAIVER_AUDIT_OUTCOME: "${{ steps.waiver_audit.outcome }}",
     VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: "${{ steps.typecheck_dependencies.outcome }}",
@@ -37,6 +38,9 @@ test("real-project workflow gates every measured surface on one verdict", () => 
     /core_tools_verdict="\$VIZE_CORE_TOOLS_OUTCOME"/,
     /\[\[ "\$CORE_TOOLS_MODE" == "record-only"/,
     /--surface "core-tools=\$core_tools_verdict"/,
+    /lint_divergence_verdict="\$VIZE_LINT_DIVERGENCE_OUTCOME"/,
+    /\[\[ "\$LINT_DIVERGENCE_MODE" == "record-only"/,
+    /--surface "lint-divergence=\$lint_divergence_verdict"/,
     /lsp_verdict="\$VIZE_LSP_OUTCOME"/,
     /\[\[ "\$LSP_MODE" == "record-only"/,
     /--surface "lsp=\$lsp_verdict"/,
@@ -49,7 +53,6 @@ test("real-project workflow gates every measured surface on one verdict", () => 
   for (const [surface, variable] of [
     ["waiver-audit", "VIZE_WAIVER_AUDIT_OUTCOME"],
     ["typecheck-dependencies", "VIZE_TYPECHECK_DEPENDENCIES_OUTCOME"],
-    ["lint-divergence", "VIZE_LINT_DIVERGENCE_OUTCOME"],
     ["syntax-highlighter", "VIZE_SYNTAX_HIGHLIGHTER_OUTCOME"],
     ["glyph", "VIZE_GLYPH_OUTCOME"],
   ]) {

@@ -25,16 +25,16 @@ on:
         required: false
         default: "2400000"
         type: string
-      lsp_mode:
-        description: "LSP lifecycle gate handling"
+      lint_divergence_mode:
+        description: "Patina lint divergence gate handling"
         required: false
         default: "enforce"
         type: choice
         options:
           - enforce
           - record-only
-      lint_divergence_mode:
-        description: "Patina lint divergence gate handling"
+      lsp_mode:
+        description: "LSP lifecycle gate handling"
         required: false
         default: "enforce"
         type: choice

@@ -20,8 +20,8 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     "budget_mode",
     "core_tools_mode",
     "core_tools_timeout_ms",
-    "lsp_mode",
     "lint_divergence_mode",
+    "lsp_mode",
   ]);
   assert.deepEqual(dispatch.inputs?.budget_mode, {
     description: "Typecheck divergence budget handling",
@@ -43,15 +43,15 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     default: "2400000",
     type: "string",
   });
-  assert.deepEqual(dispatch.inputs?.lsp_mode, {
-    description: "LSP lifecycle gate handling",
+  assert.deepEqual(dispatch.inputs?.lint_divergence_mode, {
+    description: "Patina lint divergence gate handling",
     required: false,
     default: "enforce",
     type: "choice",
     options: ["enforce", "record-only"],
   });
-  assert.deepEqual(dispatch.inputs?.lint_divergence_mode, {
-    description: "Patina lint divergence gate handling",
+  assert.deepEqual(dispatch.inputs?.lsp_mode, {
+    description: "LSP lifecycle gate handling",
     required: false,
     default: "enforce",
     type: "choice",
