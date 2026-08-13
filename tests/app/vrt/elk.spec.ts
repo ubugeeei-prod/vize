@@ -16,7 +16,6 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
-import { waitForMountedAppContent } from "../../_helpers/assertions";
 import { ELK_RENDER_ROUTE, readElkRenderRouteSourceEvidence } from "../dev/elk-route-contract";
 
 interface VisualRoute {
@@ -33,7 +32,8 @@ const OUTPUT_DIR =
   path.resolve(__dirname, "../../../.vize/artifacts/elk-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const DEFAULT_MAX_DIFF_RATIO = 0.04;
-const ELK_MIN_CONTENT_TEXT_LENGTH = 40;
+const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
+const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const apps = createElkVisualParityApps();
 
@@ -56,8 +56,8 @@ const defaultStorage = {
 } satisfies Record<string, string>;
 
 const routes: VisualRoute[] = [
-  { name: "settings-about", path: ELK_RENDER_ROUTE },
-  { name: "settings-about-mobile", path: ELK_RENDER_ROUTE, viewport: MOBILE_VIEWPORT },
+  { name: "settings-shell", path: ELK_RENDER_ROUTE },
+  { name: "settings-shell-mobile", path: ELK_RENDER_ROUTE, viewport: MOBILE_VIEWPORT },
   { name: "explore", path: "/explore" },
   { name: "explore-users", path: "/explore/users" },
   { name: "explore-tags", path: "/explore/tags" },
@@ -66,7 +66,6 @@ const routes: VisualRoute[] = [
   { name: "public-local", path: "/public/local" },
   { name: "search", path: "/search" },
   { name: "hashtags", path: "/hashtags" },
-  { name: "settings", path: "/settings" },
   { name: "settings-interface", path: "/settings/interface" },
   { name: "settings-language", path: "/settings/language" },
   { name: "settings-preferences", path: "/settings/preferences" },
@@ -184,9 +183,40 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
   });
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator("#__nuxt")).toBeAttached({ timeout: 15_000 });
-  await waitForMountedAppContent(page, "#__nuxt", {
-    minTextLength: ELK_MIN_CONTENT_TEXT_LENGTH,
-  });
+  await waitForElkPageContent(page);
   await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(1000);
+}
+
+async function waitForElkPageContent(page: Page): Promise<void> {
+  await expect
+    .poll(() => elkRenderRouteContentState(page), {
+      intervals: [250, 500, 1_000],
+      timeout: 90_000,
+    })
+    .toBe("ready");
+}
+
+async function elkRenderRouteContentState(page: Page): Promise<string> {
+  return page.evaluate(
+    ({ links, minElements, selector }) => {
+      const root = document.querySelector(selector);
+      if (!root) {
+        return "missing-root";
+      }
+
+      const elementCount = root.querySelectorAll("*").length;
+      const missingLinks = links.filter((href) => !root.querySelector(`a[href="${href}"]`));
+      if (elementCount >= minElements && missingLinks.length === 0) {
+        return "ready";
+      }
+
+      return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
+    },
+    {
+      links: [...ELK_RENDER_ROUTE_LINKS],
+      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      selector: "#__nuxt",
+    },
+  );
 }

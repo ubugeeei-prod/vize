@@ -18,7 +18,6 @@ import {
   verifyScopedCssAttributes,
   getComputedStyleValue,
   verifySSRContent,
-  waitForMountedAppContent,
 } from "../../_helpers/assertions";
 import {
   ELK_RENDER_ROUTE,
@@ -28,7 +27,8 @@ import {
 
 const app = elkApp;
 const ELK_RENDER_URL = `${app.url}${ELK_RENDER_ROUTE}`;
-const ELK_MIN_CONTENT_TEXT_LENGTH = 40;
+const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
+const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
 
 test.describe("elk dev", () => {
   let devServer: ChildProcess;
@@ -93,14 +93,16 @@ test.describe("elk dev", () => {
     const mountEl = page.locator(app.mountSelector);
     await expect(mountEl).toBeAttached({ timeout: 15_000 });
     await waitForElkPageContent(page);
-    await expect(mountEl).toContainText("GitHub");
+    for (const href of ELK_RENDER_ROUTE_LINKS) {
+      await expect(page.locator(`a[href="${href}"]`).first()).toBeAttached();
+    }
   });
 
   test("SSR: server-rendered HTML is not empty", async ({ page }) => {
     const html = await verifySSRContent(page, ELK_RENDER_URL);
     // SSR should produce non-empty HTML with at least the #__nuxt container
     expect(html).toContain("__nuxt");
-    expect(html).toContain("GitHub");
+    expect(html).toContain("/settings/about");
     expect(html.length).toBeGreaterThan(100);
   });
 
@@ -220,7 +222,34 @@ function isKnownElkShellHydrationError(error: string): boolean {
 }
 
 async function waitForElkPageContent(page: Page): Promise<void> {
-  await waitForMountedAppContent(page, app.mountSelector, {
-    minTextLength: ELK_MIN_CONTENT_TEXT_LENGTH,
-  });
+  await expect
+    .poll(() => elkRenderRouteContentState(page), {
+      intervals: [250, 500, 1_000],
+      timeout: 90_000,
+    })
+    .toBe("ready");
+}
+
+async function elkRenderRouteContentState(page: Page): Promise<string> {
+  return page.evaluate(
+    ({ links, minElements, selector }) => {
+      const root = document.querySelector(selector);
+      if (!root) {
+        return "missing-root";
+      }
+
+      const elementCount = root.querySelectorAll("*").length;
+      const missingLinks = links.filter((href) => !root.querySelector(`a[href="${href}"]`));
+      if (elementCount >= minElements && missingLinks.length === 0) {
+        return "ready";
+      }
+
+      return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
+    },
+    {
+      links: [...ELK_RENDER_ROUTE_LINKS],
+      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      selector: app.mountSelector,
+    },
+  );
 }

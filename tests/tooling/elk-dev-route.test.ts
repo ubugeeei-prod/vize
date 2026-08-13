@@ -25,7 +25,7 @@ test("elk render route source contract fails closed for each fixture anchor", ()
 
   for (const [relativePath, anchor] of [
     ["app/pages/index.vue", "middleware: 'auth'"],
-    ["app/pages/settings/about/index.vue", 'text="GitHub"'],
+    ["app/pages/settings.vue", 'to="/settings/about"'],
     ["app/layouts/default.vue", "<NavSide command"],
   ] as const) {
     const sources = validSyntheticSources();
@@ -46,13 +46,18 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
     scripts?: Record<string, string>;
   };
 
-  assert.equal(ELK_RENDER_ROUTE, "/settings/about");
+  assert.equal(ELK_RENDER_ROUTE, "/settings");
   assert.match(devSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
-  assert.match(devSpec, /await expect\(mountEl\)\.toContainText\("GitHub"\)/);
+  assert.match(devSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
+  assert.match(
+    devSpec,
+    /ELK_RENDER_ROUTE_LINKS = \["\/settings\/interface", "\/settings\/about"\]/,
+  );
   assert.doesNotMatch(devSpec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
   assert.doesNotMatch(devSpec, /verifySSRContent\(page,\s*app\.url\)/);
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
   assert.match(visualSpec, /path: ELK_RENDER_ROUTE/);
+  assert.match(visualSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
   assert.doesNotMatch(visualSpec, /path: "\/"(?:[,}])/);
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
