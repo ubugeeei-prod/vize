@@ -80,7 +80,7 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     scope_id: u32,
-    ctx: &ScopeGenContext<'_>,
+    ctx: &ScopeGenContext<'_, '_>,
     indent: &str,
 ) {
     if !ctx.check_options.check_props {

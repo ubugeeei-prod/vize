@@ -190,7 +190,7 @@ fn slot_payload_type(
 pub(super) fn generate_v_slot_scope(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ScopeGenContext<'_>,
+    ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &VSlotScopeData,
     indent: &str,

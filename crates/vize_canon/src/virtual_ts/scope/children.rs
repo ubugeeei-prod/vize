@@ -10,7 +10,7 @@ use crate::virtual_ts::types::VizeMapping;
 pub(super) fn generate_child_scopes(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ScopeGenContext<'_>,
+    ctx: &ScopeGenContext<'_, '_>,
     parent_scope_id: u32,
     indent: &str,
 ) {

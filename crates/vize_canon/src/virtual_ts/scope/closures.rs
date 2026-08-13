@@ -157,6 +157,7 @@ pub(crate) fn generate_scope_closures(
             slot_outlets: &slot_outlets,
             template_prop_names,
             checks,
+            template_ast: options.template_ast,
             template_source: options.template_ast.map(|root| root.source.as_str()),
             template_offset,
             check_options,
@@ -218,7 +219,7 @@ pub(crate) fn generate_scope_closures(
 pub(super) fn generate_scope_node(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ScopeGenContext<'_>,
+    ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     indent: &str,
 ) {

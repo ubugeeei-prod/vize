@@ -1,4 +1,5 @@
 use vize_croquis::EventHandlerScopeData;
+use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
 
 use crate::virtual_ts::helpers::is_known_dom_event_name;
 
@@ -24,11 +25,13 @@ fn is_member_handler_reference(content: &str) -> bool {
 
 pub(super) fn transition_hook_signature(
     template_source: Option<&str>,
+    template_ast: Option<&RootNode<'_>>,
     directive_start: u32,
     event_name: &str,
 ) -> Option<(&'static str, &'static str)> {
-    let source = template_source?;
-    if !is_transition_hook(event_name) || !event_belongs_to_transition(source, directive_start) {
+    if !is_transition_hook(event_name)
+        || !event_belongs_to_transition(template_source, template_ast, directive_start)
+    {
         return None;
     }
 
@@ -41,16 +44,17 @@ pub(super) fn transition_hook_signature(
 
 pub(super) fn dynamic_component_custom_event(
     template_source: Option<&str>,
+    template_ast: Option<&RootNode<'_>>,
     directive_start: u32,
     event_name: &str,
 ) -> bool {
     if is_known_dom_event_name(event_name) {
         return false;
     }
-    let Some(source) = template_source else {
-        return false;
-    };
-    matches!(event_host_tag(source, directive_start), Some("component"))
+    matches!(
+        event_host_tag(template_source, template_ast, directive_start),
+        Some("component")
+    )
 }
 
 fn is_transition_hook(event_name: &str) -> bool {
@@ -80,14 +84,82 @@ fn is_transition_hook(event_name: &str) -> bool {
     )
 }
 
-fn event_belongs_to_transition(source: &str, directive_start: u32) -> bool {
+fn event_belongs_to_transition(
+    template_source: Option<&str>,
+    template_ast: Option<&RootNode<'_>>,
+    directive_start: u32,
+) -> bool {
     matches!(
-        event_host_tag(source, directive_start),
+        event_host_tag(template_source, template_ast, directive_start),
         Some("Transition" | "TransitionGroup" | "transition" | "transition-group")
     )
 }
 
-fn event_host_tag(source: &str, directive_start: u32) -> Option<&str> {
+fn event_host_tag<'a>(
+    template_source: Option<&'a str>,
+    template_ast: Option<&'a RootNode<'_>>,
+    directive_start: u32,
+) -> Option<&'a str> {
+    if let Some(tag) = template_ast.and_then(|root| event_host_tag_from_ast(root, directive_start))
+    {
+        return Some(tag);
+    }
+    let source = template_source?;
+    event_host_tag_from_source(source, directive_start)
+}
+
+fn event_host_tag_from_ast<'root, 'arena>(
+    root: &'root RootNode<'arena>,
+    directive_start: u32,
+) -> Option<&'root str> {
+    root.children
+        .iter()
+        .find_map(|child| child_event_host_tag(child, directive_start))
+}
+
+fn child_event_host_tag<'root, 'arena>(
+    child: &'root TemplateChildNode<'arena>,
+    directive_start: u32,
+) -> Option<&'root str> {
+    match child {
+        TemplateChildNode::Element(element) => element_event_host_tag(element, directive_start),
+        TemplateChildNode::If(node) => node.branches.iter().find_map(|branch| {
+            branch
+                .children
+                .iter()
+                .find_map(|child| child_event_host_tag(child, directive_start))
+        }),
+        TemplateChildNode::IfBranch(branch) => branch
+            .children
+            .iter()
+            .find_map(|child| child_event_host_tag(child, directive_start)),
+        TemplateChildNode::For(node) => node
+            .children
+            .iter()
+            .find_map(|child| child_event_host_tag(child, directive_start)),
+        _ => None,
+    }
+}
+
+fn element_event_host_tag<'root, 'arena>(
+    element: &'root ElementNode<'arena>,
+    directive_start: u32,
+) -> Option<&'root str> {
+    if element.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(directive) if directive.loc.start.offset == directive_start
+        )
+    }) {
+        return Some(element.tag.as_str());
+    }
+    element
+        .children
+        .iter()
+        .find_map(|child| child_event_host_tag(child, directive_start))
+}
+
+fn event_host_tag_from_source(source: &str, directive_start: u32) -> Option<&str> {
     let prefix = source.get(..directive_start as usize)?;
     let open = host_tag_open_offset(prefix)?;
     if prefix[open..].starts_with("</") {
@@ -122,34 +194,65 @@ fn host_tag_open_offset(prefix: &str) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::{dynamic_component_custom_event, event_belongs_to_transition, event_host_tag};
+    use vize_carton::Allocator;
 
     fn directive_start(source: &str, directive: &str) -> u32 {
         source.find(directive).expect("directive in source") as u32
     }
 
+    fn parse<'a>(allocator: &'a Allocator, source: &'a str) -> vize_relief::RootNode<'a> {
+        let (root, errors) = vize_armature::parse(allocator, source);
+        assert!(errors.is_empty(), "{errors:?}");
+        root
+    }
+
     #[test]
     fn host_tag_ignores_less_than_inside_an_attribute_value() {
-        let source = "<Transition :data=\"a < b\" @enter=\"onEnter\">";
+        let source = "<Transition :data=\"a < b\" @enter=\"onEnter\" />";
+        let allocator = Allocator::default();
+        let root = parse(&allocator, source);
         let start = directive_start(source, "@enter");
-        assert_eq!(event_host_tag(source, start), Some("Transition"));
-        assert!(event_belongs_to_transition(source, start));
+        assert_eq!(
+            event_host_tag(Some(source), Some(&root), start),
+            Some("Transition")
+        );
+        assert!(event_belongs_to_transition(
+            Some(source),
+            Some(&root),
+            start
+        ));
     }
 
     #[test]
     fn host_tag_reports_a_plain_element_host() {
-        let source = "<div @enter=\"onEnter\">";
+        let source = "<div @enter=\"onEnter\"></div>";
+        let allocator = Allocator::default();
+        let root = parse(&allocator, source);
         let start = directive_start(source, "@enter");
-        assert_eq!(event_host_tag(source, start), Some("div"));
-        assert!(!event_belongs_to_transition(source, start));
+        assert_eq!(
+            event_host_tag(Some(source), Some(&root), start),
+            Some("div")
+        );
+        assert!(!event_belongs_to_transition(
+            Some(source),
+            Some(&root),
+            start
+        ));
     }
 
     #[test]
     fn host_tag_survives_a_preceding_dynamic_is_binding() {
-        let source = "<component :is=\"Widget\" @picked=\"onPicked\">";
+        let source = "<component :is=\"Widget\" @picked=\"onPicked\"></component>";
+        let allocator = Allocator::default();
+        let root = parse(&allocator, source);
         let start = directive_start(source, "@picked");
-        assert_eq!(event_host_tag(source, start), Some("component"));
+        assert_eq!(
+            event_host_tag(Some(source), Some(&root), start),
+            Some("component")
+        );
         assert!(dynamic_component_custom_event(
             Some(source),
+            Some(&root),
             start,
             "picked"
         ));

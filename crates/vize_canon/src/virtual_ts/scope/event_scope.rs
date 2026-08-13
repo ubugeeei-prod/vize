@@ -23,7 +23,7 @@ use event_targets::{
 pub(super) fn generate_event_handler_scope(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    ctx: &ScopeGenContext<'_>,
+    ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
     indent: &str,
@@ -132,6 +132,7 @@ pub(super) fn generate_event_handler_scope(
         );
     } else if let Some((event_type, listener_args)) = transition_hook_signature(
         ctx.template_source,
+        ctx.template_ast,
         scope.span.start,
         data.event_name.as_str(),
     ) {
@@ -190,6 +191,7 @@ pub(super) fn generate_event_handler_scope(
         );
     } else if dynamic_component_custom_event(
         ctx.template_source,
+        ctx.template_ast,
         scope.span.start,
         data.event_name.as_str(),
     ) {

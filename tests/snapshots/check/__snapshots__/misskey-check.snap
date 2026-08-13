@@ -234,12 +234,7 @@
     },
     {
       "file": "src/components/MkContainer.vue",
-      "diagnostics": [
-        "error:26:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:27:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:28:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:29:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkContextMenu.vue",
@@ -3215,7 +3210,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 27,
+  "errorCount": 4,
   "warningCount": 0,
   "fileCount": 794
 }

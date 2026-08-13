@@ -6,6 +6,9 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/accordion' or its corresponding type declarations.",
         "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:125:12 [TS2345] Argument of type '{ item: T; index: number; open: boolean; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"leading\">'.",
+        "error:130:14 [TS2345] Argument of type '{ item: T; index: number; open: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"default\">'.",
+        "error:133:12 [TS2345] Argument of type '{ item: T; index: number; open: boolean; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<AccordionSlots<T>, \"trailing\">'.",
         "error:134:83 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"accordion\"> | Record<string, never>) & { accordion?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"accordion\"> & { accordion?: any; }'."
       ]
     },
@@ -92,7 +95,10 @@
         "error:5:19 [TS2307] Cannot find module '#build/ui/breadcrumb' or its corresponding type declarations.",
         "error:70:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:93:97 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
-        "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'."
+        "error:93:130 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"breadcrumb\"> | Record<string, never>) & { breadcrumb?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"breadcrumb\"> & { breadcrumb?: any; }'.",
+        "error:108:16 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: boolean; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
+        "error:109:18 [TS2345] Argument of type '{ item: Extract<T, { slot: string; }>; active: boolean; index: number; ui: any; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<BreadcrumbSlots<T>>'.",
+        "error:127:12 [TS2345] Argument of type '{ ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<BreadcrumbSlots<T>, \"separator\">'."
       ]
     },
     {
@@ -215,7 +221,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:19 [TS2307] Cannot find module '#build/ui/chat-prompt' or its corresponding type declarations.",
-        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:59:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:151:8 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
       ]
     },
     {
@@ -229,7 +236,8 @@
         "error:124:74 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:130:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
         "error:138:47 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
-        "error:146:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'."
+        "error:146:43 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"chatPromptSubmit\"> | Record<string, never>) & { chatPromptSubmit?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"chatPromptSubmit\"> & { chatPromptSubmit?: any; }'.",
+        "error:172:8 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
       ]
     },
     {
@@ -323,7 +331,8 @@
         "error:602:79 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:612:53 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
         "error:629:54 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"commandPalette\"> | Record<string, never>) & { commandPalette?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"commandPalette\"> & { commandPalette?: any; }'.",
-        "error:649:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'."
+        "error:649:38 [TS2345] Argument of type 'AcceptableValue' is not assignable to parameter of type 'Record<string, any> | undefined'.\nType 'null' is not assignable to type 'Record<string, any> | undefined'.",
+        "error:658:117 [TS2353] Object literal may only specify known properties, and '\"group\"' does not exist in type '{ item: T; index: number; ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; }'."
       ]
     },
     {
@@ -339,7 +348,8 @@
       "diagnostics": [
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:120:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:170:14 [TS2698] Spread types may only be created from object types."
       ]
     },
     {
@@ -347,7 +357,8 @@
       "diagnostics": [
         "error:3:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:4:24 [TS2307] Cannot find module '#build/ui/context-menu' or its corresponding type declarations.",
-        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:45:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:161:26 [TS2698] Spread types may only be created from object types."
       ]
     },
     {
@@ -403,7 +414,8 @@
         "error:3:19 [TS2307] Cannot find module '#build/ui/dashboard-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'."
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"dashboardSearchButton\"> | Record<string, never>) & { dashboardSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"dashboardSearchButton\"> & { dashboardSearchButton?: any; }'.",
+        "error:119:10 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
       ]
     },
     {
@@ -461,7 +473,9 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
         "error:148:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:151:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:190:8 [TS2345] Argument of type '{ open: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuSlots<T, NestedItem<T>>, \"default\">'.",
+        "error:212:14 [TS2698] Spread types may only be created from object types."
       ]
     },
     {
@@ -470,7 +484,16 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:24 [TS2307] Cannot find module '#build/ui/dropdown-menu' or its corresponding type declarations.",
         "error:62:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
-        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:66:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:130:6 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:131:8 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:139:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:147:12 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:154:10 [TS2345] Argument of type '{ item: Extract<NestedItem<T>, { slot: string; }>; active: boolean | undefined; index: number; ui: { [x: string]: (props?: Record<string, any>) => string; }; }' is not assignable to parameter of type '__VizeAnySlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>>'.",
+        "error:183:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-top\">'.",
+        "error:226:26 [TS2698] Spread types may only be created from object types.",
+        "error:259:12 [TS2345] Argument of type '{ searchTerm: string; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"empty\">'.",
+        "error:266:10 [TS2345] Argument of type '{ sub: boolean; }' is not assignable to parameter of type '__VizeSlotOutletPayload<DropdownMenuContentSlots<T, NestedItem<T>>, \"content-bottom\">'."
       ]
     },
     {
@@ -702,7 +725,7 @@
         "error:5:19 [TS2307] Cannot find module '#build/ui/input-tags' or its corresponding type declarations.",
         "error:76:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:161:4 [TS2345] Argument of type '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to parameter of type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; } & Record<...>'.\nType '{ required?: boolean; addOnPaste?: boolean; addOnTab?: boolean; addOnBlur?: boolean; duplicate?: boolean; delimiter?: string | RegExp; max?: number; convertValue?: ((value: string) => T) | undefined; ... 8 more ...; disabled: boolean | undefined; }' is not assignable to type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 28 more ...; readonly onRemoveTag?: ((payload: AcceptableInputValue) => any) | undefined; }'.\nTypes of property 'displayValue' are incompatible.\nType '((value: T) => string) | undefined' is not assignable to type '((value: AcceptableInputValue) => string) | undefined'.\nType '(value: T) => string' is not assignable to type '(value: AcceptableInputValue) => string'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
-        "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and 'payload' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
+        "error:171:6 [TS2322] Type '(value: T[]) => void' is not assignable to type '(payload: AcceptableInputValue[]) => any'.\nTypes of parameters 'value' and 'args' are incompatible.\nType 'AcceptableInputValue[]' is not assignable to type 'T[]'.\nType 'AcceptableInputValue' is not assignable to type 'T'.\n'AcceptableInputValue' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.\nType 'string' is not assignable to type 'T'.\n'string' is assignable to the constraint of type 'T', but 'T' could be instantiated with a different subtype of constraint 'AcceptableInputValue'.",
         "error:190:58 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"inputTags\"> | Record<string, never>) & { inputTags?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"inputTags\"> & { inputTags?: any; }'."
       ]
     },
@@ -731,7 +754,9 @@
         "error:119:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
         "error:121:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:122:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:124:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:124:52 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:267:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
+        "error:303:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
       ]
     },
     {
@@ -979,7 +1004,9 @@
         "error:5:19 [TS2307] Cannot find module '#build/ui/pricing-table' or its corresponding type declarations.",
         "error:107:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
         "error:234:85 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
-        "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'."
+        "error:240:39 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"pricingTable\"> | Record<string, never>) & { pricingTable?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"pricingTable\"> & { pricingTable?: any; }'.",
+        "error:292:20 [TS2345] Argument of type '{ feature: PricingTableSectionFeature<T>; section: PricingTableSection<T>; }' is not assignable to parameter of type '__VizeSlotOutletPayload<PricingTableSlots<T>, \"feature-title\">'.",
+        "error:334:18 [TS2345] Argument of type '{ feature: PricingTableSectionFeature<T>; section: PricingTableSection<T>; }' is not assignable to parameter of type '__VizeSlotOutletPayload<PricingTableSlots<T>, \"feature-title\">'."
       ]
     },
     {
@@ -1089,7 +1116,8 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/stepper' or its corresponding type declarations.",
         "error:84:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:150:63 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:150:63 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'.",
+        "error:163:16 [TS2345] Argument of type '{ item: T; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<StepperSlots<T>, \"indicator\">'."
       ]
     },
     {
@@ -1123,7 +1151,10 @@
         "error:5:32 [TS2307] Cannot find module '@nuxt/schema' or its corresponding type declarations.",
         "error:6:19 [TS2307] Cannot find module '#build/ui/tabs' or its corresponding type declarations.",
         "error:104:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:154:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'."
+        "error:154:6 [TS2322] Type 'string | number | symbol | undefined' is not assignable to type 'DataOrientation | undefined'.\nType 'string' is not assignable to type 'DataOrientation | undefined'.",
+        "error:173:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"leading\">'.",
+        "error:179:12 [TS2345] Argument of type '{ item: T; index: number; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"default\">'.",
+        "error:182:10 [TS2345] Argument of type '{ item: T; index: number; ui: any; }' is not assignable to parameter of type '__VizeSlotOutletPayload<TabsSlots<T>, \"trailing\">'."
       ]
     },
     {
@@ -1238,9 +1269,6 @@
         "error:149:29 [TS2339] Property 'path' does not exist on type 'ContentNavigationLink'.",
         "error:180:24 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:180:92 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:181:46 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:181:68 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
-        "error:181:77 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:182:19 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:182:20 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:185:61 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
@@ -1248,6 +1276,7 @@
         "error:185:132 [TS2339] Property 'title' does not exist on type 'ContentNavigationLink'.",
         "error:199:123 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentNavigation\"> | Record<string, never>) & { contentNavigation?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentNavigation\"> & { contentNavigation?: any; }'.",
         "error:215:82 [TS2339] Property 'path' does not exist on type 'T'.",
+        "error:248:18 [TS2345] Argument of type '{ active?: boolean | undefined; ui?: { [x: string]: (props?: Record<string, any>) => string; } | undefined; link: T; }' is not assignable to parameter of type '{ link: T; active: boolean; ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; }'.\nTypes of property 'active' are incompatible.\nType 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'.",
         "error:248:65 [TS18048] 'slotData' is possibly 'undefined'."
       ]
     },
@@ -1273,7 +1302,8 @@
         "error:3:19 [TS2307] Cannot find module '#build/ui/content/content-search-button' or its corresponding type declarations.",
         "error:58:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:60:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
-        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'."
+        "error:103:77 [TS2339] Property 'icons' does not exist on type '(Omit<unknown, \"contentSearchButton\"> | Record<string, never>) & { contentSearchButton?: any; }'.\nProperty 'icons' does not exist on type 'Omit<unknown, \"contentSearchButton\"> & { contentSearchButton?: any; }'.",
+        "error:119:10 [TS2345] Argument of type '{} | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }' is not assignable to parameter of type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'.\nType '{}' is not assignable to type '{ ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ui: { [x: string]: (props?: Record<string, any> | undefined) => string; }; } | { ...; }'."
       ]
     },
     {
@@ -2493,7 +2523,8 @@
         "error:73:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:76:25 [TS2307] Cannot find module '@inertiajs/vue3' or its corresponding type declarations.",
         "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:187:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
       ]
     },
     {
@@ -2509,7 +2540,8 @@
         "error:4:19 [TS2307] Cannot find module '#build/ui/link' or its corresponding type declarations.",
         "error:75:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:77:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:78:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:182:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
       ]
     },
     {
@@ -2520,11 +2552,13 @@
         "error:66:22 [TS2307] Cannot find module 'defu' or its corresponding type declarations.",
         "error:67:25 [TS2307] Cannot find module 'ohash/utils' or its corresponding type declarations.",
         "error:70:29 [TS2307] Cannot find module 'ufo' or its corresponding type declarations.",
-        "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations."
+        "error:72:30 [TS2307] Cannot find module '#imports' or its corresponding type declarations.",
+        "error:190:11 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer.",
+        "error:226:9 [TS18004] No value exists in scope for the shorthand property 'as'. Either declare one or provide an initializer."
       ]
     }
   ],
-  "errorCount": 1395,
+  "errorCount": 1429,
   "warningCount": 0,
   "fileCount": 231
 }
