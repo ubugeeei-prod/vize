@@ -9,14 +9,8 @@ import {
   isFatalError,
   verifySSRContent,
 } from "../../_helpers/assertions";
-import {
-  ensurePortFree,
-  getProcessLogs,
-  killProcess,
-  startDevServer,
-  waitForHttpReady,
-  waitForServerReady,
-} from "../../_helpers/server";
+import { killProcess } from "../../_helpers/server";
+import { startNuxtUiDevServer } from "./nuxt-ui-dev-server";
 import { verifyNuxtUiAuthoredSourceHmr } from "./nuxt-ui-hmr";
 
 const app = nuxtUiApp;
@@ -194,28 +188,15 @@ test.describe("nuxt-ui dev", () => {
   let hmrStartupLogStart = 0;
 
   test.beforeAll(async ({ browser }) => {
-    // setup + install + dev:prepare + server start + route warmup can exceed the
-    // default hook timeout for this heavy playground.
-    test.setTimeout(600_000);
+    // setup + install + dev:prepare + server start (with a bounded restart when
+    // the SSR bridge dies) + route warmup can exceed the default hook timeout for
+    // this heavy playground.
+    test.setTimeout(900_000);
     if (app.setup) app.setup();
-    await ensurePortFree(app.port);
 
-    console.log(`Starting dev server for ${app.name}...`);
-    devServer = startDevServer(app);
-    hmrStartupLogStart = getProcessLogs(devServer).length;
-    devServer.on("exit", (code) => {
-      console.log(`[${app.name}] dev server exited with code ${code}`);
-    });
-
-    console.log(`Waiting for ${app.name} server to be ready (port ${app.port})...`);
-    await waitForServerReady(
-      devServer,
-      app.port,
-      app.readyPattern,
-      app.startupTimeout,
-      app.readyDelay,
-    );
-    await waitForHttpReady(app.url, app.port);
+    const started = await startNuxtUiDevServer();
+    devServer = started.devServer;
+    hmrStartupLogStart = started.startupLogStart;
     console.log(`${app.name} server is ready`);
 
     // Pre-bundle the routes the suite visits so Vite finishes optimize-deps churn

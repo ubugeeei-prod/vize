@@ -175,6 +175,12 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
     "the pinned Nuxt readiness spec must exercise authored-source HMR",
   );
   assert.match(nuxtUiDevSpec, /verifyNuxtUiAuthoredSourceHmr/);
+  assert.match(
+    nuxtUiDevSpec,
+    /startNuxtUiDevServer\(\)/,
+    "the Nuxt readiness spec must boot through the SSR-bridge recovery helper",
+  );
+  assertExists("tests", "app", "dev", "nuxt-ui-dev-server.ts");
   assertExists("tests", "app", "dev", "nuxt-ui-hmr.ts");
   assertExists("tests", "app", "dev", "source-restore.ts");
 

@@ -85,7 +85,7 @@ jobs:
               - 'tests/_fixtures/_projects/compiler-macros/**'
               - 'tests/_helpers/**'
               - 'tests/app/dev/{misskey,nuxt-ui}.spec.ts'
-              - 'tests/app/dev/{misskey-hmr,nuxt-ui-hmr,source-restore}.ts'
+              - 'tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts'
               - 'tests/app/playwright.config.ts'
               - 'tests/snapshots/check/compiler-macros.ts'
               - 'tests/snapshots/check/__snapshots__/compiler-macros-check.snap'
@@ -143,7 +143,7 @@ jobs:
     needs: app-readiness-plan
     if: needs.app-readiness-plan.outputs.run == 'true'
     runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 40 # restore: 30 with blacksmith-32vcpu-ubuntu-2404
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.app-readiness-plan.outputs.matrix) }}
