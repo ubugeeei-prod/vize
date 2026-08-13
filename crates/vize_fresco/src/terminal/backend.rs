@@ -226,13 +226,16 @@ impl<W: Write> Backend<W> {
     /// normal path is one state check. A failed output retains its painted frame
     /// for direct [`flush`](Self::flush) retries; [`FrameRenderer`] calls this
     /// method before repainting because its tree may have changed meanwhile.
+    /// Returns whether a retained frame was cleared.
     ///
     /// [`FrameRenderer`]: crate::render::FrameRenderer
-    pub(crate) fn prepare_retained_frame(&mut self) {
+    pub(crate) fn prepare_retained_frame(&mut self) -> bool {
         if !self.current_frame_blank {
             self.current.clear();
             self.current_frame_blank = true;
+            return true;
         }
+        false
     }
 
     #[cfg(test)]

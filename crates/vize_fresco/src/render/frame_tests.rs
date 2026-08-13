@@ -4,7 +4,10 @@ use super::{
     FRAME_TELEMETRY_SCHEMA_VERSION, FrameCoalescer, FrameRenderer, FrameRequestOutcome, RenderNode,
     RenderTree,
 };
-use crate::{layout::Dimension, terminal::Backend};
+use crate::{
+    layout::Dimension,
+    terminal::{Backend, Cell, Color, Style},
+};
 
 fn text_tree(value: &str) -> RenderTree {
     let mut tree = RenderTree::new();
@@ -120,6 +123,36 @@ fn output_failure_preserves_partial_timing_activity_and_retry_buffer() {
 }
 
 #[test]
+fn retained_frame_preparation_clears_exactly_once() {
+    let mut backend = Backend::with_writer(4, 1, Vec::new());
+    assert!(!backend.prepare_retained_frame());
+
+    backend
+        .buffer_mut()
+        .set_string(0, 0, "old", Style::new().fg(Color::Red));
+    assert!(backend.prepare_retained_frame());
+    assert_eq!(backend.buffer().get(0, 0), Some(&Cell::EMPTY));
+    assert_eq!(backend.buffer().get(1, 0), Some(&Cell::EMPTY));
+    assert_eq!(backend.buffer().get(2, 0), Some(&Cell::EMPTY));
+    assert!(!backend.prepare_retained_frame());
+}
+
+#[test]
+fn direct_backend_retry_preserves_the_already_painted_buffer() {
+    let mut backend = Backend::with_writer(5, 1, FailOnceWriter::armed());
+    backend.buffer_mut().set_string(0, 0, "retry", Style::new());
+
+    backend.flush_measured().unwrap_err();
+    assert_eq!(
+        backend.buffer().get(0, 0).map(|cell| cell.symbol.as_str()),
+        Some("r")
+    );
+
+    let retried = backend.flush_measured().unwrap();
+    assert_eq!(retried.changed_cells(), 5);
+}
+
+#[test]
 fn changed_tree_after_output_failure_erases_shortened_wide_content() {
     let mut tree = text_tree("AB🙂");
     let mut backend = Backend::with_writer(6, 1, FailOnceWriter::armed());
@@ -134,6 +167,34 @@ fn changed_tree_after_output_failure_erases_shortened_wide_content() {
         .render(&mut tree, &mut backend, Default::default())
         .unwrap();
     assert_eq!(recovered.changed_cells(), 1);
+
+    let unchanged = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(unchanged.changed_cells(), 0);
+}
+
+#[test]
+fn recovery_diffs_shortened_wide_content_against_previous_successful_frame() {
+    let mut tree = text_tree("AB🙂");
+    let mut backend = Backend::with_writer(6, 1, FailOnceWriter::default());
+    let mut renderer = FrameRenderer::new();
+
+    let first = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(first.changed_cells(), 4);
+
+    backend.writer_mut().armed = true;
+    renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap_err();
+    set_root_text(&mut tree, "Z");
+
+    let recovered = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(recovered.changed_cells(), 4);
 
     let unchanged = renderer
         .render(&mut tree, &mut backend, Default::default())
@@ -159,20 +220,41 @@ fn unchanged_tree_after_output_failure_repaints_the_complete_frame() {
 }
 
 #[test]
+fn removed_styled_child_after_failure_diffs_against_previous_successful_frame() {
+    let mut tree = styled_child_tree("界x");
+    let root = tree.root().unwrap();
+    let child = tree.get(root).unwrap().children.first().copied().unwrap();
+    let mut backend = Backend::with_writer(4, 1, FailOnceWriter::default());
+    let mut renderer = FrameRenderer::new();
+
+    let first = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(first.changed_cells(), 4);
+
+    backend.writer_mut().armed = true;
+    renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap_err();
+    tree.remove_child(root, child);
+    tree.remove(child);
+
+    let recovered = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(recovered.changed_cells(), 4);
+
+    let unchanged = renderer
+        .render(&mut tree, &mut backend, Default::default())
+        .unwrap();
+    assert_eq!(unchanged.changed_cells(), 0);
+}
+
+#[test]
 fn removed_styled_child_after_output_failure_leaves_no_stale_cells() {
-    let mut tree = RenderTree::new();
-    let root = tree.next_id();
-    tree.insert_root(RenderNode::box_node(root));
-    let child = tree.next_id();
-    let mut node = RenderNode::text_node(child, "stale");
-    node.style.width = Dimension::Points(5.0);
-    node.style.height = Dimension::Points(1.0);
-    node.appearance.fg = Some(crate::terminal::Color::Red);
-    node.appearance.bg = Some(crate::terminal::Color::Blue);
-    node.appearance.inverse = true;
-    node.appearance.underline = true;
-    tree.insert(node);
-    tree.add_child(root, child);
+    let mut tree = styled_child_tree("stale");
+    let root = tree.root().unwrap();
+    let child = tree.get(root).unwrap().children.first().copied().unwrap();
     let mut backend = Backend::with_writer(8, 1, FailOnceWriter::armed());
     let mut renderer = FrameRenderer::new();
 
@@ -259,4 +341,21 @@ fn set_root_text(tree: &mut RenderTree, text: &str) {
         panic!("test tree root must be text");
     };
     content.text = text.into();
+}
+
+fn styled_child_tree(text: &str) -> RenderTree {
+    let mut tree = RenderTree::new();
+    let root = tree.next_id();
+    tree.insert_root(RenderNode::box_node(root));
+    let child = tree.next_id();
+    let mut node = RenderNode::text_node(child, text);
+    node.style.width = Dimension::Points(text.chars().count() as f32 + 2.0);
+    node.style.height = Dimension::Points(1.0);
+    node.appearance.fg = Some(Color::Red);
+    node.appearance.bg = Some(Color::Blue);
+    node.appearance.inverse = true;
+    node.appearance.underline = true;
+    tree.insert(node);
+    tree.add_child(root, child);
+    tree
 }
