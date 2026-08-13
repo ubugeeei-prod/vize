@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { downloadArtifactEntries } from "./release-preflight-artifact-entries.mjs";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
@@ -19,14 +20,13 @@ import {
   workspaceVersionFromCargoToml,
 } from "./release-preflight-core.mjs";
 import {
-  assertRealProjectMatrixReleaseArtifacts,
   assertRequiredWorkflowJobs,
-  downloadArtifactEntries,
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
   workflowRequiresJobEvidence,
 } from "./release-preflight-evidence.mjs";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
+import { assertRealProjectMatrixReleaseArtifacts } from "./release-preflight-matrix-evidence.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const releasePackageRoots = ["editors", "npm"];
