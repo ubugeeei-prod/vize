@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -8,10 +9,13 @@ import { fileURLToPath } from "node:url";
 import {
   FRONTEND_PHPCON_E2E_API_BASE,
   FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH,
+  npmxGeneratorTaskArgs,
+  readDotenvValue,
+} from "../_helpers/app-fixture-runtime.ts";
+import {
   elkApp,
   frontendPhpconApp,
   npmxApp,
-  npmxGeneratorTaskArgs,
 } from "../_helpers/apps.ts";
 import {
   createAppE2ePlanEvidence,
@@ -101,14 +105,15 @@ test("full and readiness plans preserve every isolated execution row", () => {
 });
 
 test("upstream app fixtures keep deterministic CI setup", () => {
-  const rawMockUser = fs
-    .readFileSync(path.join(root, "tests/_fixtures/_git/elk/.env.mock"), "utf8")
-    .split(/\r?\n/)
-    .find((line) => line.startsWith("MOCK_USER="));
-  assert.ok(rawMockUser);
-  const quotedMockUser = rawMockUser.slice("MOCK_USER=".length);
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dotenv-"));
+  const dotenvPath = path.join(tempDir, ".env.mock");
+  fs.writeFileSync(dotenvPath, "MOCK_USER='{\"id\":\"e2e\"}'\nPLAIN=value\n");
+
+  assert.equal(readDotenvValue(dotenvPath, "MOCK_USER"), '{"id":"e2e"}');
+  assert.equal(readDotenvValue(dotenvPath, "PLAIN"), "value");
+  assert.equal(readDotenvValue(path.join(tempDir, "missing.env"), "MOCK_USER"), undefined);
   assert.equal(elkApp.env?.CONTEXT, "dev");
-  assert.equal(elkApp.env?.MOCK_USER, quotedMockUser.slice(1, -1));
+  assert.equal(typeof elkApp.env?.MOCK_USER, "string");
   assert.match(elkApp.args.join(" "), /pnpm@10 exec nuxt dev/);
 
   assert.deepEqual(npmxGeneratorTaskArgs("generate:lexicons"), [
