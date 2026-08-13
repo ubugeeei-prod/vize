@@ -14,6 +14,7 @@ runs:
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
         {
           echo "cpus=$(nproc)"
+          echo "rayon_num_threads=${RAYON_NUM_THREADS:-auto}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
           echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"
