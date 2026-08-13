@@ -27,8 +27,7 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Offsets are in pre-rewrite generated TS coordinates; callers must
     /// translate post-rewrite byte offsets via `import_source_map` first.
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
-    /// Stable semantic links between generated TypeScript ranges.
-    /// Offsets are in post-rewrite generated TS coordinates, matching `code`.
+    /// Stable semantic links in post-rewrite generated TS coordinates.
     pub(in crate::ide) semantic_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
@@ -42,13 +41,11 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Line-to-source mappings from @vize-map comments
     /// Index is virtual TS line number (0-indexed), value is source position in SFC
     pub(in crate::ide) line_mappings: Vec<Option<SourceMapping>>,
-    /// Number of import lines skipped from user code (to adjust line mapping)
     pub(in crate::ide) skipped_import_lines: u32,
 }
 
 /// Diagnostic service for collecting and aggregating diagnostics.
 pub struct DiagnosticService;
-
 impl DiagnosticService {
     /// Collect all diagnostics for a document.
     pub fn collect(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {

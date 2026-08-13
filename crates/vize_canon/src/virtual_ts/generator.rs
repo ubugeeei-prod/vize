@@ -22,7 +22,7 @@ pub(super) mod setup_scope;
 mod setup_type_exports;
 mod spans;
 mod template_refs;
-use self::anchors::{emit_props_shadow_anchor, emit_setup_binding_anchors};
+use self::anchors::emit_setup_binding_anchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
@@ -646,26 +646,16 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
-            let template_ref_unwraps = template_refs::TemplateRefUnwraps::collect(
+            let template_ref_unwraps = template_refs::collect_and_emit_scope_preamble(
+                &mut ts,
                 summary,
                 options_api,
-                Some(&template_usage_names),
+                &template_usage_names,
                 script_content,
                 &imported_names,
                 options,
                 generation_options,
-            );
-            let template_ref_captures = template_ref_unwraps.emit_type_captures(&mut ts);
-
-            emit_props_shadow_anchor(&mut ts, summary, &template_usage_names);
-            // Semicolon prevents ASI issues when user script doesn't end with `;`
-            // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
-            ts.push_str("  ;(function __template() {\n");
-
-            template_ref_unwraps.emit_template_variables(
-                &mut ts,
                 generic_param.is_some(),
-                &template_ref_captures,
                 &mut semantic_links,
             );
 

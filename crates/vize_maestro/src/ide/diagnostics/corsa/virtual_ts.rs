@@ -259,6 +259,8 @@ pub(in crate::ide) fn semantic_links_after_import_rewrite(
         .collect()
 }
 
+/// Map a pre-rewrite generated TypeScript range into the post-rewrite code
+/// held by [`VirtualTsResult::code`].
 fn rewrite_range(
     range: std::ops::Range<usize>,
     import_source_map: &ImportSourceMap,

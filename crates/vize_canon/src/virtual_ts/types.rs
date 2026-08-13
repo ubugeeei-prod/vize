@@ -3,6 +3,8 @@
 use std::ops::Range;
 use vize_carton::{FxHashSet, String, config::VueVersion, cstr};
 
+use super::semantic_links::VizeSemanticLink;
+
 /// A mapping from generated virtual TS position to SFC source position.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VizeMapping {
@@ -27,34 +29,6 @@ pub struct VizeMapping {
 pub struct VizeSubSpan {
     pub gen_range: Range<usize>,
     pub src_range: Range<usize>,
-}
-
-/// A stable semantic edge between two generated TypeScript ranges that model
-/// one authored Vue binding but intentionally have different TypeScript
-/// symbols.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct VizeSemanticLink {
-    pub source_range: Range<usize>,
-    pub target_range: Range<usize>,
-    pub kind: VizeSemanticLinkKind,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum VizeSemanticLinkKind {
-    VueSetupTemplateRefUnwrap,
-}
-
-impl VizeSemanticLink {
-    /// Only the native batch pipeline prefixes generated code (and therefore
-    /// needs to re-base semantic links), so this stays gated to avoid a
-    /// dead-code warning in non-`native` builds.
-    #[cfg(feature = "native")]
-    pub(crate) fn shift(&mut self, offset: usize) {
-        self.source_range.start += offset;
-        self.source_range.end += offset;
-        self.target_range.start += offset;
-        self.target_range.end += offset;
-    }
 }
 
 impl VizeMapping {

@@ -3,7 +3,6 @@
 use std::ops::Range;
 use std::path::Path;
 
-use serde::Serialize;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
 use vize_carton::{String as CompactString, ToCompactString, config::VueVersion};
@@ -15,6 +14,13 @@ use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, to
 #[path = "content_mapper_alias.rs"]
 mod alias;
 use alias::{is_alias_projection, is_synthetic_content_mapper_identifier};
+
+#[path = "content_mapper_protocol.rs"]
+mod protocol;
+use protocol::protocol_semantic_links;
+pub use protocol::{
+    ContentMapperDiagnostic, ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
+};
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -35,17 +41,6 @@ enum ContentMapperSpanKind {
     Verbatim = 0,
     Atom = 1,
     Alias = 2,
-}
-
-/// A TypeScript content-mapper transform result.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContentMapperTransform {
-    pub text: CompactString,
-    pub mappings: Vec<ContentMapperSpan>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub semantic_links: Vec<ContentMapperSemanticLink>,
-    pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
 
 /// Settings resolved from a TypeScript content-mapper entry and its declared
@@ -88,31 +83,6 @@ impl ContentMapperTransformOptions {
         self.preserve_unused_diagnostics = enabled;
         self
     }
-}
-
-/// A protocol v1 span tuple:
-/// `[generatedStart, generatedLength, originalStart, originalLength, kind, featureMask]`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-pub struct ContentMapperSpan(pub [usize; 6]);
-
-/// Stable semantic links between generated ranges.
-#[derive(Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContentMapperSemanticLink {
-    pub source_start: usize,
-    pub source_length: usize,
-    pub target_start: usize,
-    pub target_length: usize,
-    pub kind: &'static str,
-}
-
-/// A diagnostic expressed in the mapper's negotiated UTF-8 coordinates.
-#[derive(Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContentMapperDiagnostic {
-    pub message_text: CompactString,
-    pub start: usize,
-    pub length: usize,
 }
 
 /// Generate self-contained TypeScript and protocol-v1 mappings for one Vue SFC.
@@ -197,25 +167,6 @@ pub fn generate_vue_content_mapper_transform_with_options(
             .collect(),
         text: code,
     })
-}
-
-fn protocol_semantic_links(
-    links: &[crate::virtual_ts::VizeSemanticLink],
-) -> Vec<ContentMapperSemanticLink> {
-    links
-        .iter()
-        .map(|link| ContentMapperSemanticLink {
-            source_start: link.source_range.start,
-            source_length: link.source_range.len(),
-            target_start: link.target_range.start,
-            target_length: link.target_range.len(),
-            kind: match link.kind {
-                crate::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap => {
-                    "vueSetupTemplateRefUnwrap"
-                }
-            },
-        })
-        .collect()
 }
 
 fn content_mapper_component_name(path: &Path) -> CompactString {

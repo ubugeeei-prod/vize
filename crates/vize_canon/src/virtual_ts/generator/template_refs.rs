@@ -8,6 +8,7 @@ use vize_carton::{FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{BindingType, Croquis};
 
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
+use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
 use super::spans::is_local_setup_binding;
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
@@ -24,6 +25,37 @@ pub(super) struct TemplateRefUnwraps {
     legacy_helpers: bool,
     dialect: VueVersion,
     hoist_shared_preamble: bool,
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(super) fn collect_and_emit_scope_preamble(
+    ts: &mut String,
+    summary: &Croquis,
+    options_api: bool,
+    template_referenced_names: &FxHashSet<String>,
+    script_content: Option<&str>,
+    imported_names: &FxHashSet<&str>,
+    options: &VirtualTsOptions,
+    generation_options: VirtualTsGenerationOptions<'_>,
+    has_generic_param: bool,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+) -> TemplateRefUnwraps {
+    let unwraps = TemplateRefUnwraps::collect(
+        summary,
+        options_api,
+        Some(template_referenced_names),
+        script_content,
+        imported_names,
+        options,
+        generation_options,
+    );
+    let captures = unwraps.emit_type_captures(ts);
+    emit_props_shadow_anchor(ts, summary, template_referenced_names);
+    // Semicolon prevents ASI issues when user script doesn't end with `;`
+    // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
+    ts.push_str("  ;(function __template() {\n");
+    unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
+    unwraps
 }
 
 impl TemplateRefUnwraps {

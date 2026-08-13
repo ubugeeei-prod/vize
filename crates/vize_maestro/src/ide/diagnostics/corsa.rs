@@ -22,4 +22,6 @@ mod virtual_ts_inline_art;
 mod relative_import_tests;
 mod script_fallback;
 #[cfg(test)]
+mod semantic_link_tests;
+#[cfg(test)]
 mod tests;

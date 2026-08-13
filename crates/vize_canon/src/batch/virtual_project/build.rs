@@ -281,7 +281,7 @@ pub(super) fn prepend_vue_jsx_reference(
         }
     }
     for link in semantic_links {
-        link.shift(offset);
+        link.shift_generated_ranges(offset);
     }
 }
 

@@ -28,6 +28,7 @@ mod macro_type_mappings;
 pub mod mapping;
 mod props;
 mod scope;
+mod semantic_links;
 #[cfg(test)]
 mod tests;
 mod types;
@@ -44,12 +45,10 @@ pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
     VUE_TYPE_HELPERS,
 };
+pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 #[cfg(feature = "native")]
 pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
-pub use types::{
-    TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSemanticLink,
-    VizeSemanticLinkKind, VizeSubSpan,
-};
+pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSubSpan};
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.
