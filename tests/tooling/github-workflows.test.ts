@@ -52,6 +52,17 @@ test("GitHub workflows use the current cache action", () => {
   }
 });
 
+test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => {
+  const action = readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml");
+
+  assert.match(action, /runner\.environment == 'github-hosted'/);
+  assert.match(action, /runner\.environment != 'github-hosted'/);
+  assert.match(
+    action,
+    /runner\.environment != 'github-hosted' && inputs\.secondary-target-path != ''/,
+  );
+});
+
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
   // We use Blacksmith-hosted runners where compatible and intentionally let
   // any matching vCPU SKU pass — bumping vCPU shouldn't need a test change.

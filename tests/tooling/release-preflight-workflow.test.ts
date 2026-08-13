@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { hostedOrBlacksmith, readRepoFile } from "./support/github-workflows.ts";
 
 type WorkflowStep = {
   env?: Record<string, string>;
@@ -39,7 +39,7 @@ test("reusable release preflight verifies evidence and crate plans without regis
 
   const verify = workflow.jobs?.verify;
   assert.ok(verify);
-  assert.match(verify["runs-on"] ?? "", /^blacksmith-\d+vcpu-ubuntu-2404$/);
+  assert.match(verify["runs-on"] ?? "", new RegExp(`^${hostedOrBlacksmith("ubuntu-24.04")}$`));
   assert.equal(verify["timeout-minutes"], 120);
   assert.deepEqual(verify.permissions, {
     actions: "write",
@@ -56,7 +56,10 @@ test("reusable release preflight verifies evidence and crate plans without regis
 
   const crateValidation = workflow.jobs?.["validate-crates"];
   assert.ok(crateValidation);
-  assert.match(crateValidation["runs-on"] ?? "", /^blacksmith-\d+vcpu-ubuntu-2404$/);
+  assert.match(
+    crateValidation["runs-on"] ?? "",
+    new RegExp(`^${hostedOrBlacksmith("ubuntu-24.04")}$`),
+  );
   assert.equal(crateValidation["timeout-minutes"], 45);
   assert.deepEqual(crateValidation.permissions, { contents: "read" });
   const crateCheckout = crateValidation.steps?.find((step) =>
