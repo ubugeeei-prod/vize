@@ -55,22 +55,40 @@ pub(in crate::terminal::backend::lifecycle) fn enable_raw_mode() -> io::Result<(
 }
 
 /// Restore and release the native raw-mode snapshot.
+///
+/// Crossterm cleanup runs before the snapshot is replayed because its Windows
+/// implementation re-enables `ENABLE_LINE_INPUT`, `ENABLE_ECHO_INPUT`, and
+/// `ENABLE_PROCESSED_INPUT` instead of writing back the mode it observed, which
+/// would clobber a valid non-default input mode. The captured mode is written
+/// back even when that cleanup fails, so a partial teardown never leaves the
+/// console on Crossterm's cooked-input defaults.
 pub(in crate::terminal::backend::lifecycle) fn disable_raw_mode() -> io::Result<()> {
     let Some(snapshot) = RawSnapshotReader::acquire() else {
         return Ok(());
     };
-    let mut restoration = set_console_mode(
+    let cleanup = if snapshot.snapshot.owns_crossterm_raw_mode {
+        crossterm::terminal::disable_raw_mode()
+    } else {
+        Ok(())
+    };
+    let restoration = set_console_mode(
         snapshot.snapshot.input_handle,
         snapshot.snapshot.input_original,
     );
-    if restoration.is_ok() && snapshot.snapshot.owns_crossterm_raw_mode {
-        restoration = crossterm::terminal::disable_raw_mode();
-    }
     drop(snapshot);
-    if restoration.is_ok() {
+    let outcome = match (cleanup, restoration) {
+        (Ok(()), restoration) => restoration,
+        (Err(cleanup), Ok(())) => Err(cleanup),
+        (Err(cleanup), Err(restoration)) => Err(combine_transition_errors(
+            "disabling Crossterm raw mode",
+            cleanup,
+            restoration,
+        )),
+    };
+    if outcome.is_ok() {
         deactivate_snapshot();
     }
-    restoration
+    outcome
 }
 
 /// Return whether raw mode owns a native snapshot requiring restoration.
@@ -150,7 +168,11 @@ fn fail_enable_transition(enable: io::Error) -> io::Result<()> {
         deactivate_snapshot();
         return Err(enable);
     }
-    Err(combine_transition_errors(enable, rollback.unwrap_err()))
+    Err(combine_transition_errors(
+        "enabling raw mode",
+        enable,
+        rollback.unwrap_err(),
+    ))
 }
 
 fn deactivate_snapshot() {
@@ -208,29 +230,41 @@ fn set_console_mode(handle: HANDLE, mode: u32) -> io::Result<()> {
     }
 }
 
-fn combine_transition_errors(enable: io::Error, rollback: io::Error) -> io::Error {
-    let kind = enable.kind();
-    io::Error::new(kind, RawModeTransitionFailure { enable, rollback })
+fn combine_transition_errors(
+    action: &'static str,
+    action_error: io::Error,
+    restoration: io::Error,
+) -> io::Error {
+    let kind = action_error.kind();
+    io::Error::new(
+        kind,
+        RawModeTransitionFailure {
+            action,
+            action_error,
+            restoration,
+        },
+    )
 }
 
 #[derive(Debug)]
 struct RawModeTransitionFailure {
-    enable: io::Error,
-    rollback: io::Error,
+    action: &'static str,
+    action_error: io::Error,
+    restoration: io::Error,
 }
 
 impl fmt::Display for RawModeTransitionFailure {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             formatter,
-            "enabling raw mode failed: {}; restoring the original console mode also failed: {}",
-            self.enable, self.rollback
+            "{} failed: {}; restoring the original console mode also failed: {}",
+            self.action, self.action_error, self.restoration
         )
     }
 }
 
 impl Error for RawModeTransitionFailure {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.enable)
+        Some(&self.action_error)
     }
 }

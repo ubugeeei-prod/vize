@@ -24,3 +24,5 @@ pub(super) const fn raw_mode_requires_restoration() -> bool {
 
 #[cfg(all(test, unix))]
 mod tests;
+#[cfg(all(test, windows))]
+mod windows_tests;
