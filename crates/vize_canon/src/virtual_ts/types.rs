@@ -45,6 +45,10 @@ pub enum VizeSemanticLinkKind {
 }
 
 impl VizeSemanticLink {
+    /// Only the native batch pipeline prefixes generated code (and therefore
+    /// needs to re-base semantic links), so this stays gated to avoid a
+    /// dead-code warning in non-`native` builds.
+    #[cfg(feature = "native")]
     pub(crate) fn shift(&mut self, offset: usize) {
         self.source_range.start += offset;
         self.source_range.end += offset;
