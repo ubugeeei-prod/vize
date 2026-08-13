@@ -106,9 +106,10 @@ export const readinessRows = [
     "test:readiness:dev:nuxt-ui",
     ["nuxt-ui"],
     true,
-    // Hosted boot can lose the Nuxt SSR bridge, which the suite replaces with a
-    // second dev server, so this budget also has to absorb one extra startup.
-    "20m",
+    // Hosted boot can lose the Nuxt SSR bridge, which the suite replaces by
+    // rebooting the dev server, so this budget has to absorb those extra
+    // startups plus one Playwright retry of the whole fixture setup.
+    "30m",
   ),
 ];
 
