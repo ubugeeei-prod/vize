@@ -36,11 +36,22 @@ exports.runRealServerScenario = async function runRealServerScenario() {
   const editor = await vscode.window.showTextDocument(document);
   assert.equal(document.getText(), expected.authoredSource, "scenario fixture as authored");
 
-  await stepDiagnosticAtAuthoredSpan(document);
-  await stepQuickFix(document, editor);
-  await stepFormatOnSave(document);
-  await stepSemanticTokens(document);
-  await stepRename(document);
+  // Announced one by one: the scenario is the longest phase of the host run, and
+  // the host is aborted on a wall-clock budget without a suite failure, so the
+  // last step logged here is the only evidence of where a stall happened.
+  const steps = [
+    ["diagnostic at authored span", () => stepDiagnosticAtAuthoredSpan(document)],
+    ["quick fix", () => stepQuickFix(document, editor)],
+    ["format on save", () => stepFormatOnSave(document)],
+    ["semantic tokens", () => stepSemanticTokens(document)],
+    ["rename", () => stepRename(document)],
+  ];
+  for (const [label, step] of steps) {
+    const startedAt = Date.now();
+    console.log(`[vize-host-real] scenario ${label}`);
+    await step();
+    console.log(`[vize-host-real] scenario ${label} finished after ${Date.now() - startedAt}ms`);
+  }
 };
 
 async function enableFormatOnSave() {

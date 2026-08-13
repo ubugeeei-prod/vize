@@ -84,6 +84,12 @@ export async function runPackagedExtensionHost(
   onOutput(
     await runVSCodeCommandWithTimeout(runCommand, launchArgs, {
       environment: hostEnvironment,
+      // The suite inside the host runs for minutes, and its progress log is the
+      // only evidence of where a stall happened. A piped child hands its output
+      // back when the command resolves, so a host that outruns `hostTimeoutMs`
+      // reports the abort with everything the suite printed already discarded.
+      // Inheriting the streams publishes each line as it is written instead.
+      stdio: ["ignore", "inherit", "inherit"],
       timeoutMs: hostTimeoutMs,
       version: vscodeVersion,
     }),
@@ -111,14 +117,14 @@ export function resolveInstalledExtensionPath(extensionsPath, extensionId) {
 export async function runVSCodeCommandWithTimeout(
   runCommand,
   args,
-  { environment, timeoutMs, version },
+  { environment, stdio, timeoutMs, version },
 ) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await runCommand(args, {
-      spawn: { env: environment, signal: controller.signal },
+      spawn: { env: environment, signal: controller.signal, ...(stdio ? { stdio } : {}) },
       version,
     });
   } catch (error) {
