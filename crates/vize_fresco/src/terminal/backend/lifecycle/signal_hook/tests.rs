@@ -67,13 +67,44 @@ extern "C" fn siginfo_handler(
     let _ = signal;
 }
 
-#[cfg(not(unix))]
+#[cfg(not(any(unix, windows)))]
 #[test]
 fn unsupported_platform_is_explicit_and_does_not_install() {
     assert!(matches!(
         install_terminal_signal_hook(),
         Err(TerminalSignalHookError::UnsupportedPlatform)
     ));
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_control_event_names_are_stable() {
+    use windows_sys::Win32::System::Console::{
+        CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT, CTRL_SHUTDOWN_EVENT,
+    };
+
+    assert_eq!(signal_name(CTRL_C_EVENT as i32), "CTRL_C_EVENT");
+    assert_eq!(signal_name(CTRL_BREAK_EVENT as i32), "CTRL_BREAK_EVENT");
+    assert_eq!(signal_name(CTRL_CLOSE_EVENT as i32), "CTRL_CLOSE_EVENT");
+    assert_eq!(signal_name(CTRL_LOGOFF_EVENT as i32), "CTRL_LOGOFF_EVENT");
+    assert_eq!(
+        signal_name(CTRL_SHUTDOWN_EVENT as i32),
+        "CTRL_SHUTDOWN_EVENT"
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_signal_hook_installation_is_supported_and_idempotent() {
+    assert!(matches!(
+        install_terminal_signal_hook().unwrap(),
+        TerminalSignalHookInstallation::Installed
+            | TerminalSignalHookInstallation::AlreadyInstalled
+    ));
+    assert_eq!(
+        install_terminal_signal_hook().unwrap(),
+        TerminalSignalHookInstallation::AlreadyInstalled
+    );
 }
 
 #[test]

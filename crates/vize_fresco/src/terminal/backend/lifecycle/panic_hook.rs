@@ -2,7 +2,7 @@
 
 use std::{error::Error, fmt};
 
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 use std::{
     panic,
     sync::{
@@ -12,30 +12,30 @@ use std::{
     thread,
 };
 
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 use super::TerminalMode;
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 use super::lease::emergency_presentation_modes;
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 use super::raw_mode::emergency_restore_raw_mode;
 
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 static PANIC_HOOK_INSTALLATION: Mutex<()> = Mutex::new(());
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 static PANIC_HOOK_INSTALLED: AtomicBool = AtomicBool::new(false);
 
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 const DISABLE_MOUSE_CAPTURE: &[u8] = b"\x1b[?1006l\x1b[?1015l\x1b[?1003l\x1b[?1002l\x1b[?1000l";
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 const DISABLE_BRACKETED_PASTE: &[u8] = b"\x1b[?2004l";
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 const LEAVE_ALTERNATE_SCREEN: &[u8] = b"\x1b[?1049l";
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 const RESET_CURSOR_SHAPE: &[u8] = b"\x1b[0 q";
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 const SHOW_CURSOR: &[u8] = b"\x1b[?25h";
 
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 pub(super) const PRESENTATION_RESETS: [(TerminalMode, &[u8]); 5] = [
     (TerminalMode::MouseCapture, DISABLE_MOUSE_CAPTURE),
     (TerminalMode::BracketedPaste, DISABLE_BRACKETED_PASTE),
@@ -87,8 +87,8 @@ impl Error for TerminalPanicHookError {}
 
 /// Install process-wide restoration before Rust invokes the existing panic hook.
 ///
-/// On Unix, Fresco restores every tracked ANSI presentation mode directly to
-/// standard output, then restores the exact native terminal attributes captured
+/// On Unix and Windows, Fresco restores every tracked presentation mode directly
+/// to the process terminal, then restores the exact native input mode captured
 /// before raw mode, before delegating to the hook that was active at installation
 /// time. This path does not allocate, format, acquire a standard-output lock, or
 /// depend on [`Drop`], so it also runs before a `panic = "abort"` process exits.
@@ -99,17 +99,17 @@ impl Error for TerminalPanicHookError {}
 /// take-and-chain ownership discipline. A caught panic should be followed by
 /// [`Backend::restore`](super::super::Backend::restore) before reusing the backend.
 ///
-/// Non-Unix platforms return [`TerminalPanicHookError::UnsupportedPlatform`]
-/// without changing the process hook. Their console restoration requires native
-/// platform state rather than assuming ANSI escape-sequence support.
+/// Platforms without a native emergency terminal path return
+/// [`TerminalPanicHookError::UnsupportedPlatform`] without changing the process
+/// hook.
 pub fn install_terminal_panic_hook() -> Result<TerminalPanicHookInstallation, TerminalPanicHookError>
 {
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         Err(TerminalPanicHookError::UnsupportedPlatform)
     }
 
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     {
         if thread::panicking() {
             return Err(TerminalPanicHookError::PanickingThread);
@@ -140,7 +140,7 @@ pub fn install_terminal_panic_hook() -> Result<TerminalPanicHookInstallation, Te
 }
 
 #[inline]
-#[cfg(any(unix, test))]
+#[cfg(any(unix, windows, test))]
 pub(super) fn restore_owned_presentation_modes(
     owned_modes: u8,
     mut write: impl FnMut(&[u8]) -> bool,
@@ -168,6 +168,43 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
             )
         };
         if written <= 0 || written as usize > bytes.len() {
+            return false;
+        }
+        bytes = &bytes[written as usize..];
+    }
+    true
+}
+
+#[cfg(windows)]
+pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
+    use std::ptr;
+    use windows_sys::Win32::{
+        Foundation::{HANDLE, INVALID_HANDLE_VALUE},
+        Storage::FileSystem::WriteFile,
+        System::Console::{GetStdHandle, STD_OUTPUT_HANDLE},
+    };
+
+    // SAFETY: `STD_OUTPUT_HANDLE` is the documented selector for standard
+    // output. The returned handle is used only for synchronous writes below.
+    let handle: HANDLE = unsafe { GetStdHandle(STD_OUTPUT_HANDLE) };
+    if handle.is_null() || handle == INVALID_HANDLE_VALUE {
+        return false;
+    }
+    while !bytes.is_empty() {
+        let chunk_len = bytes.len().min(u32::MAX as usize) as u32;
+        let mut written = 0_u32;
+        // SAFETY: `bytes` remains valid for the duration of the call, its
+        // current chunk length is supplied, and no overlapped state is used.
+        let ok = unsafe {
+            WriteFile(
+                handle,
+                bytes.as_ptr(),
+                chunk_len,
+                ptr::addr_of_mut!(written),
+                ptr::null_mut(),
+            )
+        };
+        if ok == 0 || written == 0 || written > chunk_len {
             return false;
         }
         bytes = &bytes[written as usize..];

@@ -4,6 +4,8 @@ use std::{error::Error, fmt, io};
 
 #[cfg(unix)]
 mod unix;
+#[cfg(windows)]
+mod windows;
 
 #[cfg(all(test, unix))]
 use unix::{
@@ -56,7 +58,7 @@ impl Error for TerminalSignalRollbackFailure {
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum TerminalSignalHookError {
-    /// The current platform has no POSIX signal-action implementation.
+    /// The current platform has no native termination-handler implementation.
     UnsupportedPlatform,
     /// A prior panic poisoned the process-global installation lock.
     InstallationPoisoned,
@@ -135,7 +137,7 @@ impl Error for TerminalSignalHookError {
     }
 }
 
-/// Install restoration before existing handlers for interactive termination signals.
+/// Install restoration before existing handlers for interactive termination events.
 ///
 /// On Unix, Fresco supervises `SIGINT`, `SIGTERM`, `SIGHUP`, and `SIGQUIT`. Its
 /// handler restores every presentation mode owned by the active process-terminal
@@ -157,11 +159,20 @@ impl Error for TerminalSignalHookError {
 /// query-and-chain discipline. Applications should install this hook during
 /// single-threaded startup, before unrelated threads mutate signal actions.
 ///
-/// Non-Unix platforms return [`TerminalSignalHookError::UnsupportedPlatform`]
-/// without changing process state.
+/// On Windows, Fresco supervises console control events for Ctrl+C, Ctrl+Break,
+/// console close, logoff, and shutdown. The handler restores the same
+/// presentation and raw-input state, then returns `FALSE` so Windows can invoke
+/// the next application handler or the default disposition. Windows does not
+/// expose the existing handler chain for inspection, so Fresco cannot report or
+/// restore prior handlers during installation; later handlers must still follow
+/// Windows console-control chaining rules.
+///
+/// Platforms without a native hook return
+/// [`TerminalSignalHookError::UnsupportedPlatform`] without changing process
+/// state.
 pub fn install_terminal_signal_hook()
 -> Result<TerminalSignalHookInstallation, TerminalSignalHookError> {
-    #[cfg(not(unix))]
+    #[cfg(not(any(unix, windows)))]
     {
         Err(TerminalSignalHookError::UnsupportedPlatform)
     }
@@ -169,6 +180,11 @@ pub fn install_terminal_signal_hook()
     #[cfg(unix)]
     {
         unix::install()
+    }
+
+    #[cfg(windows)]
+    {
+        windows::install()
     }
 }
 
@@ -186,6 +202,28 @@ fn signal_name(signal: i32) -> &'static str {
         }
         if signal == libc::SIGQUIT {
             return "SIGQUIT";
+        }
+    }
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::Console::{
+            CTRL_BREAK_EVENT, CTRL_C_EVENT, CTRL_CLOSE_EVENT, CTRL_LOGOFF_EVENT,
+            CTRL_SHUTDOWN_EVENT,
+        };
+        if signal == CTRL_C_EVENT as i32 {
+            return "CTRL_C_EVENT";
+        }
+        if signal == CTRL_BREAK_EVENT as i32 {
+            return "CTRL_BREAK_EVENT";
+        }
+        if signal == CTRL_CLOSE_EVENT as i32 {
+            return "CTRL_CLOSE_EVENT";
+        }
+        if signal == CTRL_LOGOFF_EVENT as i32 {
+            return "CTRL_LOGOFF_EVENT";
+        }
+        if signal == CTRL_SHUTDOWN_EVENT as i32 {
+            return "CTRL_SHUTDOWN_EVENT";
         }
     }
     "unknown signal"

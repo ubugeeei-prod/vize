@@ -96,12 +96,25 @@ fn rejected_reset_does_not_block_later_owned_modes() {
     );
 }
 
-#[cfg(not(unix))]
+#[cfg(not(any(unix, windows)))]
 #[test]
 fn unsupported_platform_is_explicit_and_does_not_install() {
     assert_eq!(
         install_terminal_panic_hook(),
         Err(TerminalPanicHookError::UnsupportedPlatform)
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_panic_hook_installation_is_supported_and_idempotent() {
+    assert!(matches!(
+        install_terminal_panic_hook().unwrap(),
+        TerminalPanicHookInstallation::Installed | TerminalPanicHookInstallation::AlreadyInstalled
+    ));
+    assert_eq!(
+        install_terminal_panic_hook().unwrap(),
+        TerminalPanicHookInstallation::AlreadyInstalled
     );
 }
 

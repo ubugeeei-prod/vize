@@ -3882,6 +3882,7 @@ dependencies = [
  "unicode-segmentation",
  "unicode-width",
  "vize_carton",
+ "windows-sys",
 ]
 
 [[package]]

@@ -170,11 +170,11 @@ pub(super) fn run(
 
 /// Prepare emergency terminal restoration before Doctor acquires any modes.
 ///
-/// Fresco cannot yet restore native console state before an aborting panic on
-/// every platform. An unsupported platform therefore retains Doctor's ordinary
-/// transactional and unwind restoration. Failures on a supported platform are
-/// surfaced before terminal state changes, rather than silently weakening the
-/// promised supervision.
+/// Fresco restores native terminal state before aborting panics on Unix and
+/// Windows. An unsupported platform retains Doctor's ordinary transactional and
+/// unwind restoration. Failures on a supported platform are surfaced before
+/// terminal state changes, rather than silently weakening the promised
+/// supervision.
 fn prepare_panic_supervision(
     install: impl FnOnce() -> Result<TerminalPanicHookInstallation, TerminalPanicHookError>,
 ) -> Result<(), DoctorTuiError> {
@@ -188,9 +188,11 @@ fn prepare_panic_supervision(
 /// Prepare termination-signal restoration before Doctor acquires any modes.
 ///
 /// Unix installations restore terminal presentation and native raw attributes
-/// before delegating `SIGINT`, `SIGTERM`, `SIGHUP`, and `SIGQUIT`. Unsupported
-/// platforms retain Doctor's transactional normal and unwind cleanup. Every
-/// other failure is reported before the backend can change terminal state.
+/// before delegating `SIGINT`, `SIGTERM`, `SIGHUP`, and `SIGQUIT`. Windows
+/// installations do the same before forwarding console control events.
+/// Unsupported platforms retain Doctor's transactional normal and unwind
+/// cleanup. Every other failure is reported before the backend can change
+/// terminal state.
 fn prepare_signal_supervision(
     install: impl FnOnce() -> Result<TerminalSignalHookInstallation, TerminalSignalHookError>,
 ) -> Result<(), DoctorTuiError> {
