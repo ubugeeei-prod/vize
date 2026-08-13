@@ -12,11 +12,7 @@ import {
   npmxGeneratorTaskArgs,
   readDotenvValue,
 } from "../_helpers/app-fixture-runtime.ts";
-import {
-  elkApp,
-  frontendPhpconApp,
-  npmxApp,
-} from "../_helpers/apps.ts";
+import { elkApp, frontendPhpconApp, npmxApp } from "../_helpers/apps.ts";
 import {
   createAppE2ePlanEvidence,
   fullAppE2eRows,
@@ -107,7 +103,7 @@ test("full and readiness plans preserve every isolated execution row", () => {
 test("upstream app fixtures keep deterministic CI setup", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-dotenv-"));
   const dotenvPath = path.join(tempDir, ".env.mock");
-  fs.writeFileSync(dotenvPath, "MOCK_USER='{\"id\":\"e2e\"}'\nPLAIN=value\n");
+  fs.writeFileSync(dotenvPath, 'MOCK_USER=\'{"id":"e2e"}\'\nPLAIN=value\n');
 
   assert.equal(readDotenvValue(dotenvPath, "MOCK_USER"), '{"id":"e2e"}');
   assert.equal(readDotenvValue(dotenvPath, "PLAIN"), "value");
