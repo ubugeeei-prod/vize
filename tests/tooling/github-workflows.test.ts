@@ -56,7 +56,9 @@ test("GitHub workflows use the current cache action", () => {
 test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => {
   const action = parse(
     readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml"),
-  ) as { runs?: { steps?: Array<{ name?: string; if?: string; uses?: string }> } };
+  ) as {
+    runs?: { steps?: Array<{ name?: string; if?: string; run?: string; uses?: string }> };
+  };
   const steps = action.runs?.steps ?? [];
 
   // Every mount has to carry the guard itself: a condition attached to one step
@@ -76,7 +78,10 @@ test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => 
     "the optional secondary mount must keep both guards",
   );
 
-  const notice = steps.find((step) => step.if?.includes("runner.environment == 'github-hosted'"));
+  // Found by what it reports, not by its condition: keying off the condition
+  // alone would keep passing once the notice is deleted and any other
+  // hosted-only step remains.
+  const notice = steps.find((step) => step.run?.includes("skipping Blacksmith sticky disks"));
   assert.ok(notice, "hosted runners must report why sticky disks were skipped");
   assert.equal(notice.if, "${{ runner.environment == 'github-hosted' }}");
 });
