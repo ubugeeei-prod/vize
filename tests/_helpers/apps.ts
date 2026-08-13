@@ -9,7 +9,6 @@ import {
   ensureSymlink,
 } from "./vize-local-packages.ts";
 import {
-  FRONTEND_PHPCON_E2E_API_BASE,
   FRONTEND_PHPCON_E2E_ENV,
   NPMX_E2E_ENV,
   VUEFES_E2E_ENV,
