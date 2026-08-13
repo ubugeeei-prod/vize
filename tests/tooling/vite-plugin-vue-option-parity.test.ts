@@ -17,10 +17,7 @@ import {
   upstreamSurface,
   validateLedger,
 } from "./_helpers/vite-plugin-vue-parity.ts";
-import {
-  probeHookImplemented,
-  probes,
-} from "./_helpers/vite-plugin-vue-behavior-probes.ts";
+import { probeHookImplemented, probes } from "./_helpers/vite-plugin-vue-behavior-probes.ts";
 
 test("the parity ledger stays exhaustive over the pinned @vitejs/plugin-vue surface", () => {
   const surface = upstreamSurface();

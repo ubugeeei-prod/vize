@@ -184,7 +184,10 @@ async function probeCustomElementOutput(): Promise<void> {
     await loadResolvedVueModule(defaultPlugin, path.join(root, "Element.ce.vue")),
     "Element.ce",
   );
-  assert.match(await loadResolvedVueModule(defaultPlugin, path.join(root, "Plain.vue")), /__vize_css__/);
+  assert.match(
+    await loadResolvedVueModule(defaultPlugin, path.join(root, "Plain.vue")),
+    /__vize_css__/,
+  );
 
   const featurePlugin = await bootPlugin(root, { features: { customElement: /Feature\.vue$/ } });
   assertCustomElementStyleOutput(
