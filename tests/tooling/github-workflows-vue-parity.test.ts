@@ -84,14 +84,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     /echo "rayon_num_threads=\$RAYON_NUM_THREADS"/,
     "the runner baseline must record the emitted Rayon cap",
   );
-  for (const fact of [
-    "nproc",
-    "ulimit -u",
-    "ulimit -Hu",
-    "pids.current",
-    "pids.max",
-    "Threads:",
-  ]) {
+  for (const fact of ["nproc", "ulimit -u", "ulimit -Hu", "pids.current", "pids.max", "Threads:"]) {
     assert.ok((steps[0]?.run ?? "").includes(fact), `the runner baseline must record ${fact}`);
   }
 
