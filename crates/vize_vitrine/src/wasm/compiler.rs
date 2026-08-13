@@ -239,6 +239,9 @@ impl Compiler {
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
+                custom_elements: crate::types::custom_element_patterns(
+                    opts.custom_elements.as_deref(),
+                ),
                 compiler_options: Some(experimental_dom_options(&opts)),
                 ..Default::default()
             },
@@ -337,6 +340,7 @@ pub(super) fn compile_internal(
         let ssr_opts = SsrCompilerOptions {
             is_ts: opts.is_ts.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            custom_elements: crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
             experimental_in_tag_comments,
             experimental_patterned_template,
             ..Default::default()
@@ -374,6 +378,7 @@ pub(super) fn compile_internal(
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            custom_elements: crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
             experimental_in_tag_comments,
             experimental_patterned_template,
             binding_metadata,
@@ -422,6 +427,7 @@ pub(super) fn compile_internal(
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        custom_elements: crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
         binding_metadata,
         inline: has_binding_metadata,
         ..experimental_dom_options(opts)

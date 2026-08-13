@@ -65,6 +65,7 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  customElements?: Array<string>;
   templateSyntax?: string;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -252,6 +253,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
+  /** Tag patterns that compile as custom elements instead of Vue components. */
+  customElements?: Array<string>;
   /** Template syntax compatibility mode: "standard", "strict", or "quirks". */
   templateSyntax?: string;
   /** Enable experimental Vue in-tag comments (`// ...`) inside opening tags. */
@@ -924,6 +927,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  customElements?: Array<string>;
   templateSyntax?: string;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;

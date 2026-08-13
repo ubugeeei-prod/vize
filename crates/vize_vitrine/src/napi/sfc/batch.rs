@@ -64,6 +64,8 @@ fn compile_sfc_batch_inner(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let custom_renderer = opts.custom_renderer.unwrap_or(false);
+    let custom_elements = crate::types::custom_element_patterns(opts.custom_elements.as_deref());
     let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
@@ -156,8 +158,11 @@ fn compile_sfc_batch_inner(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
+                    custom_renderer,
+                    custom_elements: custom_elements.clone(),
                     compiler_options: {
                         let mut dom_options = experimentals.dom_options();
+                        dom_options.custom_elements = custom_elements.clone();
                         if let Some(value) = opts.template_cache_handlers {
                             dom_options.cache_handlers = value;
                         }

@@ -47,7 +47,7 @@ pub(super) fn file_profile(
     cache_status: StatsCacheStatus,
 ) -> FileProfile {
     record_source_facts(
-        settings,
+        &settings,
         facts.file_size,
         facts.template_size,
         facts.script_size,
@@ -65,7 +65,7 @@ pub(super) fn file_profile(
         script_size: facts.script_size,
         style_count: facts.style_count,
         profile_note: file_note(
-            settings,
+            &settings,
             facts.template_size,
             facts.script_size,
             facts.style_count,
@@ -75,7 +75,7 @@ pub(super) fn file_profile(
 }
 
 fn record_source_facts(
-    settings: CompileFileSettings,
+    settings: &CompileFileSettings,
     file_size: usize,
     template_size: usize,
     script_size: usize,
@@ -96,7 +96,7 @@ fn record_source_facts(
 }
 
 fn file_note(
-    settings: CompileFileSettings,
+    settings: &CompileFileSettings,
     template_size: usize,
     script_size: usize,
     style_count: usize,
@@ -114,7 +114,7 @@ fn file_note(
     )
 }
 
-fn record_lane(settings: CompileFileSettings) {
+fn record_lane(settings: &CompileFileSettings) {
     let profiler = global_profiler();
     match lane_label(settings) {
         "atelier.vapor" => profiler.record_counter("lane.atelier.vapor.requests", 1),
@@ -164,7 +164,7 @@ fn record_cache_status(cache_status: StatsCacheStatus) {
     }
 }
 
-fn lane_label(settings: CompileFileSettings) -> &'static str {
+fn lane_label(settings: &CompileFileSettings) -> &'static str {
     if settings.vapor {
         "atelier.vapor"
     } else if settings.ssr {

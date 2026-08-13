@@ -47,6 +47,7 @@ fn compile_sfc_batch_with_results_inner(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
+    let custom_elements = crate::types::custom_element_patterns(opts.custom_elements.as_deref());
     let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
@@ -158,6 +159,7 @@ fn compile_sfc_batch_with_results_inner(
                     ssr,
                     is_ts,
                     custom_renderer,
+                    custom_elements: custom_elements.clone(),
                     compiler_options: template_compiler_options,
                     ..Default::default()
                 },

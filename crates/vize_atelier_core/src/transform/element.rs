@@ -83,6 +83,15 @@ fn maybe_promote_element_to_component(
         return;
     }
 
+    if is_registered_component(ctx, &el.tag) {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    if ctx.options.custom_elements.matches(&el.tag) {
+        return;
+    }
+
     let looks_like_component = el.tag == "component"
         || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
         || el.tag.contains('-');
@@ -100,10 +109,6 @@ fn maybe_promote_element_to_component(
 
     if is_native_tag(&el.tag) {
         return;
-    }
-
-    if is_registered_component(ctx, &el.tag) {
-        el.tag_type = ElementType::Component;
     }
 }
 

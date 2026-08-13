@@ -78,6 +78,7 @@ pub(super) fn compile_file_stats_with_cache(
         source_len: file_size,
         component_name_len: component_name.len(),
         settings: settings.cache_bits(),
+        custom_elements_hash: settings.custom_elements_hash(),
     });
 
     if let Some(key) = cache_key
@@ -179,7 +180,9 @@ pub(super) fn compile_file_stats_with_cache(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            custom_elements: settings.custom_elements.clone(),
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                custom_elements: settings.custom_elements.clone(),
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
                 ..Default::default()

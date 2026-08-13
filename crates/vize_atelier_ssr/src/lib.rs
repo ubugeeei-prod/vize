@@ -91,6 +91,9 @@ fn compile_ssr_inner<'a>(
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            options.custom_elements.clone(),
+        ),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
@@ -129,6 +132,9 @@ fn compile_ssr_inner<'a>(
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            codegen_options.custom_elements.clone(),
+        ),
         experimental_patterned_template: codegen_options.experimental_patterned_template,
         binding_metadata: codegen_options.binding_metadata.clone(),
         dialect: codegen_options.dialect,

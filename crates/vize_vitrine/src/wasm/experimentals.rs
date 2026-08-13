@@ -1,5 +1,5 @@
 use crate::CompilerOptions;
-use vize_atelier_core::options::ParserOptions;
+use vize_atelier_core::options::{CustomElementMatcher, ParserOptions};
 use vize_atelier_dom::DomCompilerOptions;
 
 pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool) {
@@ -12,6 +12,9 @@ pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool) {
 pub(super) fn compiler_parser_options(opts: &CompilerOptions) -> ParserOptions {
     ParserOptions {
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        custom_elements: CustomElementMatcher::from_patterns(
+            crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+        ),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     }

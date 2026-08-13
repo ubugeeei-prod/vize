@@ -35,6 +35,7 @@ class CompilerConfig {
   jsxMode: JsxMode? = null
   jsxCompat: JsxCompat? = null
   customRenderer: Boolean? = null
+  customElements: Listing<String>? = null
   ssr: Boolean? = null
   templateSyntax: TemplateSyntax? = null
   sourceMap: Boolean? = null

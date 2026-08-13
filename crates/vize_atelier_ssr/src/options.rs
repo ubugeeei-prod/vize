@@ -42,6 +42,10 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    #[serde(default)]
+    pub custom_elements: Vec<String>,
+
     /// CSS variables to inject (from SFC <style> blocks with v-bind)
     #[serde(default)]
     pub ssr_css_vars: Option<String>,
@@ -73,6 +77,7 @@ impl Clone for SsrCompilerOptions {
             inline: self.inline,
             is_ts: self.is_ts,
             custom_renderer: self.custom_renderer,
+            custom_elements: self.custom_elements.clone(),
             ssr_css_vars: self.ssr_css_vars.clone(),
             dialect: self.dialect,
             binding_metadata: self.binding_metadata.clone(),

@@ -3,6 +3,108 @@
 use vize_carton::config::VueVersion;
 use vize_carton::{FxHashMap, String};
 
+/// Declarative matcher for tags that should compile as custom elements.
+///
+/// This is the schema-friendly counterpart to Vue's `isCustomElement`
+/// predicate. Patterns are case-sensitive tag globs where `*` matches any
+/// substring, so `Tres*` matches `TresMesh` and `three-*` matches `three-mesh`.
+#[derive(Debug, Clone, Default)]
+pub struct CustomElementMatcher {
+    patterns: Vec<String>,
+    predicate: Option<fn(&str) -> bool>,
+}
+
+impl CustomElementMatcher {
+    /// Create a matcher from declarative tag patterns.
+    #[must_use]
+    pub fn from_patterns(patterns: Vec<String>) -> Self {
+        Self {
+            patterns,
+            predicate: None,
+        }
+    }
+
+    /// Create a matcher from a static Rust predicate.
+    #[must_use]
+    pub fn from_static_predicate(predicate: fn(&str) -> bool) -> Self {
+        Self {
+            patterns: Vec::new(),
+            predicate: Some(predicate),
+        }
+    }
+
+    /// Return configured declarative patterns.
+    #[must_use]
+    pub fn patterns(&self) -> &[String] {
+        &self.patterns
+    }
+
+    /// Whether no pattern or predicate can match.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.patterns.is_empty() && self.predicate.is_none()
+    }
+
+    /// Whether `tag` is configured as a custom element.
+    #[must_use]
+    pub fn matches(&self, tag: &str) -> bool {
+        self.predicate.is_some_and(|predicate| predicate(tag))
+            || self
+                .patterns
+                .iter()
+                .any(|pattern| tag_pattern_matches(pattern.as_str(), tag))
+    }
+}
+
+fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
+    if pattern.is_empty() {
+        return false;
+    }
+    if pattern == "*" {
+        return true;
+    }
+    if !pattern.contains('*') {
+        return pattern == tag;
+    }
+
+    let starts_with_wildcard = pattern.starts_with('*');
+    let ends_with_wildcard = pattern.ends_with('*');
+    let mut position = 0;
+    let mut matched_any = false;
+
+    for (index, part) in pattern
+        .split('*')
+        .filter(|part| !part.is_empty())
+        .enumerate()
+    {
+        matched_any = true;
+        if index == 0 && !starts_with_wildcard {
+            if !tag[position..].starts_with(part) {
+                return false;
+            }
+            position += part.len();
+            continue;
+        }
+
+        let Some(found) = tag[position..].find(part) else {
+            return false;
+        };
+        position += found + part.len();
+    }
+
+    if !matched_any {
+        return false;
+    }
+
+    if !ends_with_wildcard
+        && let Some(last_part) = pattern.rsplit('*').find(|part| !part.is_empty())
+    {
+        return tag.ends_with(last_part);
+    }
+
+    true
+}
+
 /// Parse mode for the tokenizer
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ParseMode {
@@ -65,8 +167,13 @@ pub struct ParserOptions {
     pub is_pre_tag: fn(&str) -> bool,
     /// Whether is a native tag
     pub is_native_tag: Option<fn(&str) -> bool>,
-    /// Whether is a custom element
+    /// Whether is a custom element.
+    ///
+    /// Static callback kept for internal Rust callers; config and FFI surfaces
+    /// use [`custom_elements`](Self::custom_elements) instead.
     pub is_custom_element: Option<fn(&str) -> bool>,
+    /// Declarative custom-element matcher for config and FFI callers.
+    pub custom_elements: CustomElementMatcher,
     /// Whether the template targets a custom renderer instead of the DOM.
     ///
     /// When enabled, lowercase non-HTML tags default to renderer-native
@@ -98,6 +205,7 @@ impl Default for ParserOptions {
             is_pre_tag: |_| false,
             is_native_tag: None,
             is_custom_element: None,
+            custom_elements: CustomElementMatcher::default(),
             custom_renderer: false,
             is_void_tag: vize_carton::is_void_tag,
             get_namespace: |_, _| crate::Namespace::Html,
@@ -146,6 +254,8 @@ pub struct TransformOptions {
     /// Whether in Vapor mode (skip v-model expansion)
     pub vapor: bool,
     pub custom_renderer: bool,
+    /// Declarative custom-element matcher for config and FFI callers.
+    pub custom_elements: CustomElementMatcher,
     pub experimental_patterned_template: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
@@ -171,6 +281,7 @@ impl Default for TransformOptions {
             is_ts: false,
             vapor: false,
             custom_renderer: false,
+            custom_elements: CustomElementMatcher::default(),
             experimental_patterned_template: false,
             dialect: VueVersion::V3,
         }
@@ -382,9 +493,10 @@ pub struct CompilerOptions {
 #[cfg(test)]
 mod tests {
     use super::{
-        BindingMetadata, BindingType, CodegenMode, CodegenOptions, ParseMode, ParserOptions,
-        TransformOptions, VueVersion, WhitespaceStrategy,
+        BindingMetadata, BindingType, CodegenMode, CodegenOptions, CustomElementMatcher, ParseMode,
+        ParserOptions, TransformOptions, VueVersion, WhitespaceStrategy,
     };
+    use vize_carton::String;
 
     #[test]
     fn parser_options_default() {
@@ -396,6 +508,7 @@ mod tests {
         assert!(opts.comments);
         assert!(opts.is_native_tag.is_none());
         assert!(opts.is_custom_element.is_none());
+        assert!(opts.custom_elements.is_empty());
         assert!(opts.on_error.is_none());
         assert!(opts.on_warn.is_none());
         // Default dialect is modern Vue 3 — the zero-cost path.
@@ -414,8 +527,24 @@ mod tests {
         assert!(opts.scope_id.is_none());
         assert!(opts.ssr_css_vars.is_none());
         assert!(opts.binding_metadata.is_none());
+        assert!(opts.custom_elements.is_empty());
         // Default dialect is modern Vue 3 — the zero-cost path.
         assert_eq!(opts.dialect, VueVersion::V3);
+    }
+
+    #[test]
+    fn custom_element_matcher_supports_exact_and_wildcard_patterns() {
+        let matcher = CustomElementMatcher::from_patterns(vec![
+            String::from("Tres*"),
+            String::from("primitive"),
+            String::from("three-*"),
+        ]);
+
+        assert!(matcher.matches("TresMesh"));
+        assert!(matcher.matches("primitive"));
+        assert!(matcher.matches("three-buffer-geometry"));
+        assert!(!matcher.matches("MyComponent"));
+        assert!(!matcher.matches("NestedTresMesh"));
     }
 
     #[test]

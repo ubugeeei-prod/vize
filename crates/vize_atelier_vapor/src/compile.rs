@@ -27,6 +27,8 @@ pub struct VaporCompilerOptions {
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    pub custom_elements: Vec<String>,
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
     pub experimental_in_tag_comments: bool,
     /// Enable experimental `v-match` / `v-case` patterned template desugaring.
@@ -127,6 +129,9 @@ fn compile_vapor_inner_with_stack<'a>(
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            options.custom_elements.clone(),
+        ),
         custom_renderer: options.custom_renderer,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
         is_pre_tag: |tag| tag == "pre",
@@ -158,6 +163,9 @@ fn compile_vapor_inner_with_stack<'a>(
         inline: options.inline,
         vapor: true,
         custom_renderer: options.custom_renderer,
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            options.custom_elements,
+        ),
         experimental_patterned_template: options.experimental_patterned_template,
         ..Default::default()
     };

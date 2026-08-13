@@ -158,6 +158,14 @@ pub fn load_compiler_host_compiler(path: Option<&Path>) -> Option<bool> {
         .host_compiler
 }
 
+/// Load configured `compiler.customElements` tag patterns.
+pub fn load_compiler_custom_elements(path: Option<&Path>) -> Vec<crate::String> {
+    load_raw_config_with_source(path)
+        .config
+        .compiler
+        .custom_elements
+}
+
 /// Load the configured `compiler.jsxMode` default output mode (#1496).
 ///
 /// Returns `None` when the key is absent (treated as VDOM by the JSX entry

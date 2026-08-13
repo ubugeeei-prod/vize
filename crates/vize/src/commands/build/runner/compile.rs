@@ -118,7 +118,9 @@ pub(super) fn compile_file_with_profile(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
+            custom_elements: settings.custom_elements.clone(),
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
+                custom_elements: settings.custom_elements.clone(),
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
                 ..Default::default()

@@ -34,6 +34,10 @@ fn is_component(ctx: &TransformContext<'_>, tag: &str, el: &ElementNode<'_>) -> 
         return true;
     }
 
+    if ctx.options.custom_elements.matches(tag) {
+        return false;
+    }
+
     if is_native_tag(tag) {
         return false;
     }

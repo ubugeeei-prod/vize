@@ -48,6 +48,9 @@ pub struct CompilerOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     #[serde(default)]
     pub custom_renderer: Option<bool>,
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    #[serde(default)]
+    pub custom_elements: Option<Vec<String>>,
     /// Template syntax compatibility mode: "standard", "strict", or "quirks".
     #[serde(default)]
     pub template_syntax: Option<String>,
@@ -70,6 +73,14 @@ pub struct CompilerOptions {
     /// Defaults to "downcompile"
     #[serde(default)]
     pub script_ext: Option<String>,
+}
+
+pub(crate) fn custom_element_patterns(patterns: Option<&[String]>) -> Vec<vize_carton::String> {
+    patterns
+        .unwrap_or_default()
+        .iter()
+        .map(|pattern| pattern.as_str().into())
+        .collect()
 }
 
 /// Compile result

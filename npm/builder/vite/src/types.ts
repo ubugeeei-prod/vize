@@ -179,6 +179,12 @@ export interface VizeOptions extends ExperimentalPluginOptions {
   customRenderer?: boolean;
 
   /**
+   * Tag patterns that compile as custom elements instead of Vue components.
+   * Supports exact tags and `*` wildcards, e.g. `["Tres*", "primitive"]`.
+   */
+  customElements?: string[];
+
+  /**
    * Template syntax compatibility mode.
    * @default "standard"
    */

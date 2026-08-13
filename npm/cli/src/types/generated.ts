@@ -97,6 +97,10 @@ export interface CompilerConfig {
    */
   customRenderer?: boolean;
   /**
+   * Tag patterns that compile as custom elements instead of Vue components
+   */
+  customElements?: string[];
+  /**
    * Enable SSR mode
    */
   ssr?: boolean;

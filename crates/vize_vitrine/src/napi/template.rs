@@ -32,8 +32,13 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Parse
+    let custom_element_patterns =
+        crate::types::custom_element_patterns(opts.custom_elements.as_deref());
+    let custom_elements =
+        vize_atelier_core::options::CustomElementMatcher::from_patterns(custom_element_patterns);
     let parser_opts = ParserOptions {
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        custom_elements: custom_elements.clone(),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
@@ -59,6 +64,8 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         cache_handlers: opts.cache_handlers.unwrap_or(false),
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
+        custom_elements,
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
     };
@@ -119,6 +126,8 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
+        custom_elements: crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         experimental_patterned_template: opts.experimental_patterned_template.unwrap_or(false),
         ..Default::default()
@@ -161,6 +170,10 @@ pub fn parse_template(
         &allocator,
         &template,
         ParserOptions {
+            custom_renderer: opts.custom_renderer.unwrap_or(false),
+            custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+                crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+            ),
             experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             ..Default::default()
         },

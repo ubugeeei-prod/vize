@@ -68,6 +68,7 @@ pub fn compile_sfc(
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
+    let custom_elements = crate::types::custom_element_patterns(opts.custom_elements.as_deref());
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
@@ -114,6 +115,7 @@ pub fn compile_sfc(
             ssr: opts.ssr.unwrap_or(false),
             is_ts,
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            custom_elements,
             compiler_options: template_compiler_options,
             ..Default::default()
         },

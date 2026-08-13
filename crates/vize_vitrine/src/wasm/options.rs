@@ -38,6 +38,7 @@ define_compiler_option_inventory! {
     OutputMode => ("outputMode", r#""vdom" | "vapor""#),
     IsTs => ("isTs", "boolean"),
     CustomRenderer => ("customRenderer", "boolean"),
+    CustomElements => ("customElements", "string[]"),
     TemplateSyntax => ("templateSyntax", r#""standard" | "strict" | "quirks""#),
     ExperimentalInTagComments => ("experimentalInTagComments", "boolean"),
     ExperimentalPatternedTemplate => ("experimentalPatternedTemplate", "boolean"),
@@ -76,6 +77,18 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             .ok()
             .and_then(|value| value.as_bool())
     };
+    let get_string_array = |option: CompilerOption| {
+        let value = js_sys::Reflect::get(options, &JsValue::from_str(option.name())).ok()?;
+        if value.is_null() || value.is_undefined() || !js_sys::Array::is_array(&value) {
+            return None;
+        }
+        let array = js_sys::Array::from(&value);
+        let mut values = Vec::with_capacity(array.length() as usize);
+        for value in array.iter() {
+            values.push(value.as_string()?);
+        }
+        Some(values)
+    };
 
     let binding_metadata = js_sys::Reflect::get(
         options,
@@ -111,6 +124,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             output_mode: get_string(CompilerOption::OutputMode),
             is_ts: get_bool(CompilerOption::IsTs),
             custom_renderer: get_bool(CompilerOption::CustomRenderer),
+            custom_elements: get_string_array(CompilerOption::CustomElements),
             template_syntax,
             experimental_in_tag_comments: get_bool(CompilerOption::ExperimentalInTagComments),
             experimental_patterned_template: get_bool(

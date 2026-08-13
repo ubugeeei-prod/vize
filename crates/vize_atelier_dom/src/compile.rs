@@ -231,6 +231,9 @@ fn compile_template_inner_with_sections<'a>(
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            options.custom_elements.clone(),
+        ),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
@@ -280,6 +283,9 @@ fn compile_template_inner_with_sections<'a>(
         is_ts: options.is_ts,
         inline: options.inline,
         custom_renderer: options.custom_renderer,
+        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
+            options.custom_elements,
+        ),
         experimental_patterned_template: options.experimental_patterned_template,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,

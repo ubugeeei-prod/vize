@@ -521,6 +521,9 @@ pub struct TemplateCompileOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
 
+    /// Tag patterns that compile as custom elements instead of Vue components.
+    pub custom_elements: Vec<String>,
+
     /// Vue dialect resolved once per file from `vue.version`. Defaults to
     /// [`VueVersion::V3`] and is threaded into the DOM/SSR compiler options so
     /// it reaches the parser/transform layer. Legacy lines are opt-in behind

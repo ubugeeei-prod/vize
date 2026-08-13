@@ -132,6 +132,7 @@ pub(crate) fn run(args: BuildArgs) {
         ssr: args.ssr,
         vapor: args.vapor || build_config.vapor.unwrap_or(false),
         custom_renderer: args.custom_renderer,
+        custom_elements: build_config.custom_elements,
         template_syntax: args
             .template_syntax
             .map(Into::into)
@@ -146,7 +147,12 @@ pub(crate) fn run(args: BuildArgs) {
     let results: Vec<_> = if stats_only {
         let compile_cache = StatsCompileCache::default();
         files.par_iter().for_each(|path| {
-            match compile_file_stats_with_cache(path, compile_settings, &stats, &compile_cache) {
+            match compile_file_stats_with_cache(
+                path,
+                compile_settings.clone(),
+                &stats,
+                &compile_cache,
+            ) {
                 Ok((output_bytes, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -179,7 +185,7 @@ pub(crate) fn run(args: BuildArgs) {
         planned_inputs
             .par_iter()
             .map(|input| {
-                match compile_file_with_profile(&input.source, compile_settings, &stats) {
+                match compile_file_with_profile(&input.source, compile_settings.clone(), &stats) {
                     Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats

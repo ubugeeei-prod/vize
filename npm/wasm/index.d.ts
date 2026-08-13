@@ -76,6 +76,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
+  /** Tag patterns that compile as custom elements instead of Vue components. */
+  customElements?: string[];
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
   /** Enable Vue in-tag comments (`// ...`) inside opening tags. */

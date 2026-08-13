@@ -766,6 +766,53 @@ assert.doesNotMatch(
   "Custom renderer SSR builds should not keep the Vapor marker after the SSR fallback",
 );
 
+const customElementPatternSource = `<script setup lang="ts">
+import { TresCanvas } from "@tresjs/core";
+const visible = true;
+</script>
+
+<template>
+  <TresCanvas>
+    <TresMesh v-if="visible">
+      <TresSpotLight />
+    </TresMesh>
+  </TresCanvas>
+</template>`;
+
+const customElementPatternCompiled = compileFile(
+  "/src/TresCustomElements.vue",
+  new Map(),
+  {
+    sourceMap: false,
+    ssr: false,
+    vapor: false,
+    customRenderer: true,
+    customElements: ["Tres*"],
+  },
+  customElementPatternSource,
+);
+
+assert.match(
+  customElementPatternCompiled.code,
+  /_createBlock\(_unref\(TresCanvas\)/,
+  "Explicit script setup imports should still win over custom-element patterns",
+);
+assert.match(
+  customElementPatternCompiled.code,
+  /_createElementBlock\("TresMesh"/,
+  "Matched PascalCase renderer tags should compile as element blocks",
+);
+assert.match(
+  customElementPatternCompiled.code,
+  /_createElementVNode\("TresSpotLight"/,
+  "Matched PascalCase renderer child tags should compile as element vnodes",
+);
+assert.doesNotMatch(
+  customElementPatternCompiled.code,
+  /_resolveComponent\("Tres(?:Canvas|Mesh|SpotLight)"\)/,
+  "Matched PascalCase renderer tags must not use runtime component resolution",
+);
+
 const ssrSuspenseSource = `<script setup lang="ts">
 let visible = true;
 </script>
