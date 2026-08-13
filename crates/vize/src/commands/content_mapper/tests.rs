@@ -145,6 +145,30 @@ const unused = 2
 }
 
 #[test]
+fn transform_exposes_semantic_links() {
+    let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
+const count = ref(1)
+</script>
+<template>{{ count }}</template>
+"#;
+    let input = frames(&[
+        initialize_request(),
+        transform_request(2, source, Value::Null),
+    ]);
+    let responses = exchange(&input);
+
+    assert!(
+        !responses[1]["result"]["semanticLinks"]
+            .as_array()
+            .unwrap()
+            .is_empty(),
+        "{}",
+        responses[1]
+    );
+}
+
+#[test]
 fn transform_defaults_options_api_on_for_absent_null_and_empty_options() {
     let source = r#"<script lang="ts">
 export default { data() { return { count: 1 } } }

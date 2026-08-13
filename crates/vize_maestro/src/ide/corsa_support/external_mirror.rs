@@ -5,6 +5,7 @@ use vize_carton::cstr;
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
+use crate::ide::diagnostics::corsa::semantic_links_after_import_rewrite;
 
 use super::canonical::{CanonicalVirtualDocument, map_lsp_range_to_source};
 
@@ -82,6 +83,10 @@ fn map_range(
         virtual_result: VirtualTsResult {
             code: generated.code.to_string(),
             source_mappings: generated.mappings,
+            semantic_links: semantic_links_after_import_rewrite(
+                generated.semantic_links,
+                &generated.import_source_map,
+            ),
             import_source_map: generated.import_source_map,
             user_code_start_line: 0,
             sfc_script_start_line: 0,

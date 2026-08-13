@@ -36,8 +36,12 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Statement, VariableDeclarationKind};
 use oxc_parser::{Parser, ParserReturn};
 use oxc_span::SourceType;
-use vize_carton::{FxHashSet, String, append};
+use std::ops::Range;
+
+use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{BindingType, Croquis};
+
+use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Collects template-referenced bindings that need the type-query shadow.
 ///
@@ -73,24 +77,52 @@ pub(super) fn collect_deferred_setup_bindings(
 }
 
 /// Captures the declared type before template scope shadows the name.
-pub(super) fn emit_type_captures(mut ts: &mut String, names: &[String]) {
+pub(super) fn emit_type_captures(
+    ts: &mut String,
+    names: &[String],
+) -> FxHashMap<String, Range<usize>> {
+    let mut captures = FxHashMap::default();
     if names.is_empty() {
-        return;
+        return captures;
     }
     ts.push_str("  // Deferred-assignment type captures (setup runs before render)\n");
     for name in names {
-        append!(ts, "  type __D_{name} = typeof {name};\n");
+        let line = cstr!("  type __D_{name} = typeof {name};\n");
+        let start = ts.len()
+            + line
+                .rfind(name.as_str())
+                .expect("deferred capture line should contain binding name");
+        ts.push_str(line.as_str());
+        captures.insert(name.clone(), start..start + name.len());
     }
+    captures
 }
 
 /// Redeclares the bindings in template scope carrying their captured types.
-pub(super) fn emit_template_variables(mut ts: &mut String, names: &[String]) {
+pub(super) fn emit_template_variables(
+    ts: &mut String,
+    names: &[String],
+    captures: &FxHashMap<String, Range<usize>>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+) {
     if names.is_empty() {
         return;
     }
     ts.push_str("    // Vue completes setup before the render function reads these\n");
     for name in names {
-        append!(ts, "    var {name}: __D_{name} = undefined as any;\n");
+        let line = cstr!("    var {name}: __D_{name} = undefined as any;\n");
+        let start = ts.len()
+            + line
+                .find(name.as_str())
+                .expect("deferred shadow line should contain binding name");
+        ts.push_str(line.as_str());
+        if let Some(source_range) = captures.get(name) {
+            semantic_links.push(VizeSemanticLink {
+                source_range: source_range.clone(),
+                target_range: start..start + name.len(),
+                kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+            });
+        }
     }
 }
 

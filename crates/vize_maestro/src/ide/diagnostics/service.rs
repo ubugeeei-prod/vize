@@ -27,6 +27,9 @@ pub(in crate::ide) struct VirtualTsResult {
     /// Offsets are in pre-rewrite generated TS coordinates; callers must
     /// translate post-rewrite byte offsets via `import_source_map` first.
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
+    /// Stable semantic links between generated TypeScript ranges.
+    /// Offsets are in post-rewrite generated TS coordinates, matching `code`.
+    pub(in crate::ide) semantic_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
     pub(in crate::ide) import_source_map: vize_canon::ImportSourceMap,

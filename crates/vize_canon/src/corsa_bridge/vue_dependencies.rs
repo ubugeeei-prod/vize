@@ -215,6 +215,7 @@ pub(super) fn queue_vue_dependency(
             request_uri: generated.virtual_uri,
             code: generated_code,
             mappings: generated.generated.mappings,
+            semantic_links: generated.generated.semantic_links,
             import_source_map: generated.generated.import_source_map,
             source_type: generated.generated.source_type,
             virtual_suffix: generated.generated.virtual_suffix,

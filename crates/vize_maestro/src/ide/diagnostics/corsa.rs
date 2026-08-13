@@ -12,6 +12,7 @@ pub(in crate::ide) use collect_virtual::corsa_diagnostic_code;
 mod mapping;
 mod message;
 mod virtual_ts;
+pub(in crate::ide) use virtual_ts::semantic_links_after_import_rewrite;
 mod virtual_ts_art;
 mod virtual_ts_art_bindings;
 mod virtual_ts_art_imports;

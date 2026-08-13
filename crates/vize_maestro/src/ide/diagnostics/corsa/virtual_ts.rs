@@ -41,6 +41,10 @@ impl DiagnosticService {
             VirtualTsResult {
                 code: opened.code.to_string(),
                 source_mappings: opened.mappings,
+                semantic_links: semantic_links_after_import_rewrite(
+                    opened.semantic_links,
+                    &opened.import_source_map,
+                ),
                 import_source_map: opened.import_source_map,
                 user_code_start_line: metadata.user_code_start_line,
                 sfc_script_start_line: metadata.sfc_script_start_line,
@@ -90,6 +94,10 @@ impl DiagnosticService {
         Some(VirtualTsResult {
             code: generated.code.to_string(),
             source_mappings: generated.mappings,
+            semantic_links: semantic_links_after_import_rewrite(
+                generated.semantic_links,
+                &generated.import_source_map,
+            ),
             import_source_map: generated.import_source_map,
             user_code_start_line: metadata.user_code_start_line,
             sfc_script_start_line: metadata.sfc_script_start_line,
@@ -235,4 +243,26 @@ impl DiagnosticService {
         tracing::info!("parse_vize_map_comments: found {} mappings", found_count);
         mappings
     }
+}
+
+pub(in crate::ide) fn semantic_links_after_import_rewrite(
+    links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
+    import_source_map: &ImportSourceMap,
+) -> Vec<vize_canon::virtual_ts::VizeSemanticLink> {
+    links
+        .into_iter()
+        .map(|mut link| {
+            link.source_range = rewrite_range(link.source_range, import_source_map);
+            link.target_range = rewrite_range(link.target_range, import_source_map);
+            link
+        })
+        .collect()
+}
+
+fn rewrite_range(
+    range: std::ops::Range<usize>,
+    import_source_map: &ImportSourceMap,
+) -> std::ops::Range<usize> {
+    import_source_map.get_virtual_offset(range.start as u32) as usize
+        ..import_source_map.get_virtual_offset(range.end as u32) as usize
 }

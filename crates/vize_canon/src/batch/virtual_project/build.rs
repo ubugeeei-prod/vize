@@ -170,17 +170,22 @@ pub(super) fn build_vue_registered_file(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mut semantic_links,
         diagnostics,
     } = generated;
     if use_tsx_virtual {
-        prepend_vue_jsx_reference(&mut code, &mut mappings);
+        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
     }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
         context.rewriter.rewrite(&code, source_type, path.parent())
     );
     let source_map = CompositeSourceMap::new_vue(
-        SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
+        SfcSourceMap::new_with_semantic_links(
+            mappings,
+            collect_sfc_block_ranges(&descriptor),
+            semantic_links,
+        ),
         rewritten.source_map,
     );
     let virtual_path = virtual_vue_path(
@@ -254,7 +259,11 @@ pub(super) fn build_script_registered_file(
     })
 }
 
-pub(super) fn prepend_vue_jsx_reference(code: &mut CompactString, mappings: &mut [VizeMapping]) {
+pub(super) fn prepend_vue_jsx_reference(
+    code: &mut CompactString,
+    mappings: &mut [VizeMapping],
+    semantic_links: &mut [crate::virtual_ts::VizeSemanticLink],
+) {
     if code.starts_with(VUE_JSX_REFERENCE_DIRECTIVE) {
         return;
     }
@@ -270,6 +279,9 @@ pub(super) fn prepend_vue_jsx_reference(code: &mut CompactString, mappings: &mut
             sub_span.gen_range.start += offset;
             sub_span.gen_range.end += offset;
         }
+    }
+    for link in semantic_links {
+        link.shift(offset);
     }
 }
 

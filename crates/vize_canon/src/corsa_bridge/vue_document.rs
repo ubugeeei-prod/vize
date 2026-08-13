@@ -261,6 +261,7 @@ pub(crate) fn build_vue_virtual_project_with_overlays_and_options_and_package_ro
             code: generated.code,
             pre_rewrite_code: generated.pre_rewrite_code,
             mappings: generated.mappings,
+            semantic_links: generated.semantic_links,
             import_source_map: generated.import_source_map,
             source_type: generated.source_type,
             virtual_suffix: generated.virtual_suffix,

@@ -196,6 +196,7 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
         virtual_result: crate::ide::diagnostics::VirtualTsResult {
             code: "export const alpha = 1;\n".to_string(),
             source_mappings: Vec::new(),
+            semantic_links: Vec::new(),
             import_source_map: vize_canon::ImportSourceMap::empty(),
             user_code_start_line: 0,
             sfc_script_start_line: 0,

@@ -165,6 +165,7 @@ mod tests {
                     src_range: 0..6,
                     sub_spans: Vec::new(),
                 }],
+                semantic_links: Vec::new(),
                 import_source_map: ImportSourceMap::empty(),
                 source_type: SourceType::ts(),
                 virtual_suffix: ".ts",

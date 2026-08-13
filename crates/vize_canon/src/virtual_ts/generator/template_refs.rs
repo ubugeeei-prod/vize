@@ -1,13 +1,16 @@
 mod auto_imports;
 mod deferred_bindings;
 
+use std::ops::Range;
+
 use vize_carton::config::VueVersion;
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{BindingType, Croquis};
 
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
 use super::spans::is_local_setup_binding;
+use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
@@ -107,12 +110,15 @@ impl TemplateRefUnwraps {
         &self.options_api_setup_bindings
     }
 
-    pub(super) fn emit_type_captures(&self, mut ts: &mut String) {
-        deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
+    pub(super) fn emit_type_captures(
+        &self,
+        mut ts: &mut String,
+    ) -> FxHashMap<String, Range<usize>> {
+        let mut captures = deferred_bindings::emit_type_captures(ts, &self.deferred_bindings);
         if !self.setup_bindings.is_empty() {
             ts.push_str("  // Ref type captures (before template scope shadows them)\n");
             for name in &self.setup_bindings {
-                append!(ts, "  type __R_{name} = typeof {name};\n");
+                record_typeof_capture(ts, name, &mut captures, "__R");
             }
         }
         if !self.options_api_setup_bindings.is_empty() {
@@ -134,9 +140,10 @@ impl TemplateRefUnwraps {
                 "  // Auto-import ref type captures (before template scope shadows them)\n",
             );
             for name in &self.auto_import_bindings {
-                append!(ts, "  type __R_{name} = typeof {name};\n");
+                record_typeof_capture(ts, name, &mut captures, "__R");
             }
         }
+        captures
     }
 
     /// Shadow ref bindings with their unwrapped types. `var` allows
@@ -146,8 +153,19 @@ impl TemplateRefUnwraps {
     /// shadow, which is why the conditional types `__U` delegates to are
     /// declared alongside it rather than at module scope — see
     /// `legacy_vue2::MODERN_REF_UNWRAP_HELPER`.
-    pub(super) fn emit_template_variables(&self, mut ts: &mut String, has_generic_param: bool) {
-        deferred_bindings::emit_template_variables(ts, &self.deferred_bindings);
+    pub(super) fn emit_template_variables(
+        &self,
+        mut ts: &mut String,
+        has_generic_param: bool,
+        captures: &FxHashMap<String, Range<usize>>,
+        semantic_links: &mut Vec<VizeSemanticLink>,
+    ) {
+        deferred_bindings::emit_template_variables(
+            ts,
+            &self.deferred_bindings,
+            captures,
+            semantic_links,
+        );
         if self.setup_bindings.is_empty()
             && self.options_api_setup_bindings.is_empty()
             && self.auto_import_bindings.is_empty()
@@ -163,13 +181,51 @@ impl TemplateRefUnwraps {
             self.hoist_shared_preamble,
         ));
         for name in &self.setup_bindings {
-            append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
+            record_template_shadow(ts, name, "__U<__R_", ">", captures, semantic_links);
         }
         for name in &self.options_api_setup_bindings {
             append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
         }
         for name in &self.auto_import_bindings {
-            append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
+            record_template_shadow(ts, name, "__U<__R_", ">", captures, semantic_links);
         }
+    }
+}
+
+fn record_typeof_capture(
+    ts: &mut String,
+    name: &str,
+    captures: &mut FxHashMap<String, Range<usize>>,
+    helper_prefix: &str,
+) {
+    let line = cstr!("  type {helper_prefix}_{name} = typeof {name};\n");
+    let start = ts.len()
+        + line
+            .rfind(name)
+            .expect("capture line should contain binding name");
+    ts.push_str(line.as_str());
+    captures.insert(String::from(name), start..start + name.len());
+}
+
+fn record_template_shadow(
+    ts: &mut String,
+    name: &str,
+    type_prefix: &str,
+    type_suffix: &str,
+    captures: &FxHashMap<String, Range<usize>>,
+    semantic_links: &mut Vec<VizeSemanticLink>,
+) {
+    let line = cstr!("    var {name}: {type_prefix}{name}{type_suffix} = undefined as any;\n");
+    let start = ts.len()
+        + line
+            .find(name)
+            .expect("template shadow line should contain binding name");
+    ts.push_str(line.as_str());
+    if let Some(source_range) = captures.get(name) {
+        semantic_links.push(VizeSemanticLink {
+            source_range: source_range.clone(),
+            target_range: start..start + name.len(),
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        });
     }
 }

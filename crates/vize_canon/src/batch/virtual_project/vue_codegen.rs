@@ -39,6 +39,7 @@ use super::{
 pub(super) struct GeneratedVueFile {
     pub(super) code: CompactString,
     pub(super) mappings: Vec<crate::virtual_ts::VizeMapping>,
+    pub(super) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(super) diagnostics: Vec<Diagnostic>,
 }
 
@@ -178,6 +179,7 @@ pub(super) fn generate_vue_virtual_ts(
         return Ok(GeneratedVueFile {
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
+            semantic_links: Vec::new(),
             diagnostics,
         });
     }
@@ -271,6 +273,7 @@ pub(super) fn generate_vue_virtual_ts(
     Ok(GeneratedVueFile {
         code: output.code,
         mappings: output.mappings,
+        semantic_links: output.semantic_links,
         diagnostics,
     })
 }

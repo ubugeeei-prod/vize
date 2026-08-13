@@ -6,7 +6,7 @@ use oxc_span::SourceType;
 use vize_carton::String;
 
 use crate::batch::{ImportSourceMap, VueDocumentVirtualTs};
-use crate::virtual_ts::VizeMapping;
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink};
 
 /// Options for opening a Vue SFC as a canonical Corsa virtual document.
 #[derive(Clone, Copy, Debug, Default)]
@@ -23,6 +23,7 @@ pub struct CorsaVueVirtualDocument {
     pub code: String,
     pub pre_rewrite_code: String,
     pub mappings: Vec<VizeMapping>,
+    pub semantic_links: Vec<VizeSemanticLink>,
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,
@@ -39,6 +40,7 @@ pub struct CorsaMaterializedSource {
     pub source: String,
     pub code: String,
     pub mappings: Vec<VizeMapping>,
+    pub semantic_links: Vec<VizeSemanticLink>,
     pub import_source_map: ImportSourceMap,
     pub mapping_kind: CorsaMaterializedMappingKind,
 }
@@ -64,6 +66,7 @@ pub struct CorsaVueVirtualDependency {
     pub request_uri: String,
     pub code: String,
     pub mappings: Vec<VizeMapping>,
+    pub semantic_links: Vec<VizeSemanticLink>,
     pub import_source_map: ImportSourceMap,
     pub source_type: SourceType,
     pub virtual_suffix: &'static str,

@@ -17,6 +17,7 @@ pub(crate) struct MaterializedSourceDocument {
     pub(crate) source: vize_carton::String,
     pub(crate) code: vize_carton::String,
     pub(crate) mappings: Vec<crate::virtual_ts::VizeMapping>,
+    pub(crate) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(crate) import_source_map: crate::batch::ImportSourceMap,
     pub(crate) mapping_kind: MaterializedSourceMappingKind,
 }
@@ -38,12 +39,19 @@ impl VirtualProject {
                     .as_ref()
                     .map(|map| map.mappings().to_vec())
                     .unwrap_or_default();
+                let semantic_links = file
+                    .source_map
+                    .sfc_map
+                    .as_ref()
+                    .map(|map| map.semantic_links().to_vec())
+                    .unwrap_or_default();
                 MaterializedSourceDocument {
                     materialized_path: file.virtual_path.clone(),
                     source_path: file.original_path.clone(),
                     source,
                     code: file.content.clone(),
                     mappings,
+                    semantic_links,
                     import_source_map: file.source_map.import_map.clone(),
                     mapping_kind: MaterializedSourceMappingKind::Generated,
                 }
@@ -78,6 +86,15 @@ impl VirtualProject {
             } else {
                 Vec::new()
             };
+            let semantic_links = if mapping_kind == MaterializedSourceMappingKind::Generated {
+                file.source_map
+                    .sfc_map
+                    .as_ref()
+                    .map(|map| map.semantic_links().to_vec())
+                    .unwrap_or_default()
+            } else {
+                Vec::new()
+            };
             let import_source_map = if mapping_kind == MaterializedSourceMappingKind::Generated {
                 file.source_map.import_map.clone()
             } else {
@@ -89,6 +106,7 @@ impl VirtualProject {
                 source,
                 code,
                 mappings,
+                semantic_links,
                 import_source_map,
                 mapping_kind,
             });
@@ -104,6 +122,7 @@ impl VirtualProject {
                 source: source.clone().into(),
                 code: source.into(),
                 mappings: Vec::new(),
+                semantic_links: Vec::new(),
                 import_source_map: Default::default(),
                 mapping_kind: MaterializedSourceMappingKind::AuthoredIdentity,
             });

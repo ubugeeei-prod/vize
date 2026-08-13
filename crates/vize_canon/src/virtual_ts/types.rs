@@ -29,6 +29,30 @@ pub struct VizeSubSpan {
     pub src_range: Range<usize>,
 }
 
+/// A stable semantic edge between two generated TypeScript ranges that model
+/// one authored Vue binding but intentionally have different TypeScript
+/// symbols.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VizeSemanticLink {
+    pub source_range: Range<usize>,
+    pub target_range: Range<usize>,
+    pub kind: VizeSemanticLinkKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VizeSemanticLinkKind {
+    VueSetupTemplateRefUnwrap,
+}
+
+impl VizeSemanticLink {
+    pub(crate) fn shift(&mut self, offset: usize) {
+        self.source_range.start += offset;
+        self.source_range.end += offset;
+        self.target_range.start += offset;
+        self.target_range.end += offset;
+    }
+}
+
 impl VizeMapping {
     /// Look up the SFC sub-range that contains `gen_offset`. Returns `None`
     /// when no sub-span covers it — callers should fall back to `src_range`.
@@ -330,4 +354,6 @@ pub struct VirtualTsOutput {
     pub code: String,
     /// Source mappings from virtual TS positions to SFC positions.
     pub mappings: Vec<VizeMapping>,
+    /// Stable semantic links between generated ranges.
+    pub semantic_links: Vec<VizeSemanticLink>,
 }

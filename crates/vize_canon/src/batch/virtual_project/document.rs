@@ -9,7 +9,7 @@ use vize_carton::{String as CompactString, ToCompactString};
 
 use crate::batch::error::{CorsaError, CorsaResult};
 use crate::batch::import_rewriter::{ImportRewriter, ImportSourceMap};
-use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping, VizeSemanticLink};
 
 use super::build::{
     descriptor_uses_jsx_script, prepend_vue_jsx_reference, virtual_ts_options_for_descriptor,
@@ -24,6 +24,8 @@ pub struct VueDocumentVirtualTs {
     pub pre_rewrite_code: CompactString,
     /// Byte-range source mappings in pre-rewrite generated TS coordinates.
     pub mappings: Vec<VizeMapping>,
+    /// Semantic links in pre-rewrite generated TS coordinates.
+    pub semantic_links: Vec<VizeSemanticLink>,
     /// Source map for `.vue -> .vue.ts` import rewrites.
     pub import_source_map: ImportSourceMap,
     /// Source type used for parsing the generated virtual document.
@@ -106,6 +108,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mut semantic_links,
         ..
     } = generate_vue_virtual_ts(
         path,
@@ -128,7 +131,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         },
     )?;
     if use_tsx_virtual {
-        prepend_vue_jsx_reference(&mut code, &mut mappings);
+        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
     }
 
     let rewritten = match alias_resolver {
@@ -141,6 +144,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         code: rewritten.code,
         pre_rewrite_code: code,
         mappings,
+        semantic_links,
         import_source_map: rewritten.source_map,
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },

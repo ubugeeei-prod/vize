@@ -43,6 +43,8 @@ enum ContentMapperSpanKind {
 pub struct ContentMapperTransform {
     pub text: CompactString,
     pub mappings: Vec<ContentMapperSpan>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub semantic_links: Vec<ContentMapperSemanticLink>,
     pub diagnostics: Vec<ContentMapperDiagnostic>,
 }
 
@@ -93,6 +95,17 @@ impl ContentMapperTransformOptions {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct ContentMapperSpan(pub [usize; 6]);
 
+/// Stable semantic links between generated ranges.
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContentMapperSemanticLink {
+    pub source_start: usize,
+    pub source_length: usize,
+    pub target_start: usize,
+    pub target_length: usize,
+    pub kind: &'static str,
+}
+
 /// A diagnostic expressed in the mapper's negotiated UTF-8 coordinates.
 #[derive(Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -136,6 +149,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
             return Ok(ContentMapperTransform {
                 text: invalid_sfc_fallback_virtual_ts(),
                 mappings: Vec::new(),
+                semantic_links: Vec::new(),
                 diagnostics: vec![sfc_parse_diagnostic(content, &error)],
             });
         }
@@ -147,6 +161,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
     let GeneratedVueFile {
         mut code,
         mut mappings,
+        mut semantic_links,
         diagnostics,
     } = generate_vue_virtual_ts(
         path,
@@ -170,17 +185,37 @@ pub fn generate_vue_content_mapper_transform_with_options(
     )?;
 
     if use_tsx {
-        prepend_vue_jsx_reference(&mut code, &mut mappings);
+        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
     }
 
     Ok(ContentMapperTransform {
         mappings: protocol_spans(content, &code, &mappings),
+        semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics
             .iter()
             .map(|diagnostic| generated_diagnostic(content, diagnostic))
             .collect(),
         text: code,
     })
+}
+
+fn protocol_semantic_links(
+    links: &[crate::virtual_ts::VizeSemanticLink],
+) -> Vec<ContentMapperSemanticLink> {
+    links
+        .iter()
+        .map(|link| ContentMapperSemanticLink {
+            source_start: link.source_range.start,
+            source_length: link.source_range.len(),
+            target_start: link.target_range.start,
+            target_length: link.target_range.len(),
+            kind: match link.kind {
+                crate::virtual_ts::VizeSemanticLinkKind::VueSetupTemplateRefUnwrap => {
+                    "vueSetupTemplateRefUnwrap"
+                }
+            },
+        })
+        .collect()
 }
 
 fn content_mapper_component_name(path: &Path) -> CompactString {

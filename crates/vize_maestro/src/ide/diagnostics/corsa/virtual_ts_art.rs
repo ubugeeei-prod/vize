@@ -160,6 +160,7 @@ impl DiagnosticService {
             &virtual_ts_options,
         );
         let code = output.code;
+        let semantic_links = output.semantic_links;
         let line_mappings = Self::parse_vize_map_comments(&code);
         let vue_dependencies = collect_art_vue_dependency_paths(uri, &code);
         let (rewritten_code, import_source_map) = rewrite_vue_imports(&code);
@@ -169,6 +170,10 @@ impl DiagnosticService {
             virtual_result: VirtualTsResult {
                 code: rewritten_code,
                 source_mappings: output.mappings,
+                semantic_links: super::semantic_links_after_import_rewrite(
+                    semantic_links,
+                    &import_source_map,
+                ),
                 import_source_map,
                 user_code_start_line: code
                     .lines()

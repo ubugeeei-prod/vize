@@ -30,7 +30,7 @@ mod art_usage;
 mod build;
 mod content_mapper;
 pub use content_mapper::{
-    ContentMapperDiagnostic, ContentMapperSpan, ContentMapperTransform,
+    ContentMapperDiagnostic, ContentMapperSemanticLink, ContentMapperSpan, ContentMapperTransform,
     ContentMapperTransformOptions, generate_vue_content_mapper_transform,
     generate_vue_content_mapper_transform_with_options,
 };

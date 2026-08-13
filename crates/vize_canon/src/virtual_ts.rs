@@ -46,7 +46,10 @@ pub use helpers::{
 };
 #[cfg(feature = "native")]
 pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
-pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSubSpan};
+pub use types::{
+    TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSemanticLink,
+    VizeSemanticLinkKind, VizeSubSpan,
+};
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.

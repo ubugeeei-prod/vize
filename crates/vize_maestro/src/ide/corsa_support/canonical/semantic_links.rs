@@ -1,7 +1,8 @@
 use vize_canon::{LspPosition, LspRange};
-use vize_carton::{String, cstr};
+use vize_carton::String;
 
 use super::{CanonicalVirtualDocument, location_matches_uri};
+use crate::ide::diagnostics::VirtualTsResult;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct CanonicalSemanticPosition {
@@ -112,11 +113,12 @@ pub(crate) fn linked_semantic_position(
     uri: &str,
     range: &LspRange,
 ) -> Option<CanonicalSemanticPosition> {
-    let (request_uri, code) = virtual_code(document, uri)?;
-    let start = crate::ide::position_to_offset(code, range.start.line, range.start.character)?;
-    let end = crate::ide::position_to_offset(code, range.end.line, range.end.character)?;
-    let linked_offset = linked_offset(code, start, end)?;
-    let (line, character) = crate::ide::offset_to_position(code, linked_offset);
+    let (request_uri, result) = virtual_result(document, uri)?;
+    let start =
+        crate::ide::position_to_offset(&result.code, range.start.line, range.start.character)?;
+    let end = crate::ide::position_to_offset(&result.code, range.end.line, range.end.character)?;
+    let linked_offset = linked_offset(&result.semantic_links, start, end)?;
+    let (line, character) = crate::ide::offset_to_position(&result.code, linked_offset);
     Some(CanonicalSemanticPosition {
         request_uri: request_uri.clone(),
         line,
@@ -124,50 +126,40 @@ pub(crate) fn linked_semantic_position(
     })
 }
 
-fn linked_offset(code: &str, start: usize, end: usize) -> Option<usize> {
-    let name = code.get(start..end)?;
-    if name.is_empty() || name.bytes().any(|byte| byte.is_ascii_whitespace()) {
-        return None;
-    }
-
-    let anchor = cstr!("type __R_{name} = typeof {name};");
-    let anchor_name_in_pattern = anchor.rfind(name)?;
-    let anchors = code
-        .match_indices(anchor.as_str())
-        .map(|(offset, _)| offset + anchor_name_in_pattern)
-        .collect::<Vec<_>>();
-    let shadow = cstr!("var {name}: __U<__R_{name}> =");
-    let shadows = code
-        .match_indices(shadow.as_str())
-        .map(|(offset, _)| offset + "var ".len())
-        .collect::<Vec<_>>();
-
-    let linked_offset = if anchors.contains(&start) {
-        shadows.into_iter().filter(|offset| *offset > start).min()?
-    } else if shadows.contains(&start) {
-        anchors.into_iter().filter(|offset| *offset < start).max()?
-    } else {
-        return None;
-    };
-    Some(linked_offset)
+fn linked_offset(
+    links: &[vize_canon::virtual_ts::VizeSemanticLink],
+    start: usize,
+    end: usize,
+) -> Option<usize> {
+    links.iter().find_map(|link| {
+        if link.source_range.start == start && link.source_range.end == end {
+            Some(link.target_range.start)
+        } else if link.target_range.start == start && link.target_range.end == end {
+            Some(link.source_range.start)
+        } else {
+            None
+        }
+    })
 }
 
-fn virtual_code<'a>(
+fn virtual_result<'a>(
     document: &'a CanonicalVirtualDocument,
     uri: &str,
-) -> Option<(&'a String, &'a str)> {
+) -> Option<(&'a String, &'a VirtualTsResult)> {
     if location_matches_uri(uri, document.request_uri.as_str()) {
-        return Some((&document.request_uri, &document.virtual_result.code));
+        return Some((&document.request_uri, &document.virtual_result));
     }
     document
         .dependencies
         .iter()
         .find(|dependency| location_matches_uri(uri, dependency.request_uri.as_str()))
-        .map(|dependency| {
-            (
-                &dependency.request_uri,
-                dependency.virtual_result.code.as_str(),
-            )
+        .map(|dependency| (&dependency.request_uri, &dependency.virtual_result))
+        .or_else(|| {
+            document
+                .materialized_sources
+                .iter()
+                .find(|source| location_matches_uri(uri, source.request_uri.as_str()))
+                .map(|source| (&source.request_uri, &source.virtual_result))
         })
 }
 
@@ -199,6 +191,7 @@ mod semantic_position_tests {
         VirtualTsResult {
             code: code.to_owned(),
             source_mappings: Vec::new(),
+            semantic_links: Vec::new(),
             import_source_map: ImportSourceMap::empty(),
             user_code_start_line: 0,
             sfc_script_start_line: 0,
@@ -242,25 +235,78 @@ mod semantic_position_tests {
 
 #[cfg(test)]
 mod tests {
-    use vize_carton::cstr;
+    use tower_lsp::lsp_types::Url;
+    use vize_canon::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
+    use vize_canon::{ImportSourceMap, LspPosition, LspRange};
 
-    use super::linked_offset;
+    use super::{CanonicalVirtualDocument, linked_offset, linked_semantic_position};
+    use crate::ide::diagnostics::VirtualTsResult;
 
     #[test]
-    fn links_the_matching_generated_pair_when_authored_text_collides() {
-        let pair =
-            "type __R_shared = typeof shared;\nvar shared: __U<__R_shared> = undefined as any;\n";
-        let code = cstr!("{pair}// generated pair\n{pair}");
-        let generated_start = code.rfind("typeof shared").unwrap() + "typeof ".len();
-        let generated_shadow = code.rfind("var shared").unwrap() + "var ".len();
+    fn links_the_matching_metadata_pair_when_generated_text_collides() {
+        let first = VizeSemanticLink {
+            source_range: 15..21,
+            target_range: 30..36,
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        };
+        let second = VizeSemanticLink {
+            source_range: 115..121,
+            target_range: 130..136,
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        };
+        let links = vec![first, second];
 
-        assert_eq!(
-            linked_offset(&code, generated_start, generated_start + "shared".len(),),
-            Some(generated_shadow),
-        );
-        assert_eq!(
-            linked_offset(&code, generated_shadow, generated_shadow + "shared".len(),),
-            Some(generated_start),
-        );
+        assert_eq!(linked_offset(&links, 115, 121), Some(130));
+        assert_eq!(linked_offset(&links, 130, 136), Some(115));
+    }
+
+    #[test]
+    fn linked_position_uses_metadata_without_generated_helper_spelling() {
+        let code =
+            "type Capture = typeof shared;\nvar shared: Unwrap<Capture> = undefined as any;\n";
+        let source_start = code.find("typeof shared").unwrap() + "typeof ".len();
+        let target_start = code.find("var shared").unwrap() + "var ".len();
+        let link = VizeSemanticLink {
+            source_range: source_start..source_start + "shared".len(),
+            target_range: target_start..target_start + "shared".len(),
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        };
+        let document = CanonicalVirtualDocument {
+            source_uri: Url::parse("file:///workspace/App.vue").unwrap(),
+            request_uri: "file:///workspace/App.vue.ts".into(),
+            virtual_result: VirtualTsResult {
+                code: code.into(),
+                source_mappings: Vec::new(),
+                semantic_links: vec![link],
+                import_source_map: ImportSourceMap::empty(),
+                user_code_start_line: 0,
+                sfc_script_start_line: 0,
+                template_scope_start_line: 0,
+                line_mappings: Vec::new(),
+                skipped_import_lines: 0,
+            },
+            dependencies: Vec::new(),
+            materialized_sources: Vec::new(),
+            session_project_roots: Vec::new(),
+        };
+        let (line, character) = crate::ide::offset_to_position(code, source_start);
+        let (_, end_character) =
+            crate::ide::offset_to_position(code, source_start + "shared".len());
+
+        let linked = linked_semantic_position(
+            &document,
+            "file:///workspace/App.vue.ts",
+            &LspRange {
+                start: LspPosition { line, character },
+                end: LspPosition {
+                    line,
+                    character: end_character,
+                },
+            },
+        )
+        .expect("linked position");
+        let expected = crate::ide::offset_to_position(code, target_start);
+
+        assert_eq!((linked.line, linked.character), expected);
     }
 }

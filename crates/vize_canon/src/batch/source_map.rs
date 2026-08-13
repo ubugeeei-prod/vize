@@ -2,7 +2,7 @@
 
 use super::SfcBlockType;
 use super::import_rewriter::ImportSourceMap;
-use crate::virtual_ts::VizeMapping;
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink};
 
 /// Original SFC block span in source coordinates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,15 +27,30 @@ impl SfcBlockRange {
 pub struct SfcSourceMap {
     /// Fine-grained virtual TS mappings emitted by `vize_canon::virtual_ts`.
     mappings: Vec<VizeMapping>,
+    /// Semantic links emitted by `vize_canon::virtual_ts`.
+    semantic_links: Vec<VizeSemanticLink>,
     /// Coarse block ranges used to recover the SFC block type.
     blocks: Vec<SfcBlockRange>,
 }
 
 impl SfcSourceMap {
     /// Create a new SFC source map.
-    pub fn new(mappings: Vec<VizeMapping>, mut blocks: Vec<SfcBlockRange>) -> Self {
+    pub fn new(mappings: Vec<VizeMapping>, blocks: Vec<SfcBlockRange>) -> Self {
+        Self::new_with_semantic_links(mappings, blocks, Vec::new())
+    }
+
+    /// Create a new SFC source map with stable semantic links.
+    pub fn new_with_semantic_links(
+        mappings: Vec<VizeMapping>,
+        mut blocks: Vec<SfcBlockRange>,
+        semantic_links: Vec<VizeSemanticLink>,
+    ) -> Self {
         blocks.sort_by_key(|block| block.start);
-        Self { mappings, blocks }
+        Self {
+            mappings,
+            semantic_links,
+            blocks,
+        }
     }
 
     /// Create an empty SFC source map.
@@ -92,6 +107,11 @@ impl SfcSourceMap {
     /// Access the raw virtual TS mappings.
     pub fn mappings(&self) -> &[VizeMapping] {
         &self.mappings
+    }
+
+    /// Access the raw virtual TS semantic links.
+    pub fn semantic_links(&self) -> &[VizeSemanticLink] {
+        &self.semantic_links
     }
 }
 
