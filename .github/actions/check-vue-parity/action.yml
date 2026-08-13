@@ -32,14 +32,20 @@ runs:
           echo "${count:-0}"
         }
         if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          # Temporary hosted-runner fallback while Blacksmith is degraded.
+          # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove this floor.
           export RAYON_NUM_THREADS=1
           export GOMAXPROCS=1
+          export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=8
         else
           export RAYON_NUM_THREADS=4
         fi
         echo "RAYON_NUM_THREADS=$RAYON_NUM_THREADS" >> "$GITHUB_ENV"
         if [ -n "${GOMAXPROCS:-}" ]; then
           echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-}" ]; then
+          echo "VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=$VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR" >> "$GITHUB_ENV"
         fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
         threads_total="$(thread_count)"
@@ -49,6 +55,7 @@ runs:
           echo "cpus=$(cpu_count)"
           echo "rayon_num_threads=$RAYON_NUM_THREADS"
           echo "gomaxprocs=${GOMAXPROCS:-unset}"
+          echo "budget_cpu_floor=${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-unset}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
           echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ' || echo unavailable)"

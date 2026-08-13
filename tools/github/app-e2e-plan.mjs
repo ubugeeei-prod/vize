@@ -76,7 +76,9 @@ export const fullAppE2eRows = [
 ];
 
 export const readinessRows = [
-  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "5m"),
+  // Temporary hosted-runner fallback while Blacksmith is degraded.
+  // Restore to 5m with blacksmith-32vcpu-ubuntu-2404.
+  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "12m"),
   row(
     "readiness",
     "readiness",

@@ -38,6 +38,7 @@ export const DEFAULT_METRICS_DIR = path.join(
 );
 export const DEFAULT_CYCLES = 20;
 export const DEFAULT_SAMPLE_INTERVAL_MS = 25;
+export const BUDGET_CPU_FLOOR_ENV = "VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR";
 
 export type CyclesOptions = {
   readonly targets?: readonly CycleTarget[];
@@ -46,6 +47,21 @@ export type CyclesOptions = {
   readonly sampleIntervalMs?: number;
   readonly repoRoot?: string;
 };
+
+export function resolveBudgetCpuCount(
+  cpuCount: number,
+  environment: NodeJS.ProcessEnv = process.env,
+): number {
+  const floor = environment[BUDGET_CPU_FLOOR_ENV];
+  if (floor == null || floor === "") {
+    return cpuCount;
+  }
+  const parsed = Number(floor);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${BUDGET_CPU_FLOOR_ENV} must be a positive integer, received: ${floor}`);
+  }
+  return Math.max(cpuCount, parsed);
+}
 
 function summarizeTarget(target: CycleTarget, records: readonly CycleRecord[]): string[] {
   const failures = records.flatMap((record) =>
@@ -70,9 +86,16 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
   const metricsDir = options.metricsDir ?? DEFAULT_METRICS_DIR;
   const sampleIntervalMs = options.sampleIntervalMs ?? DEFAULT_SAMPLE_INTERVAL_MS;
   const cpuCount = os.availableParallelism();
+  const budgetCpuCount = resolveBudgetCpuCount(cpuCount);
   const vizeBin = resolveVizeBin(repoRoot);
   const corsaBin = resolveCorsaBin(repoRoot);
-  const report = createCyclesReport({ corsaBin, cpuCount, cycles, repoRoot, vizeBin });
+  const report = createCyclesReport({
+    budgetCpuCount,
+    corsaBin,
+    cycles,
+    repoRoot,
+    vizeBin,
+  });
   writeCyclesReport(metricsDir, report);
 
   const startedAt = performance.now();
@@ -83,7 +106,7 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
       bounds: {
         corsaProcesses: target.corsaProcesses,
         peakGroupProcesses: target.peakGroupProcessBound,
-        taskBudget: target.taskBudget(cpuCount),
+        taskBudget: target.taskBudget(budgetCpuCount),
       },
       cycles: records,
       description: target.description,
@@ -98,7 +121,7 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
       const first = records[0];
       const record = await runCycle(target, index, {
         corsaBin,
-        cpuCount,
+        budgetCpuCount,
         expectedExitCode: first?.exitCode ?? null,
         expectedSha256: first?.outputSha256 ?? null,
         repoRoot,

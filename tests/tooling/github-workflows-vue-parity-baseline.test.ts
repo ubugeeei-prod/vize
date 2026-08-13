@@ -24,9 +24,15 @@ test("the vue-parity runner baseline caps process pools only on GitHub-hosted ru
     "1",
     "GitHub-hosted runners must export Corsa's Go runtime cap to every later step",
   );
+  assert.equal(
+    hosted.githubEnv.get("VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR"),
+    "8",
+    "GitHub-hosted runners must export the temporary cycle-budget floor",
+  );
   assert.equal(hosted.baseline.get("runner_environment"), "github-hosted");
   assert.equal(hosted.baseline.get("rayon_num_threads"), "1");
   assert.equal(hosted.baseline.get("gomaxprocs"), "1");
+  assert.equal(hosted.baseline.get("budget_cpu_floor"), "8");
   // The settle step compares live pressure against this number, so it has to be
   // an integer and it has to be the same count the artifact reports.
   assert.match(hosted.githubEnv.get("VIZE_RUNNER_BASELINE_THREADS") ?? "", /^[0-9]+$/);
@@ -47,9 +53,15 @@ test("the vue-parity runner baseline caps process pools only on GitHub-hosted ru
     false,
     "the hosted-runner Go runtime cap must not leak onto self-hosted runners",
   );
+  assert.equal(
+    selfHosted.githubEnv.has("VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR"),
+    false,
+    "the hosted-runner cycle-budget floor must not leak onto self-hosted runners",
+  );
   assert.equal(selfHosted.baseline.get("runner_environment"), "self-hosted");
   assert.equal(selfHosted.baseline.get("rayon_num_threads"), "4");
   assert.equal(selfHosted.baseline.get("gomaxprocs"), "unset");
+  assert.equal(selfHosted.baseline.get("budget_cpu_floor"), "unset");
 
   // The artifact is the only evidence left when a later step is killed by the
   // spawn exhaustion of #4126, so every process-budget fact must be emitted.
