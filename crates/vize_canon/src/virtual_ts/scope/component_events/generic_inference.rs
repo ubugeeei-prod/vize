@@ -3,7 +3,7 @@ use vize_croquis::{Croquis, EventHandlerScopeData, Scope, ScopeData, analysis::C
 
 use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_camel_case};
 
-use super::generated_prop_value;
+use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) struct EmitInferenceContext<'a> {
     pub(super) summary: &'a Croquis,

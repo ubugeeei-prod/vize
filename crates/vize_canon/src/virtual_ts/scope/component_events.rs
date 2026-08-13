@@ -5,15 +5,9 @@ mod handler_context;
 mod reference;
 
 use vize_carton::{FxHashSet, String, append, cstr};
-use vize_croquis::croquis::PassedProp;
-use vize_croquis::{
-    Croquis, EventHandlerScopeData, Scope, analyzer::strip_js_comments, naming::to_pascal_case,
-};
+use vize_croquis::{Croquis, EventHandlerScopeData, Scope, naming::to_pascal_case};
 
-use crate::virtual_ts::{
-    expressions::rewrite_reserved_template_prop,
-    helpers::{to_safe_identifier, to_safe_identifier_fragment},
-};
+use crate::virtual_ts::helpers::{to_safe_identifier, to_safe_identifier_fragment};
 use generic_inference::{
     EmitInferenceContext, find_component_usage_for_event, generate_inferred_emit_args,
 };
@@ -203,42 +197,4 @@ pub(super) fn generate_component_event_types(
         listener_type,
         listener_type_expr,
     })
-}
-
-fn push_ts_string_literal(out: &mut String, value: &str) {
-    out.push('"');
-    for ch in value.chars() {
-        match ch {
-            '\\' => out.push_str("\\\\"),
-            '"' => out.push_str("\\\""),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            _ => out.push(ch),
-        }
-    }
-    out.push('"');
-}
-
-pub(super) fn generated_prop_value(
-    prop: &PassedProp,
-    template_prop_names: &FxHashSet<String>,
-) -> Option<String> {
-    if !prop.is_dynamic {
-        let mut value = String::default();
-        if let Some(static_value) = prop.value.as_ref() {
-            push_ts_string_literal(&mut value, static_value.as_str());
-        } else {
-            value.push_str("true");
-        }
-        return Some(value);
-    }
-
-    let value = strip_js_comments(prop.value.as_ref()?.as_str());
-    let trimmed_value = value.as_ref().trim();
-    let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
-    Some(rewritten_value.as_ref().map_or_else(
-        || String::from(value.as_ref()),
-        |s| String::from(s.as_str()),
-    ))
 }

@@ -131,8 +131,11 @@ function __setup<T extends string = 'a'>() {
   const props: __DefineProps<Props<T>> = {} as __DefineProps<Props<T>>;
   void props; // Mark as used to avoid TS6133
 
-  void (value); // VBind
-  // @vize-map: expr -> 431:436
+  type __VizeSlotOutletIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = __VizeSlotOutletIsAny<__S> extends true ? any : __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : unknown) : unknown;
+  ((__vize_slot_props: __VizeSlotOutletPayload<Slots<T>, "default">) => { void __vize_slot_props; })({
+    "value": value,
+  });
 
   // @click handler
   (($event: PointerEvent) => {

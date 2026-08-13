@@ -89,7 +89,7 @@ fn event_belongs_to_transition(source: &str, directive_start: u32) -> bool {
 
 fn event_host_tag(source: &str, directive_start: u32) -> Option<&str> {
     let prefix = source.get(..directive_start as usize)?;
-    let open = prefix.rfind('<')?;
+    let open = host_tag_open_offset(prefix)?;
     if prefix[open..].starts_with("</") {
         return None;
     }
@@ -97,4 +97,61 @@ fn event_host_tag(source: &str, directive_start: u32) -> Option<&str> {
         .trim_start()
         .split(|ch: char| ch.is_ascii_whitespace() || ch == '/' || ch == '>')
         .next()
+}
+
+/// Byte offset of the `<` opening the tag the directive is written in, or
+/// `None` when the offset is not inside a tag. Attribute values may contain
+/// `<` (`:data="a < b"`), so the scan runs forward and tracks quoting instead
+/// of taking the last `<`, which would read the comparison as a tag open.
+fn host_tag_open_offset(prefix: &str) -> Option<usize> {
+    let mut open = None;
+    let mut quote = None;
+    for (index, byte) in prefix.bytes().enumerate() {
+        match (quote, byte) {
+            (Some(open_quote), byte) if byte == open_quote => quote = None,
+            (Some(_), _) => {}
+            (None, b'"' | b'\'') if open.is_some() => quote = Some(byte),
+            (None, b'<') => open = Some(index),
+            (None, b'>') => open = None,
+            (None, _) => {}
+        }
+    }
+    open
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{dynamic_component_custom_event, event_belongs_to_transition, event_host_tag};
+
+    fn directive_start(source: &str, directive: &str) -> u32 {
+        source.find(directive).expect("directive in source") as u32
+    }
+
+    #[test]
+    fn host_tag_ignores_less_than_inside_an_attribute_value() {
+        let source = "<Transition :data=\"a < b\" @enter=\"onEnter\">";
+        let start = directive_start(source, "@enter");
+        assert_eq!(event_host_tag(source, start), Some("Transition"));
+        assert!(event_belongs_to_transition(source, start));
+    }
+
+    #[test]
+    fn host_tag_reports_a_plain_element_host() {
+        let source = "<div @enter=\"onEnter\">";
+        let start = directive_start(source, "@enter");
+        assert_eq!(event_host_tag(source, start), Some("div"));
+        assert!(!event_belongs_to_transition(source, start));
+    }
+
+    #[test]
+    fn host_tag_survives_a_preceding_dynamic_is_binding() {
+        let source = "<component :is=\"Widget\" @picked=\"onPicked\">";
+        let start = directive_start(source, "@picked");
+        assert_eq!(event_host_tag(source, start), Some("component"));
+        assert!(dynamic_component_custom_event(
+            Some(source),
+            start,
+            "picked"
+        ));
+    }
 }

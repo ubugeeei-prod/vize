@@ -5,7 +5,7 @@ mod component_export;
 mod css_modules;
 mod emits;
 mod entry;
-mod generics;
+pub(super) mod generics;
 mod global_components;
 mod imports;
 mod legacy_vue2;

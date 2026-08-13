@@ -1,10 +1,7 @@
 use std::ops::Range;
 
 use vize_carton::{FxHashMap, FxHashSet, String, append};
-use vize_croquis::{
-    Croquis,
-    croquis::{PassedProp, SpreadProp},
-};
+use vize_croquis::croquis::{PassedProp, SpreadProp};
 
 use crate::virtual_ts::{
     expressions::{
@@ -26,7 +23,7 @@ struct SlotOutletCheckContext<'a> {
     indent: &'a str,
 }
 
-pub(in crate::virtual_ts::scope) fn emit_slot_outlet_helpers(
+pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
 ) {
@@ -74,14 +71,14 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
         mappings,
         scope_id,
         SlotOutletCheckContext {
-            slot_outlets_by_scope: ctx.slot_outlets_by_scope,
+            slot_outlets_by_scope: &ctx.slot_outlets.by_scope,
             template_prop_names: ctx.template_prop_names,
             source_context: ComponentPropSource::new(
                 ctx.template_source,
                 ctx.template_offset,
                 &ctx.summary.scopes,
             ),
-            slots_type_ref: slots_type_ref(ctx.summary),
+            slots_type_ref: ctx.slot_outlets.slots_type.as_str(),
             indent,
         },
     );
@@ -139,14 +136,6 @@ fn generate_slot_outlet_checks(
         if outlet.vif_guard.is_some() {
             append!(*ts, "{indent}}}\n");
         }
-    }
-}
-
-fn slots_type_ref(summary: &Croquis) -> &'static str {
-    if summary.macros.define_slots().is_some() && summary.bindings.bindings.contains_key("slots") {
-        "typeof slots"
-    } else {
-        "Slots"
     }
 }
 
@@ -226,22 +215,23 @@ fn entry_sub_spans(
     key_gen_range: Range<usize>,
     value_gen_range: Range<usize>,
 ) -> Vec<VizeSubSpan> {
-    let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
-        return Vec::new();
-    };
-    let Some(value_src_range) = prop_value_source_range(source_context, prop) else {
-        return Vec::new();
-    };
-    vec![
-        VizeSubSpan {
+    let mut sub_spans = Vec::new();
+    // The key and the value are anchored independently: a value whose authored
+    // text cannot be located (a shorthand bind, a rewritten reserved name) must
+    // not discard the key span too.
+    if let Some(name_src_range) = prop_name_source_range(source_context, prop) {
+        sub_spans.push(VizeSubSpan {
             gen_range: key_gen_range,
             src_range: name_src_range,
-        },
-        VizeSubSpan {
+        });
+    }
+    if let Some(value_src_range) = prop_value_source_range(source_context, prop) {
+        sub_spans.push(VizeSubSpan {
             gen_range: value_gen_range,
             src_range: value_src_range,
-        },
-    ]
+        });
+    }
+    sub_spans
 }
 
 fn spread_expression_source_range(

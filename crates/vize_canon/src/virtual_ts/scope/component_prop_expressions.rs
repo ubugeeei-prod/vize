@@ -4,20 +4,20 @@ use vize_croquis::{Croquis, TemplateExpressionKind};
 use super::component_prop_checker::contains_inline_function_prop_value;
 use super::component_props::component_usage_has_checkable_binding;
 use super::context::ScopeGenerationOptions;
-use super::slot_outlet_props::collect_slot_outlet_expression_ranges;
-use crate::virtual_ts::types::VirtualTsOptions;
+use super::slot_outlet_props::SlotOutletChecks;
 
 pub(super) fn collect_component_prop_expression_ranges(
     summary: &Croquis,
-    virtual_ts_options: &VirtualTsOptions,
     options: &ScopeGenerationOptions<'_, '_>,
+    slot_outlets: &SlotOutletChecks,
 ) -> FxHashSet<(u32, u32)> {
     if !options.check_options.check_props {
         return FxHashSet::default();
     }
 
-    let mut ranges = collect_slot_outlet_expression_ranges(summary, options.template_ast);
-    let external_template_bindings: FxHashSet<&str> = virtual_ts_options
+    let mut ranges = slot_outlets.expression_ranges(summary);
+    let external_template_bindings: FxHashSet<&str> = options
+        .virtual_ts_options
         .external_template_bindings
         .iter()
         .map(|name| name.as_str())

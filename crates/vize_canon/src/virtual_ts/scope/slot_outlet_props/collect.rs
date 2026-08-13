@@ -7,7 +7,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChild
 
 use super::SlotOutlet;
 
-pub(in crate::virtual_ts::scope) fn collect_slot_outlets_by_scope(
+pub(super) fn collect_slot_outlets_by_scope(
     summary: &Croquis,
     root: Option<&RootNode<'_>>,
 ) -> FxHashMap<u32, Vec<SlotOutlet>> {
@@ -20,42 +20,49 @@ pub(in crate::virtual_ts::scope) fn collect_slot_outlets_by_scope(
     }
 
     let mut by_scope: FxHashMap<u32, Vec<SlotOutlet>> = FxHashMap::default();
-    for (index, mut outlet) in outlets.into_iter().enumerate() {
-        outlet.index = index;
+    for outlet in outlets {
         by_scope.entry(outlet.scope_id).or_default().push(outlet);
     }
     by_scope
 }
 
-pub(in crate::virtual_ts::scope) fn collect_slot_outlet_expression_ranges(
+/// Authored v-bind ranges covered by already collected outlets. The v-bind
+/// expressions are indexed by start offset once, so each outlet binding costs a
+/// binary search instead of a full scan of every template expression.
+pub(super) fn slot_outlet_expression_ranges(
     summary: &Croquis,
-    root: Option<&RootNode<'_>>,
+    by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
 ) -> FxHashSet<(u32, u32)> {
+    let mut v_binds: Vec<&TemplateExpression> = summary
+        .template_expressions
+        .iter()
+        .filter(|expr| expr.kind == TemplateExpressionKind::VBind)
+        .collect();
+    v_binds.sort_unstable_by_key(|expr| expr.start);
+    let nested_v_bind = |start: u32, end: u32, content: &str| {
+        let from = v_binds.partition_point(|expr| expr.start < start);
+        v_binds[from..]
+            .iter()
+            .take_while(|expr| expr.start <= end)
+            .find(|expr| expr.end <= end && expr.content.as_str().trim() == content)
+            .map(|expr| (expr.start, expr.end))
+    };
+
     let mut ranges = FxHashSet::default();
-    for outlets in collect_slot_outlets_by_scope(summary, root).into_values() {
-        for outlet in outlets {
-            for prop in outlet.props {
-                if prop.is_dynamic
-                    && let Some(value) = prop.value
-                    && let Some(expr) = summary.template_expressions.iter().find(|expr| {
-                        expr.kind == TemplateExpressionKind::VBind
-                            && expr.start >= prop.start
-                            && expr.end <= prop.end
-                            && expr.content.as_str().trim() == value.as_str().trim()
-                    })
-                {
-                    ranges.insert((expr.start, expr.end));
-                }
+    for outlet in by_scope.values().flatten() {
+        for prop in &outlet.props {
+            if prop.is_dynamic
+                && let Some(value) = prop.value.as_ref()
+                && let Some(range) = nested_v_bind(prop.start, prop.end, value.as_str().trim())
+            {
+                ranges.insert(range);
             }
-            for spread in outlet.spread_props {
-                if let Some(expr) = summary.template_expressions.iter().find(|expr| {
-                    expr.kind == TemplateExpressionKind::VBind
-                        && expr.start >= spread.start
-                        && expr.end <= spread.end
-                        && expr.content.as_str().trim() == spread.expression.as_str().trim()
-                }) {
-                    ranges.insert((expr.start, expr.end));
-                }
+        }
+        for spread in &outlet.spread_props {
+            if let Some(range) =
+                nested_v_bind(spread.start, spread.end, spread.expression.as_str().trim())
+            {
+                ranges.insert(range);
             }
         }
     }
@@ -173,7 +180,6 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutle
     }
     let (scope_id, vif_guard) = scope.unwrap_or((ScopeId::ROOT.as_u32(), None));
     Some(SlotOutlet {
-        index: 0,
         scope_id,
         name,
         name_is_dynamic,

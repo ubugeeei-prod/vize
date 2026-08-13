@@ -124,7 +124,7 @@ const props = {
             Some(2322),
             vize_carton::String::from(
                 "12:57:error Type '(value: string) => string' is not assignable to type '(value: number | null) => any'.\n\
-                 Types of parameters 'value' and 'args' are incompatible.\n\
+                 Types of parameters 'value' and 'value' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'string'.\n\
                  Type 'null' is not assignable to type 'string'.",
             ),
@@ -174,7 +174,7 @@ function numberOnly(value: number) { value.toFixed() }
             Some(2322),
             vize_carton::String::from(
                 "7:42:error Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\n\
-                 Types of parameters 'value' and 'args' are incompatible.\n\
+                 Types of parameters 'value' and 'value' are incompatible.\n\
                  Type 'number | null' is not assignable to type 'number'.\n\
                  Type 'null' is not assignable to type 'number'.",
             ),
@@ -220,7 +220,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
                 Some(2322),
                 vize_carton::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
-                     Types of parameters 'el' and 'args' are incompatible.\n\
+                     Types of parameters 'el' and 'el' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),
@@ -273,7 +273,7 @@ function wrongTransition(el: string) { el.toUpperCase() }
                 Some(2322),
                 vize_carton::String::from(
                     "12:6:error Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\n\
-                     Types of parameters 'el' and 'args' are incompatible.\n\
+                     Types of parameters 'el' and 'el' are incompatible.\n\
                      Type 'Element' is not assignable to type 'string'."
                 ),
             ),

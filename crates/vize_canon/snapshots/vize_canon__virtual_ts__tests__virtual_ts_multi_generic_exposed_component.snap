@@ -135,10 +135,12 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   const event = props["event"];
   void event;
 
-  void (props.mode); // VBind
-  // @vize-map: expr -> 327:337
-  void (props.event); // VBind
-  // @vize-map: expr -> 347:358
+  type __VizeSlotOutletIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = __VizeSlotOutletIsAny<__S> extends true ? any : __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : unknown) : unknown;
+  ((__vize_slot_props: __VizeSlotOutletPayload<Slots<Mode, TEvent>, "default">) => { void __vize_slot_props; })({
+    "mode": props.mode,
+    "event": props.event,
+  });
 
   // Reference setup bindings (used in template/CSS v-bind)
   void event; void mode; void props;

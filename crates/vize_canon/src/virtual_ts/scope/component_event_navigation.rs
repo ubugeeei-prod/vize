@@ -10,10 +10,10 @@ use crate::virtual_ts::{
     types::VizeMapping,
 };
 
-use super::component_events::generated_prop_value;
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
 use super::context::{ComponentPropsContext, VForPropsContext};
 use super::event_handler::event_name_source_range;
+use crate::virtual_ts::expressions::generated_prop_value;
 
 pub(super) fn emit_event_references(
     ts: &mut String,

@@ -186,7 +186,7 @@ pub(super) fn skip_ascii_ws(bytes: &[u8], mut i: usize) -> usize {
 /// Whether `haystack` mentions any of `idents` as a whole-word identifier.
 /// Used to decide whether a lifted type declaration depends on an SFC generic
 /// parameter and therefore needs that parameter re-declared on it.
-pub(super) fn references_any_identifier(haystack: &str, idents: &[String]) -> bool {
+pub(crate) fn references_any_identifier(haystack: &str, idents: &[String]) -> bool {
     let bytes = haystack.as_bytes();
     idents.iter().any(|ident| {
         let ident = ident.as_str();
