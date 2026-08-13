@@ -198,10 +198,10 @@ function assertArtifactBoundToRun(run, artifact) {
   }
   const source = artifact.workflow_run;
   if (
-    source != null &&
-    (Number(source.id) !== Number(run.id) ||
-      source.head_sha !== run.head_sha ||
-      source.head_branch !== run.head_branch)
+    source == null ||
+    Number(source.id) !== Number(run.id) ||
+    source.head_sha !== run.head_sha ||
+    source.head_branch !== run.head_branch
   ) {
     throw new Error(
       `Real Project Matrix artifact ${String(artifact.name)} is not bound to run ${String(run.id)}`,

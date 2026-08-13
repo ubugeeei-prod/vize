@@ -4,6 +4,9 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
+const artifactDownloadTimeoutMs = 120_000;
+const artifactMaxBytes = 512 * 1024 * 1024;
+
 export async function downloadArtifactEntries({ artifact, token, fetchImpl = globalThis.fetch }) {
   const url = artifact.archive_download_url;
   if (typeof url !== "string" || url.length === 0) {
@@ -15,6 +18,7 @@ export async function downloadArtifactEntries({ artifact, token, fetchImpl = glo
       authorization: `Bearer ${token}`,
       "x-github-api-version": "2022-11-28",
     },
+    signal: AbortSignal.timeout(artifactDownloadTimeoutMs),
   });
   if (!response.ok) {
     throw new Error(
@@ -25,7 +29,13 @@ export async function downloadArtifactEntries({ artifact, token, fetchImpl = glo
   try {
     const archive = join(scratch, "artifact.zip");
     const output = join(scratch, "out");
-    writeFileSync(archive, Buffer.from(await response.arrayBuffer()));
+    const payload = Buffer.from(await response.arrayBuffer());
+    if (payload.byteLength > artifactMaxBytes) {
+      throw new Error(
+        `Real Project Matrix artifact ${String(artifact.name)} exceeds ${artifactMaxBytes} bytes`,
+      );
+    }
+    writeFileSync(archive, payload);
     const unzip = spawnSync("unzip", ["-q", archive, "-d", output], {
       encoding: "utf8",
       timeout: 30_000,

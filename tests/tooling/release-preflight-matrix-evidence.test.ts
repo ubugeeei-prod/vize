@@ -45,6 +45,18 @@ test("release preflight rejects missing or foreign real-project shard artifacts"
     }),
     /not bound to run/,
   );
+  await assert.rejects(
+    assertRealProjectMatrixReleaseArtifacts({
+      run,
+      artifacts: realProjectArtifacts(run).map((artifact) =>
+        artifact.name === "real-project-matrix-0"
+          ? { ...artifact, workflow_run: undefined }
+          : artifact,
+      ),
+      readArtifactEntries: async () => shardEntries(0),
+    }),
+    /not bound to run/,
+  );
 });
 
 test("release preflight rejects record-only and non-zero typecheck parity artifacts", async () => {
@@ -126,6 +138,37 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
       (entries: Record<string, string>) =>
         mutateDivergence(entries, (artifact) => delete artifact.mutationOracle),
       /seeded mutation oracle/,
+    ],
+    [
+      "forged broken mutation state",
+      (entries: Record<string, string>) =>
+        mutateDivergence(entries, (artifact) => (artifact.mutationOracle.states[1].sharedCount = 0)),
+      /seeded mutation oracle/,
+    ],
+    [
+      "unrestored repaired mutation state",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[2].sourceSha256 = "7".repeat(64)),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
+      "failed surface verdict",
+      (entries: Record<string, string>) => {
+        entries["surface-verdict.json"] = json({ status: "failure" });
+      },
+      /surface verdict is failure/,
+    ],
+    [
+      "wrong shard count",
+      (entries: Record<string, string>) => {
+        const summary = JSON.parse(entries["summary.json"]);
+        summary.command.shardCount = requiredRealProjectMatrixShardCount - 1;
+        entries["summary.json"] = json(summary);
+      },
+      /not exact release evidence/,
     ],
     [
       "missing dependency artifact",
