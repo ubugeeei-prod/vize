@@ -167,6 +167,18 @@ impl Error for TerminalSignalHookError {
 /// restore prior handlers during installation; later handlers must still follow
 /// Windows console-control chaining rules.
 ///
+/// Windows delivery of these events is narrower than the Unix signal set, so
+/// the console path supervises rather than guarantees restoration. Windows
+/// delivers `CTRL_LOGOFF_EVENT` and `CTRL_SHUTDOWN_EVENT` only to services, and
+/// it stops delivering them at all once `user32.dll` or `gdi32.dll` is loaded
+/// into the process, so a typical console application receives neither. While
+/// raw mode is active, Ctrl+C is delivered to the application as an input
+/// record instead of a control event, because raw mode clears
+/// `ENABLE_PROCESSED_INPUT`; that is the intended raw-mode contract, and
+/// restoration for that path runs through the application's normal shutdown or
+/// the panic hook. `CTRL_CLOSE_EVENT` also caps handler execution at a short
+/// system timeout before the process is terminated.
+///
 /// Platforms without a native hook return
 /// [`TerminalSignalHookError::UnsupportedPlatform`] without changing process
 /// state.

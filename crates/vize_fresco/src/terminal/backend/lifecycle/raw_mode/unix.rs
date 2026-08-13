@@ -28,9 +28,17 @@ impl RawSnapshotCell {
     }
 
     fn read(&self) -> NativeRawSnapshot {
-        // SAFETY: callers hold a reader slot and observed the active flag
-        // in the sequentially consistent publication order. Deactivation
-        // waits for every slot before a later session can reuse storage.
+        // SAFETY: the value is initialized because every caller reads only
+        // after a `write` published `RAW_SNAPSHOT_ACTIVE`. Reader callers
+        // hold a reader slot and observed the active flag in the
+        // sequentially consistent publication order, and deactivation waits
+        // for every slot before a later session can reuse storage. The
+        // remaining caller is `deactivate_snapshot`, which is the lease
+        // owner reading its own snapshot after readers drained, so no
+        // concurrent `write` can overlap it. `NativeRawSnapshot` is `Copy`
+        // data (a descriptor, a `termios`, and a flag), so reading it out
+        // never duplicates ownership of a Rust resource; the descriptor is
+        // closed exactly once by `deactivate_snapshot`.
         unsafe { self.0.get().cast::<NativeRawSnapshot>().read() }
     }
 }
@@ -202,31 +210,26 @@ fn open_controlling_terminal() -> io::Result<RawFd> {
     }
 
     // SAFETY: the path is a static NUL-terminated C string and `open`
-    // receives no variadic mode because `O_CREAT` is absent.
-    let fd = unsafe { libc::open(c"/dev/tty".as_ptr(), libc::O_RDWR) };
+    // receives no variadic mode because `O_CREAT` is absent. `O_CLOEXEC`
+    // sets the flag atomically, so a concurrent `fork`/`exec` cannot leak
+    // the descriptor through the window a follow-up `F_SETFD` would leave.
+    let fd = unsafe { libc::open(c"/dev/tty".as_ptr(), libc::O_RDWR | libc::O_CLOEXEC) };
     if fd < 0 {
         return Err(io::Error::last_os_error());
     }
-    set_cloexec_or_close(fd)
+    Ok(fd)
 }
 
 fn duplicate_cloexec(fd: RawFd) -> io::Result<RawFd> {
-    // SAFETY: duplicating a valid descriptor does not borrow its resource.
-    let duplicate = unsafe { libc::dup(fd) };
+    // SAFETY: duplicating a valid descriptor does not borrow its resource,
+    // and `F_DUPFD_CLOEXEC` takes one integer minimum-descriptor argument.
+    // The duplicate is created close-on-exec atomically, leaving no window
+    // in which a concurrent `exec` could inherit the terminal descriptor.
+    let duplicate = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 0) };
     if duplicate < 0 {
         return Err(io::Error::last_os_error());
     }
-    set_cloexec_or_close(duplicate)
-}
-
-fn set_cloexec_or_close(fd: RawFd) -> io::Result<RawFd> {
-    // SAFETY: `fd` is owned by the caller and `F_SETFD` takes one integer.
-    if unsafe { libc::fcntl(fd, libc::F_SETFD, libc::FD_CLOEXEC) } == 0 {
-        return Ok(fd);
-    }
-    let error = io::Error::last_os_error();
-    close_owned_fd(fd);
-    Err(error)
+    Ok(duplicate)
 }
 
 fn deactivate_snapshot() {
