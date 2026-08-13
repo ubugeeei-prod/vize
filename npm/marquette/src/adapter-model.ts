@@ -61,6 +61,10 @@ export interface AdapterCapabilityMismatch {
   readonly code: AdapterCapabilityMismatchCode;
   /** Required capability identifier. */
   readonly capability: string;
+  /** JSON-style path of the unsupported application capability requirement. */
+  readonly path: string;
+  /** Human-readable explanation with stable wording for renderer diagnostics. */
+  readonly message: string;
   /** Required contract version when the capability is declared. */
   readonly requiredVersion?: number;
   /** Adapter minimum when support exists. */

@@ -66,9 +66,24 @@ function problem(
   return {
     code,
     capability,
+    path: `capabilities.${capability}`,
+    message: mismatchMessage(code),
     ...(requiredVersion === undefined ? {} : { requiredVersion }),
     ...(support === undefined
       ? {}
       : { minVersion: support.minVersion, maxVersion: support.maxVersion }),
   };
+}
+
+function mismatchMessage(code: AdapterCapabilityMismatchCode): string {
+  switch (code) {
+    case "unknown-requirement":
+      return "application references an undeclared capability requirement";
+    case "missing-capability":
+      return "adapter does not support the required capability";
+    case "version-below-minimum":
+      return "application requires a capability version below the adapter minimum";
+    case "version-above-maximum":
+      return "application requires a capability version above the adapter maximum";
+  }
 }

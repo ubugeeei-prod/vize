@@ -47,10 +47,18 @@
         "compatible": false,
         "diagnostics": [],
         "mismatches": [
-          { "code": "missing-capability", "capability": "missing", "requiredVersion": 1 },
+          {
+            "code": "missing-capability",
+            "capability": "missing",
+            "path": "capabilities.missing",
+            "message": "adapter does not support the required capability",
+            "requiredVersion": 1
+          },
           {
             "code": "version-above-maximum",
             "capability": "new.application",
+            "path": "capabilities.new.application",
+            "message": "application requires a capability version above the adapter maximum",
             "requiredVersion": 5,
             "minVersion": 1,
             "maxVersion": 4
@@ -58,6 +66,8 @@
           {
             "code": "version-below-minimum",
             "capability": "old.application",
+            "path": "capabilities.old.application",
+            "message": "application requires a capability version below the adapter minimum",
             "requiredVersion": 1,
             "minVersion": 2,
             "maxVersion": 4
@@ -92,10 +102,18 @@
         "compatible": false,
         "diagnostics": [],
         "mismatches": [
-          { "code": "missing-capability", "capability": "missing", "requiredVersion": 1 },
+          {
+            "code": "missing-capability",
+            "capability": "missing",
+            "path": "capabilities.missing",
+            "message": "adapter does not support the required capability",
+            "requiredVersion": 1
+          },
           {
             "code": "version-above-maximum",
             "capability": "new.application",
+            "path": "capabilities.new.application",
+            "message": "application requires a capability version above the adapter maximum",
             "requiredVersion": 5,
             "minVersion": 1,
             "maxVersion": 4
@@ -103,6 +121,8 @@
           {
             "code": "version-below-minimum",
             "capability": "old.application",
+            "path": "capabilities.old.application",
+            "message": "application requires a capability version below the adapter minimum",
             "requiredVersion": 1,
             "minVersion": 2,
             "maxVersion": 4
@@ -140,7 +160,14 @@
         "adapter": "fixture.adapter",
         "compatible": false,
         "diagnostics": [],
-        "mismatches": [{ "code": "unknown-requirement", "capability": "unknown.capability" }]
+        "mismatches": [
+          {
+            "code": "unknown-requirement",
+            "capability": "unknown.capability",
+            "path": "capabilities.unknown.capability",
+            "message": "application references an undeclared capability requirement"
+          }
+        ]
       }
     }
   ]

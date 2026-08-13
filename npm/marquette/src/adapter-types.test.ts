@@ -1,6 +1,7 @@
 import type {
   AdapterCapabilityDiagnosticCode,
   AdapterCapabilityManifest,
+  AdapterCapabilityMismatch,
   AdapterCapabilityMismatchCode,
   CompatibilityChangeKind,
   NativeEngineCapabilityId,
@@ -13,6 +14,13 @@ const manifest = {
 } as const satisfies AdapterCapabilityManifest;
 const diagnostic: AdapterCapabilityDiagnosticCode = "duplicate-capability";
 const mismatch: AdapterCapabilityMismatchCode = "version-above-maximum";
+const mismatchDiagnostic = {
+  code: "missing-capability",
+  capability: "auth.session",
+  path: "capabilities.auth.session",
+  message: "adapter does not support the required capability",
+  requiredVersion: 1,
+} as const satisfies AdapterCapabilityMismatch;
 const compatibility: CompatibilityChangeKind = "breaking";
 const nativeCapability: NativeEngineCapabilityId = "native.accessibility";
 
@@ -29,6 +37,7 @@ const unknownNativeCapability: NativeEngineCapabilityId = "native.unknown";
 void manifest;
 void diagnostic;
 void mismatch;
+void mismatchDiagnostic;
 void compatibility;
 void nativeCapability;
 void future;

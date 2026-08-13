@@ -83,6 +83,14 @@ fn native_engine_profile_matches_the_shared_contract_and_negotiates_fail_closed(
     assert!(!incompatible.compatible);
     assert_eq!(incompatible.mismatches.len(), 1);
     assert_eq!(incompatible.mismatches[0].capability, "native.animation");
+    assert_eq!(
+        incompatible.mismatches[0].path,
+        "capabilities.native.animation"
+    );
+    assert_eq!(
+        incompatible.mismatches[0].message,
+        "adapter does not support the required capability"
+    );
 }
 
 #[test]
@@ -105,6 +113,10 @@ fn matches_shared_negotiation_fixtures_and_input_permutations() {
     assert_eq!(
         results[3]["mismatches"][0]["code"], "unknown-requirement",
         "undeclared requirements must fail even when the adapter offers them"
+    );
+    assert_eq!(
+        results[3]["mismatches"][0]["path"], "capabilities.unknown.capability",
+        "undeclared requirement diagnostics must use stable application capability paths"
     );
 }
 

@@ -86,7 +86,15 @@ void test("native engine profile matches the shared contract and returns fresh v
   assert.deepEqual(
     negotiateAdapterCapabilities(contract, NATIVE_ENGINE_CAPABILITY_IDS, missingAnimation)
       .mismatches,
-    [{ code: "missing-capability", capability: "native.animation", requiredVersion: 1 }],
+    [
+      {
+        code: "missing-capability",
+        capability: "native.animation",
+        path: "capabilities.native.animation",
+        message: "adapter does not support the required capability",
+        requiredVersion: 1,
+      },
+    ],
   );
 
   (first[0] as { id: string }).id = "mutated";
@@ -109,6 +117,7 @@ void test("matches shared negotiation fixtures and input permutations", async ()
   assert.equal(JSON.stringify(results[0]), JSON.stringify(results[1]));
   assert.equal(results[2]?.compatible, true, "inclusive bounds must pass");
   assert.equal(results[3]?.mismatches[0]?.code, "unknown-requirement");
+  assert.equal(results[3]?.mismatches[0]?.path, "capabilities.unknown.capability");
 });
 
 void test("matches shared semantic validation diagnostics", async () => {

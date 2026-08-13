@@ -92,8 +92,33 @@ fn problem(
     AdapterCapabilityMismatch {
         code,
         capability: String::from(capability),
+        path: capability_path(capability),
+        message: mismatch_message(code).into(),
         required_version,
         min_version: support.map(|value| value.min_version),
         max_version: support.map(|value| value.max_version),
+    }
+}
+
+fn capability_path(capability: &str) -> String {
+    let mut path = String::from("capabilities.");
+    path.push_str(capability);
+    path
+}
+
+const fn mismatch_message(code: AdapterCapabilityMismatchCode) -> &'static str {
+    match code {
+        AdapterCapabilityMismatchCode::UnknownRequirement => {
+            "application references an undeclared capability requirement"
+        }
+        AdapterCapabilityMismatchCode::MissingCapability => {
+            "adapter does not support the required capability"
+        }
+        AdapterCapabilityMismatchCode::VersionBelowMinimum => {
+            "application requires a capability version below the adapter minimum"
+        }
+        AdapterCapabilityMismatchCode::VersionAboveMaximum => {
+            "application requires a capability version above the adapter maximum"
+        }
     }
 }

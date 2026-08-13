@@ -90,6 +90,10 @@ pub struct AdapterCapabilityMismatch {
     pub code: AdapterCapabilityMismatchCode,
     /// Required capability identifier.
     pub capability: String,
+    /// JSON-style path of the unsupported application capability requirement.
+    pub path: String,
+    /// Human-readable explanation with stable wording for renderer diagnostics.
+    pub message: String,
     /// Required contract version when the capability is declared.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub required_version: Option<u32>,
