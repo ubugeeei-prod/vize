@@ -208,7 +208,7 @@ jobs:
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Install vize CLI
-        run: cp target/ci/vize /usr/local/bin/vize
+        run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
 
@@ -267,7 +267,7 @@ jobs:
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Install vize CLI
-        run: cp target/ci/vize /usr/local/bin/vize
+        run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
 

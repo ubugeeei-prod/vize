@@ -43,6 +43,19 @@ export function workflowJobBody(workflow: string, jobName: string): string {
   return remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
 }
 
+/**
+ * The `runs-on:` value declared by one job, including any trailing comment.
+ * Scoping to the owning job keeps runner assertions from being satisfied by a
+ * different job that happens to carry the expected label.
+ */
+export function workflowJobRunsOn(workflow: string, jobName: string): string | undefined {
+  const prefix = "    runs-on:";
+  const line = workflowJobBody(workflow, jobName)
+    .split("\n")
+    .find((candidate) => candidate.startsWith(prefix));
+  return line?.slice(prefix.length).trim();
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

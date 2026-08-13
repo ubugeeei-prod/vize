@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile, workflowJobRunsOn } from "./support/github-workflows.ts";
 
 const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
 const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
@@ -200,17 +200,15 @@ test("every producer and aggregator checks out the exact event target", () => {
 test("temporary App E2E hosted fallback keeps Blacksmith restore labels", () => {
   const source = readRepoFile(".github", "workflows", "e2e.yml");
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {
-    assert.match(
-      source,
-      new RegExp(
-        `${job}:[\\s\\S]*runs-on: ${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`,
-      ),
+    assert.equal(
+      workflowJobRunsOn(source, job),
+      `${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`,
       `${job} must keep the Blacksmith restore label while hosted fallback is active`,
     );
   }
-  assert.match(
-    source,
-    new RegExp(`testbox:[\\s\\S]*runs-on: ${RESTORE_BLACKSMITH_RUNNER}`),
+  assert.equal(
+    workflowJobRunsOn(source, "testbox"),
+    RESTORE_BLACKSMITH_RUNNER,
     "Blacksmith Testbox dispatch must keep its native Blacksmith runner",
   );
 });
