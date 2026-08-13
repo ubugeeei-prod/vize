@@ -31,9 +31,10 @@
 //!   layout at 80 columns, assigns 40% of split width to the finding list,
 //!   reserves 3 chrome rows, and retains 2 virtualized overscan rows on each
 //!   side of a viewport.
-//! - [`TerminalProfileOptions::default`] resolves color, Unicode, and
-//!   interactivity from explicit probe data; widths below 60 cells are marked
-//!   narrow.
+//! - [`TerminalProfileOptions::default`] selects automatic color, Unicode, and
+//!   interactivity resolution and a 60-cell narrow-layout threshold;
+//!   [`TerminalCapabilities::resolve`] consumes those preferences together with
+//!   explicit probe data to mark widths below the threshold as narrow.
 //! - [`terminal::TerminalOptions::default`] acquires raw mode, alternate
 //!   screen, bracketed paste, and hidden cursor, while leaving mouse capture
 //!   disabled.

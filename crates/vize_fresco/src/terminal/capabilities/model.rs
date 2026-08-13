@@ -41,11 +41,12 @@ impl ColorSupport {
 
 /// Why one resolved capability has its current value.
 ///
-/// Reasons are intentionally part of the public contract. Diagnostic
-/// presentations should report these values when color, Unicode,
-/// interactivity, or narrow-layout behavior is unavailable or forced, instead
-/// of deriving unsupported capability reasons from escape sequences or rendered
-/// glyphs.
+/// Reasons are intentionally part of the public contract. They accompany the
+/// [`CapabilityDecision`] values exposed for color, Unicode, and interactivity;
+/// redirected output and narrow layout remain plain boolean flags without
+/// reasons. Diagnostic presentations should report these values when color,
+/// Unicode, or interactivity is unavailable or forced, instead of deriving
+/// unsupported capability reasons from escape sequences or rendered glyphs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum CapabilityReason {
