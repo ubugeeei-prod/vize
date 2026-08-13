@@ -54,7 +54,7 @@ export function readNpmxHeadSourceEvidence(fixtureRoot: string): NpmxHeadSourceE
   const sources: Record<string, string> = {};
   const evidence: NpmxHeadSourceEvidence = {};
 
-  for (const [relativePath, contract] of Object.entries(NPMX_HEAD_SOURCE_CONTRACTS)) {
+  for (const relativePath of Object.keys(NPMX_HEAD_SOURCE_CONTRACTS)) {
     const source = fs.readFileSync(path.join(fixtureRoot, relativePath), "utf8");
     sources[relativePath] = source;
     evidence[relativePath] = sha256(source);

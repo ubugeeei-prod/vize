@@ -149,7 +149,7 @@ function createCompilerExcludeRequestMatcher(
 function normalizeVueRequestPath(id: string): string | null {
   const normalized = normalizeViteRequestId(id);
   const pathOnly = normalized.replace(/[?#].*$/, "");
-  return /\.vue$/.test(pathOnly) ? pathOnly : null;
+  return pathOnly.endsWith(".vue") ? pathOnly : null;
 }
 
 function isPluginVueSubrequest(id: string): boolean {

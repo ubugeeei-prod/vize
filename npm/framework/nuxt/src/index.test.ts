@@ -7,7 +7,10 @@ import {
   registerNuxtMuseaStaticPublicAsset,
   resolveNuxtMuseaStaticPublicAsset,
 } from "./musea-static.ts";
-import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge.ts";
+import {
+  patchNuxtClientManifestCloseBundlePlugin,
+  type NuxtClientManifestVitePlugin,
+} from "./client-manifest-bridge.ts";
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge.ts";
 import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE } from "./utils.ts";
 
@@ -172,16 +175,27 @@ void test("Nuxt Musea static public asset preserves root base path", () => {
   });
 });
 
+function invokeCloseBundle(plugin: NuxtClientManifestVitePlugin): Promise<unknown> {
+  const hook = plugin.closeBundle;
+  if (typeof hook === "function") {
+    return Promise.resolve(hook.call(plugin));
+  }
+  if (hook && typeof hook.handler === "function") {
+    return Promise.resolve(hook.handler.call(plugin));
+  }
+  throw new Error("plugin has no closeBundle hook");
+}
+
 void test("Nuxt client manifest closeBundle bridge is idempotent per build scope", async () => {
   let calls = 0;
   const scope = {};
-  const firstPlugin = {
+  const firstPlugin: NuxtClientManifestVitePlugin = {
     name: "nuxt:client-manifest",
     closeBundle() {
       calls++;
     },
   };
-  const duplicatePlugin = {
+  const duplicatePlugin: NuxtClientManifestVitePlugin = {
     name: "nuxt:client-manifest",
     closeBundle() {
       calls++;
@@ -192,15 +206,15 @@ void test("Nuxt client manifest closeBundle bridge is idempotent per build scope
   patchNuxtClientManifestCloseBundlePlugin(firstPlugin, scope);
   patchNuxtClientManifestCloseBundlePlugin(duplicatePlugin, scope);
 
-  await firstPlugin.closeBundle();
-  await duplicatePlugin.closeBundle();
+  await invokeCloseBundle(firstPlugin);
+  await invokeCloseBundle(duplicatePlugin);
 
   assert.equal(calls, 1);
 });
 
 void test("Nuxt client manifest closeBundle bridge supports hook objects", async () => {
   let calls = 0;
-  const plugin = {
+  const plugin: NuxtClientManifestVitePlugin = {
     name: "nuxt:client-manifest",
     closeBundle: {
       handler() {
@@ -212,8 +226,8 @@ void test("Nuxt client manifest closeBundle bridge supports hook objects", async
 
   patchNuxtClientManifestCloseBundlePlugin(plugin, {});
 
-  assert.equal(await plugin.closeBundle.handler(), "manifest");
-  assert.equal(await plugin.closeBundle.handler(), "manifest");
+  assert.equal(await invokeCloseBundle(plugin), "manifest");
+  assert.equal(await invokeCloseBundle(plugin), "manifest");
   assert.equal(calls, 1);
 });
 
