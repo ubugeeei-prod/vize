@@ -243,6 +243,7 @@ jobs:
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --budget-mode "$BUDGET_MODE" \
+            --vize-bin target/ci/vize \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
 
       - name: Enforce all real-project surface verdicts

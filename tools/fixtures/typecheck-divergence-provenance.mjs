@@ -4,7 +4,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { installArguments } from "./typecheck-dependency-prepare.mjs";
-import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
+import {
+  buildSeededMutation,
+  executeSeededMutationOracle,
+} from "./typecheck-divergence-mutation.mjs";
 
 const mutationSchema = "vize.fixtureTypecheckSeededMutationOracle";
 const preparationSchema = "vize.fixtureTypecheckPreparationEvidence";
@@ -89,7 +92,16 @@ export function readAndValidateDependencyPreparation({
   };
 }
 
-export function createSeededMutationOracle({ project, fixtureRoot, vizeReport, coverage }) {
+export function createSeededMutationOracle({
+  project,
+  fixtureRoot,
+  vizeReport,
+  coverage,
+  vizeLaunch,
+  vueTsc,
+  baselineArgs,
+  documentedDifferences,
+}) {
   const seed = sha256(
     [
       project.id,
@@ -119,54 +131,60 @@ export function createSeededMutationOracle({ project, fixtureRoot, vizeReport, c
     );
   }
 
-  const file = sharedFiles[Number.parseInt(seed.slice(0, 8), 16) % sharedFiles.length];
-  const cleanSource = readFileSync(resolve(fixtureRoot, file), "utf8");
-  const prefix = cleanSource.endsWith("\n") ? cleanSource : `${cleanSource}\n`;
-  const brokenPrefix = `${prefix}<script setup lang="ts">\n`;
-  const brokenSource = `${brokenPrefix}const __vize_typecheck_mutation_probe: string = 1\n</script>\n`;
+  const candidate = selectMutationCandidate(sharedFiles, seed, fixtureRoot);
+  if (candidate == null) {
+    return unusableMutation(
+      seed,
+      "seeded mutation found no authored Vue file accepting a TS probe",
+    );
+  }
+  const { file, cleanSource, brokenSource, line, column } = candidate;
   const diagnostic = {
     file,
     severity: "error",
-    line: lineCount(brokenPrefix),
-    column: 1,
+    line,
+    column,
     code: 2322,
     message: "Type 'number' is not assignable to type 'string'.",
   };
-  const brokenComparison = compareTypecheckDiagnostics({
-    projectId: project.id,
-    cwd: fixtureRoot,
-    vizeReport: {
-      files: [
-        {
-          file,
-          diagnostics: [
-            `${diagnostic.severity}:${diagnostic.line}:${diagnostic.column} [TS${diagnostic.code}] ${diagnostic.message}`,
-          ],
-        },
-      ],
-    },
-    vueTscOutput: `${file}(${diagnostic.line},${diagnostic.column}): ${diagnostic.severity} TS${diagnostic.code}: ${diagnostic.message}\n`,
-  });
-  const cleanComparison = compareTypecheckDiagnostics({
-    projectId: project.id,
-    cwd: fixtureRoot,
-    vizeReport: { files: [{ file, diagnostics: [] }] },
-    vueTscOutput: "",
-  });
 
-  const broken = mutationState("broken", brokenSource, brokenComparison);
-  const clean = mutationState("clean", cleanSource, cleanComparison);
-  const repaired = mutationState("repaired", cleanSource, cleanComparison);
+  let observed;
+  try {
+    observed = executeSeededMutationOracle({
+      project,
+      fixtureRoot,
+      file,
+      cleanSource,
+      brokenSource,
+      diagnostic,
+      vizeLaunch,
+      vueTsc,
+      baselineArgs,
+      documentedDifferences,
+    });
+  } catch (error) {
+    return unusableMutation(
+      seed,
+      `seeded mutation oracle could not run real typecheckers: ${errorMessage(error)}`,
+    );
+  }
+
+  const [clean, broken, repaired] = observed.states;
   const passed =
-    clean.sharedCount === 0 &&
-    clean.falsePositiveCount === 0 &&
-    clean.falseNegativeCount === 0 &&
+    observed.cleanExpectedDiagnosticPresent === false &&
     broken.sharedCount === 1 &&
+    broken.messageMismatchCount === 0 &&
+    broken.documentedDifferenceCount === 0 &&
     broken.falsePositiveCount === 0 &&
     broken.falseNegativeCount === 0 &&
+    observed.expectedDiagnosticMatched === true &&
     repaired.sourceSha256 === clean.sourceSha256 &&
+    repaired.sharedCount === 0 &&
+    repaired.messageMismatchCount === 0 &&
+    repaired.documentedDifferenceCount === 0 &&
     repaired.falsePositiveCount === 0 &&
-    repaired.falseNegativeCount === 0;
+    repaired.falseNegativeCount === 0 &&
+    observed.repairedExpectedDiagnosticPresent === false;
 
   return {
     schema: mutationSchema,
@@ -184,7 +202,10 @@ export function createSeededMutationOracle({ project, fixtureRoot, vizeReport, c
       column: diagnostic.column,
     },
     diagnostic,
-    states: [clean, broken, repaired],
+    cleanExpectedDiagnosticPresent: observed.cleanExpectedDiagnosticPresent,
+    expectedDiagnosticMatched: observed.expectedDiagnosticMatched,
+    repairedExpectedDiagnosticPresent: observed.repairedExpectedDiagnosticPresent,
+    states: observed.states,
   };
 }
 
@@ -201,19 +222,6 @@ function unusableMutation(seed, reason) {
     span: null,
     diagnostic: null,
     states: [],
-  };
-}
-
-function mutationState(name, source, comparison) {
-  const summary = comparison.summary;
-  return {
-    name,
-    sourceSha256: sha256(source),
-    vizeDiagnosticCount: summary.vizeDiagnosticCount,
-    baselineDiagnosticCount: summary.baselineDiagnosticCount,
-    sharedCount: summary.sharedCount,
-    falsePositiveCount: summary.falsePositiveCount,
-    falseNegativeCount: summary.falseNegativeCount,
   };
 }
 
@@ -293,14 +301,25 @@ function isSha256(value) {
   return typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
 }
 
-function lineCount(value) {
-  return value.replaceAll("\r\n", "\n").split("\n").length;
-}
-
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
 
 function byteOrder(left, right) {
   return Buffer.compare(Buffer.from(left), Buffer.from(right));
+}
+
+function selectMutationCandidate(sharedFiles, seed, fixtureRoot) {
+  const start = Number.parseInt(seed.slice(0, 8), 16) % sharedFiles.length;
+  for (let offset = 0; offset < sharedFiles.length; offset += 1) {
+    const file = sharedFiles[(start + offset) % sharedFiles.length];
+    const cleanSource = readFileSync(resolve(fixtureRoot, file), "utf8");
+    const mutation = buildSeededMutation(cleanSource);
+    if (mutation != null) return { file, cleanSource, ...mutation };
+  }
+  return null;
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }

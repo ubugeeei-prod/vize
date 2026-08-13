@@ -6,6 +6,7 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { fileURLToPath } from "node:url";
 
 import { collectTypecheckerAuthoredPaths, collectVueInputPaths } from "./tool-matrix-inputs.mjs";
+import { resolveVizeLaunch } from "./tool-matrix-run.mjs";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
@@ -14,16 +15,13 @@ import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-targ
 import { evaluateBaselineConfiguration } from "./typecheck-baseline-configuration.mjs";
 import { materializeBaselineProject } from "./typecheck-baseline-project.mjs";
 import { evaluateVueProgramCoverage } from "./typecheck-baseline-coverage.mjs";
-import {
-  assertBudgetPassed,
-  evaluateBudget,
-  parseBudgetMode,
-} from "./typecheck-divergence-budget.mjs";
+import { assertBudgetPassed, evaluateBudget } from "./typecheck-divergence-budget.mjs";
 import { renderMarkdown } from "./typecheck-divergence-markdown.mjs";
 import {
   createSeededMutationOracle,
   readAndValidateDependencyPreparation,
 } from "./typecheck-divergence-provenance.mjs";
+import { parseArgs } from "./typecheck-divergence-report-args.mjs";
 import { compareTypecheckDiagnostics } from "./typecheck-divergence.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +35,7 @@ const documentedDifferencesPath = join(
 );
 
 export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
-  const args = parseArgs(argv);
+  const args = parseArgs(argv, { repoRoot, defaultRegistry });
   const registry = readJson(args.registry);
   const selected = registry.projects
     .filter((_, index) => index % args.shardCount === args.shardIndex)
@@ -60,6 +58,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     commitSha: summary.evidence.commitSha,
   });
   const vizeRun = readAndValidateVizeRun(args.reportDir, project, summary);
+  const vizeLaunch = resolveVizeLaunch(args.vizeBin, false);
   const vueTsc = resolveVueTsc(args.vueTscBin);
   const baselineProject = materializeBaselineProject(
     fixtureRoot,
@@ -84,12 +83,13 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
   }
 
   const baselineOutput = `${baseline.stdout ?? ""}\n${baseline.stderr ?? ""}`;
+  const documentedDifferences = readDocumentedDifferences();
   const divergence = compareTypecheckDiagnostics({
     projectId: project.id,
     cwd: fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
     vueTscOutput: baselineOutput,
-    documentedDifferences: readDocumentedDifferences(),
+    documentedDifferences,
   });
   const coverage = evaluateVueProgramCoverage(
     vizeRun.payload.parsed,
@@ -102,6 +102,10 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
     coverage,
+    vizeLaunch,
+    vueTsc,
+    baselineArgs,
+    documentedDifferences,
   });
   const budget = evaluateBudget(
     project.typecheckPerformance,
@@ -283,45 +287,6 @@ function resolveVueTsc(value) {
   if (probe.error != null || probe.status !== 0 || version === "")
     throw new Error(`vue-tsc is not runnable: ${value}`);
   return { path: candidate, version };
-}
-
-function parseArgs(argv) {
-  const args = {
-    budgetMode: "enforce",
-    registry: defaultRegistry,
-    reportDir: null,
-    shardCount: 1,
-    shardIndex: 0,
-    vueTscBin: null,
-  };
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    const value = () => {
-      if (argv[index + 1] == null) throw new Error(`${arg} requires a value`);
-      return argv[++index];
-    };
-    if (arg === "--budget-mode") args.budgetMode = parseBudgetMode(value());
-    else if (arg === "--registry") args.registry = resolve(repoRoot, value());
-    else if (arg === "--report-dir") args.reportDir = resolve(repoRoot, value());
-    else if (arg === "--shard-count") args.shardCount = integer(value(), arg, 1);
-    else if (arg === "--shard-index") args.shardIndex = integer(value(), arg, 0);
-    else if (arg === "--vue-tsc-bin") args.vueTscBin = value();
-    else throw new Error(`Unknown argument: ${arg}`);
-  }
-  if (args.reportDir == null) throw new Error("--report-dir is required");
-  if (args.vueTscBin == null) throw new Error("--vue-tsc-bin is required");
-  if (args.shardIndex >= args.shardCount) {
-    throw new Error("--shard-index must be less than --shard-count");
-  }
-  return args;
-}
-
-function integer(value, name, minimum) {
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < minimum) {
-    throw new Error(`${name} must be an integer >= ${minimum}`);
-  }
-  return parsed;
 }
 
 function readJson(path) {

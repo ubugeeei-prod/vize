@@ -279,6 +279,9 @@ function shardEntries(shard: number): Record<string, string> {
         passed: true,
         file: "src/App.vue",
         span: { line: 3, column: 1 },
+        cleanExpectedDiagnosticPresent: false,
+        expectedDiagnosticMatched: true,
+        repairedExpectedDiagnosticPresent: false,
         states: [
           mutationState("clean", "5".repeat(64), 0, 0, 0),
           mutationState("broken", "6".repeat(64), 1, 0, 0),
@@ -303,15 +306,27 @@ function mutationState(
   falsePositiveCount: number,
   falseNegativeCount: number,
 ) {
-  return {
-    name,
-    sourceSha256,
+  const summary = {
     vizeDiagnosticCount: sharedCount,
     baselineDiagnosticCount: sharedCount,
     sharedCount,
+    messageMismatchCount: 0,
+    documentedDifferenceCount: 0,
     falsePositiveCount,
     falseNegativeCount,
   };
+  return {
+    name,
+    sourceSha256,
+    ...summary,
+    observed: summary,
+    vize: mutationRun("vize", falsePositiveCount > 0 ? 1 : 0),
+    baseline: mutationRun("vue-tsc", falseNegativeCount > 0 ? 2 : 0),
+  };
+}
+
+function mutationRun(command: string, exitCode: number) {
+  return { command, exitCode, stdoutSha256: "8".repeat(64), stderrSha256: "9".repeat(64) };
 }
 
 function mutateDivergence(entries: Record<string, string>, mutate: (artifact: any) => void) {

@@ -9,6 +9,7 @@ import {
   root,
   run,
   setup,
+  unusableFailure,
   updateJson,
   writeJson,
   writeVueTsc,
@@ -201,6 +202,41 @@ test("typecheck divergence report rejects unsupported baseline exits and output"
       const result = run(fixture);
       assert.equal(result.status, 1);
       assert.match(result.stderr, message);
+    } finally {
+      cleanup(fixture);
+    }
+  }
+});
+
+test("seeded mutation oracle fails when either checker misses or mismatches the probe", () => {
+  for (const [label, options, expected] of [
+    ["vize missing", { vizeMutation: "missing" }, { fp: 0, fn: 1, mm: 0 }],
+    ["vue-tsc missing", { baselineMutation: "missing" }, { fp: 1, fn: 0, mm: 0 }],
+    ["vize mismatch", { vizeMutation: "mismatch" }, { fp: 0, fn: 0, mm: 1 }],
+    ["vue-tsc mismatch", { baselineMutation: "mismatch" }, { fp: 0, fn: 0, mm: 1 }],
+  ] as const) {
+    const fixture = setup(options);
+    try {
+      const result = run(fixture);
+      assert.equal(result.status, 1, label);
+      assert.equal(
+        result.stderr,
+        `${unusableFailure(
+          "seeded mutation oracle did not produce one shared broken diagnostic and clean repair",
+        )}\n`,
+      );
+      assert.equal(
+        fs.readFileSync(path.join(fixture.fixtureRoot, "src", "App.vue"), "utf8"),
+        "<template />\n",
+      );
+      const oracle = readJson(
+        path.join(fixture.reportDir, "fixture-typecheck-divergence.json"),
+      ).mutationOracle;
+      assert.equal(oracle.passed, false, label);
+      assert.equal(oracle.expectedDiagnosticMatched, false, label);
+      assert.equal(oracle.states[1].falsePositiveCount, expected.fp, label);
+      assert.equal(oracle.states[1].falseNegativeCount, expected.fn, label);
+      assert.equal(oracle.states[1].messageMismatchCount, expected.mm, label);
     } finally {
       cleanup(fixture);
     }

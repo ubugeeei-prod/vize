@@ -151,20 +151,61 @@ function assertReleaseMutationOracle(artifactName, mutationOracle) {
     mutationOracle.version !== 1 ||
     mutationOracle.passed !== true ||
     mutationOracle.verdict !== "passed" ||
+    mutationOracle.cleanExpectedDiagnosticPresent !== false ||
+    mutationOracle.expectedDiagnosticMatched !== true ||
+    mutationOracle.repairedExpectedDiagnosticPresent !== false ||
     clean?.name !== "clean" ||
     broken?.name !== "broken" ||
     repaired?.name !== "repaired" ||
+    !hasMutationStateEvidence(clean) ||
+    !hasMutationStateEvidence(broken) ||
+    !hasMutationStateEvidence(repaired) ||
     clean.falsePositiveCount !== 0 ||
     clean.falseNegativeCount !== 0 ||
     broken.sharedCount !== 1 ||
+    broken.messageMismatchCount !== 0 ||
+    broken.documentedDifferenceCount !== 0 ||
     broken.falsePositiveCount !== 0 ||
     broken.falseNegativeCount !== 0 ||
     repaired.sourceSha256 !== clean.sourceSha256 ||
+    repaired.sharedCount !== 0 ||
+    repaired.messageMismatchCount !== 0 ||
+    repaired.documentedDifferenceCount !== 0 ||
     repaired.falsePositiveCount !== 0 ||
     repaired.falseNegativeCount !== 0
   ) {
     throw new Error(`${artifactName} has no passing seeded mutation oracle`);
   }
+}
+
+function hasMutationStateEvidence(state) {
+  return (
+    hasSummaryEvidence(state.observed) &&
+    hasRunEvidence(state.vize) &&
+    hasRunEvidence(state.baseline)
+  );
+}
+
+function hasSummaryEvidence(summary) {
+  return [
+    "vizeDiagnosticCount",
+    "baselineDiagnosticCount",
+    "sharedCount",
+    "messageMismatchCount",
+    "documentedDifferenceCount",
+    "falsePositiveCount",
+    "falseNegativeCount",
+  ].every((key) => Number.isSafeInteger(summary?.[key]) && summary[key] >= 0);
+}
+
+function hasRunEvidence(run) {
+  return (
+    typeof run?.command === "string" &&
+    run.command.length > 0 &&
+    Number.isSafeInteger(run.exitCode) &&
+    isSha256(run.stdoutSha256) &&
+    isSha256(run.stderrSha256)
+  );
 }
 
 function assertReleaseDependencyLink({ artifactName, divergence, dependency, dependencySha256 }) {

@@ -13,6 +13,14 @@ import {
   collectTypecheckerAuthoredPaths,
   collectVueInputPaths,
 } from "../../../tools/fixtures/tool-matrix-inputs.mjs";
+import {
+  type MutationDiagnosticMode,
+  writeVize,
+  writeVueTsc,
+  writeVueTscFixture,
+} from "./typecheck-divergence-checker-fakes.ts";
+
+export { writeVueTsc };
 
 /**
  * Scaffolding shared by every `tools/fixtures/typecheck-divergence-report.mjs`
@@ -60,11 +68,17 @@ export type FixtureOptions = {
   baselineOutput?: string;
   /** Vue source files emitted by the fake `vue-tsc --listFiles` run. */
   baselineFiles?: string[];
+  /** How the fake Vize binary reports the seeded mutation during oracle runs. */
+  vizeMutation?: MutationDiagnosticMode;
+  /** How the fake vue-tsc binary reports the seeded mutation during oracle runs. */
+  baselineMutation?: MutationDiagnosticMode;
 };
 
 export function setup(options: FixtureOptions = {}) {
   const vizeDiagnostics = options.vizeDiagnostics ?? [sharedVizeDiagnostic];
   const baselineOutput = options.baselineOutput ?? sharedBaselineOutput;
+  const vizeMutation = options.vizeMutation ?? "match";
+  const baselineMutation = options.baselineMutation ?? "match";
   const fixtureRoot = fs.mkdtempSync(
     path.join(root, "tests", "_fixtures", "typecheck-divergence-"),
   );
@@ -180,30 +194,33 @@ export function setup(options: FixtureOptions = {}) {
     },
     baselinePrepare: null,
   });
+  const vize = path.join(fakeDir, "vize.mjs");
   const vueTsc = path.join(fakeDir, "vue-tsc.mjs");
   const invocationPath = path.join(fakeDir, "invocation.json");
-  writeVueTsc(
+  writeVize(vize, {
+    baselineDiagnostics: vizeDiagnostics,
+    mutation: vizeMutation,
+  });
+  writeVueTscFixture(
     vueTsc,
-    `process.stdout.write(${JSON.stringify(
-      `${baselineOutput}${(options.baselineFiles ?? ["src/App.vue"])
-        .map((file) => `${path.join(fixtureRoot, file)}\n`)
-        .join("")}`,
-    )}); process.exit(2);`,
+    {
+      baselineOutput,
+      files: options.baselineFiles ?? ["src/App.vue"],
+      fixtureRoot,
+      mutation: baselineMutation,
+    },
     invocationPath,
   );
-  return { fixtureRoot, reportDir, fakeDir, registryPath, outputPath, vueTsc, invocationPath };
-}
-
-export function writeVueTsc(pathname: string, runBody: string, invocationPath?: string) {
-  const recordInvocation =
-    invocationPath == null
-      ? ""
-      : `fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }));`;
-  fs.writeFileSync(
-    pathname,
-    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log("3.3.4"); process.exit(0); }\n${recordInvocation}\n${runBody}\n`,
-  );
-  fs.chmodSync(pathname, 0o755);
+  return {
+    fixtureRoot,
+    reportDir,
+    fakeDir,
+    registryPath,
+    outputPath,
+    vize,
+    vueTsc,
+    invocationPath,
+  };
 }
 
 export function run(
@@ -219,6 +236,8 @@ export function run(
       fixture.registryPath,
       "--report-dir",
       fixture.reportDir,
+      "--vize-bin",
+      fixture.vize,
       "--vue-tsc-bin",
       fixture.vueTsc,
       ...extraArgs,
