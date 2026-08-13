@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { nativeReleasePlatforms } from "../../tools/github/release-platforms.mjs";
 import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("release workflow explicitly installs matrix Rust targets", () => {
@@ -162,10 +163,10 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
 
 test("release workflow builds native targets on MoonBit-supported runners", () => {
   const releasePlatforms = readRepoFile("tools", "github", "release-platforms.mjs");
-
-  assert.doesNotMatch(
-    releasePlatforms,
-    /host:\s*"macos-15-intel"[\s\S]*target:\s*"x86_64-apple-darwin"/,
+  const nativeHosts = new Map(nativeReleasePlatforms.map(({ host, target }) => [target, host]));
+  assert.notEqual(
+    nativeHosts.get("x86_64-apple-darwin"),
+    "macos-15-intel",
     "MoonBit native scripts cannot run on macOS Intel runners",
   );
 

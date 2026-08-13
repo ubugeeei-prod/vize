@@ -14,11 +14,12 @@ export const slowNapiPackageDirs = new Map([
   ["aarch64-pc-windows-msvc", "win32-arm64-msvc"],
 ]);
 
-// Temporary hosted-runner fallback: restore macos-15/ubuntu-24.04/ubuntu-24.04-arm
-// to blacksmith-12vcpu-macos-15/blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm.
+// Temporary hosted-runner fallback:
+// - restore macos-15-intel/macos-15 to blacksmith-12vcpu-macos-15
+// - restore ubuntu-24.04/ubuntu-24.04-arm to blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm
 export const cliReleasePlatforms = [
   {
-    host: "macos-15",
+    host: "macos-15-intel",
     target: "x86_64-apple-darwin",
     archive: "vize-x86_64-apple-darwin.tar.gz",
   },
