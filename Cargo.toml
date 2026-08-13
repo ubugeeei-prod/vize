@@ -23,6 +23,7 @@ members = [
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
+  "benchmarks/davinci_harness",
   "benchmarks/vize",
   "tests/vize_test_runner",
 ]

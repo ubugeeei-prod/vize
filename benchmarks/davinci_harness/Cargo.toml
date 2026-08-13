@@ -1,0 +1,29 @@
+[package]
+name = "davinci_harness"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Davinci bench harness - criterion wrapper with allocation and RSS metrics"
+publish = false
+autobenches = false
+metadata.vize.stability = "experimental"
+
+[dependencies]
+criterion = { workspace = true }
+mimalloc = { workspace = true }
+regex-lite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+libc = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[[bench]]
+name = "selfcheck"
+harness = false

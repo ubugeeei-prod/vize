@@ -1,6 +1,9 @@
 # Rust
 target/
 
+# Davinci bench harness run output (committed baselines live under baseline/)
+bench/results/davinci/*.json
+
 # Node.js
 node_modules/
 .mooncakes/

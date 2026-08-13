@@ -6,6 +6,9 @@
     "access": "public",
     "provenance": true
   },
+  "scripts": {
+    "bench:davinci": "cargo bench -p davinci_harness"
+  },
   "devDependencies": {
     "@babel/core": "catalog:babel-jsx-oracle",
     "@babel/plugin-syntax-typescript": "catalog:babel-jsx-oracle",
