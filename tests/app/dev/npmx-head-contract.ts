@@ -11,6 +11,8 @@ export type NpmxHeadFixtureContent = {
   aboutTitle: string;
   accessibilityDescription: string;
   accessibilityTitle: string;
+  docsOgTitle: string;
+  docsTitle: string;
 };
 
 export const NPMX_HEAD_SOURCE_CONTRACTS = {
@@ -30,6 +32,7 @@ export const NPMX_HEAD_SOURCE_CONTRACTS = {
       "alias: ['/package/docs/:path+', '/docs/:path+']",
       "scrollMargin: 180",
       "useSeoMeta({",
+      "ogTitle: () => t('package.docs.og_title'",
     ],
   },
   "app/pages/package/[[org]]/[name].vue": {
@@ -86,20 +89,35 @@ function readStringPath(
   return cursor;
 }
 
-function interpolateNpmxAppName(message: string): string {
-  return message.replaceAll("{app}", "npmx");
+function formatFixtureMessage(message: string, replacements: Record<string, string>): string {
+  return message.replaceAll(/\{([^{}]+)\}/g, (placeholder, key: string) => {
+    const replacement = replacements[key];
+    return replacement ?? placeholder;
+  });
 }
 
 export function readNpmxHeadFixtureContent(fixtureRoot: string): NpmxHeadFixtureContent {
   const localePath = path.join(fixtureRoot, "i18n/locales/en.json");
   const locale = readJsonObject(localePath);
+  const docsPackageName = "nuxt";
+  const docsPackageVersion = "4.0.0";
+  const docsVersionName = `${docsPackageName}@${docsPackageVersion}`;
   return {
     aboutDescription: readStringPath(locale, ["about", "meta_description"], localePath),
     aboutTitle: readStringPath(locale, ["about", "title"], localePath),
-    accessibilityDescription: interpolateNpmxAppName(
+    accessibilityDescription: formatFixtureMessage(
       readStringPath(locale, ["a11y", "welcome"], localePath),
+      { app: "npmx" },
     ),
     accessibilityTitle: readStringPath(locale, ["a11y", "title"], localePath),
+    docsOgTitle: formatFixtureMessage(
+      readStringPath(locale, ["package", "docs", "og_title"], localePath),
+      { name: docsPackageName },
+    ),
+    docsTitle: formatFixtureMessage(
+      readStringPath(locale, ["package", "docs", "page_title_version"], localePath),
+      { name: docsVersionName },
+    ),
   };
 }
 

@@ -55,6 +55,12 @@ test("npmx head fixture content comes from the pinned locale file", (t) => {
         title: "fixture accessibility",
         welcome: "We want {app} to stay source-owned.",
       },
+      package: {
+        docs: {
+          og_title: "{name} - Fixture Docs",
+          page_title_version: "{name} fixture docs - npmx",
+        },
+      },
     }),
   );
 
@@ -63,6 +69,8 @@ test("npmx head fixture content comes from the pinned locale file", (t) => {
     aboutTitle: "Fixture About",
     accessibilityDescription: "We want npmx to stay source-owned.",
     accessibilityTitle: "fixture accessibility",
+    docsOgTitle: "nuxt - Fixture Docs",
+    docsTitle: "nuxt@4.0.0 fixture docs - npmx",
   });
 });
 

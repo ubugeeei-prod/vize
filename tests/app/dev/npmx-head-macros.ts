@@ -26,7 +26,12 @@ export type RouteSnapshot = {
 function expectedHead(
   title: string,
   description: string,
-  options: { canonical?: string; includeSocial?: boolean } = {},
+  options: {
+    canonical?: string;
+    includeSocial?: boolean;
+    ogTitle?: string;
+    twitterTitle?: string;
+  } = {},
 ): HeadState {
   const includeSocial = options.includeSocial ?? true;
   return {
@@ -37,10 +42,10 @@ function expectedHead(
     htmlKeyboardHints: "false",
     htmlLang: "en-US",
     ogDescription: includeSocial ? [description] : [],
-    ogTitle: includeSocial ? [title] : [],
+    ogTitle: includeSocial ? [options.ogTitle ?? title] : [],
     title: [title],
     twitterDescription: includeSocial ? [description] : [],
-    twitterTitle: includeSocial ? [title] : [],
+    twitterTitle: includeSocial ? [options.twitterTitle ?? title] : [],
   };
 }
 
@@ -132,7 +137,11 @@ export async function navigateWithNuxtRouter(page: Page, targetPath: string): Pr
   await expect.poll(() => new URL(page.url()).pathname, { timeout: 20_000 }).toBe(targetPath);
 }
 
-async function expectDocsRoute(page: Page, requestedPath: string): Promise<void> {
+async function expectDocsRoute(
+  page: Page,
+  requestedPath: string,
+  expectedDocsHead: HeadState,
+): Promise<void> {
   await navigateWithNuxtRouter(page, requestedPath);
   const route = await readCurrentRoute(page);
   expect(route).toEqual({
@@ -147,7 +156,7 @@ async function expectDocsRoute(page: Page, requestedPath: string): Promise<void>
     params: { path: ["nuxt", "v", "4.0.0"] },
     path: requestedPath,
   });
-  await expectDocumentHead(page, expectedHead("nuxt@4.0.0 docs - npmx", "MIT"));
+  await expectDocumentHead(page, expectedDocsHead);
 }
 
 export async function verifyNpmxHeadMacros(
@@ -168,13 +177,14 @@ export async function verifyNpmxHeadMacros(
       includeSocial: false,
     },
   );
+  const docsHead = expectedHead(fixtureContent.docsTitle, "MIT", {
+    ogTitle: fixtureContent.docsOgTitle,
+  });
 
   try {
     expect(await fetchHead(page, `${baseUrl}/about`)).toEqual(aboutHead);
     expect(await fetchHead(page, `${baseUrl}/accessibility`)).toEqual(accessibilityHead);
-    expect(await fetchHead(page, `${baseUrl}/docs/nuxt/v/4.0.0`)).toEqual(
-      expectedHead("nuxt@4.0.0 docs - npmx", "MIT"),
-    );
+    expect(await fetchHead(page, `${baseUrl}/docs/nuxt/v/4.0.0`)).toEqual(docsHead);
 
     await page.goto(`${baseUrl}/about`, { waitUntil: "load", timeout: 30_000 });
     await readCurrentRoute(page);
@@ -205,7 +215,7 @@ export async function verifyNpmxHeadMacros(
     ]) {
       await navigateWithNuxtRouter(page, "/about");
       await expectDocumentHead(page, aboutHead);
-      await expectDocsRoute(page, docsPath);
+      await expectDocsRoute(page, docsPath, docsHead);
     }
 
     await navigateWithNuxtRouter(page, "/accessibility");
