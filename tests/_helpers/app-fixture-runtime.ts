@@ -58,8 +58,14 @@ export function execNpxCommand(
   });
 }
 
+// The App E2E row itself runs inside a cacheable `vp run` task, so the runner exports the
+// outer file-spy hooks (LD_PRELOAD/FSPY) to every child process. npmx.dev pins its own,
+// different vite-plus version, and letting it attach a second spy layer on top of the outer
+// one makes its task spawn fail with `Invalid argument (os error 22)`. Disabling the cache
+// for these generator tasks keeps the spawn plain, matching the `cache: false` workaround
+// upstream npmx.dev applies for the same failure.
 export function npmxGeneratorTaskArgs(task: "generate:lexicons" | "generate:sprite"): string[] {
-  return ["-y", "pnpm@10", "exec", "vp", "run", task];
+  return ["-y", "pnpm@10", "exec", "vp", "run", "--no-cache", task];
 }
 
 export function writeFrontendPhpconStaffRoute(

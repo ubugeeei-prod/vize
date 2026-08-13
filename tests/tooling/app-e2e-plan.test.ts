@@ -118,6 +118,7 @@ test("upstream app fixtures keep deterministic CI setup", () => {
     "exec",
     "vp",
     "run",
+    "--no-cache",
     "generate:lexicons",
   ]);
   assert.deepEqual(npmxGeneratorTaskArgs("generate:sprite"), [
@@ -126,6 +127,7 @@ test("upstream app fixtures keep deterministic CI setup", () => {
     "exec",
     "vp",
     "run",
+    "--no-cache",
     "generate:sprite",
   ]);
   assert.equal(npmxApp.env?.VIZE_E2E_DISABLE_LUNARIA, "1");
