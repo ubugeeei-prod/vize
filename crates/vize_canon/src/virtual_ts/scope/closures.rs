@@ -24,6 +24,9 @@ use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOpti
 use super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::event_scope::generate_event_handler_scope;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
+use super::slot_outlet_props::{
+    collect_slot_outlets_by_scope, emit_slot_outlet_helpers, generate_scope_slot_outlet_checks,
+};
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope};
 
@@ -38,6 +41,7 @@ pub(crate) fn generate_scope_closures(
     options: ScopeGenerationOptions<'_, '_>,
 ) {
     let check_options = options.check_options;
+    let check_props = check_options.check_props;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
     let checks = check_tables.as_checks();
@@ -58,6 +62,14 @@ pub(crate) fn generate_scope_closures(
         profile!("canon.virtual_ts.component_prop_expression_ranges", {
             collect_component_prop_expression_ranges(summary, virtual_ts_options, &options)
         });
+    let slot_outlets_by_scope = if check_props {
+        profile!("canon.virtual_ts.collect_slot_outlets", {
+            collect_slot_outlets_by_scope(summary, options.template_ast)
+        })
+    } else {
+        FxHashMap::default()
+    };
+    emit_slot_outlet_helpers(ts, &slot_outlets_by_scope);
 
     // Build scope tree: parent_scope_id -> Vec<child ScopeId>
     let children_map: FxHashMap<u32, Vec<ScopeId>> =
@@ -132,15 +144,27 @@ pub(crate) fn generate_scope_closures(
         check_unresolved_global_components: options.check_unresolved_global_components,
         legacy_vue2: options.legacy_vue2,
     };
-    let check_props = check_options.check_props;
     let usages = check_props.then(|| collect_checkable_usages(&props_ctx));
     if let Some(usages) = &usages {
         emit_event_references(ts, mappings, &props_ctx, usages);
     }
     for scope in summary.scopes.iter() {
         let scope_id = scope.id.as_u32();
+        let ctx = ScopeGenContext {
+            summary,
+            virtual_ts_options,
+            expressions_by_scope: &expressions_by_scope,
+            skipped_expression_ranges: &skipped_expression_ranges,
+            children_map: &children_map,
+            slot_outlets_by_scope: &slot_outlets_by_scope,
+            template_prop_names,
+            checks,
+            template_source: options.template_ast.map(|root| root.source.as_str()),
+            template_offset,
+            check_options,
+            legacy_vue2: options.legacy_vue2,
+        };
 
-        // Skip scopes that are nested inside a closure parent
         if nested_scope_ids.contains(&scope.id) {
             continue;
         }
@@ -169,21 +193,9 @@ pub(crate) fn generate_scope_closures(
                     ),
                 );
             }
+            generate_scope_slot_outlet_checks(ts, mappings, scope_id, &ctx, "  ");
             continue;
         }
-        let ctx = ScopeGenContext {
-            summary,
-            virtual_ts_options,
-            expressions_by_scope: &expressions_by_scope,
-            skipped_expression_ranges: &skipped_expression_ranges,
-            children_map: &children_map,
-            template_prop_names,
-            checks,
-            template_source: options.template_ast.map(|root| root.source.as_str()),
-            template_offset,
-            check_options,
-            legacy_vue2: options.legacy_vue2,
-        };
         profile!(
             "canon.virtual_ts.scope_node",
             generate_scope_node(ts, mappings, &ctx, scope, "  ")
@@ -290,6 +302,7 @@ pub(super) fn generate_scope_node(
                     enclosing_guard,
                 );
             }
+            generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, &callback_indent);
 
             // Recursively generate child scopes inside this closure
             profile!(
@@ -331,6 +344,7 @@ pub(super) fn generate_scope_node(
                     ),
                 );
             }
+            generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, indent);
         }
     }
 }

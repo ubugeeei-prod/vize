@@ -33,7 +33,7 @@ fn push_ts_string_literal(out: &mut String, value: &str) {
     out.push('"');
 }
 
-pub(super) fn generated_prop_value(
+pub(crate) fn generated_prop_value(
     prop: &PassedProp,
     template_prop_names: &FxHashSet<String>,
 ) -> Option<String> {
@@ -64,7 +64,7 @@ pub(super) fn generated_prop_value(
 /// element, or spread). OXC distinguishes that shape from commas nested in a
 /// call, array, object, or already-parenthesized sequence. The cheap byte check
 /// only skips parsing expressions that cannot possibly be sequences.
-pub(super) fn append_prop_value(ts: &mut String, value: &str) -> Range<usize> {
+pub(crate) fn append_prop_value(ts: &mut String, value: &str) -> Range<usize> {
     let needs_grouping = value.as_bytes().contains(&b',') && is_top_level_sequence(value);
     if needs_grouping {
         ts.push('(');
@@ -86,7 +86,7 @@ fn is_top_level_sequence(value: &str) -> bool {
     )
 }
 
-pub(super) fn prop_value_source_range(
+pub(crate) fn prop_value_source_range(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
 ) -> Option<std::ops::Range<usize>> {
@@ -107,7 +107,7 @@ pub(super) fn prop_value_source_range(
 ///
 /// vue-tsc anchors prop-type diagnostics at that token, so the synthetic check
 /// identifier maps here for byte-identical positions.
-pub(super) fn prop_name_source_range(
+pub(crate) fn prop_name_source_range(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
 ) -> Option<std::ops::Range<usize>> {

@@ -1,0 +1,225 @@
+use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_croquis::{
+    Croquis, ScopeId, TemplateExpression, TemplateExpressionKind,
+    croquis::{PassedProp, SpreadProp},
+};
+use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
+
+use super::SlotOutlet;
+
+pub(in crate::virtual_ts::scope) fn collect_slot_outlets_by_scope(
+    summary: &Croquis,
+    root: Option<&RootNode<'_>>,
+) -> FxHashMap<u32, Vec<SlotOutlet>> {
+    let mut outlets = Vec::new();
+    let Some(root) = root else {
+        return FxHashMap::default();
+    };
+    for child in &root.children {
+        collect_child_outlets(summary, child, &mut outlets);
+    }
+
+    let mut by_scope: FxHashMap<u32, Vec<SlotOutlet>> = FxHashMap::default();
+    for (index, mut outlet) in outlets.into_iter().enumerate() {
+        outlet.index = index;
+        by_scope.entry(outlet.scope_id).or_default().push(outlet);
+    }
+    by_scope
+}
+
+pub(in crate::virtual_ts::scope) fn collect_slot_outlet_expression_ranges(
+    summary: &Croquis,
+    root: Option<&RootNode<'_>>,
+) -> FxHashSet<(u32, u32)> {
+    let mut ranges = FxHashSet::default();
+    for outlets in collect_slot_outlets_by_scope(summary, root).into_values() {
+        for outlet in outlets {
+            for prop in outlet.props {
+                if prop.is_dynamic
+                    && let Some(value) = prop.value
+                    && let Some(expr) = summary.template_expressions.iter().find(|expr| {
+                        expr.kind == TemplateExpressionKind::VBind
+                            && expr.start >= prop.start
+                            && expr.end <= prop.end
+                            && expr.content.as_str().trim() == value.as_str().trim()
+                    })
+                {
+                    ranges.insert((expr.start, expr.end));
+                }
+            }
+            for spread in outlet.spread_props {
+                if let Some(expr) = summary.template_expressions.iter().find(|expr| {
+                    expr.kind == TemplateExpressionKind::VBind
+                        && expr.start >= spread.start
+                        && expr.end <= spread.end
+                        && expr.content.as_str().trim() == spread.expression.as_str().trim()
+                }) {
+                    ranges.insert((expr.start, expr.end));
+                }
+            }
+        }
+    }
+    ranges
+}
+
+fn collect_child_outlets(
+    summary: &Croquis,
+    child: &TemplateChildNode<'_>,
+    outlets: &mut Vec<SlotOutlet>,
+) {
+    match child {
+        TemplateChildNode::Element(element) => collect_element_outlets(summary, element, outlets),
+        TemplateChildNode::If(node) => {
+            for branch in &node.branches {
+                for child in &branch.children {
+                    collect_child_outlets(summary, child, outlets);
+                }
+            }
+        }
+        TemplateChildNode::IfBranch(branch) => {
+            for child in &branch.children {
+                collect_child_outlets(summary, child, outlets);
+            }
+        }
+        TemplateChildNode::For(node) => {
+            for child in &node.children {
+                collect_child_outlets(summary, child, outlets);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_element_outlets(
+    summary: &Croquis,
+    element: &ElementNode<'_>,
+    outlets: &mut Vec<SlotOutlet>,
+) {
+    if element.tag == "slot"
+        && let Some(outlet) = slot_outlet(summary, element)
+    {
+        outlets.push(outlet);
+    }
+    for child in &element.children {
+        collect_child_outlets(summary, child, outlets);
+    }
+}
+
+fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutlet> {
+    let mut name = CompactString::const_new("default");
+    let mut name_is_dynamic = false;
+    let mut props = Vec::new();
+    let mut spread_props = Vec::new();
+    let mut scope = None;
+
+    for prop in &element.props {
+        match prop {
+            PropNode::Attribute(attr) => {
+                if attr.name == "name" {
+                    if let Some(value) = attr.value.as_ref() {
+                        name = value.content.clone();
+                    }
+                    continue;
+                }
+                props.push(PassedProp {
+                    name: attr.name.clone(),
+                    name_is_dynamic: false,
+                    value: attr.value.as_ref().map(|value| value.content.clone()),
+                    start: attr.loc.start.offset,
+                    end: attr.loc.end.offset,
+                    is_dynamic: false,
+                });
+            }
+            PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
+                if let Some(ref arg) = directive.arg {
+                    let (prop_name, prop_name_is_dynamic) = directive_argument(arg);
+                    let value = directive
+                        .exp
+                        .as_ref()
+                        .map(|exp| CompactString::new(expression_content(exp)))
+                        .or_else(|| Some(prop_name.clone()));
+                    if prop_name == "name" && !prop_name_is_dynamic {
+                        name_is_dynamic = true;
+                        record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
+                        continue;
+                    }
+                    if prop_name_is_dynamic {
+                        continue;
+                    }
+                    record_expression_scope(summary, directive.exp.as_ref(), &mut scope);
+                    props.push(PassedProp {
+                        name: prop_name,
+                        name_is_dynamic: false,
+                        value,
+                        start: directive.loc.start.offset,
+                        end: directive.loc.end.offset,
+                        is_dynamic: true,
+                    });
+                } else if let Some(ref exp) = directive.exp {
+                    record_expression_scope(summary, Some(exp), &mut scope);
+                    spread_props.push(SpreadProp {
+                        expression: CompactString::new(expression_content(exp)),
+                        start: directive.loc.start.offset,
+                        end: directive.loc.end.offset,
+                    });
+                }
+            }
+            PropNode::Directive(_) => {}
+        }
+    }
+
+    if props.is_empty() && spread_props.is_empty() {
+        return None;
+    }
+    let (scope_id, vif_guard) = scope.unwrap_or((ScopeId::ROOT.as_u32(), None));
+    Some(SlotOutlet {
+        index: 0,
+        scope_id,
+        name,
+        name_is_dynamic,
+        start: element.loc.start.offset,
+        vif_guard,
+        props,
+        spread_props,
+    })
+}
+
+fn directive_argument(arg: &ExpressionNode<'_>) -> (CompactString, bool) {
+    match arg {
+        ExpressionNode::Simple(simple) => (simple.content.clone(), !simple.is_static),
+        ExpressionNode::Compound(compound) => {
+            (CompactString::new(compound.loc.source.as_str()), true)
+        }
+    }
+}
+
+fn record_expression_scope(
+    summary: &Croquis,
+    exp: Option<&ExpressionNode<'_>>,
+    scope: &mut Option<(u32, Option<CompactString>)>,
+) {
+    if scope.is_some() {
+        return;
+    }
+    let Some(exp) = exp else {
+        return;
+    };
+    let loc = exp.loc();
+    let Some(expr) = template_expression(summary, loc.start.offset, loc.end.offset) else {
+        return;
+    };
+    *scope = Some((expr.scope_id.as_u32(), expr.vif_guard.clone()));
+}
+
+fn template_expression(summary: &Croquis, start: u32, end: u32) -> Option<&TemplateExpression> {
+    summary.template_expressions.iter().find(|expr| {
+        expr.kind == TemplateExpressionKind::VBind && expr.start == start && expr.end == end
+    })
+}
+
+fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {
+    match exp {
+        ExpressionNode::Simple(simple) => simple.content.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+    }
+}

@@ -27,6 +27,7 @@ use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 use super::children::generate_child_scopes;
 use super::context::{ScopeGenContext, VForPropsContext};
 use super::emit::{component_binding_reference, emit_slot_function_open, slot_props_type};
+use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 
 /// The slot-payload aliases, emitted per file rather than hoisted into the
 /// shared preamble.
@@ -249,6 +250,7 @@ pub(super) fn generate_v_slot_scope(
             ),
         );
     }
+    generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, inner_indent);
 
     // Recursively generate child scopes inside this closure
     profile!(

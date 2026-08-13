@@ -1,0 +1,271 @@
+use std::ops::Range;
+
+use vize_carton::{FxHashMap, FxHashSet, String, append};
+use vize_croquis::{
+    Croquis,
+    croquis::{PassedProp, SpreadProp},
+};
+
+use crate::virtual_ts::{
+    expressions::{
+        ComponentPropSource, append_prop_value, generated_prop_value, prop_name_source_range,
+        prop_value_source_range,
+    },
+    helpers::to_camel_case,
+    types::{VizeMapping, VizeSubSpan},
+};
+
+use super::super::context::ScopeGenContext;
+use super::SlotOutlet;
+
+struct SlotOutletCheckContext<'a> {
+    slot_outlets_by_scope: &'a FxHashMap<u32, Vec<SlotOutlet>>,
+    template_prop_names: &'a FxHashSet<String>,
+    source_context: ComponentPropSource<'a>,
+    slots_type_ref: &'a str,
+    indent: &'a str,
+}
+
+pub(in crate::virtual_ts::scope) fn emit_slot_outlet_helpers(
+    ts: &mut String,
+    slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
+) {
+    let mut needs_static = false;
+    let mut needs_dynamic = false;
+    for outlet in slot_outlets_by_scope
+        .values()
+        .flat_map(|outlets| outlets.iter())
+    {
+        if outlet.name_is_dynamic {
+            needs_dynamic = true;
+        } else {
+            needs_static = true;
+        }
+    }
+    if !needs_static && !needs_dynamic {
+        return;
+    }
+
+    ts.push_str("  type __VizeSlotOutletIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    if needs_static {
+        ts.push_str(
+            "  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = __VizeSlotOutletIsAny<__S> extends true ? any : __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : unknown) : unknown;\n",
+        );
+    }
+    if needs_dynamic {
+        ts.push_str(
+            "  type __VizeAnySlotOutletPayload<__S> = __VizeSlotOutletIsAny<__S> extends true ? any : { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? unknown : __P) : unknown;\n",
+        );
+    }
+}
+
+pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    scope_id: u32,
+    ctx: &ScopeGenContext<'_>,
+    indent: &str,
+) {
+    if !ctx.check_options.check_props {
+        return;
+    }
+    generate_slot_outlet_checks(
+        ts,
+        mappings,
+        scope_id,
+        SlotOutletCheckContext {
+            slot_outlets_by_scope: ctx.slot_outlets_by_scope,
+            template_prop_names: ctx.template_prop_names,
+            source_context: ComponentPropSource::new(
+                ctx.template_source,
+                ctx.template_offset,
+                &ctx.summary.scopes,
+            ),
+            slots_type_ref: slots_type_ref(ctx.summary),
+            indent,
+        },
+    );
+}
+
+fn generate_slot_outlet_checks(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    scope_id: u32,
+    ctx: SlotOutletCheckContext<'_>,
+) {
+    let SlotOutletCheckContext {
+        slot_outlets_by_scope,
+        template_prop_names,
+        source_context,
+        slots_type_ref,
+        indent,
+    } = ctx;
+    let Some(outlets) = slot_outlets_by_scope.get(&scope_id) else {
+        return;
+    };
+
+    for outlet in outlets {
+        if let Some(ref guard) = outlet.vif_guard {
+            append!(*ts, "{indent}if ({guard}) {{\n");
+        }
+        let expr_indent = if outlet.vif_guard.is_some() {
+            let mut nested = String::from(indent);
+            nested.push_str("  ");
+            nested
+        } else {
+            String::from(indent)
+        };
+        let payload_type = outlet_payload_type(outlet, slots_type_ref);
+        append!(
+            *ts,
+            "{expr_indent}((__vize_slot_props: {payload_type}) => {{ void __vize_slot_props; }})(",
+        );
+        let literal_range = append_slot_outlet_literal(
+            ts,
+            mappings,
+            outlet,
+            template_prop_names,
+            source_context,
+            expr_indent.as_str(),
+        );
+        ts.push_str(");\n");
+
+        let tag_src_start = (source_context.offset + outlet.start + 1) as usize;
+        mappings.push(VizeMapping {
+            gen_range: literal_range,
+            src_range: tag_src_start..tag_src_start + "slot".len(),
+            sub_spans: Vec::new(),
+        });
+        if outlet.vif_guard.is_some() {
+            append!(*ts, "{indent}}}\n");
+        }
+    }
+}
+
+fn slots_type_ref(summary: &Croquis) -> &'static str {
+    if summary.macros.define_slots().is_some() && summary.bindings.bindings.contains_key("slots") {
+        "typeof slots"
+    } else {
+        "Slots"
+    }
+}
+
+fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> String {
+    if outlet.name_is_dynamic {
+        return vize_carton::cstr!("__VizeAnySlotOutletPayload<{slots_type_ref}>");
+    }
+
+    let mut name = String::default();
+    append_ts_string_literal(&mut name, outlet.name.as_str());
+    vize_carton::cstr!("__VizeSlotOutletPayload<{slots_type_ref}, {name}>")
+}
+
+fn append_slot_outlet_literal(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    outlet: &SlotOutlet,
+    template_prop_names: &FxHashSet<String>,
+    source_context: ComponentPropSource<'_>,
+    expr_indent: &str,
+) -> Range<usize> {
+    let literal_gen_start = ts.len();
+    ts.push_str("{\n");
+
+    for prop in &outlet.props {
+        let Some(generated_value) = generated_prop_value(prop, template_prop_names) else {
+            continue;
+        };
+        let prop_src_start = (source_context.offset + prop.start) as usize;
+        let prop_src_end = (source_context.offset + prop.end) as usize;
+        append!(*ts, "{expr_indent}  ");
+        let entry_gen_start = ts.len();
+        let camel_prop_name = to_camel_case(prop.name.as_str());
+        append!(*ts, "\"{camel_prop_name}\"");
+        let key_gen_end = ts.len();
+        ts.push_str(": ");
+        let value_gen_range = append_prop_value(ts, generated_value.as_str());
+        let entry_gen_end = ts.len();
+        ts.push_str(",\n");
+        mappings.push(VizeMapping {
+            gen_range: entry_gen_start..entry_gen_end,
+            src_range: prop_src_start..prop_src_end,
+            sub_spans: entry_sub_spans(
+                source_context,
+                prop,
+                entry_gen_start..key_gen_end,
+                value_gen_range,
+            ),
+        });
+    }
+
+    for spread in &outlet.spread_props {
+        append!(*ts, "{expr_indent}  ...");
+        let gen_range = append_prop_value(ts, spread.expression.as_str());
+        ts.push_str(",\n");
+        let source_expression = spread_expression_source_range(source_context, spread);
+        mappings.push(VizeMapping {
+            gen_range: gen_range.clone(),
+            src_range: (source_context.offset + spread.start) as usize
+                ..(source_context.offset + spread.end) as usize,
+            sub_spans: source_expression.map_or_else(Vec::new, |src_range| {
+                vec![VizeSubSpan {
+                    gen_range,
+                    src_range,
+                }]
+            }),
+        });
+    }
+
+    append!(*ts, "{expr_indent}}}");
+    literal_gen_start..ts.len()
+}
+
+fn entry_sub_spans(
+    source_context: ComponentPropSource<'_>,
+    prop: &PassedProp,
+    key_gen_range: Range<usize>,
+    value_gen_range: Range<usize>,
+) -> Vec<VizeSubSpan> {
+    let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    let Some(value_src_range) = prop_value_source_range(source_context, prop) else {
+        return Vec::new();
+    };
+    vec![
+        VizeSubSpan {
+            gen_range: key_gen_range,
+            src_range: name_src_range,
+        },
+        VizeSubSpan {
+            gen_range: value_gen_range,
+            src_range: value_src_range,
+        },
+    ]
+}
+
+fn spread_expression_source_range(
+    source_context: ComponentPropSource<'_>,
+    spread: &SpreadProp,
+) -> Option<Range<usize>> {
+    let source = source_context.template?;
+    let raw = source.get(spread.start as usize..spread.end as usize)?;
+    let relative_start = raw.rfind(spread.expression.as_str())?;
+    let source_start = source_context.offset as usize + spread.start as usize + relative_start;
+    Some(source_start..source_start + spread.expression.len())
+}
+
+fn append_ts_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            _ => out.push(ch),
+        }
+    }
+    out.push('"');
+}

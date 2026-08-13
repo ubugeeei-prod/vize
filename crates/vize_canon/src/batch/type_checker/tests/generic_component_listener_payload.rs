@@ -120,7 +120,9 @@ function wrong(payload: FormSubmitEvent<{ username: number; password: string }>)
     // `TS2322` at the `submit` of `@submit`, matching how vue-tsc assigns the
     // handler to the child's `onSubmit` prop (#3462). The payload type still
     // comes from the generic instantiated by `:initial-state`, which is what
-    // this case exists to pin.
+    // this case exists to pin. Corsa names the target rest parameter `args`
+    // inside the elaboration; the diagnostic code, anchor and instantiated
+    // payload are the parity surface here.
     assert_eq!(
         snapshot,
         vec![(
@@ -129,7 +131,7 @@ function wrong(payload: FormSubmitEvent<{ username: number; password: string }>)
             String::from(
                 "22:6:error Type '(payload: FormSubmitEvent<{ username: number; password: string; }>) => void' \
                  is not assignable to type '(payload: FormSubmitEvent<{ username: string; password: string; }>) => any'.\n\
-                 Types of parameters 'payload' and 'payload' are incompatible.\n\
+                 Types of parameters 'payload' and 'args' are incompatible.\n\
                  Type 'FormSubmitEvent<{ username: string; password: string; }>' is not assignable to type 'FormSubmitEvent<{ username: number; password: string; }>'.\n\
                  Type '{ username: string; password: string; }' is not assignable to type '{ username: number; password: string; }'.\n\
                  Types of property 'username' are incompatible.\n\
