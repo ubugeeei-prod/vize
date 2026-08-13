@@ -99,7 +99,7 @@ fn bridge_diagnostics_and_hover_reuse_one_standard_editor_lsp_session() {
         .filter(|line| line.contains("--lsp"))
         .count();
     assert!(
-        lsp_launches <= 1,
+        lsp_launches == 1,
         "diagnostics and hover must share one standard LSP session; launches: {lsp_launches}"
     );
     assert!(!child_path.exists());

@@ -68,13 +68,19 @@ async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
 #[cfg(feature = "native")]
 fn typecheck_dependency_watcher_registration() -> Registration {
     let options = DidChangeWatchedFilesRegistrationOptions {
-        watchers: ["**/*.d.{ts,mts,cts}", "**/*.vue", "**/package.json"]
-            .into_iter()
-            .map(|pattern| FileSystemWatcher {
-                glob_pattern: GlobPattern::String(pattern.into()),
-                kind: None,
-            })
-            .collect(),
+        watchers: [
+            "**/*.d.{ts,mts,cts}",
+            "**/*.vue",
+            "**/package.json",
+            "**/tsconfig*.json",
+            "**/jsconfig.json",
+        ]
+        .into_iter()
+        .map(|pattern| FileSystemWatcher {
+            glob_pattern: GlobPattern::String(pattern.into()),
+            kind: None,
+        })
+        .collect(),
     };
     Registration {
         id: "vize-typecheck-dependencies".into(),
@@ -89,7 +95,7 @@ pub(super) async fn did_change_watched_files(
 ) {
     #[cfg(feature = "native")]
     {
-        if changes_invalidate_disk_project_state(&params.changes) {
+        if changes_invalidate_disk_project_state(&server.state, &params.changes) {
             invalidate_corsa_disk_state(&server.state).await;
         }
         // Any watched change can affect an open importer; declaration changes
@@ -122,15 +128,34 @@ pub(super) async fn did_change_watched_files(
 
 /// Whether watched changes moved project state the type checker only sees on disk.
 ///
-/// Editing a `.vue` source reaches the checker through its synchronized virtual
-/// document, so treating those edits as disk changes would retire the reusable
-/// editor session on every save. Everything else is disk-only state: declaration
-/// and manifest edits, plus any create or delete regardless of extension.
+/// Editing an open `.vue` source reaches the checker through its synchronized
+/// virtual document, so treating those edits as disk changes would retire the
+/// reusable editor session on every save. Changed closed `.vue` files are only
+/// visible on disk and must invalidate cached project state just like
+/// declaration, manifest, and configuration changes.
 #[cfg(feature = "native")]
-fn changes_invalidate_disk_project_state(changes: &[FileEvent]) -> bool {
+fn changes_invalidate_disk_project_state(state: &ServerState, changes: &[FileEvent]) -> bool {
     changes.iter().any(|change| {
-        change.typ != FileChangeType::CHANGED || !change.uri.as_str().ends_with(".vue")
+        change.typ != FileChangeType::CHANGED
+            || !change.uri.as_str().ends_with(".vue")
+            || state.documents.version(&change.uri).is_none()
     })
+}
+
+#[cfg(feature = "native")]
+pub(super) async fn invalidate_changed_document_disk_project_state(
+    server: &MaestroServer,
+    uri: &tower_lsp::lsp_types::Url,
+) {
+    if changes_invalidate_disk_project_state(
+        &server.state,
+        &[FileEvent {
+            uri: uri.clone(),
+            typ: FileChangeType::CHANGED,
+        }],
+    ) {
+        invalidate_corsa_disk_state(&server.state).await;
+    }
 }
 
 pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {

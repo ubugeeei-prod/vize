@@ -15,6 +15,8 @@ fn typecheck_watcher_tracks_declarations_vue_sources_and_manifests() {
     assert_eq!(options["watchers"][0]["globPattern"], "**/*.d.{ts,mts,cts}");
     assert_eq!(options["watchers"][1]["globPattern"], "**/*.vue");
     assert_eq!(options["watchers"][2]["globPattern"], "**/package.json");
+    assert_eq!(options["watchers"][3]["globPattern"], "**/tsconfig*.json");
+    assert_eq!(options["watchers"][4]["globPattern"], "**/jsconfig.json");
     for watcher in options["watchers"].as_array().unwrap() {
         assert!(
             watcher.get("kind").is_none(),
@@ -76,25 +78,78 @@ fn vue_file_events_track_only_existing_created_files_and_forget_deletes() {
 fn only_vue_content_changes_keep_the_cached_disk_project_state() {
     let vue = "file:///workspace/src/App.vue";
     let declaration = "file:///workspace/components.d.ts";
+    let tsconfig = "file:///workspace/tsconfig.app.json";
+    let jsconfig = "file:///workspace/jsconfig.json";
     let changed = |uri: &str| FileEvent {
         uri: Url::parse(uri).unwrap(),
         typ: FileChangeType::CHANGED,
     };
+    let state = ServerState::new();
+    let vue_uri = Url::parse(vue).unwrap();
+    state
+        .documents
+        .open(vue_uri.clone(), "<template />\n".into(), 1, "vue".into());
 
-    assert!(!changes_invalidate_disk_project_state(&[changed(vue)]));
-    assert!(changes_invalidate_disk_project_state(&[changed(
-        declaration
-    )]));
-    assert!(changes_invalidate_disk_project_state(&[FileEvent {
-        uri: Url::parse(vue).unwrap(),
-        typ: FileChangeType::CREATED,
-    }]));
-    assert!(changes_invalidate_disk_project_state(&[FileEvent {
-        uri: Url::parse(vue).unwrap(),
-        typ: FileChangeType::DELETED,
-    }]));
-    assert!(changes_invalidate_disk_project_state(&[
-        changed(vue),
-        changed(declaration)
-    ]));
+    assert!(!changes_invalidate_disk_project_state(
+        &state,
+        &[changed(vue)]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[changed(declaration)]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[changed(tsconfig)]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[changed(jsconfig)]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[FileEvent {
+            uri: vue_uri.clone(),
+            typ: FileChangeType::CREATED,
+        }]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[FileEvent {
+            uri: vue_uri,
+            typ: FileChangeType::DELETED,
+        }]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[changed(vue), changed(declaration)]
+    ));
+}
+
+#[test]
+fn closed_vue_content_changes_invalidate_the_cached_disk_project_state() {
+    let root = tempfile::tempdir().unwrap();
+    let open_path = root.path().join("Open.vue");
+    let closed_path = root.path().join("Closed.vue");
+    std::fs::write(&open_path, "<template />\n").unwrap();
+    std::fs::write(&closed_path, "<template />\n").unwrap();
+    let open_uri = Url::from_file_path(&open_path).unwrap();
+    let closed_uri = Url::from_file_path(&closed_path).unwrap();
+    let changed = |uri: Url| FileEvent {
+        uri,
+        typ: FileChangeType::CHANGED,
+    };
+    let state = ServerState::new();
+    state
+        .documents
+        .open(open_uri.clone(), "<template />\n".into(), 1, "vue".into());
+
+    assert!(!changes_invalidate_disk_project_state(
+        &state,
+        &[changed(open_uri)]
+    ));
+    assert!(changes_invalidate_disk_project_state(
+        &state,
+        &[changed(closed_uri)]
+    ));
 }

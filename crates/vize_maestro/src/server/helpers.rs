@@ -39,6 +39,8 @@ impl MaestroServer {
             return;
         };
         self.state.update_virtual_docs(uri, &content);
+        #[cfg(feature = "native")]
+        super::workspace_files::invalidate_changed_document_disk_project_state(self, uri).await;
         let diagnostics = self.collect_diagnostics_unlocked(uri).await;
 
         #[cfg(feature = "native")]
