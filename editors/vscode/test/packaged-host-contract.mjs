@@ -37,6 +37,12 @@ export function createPackagedHostLaunchArgs({
   ];
 }
 
+export function createPackagedHostEnvironment(environment) {
+  const cleanEnvironment = { ...environment };
+  delete cleanEnvironment.NODE_OPTIONS;
+  return cleanEnvironment;
+}
+
 /**
  * Runs the packaged extension host protocol: install the VSIX into the
  * isolated profile, resolve the extracted copy, then execute the test suite
@@ -84,7 +90,7 @@ export async function runPackagedExtensionHost(
   });
   onOutput(
     await runVSCodeCommandWithTimeout(runCommand, launchArgs, {
-      environment: hostEnvironment,
+      environment: createPackagedHostEnvironment(hostEnvironment),
       // The suite inside the host runs for minutes, and its progress log is the
       // only evidence of where a stall happened. A piped child hands its output
       // back when the command resolves, so a host that outruns `hostTimeoutMs`

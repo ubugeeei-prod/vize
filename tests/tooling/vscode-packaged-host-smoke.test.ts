@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
+  createPackagedHostEnvironment,
   createPackagedHostInstallArgs,
   createPackagedHostLaunchArgs,
   resolveInstalledExtensionPath,
@@ -140,6 +141,16 @@ test("packaged host aborts a stuck VS Code command", async () => {
   assert.equal(receivedSignal.aborted, true);
 });
 
+test("packaged host strips Node-only options from the VS Code app environment", () => {
+  assert.deepEqual(
+    createPackagedHostEnvironment({
+      NODE_OPTIONS: "--disable-warning=DEP0040",
+      VIZE_TEST_SERVER_PATH: "/repo/target/ci/vize",
+    }),
+    { VIZE_TEST_SERVER_PATH: "/repo/target/ci/vize" },
+  );
+});
+
 test("real host task packages and statically validates the same VSIX that it runs", () => {
   const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
 
@@ -180,6 +191,7 @@ test("real host runner installs the VSIX and launches the host from the installe
       extensionsPath,
       extensionTestsPath: path.join(sourceExtensionPath, "test/suite/extension-host-real.cjs"),
       hostEnvironment: {
+        NODE_OPTIONS: "--disable-warning=DEP0040",
         VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
         VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
       },
