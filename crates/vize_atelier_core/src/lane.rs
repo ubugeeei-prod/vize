@@ -7,6 +7,7 @@ mod context;
 #[path = "transform/element.rs"]
 pub mod element;
 mod extensions;
+mod options;
 #[path = "transform/patterned_template.rs"]
 pub mod patterned_template;
 #[path = "transform/structural.rs"]
@@ -16,7 +17,7 @@ mod structural_keys;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
 
-use vize_carton::{Box, Bump, FxHashSet, SmallVec, String, Vec, profile};
+use vize_carton::{Box, Bump, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::errors::CompilerError;
@@ -27,10 +28,12 @@ use crate::{
     PropNode, RootNode, RuntimeHelper, TemplateChildNode,
 };
 
+pub(crate) use options::{JsxTransformCompat, TransformLaneOptions};
 use traverse::traverse_children;
 
 #[allow(deprecated)]
 pub use extensions::{
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     transform_with_hoisted_scope_id, transform_with_jsx_compatibility,
     transform_with_plain_element_model_argument,
     transform_with_template_syntax_quirks_and_hoisted_scope_id,
@@ -45,7 +48,6 @@ pub type NodeTransform<'a> =
 pub type ExitFn<'a> = std::boxed::Box<dyn FnOnce(&mut TransformContext<'a>) + 'a>;
 pub type ExitFns<'a> = SmallVec<[ExitFn<'a>; 2]>;
 
-/// Transform function for directives
 pub type DirectiveTransform<'a> = fn(
     &mut TransformContext<'a>,
     &mut ElementNode<'a>,
@@ -62,15 +64,8 @@ pub struct DirectiveTransformResult<'a> {
     pub ssr_tag_type: Option<u8>,
 }
 
-/// Structural directive transform (v-if, v-for)
 pub type StructuralDirectiveTransform<'a> =
     fn(&mut TransformContext<'a>, &mut ElementNode<'a>, &DirectiveNode<'a>) -> Option<ExitFn<'a>>;
-
-#[derive(Default)]
-pub(crate) struct JsxTransformCompat {
-    pub allow_static_v_model_arg_on_element: bool,
-    pub custom_element_spans: FxHashSet<(u32, u32)>,
-}
 
 /// Transform context for AST traversal
 pub struct TransformContext<'a> {
@@ -78,6 +73,7 @@ pub struct TransformContext<'a> {
     pub allocator: &'a Bump,
     /// Transform options
     pub options: TransformOptions,
+    pub(crate) custom_elements: crate::options::CustomElementMatcher,
     /// Source code
     pub source: String,
     /// Root node reference
@@ -198,9 +194,7 @@ pub fn transform<'a>(
         root,
         options,
         analysis,
-        false,
-        None,
-        JsxTransformCompat::default(),
+        TransformLaneOptions::default(),
     )
 }
 
@@ -216,9 +210,10 @@ pub fn transform_with_template_syntax_quirks<'a>(
         root,
         options,
         analysis,
-        true,
-        None,
-        JsxTransformCompat::default(),
+        TransformLaneOptions {
+            template_syntax_quirks: true,
+            ..Default::default()
+        },
     )
 }
 
@@ -238,10 +233,14 @@ pub(crate) fn transform_inner<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-    template_syntax_quirks: bool,
-    hoisted_scope_id: Option<String>,
-    jsx_compat: JsxTransformCompat,
+    lane_options: TransformLaneOptions,
 ) -> std::vec::Vec<CompilerError> {
+    let TransformLaneOptions {
+        template_syntax_quirks,
+        hoisted_scope_id,
+        jsx_compat,
+        custom_elements,
+    } = lane_options;
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
         TransformContext::with_analysis_and_template_syntax_quirks(
@@ -261,6 +260,7 @@ pub(crate) fn transform_inner<'a>(
     };
     ctx.jsx_compat = jsx_compat;
     ctx.hoisted_scope_id = hoisted_scope_id;
+    ctx.custom_elements = custom_elements;
     ctx.root = Some(root as *mut _);
 
     // Legacy (Vue 2 / 2.7) template-sugar pre-transform. Resolved once per file

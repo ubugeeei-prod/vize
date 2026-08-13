@@ -62,10 +62,6 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
-    /// Tag patterns that compile as custom elements instead of Vue components.
-    #[serde(default)]
-    pub custom_elements: Vec<String>,
-
     /// Binding metadata from script setup
     #[serde(skip)]
     pub binding_metadata: Option<BindingMetadata>,
@@ -105,7 +101,6 @@ impl Clone for DomCompilerOptions {
             component_name: self.component_name.clone(),
             inline: self.inline,
             custom_renderer: self.custom_renderer,
-            custom_elements: self.custom_elements.clone(),
             binding_metadata: self.binding_metadata.clone(),
             is_ts: self.is_ts,
             dialect: self.dialect,
@@ -131,7 +126,6 @@ impl Default for DomCompilerOptions {
             component_name: None,
             inline: false,
             custom_renderer: false,
-            custom_elements: Vec::new(),
             binding_metadata: None,
             is_ts: false,
             dialect: VueVersion::V3,

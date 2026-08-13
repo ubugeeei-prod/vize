@@ -23,6 +23,10 @@ pub mod steps;
 #[cfg(test)]
 mod tests;
 
+pub use compile::custom_elements::{
+    compile_template_with_custom_elements_and_template_syntax_and_codegen_options,
+    compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
+};
 pub use compile::{
     compile_template, compile_template_with_options,
     compile_template_with_options_and_hoisted_scope_id, compile_template_with_template_syntax,

@@ -59,7 +59,25 @@ pub fn load_compiler_custom_elements(path: Option<&Path>) -> Vec<crate::String> 
 
 #[cfg(test)]
 mod tests {
-    use super::load_compiler_custom_elements;
+    use super::{
+        load_compiler_custom_elements, load_compiler_host_compiler, load_compiler_template_syntax,
+    };
+
+    #[test]
+    fn load_config_reads_compiler_template_syntax() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("vize.config.json");
+        std::fs::write(
+            &config_path,
+            r#"{ "compiler": { "templateSyntax": "quirks" } }"#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            load_compiler_template_syntax(Some(&config_path)),
+            Some("quirks")
+        );
+    }
 
     #[test]
     fn load_config_reads_compiler_custom_elements() {
@@ -79,5 +97,18 @@ mod tests {
                 .collect::<Vec<_>>(),
             ["Tres*", "primitive"]
         );
+    }
+
+    #[test]
+    fn load_compiler_host_compiler_reads_compiler_compatibility_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("vize.config.json");
+        std::fs::write(
+            &config_path,
+            r#"{ "compiler": { "compatibility": { "hostCompiler": false } } }"#,
+        )
+        .unwrap();
+
+        assert_eq!(load_compiler_host_compiler(Some(&config_path)), Some(false));
     }
 }

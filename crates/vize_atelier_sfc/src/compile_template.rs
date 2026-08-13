@@ -22,6 +22,7 @@ use vize_carton::Bump;
 
 use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
+use vize_atelier_core::options::CustomElementMatcher;
 
 pub(crate) struct TemplateBlockCompileResult {
     pub(crate) code: String,
@@ -67,6 +68,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
 pub(crate) fn compile_template_block(
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
+    custom_elements: &CustomElementMatcher,
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     codegen_options: &CodegenOptions,
@@ -104,7 +106,6 @@ pub(crate) fn compile_template_block(
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
-            custom_elements: options.custom_elements.clone(),
             ssr_css_vars: options.ssr_css_vars.clone(),
             dialect: options.dialect,
             binding_metadata: bindings.cloned(),
@@ -113,11 +114,12 @@ pub(crate) fn compile_template_block(
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
-            vize_atelier_ssr::compile_ssr_with_template_syntax(
+            vize_atelier_ssr::compile_ssr_with_custom_elements_and_template_syntax(
                 &allocator,
                 &template.content,
                 ssr_opts,
                 template_syntax,
+                custom_elements.clone(),
             )
         );
 
@@ -166,7 +168,6 @@ pub(crate) fn compile_template_block(
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
-    dom_opts.custom_elements = options.custom_elements.clone();
     dom_opts.dialect = options.dialect;
     dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
@@ -189,12 +190,13 @@ pub(crate) fn compile_template_block(
     // Compile template
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
+        vize_atelier_dom::compile_template_with_custom_elements_and_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
             &allocator,
             &template.content,
             dom_opts,
             template_syntax,
             hoisted_scope_attr,
+            custom_elements.clone(),
             codegen_options.clone(),
         )
     );

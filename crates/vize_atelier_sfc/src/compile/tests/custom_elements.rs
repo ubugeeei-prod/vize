@@ -3,12 +3,15 @@
 //! Kept separate from `tests.rs` so that already large file does not grow past
 //! the source-file-length limit.
 
-use super::super::compile_sfc;
-use crate::types::{ScriptCompileOptions, SfcCompileOptions, TemplateCompileOptions};
-use crate::{SfcParseOptions, parse_sfc};
+use crate::{
+    SfcParseOptions, parse_sfc,
+    types::{ScriptCompileOptions, SfcCompileOptions, TemplateCompileOptions},
+};
+
+use super::super::compile_sfc_with_custom_elements_template_syntax_and_codegen_options;
 
 #[test]
-fn test_script_setup_sfc_custom_elements_preserve_imports_and_pascal_case_intrinsics() {
+fn script_setup_preserves_imports_and_pascal_case_intrinsics() {
     let source = r#"<script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
 const visible = true
@@ -31,18 +34,25 @@ const visible = true
         template: TemplateCompileOptions {
             is_ts: true,
             custom_renderer: true,
-            custom_elements: vec!["Tres*".into()],
             ..Default::default()
         },
         ..Default::default()
     };
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let result = compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
+        &descriptor,
+        opts,
+        vize_atelier_core::TemplateSyntaxMode::Standard,
+        vize_atelier_core::options::CustomElementMatcher::from_patterns(vec!["Tres*".into()]),
+        vize_atelier_core::CodegenOptions::default(),
+    )
+    .expect("Failed to compile SFC");
 
     assert!(
         result.code.contains(r#"_createBlock(_unref(TresCanvas)"#),
         "{}",
         result.code
     );
+    assert!(result.code.contains("import { TresCanvas }"));
     assert!(
         result.code.contains(r#"_createElementBlock("TresMesh""#),
         "{}",

@@ -1,29 +1,36 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_vapor::{
-    VaporCompilerOptions, compile_vapor_with_template_syntax_and_diagnostics,
+    VaporCompilerOptions, compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
 };
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::{
-    compile_template::{TemplateBlockCompileResult, recoverable_template_warnings},
+    compile_template::{
+        TemplateBlockCompileContext, TemplateBlockCompileResult, recoverable_template_warnings,
+    },
     types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions},
 };
 
 /// Compile template block using Vapor mode
 pub(crate) fn compile_template_block_vapor(
     template: &SfcTemplateBlock,
-    scope_id: &str,
-    has_scoped: bool,
-    bindings: Option<&BindingMetadata>,
     options: &TemplateCompileOptions,
+    custom_elements: &CustomElementMatcher,
+    ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     codegen_options: &CodegenOptions,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let allocator = Bump::new();
     let compiler_options = options.compiler_options.as_ref();
+    let TemplateBlockCompileContext {
+        scope_id,
+        has_scoped,
+        bindings,
+        ..
+    } = ctx;
 
     // Build Vapor compiler options
     let vapor_opts = VaporCompilerOptions {
@@ -31,7 +38,6 @@ pub(crate) fn compile_template_block_vapor(
         ssr: false,
         binding_metadata: bindings.cloned(),
         custom_renderer: options.custom_renderer,
-        custom_elements: options.custom_elements.clone(),
         experimental_in_tag_comments: compiler_options
             .is_some_and(|opts| opts.experimental_in_tag_comments),
         experimental_patterned_template: compiler_options
@@ -40,11 +46,12 @@ pub(crate) fn compile_template_block_vapor(
     };
 
     // Compile template with Vapor
-    let (result, diagnostics) = compile_vapor_with_template_syntax_and_diagnostics(
+    let (result, diagnostics) = compile_vapor_with_custom_elements_template_syntax_and_diagnostics(
         &allocator,
         &template.content,
         vapor_opts,
         template_syntax,
+        custom_elements.clone(),
     );
 
     if !result.error_messages.is_empty() {

@@ -64,7 +64,7 @@ impl<'a> Parser<'a> {
         {
             return false;
         }
-        if self.options.custom_elements.matches(tag) {
+        if self.custom_elements.matches(tag) {
             return false;
         }
 

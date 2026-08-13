@@ -6,8 +6,8 @@
  *
  * Unlike `compare-pr.mjs` (which times the whole CLI on a generated corpus),
  * this script drives the in-crate criterion suites under the crate `benches`
- * directories. Both sides save a named baseline into the same `--target-dir`,
- * so critcmp can diff `base` against `head` for each benchmark id in one pass.
+ * directories. Each checkout builds in an isolated Cargo target directory, then
+ * critcmp compares exported JSON snapshots for each benchmark id in one pass.
  *
  * The script is dependency-free (besides `cargo`, `critcmp`, and a checkout of
  * each side) so GitHub Actions can run it after checking out both commits.
@@ -131,8 +131,9 @@ function run(command, commandArgs, options = {}) {
 
 /**
  * Build the `cargo bench` argument vector for one side of the comparison.
- * `targetDir` is shared between base and head so critcmp can read both
- * baselines; `baseline` is the criterion baseline name (`base` or `head`).
+ * `targetDir` is side-specific so Cargo never reuses base checkout crate
+ * metadata while compiling the head checkout; `baseline` is the criterion
+ * baseline name (`base` or `head`).
  */
 export function cargoBenchArgs({ pkg, benches, baseline, targetDir }) {
   const args = ["bench", "-p", pkg];
@@ -175,12 +176,18 @@ function exportBaseline({ targetDir, baseline, outputPath }) {
 }
 
 function critcmpCompare({ targetDir, baselinePaths }) {
-  // critcmp 0.1.8 does not read CRITERION_HOME. Point it at the same Cargo
-  // target directory used by both benchmark runs. The exported snapshots keep
-  // the base sample stable while the head checkout reuses the shared target.
+  // critcmp 0.1.8 requires a target-dir argument even when explicit exported
+  // snapshot paths are supplied. The head target is enough for its scratch data.
   const args = critcmpArgs({ targetDir, baselinePaths });
   const result = run("critcmp", args, { capture: true });
   return `${result.stdout ?? ""}${result.stderr ?? ""}`;
+}
+
+export function criterionSideTargetDirs(targetDir) {
+  return {
+    baseTargetDir: resolve(targetDir, "base-target"),
+    headTargetDir: resolve(targetDir, "head-target"),
+  };
 }
 
 export function resolveSuiteSelection(selection) {
@@ -229,30 +236,41 @@ export function main(argv = process.argv.slice(2)) {
   const suites = CRITERION_SUITES.filter((suite) => selection.selected.includes(suite.package));
   const basePath = resolve(targetDir, "criterion-ab-base.json");
   const headPath = resolve(targetDir, "criterion-ab-head.json");
+  const { baseTargetDir, headTargetDir } = criterionSideTargetDirs(targetDir);
   let baseExport;
   let headExport;
-  // Export base before the head run can mutate the shared Criterion directory.
+  // Export each side from its own target dir, then compare immutable snapshots.
   if (suites.length > 0) {
     benchSide({
       side: "base",
       checkoutDir: baseDir,
       baseline: "base",
-      targetDir,
+      targetDir: baseTargetDir,
       suites,
     });
-    baseExport = exportBaseline({ targetDir, baseline: "base", outputPath: basePath });
+    baseExport = exportBaseline({
+      targetDir: baseTargetDir,
+      baseline: "base",
+      outputPath: basePath,
+    });
     benchSide({
       side: "head",
       checkoutDir: headDir,
       baseline: "head",
-      targetDir,
+      targetDir: headTargetDir,
       suites,
     });
-    headExport = exportBaseline({ targetDir, baseline: "head", outputPath: headPath });
+    headExport = exportBaseline({
+      targetDir: headTargetDir,
+      baseline: "head",
+      outputPath: headPath,
+    });
   }
 
   const table =
-    suites.length > 0 ? critcmpCompare({ targetDir, baselinePaths: [basePath, headPath] }) : "";
+    suites.length > 0
+      ? critcmpCompare({ targetDir: headTargetDir, baselinePaths: [basePath, headPath] })
+      : "";
   if (suites.length > 0) {
     validateComparisonTable(table);
   }

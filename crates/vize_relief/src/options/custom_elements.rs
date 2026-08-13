@@ -1,5 +1,6 @@
 //! Declarative custom-element tag matching.
 
+use std::vec::Vec;
 use vize_carton::String;
 
 /// Declarative matcher for tags that should compile as custom elements.

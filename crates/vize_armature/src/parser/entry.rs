@@ -8,7 +8,7 @@ use vize_carton::{Bump, Vec};
 use vize_relief::{
     RootNode,
     errors::CompilerError,
-    options::{ParserOptions, TemplateSyntaxMode},
+    options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode},
 };
 
 use super::Parser;
@@ -80,4 +80,23 @@ pub fn parse_with_options_and_template_syntax<'a>(
     template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
     Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
+}
+
+/// Parse with declarative custom-element patterns without growing [`ParserOptions`].
+#[doc(hidden)]
+pub fn parse_with_options_custom_elements_and_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: ParserOptions,
+    custom_elements: CustomElementMatcher,
+    template_syntax: TemplateSyntaxMode,
+) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    Parser::with_options_custom_elements_and_template_syntax(
+        allocator,
+        source,
+        options,
+        custom_elements,
+        template_syntax,
+    )
+    .parse()
 }

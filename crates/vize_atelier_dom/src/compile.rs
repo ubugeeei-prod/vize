@@ -1,16 +1,14 @@
 //! DOM template compilation: parse, transform, and codegen entry points.
 
+pub mod custom_elements;
+
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::generate_with_sections,
-    lane::{
-        transform as do_transform, transform_with_hoisted_scope_id,
-        transform_with_template_syntax_quirks,
-        transform_with_template_syntax_quirks_and_hoisted_scope_id,
-    },
-    options::{CodegenOptions, TemplateSyntaxMode},
-    parser::parse_with_options_and_template_syntax,
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
+    parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
@@ -39,6 +37,7 @@ pub fn compile_template_with_options<'a>(
         options,
         TemplateSyntaxMode::Standard,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -56,6 +55,7 @@ pub fn compile_template_with_vue_parser_quirks<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -74,6 +74,7 @@ pub fn compile_template_with_template_syntax<'a>(
         options,
         template_syntax,
         None,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -98,6 +99,7 @@ pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
         options,
         template_syntax,
         None,
+        CustomElementMatcher::default(),
         codegen_options,
     )
 }
@@ -116,6 +118,7 @@ pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Standard,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -135,6 +138,7 @@ pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
         options,
         TemplateSyntaxMode::Quirks,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -154,6 +158,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -174,6 +179,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         CodegenOptions::default(),
     )
 }
@@ -197,6 +203,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_
         options,
         template_syntax,
         hoisted_scope_id,
+        CustomElementMatcher::default(),
         codegen_options,
     )
 }
@@ -207,6 +214,7 @@ fn compile_template_inner<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     let (root, errors, codegen_result) = compile_template_inner_with_sections(
@@ -215,6 +223,7 @@ fn compile_template_inner<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
+        custom_elements,
         codegen_options,
     );
     (root, errors, codegen_result.into_result())
@@ -226,6 +235,7 @@ fn compile_template_inner_with_sections<'a>(
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
     hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
     let parser_opts = stage_options::parser_options(&options);
@@ -233,7 +243,13 @@ fn compile_template_inner_with_sections<'a>(
     // Parse
     let (mut root, errors) = profile!(
         "atelier.dom.template.parse",
-        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax)
+        parse_with_options_custom_elements_and_template_syntax(
+            allocator,
+            source,
+            parser_opts,
+            custom_elements.clone(),
+            template_syntax,
+        )
     );
 
     // Parser-level diagnostics that are recoverable (e.g. duplicate
@@ -265,34 +281,15 @@ fn compile_template_inner_with_sections<'a>(
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
     let transform_errors = profile!(
         "atelier.dom.template.transform",
-        if template_syntax_quirks {
-            if hoisted_scope_id.is_some() {
-                transform_with_template_syntax_quirks_and_hoisted_scope_id(
-                    allocator,
-                    &mut root,
-                    transform_opts,
-                    analysis,
-                    hoisted_scope_id,
-                )
-            } else {
-                transform_with_template_syntax_quirks(
-                    allocator,
-                    &mut root,
-                    transform_opts,
-                    analysis,
-                )
-            }
-        } else if hoisted_scope_id.is_some() {
-            transform_with_hoisted_scope_id(
-                allocator,
-                &mut root,
-                transform_opts,
-                analysis,
-                hoisted_scope_id,
-            )
-        } else {
-            do_transform(allocator, &mut root, transform_opts, analysis)
-        }
+        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+            allocator,
+            &mut root,
+            transform_opts,
+            analysis,
+            custom_elements,
+            template_syntax_quirks,
+            hoisted_scope_id,
+        )
     );
 
     // Surface transform diagnostics (e.g. invalid expressions) alongside

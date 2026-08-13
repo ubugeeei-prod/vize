@@ -3,7 +3,7 @@
 //! Keeps the parse/transform option wiring out of `compile.rs` so that entry
 //! point stays focused on pipeline flow.
 
-use vize_atelier_core::options::{CustomElementMatcher, ParserOptions, TransformOptions};
+use vize_atelier_core::options::{ParserOptions, TransformOptions};
 
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
@@ -13,7 +13,6 @@ pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
-        custom_elements: CustomElementMatcher::from_patterns(options.custom_elements.clone()),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
@@ -37,7 +36,6 @@ pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOption
         is_ts: options.is_ts,
         inline: options.inline,
         custom_renderer: options.custom_renderer,
-        custom_elements: CustomElementMatcher::from_patterns(options.custom_elements.clone()),
         experimental_patterned_template: options.experimental_patterned_template,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,

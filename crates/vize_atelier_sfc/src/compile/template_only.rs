@@ -3,7 +3,7 @@
 //! Split out of `super::compile_sfc_inner` so that function stays inside the
 //! per-file source-length budget while the other two cases keep their shape.
 
-use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_carton::{String, profile};
 
 use crate::compile_template::{
@@ -23,6 +23,7 @@ use super::styles::CompiledStyles;
 pub(super) struct TemplateOnlyInput<'a> {
     pub(super) descriptor: &'a SfcDescriptor<'a>,
     pub(super) options: &'a SfcCompileOptions,
+    pub(super) custom_elements: &'a CustomElementMatcher,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) codegen_options: &'a CodegenOptions,
     pub(super) compiled_styles: &'a CompiledStyles,
@@ -46,10 +47,18 @@ pub(super) fn compile_template_only(
             "atelier.sfc.template.vapor",
             compile_template_block_vapor(
                 template,
-                input.scope_id,
-                input.has_scoped,
-                None,
                 &input.options.template,
+                input.custom_elements,
+                TemplateBlockCompileContext {
+                    scope_id: input.scope_id,
+                    apply_scope_id: input.has_scoped,
+                    has_scoped: input.has_scoped,
+                    is_ts: input.template_is_ts,
+                    inline: false,
+                    component_name: Some(input.component_name),
+                    bindings: None,
+                    croquis: None,
+                },
                 input.template_syntax,
                 input.codegen_options,
             )
@@ -64,6 +73,7 @@ pub(super) fn compile_template_only(
             compile_template_block(
                 template,
                 &template_opts,
+                input.custom_elements,
                 TemplateBlockCompileContext {
                     scope_id: input.scope_id,
                     apply_scope_id: input.has_scoped,

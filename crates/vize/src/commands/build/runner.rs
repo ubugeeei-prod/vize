@@ -122,7 +122,6 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!();
     }
 
-    // Collect errors and slow files
     let errors: Mutex<Vec<CompileError>> = Mutex::new(Vec::new());
     let slow_files: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
@@ -133,12 +132,7 @@ pub(crate) fn run(args: BuildArgs) {
     let results: Vec<_> = if stats_only {
         let compile_cache = StatsCompileCache::default();
         files.par_iter().for_each(|path| {
-            match compile_file_stats_with_cache(
-                path,
-                compile_settings.clone(),
-                &stats,
-                &compile_cache,
-            ) {
+            match compile_file_stats_with_cache(path, &compile_settings, &stats, &compile_cache) {
                 Ok((output_bytes, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -171,7 +165,7 @@ pub(crate) fn run(args: BuildArgs) {
         planned_inputs
             .par_iter()
             .map(|input| {
-                match compile_file_with_profile(&input.source, compile_settings.clone(), &stats) {
+                match compile_file_with_profile(&input.source, &compile_settings, &stats) {
                     Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats

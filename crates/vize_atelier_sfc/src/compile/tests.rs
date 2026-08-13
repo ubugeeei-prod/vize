@@ -7,8 +7,7 @@ use crate::types::{
     BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
 };
 use crate::{SfcParseOptions, parse_sfc};
-use std::fs;
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 use vize_carton::ToCompactString;
 
 fn fixtures_path() -> PathBuf {

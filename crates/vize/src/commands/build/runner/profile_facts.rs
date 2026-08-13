@@ -43,11 +43,11 @@ pub(super) struct FileProfileFacts {
 pub(super) fn file_profile(
     path: &Path,
     facts: FileProfileFacts,
-    settings: CompileFileSettings,
+    settings: &CompileFileSettings,
     cache_status: StatsCacheStatus,
 ) -> FileProfile {
     record_source_facts(
-        &settings,
+        settings,
         facts.file_size,
         facts.template_size,
         facts.script_size,
@@ -65,7 +65,7 @@ pub(super) fn file_profile(
         script_size: facts.script_size,
         style_count: facts.style_count,
         profile_note: file_note(
-            &settings,
+            settings,
             facts.template_size,
             facts.script_size,
             facts.style_count,

@@ -37,7 +37,7 @@ fn compile_sfc_batch_with_results_inner(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
         TemplateCompileOptions,
-        compile_sfc_with_template_syntax as sfc_compile_with_template_syntax,
+        compile_sfc_with_custom_elements_template_syntax_and_codegen_options as sfc_compile_with_custom_elements,
         parse_sfc as sfc_parse,
     };
 
@@ -47,7 +47,9 @@ fn compile_sfc_batch_with_results_inner(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
-    let custom_elements = crate::types::custom_element_patterns(opts.custom_elements.as_deref());
+    let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
+        crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+    );
     let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
@@ -159,7 +161,6 @@ fn compile_sfc_batch_with_results_inner(
                     ssr,
                     is_ts,
                     custom_renderer,
-                    custom_elements: custom_elements.clone(),
                     compiler_options: template_compiler_options,
                     ..Default::default()
                 },
@@ -173,8 +174,13 @@ fn compile_sfc_batch_with_results_inner(
                 scope_id: Some(scope_id.clone()),
             };
 
-            let compile_result =
-                sfc_compile_with_template_syntax(&descriptor, compile_opts, template_syntax);
+            let compile_result = sfc_compile_with_custom_elements(
+                &descriptor,
+                compile_opts,
+                template_syntax,
+                custom_elements.clone(),
+                vize_atelier_core::CodegenOptions::default(),
+            );
 
             match compile_result {
                 Ok(result) => {

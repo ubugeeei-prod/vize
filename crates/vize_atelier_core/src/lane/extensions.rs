@@ -3,8 +3,8 @@
 use vize_carton::{Bump, String};
 use vize_croquis::Croquis;
 
-use super::{JsxTransformCompat, transform_inner};
-use crate::{CompilerError, RootNode, TransformOptions};
+use super::{JsxTransformCompat, TransformLaneOptions, transform_inner};
+use crate::{CompilerError, RootNode, TransformOptions, options::CustomElementMatcher};
 
 /// Transform the root AST node with an explicit scope ID for hoisted VNodes.
 #[doc(hidden)]
@@ -20,9 +20,10 @@ pub fn transform_with_hoisted_scope_id<'a>(
         root,
         options,
         analysis,
-        false,
-        hoisted_scope_id,
-        JsxTransformCompat::default(),
+        TransformLaneOptions {
+            hoisted_scope_id,
+            ..Default::default()
+        },
     )
 }
 
@@ -40,9 +41,36 @@ pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
         root,
         options,
         analysis,
-        true,
-        hoisted_scope_id,
-        JsxTransformCompat::default(),
+        TransformLaneOptions {
+            template_syntax_quirks: true,
+            hoisted_scope_id,
+            ..Default::default()
+        },
+    )
+}
+
+/// Transform with declarative custom-element patterns and optional hoisted scope ID.
+#[doc(hidden)]
+pub fn transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    custom_elements: CustomElementMatcher,
+    template_syntax_quirks: bool,
+    hoisted_scope_id: Option<String>,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        TransformLaneOptions {
+            template_syntax_quirks,
+            hoisted_scope_id,
+            custom_elements,
+            ..Default::default()
+        },
     )
 }
 
@@ -78,10 +106,11 @@ pub fn transform_with_plain_element_model_argument<'a>(
         root,
         options,
         analysis,
-        false,
-        None,
-        JsxTransformCompat {
-            allow_static_v_model_arg_on_element: true,
+        TransformLaneOptions {
+            jsx_compat: JsxTransformCompat {
+                allow_static_v_model_arg_on_element: true,
+                ..Default::default()
+            },
             ..Default::default()
         },
     )
@@ -104,5 +133,14 @@ pub fn transform_with_jsx_compatibility<'a>(
     jsx_compat
         .custom_element_spans
         .extend(custom_element_spans.iter().copied());
-    transform_inner(allocator, root, options, analysis, false, None, jsx_compat)
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        TransformLaneOptions {
+            jsx_compat,
+            ..Default::default()
+        },
+    )
 }

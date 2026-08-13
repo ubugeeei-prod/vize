@@ -34,8 +34,11 @@ mod tests_template_children;
 mod tests_valueless_attr;
 
 pub use compile::{
-    VaporCompileResult, VaporCompilerOptions, compile_vapor, compile_vapor_with_diagnostics,
-    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
+    VaporCompileResult, VaporCompilerOptions, compile_vapor,
+    compile_vapor_with_custom_elements_and_template_syntax,
+    compile_vapor_with_custom_elements_template_syntax_and_diagnostics,
+    compile_vapor_with_diagnostics, compile_vapor_with_template_syntax,
+    compile_vapor_with_template_syntax_and_diagnostics,
 };
 #[allow(deprecated)]
 pub use compile::{

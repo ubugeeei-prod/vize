@@ -7,9 +7,11 @@ use std::{
     time::{Duration, Instant},
 };
 
+use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc_with_template_syntax, parse_sfc,
+    TemplateCompileOptions, compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
+    parse_sfc,
 };
 use vize_carton::cstr;
 use vize_carton::hash::hash_str;
@@ -35,7 +37,7 @@ use super::settings::CompileFileSettings;
 /// so profile totals represent actual compiler work.
 pub(super) fn compile_file_stats_with_cache(
     path: &PathBuf,
-    settings: CompileFileSettings,
+    settings: &CompileFileSettings,
     stats: &CompileStats,
     cache: &StatsCompileCache,
 ) -> Result<(usize, FileProfile), CompileError> {
@@ -164,6 +166,7 @@ pub(super) fn compile_file_stats_with_cache(
     let compile_start = Instant::now();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
+    let custom_elements = CustomElementMatcher::from_patterns(settings.custom_elements.clone());
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -180,9 +183,7 @@ pub(super) fn compile_file_stats_with_cache(
             ssr: settings.ssr,
             is_ts,
             custom_renderer: settings.custom_renderer,
-            custom_elements: settings.custom_elements.clone(),
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
-                custom_elements: settings.custom_elements.clone(),
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
                 ..Default::default()
@@ -201,7 +202,13 @@ pub(super) fn compile_file_stats_with_cache(
 
     let result = match profile!(
         "atelier.sfc.compile",
-        compile_sfc_with_template_syntax(&descriptor, compile_opts, settings.template_syntax)
+        compile_sfc_with_custom_elements_template_syntax_and_codegen_options(
+            &descriptor,
+            compile_opts,
+            settings.template_syntax,
+            custom_elements,
+            CodegenOptions::default()
+        )
     ) {
         Ok(result) => result,
         Err(error) => {

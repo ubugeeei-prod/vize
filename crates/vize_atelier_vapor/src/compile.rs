@@ -8,9 +8,9 @@ use crate::ir_drop::drop_ir_stack_safe;
 use crate::lower as vapor_lower;
 use vize_atelier_core::{
     CompilerError, Namespace,
-    lane::{transform, transform_with_template_syntax_quirks},
-    options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
-    parser::parse_with_options_and_template_syntax,
+    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, TransformOptions},
+    parser::parse_with_options_custom_elements_and_template_syntax,
 };
 use vize_carton::{Bump, String};
 
@@ -27,8 +27,6 @@ pub struct VaporCompilerOptions {
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
-    /// Tag patterns that compile as custom elements instead of Vue components.
-    pub custom_elements: Vec<String>,
     /// Enable experimental Vue in-tag comments (`// ...`) inside opening tags.
     pub experimental_in_tag_comments: bool,
     /// Enable experimental `v-match` / `v-case` patterned template desugaring.
@@ -52,7 +50,14 @@ pub fn compile_vapor<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Standard).0
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+    )
+    .0
 }
 
 /// Compile a Vue template to Vapor mode with Vue parser quirk compatibility.
@@ -62,7 +67,14 @@ pub fn compile_vapor_with_vue_parser_quirks<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Quirks).0
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Quirks,
+        CustomElementMatcher::default(),
+    )
+    .0
 }
 
 /// Compile a Vue template to Vapor mode with an explicit template syntax mode.
@@ -73,7 +85,26 @@ pub fn compile_vapor_with_template_syntax<'a>(
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> VaporCompileResult {
-    compile_vapor_inner(allocator, source, options, template_syntax).0
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        CustomElementMatcher::default(),
+    )
+    .0
+}
+
+/// Compile with declarative custom-element patterns.
+#[doc(hidden)]
+pub fn compile_vapor_with_custom_elements_and_template_syntax<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+) -> VaporCompileResult {
+    compile_vapor_inner(allocator, source, options, template_syntax, custom_elements).0
 }
 
 /// Compile a Vue template to Vapor mode and return parser diagnostics.
@@ -83,7 +114,13 @@ pub fn compile_vapor_with_diagnostics<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Standard)
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+    )
 }
 
 /// Compile a Vue template to Vapor mode with Vue parser quirks and return parser diagnostics.
@@ -94,7 +131,13 @@ pub fn compile_vapor_with_vue_parser_quirks_and_diagnostics<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(allocator, source, options, TemplateSyntaxMode::Quirks)
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        TemplateSyntaxMode::Quirks,
+        CustomElementMatcher::default(),
+    )
 }
 
 /// Compile a Vue template to Vapor mode with template syntax mode and return parser diagnostics.
@@ -105,7 +148,25 @@ pub fn compile_vapor_with_template_syntax_and_diagnostics<'a>(
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
-    compile_vapor_inner(allocator, source, options, template_syntax)
+    compile_vapor_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        CustomElementMatcher::default(),
+    )
+}
+
+/// Compile with template syntax, diagnostics, and declarative custom-element patterns.
+#[doc(hidden)]
+pub fn compile_vapor_with_custom_elements_template_syntax_and_diagnostics<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner(allocator, source, options, template_syntax, custom_elements)
 }
 
 fn compile_vapor_inner<'a>(
@@ -113,9 +174,10 @@ fn compile_vapor_inner<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
-        compile_vapor_inner_with_stack(allocator, source, options, template_syntax)
+        compile_vapor_inner_with_stack(allocator, source, options, template_syntax, custom_elements)
     })
 }
 
@@ -124,22 +186,25 @@ fn compile_vapor_inner_with_stack<'a>(
     source: &'a str,
     options: VaporCompilerOptions,
     template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     // Parse
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            options.custom_elements.clone(),
-        ),
         custom_renderer: options.custom_renderer,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         ..ParserOptions::default()
     };
-    let (mut root, errors) =
-        parse_with_options_and_template_syntax(allocator, source, parser_opts, template_syntax);
+    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
+        allocator,
+        source,
+        parser_opts,
+        custom_elements.clone(),
+        template_syntax,
+    );
     let parser_diagnostics = errors.to_vec();
 
     let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
@@ -163,17 +228,18 @@ fn compile_vapor_inner_with_stack<'a>(
         inline: options.inline,
         vapor: true,
         custom_renderer: options.custom_renderer,
-        custom_elements: vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            options.custom_elements,
-        ),
         experimental_patterned_template: options.experimental_patterned_template,
         ..Default::default()
     };
-    if template_syntax.is_quirks() {
-        transform_with_template_syntax_quirks(allocator, &mut root, transform_opts, None);
-    } else {
-        transform(allocator, &mut root, transform_opts, None);
-    }
+    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+        allocator,
+        &mut root,
+        transform_opts,
+        None,
+        custom_elements,
+        template_syntax.is_quirks(),
+        None,
+    );
 
     // Lower to Vapor IR
     let (ir, transform_diagnostics) =

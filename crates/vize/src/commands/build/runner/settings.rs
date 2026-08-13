@@ -39,7 +39,6 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
 }
 
 /// Compile a single `.vue` file with profiling information.
-#[derive(Clone)]
 pub(super) struct CompileFileSettings {
     pub(super) ssr: bool,
     pub(super) vapor: bool,

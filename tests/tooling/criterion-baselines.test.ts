@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { criterionBenchRunOptions, resolveSuiteSelection } from "../../bench/criterion-ab.mjs";
+import {
+  criterionBenchRunOptions,
+  criterionSideTargetDirs,
+  resolveSuiteSelection,
+} from "../../bench/criterion-ab.mjs";
 import {
   compareBaselineExports,
   criterionEnvironment,
@@ -14,14 +18,18 @@ import {
 import { renderSummary } from "../../bench/criterion-summary.mjs";
 
 test("Criterion driver snapshots both baselines before comparing them", () => {
+  assert.deepEqual(criterionSideTargetDirs("/work/head/target"), {
+    baseTargetDir: "/work/head/target/base-target",
+    headTargetDir: "/work/head/target/head-target",
+  });
   assert.deepEqual(
     criterionBenchRunOptions({
       checkoutDir: "/work/head",
-      targetDir: "/work/head/target",
+      targetDir: "/work/head/target/head-target",
     }),
     {
       cwd: "/work/head",
-      env: { CARGO_TARGET_DIR: "/work/head/target" },
+      env: { CARGO_TARGET_DIR: "/work/head/target/head-target" },
       capture: false,
     },
   );

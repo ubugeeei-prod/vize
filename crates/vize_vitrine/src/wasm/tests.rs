@@ -1,5 +1,6 @@
 use super::{
-    compiler::compile_internal, options::resolve_template_syntax_compat, utf8_byte_to_utf16_offset,
+    compiler::pipeline::compile_internal, options::resolve_template_syntax_compat,
+    utf8_byte_to_utf16_offset,
 };
 use crate::CompilerOptions;
 use vize_atelier_core::CodegenOptions;

@@ -71,13 +71,8 @@ pub struct ParserOptions {
     pub is_pre_tag: fn(&str) -> bool,
     /// Whether is a native tag
     pub is_native_tag: Option<fn(&str) -> bool>,
-    /// Whether is a custom element.
-    ///
-    /// Static callback kept for internal Rust callers; config and FFI surfaces
-    /// use [`custom_elements`](Self::custom_elements) instead.
+    /// Whether is a custom element
     pub is_custom_element: Option<fn(&str) -> bool>,
-    /// Declarative custom-element matcher for config and FFI callers.
-    pub custom_elements: CustomElementMatcher,
     /// Whether the template targets a custom renderer instead of the DOM.
     ///
     /// When enabled, lowercase non-HTML tags default to renderer-native
@@ -109,7 +104,6 @@ impl Default for ParserOptions {
             is_pre_tag: |_| false,
             is_native_tag: None,
             is_custom_element: None,
-            custom_elements: CustomElementMatcher::default(),
             custom_renderer: false,
             is_void_tag: vize_carton::is_void_tag,
             get_namespace: |_, _| crate::Namespace::Html,
@@ -158,8 +152,6 @@ pub struct TransformOptions {
     /// Whether in Vapor mode (skip v-model expansion)
     pub vapor: bool,
     pub custom_renderer: bool,
-    /// Declarative custom-element matcher for config and FFI callers.
-    pub custom_elements: CustomElementMatcher,
     pub experimental_patterned_template: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
@@ -185,7 +177,6 @@ impl Default for TransformOptions {
             is_ts: false,
             vapor: false,
             custom_renderer: false,
-            custom_elements: CustomElementMatcher::default(),
             experimental_patterned_template: false,
             dialect: VueVersion::V3,
         }
@@ -282,10 +273,8 @@ mod tests {
         assert!(opts.comments);
         assert!(opts.is_native_tag.is_none());
         assert!(opts.is_custom_element.is_none());
-        assert!(opts.custom_elements.is_empty());
         assert!(opts.on_error.is_none());
         assert!(opts.on_warn.is_none());
-        // Default dialect is modern Vue 3 — the zero-cost path.
         assert_eq!(opts.dialect, VueVersion::V3);
     }
 
@@ -301,8 +290,6 @@ mod tests {
         assert!(opts.scope_id.is_none());
         assert!(opts.ssr_css_vars.is_none());
         assert!(opts.binding_metadata.is_none());
-        assert!(opts.custom_elements.is_empty());
-        // Default dialect is modern Vue 3 — the zero-cost path.
         assert_eq!(opts.dialect, VueVersion::V3);
     }
 

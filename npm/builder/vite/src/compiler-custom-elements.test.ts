@@ -37,6 +37,7 @@ assert.match(
   /_createBlock\(_unref\(TresCanvas\)/,
   "Explicit script setup imports should still win over custom-element patterns",
 );
+assert.match(customElementPatternCompiled.code, /import \{ TresCanvas \}/);
 assert.match(
   customElementPatternCompiled.code,
   /_createElementBlock\("TresMesh"/,

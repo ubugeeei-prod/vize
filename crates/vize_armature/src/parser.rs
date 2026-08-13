@@ -9,6 +9,7 @@
 
 mod attribute;
 mod callbacks;
+mod constructor;
 mod delimiters;
 mod element;
 mod entry;
@@ -25,7 +26,7 @@ use vize_carton::{Bump, String, Vec};
 use vize_relief::{
     ElementNode, Namespace, Position, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
-    options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
+    options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 
 use element::{note_html_tree_element_close, note_html_tree_element_open};
@@ -35,6 +36,7 @@ pub struct Parser<'a> {
     allocator: &'a Bump,
     source: &'a str,
     options: ParserOptions,
+    custom_elements: CustomElementMatcher,
     /// Template syntax compatibility mode.
     template_syntax: TemplateSyntaxMode,
     /// Current node stack
@@ -127,101 +129,6 @@ pub(super) struct CurrentDirective<'a> {
 }
 
 impl<'a> Parser<'a> {
-    /// Create a new parser
-    pub fn new(allocator: &'a Bump, source: &'a str) -> Self {
-        Self::with_options(allocator, source, ParserOptions::default())
-    }
-
-    /// Create a new parser with options
-    pub fn with_options(allocator: &'a Bump, source: &'a str, options: ParserOptions) -> Self {
-        Self::with_options_and_template_syntax(
-            allocator,
-            source,
-            options,
-            TemplateSyntaxMode::Standard,
-        )
-    }
-
-    /// Create a new parser with options and invalid HTML self-closing compatibility.
-    #[deprecated(note = "use with_options_and_template_syntax instead")]
-    pub fn with_options_and_invalid_html_self_closing(
-        allocator: &'a Bump,
-        source: &'a str,
-        options: ParserOptions,
-        allow_invalid_html_self_closing: bool,
-    ) -> Self {
-        Self::with_options_and_template_syntax(
-            allocator,
-            source,
-            options,
-            if allow_invalid_html_self_closing {
-                TemplateSyntaxMode::Quirks
-            } else {
-                TemplateSyntaxMode::Standard
-            },
-        )
-    }
-
-    /// Create a new parser with options and template syntax compatibility.
-    pub fn with_options_and_template_syntax(
-        allocator: &'a Bump,
-        source: &'a str,
-        options: ParserOptions,
-        template_syntax: TemplateSyntaxMode,
-    ) -> Self {
-        Self {
-            allocator,
-            source,
-            options,
-            template_syntax,
-            stack: Vec::new_in(allocator),
-            flattened_tags: Vec::new_in(allocator),
-            root: None,
-            current_element: None,
-            current_attr: None,
-            current_dir: None,
-            errors: Vec::new_in(allocator),
-            newlines: Vec::new_in(allocator),
-            in_pre: false,
-            in_v_pre: false,
-            open_table_count: 0,
-            open_p_count: 0,
-            open_a_count: 0,
-            open_button_count: 0,
-            open_form_count: 0,
-            document: false,
-        }
-    }
-
-    /// Create a new parser in full-HTML-document mode.
-    ///
-    /// Document mode is additive: it parses an entire HTML document (doctype +
-    /// `<html>/<head>/<body>`, with `<script>`/`<style>` kept as raw text) into
-    /// the same template AST, so downstream analysis (lint/scope) can run over a
-    /// petite-vue HTML page where directives (`v-scope`, `v-effect`, `@click`)
-    /// live on ordinary elements. The only behavioral difference from
-    /// [`Parser::with_options`] is doctype tolerance; SFC `<template>` parsing is
-    /// unaffected.
-    pub fn new_document(allocator: &'a Bump, source: &'a str) -> Self {
-        Self::document_with_options(allocator, source, ParserOptions::default())
-    }
-
-    /// Create a new document-mode parser with options.
-    pub fn document_with_options(
-        allocator: &'a Bump,
-        source: &'a str,
-        options: ParserOptions,
-    ) -> Self {
-        let mut parser = Self::with_options_and_template_syntax(
-            allocator,
-            source,
-            options,
-            TemplateSyntaxMode::Standard,
-        );
-        parser.document = true;
-        parser
-    }
-
     /// Parse the source and return the AST
     pub fn parse(mut self) -> (RootNode<'a>, Vec<'a, CompilerError>) {
         // Initialize root node

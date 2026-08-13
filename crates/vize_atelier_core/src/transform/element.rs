@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive};
+use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
@@ -83,25 +83,24 @@ fn maybe_promote_element_to_component(
         return;
     }
 
+    if is_native_tag(&el.tag) {
+        return;
+    }
+
     if is_registered_component(ctx, &el.tag) {
         el.tag_type = ElementType::Component;
         return;
     }
 
-    if ctx.options.custom_elements.matches(&el.tag) {
+    if ctx.custom_elements.matches(&el.tag) {
         return;
     }
 
-    let looks_like_component = el.tag == "component"
+    if el.tag == "component"
         || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
-        || el.tag.contains('-');
-
-    if looks_like_component {
-        el.tag_type = ElementType::Component;
-        return;
-    }
-
-    if has_is_attribute(el) {
+        || el.tag.contains('-')
+        || has_is_attribute(el)
+    {
         el.tag_type = ElementType::Component;
     }
 }
