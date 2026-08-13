@@ -4,6 +4,8 @@ import { setupNuxtLintChecker } from "./lint/checker/setup";
 import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/generation";
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
+import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge";
+import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import "./schema";
 import * as bridgeFastPath from "./bridge-fast-path";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
@@ -56,6 +58,7 @@ type NuxtWithBuilderOptions = {
     };
     buildDir: string;
     dev?: boolean;
+    experimental?: { viteEnvironmentApi?: boolean };
     modules: unknown[];
     rootDir: string;
     router?: {
@@ -392,9 +395,11 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       }
     }
 
-    // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active.
-    // Both plugins handle .vue files; if both are active, @vitejs/plugin-vue
-    // may try to read vize's \0-prefixed virtual module IDs via fs.readFileSync,
+    // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active, except
+    // for SFCs that Vize explicitly excludes and must delegate back to the
+    // host compiler pipeline (for example nuxt-og-image's .takumi.vue files).
+    // If both compilers handle the same .vue module, @vitejs/plugin-vue may
+    // try to read vize's \0-prefixed virtual module IDs via fs.readFileSync,
     // causing "path must not contain null bytes" / ENOENT errors.
     //
     // Nuxt adds @vitejs/plugin-vue AFTER vite:extendConfig but BEFORE
@@ -410,9 +415,18 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
           const p = config.plugins[i];
           const name = p && typeof p === "object" && "name" in p ? p.name : "";
           if (name === "vite:vue") {
-            config.plugins.splice(i, 1);
+            const keepForExcludedSfc = patchNuxtHostVuePluginForCompilerExcludes(
+              p,
+              compilerOptions,
+            );
+            if (!keepForExcludedSfc) {
+              config.plugins.splice(i, 1);
+            }
           } else if (bridgeOptions.stableInjectedKeys && name === "nuxt:compiler:keyed-functions") {
             patchNuxtKeyedFunctionsPlugin(p);
+          }
+          if (isViteBuild && nuxt.options.experimental?.viteEnvironmentApi === true) {
+            patchNuxtClientManifestCloseBundlePlugin(p, nuxt);
           }
           if (bridgeOptions.autoImports) {
             patchNuxtAutoImportTransformPlugin(p, isViteBuild);

@@ -117,7 +117,8 @@ test.describe("npmx.dev dev", () => {
     const html = await verifySSRContent(page, url);
 
     expect(html).toContain("<title>nuxt@4.0.0 docs - npmx</title>");
-    expect(html).toContain('aria-label="Package documentation header"');
+    expect(html).toContain('property="og:title" content="nuxt - Docs"');
+    expect(html).toContain('name="description" content="MIT"');
 
     await page.goto(url, {
       waitUntil: app.waitUntil ?? "networkidle",

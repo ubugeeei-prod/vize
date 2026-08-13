@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 
-import { createPostTransformPlugin, transformScopedPreprocessorCss } from "./compat.ts";
+import {
+  createPostTransformPlugin,
+  createVueCompatPlugin,
+  transformScopedPreprocessorCss,
+} from "./compat.ts";
 import type { VizePluginState } from "./state.ts";
 
 function createState(overrides: Partial<VizePluginState> = {}): VizePluginState {
@@ -52,6 +56,37 @@ const msg = 'hello'
 .card { color: rebeccapurple; }
 </style>
 `;
+
+{
+  const state = createState();
+  const plugin = createVueCompatPlugin(state, {});
+  const api = plugin.api as {
+    options: {
+      template: {
+        compilerOptions: {
+          directiveTransforms: Record<string, unknown>;
+          nodeTransforms: unknown[];
+        };
+      };
+    };
+  };
+  const nodeTransform = () => undefined;
+  const directiveTransform = () => undefined;
+
+  api.options.template.compilerOptions.nodeTransforms.push(nodeTransform);
+  api.options.template.compilerOptions.directiveTransforms.model = directiveTransform;
+
+  assert.equal(
+    api.options.template.compilerOptions.nodeTransforms[0],
+    nodeTransform,
+    "Vue ecosystem plugins should be able to append template compiler node transforms",
+  );
+  assert.equal(
+    api.options.template.compilerOptions.directiveTransforms.model,
+    directiveTransform,
+    "Vue ecosystem plugins should be able to register directive transforms",
+  );
+}
 
 {
   const state = createState();

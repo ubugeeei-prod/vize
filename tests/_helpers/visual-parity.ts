@@ -1,13 +1,14 @@
 import { expect, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
 export interface VisualParityOptions {
   name: string;
   outputDir: string;
   maxDiffRatio?: number;
-  channelThreshold?: number;
+  pixelThreshold?: number;
   fullPage?: boolean;
 }
 
@@ -24,8 +25,8 @@ interface ImageDimensions {
   width: number;
 }
 
-const DEFAULT_CHANNEL_THRESHOLD = 16;
 const DEFAULT_MAX_DIFF_RATIO = 0.002;
+const DEFAULT_PIXEL_THRESHOLD = 0.1;
 
 export async function installVisualStabilityHooks(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -91,13 +92,10 @@ export async function expectVisualParity(
     candidatePage.viewportSize()?.width,
   ].filter((width): width is number => width !== undefined);
   const viewportWidth = viewportWidths.length > 0 ? Math.min(...viewportWidths) : undefined;
-  const result = comparePngBuffers(
-    referenceBuffer,
-    candidateBuffer,
-    options.channelThreshold ?? DEFAULT_CHANNEL_THRESHOLD,
-    diffPath,
+  const result = comparePngBuffers(referenceBuffer, candidateBuffer, diffPath, {
+    threshold: options.pixelThreshold ?? DEFAULT_PIXEL_THRESHOLD,
     viewportWidth,
-  );
+  });
   const maxDiffRatio = options.maxDiffRatio ?? DEFAULT_MAX_DIFF_RATIO;
   const message = [
     `${options.name} visual diff ratio ${result.diffRatio}`,
@@ -109,46 +107,29 @@ export async function expectVisualParity(
   expect(result.diffRatio, message).toBeLessThanOrEqual(maxDiffRatio);
 }
 
-function comparePngBuffers(
+export function comparePngBuffers(
   referenceBuffer: Buffer,
   candidateBuffer: Buffer,
-  channelThreshold: number,
   diffPath: string,
-  viewportWidth?: number,
+  options: { threshold?: number; viewportWidth?: number } = {},
 ): PngCompareResult {
   const reference = PNG.sync.read(referenceBuffer);
   const candidate = PNG.sync.read(candidateBuffer);
-  const { height, width } = visualComparisonDimensions(reference, candidate, viewportWidth);
+  const { height, width } = visualComparisonDimensions(reference, candidate, options.viewportWidth);
   const diff = new PNG({ width, height });
-  let diffPixels = 0;
-
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const diffIdx = pixelIndex(width, x, y);
-      const hasReference = x < reference.width && y < reference.height;
-      const hasCandidate = x < candidate.width && y < candidate.height;
-      const refIdx = hasReference ? pixelIndex(reference.width, x, y) : -1;
-      const candidateIdx = hasCandidate ? pixelIndex(candidate.width, x, y) : -1;
-      const differs =
-        !hasReference ||
-        !hasCandidate ||
-        channelDiff(reference, refIdx, candidate, candidateIdx) > channelThreshold;
-
-      if (differs) {
-        diffPixels++;
-        diff.data[diffIdx] = 255;
-        diff.data[diffIdx + 1] = 0;
-        diff.data[diffIdx + 2] = 0;
-        diff.data[diffIdx + 3] = 255;
-        continue;
-      }
-
-      diff.data[diffIdx] = candidate.data[candidateIdx];
-      diff.data[diffIdx + 1] = candidate.data[candidateIdx + 1];
-      diff.data[diffIdx + 2] = candidate.data[candidateIdx + 2];
-      diff.data[diffIdx + 3] = 160;
-    }
-  }
+  const referenceFrame = normalizePngFrame(reference, width, height);
+  const candidateFrame = normalizePngFrame(candidate, width, height);
+  const diffPixels = pixelmatch(
+    referenceFrame.data,
+    candidateFrame.data,
+    diff.data,
+    width,
+    height,
+    {
+      includeAA: false,
+      threshold: options.threshold ?? DEFAULT_PIXEL_THRESHOLD,
+    },
+  );
 
   fs.writeFileSync(diffPath, PNG.sync.write(diff));
 
@@ -160,6 +141,31 @@ function comparePngBuffers(
     totalPixels,
     width,
   };
+}
+
+function normalizePngFrame(source: PNG, width: number, height: number): PNG {
+  const frame = new PNG({ width, height });
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const targetIdx = pixelIndex(width, x, y);
+      if (x >= source.width || y >= source.height) {
+        frame.data[targetIdx] = 0;
+        frame.data[targetIdx + 1] = 0;
+        frame.data[targetIdx + 2] = 0;
+        frame.data[targetIdx + 3] = 0;
+        continue;
+      }
+
+      const sourceIdx = pixelIndex(source.width, x, y);
+      frame.data[targetIdx] = source.data[sourceIdx];
+      frame.data[targetIdx + 1] = source.data[sourceIdx + 1];
+      frame.data[targetIdx + 2] = source.data[sourceIdx + 2];
+      frame.data[targetIdx + 3] = source.data[sourceIdx + 3];
+    }
+  }
+
+  return frame;
 }
 
 export function visualComparisonDimensions(
@@ -174,17 +180,6 @@ export function visualComparisonDimensions(
     height: Math.max(reference.height, candidate.height),
     width: Math.min(reference.width, candidate.width, viewportWidth ?? Number.POSITIVE_INFINITY),
   };
-}
-
-function channelDiff(reference: PNG, refIdx: number, candidate: PNG, candidateIdx: number): number {
-  let max = 0;
-  for (let i = 0; i < 4; i++) {
-    const delta = Math.abs(reference.data[refIdx + i] - candidate.data[candidateIdx + i]);
-    if (delta > max) {
-      max = delta;
-    }
-  }
-  return max;
 }
 
 function pixelIndex(width: number, x: number, y: number): number {

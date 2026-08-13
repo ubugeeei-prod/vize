@@ -61,6 +61,7 @@
     "element-plus": "2.14.1",
     "graphql": "16.14.2",
     "naive-ui": "2.44.1",
+    "pixelmatch": "7.2.0",
     "pngjs": "catalog:content",
     "primevue": "4.5.5",
     "pug": "catalog:pug-oracle",

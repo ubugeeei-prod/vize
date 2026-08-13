@@ -19,6 +19,10 @@ import { transformVirtualTypeScript } from "./vite-transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
+type VueCompatTemplateCompilerOptions = {
+  directiveTransforms: Record<string, unknown>;
+  nodeTransforms: unknown[];
+};
 
 /**
  * The `vite:vue` shim a host framework probes for a Vue plugin.
@@ -31,6 +35,12 @@ type FilterPatterns = string | RegExp | (string | RegExp)[];
  */
 export function createVueCompatPlugin(state: VizePluginState, options: VizeOptions): Plugin {
   let compilerSfc: unknown = null;
+  const templateOptions: { compilerOptions: VueCompatTemplateCompilerOptions } = {
+    compilerOptions: {
+      directiveTransforms: {},
+      nodeTransforms: [],
+    },
+  };
   const loadCompilerSfc = () => {
     if (!compilerSfc) {
       try {
@@ -61,7 +71,7 @@ export function createVueCompatPlugin(state: VizePluginState, options: VizeOptio
           compiler: loadCompilerSfc(),
           isProduction: state.isProduction ?? false,
           root: state.root ?? process.cwd(),
-          template: {},
+          template: templateOptions,
         };
       },
       get include() {

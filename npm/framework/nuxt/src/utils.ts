@@ -2,7 +2,8 @@ import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 
-export const NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE = /\.takumi\.vue(?:\?|$)/;
+export const NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE =
+  /(?:\.takumi\.vue(?:\?|$)|\.vue\?[^#]*\bog-image-depth=)/;
 function normalizeUrlPrefix(value: string): string {
   const withLeadingSlash = value.startsWith("/") ? value : `/${value}`;
   return withLeadingSlash.endsWith("/") ? withLeadingSlash : `${withLeadingSlash}/`;

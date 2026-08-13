@@ -1154,6 +1154,9 @@ importers:
       naive-ui:
         specifier: 2.44.1
         version: 2.44.1(vue@3.6.0-beta.10(typescript@6.0.3))
+      pixelmatch:
+        specifier: 7.2.0
+        version: 7.2.0
       pngjs:
         specifier: catalog:content
         version: 7.0.0

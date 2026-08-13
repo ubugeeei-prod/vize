@@ -46,6 +46,22 @@ assert.deepStrictEqual(
   "Nuxt compiler options should use on-demand compilation to avoid retaining every SFC in large Nuxt apps",
 );
 
+assert.equal(
+  NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE.test("/repo/app/components/OgImage/Page.takumi.vue"),
+  true,
+  "Nuxt OG image renderer exclude should match Takumi renderer components",
+);
+assert.equal(
+  NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE.test("/repo/app/components/OgLayout.vue?og-image-depth=1"),
+  true,
+  "Nuxt OG image renderer exclude should match depth-scoped renderer SFC requests",
+);
+assert.equal(
+  NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE.test("/repo/app/components/Page.vue?vue&type=script"),
+  false,
+  "Nuxt OG image renderer exclude should not match normal Vue subrequests",
+);
+
 assert.deepStrictEqual(
   buildNuxtCompilerOptions("/repo/app", "/2026/", "/_nuxt/", {
     configFile: "vize.nuxt.config.ts",

@@ -16,6 +16,7 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
+import { setupNpmxCompareMocks } from "../../_helpers/mocking";
 
 interface VisualRoute {
   action?: (page: Page) => Promise<void>;
@@ -57,7 +58,12 @@ const routes: VisualRoute[] = [
     },
   },
   { name: "compare", path: "/compare" },
-  { name: "compare-packages", path: "/compare?packages=vue,react", maxDiffRatio: 0.004 },
+  {
+    name: "compare-packages",
+    path: "/compare?packages=vue,react",
+    maxDiffRatio: 0.004,
+    mocks: setupNpmxCompareMocks,
+  },
   { name: "package-vue", path: "/package/vue", maxDiffRatio: 0.004 },
   { name: "package-vue-version", path: "/package/vue/v/3.5.29", maxDiffRatio: 0.004 },
   {

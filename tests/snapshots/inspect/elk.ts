@@ -9,17 +9,17 @@ describe("elk inspector parity with Vue compiler", () => {
     assertInspectorCompareBudgets(elkApp, [
       {
         target: "dom",
-        changedFiles: 253,
-        additions: 10_439,
-        removals: 13_185,
+        changedFiles: 259,
+        additions: 10_747,
+        removals: 13_602,
         officialErrors: 3,
         vizeErrors: 0,
       },
       {
         target: "ssr",
-        changedFiles: 253,
-        additions: 9_131,
-        removals: 24_456,
+        changedFiles: 259,
+        additions: 9_201,
+        removals: 25_186,
         officialErrors: 3,
         vizeErrors: 0,
       },

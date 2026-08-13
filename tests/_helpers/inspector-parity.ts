@@ -51,8 +51,8 @@ export function assertInspectorCompareBudgets(
     assert.equal(report.schema, "vize.inspector.compare");
     assert.equal(report.target, budget.target);
     assert.ok(report.summary.fileCount > 0, `${app.name}:${budget.target} should inspect files`);
-    assertBudget(report, budget, app.name);
     writeInspectorReport(app.name, budget.target, report);
+    assertBudget(report, budget, app.name);
   }
 }
 
@@ -105,9 +105,18 @@ function assertBudget(
   const label = `${appName}:${budget.target}`;
   assert.equal(report.summary.officialErrors, budget.officialErrors, `${label} official errors`);
   assert.equal(report.summary.vizeErrors, budget.vizeErrors, `${label} vize errors`);
-  assert.ok(report.summary.changedFiles <= budget.changedFiles, `${label} changed file budget`);
-  assert.ok(report.summary.additions <= budget.additions, `${label} addition budget`);
-  assert.ok(report.summary.removals <= budget.removals, `${label} removal budget`);
+  assert.ok(
+    report.summary.changedFiles <= budget.changedFiles,
+    `${label} changed file budget: ${report.summary.changedFiles} > ${budget.changedFiles}`,
+  );
+  assert.ok(
+    report.summary.additions <= budget.additions,
+    `${label} addition budget: ${report.summary.additions} > ${budget.additions}`,
+  );
+  assert.ok(
+    report.summary.removals <= budget.removals,
+    `${label} removal budget: ${report.summary.removals} > ${budget.removals}`,
+  );
 }
 
 function writeInspectorReport(
