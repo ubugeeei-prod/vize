@@ -98,6 +98,58 @@ const props = defineProps<{ title: string }>()
 }
 
 #[test]
+fn typed_art_template_docs_keep_mappings_across_unicode_and_crlf_sources() {
+    let lf_source = r#"<script setup lang="ts">
+const simpleLabel: string = "型付き"
+const props = defineProps<{ title: string }>()
+</script>
+
+<art title="ボタン" component="./Button.vue">
+  <variant name="Primary" default>
+    <p>ラベル → {{ simpleLabel }} ・ 見出し ✅ {{ props.title }}</p>
+  </variant>
+</art>
+"#;
+    let crlf_source = lf_source.replace('\n', "\r\n");
+
+    for (endings, source) in [("lf", lf_source), ("crlf", crlf_source.as_str())] {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Unicode.art.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let virtual_docs = state.get_virtual_docs(&uri).unwrap();
+        let template = virtual_docs.art_template(0).unwrap();
+        assert!(
+            !template.content.contains("__VIZE_ctx."),
+            "typed art template must use setup bindings directly ({endings}):\n{}",
+            template.content,
+        );
+
+        for marker in ["simpleLabel", "props.title"] {
+            let source_offset = source.rfind(marker).unwrap();
+            let generated_offset = template
+                .source_map
+                .to_generated(source_offset as u32)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "missing {endings} mapping for {marker:?}:\n{}",
+                        template.content
+                    )
+                }) as usize;
+            assert_eq!(
+                &template.content[generated_offset..generated_offset + marker.len()],
+                marker,
+                "{endings} mapping for {marker:?} should land on the authored expression:\n{}",
+                template.content,
+            );
+        }
+    }
+}
+
+#[test]
 fn update_art_virtual_docs_isolates_script_setup_per_variant() {
     let state = ServerState::new();
     let uri = Url::parse("file:///Counter.art.vue").unwrap();

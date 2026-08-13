@@ -39,7 +39,7 @@ function format(value: string, precision: number): string {
 
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
-    <p>{{ simpleLabel }} {{ format('art', 2) }} {{ imported(10, 16) }}</p>
+    <p>ラベル → {{ simpleLabel }} ・ 桁 ✅ {{ format('art', 2) }} {{ imported(10, 16) }}</p>
   </variant>
 </art>
 "#;
@@ -66,7 +66,7 @@ function format(value: string, precision: number): string {
 
         for (marker, authored_word, expected) in [
             (
-                "simpleLabel }} {{ format",
+                "simpleLabel }}",
                 "simpleLabel",
                 &["simpleLabel", "string"][..],
             ),

@@ -218,11 +218,18 @@ const editedLabel = "edited"
     futures::executor::block_on(server.did_change(full_change(uri.clone(), 4, &renamed)));
     let docs = server.state.get_virtual_docs(&uri).unwrap();
     assert_eq!(docs.art_templates.len(), 2);
-    assert!(
-        docs.art_template(1)
-            .unwrap()
-            .content
-            .contains("editedLabel")
+    let renamed_template = docs.art_template(1).unwrap();
+    assert!(renamed_template.content.contains("editedLabel"));
+    let source_offset = renamed.rfind("editedLabel").unwrap();
+    let generated_offset = renamed_template
+        .source_map
+        .to_generated(source_offset as u32)
+        .expect("renamed variant mapping") as usize;
+    assert_eq!(
+        &renamed_template.content[generated_offset..generated_offset + "editedLabel".len()],
+        "editedLabel",
+        "the renamed variant mapping should follow the shifted authored offset:\n{}",
+        renamed_template.content,
     );
 
     futures::executor::block_on(server.did_change(full_change(uri.clone(), 5, &deleted)));
