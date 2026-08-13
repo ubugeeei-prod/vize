@@ -15,7 +15,7 @@
 - [ ] P0-4 Bench baselines and CI gating (`budgets.toml`)
 - [ ] P0-5 Corpus baseline snapshot + diff tool
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
-- [ ] P0-7 Croquis consumption matrix as tracked artifact
+- [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
 - [ ] P0-8 Rule-parity matrix (SFC × JSX)
 - [ ] P0-9 `Span` type + `SourceLocation` consumer inventory
 - [ ] P0-10 Folio harness skeleton + VIR absorption
@@ -141,9 +141,9 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `tools/davinci/croquis-consumers.mjs`: for each public product on `crates/vize_croquis/src/croquis.rs` (the ~25 `pub` fields + exported types), resolves consumers **symbol-aware** — rustdoc-JSON or a syn-based scan over `use` paths and field accesses, so aliases/re-exports resolve — with plain text grep only as a cross-check; emits `davinci-road/plan/croquis-consumption.md` with `product × consuming-crate × site-count`
-- [ ] Verify output matches the hand-audited 2026-08-13 numbers (`EffectGraph`→doctor only; `RaceConditionTracker`/`ProvideInjectTracker`→none; etc.) — discrepancies get investigated, not papered over
-- [ ] Staleness check `tests/tooling/davinci-matrices.test.ts`: regenerates and diffs; fails CI when committed artifact is stale
+- [x] `tools/davinci/croquis-consumers.mjs`: for each public product on `crates/vize_croquis/src/croquis.rs` (the ~25 `pub` fields + exported types), resolves consumers **symbol-aware** — rustdoc-JSON or a syn-based scan over `use` paths and field accesses, so aliases/re-exports resolve — with plain text grep only as a cross-check; emits `davinci-road/plan/croquis-consumption.md` with `product × consuming-crate × site-count` *(landed as a `use`-declaration parser with per-file alias tables, `pub use` re-export chains, and typed-receiver field-access counting; grep disagreements reported in the artifact; a rustdoc-JSON upgrade remains possible later)*
+- [x] Verify output matches the hand-audited 2026-08-13 numbers (`EffectGraph`→doctor only; `RaceConditionTracker`/`ProvideInjectTracker`→none; etc.) — discrepancies get investigated, not papered over *(exact tracker types confirmed at zero external code references; the matrix additionally surfaces sibling product types — `EffectGraphSummary`, `RaceConditionRisk`, provide keys — consumed by `vize_croquis_cf`, plus one direct `croquis.race_conditions` read in `vize_croquis_cf/src/rules/race_conditions.rs`, which the hand audit's "outside croquis" framing did not count)*
+- [x] Staleness check `tests/tooling/davinci-matrices.test.ts`: regenerates and diffs; fails CI when committed artifact is stale
 
 **Acceptance:** matrix committed; staleness test demonstrably fails on an injected fake consumer then passes after regen.
 
