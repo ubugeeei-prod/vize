@@ -324,6 +324,7 @@ function emptySummary() {
     intentionalDivergenceCount: 0,
     patinaOnlyRuleFindingCount: 0,
     baselineParseErrorCount: 0,
+    baselineInvalidRangeCount: 0,
     falsePositiveRatio: 0,
     falseNegativeRatio: 0,
   };

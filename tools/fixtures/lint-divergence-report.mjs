@@ -237,6 +237,7 @@ function sumTotals(artifacts) {
     "intentionalDivergenceCount",
     "patinaOnlyRuleFindingCount",
     "baselineParseErrorCount",
+    "baselineInvalidRangeCount",
   ];
   const totals = Object.fromEntries(keys.map((key) => [key, 0]));
   for (const artifact of artifacts) {

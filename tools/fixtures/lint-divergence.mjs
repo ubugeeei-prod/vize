@@ -158,6 +158,7 @@ export function compareLintFindings({
     patinaOnlyRuleFindingCount: patinaOnlyRuleFindings.length,
     baselineParseErrorCount: baselineInput.parseErrorCount,
     baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
+    baselineInvalidRangeCount: baselineInput.invalidRangeCount,
     falsePositiveRatio: ratio(falsePositives.length, comparablePatina.length),
     falseNegativeRatio: ratio(falseNegatives.length, comparableBaseline.length),
   };

@@ -93,6 +93,7 @@ export function collectBaselineFindings(results, cwd) {
   const findings = [];
   let parseErrorCount = 0;
   let excludedNonVueCount = 0;
+  let invalidRangeCount = 0;
   for (const [index, result] of results.entries()) {
     const label = `eslint results[${index}]`;
     if (result == null || typeof result !== "object" || !Array.isArray(result.messages)) {
@@ -111,23 +112,36 @@ export function collectBaselineFindings(results, cwd) {
         excludedNonVueCount += 1;
         continue;
       }
+      const range = {
+        line: message.line,
+        column: message.column,
+        endLine: message.endLine ?? message.line,
+        endColumn: message.endColumn ?? message.column,
+      };
+      if (!isValidRange(range)) {
+        invalidRangeCount += 1;
+        continue;
+      }
       findings.push(
         lintRecord(
           file,
           message.ruleId,
           severity(message.severity, messageLabel),
-          {
-            line: message.line,
-            column: message.column,
-            endLine: message.endLine ?? message.line,
-            endColumn: message.endColumn ?? message.column,
-          },
+          range,
           message.message,
         ),
       );
     }
   }
-  return { findings, parseErrorCount, excludedNonVueCount };
+  return { findings, parseErrorCount, excludedNonVueCount, invalidRangeCount };
+}
+
+function isValidRange(range) {
+  const values = [range.line, range.column, range.endLine, range.endColumn];
+  if (values.some((value) => !Number.isSafeInteger(value) || value < 1)) return false;
+  return (
+    range.endLine > range.line || (range.endLine === range.line && range.endColumn >= range.column)
+  );
 }
 
 function severity(value, label) {

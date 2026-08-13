@@ -87,6 +87,10 @@ function unusableLintReason(artifact) {
   if (parseErrors > 0) {
     return `eslint-plugin-vue could not parse ${parseErrors} compared file(s)`;
   }
+  const invalidRanges = artifact.divergence.summary.baselineInvalidRangeCount;
+  if (invalidRanges > 0) {
+    return `eslint-plugin-vue reported ${invalidRanges} finding(s) with invalid source ranges`;
+  }
   return null;
 }
 

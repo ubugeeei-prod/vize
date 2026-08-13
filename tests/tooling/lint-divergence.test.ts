@@ -100,6 +100,7 @@ test("the divergence ledger keys on the full location tuple, not on counts", () 
     patinaOnlyRuleFindingCount: 0,
     baselineParseErrorCount: 0,
     baselineExcludedNonVueCount: 0,
+    baselineInvalidRangeCount: 0,
     falsePositiveRatio: 0.5,
     falseNegativeRatio: 0.5,
   });
@@ -224,6 +225,45 @@ test("parse errors are counted out rather than read as a parity gap", () => {
   assert.equal(result.summary.baselineParseErrorCount, 1);
   assert.equal(result.summary.baselineExcludedNonVueCount, 1);
   assert.equal(result.summary.baselineFindingCount, 0);
+});
+
+test("baseline findings with invalid ranges are counted out as unusable evidence", () => {
+  const result = compare(
+    [],
+    [
+      eslintResult("src/App.vue", [
+        {
+          ruleId: "vue/no-v-html",
+          severity: 2,
+          ...span(7, 1, 0, 0),
+          message: "bad location",
+        },
+      ]),
+    ],
+  );
+
+  assert.deepEqual(result.falseNegatives, []);
+  assert.equal(result.summary.baselineInvalidRangeCount, 1);
+  assert.equal(result.summary.baselineFindingCount, 0);
+});
+
+test("patina findings with invalid ranges remain fail-closed", () => {
+  assert.throws(
+    () =>
+      compare(
+        [
+          {
+            file: "src/App.vue",
+            ruleId: "vue/no-v-html",
+            severity: 2,
+            ...span(7, 1, 0, 0),
+            message: "bad location",
+          },
+        ],
+        [eslintResult("src/App.vue", [])],
+      ),
+    /finding range must be positive safe integers: src\/App\.vue vue\/no-v-html/u,
+  );
 });
 
 test("a baseline rule missing from the pinned map is a hard error", () => {

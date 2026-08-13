@@ -69,6 +69,10 @@ test("lint divergence treats parse errors and empty measurements as unusable evi
     "eslint-plugin-vue could not parse 1 compared file(s)",
   );
   assert.equal(
+    attachBudget(baseArtifact({ baselineInvalidRangeCount: 1 })).budget.unusableReason,
+    "eslint-plugin-vue reported 1 finding(s) with invalid source ranges",
+  );
+  assert.equal(
     attachBudget({ ...baseArtifact(), files: { comparedCount: 0 } }).budget.unusableReason,
     "the project selected no Vue files",
   );
@@ -116,6 +120,7 @@ function baseArtifact(summary = {}) {
         falsePositiveCount: 0,
         falseNegativeCount: 0,
         baselineParseErrorCount: 0,
+        baselineInvalidRangeCount: 0,
         ...summary,
       },
     },
