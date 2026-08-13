@@ -48,6 +48,13 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
   ];
   const config = {
     extends: configRelativePath(configDir, sourcePath),
+    compilerOptions: {
+      // The release matrix runs the current pinned vue-tsc/TypeScript baseline
+      // against old fixture configs. Inherited TS 6 deprecation errors are not
+      // project diagnostics, and without this the baseline aborts before it can
+      // measure the same SFC corpus as Vize.
+      ignoreDeprecations: "6.0",
+    },
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),

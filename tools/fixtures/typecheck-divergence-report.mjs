@@ -102,6 +102,7 @@ export function runTypecheckDivergenceReport(argv = process.argv.slice(2)) {
     fixtureRoot,
     vizeReport: vizeRun.payload.parsed,
     coverage,
+    configuration,
     vizeLaunch,
     vueTsc,
     baselineArgs,

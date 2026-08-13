@@ -146,6 +146,50 @@ test(
   },
 );
 
+test(
+  "materialized baseline silences inherited TypeScript 6 deprecation errors",
+  vueTscOptions,
+  (t) => {
+    const version = spawnSync(vueTsc, ["--version"], { encoding: "utf8" }).stdout;
+    if (!/\b6\./u.test(version)) {
+      t.skip("vue-tsc is not using TypeScript 6");
+      return;
+    }
+
+    const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-deprecation-baseline-project-"));
+    const fixtureRoot = path.join(temp, "fixture");
+    const reportDir = path.join(temp, "report");
+    fs.mkdirSync(path.join(fixtureRoot, "src"), { recursive: true });
+    fs.mkdirSync(reportDir);
+    fs.writeFileSync(
+      path.join(fixtureRoot, "tsconfig.json"),
+      `${JSON.stringify({
+        compilerOptions: {
+          baseUrl: ".",
+          moduleResolution: "node10",
+          target: "ES5",
+        },
+      })}\n`,
+    );
+    fs.writeFileSync(path.join(fixtureRoot, "src/App.vue"), "<template />\n");
+
+    try {
+      const project = materializeBaselineProject(
+        fixtureRoot,
+        reportDir,
+        { id: "fixture", tsconfig: "tsconfig.json" },
+        { fileCount: 1, files: [{ file: "src/App.vue" }] },
+      );
+      const result = runVueTsc(project.path, fixtureRoot);
+      assert.doesNotMatch(result.stdout, /TS510[17]/u);
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(JSON.parse(project.source).compilerOptions.ignoreDeprecations, "6.0");
+    } finally {
+      fs.rmSync(temp, { recursive: true, force: true });
+    }
+  },
+);
+
 function runVueTsc(project: string, cwd: string) {
   return spawnSync(vueTsc, ["--noEmit", "--pretty", "false", "--listFiles", "-p", project], {
     cwd,

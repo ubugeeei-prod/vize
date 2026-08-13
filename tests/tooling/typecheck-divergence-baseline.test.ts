@@ -144,6 +144,37 @@ test("zero diagnostics on both sides passes when both checked the same Vue files
   }
 });
 
+test("seeded mutation oracle tries the next deterministic candidate when a probe is invisible", () => {
+  const fixture = setup({
+    baselineFiles: ["src/App.vue", "src/Other.vue"],
+    vizeDiagnostics: [],
+    baselineOutput: "",
+  });
+  try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, "src", "App.vue"),
+      "<!-- vize-mutation-invisible -->\n<template />\n",
+    );
+    fs.writeFileSync(path.join(fixture.fixtureRoot, "src", "Other.vue"), "<template />\n");
+    updateVizeOutput(fixture, (parsed) => {
+      parsed.fileCount = 2;
+      parsed.files = [
+        { file: "src/App.vue", diagnostics: [] },
+        { file: "src/Other.vue", diagnostics: [] },
+      ];
+    });
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const oracle = readJson(artifactPath(fixture, "json")).mutationOracle;
+    assert.equal(oracle.passed, true);
+    assert.equal(oracle.file, "src/Other.vue");
+    assert.equal(oracle.states[1].sharedCount, 1);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("--budget-mode record-only reports an unusable baseline as a warning", () => {
   // The release path still has to say so out loud: a green shard that measured
   // nothing is exactly what this verdict exists to make visible.

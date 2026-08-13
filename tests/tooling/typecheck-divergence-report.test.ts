@@ -159,6 +159,9 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     const generatedBase = `${fixtureBase}/.generated`;
     assert.deepEqual(readJson(baselineProject), {
       extends: `${generatedBase}/tsconfig.json`,
+      compilerOptions: {
+        ignoreDeprecations: "6.0",
+      },
       files: [
         path
           .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "src/App.vue"))

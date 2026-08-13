@@ -98,6 +98,7 @@ export function createSeededMutationOracle({
   fixtureRoot,
   vizeReport,
   coverage,
+  configuration,
   vizeLaunch,
   vueTsc,
   baselineArgs,
@@ -113,6 +114,12 @@ export function createSeededMutationOracle({
   );
   if (coverage.verdict !== "usable") {
     return unusableMutation(seed, coverage.unusableReason ?? "Vue corpus coverage is unusable");
+  }
+  if (configuration?.verdict === "unusable") {
+    return unusableMutation(
+      seed,
+      configuration.unusableReason ?? "vue-tsc project configuration is unusable",
+    );
   }
 
   const sharedFiles = vizeReport.files
@@ -132,14 +139,44 @@ export function createSeededMutationOracle({
     );
   }
 
-  const candidate = selectMutationCandidate(sharedFiles, seed, fixtureRoot);
-  if (candidate == null) {
+  let failedOracle = null;
+  let candidateCount = 0;
+  for (const candidate of selectMutationCandidates(sharedFiles, seed, fixtureRoot)) {
+    candidateCount += 1;
+    const oracle = observeMutationCandidate({
+      project,
+      fixtureRoot,
+      candidate,
+      vizeLaunch,
+      vueTsc,
+      baselineArgs,
+      documentedDifferences,
+    });
+    if (oracle.passed) return oracle;
+    failedOracle = oracle;
+  }
+  if (candidateCount === 0) {
     return unusableMutation(
       seed,
       "seeded mutation found no authored Vue file accepting a TS probe",
     );
   }
-  const { file, cleanSource, brokenSource, line, column } = candidate;
+  return (
+    failedOracle ??
+    unusableMutation(seed, "seeded mutation found no authored Vue file accepting a TS probe")
+  );
+}
+
+function observeMutationCandidate({
+  project,
+  fixtureRoot,
+  candidate,
+  vizeLaunch,
+  vueTsc,
+  baselineArgs,
+  documentedDifferences,
+}) {
+  const { seed, file, cleanSource, brokenSource, line, column } = candidate;
   // The probe statement and its expected diagnostic are one contract, so both
   // sides come from `seededMutationDiagnostic` rather than repeated literals.
   const diagnostic = {
@@ -312,15 +349,14 @@ function byteOrder(left, right) {
   return Buffer.compare(Buffer.from(left), Buffer.from(right));
 }
 
-function selectMutationCandidate(sharedFiles, seed, fixtureRoot) {
+function* selectMutationCandidates(sharedFiles, seed, fixtureRoot) {
   const start = Number.parseInt(seed.slice(0, 8), 16) % sharedFiles.length;
   for (let offset = 0; offset < sharedFiles.length; offset += 1) {
     const file = sharedFiles[(start + offset) % sharedFiles.length];
     const cleanSource = readFileSync(resolve(fixtureRoot, file), "utf8");
     const mutation = buildSeededMutation(cleanSource);
-    if (mutation != null) return { file, cleanSource, ...mutation };
+    if (mutation != null) yield { seed, file, cleanSource, ...mutation };
   }
-  return null;
 }
 
 function errorMessage(error) {
