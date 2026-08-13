@@ -21,6 +21,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     "core_tools_mode",
     "core_tools_timeout_ms",
     "lsp_mode",
+    "lint_divergence_mode",
   ]);
   assert.deepEqual(dispatch.inputs?.budget_mode, {
     description: "Typecheck divergence budget handling",
@@ -44,6 +45,13 @@ test("real-project workflow schedules every balanced fixture shard", () => {
   });
   assert.deepEqual(dispatch.inputs?.lsp_mode, {
     description: "LSP lifecycle gate handling",
+    required: false,
+    default: "enforce",
+    type: "choice",
+    options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.lint_divergence_mode, {
+    description: "Patina lint divergence gate handling",
     required: false,
     default: "enforce",
     type: "choice",
@@ -175,6 +183,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /tools\/fixtures\/lint-divergence-report\.mjs/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
+    /--measure-coverage-gap/,
+    /--budget-mode "\$LINT_DIVERGENCE_MODE"/,
     /--vize-bin target\/ci\/vize/,
     /--timeout-ms 600000/,
     /--output-dir "\$FIXTURE_REPORT_DIR"/,
@@ -182,6 +192,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   ]) {
     assert.match(lintDivergence.run ?? "", pattern);
   }
+  assert.equal(
+    lintDivergence.env?.LINT_DIVERGENCE_MODE,
+    "${{ inputs.lint_divergence_mode || 'enforce' }}",
+  );
   assert.ok(
     syntaxHighlighterIndex < glyphPropertiesIndex,
     "the hydrated fixture corpus must run through the shipped syntax highlighter",
@@ -228,4 +242,15 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   assert.match(divergence.run ?? "", /--budget-mode "\$BUDGET_MODE"/);
   assert.match(divergence.run ?? "", /--vue-tsc-bin tests\/node_modules\/\.bin\/vue-tsc/);
   assert.equal(divergence.env?.BUDGET_MODE, "${{ inputs.budget_mode || 'enforce' }}");
+
+  const surfaceVerdict = findStep(steps, "Enforce all real-project surface verdicts");
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /lint_divergence_verdict="\$VIZE_LINT_DIVERGENCE_OUTCOME"/,
+  );
+  assert.match(
+    surfaceVerdict.run ?? "",
+    /\$LINT_DIVERGENCE_MODE" == "record-only"[\s\S]*?lint_divergence_verdict=success/,
+  );
+  assert.match(surfaceVerdict.run ?? "", /--surface "lint-divergence=\$lint_divergence_verdict"/);
 });

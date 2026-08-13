@@ -9,6 +9,12 @@ import {
   runBaseline,
   selectComparableRules,
 } from "./lint-divergence-baseline.mjs";
+import {
+  assertBudgetsPassed,
+  attachBudget,
+  parseBudgetMode,
+  summarizeBudgets,
+} from "./lint-divergence-budget.mjs";
 import { renderMarkdown } from "./lint-divergence-markdown.mjs";
 import { compareLintFindings } from "./lint-divergence.mjs";
 import { collectRunEvidence } from "./run-evidence.mjs";
@@ -76,6 +82,7 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
     if (artifact != null) artifacts.push(artifact);
   }
   writeIndex(args.outputDir, evidence, args, artifacts);
+  assertBudgetsPassed(artifacts, args.budgetMode);
   return artifacts;
 }
 
@@ -106,9 +113,9 @@ async function measureProject(context) {
     eslintResults,
     documentedDivergences: context.ledger,
   });
-  const artifact = {
+  const artifact = attachBudget({
     schema: "vize.fixtureLintDivergenceRun",
-    version: 1,
+    version: 2,
     project: project.id,
     revision: project.revision,
     preset: args.preset ?? "all-mapped",
@@ -124,7 +131,7 @@ async function measureProject(context) {
       durationMs: baselineDurationMs,
     },
     divergence,
-  };
+  });
   const jsonPath = join(args.outputDir, `${project.id}-lint-divergence.json`);
   const markdownPath = join(args.outputDir, `${project.id}-lint-divergence.md`);
   writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -203,6 +210,7 @@ function writeIndex(outputDir, evidence, args, artifacts) {
     evidence,
     preset: args.preset ?? "all-mapped",
     projectCount: artifacts.length,
+    budget: summarizeBudgets(artifacts),
     totals: sumTotals(artifacts),
     projects: artifacts.map((artifact) => ({
       project: artifact.project,
@@ -254,6 +262,7 @@ function readJson(path) {
 function parseArgs(argv) {
   const args = {
     measureCoverageGap: false,
+    budgetMode: "enforce",
     outputDir: join(repoRoot, ".vize", "lint-divergence"),
     preset: defaultPreset,
     projects: [],
@@ -270,6 +279,7 @@ function parseArgs(argv) {
       return argv[++index];
     };
     if (arg === "--output-dir") args.outputDir = resolve(value());
+    else if (arg === "--budget-mode") args.budgetMode = parseBudgetMode(value());
     else if (arg === "--preset") args.preset = value();
     else if (arg === "--all-mapped-rules") args.preset = null;
     else if (arg === "--measure-coverage-gap") args.measureCoverageGap = true;
@@ -303,6 +313,7 @@ function printHelpAndExit() {
       "  --shard-index <n>       Zero-based project shard index",
       "  --shard-count <n>       Total balanced project shards",
       "  --output-dir <dir>      Report directory",
+      "  --budget-mode <mode>    enforce or record-only (default: enforce)",
       "  --vize-bin <path>       Vize executable",
       "  --timeout-ms <n>        Per-project vize lint timeout",
       "",

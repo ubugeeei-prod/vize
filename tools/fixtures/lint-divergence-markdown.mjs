@@ -36,6 +36,8 @@ export function renderMarkdown(artifact) {
     `Intentional divergences: ${summary.intentionalDivergenceCount}`,
     `Patina-only rule findings: ${summary.patinaOnlyRuleFindingCount}`,
     `Baseline parse errors: ${summary.baselineParseErrorCount}`,
+    `Budget verdict: ${artifact.budget?.verdict ?? "not-evaluated"}`,
+    `Budget passed: ${artifact.budget?.passed ?? false}`,
     "",
   ];
   if (artifact.baseline.comparedRuleCount === 0) {

@@ -33,6 +33,14 @@ on:
         options:
           - enforce
           - record-only
+      lint_divergence_mode:
+        description: "Patina lint divergence gate handling"
+        required: false
+        default: "enforce"
+        type: choice
+        options:
+          - enforce
+          - record-only
   schedule:
     # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
     - cron: "37 5 * * 0"
@@ -171,10 +179,14 @@ jobs:
         id: lint_divergence
         if: ${{ !cancelled() }}
         continue-on-error: true
+        env:
+          LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
         run: |
           node tools/fixtures/lint-divergence-report.mjs \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
+            --measure-coverage-gap \
+            --budget-mode "$LINT_DIVERGENCE_MODE" \
             --vize-bin target/ci/vize \
             --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
@@ -250,6 +262,7 @@ jobs:
         env:
           BUDGET_MODE: ${{ inputs.budget_mode || 'enforce' }}
           CORE_TOOLS_MODE: ${{ inputs.core_tools_mode || 'enforce' }}
+          LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
           LSP_MODE: ${{ inputs.lsp_mode || 'enforce' }}
           VIZE_WAIVER_AUDIT_OUTCOME: ${{ steps.waiver_audit.outcome }}
           VIZE_TYPECHECK_DEPENDENCIES_OUTCOME: ${{ steps.typecheck_dependencies.outcome }}
@@ -263,6 +276,10 @@ jobs:
           core_tools_verdict="$VIZE_CORE_TOOLS_OUTCOME"
           if [[ "$CORE_TOOLS_MODE" == "record-only" && "$core_tools_verdict" == "failure" ]]; then
             core_tools_verdict=success
+          fi
+          lint_divergence_verdict="$VIZE_LINT_DIVERGENCE_OUTCOME"
+          if [[ "$LINT_DIVERGENCE_MODE" == "record-only" && "$lint_divergence_verdict" == "failure" ]]; then
+            lint_divergence_verdict=success
           fi
           lsp_verdict="$VIZE_LSP_OUTCOME"
           if [[ "$LSP_MODE" == "record-only" && "$lsp_verdict" == "failure" ]]; then
@@ -278,7 +295,7 @@ jobs:
             --surface "typecheck-dependencies=$VIZE_TYPECHECK_DEPENDENCIES_OUTCOME" \
             --surface "core-tools=$core_tools_verdict" \
             --surface "lsp=$lsp_verdict" \
-            --surface "lint-divergence=$VIZE_LINT_DIVERGENCE_OUTCOME" \
+            --surface "lint-divergence=$lint_divergence_verdict" \
             --surface "syntax-highlighter=$VIZE_SYNTAX_HIGHLIGHTER_OUTCOME" \
             --surface "glyph=$VIZE_GLYPH_OUTCOME" \
             --surface "typecheck-divergence=$typecheck_divergence_verdict"

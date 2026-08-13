@@ -235,6 +235,7 @@ test("the runner classifies a real divergence over a synthetic pinned project", 
     ]);
 
     assert.equal(artifact.schema, "vize.fixtureLintDivergenceRun");
+    assert.equal(artifact.version, 2);
     assert.equal(artifact.project, "lint-divergence-fixture");
     assert.equal(artifact.files.comparedCount, 1);
     assert.equal(
@@ -248,6 +249,15 @@ test("the runner classifies a real divergence over a synthetic pinned project", 
     assert.equal(artifact.divergence.summary.sharedCount, 1);
     assert.equal(artifact.divergence.summary.falsePositiveCount, 0);
     assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
+    assert.deepEqual(artifact.budget, {
+      maxFalsePositiveCount: 0,
+      maxFalseNegativeCount: 0,
+      falsePositivePassed: true,
+      falseNegativePassed: true,
+      unusableReason: null,
+      verdict: "passed",
+      passed: true,
+    });
     assert.deepEqual(
       artifact.divergence.shared.map((pair: { ruleId: string }) => pair.ruleId),
       ["vue/no-v-html"],
@@ -258,6 +268,16 @@ test("the runner classifies a real divergence over a synthetic pinned project", 
     );
     assert.equal(index.schema, "vize.fixtureLintDivergenceIndex");
     assert.equal(index.projectCount, 1);
+    assert.deepEqual(index.budget, {
+      status: "success",
+      passed: true,
+      projectCount: 1,
+      passedCount: 1,
+      failedCount: 0,
+      unusableCount: 0,
+      breachedCount: 0,
+      failedProjects: [],
+    });
     assert.equal(index.totals.sharedCount, 1);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
