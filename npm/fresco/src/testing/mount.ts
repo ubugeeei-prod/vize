@@ -22,7 +22,7 @@ import {
 } from "@vue/runtime-core";
 import { SCREEN_READER_KEY } from "../accessibility.js";
 import { lastKeyEvent, type KeyEvent } from "../app.js";
-import { APP_KEY, createAppContext } from "../composables/useApp.js";
+import { APP_KEY, createAppContext, type UseAppReturn } from "../composables/useApp.js";
 import { createCursorContext, CURSOR_KEY } from "../composables/useCursor.js";
 import { createFocusManager, FOCUS_KEY, type FocusManager } from "../composables/useFocus.js";
 import { createStreamsContext, STREAMS_KEY } from "../composables/useStreams.js";
@@ -44,6 +44,8 @@ export interface MountedFresco {
   root: FrescoElement;
   /** The Vue app instance (for `provide`-level introspection if needed). */
   app: VueApp<FrescoElement>;
+  /** App context provided to composables such as `useApp` and `useWindowSize`. */
+  appContext: UseAppReturn;
   /** Focus manager provided to the tree, as the real app would. */
   focusManager: FocusManager;
   /** Screen reader flag provided to the tree; writable to flip modes. */
@@ -80,7 +82,8 @@ export function mountFresco(
     write: () => true,
   } as unknown as NodeJS.WriteStream;
 
-  app.provide(APP_KEY, createAppContext({ width, height, stdout }));
+  const appContext = createAppContext({ width, height, stdout });
+  app.provide(APP_KEY, appContext);
   app.provide(FOCUS_KEY, focusManager);
   app.provide(SCREEN_READER_KEY, screenReaderEnabled);
   app.provide(CURSOR_KEY, createCursorContext(noopWrite));
@@ -105,6 +108,7 @@ export function mountFresco(
   return {
     root: rootElement,
     app,
+    appContext,
     focusManager,
     screenReaderEnabled,
     unmount: () => app.unmount(),

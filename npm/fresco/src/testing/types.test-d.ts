@@ -1,0 +1,52 @@
+/** Compile-only assertions for the Fresco testing harness entrypoint. */
+
+import { h } from "@vue/runtime-core";
+
+import { TextInput } from "../components/index.js";
+import {
+  renderTui,
+  type FrescoFrameSnapshot,
+  type FrescoInputDriver,
+  type RenderTuiResult,
+} from "./index.js";
+
+const rendered: RenderTuiResult = renderTui(() => h(TextInput, { modelValue: "value" }));
+const input: FrescoInputDriver = rendered.input;
+const frame: string = rendered.lastFrame();
+const frames: readonly string[] = rendered.frames;
+const snapshot: FrescoFrameSnapshot = rendered.frameSnapshot();
+const snapshots: readonly FrescoFrameSnapshot[] = rendered.frameSnapshots;
+
+void frame;
+void frames;
+void snapshot.tree.children;
+void snapshots;
+
+export const keyFrame: Promise<FrescoFrameSnapshot> = input.key({
+  key: "enter",
+  ctrl: true,
+  eventType: "press",
+});
+export const textFrame: Promise<FrescoFrameSnapshot> = input.text("abc");
+export const pasteFrame: Promise<FrescoFrameSnapshot> = input.paste("pasted");
+export const resizeFrame: Promise<FrescoFrameSnapshot> = input.resize(120, 40);
+export const mouseFrame: Promise<FrescoFrameSnapshot> = input.mouse({ x: 2, y: 3, button: "left" });
+export const focusFrame: Promise<FrescoFrameSnapshot> = input.focus(true);
+export const compositionStartFrame: Promise<FrescoFrameSnapshot> = input.compositionStart();
+export const compositionUpdateFrame: Promise<FrescoFrameSnapshot> = input.compositionUpdate(
+  "かな",
+  1,
+);
+export const compositionEndFrame: Promise<FrescoFrameSnapshot> = input.compositionEnd("かな");
+
+// @ts-expect-error - key event phases are closed.
+void input.key({ eventType: "hold" });
+
+// @ts-expect-error - resize dimensions must be numbers.
+void input.resize("120", 40);
+
+// @ts-expect-error - mouse injection requires coordinates.
+void input.mouse({ button: "left" });
+
+// @ts-expect-error - frame outputs are strings.
+const _invalidOutput: number = snapshot.output;

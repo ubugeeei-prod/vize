@@ -11,7 +11,12 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/components/index.ts", "src/composables/index.ts"],
+    entry: [
+      "src/index.ts",
+      "src/components/index.ts",
+      "src/composables/index.ts",
+      "src/testing/index.ts",
+    ],
     format: "esm",
     dts: true,
     clean: true,
