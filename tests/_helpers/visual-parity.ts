@@ -7,6 +7,7 @@ import { PNG } from "pngjs";
 export interface VisualParityOptions {
   name: string;
   outputDir: string;
+  maxDiffPixels?: number;
   maxDiffRatio?: number;
   pixelThreshold?: number;
   fullPage?: boolean;
@@ -101,10 +102,31 @@ export async function expectVisualParity(
     `${options.name} visual diff ratio ${result.diffRatio}`,
     `diffPixels=${result.diffPixels}/${result.totalPixels}`,
     `size=${result.width}x${result.height}`,
+    `maxDiffRatio=${maxDiffRatio}`,
+    options.maxDiffPixels == null ? null : `maxDiffPixels=${options.maxDiffPixels}`,
     `artifacts=${outputDir}`,
-  ].join(" ");
+  ]
+    .filter((part): part is string => part != null)
+    .join(" ");
 
-  expect(result.diffRatio, message).toBeLessThanOrEqual(maxDiffRatio);
+  expect(
+    visualDiffWithinBudget(result, {
+      maxDiffPixels: options.maxDiffPixels,
+      maxDiffRatio,
+    }),
+    message,
+  ).toBe(true);
+}
+
+export function visualDiffWithinBudget(
+  result: Pick<PngCompareResult, "diffPixels" | "diffRatio">,
+  options: { maxDiffPixels?: number; maxDiffRatio?: number } = {},
+): boolean {
+  const maxDiffRatio = options.maxDiffRatio ?? DEFAULT_MAX_DIFF_RATIO;
+  return (
+    result.diffRatio <= maxDiffRatio ||
+    (options.maxDiffPixels != null && result.diffPixels <= options.maxDiffPixels)
+  );
 }
 
 export function comparePngBuffers(

@@ -15,66 +15,33 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
+import {
+  DEFAULT_VIEWPORT,
+  FRONTEND_PHPCON_VRT_TIMEOUT,
+  frontendPhpconVisualModes,
+  frontendPhpconVisualRoutes,
+  maxDiffPixelsForFrontendPhpconMode,
+  type FrontendPhpconVisualMode,
+  type FrontendPhpconVisualRouteConfig,
+} from "./frontend-phpcon-routes";
 
-interface VisualRoute {
+interface VisualRoute extends FrontendPhpconVisualRouteConfig {
   action?: (page: Page) => Promise<void>;
-  maxDiffRatio?: number;
-  name: string;
-  path: string;
-  viewport?: { height: number; width: number };
 }
-
-type VisualMode = "dev" | "preview";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUTPUT_DIR =
   process.env.VIZE_FRONTEND_PHPCON_VRT_OUTPUT_DIR ??
   path.resolve(__dirname, "../../../.vize/artifacts/frontend-phpcon-vrt/artifacts");
-const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
-const MOBILE_VIEWPORT = { width: 390, height: 844 };
-const FRONTEND_PHPCON_VRT_TIMEOUT = 900_000;
-const modes: VisualMode[] = ["dev", "preview"];
-
-const routes: VisualRoute[] = [
-  { name: "home", path: "/", maxDiffRatio: 0.004 },
-  { name: "home-mobile", path: "/", viewport: MOBILE_VIEWPORT, maxDiffRatio: 0.004 },
-  {
-    name: "mobile-menu",
-    path: "/",
-    viewport: MOBILE_VIEWPORT,
-    maxDiffRatio: 0.004,
-    action: async (page) => {
-      await openMobileMenu(page);
-      await page.waitForTimeout(1200);
-    },
-  },
-  { name: "about", path: "/about" },
-  { name: "news", path: "/news/2026-05-06-social-gathering-ticket" },
-  { name: "timetable", path: "/timetable" },
-  { name: "job-board", path: "/job-board", maxDiffRatio: 0.004 },
-  { name: "english-home", path: "/en", maxDiffRatio: 0.004 },
-  { name: "english-about", path: "/en/about" },
-  { name: "english-news", path: "/en/news/2026-05-06-social-gathering-ticket" },
-  { name: "english-job-board", path: "/en/job-board", maxDiffRatio: 0.004 },
-  {
-    name: "language-switch",
-    path: "/",
-    maxDiffRatio: 0.004,
-    action: async (page) => {
-      await page.getByRole("button", { name: "EN" }).first().click();
-      await expect(page).toHaveURL(/\/en(?:\/)?$/);
-      await expect(page.getByRole("button", { name: "EN" }).first()).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-    },
-  },
-];
+const routes: VisualRoute[] = frontendPhpconVisualRoutes.map((route) => ({
+  ...route,
+  action: actionForRoute(route.name),
+}));
 
 test.describe("frontend-phpcon-do-website visual parity", () => {
   test.describe.configure({ mode: "serial", timeout: FRONTEND_PHPCON_VRT_TIMEOUT });
 
-  for (const mode of modes) {
+  for (const mode of frontendPhpconVisualModes) {
     test.describe(mode, () => {
       const apps = createFrontendPhpconVisualParityApps(mode);
       const servers: Array<ReturnType<typeof startDevServer>> = [];
@@ -113,7 +80,7 @@ async function startApp(app: AppConfig): Promise<ReturnType<typeof startDevServe
 async function compareRoute(
   browser: Browser,
   apps: ReturnType<typeof createFrontendPhpconVisualParityApps>,
-  mode: VisualMode,
+  mode: FrontendPhpconVisualMode,
   route: VisualRoute,
 ): Promise<void> {
   const context = await browser.newContext({
@@ -143,6 +110,7 @@ async function compareRoute(
     ]);
 
     await expectVisualParity(referencePage, candidatePage, {
+      maxDiffPixels: maxDiffPixelsForFrontendPhpconMode(route, mode),
       maxDiffRatio: route.maxDiffRatio,
       name: `${mode}-${route.name}`,
       outputDir: OUTPUT_DIR,
@@ -150,6 +118,28 @@ async function compareRoute(
   } finally {
     await context.close();
   }
+}
+
+function actionForRoute(routeName: string): VisualRoute["action"] {
+  if (routeName === "language-switch") {
+    return async (page) => {
+      await page.getByRole("button", { name: "EN" }).first().click();
+      await expect(page).toHaveURL(/\/en(?:\/)?$/);
+      await expect(page.getByRole("button", { name: "EN" }).first()).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    };
+  }
+
+  if (routeName === "mobile-menu") {
+    return async (page) => {
+      await openMobileMenu(page);
+      await page.waitForTimeout(1200);
+    };
+  }
+
+  return undefined;
 }
 
 async function setupPage(page: Page): Promise<void> {

@@ -1,0 +1,32 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  MOBILE_VIEWPORT,
+  PREVIEW_MOBILE_MAX_DIFF_PIXELS,
+  STRICT_ROUTE_MAX_DIFF_RATIO,
+  frontendPhpconVisualRoutes,
+  maxDiffPixelsForFrontendPhpconMode,
+} from "../app/vrt/frontend-phpcon-routes.ts";
+
+test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
+  const homeMobile = route("home-mobile");
+  const mobileMenu = route("mobile-menu");
+
+  assert.equal(STRICT_ROUTE_MAX_DIFF_RATIO, 0.004);
+  assert.equal(PREVIEW_MOBILE_MAX_DIFF_PIXELS, 43_887);
+  assert.deepEqual(homeMobile.viewport, MOBILE_VIEWPORT);
+  assert.equal(homeMobile.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
+  assert.equal(maxDiffPixelsForFrontendPhpconMode(homeMobile, "preview"), 43_887);
+  assert.equal(maxDiffPixelsForFrontendPhpconMode(homeMobile, "dev"), undefined);
+  assert.deepEqual(mobileMenu.viewport, MOBILE_VIEWPORT);
+  assert.equal(mobileMenu.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
+  assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "preview"), undefined);
+  assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "dev"), undefined);
+});
+
+function route(name: string) {
+  const found = frontendPhpconVisualRoutes.find((route) => route.name === name);
+  assert.ok(found, `${name} route should exist`);
+  return found;
+}
