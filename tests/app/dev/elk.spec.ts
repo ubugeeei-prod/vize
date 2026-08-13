@@ -20,15 +20,23 @@ import {
   verifySSRContent,
   waitForMountedAppContent,
 } from "../../_helpers/assertions";
+import {
+  ELK_RENDER_ROUTE,
+  readElkRenderRouteSourceEvidence,
+  type ElkRenderRouteSourceEvidence,
+} from "./elk-route-contract";
 
 const app = elkApp;
+const ELK_RENDER_URL = `${app.url}${ELK_RENDER_ROUTE}`;
 const ELK_MIN_CONTENT_TEXT_LENGTH = 40;
 
 test.describe("elk dev", () => {
   let devServer: ChildProcess;
+  let renderRouteSourceEvidence: ElkRenderRouteSourceEvidence | undefined;
 
   test.beforeAll(async ({ browser }) => {
     if (app.setup) app.setup();
+    renderRouteSourceEvidence = readElkRenderRouteSourceEvidence(app.cwd);
     await ensurePortFree(app.port);
 
     console.log(`Starting dev server for ${app.name}...`);
@@ -49,7 +57,7 @@ test.describe("elk dev", () => {
     const warmupPage = await browser.newPage();
     try {
       await disableViteHmrClient(warmupPage);
-      await warmupPage.goto(app.url, {
+      await warmupPage.goto(ELK_RENDER_URL, {
         waitUntil: app.waitUntil ?? "networkidle",
         timeout: 30_000,
       });
@@ -65,6 +73,9 @@ test.describe("elk dev", () => {
   });
 
   test.afterAll(async () => {
+    if (renderRouteSourceEvidence) {
+      expect(readElkRenderRouteSourceEvidence(app.cwd)).toEqual(renderRouteSourceEvidence);
+    }
     console.log(`Stopping dev server for ${app.name}...`);
     killProcess(devServer);
     await new Promise((r) => setTimeout(r, 2000));
@@ -73,7 +84,7 @@ test.describe("elk dev", () => {
   test("page renders with #__nuxt attached", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
 
-    const response = await page.goto(app.url, {
+    const response = await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -82,19 +93,21 @@ test.describe("elk dev", () => {
     const mountEl = page.locator(app.mountSelector);
     await expect(mountEl).toBeAttached({ timeout: 15_000 });
     await waitForElkPageContent(page);
+    await expect(mountEl).toContainText("GitHub");
   });
 
   test("SSR: server-rendered HTML is not empty", async ({ page }) => {
-    const html = await verifySSRContent(page, app.url);
+    const html = await verifySSRContent(page, ELK_RENDER_URL);
     // SSR should produce non-empty HTML with at least the #__nuxt container
     expect(html).toContain("__nuxt");
+    expect(html).toContain("GitHub");
     expect(html.length).toBeGreaterThan(100);
   });
 
   test("no hydration mismatch errors", async ({ page }) => {
     const hydrationErrors = await collectHydrationErrors(page);
 
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -107,7 +120,7 @@ test.describe("elk dev", () => {
   });
 
   test("scoped CSS: data-v-* attributes exist", async ({ page }) => {
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -118,7 +131,7 @@ test.describe("elk dev", () => {
   });
 
   test("styles are applied: computed styles are non-default", async ({ page }) => {
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -131,7 +144,7 @@ test.describe("elk dev", () => {
   });
 
   test("navigation components are visible", async ({ page }) => {
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -146,7 +159,7 @@ test.describe("elk dev", () => {
   test("no fatal console errors", async ({ page }) => {
     const errors = await collectConsoleErrors(page, app.name);
 
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -161,7 +174,7 @@ test.describe("elk dev", () => {
   });
 
   test("i18n: no raw key patterns displayed", async ({ page }) => {
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
@@ -186,7 +199,7 @@ test.describe("elk dev", () => {
   test("screenshot", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
 
-    await page.goto(app.url, {
+    await page.goto(ELK_RENDER_URL, {
       waitUntil: app.waitUntil ?? "networkidle",
       timeout: 30_000,
     });
