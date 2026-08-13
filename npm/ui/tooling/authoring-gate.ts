@@ -3,12 +3,10 @@ import path from "node:path";
 
 import { parse } from "@vue/compiler-sfc";
 
+import { VIZE_UI_SFC_AUTHORING_RULES, type SfcAuthoringRuleId } from "./authoring-contract.ts";
+
 /** Rule identifiers enforced by the component authoring gate. */
-export type AuthoringRule =
-  | "behavior-table"
-  | "interaction-test"
-  | "source-regex-behavior"
-  | "explicit-sfc";
+export type AuthoringRule = SfcAuthoringRuleId;
 
 /** One violation of the component authoring standard. */
 export interface AuthoringViolation {
@@ -25,6 +23,9 @@ export interface AuthoringViolation {
 const SOURCE_REGEX_ASSERTION = /\.(?:match|doesNotMatch)\(\s*source\b/;
 const SFC_SOURCE_READ = /readFile\([^)]*\.vue/;
 const SOURCE_CONTRACT_PRAGMA = "source-contract:";
+const AUTHORING_RULE_IDS = new Set<AuthoringRule>(
+  VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id),
+);
 
 /**
  * Audit a source directory against the Vize UI component authoring standard.
@@ -55,8 +56,10 @@ export async function auditComponentAuthoring(
   const behaviorSources = await Promise.all(behaviorFiles.map(read));
 
   const violations: AuthoringViolation[] = [];
-  const report = (file: string, rule: AuthoringRule, message: string) =>
+  const report = (file: string, rule: AuthoringRule, message: string) => {
+    assertPublishedAuthoringRule(rule);
     violations.push({ file: path.relative(root, file), rule, message });
+  };
 
   for (const sfc of sfcFiles) {
     const basename = path.basename(sfc);
@@ -99,6 +102,12 @@ export async function auditComponentAuthoring(
   return violations.sort(
     (left, right) => left.file.localeCompare(right.file) || left.rule.localeCompare(right.rule),
   );
+}
+
+function assertPublishedAuthoringRule(rule: AuthoringRule): void {
+  if (!AUTHORING_RULE_IDS.has(rule)) {
+    throw new Error(`Authoring rule ${rule} is not published in the SFC authoring contract`);
+  }
 }
 
 /**

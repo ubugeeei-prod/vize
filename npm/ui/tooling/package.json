@@ -6,12 +6,13 @@
   "license": "MIT",
   "type": "module",
   "exports": {
+    "./authoring-contract": "./authoring-contract.ts",
     "./authoring-gate": "./authoring-gate.ts",
     "./lint-sfc": "./lint-sfc.ts"
   },
   "scripts": {
-    "check": "vp check authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
-    "fmt": "vp fmt --write authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
+    "check": "vp check authoring-contract.ts authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
+    "fmt": "vp fmt --write authoring-contract.ts authoring-contract.md authoring-gate.ts authoring-gate.test.ts lint-sfc.ts lint-sfc.test.ts",
     "test": "vp exec node --test authoring-gate.test.ts lint-sfc.test.ts"
   },
   "dependencies": {

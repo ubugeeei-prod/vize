@@ -4,6 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
+import {
+  VIZE_UI_SFC_AUTHORING_CONTRACT,
+  VIZE_UI_SFC_AUTHORING_CONTRACT_SCHEMA_VERSION,
+  VIZE_UI_SFC_AUTHORING_RULES,
+  VIZE_UI_SFC_QUALITY_GATES,
+} from "./authoring-contract.ts";
 import { auditComponentAuthoring, formatAuthoringViolations } from "./authoring-gate.ts";
 
 const COMPLIANT_SFC = `<script setup lang="ts">
@@ -25,6 +31,34 @@ const { open = false } = defineProps<{
 /* Headless by design. */
 </style>
 `;
+
+void test("publishes a versioned SFC authoring and quality-gate contract", () => {
+  assert.equal(VIZE_UI_SFC_AUTHORING_CONTRACT_SCHEMA_VERSION, 1);
+  assert.equal(VIZE_UI_SFC_AUTHORING_CONTRACT.schemaVersion, 1);
+  assert.equal(VIZE_UI_SFC_AUTHORING_CONTRACT.packageName, "@vizejs/ui");
+  assert.equal(VIZE_UI_SFC_AUTHORING_CONTRACT.sourceKind, "vue-sfc");
+  assert.equal(VIZE_UI_SFC_AUTHORING_CONTRACT.stability, "stable");
+
+  const ruleIds = VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id);
+  const sortedRuleIds = [...ruleIds].sort();
+  assert.equal(new Set(ruleIds).size, ruleIds.length, "rule ids must be unique");
+
+  for (const rule of VIZE_UI_SFC_AUTHORING_RULES) {
+    assert.ok(rule.title.length > 0, `${rule.id} must publish a title`);
+    assert.ok(rule.requirement.length > 0, `${rule.id} must publish a requirement`);
+    assert.ok(rule.evidence.length > 0, `${rule.id} must publish evidence`);
+    assert.ok(rule.remediation.length > 0, `${rule.id} must publish remediation`);
+  }
+
+  const enforcedRuleIds = new Set(
+    VIZE_UI_SFC_QUALITY_GATES.flatMap((gate) => gate.enforcedByRules),
+  );
+  assert.deepEqual(
+    [...enforcedRuleIds].sort(),
+    sortedRuleIds,
+    "every authoring rule must be attached to a quality gate",
+  );
+});
 
 async function withFixture(
   files: Readonly<Record<string, string>>,
@@ -66,6 +100,28 @@ void test("requires a behavior table and an interaction test per SFC", async () 
     );
     assert.match(formatAuthoringViolations(violations), /TheWidget\.vue \[behavior-table\]/);
   });
+});
+
+void test("emits only rule ids published by the machine-readable contract", async () => {
+  await withFixture(
+    {
+      "TheWidget.vue": "<script setup>const value = 1;</script>\n",
+      "widget.test.ts": [
+        'import { readFile } from "node:fs/promises";',
+        'const source = await readFile(new URL("./TheWidget.vue", import.meta.url), "utf8");',
+        "assert.match(source, /value/);",
+      ].join("\n"),
+    },
+    async (directory) => {
+      const emitted = new Set(
+        (await auditComponentAuthoring(directory)).map((violation) => violation.rule),
+      );
+      assert.deepEqual(
+        [...emitted].sort(),
+        VIZE_UI_SFC_AUTHORING_RULES.map((rule) => rule.id).sort(),
+      );
+    },
+  );
 });
 
 void test("rejects regex-on-source behavior assertions without a pragma", async () => {
