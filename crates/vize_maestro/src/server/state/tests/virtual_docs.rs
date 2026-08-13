@@ -52,6 +52,52 @@ const secondaryLabel = ref('secondary')
 }
 
 #[test]
+fn typed_art_template_docs_strip_loose_context_prefixes_and_keep_mappings() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///Button.art.vue").unwrap();
+    let source = r#"<script setup lang="ts">
+const simpleLabel: string = "typed"
+const props = defineProps<{ title: string }>()
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <p>{{ simpleLabel }} {{ props.title }}</p>
+  </variant>
+</art>
+"#;
+
+    state
+        .documents
+        .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+    state.update_virtual_docs(&uri, source);
+
+    let virtual_docs = state.get_virtual_docs(&uri).unwrap();
+    let template = virtual_docs.art_template(0).unwrap();
+    assert!(
+        !template.content.contains("__VIZE_ctx."),
+        "typed art template must use setup bindings directly:\n{}",
+        template.content,
+    );
+    assert!(template.content.contains("= simpleLabel;"));
+    assert!(template.content.contains("= props.title;"));
+
+    for marker in ["simpleLabel", "props.title"] {
+        let source_offset = source.rfind(marker).unwrap();
+        let generated_offset = template
+            .source_map
+            .to_generated(source_offset as u32)
+            .expect("typed art template mapping") as usize;
+        assert_eq!(
+            &template.content[generated_offset..generated_offset + marker.len()],
+            marker,
+            "mapping for {marker:?} should land on the authored expression:\n{}",
+            template.content,
+        );
+    }
+}
+
+#[test]
 fn update_art_virtual_docs_isolates_script_setup_per_variant() {
     let state = ServerState::new();
     let uri = Url::parse("file:///Counter.art.vue").unwrap();

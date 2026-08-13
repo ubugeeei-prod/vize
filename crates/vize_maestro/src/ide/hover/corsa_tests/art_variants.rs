@@ -31,6 +31,7 @@ fn hover_with_corsa_resolves_art_variant_script_callable() {
 
         let source = r#"<script setup lang="ts">
 import { imported } from './format'
+const simpleLabel: string = 'typed'
 function format(value: string, precision: number): string {
   return value.repeat(precision)
 }
@@ -38,7 +39,7 @@ function format(value: string, precision: number): string {
 
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
-    <p>{{ format('art', 2) }} {{ imported(10, 16) }}</p>
+    <p>{{ simpleLabel }} {{ format('art', 2) }} {{ imported(10, 16) }}</p>
   </variant>
 </art>
 "#;
@@ -63,17 +64,24 @@ function format(value: string, precision: number): string {
         ));
         bridge.spawn().await.unwrap();
 
-        for (marker, expected) in [
+        for (marker, authored_word, expected) in [
+            (
+                "simpleLabel }} {{ format",
+                "simpleLabel",
+                &["simpleLabel", "string"][..],
+            ),
             (
                 "format('art'",
-                ["format", "value: string", "precision: number"],
+                "format",
+                &["format", "value: string", "precision: number"][..],
             ),
             (
                 "imported(10",
-                ["imported", "value: number", "radix: number"],
+                "imported",
+                &["imported", "value: number", "radix: number"][..],
             ),
         ] {
-            let offset = source.rfind(marker).unwrap() + 2;
+            let offset = source.rfind(marker).unwrap() + marker.find(authored_word).unwrap() + 2;
             let ctx = IdeContext::new(&state, &uri, offset).unwrap();
             let template = ctx
                 .virtual_docs
@@ -91,7 +99,6 @@ function format(value: string, precision: number): string {
                 .source_map
                 .to_generated(offset as u32)
                 .expect("authored art cursor mapping") as usize;
-            let authored_word = marker.split(['(', '\'']).next().unwrap();
             assert_eq!(
                 &template.content[generated_offset - 2..generated_offset - 2 + authored_word.len()],
                 authored_word,

@@ -144,8 +144,9 @@ fn append_template_payload(
 ) {
     const MARKER: &str = "// Template expressions";
     let payload_start = template.content.find(MARKER).unwrap_or(0);
+    let removals = synthetic_context_prefix_removals(template, payload_start as u32);
     let generated_base = output.len() as u32;
-    output.push_str(&template.content[payload_start..]);
+    append_without_ranges(output, &template.content, payload_start, &removals);
     if !output.ends_with('\n') {
         output.push('\n');
     }
@@ -157,10 +158,74 @@ fn append_template_payload(
         let mut shifted = mapping.clone();
         shifted.source.start += template.source_map.block_offset;
         shifted.source.end += template.source_map.block_offset;
-        shifted.generated.start = generated_base + mapping.generated.start - payload_start as u32;
-        shifted.generated.end = generated_base + mapping.generated.end - payload_start as u32;
+        shifted.generated.start = generated_base + mapping.generated.start
+            - payload_start as u32
+            - removed_bytes_before(mapping.generated.start, &removals);
+        shifted.generated.end = generated_base + mapping.generated.end
+            - payload_start as u32
+            - removed_bytes_before(mapping.generated.end, &removals);
         mappings.push(shifted);
     }
+}
+
+fn synthetic_context_prefix_removals(
+    template: &VirtualDocument,
+    payload_start: u32,
+) -> Vec<SourceRange> {
+    const PREFIX: &str = "__VIZE_ctx.";
+
+    let mut removals = template
+        .source_map
+        .mappings()
+        .iter()
+        .filter_map(|mapping| {
+            let prefix_start = mapping.generated.start.checked_sub(PREFIX.len() as u32)?;
+            if prefix_start < payload_start {
+                return None;
+            }
+            let prefix = template
+                .content
+                .get(prefix_start as usize..mapping.generated.start as usize)?;
+            (prefix == PREFIX).then(|| SourceRange::new(prefix_start, mapping.generated.start))
+        })
+        .collect::<Vec<_>>();
+    removals.sort_by_key(|range| range.start);
+    removals.dedup_by_key(|range| range.start);
+    removals
+}
+
+fn append_without_ranges(
+    output: &mut String,
+    content: &str,
+    start: usize,
+    removals: &[SourceRange],
+) {
+    let mut cursor = start;
+    for removal in removals {
+        let removal_start = removal.start as usize;
+        let removal_end = removal.end as usize;
+        if removal_end <= start || removal_start < cursor {
+            continue;
+        }
+        output.push_str(&content[cursor..removal_start]);
+        cursor = removal_end;
+    }
+    output.push_str(&content[cursor..]);
+}
+
+fn removed_bytes_before(offset: u32, removals: &[SourceRange]) -> u32 {
+    removals
+        .iter()
+        .map(|removal| {
+            if offset <= removal.start {
+                0
+            } else if offset >= removal.end {
+                removal.len()
+            } else {
+                offset - removal.start
+            }
+        })
+        .sum()
 }
 
 fn shift_mapping(mapping: &SourceMapping, source_base: u32, generated_base: u32) -> SourceMapping {

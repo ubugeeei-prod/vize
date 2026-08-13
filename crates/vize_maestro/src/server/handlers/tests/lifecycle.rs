@@ -37,6 +37,17 @@ fn open_vue(server: &MaestroServer, uri: Url, text: &str, version: i32) {
     }));
 }
 
+fn open_art(server: &MaestroServer, uri: Url, text: &str, version: i32) {
+    futures::executor::block_on(server.did_open(DidOpenTextDocumentParams {
+        text_document: TextDocumentItem {
+            uri,
+            language_id: "art-vue".to_string(),
+            version,
+            text: text.to_string(),
+        },
+    }));
+}
+
 fn full_change(uri: Url, version: i32, text: &str) -> DidChangeTextDocumentParams {
     DidChangeTextDocumentParams {
         text_document: VersionedTextDocumentIdentifier { uri, version },
@@ -141,6 +152,90 @@ fn did_change_incremental_content_updates_document_and_virtual_docs() {
         .and_then(|docs| docs.script_setup.clone())
         .expect("script setup virtual doc should be regenerated");
     assert!(script_setup.content.contains("count = 2"));
+}
+
+#[test]
+fn did_change_rebuilds_cached_art_variant_docs_after_create_edit_rename_delete() {
+    let service = quiet_service();
+    let server = service.inner();
+    let uri = uri("Lifecycle.art.vue");
+    let before = r#"<script setup lang="ts">
+const primaryLabel = "primary"
+const secondaryLabel = "secondary"
+const editedLabel = "edited"
+</script>
+
+<art title="Lifecycle">
+  <variant name="Primary" default>
+    <p>{{ primaryLabel }}</p>
+  </variant>
+</art>
+"#;
+    let created = before.replace(
+        "</art>",
+        "  <variant name=\"Secondary\">\n    <p>{{ secondaryLabel }}</p>\n  </variant>\n</art>",
+    );
+    let edited = created.replace("{{ secondaryLabel }}", "{{ editedLabel }}");
+    let renamed = edited.replace("name=\"Secondary\"", "name=\"Renamed\"");
+    let deleted = renamed.replace(
+        "  <variant name=\"Renamed\">\n    <p>{{ editedLabel }}</p>\n  </variant>\n",
+        "",
+    );
+
+    open_art(server, uri.clone(), before, 1);
+    let docs = server.state.get_virtual_docs(&uri).unwrap();
+    assert_eq!(docs.art_templates.len(), 1);
+    assert!(
+        docs.art_template(0)
+            .unwrap()
+            .content
+            .contains("primaryLabel")
+    );
+
+    futures::executor::block_on(server.did_change(full_change(uri.clone(), 2, &created)));
+    let docs = server.state.get_virtual_docs(&uri).unwrap();
+    assert_eq!(docs.art_templates.len(), 2);
+    assert!(
+        docs.art_template(1)
+            .unwrap()
+            .content
+            .contains("secondaryLabel")
+    );
+
+    futures::executor::block_on(server.did_change(full_change(uri.clone(), 3, &edited)));
+    let docs = server.state.get_virtual_docs(&uri).unwrap();
+    let edited_template = &docs.art_template(1).unwrap().content;
+    assert!(
+        edited_template.contains("= editedLabel;"),
+        "edited variant expression was not rebuilt:\n{edited_template}",
+    );
+    assert_eq!(
+        edited_template.matches("secondaryLabel").count(),
+        1,
+        "the stale secondaryLabel expression should be gone while the setup declaration remains:\n{edited_template}",
+    );
+
+    futures::executor::block_on(server.did_change(full_change(uri.clone(), 4, &renamed)));
+    let docs = server.state.get_virtual_docs(&uri).unwrap();
+    assert_eq!(docs.art_templates.len(), 2);
+    assert!(
+        docs.art_template(1)
+            .unwrap()
+            .content
+            .contains("editedLabel")
+    );
+
+    futures::executor::block_on(server.did_change(full_change(uri.clone(), 5, &deleted)));
+    let docs = server.state.get_virtual_docs(&uri).unwrap();
+    assert_eq!(docs.art_templates.len(), 1);
+    assert!(docs.art_template(1).is_none());
+    assert!(
+        !docs
+            .art_template(0)
+            .unwrap()
+            .content
+            .contains("= editedLabel;")
+    );
 }
 
 #[test]
