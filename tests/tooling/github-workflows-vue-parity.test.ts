@@ -131,7 +131,14 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: "${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}",
     VIZE_TEST_BIN: "target/ci/vize",
   });
-  assert.equal(cycles?.run, "vp run --filter './tests' test:check:fixtures:cycles");
+  // `--no-cache` carries the step's environment, so it belongs to the contract
+  // rather than to cache hygiene: Vite+ hands a cached script only its own
+  // passthrough set plus the variables the task config declares, and a
+  // `package.json` script has no task config to declare them in, so a cached
+  // invocation reaches the harness without the floor above, without
+  // `GOMAXPROCS`, and without `RAYON_NUM_THREADS`. It also keeps a
+  // process-budget measurement from being replayed instead of measured.
+  assert.equal(cycles?.run, "vp run --no-cache --filter './tests' test:check:fixtures:cycles");
   assert.equal(
     testsPackage.scripts["test:check:fixtures:cycles"],
     "node tooling/support/check-fixtures/cycles.ts",

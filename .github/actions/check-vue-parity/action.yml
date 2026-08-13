@@ -139,12 +139,21 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
+    # `--no-cache` is load-bearing, not a cache-hygiene preference. A cached
+    # Vite+ script receives only the runner's own passthrough set plus the
+    # variables its task config declares, and a `package.json` script cannot
+    # declare any, so `GOMAXPROCS`, `RAYON_NUM_THREADS` and the cycle-budget
+    # floor were dropped between this step's shell and the harness: run
+    # 31737148023 exported a floor of 8 and its artifact still recorded
+    # `budgetCpuCount: 4`, so the hosted lane measured itself against the
+    # 32-vCPU bound and failed 16 of 20 cycles. Caching a measurement lane is
+    # wrong on its own terms too, since a replayed cycle proves nothing.
     - name: Bound fixture process topology under a constrained PID budget
       shell: bash
       env:
         VIZE_TEST_BIN: target/ci/vize
         VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: ${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}
-      run: vp run --filter './tests' test:check:fixtures:cycles
+      run: vp run --no-cache --filter './tests' test:check:fixtures:cycles
 
     - name: Check Tier-L batch incremental session reuse
       shell: bash
