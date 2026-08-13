@@ -17,6 +17,7 @@ import {
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
 import { waitForMountedAppContent } from "../../_helpers/assertions";
+import { ELK_RENDER_ROUTE, readElkRenderRouteSourceEvidence } from "../dev/elk-route-contract";
 
 interface VisualRoute {
   maxDiffRatio?: number;
@@ -55,8 +56,8 @@ const defaultStorage = {
 } satisfies Record<string, string>;
 
 const routes: VisualRoute[] = [
-  { name: "home", path: "/" },
-  { name: "home-mobile", path: "/", viewport: MOBILE_VIEWPORT },
+  { name: "settings-about", path: ELK_RENDER_ROUTE },
+  { name: "settings-about-mobile", path: ELK_RENDER_ROUTE, viewport: MOBILE_VIEWPORT },
   { name: "explore", path: "/explore" },
   { name: "explore-users", path: "/explore/users" },
   { name: "explore-tags", path: "/explore/tags" },
@@ -69,7 +70,6 @@ const routes: VisualRoute[] = [
   { name: "settings-interface", path: "/settings/interface" },
   { name: "settings-language", path: "/settings/language" },
   { name: "settings-preferences", path: "/settings/preferences" },
-  { name: "settings-about", path: "/settings/about" },
   { name: "notifications", path: "/notifications" },
   { name: "compose", path: "/compose" },
   { name: "share-target", path: "/share-target?text=hello" },
@@ -102,6 +102,7 @@ test.describe("elk visual parity", () => {
 
 async function startApp(app: AppConfig): Promise<ChildProcess> {
   if (app.setup) app.setup();
+  readElkRenderRouteSourceEvidence(app.cwd);
   await ensurePortFree(app.port);
 
   const server = startDevServer(app);

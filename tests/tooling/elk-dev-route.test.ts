@@ -37,8 +37,9 @@ test("elk render route source contract fails closed for each fixture anchor", ()
   }
 });
 
-test("elk dev app-e2e is wired to the deterministic rendered fixture route", () => {
-  const spec = fs.readFileSync(path.join(root, "tests/app/dev/elk.spec.ts"), "utf8");
+test("elk dev and visual app-e2e are wired to the deterministic rendered fixture route", () => {
+  const devSpec = fs.readFileSync(path.join(root, "tests/app/dev/elk.spec.ts"), "utf8");
+  const visualSpec = fs.readFileSync(path.join(root, "tests/app/vrt/elk.spec.ts"), "utf8");
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, "tests/package.json"), "utf8"),
   ) as {
@@ -46,12 +47,16 @@ test("elk dev app-e2e is wired to the deterministic rendered fixture route", () 
   };
 
   assert.equal(ELK_RENDER_ROUTE, "/settings/about");
-  assert.match(spec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
-  assert.match(spec, /await expect\(mountEl\)\.toContainText\("GitHub"\)/);
-  assert.doesNotMatch(spec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
-  assert.doesNotMatch(spec, /verifySSRContent\(page,\s*app\.url\)/);
+  assert.match(devSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
+  assert.match(devSpec, /await expect\(mountEl\)\.toContainText\("GitHub"\)/);
+  assert.doesNotMatch(devSpec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
+  assert.doesNotMatch(devSpec, /verifySSRContent\(page,\s*app\.url\)/);
+  assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
+  assert.match(visualSpec, /path: ELK_RENDER_ROUTE/);
+  assert.doesNotMatch(visualSpec, /path: "\/"(?:[,}])/);
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
+  assert.match(packageJson.scripts?.["test:vrt:elk"] ?? "", /app\/vrt\/elk\.spec\.ts/);
 });
 
 function escapeRegExp(source: string): string {
