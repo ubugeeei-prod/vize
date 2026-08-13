@@ -12,7 +12,10 @@ mod navigation;
 mod responder;
 pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
 #[allow(unused_imports)]
-pub use navigation::{contains_location_range, contains_text_edit, references, rename};
+pub use navigation::{
+    contains_location_range, contains_range, contains_text_edit, document_highlights, references,
+    rename,
+};
 pub use responder::EditorResponder;
 
 struct RawDocumentDiagnostic;
@@ -338,6 +341,7 @@ pub fn editor_capabilities() -> Value {
             "signatureHelp": { "dynamicRegistration": true },
             "hover": { "dynamicRegistration": true },
             "definition": { "dynamicRegistration": true },
+            "documentHighlight": { "dynamicRegistration": true },
             "references": { "dynamicRegistration": true },
             "rename": { "dynamicRegistration": true }
         }

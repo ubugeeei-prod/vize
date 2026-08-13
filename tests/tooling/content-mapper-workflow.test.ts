@@ -15,6 +15,7 @@ const MAESTRO_SUCCESS_LOG = 'echo "Content Mapper Maestro lifecycle cycle $itera
 
 interface WorkflowStep {
   env?: Record<string, string>;
+  name?: string;
   run?: string;
   "working-directory"?: string;
 }
@@ -114,7 +115,8 @@ test("Content Mapper conformance pins and runs the exact upstream project path",
   const editorSteps = steps.filter((step) =>
     editorCommands.every((command) => step.run?.includes(command)),
   );
-  assert.equal(editorSteps.length, 1, "expected one exact editor backend step");
+  assert.equal(editorSteps.length, 1, "expected one mixed editor backend step");
+  assert.equal(editorSteps[0].name, "Run Content Mapper LSP and virtual-overlay editor checks");
   assert.equal(editorSteps[0].env?.TSGO_PATH, "${{ runner.temp }}/tsgo");
   assert.equal(editorSteps[0].env?.VIZE_TEST_CONTENT_MAPPER_TSGO, "${{ runner.temp }}/tsgo");
   const stressSteps = stepsRunning(steps, MAESTRO_COMMAND);

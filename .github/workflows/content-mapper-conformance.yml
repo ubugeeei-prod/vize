@@ -195,7 +195,7 @@ jobs:
           cargo test -p vize --test check_package_resolution_modes_cli -- --nocapture
           cargo test -p vize --test check_package_scope_mode_cli -- --nocapture
           cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture
-      - name: Run exact editor backend conformance
+      - name: Run Content Mapper LSP and virtual-overlay editor checks
         env:
           TSGO_PATH: ${{ runner.temp }}/tsgo
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo

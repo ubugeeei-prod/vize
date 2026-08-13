@@ -12,9 +12,9 @@ mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
     EditorResponder, assert_component_completions, assert_component_members,
     assert_component_navigation, assert_no_generated_uri_or_zero_range, completion,
-    contains_location, copy_fixture, definition, editor_capabilities, file_uri, hover,
-    install_packages, notify_file_changes, position, pull_diagnostics, try_pull_diagnostics,
-    workspace_root,
+    contains_location, contains_range, copy_fixture, definition, document_highlights,
+    editor_capabilities, file_uri, hover, install_packages, notify_file_changes, position,
+    pull_diagnostics, references, rename, try_pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -30,8 +30,6 @@ impl Drop for StopOnDrop<'_> {
 struct RawInitialize;
 struct RawSetContentMapperContributions;
 struct RawSignatureHelp;
-struct RawReferences;
-struct RawRename;
 
 macro_rules! raw_request {
     ($request:ty, $method:literal) => {
@@ -49,8 +47,6 @@ raw_request!(
     "custom/setContentMapperContributions"
 );
 raw_request!(RawSignatureHelp, "textDocument/signatureHelp");
-raw_request!(RawReferences, "textDocument/references");
-raw_request!(RawRename, "textDocument/rename");
 
 struct RawInitialized;
 
@@ -207,14 +203,7 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             );
             assert!(!definition_text.contains(".vue.ts"), "{definition:#}");
 
-            let references = client
-                .request::<RawReferences>(json!({
-                    "textDocument": { "uri": child_uri },
-                    "position": symbol_position,
-                    "context": { "includeDeclaration": true }
-                }))
-                .await
-                .unwrap();
+            let references = references(&client, &child_uri, &symbol_position).await;
             assert_no_generated_uri_or_zero_range(&references);
             let references_text = serde_json::to_string(&references).unwrap();
             assert!(
@@ -223,14 +212,21 @@ fn standard_tsgo_lsp_maps_core_symbol_features_to_authored_vue() {
             );
             assert!(!references_text.contains(".vue.ts"), "{references:#}");
 
-            let rename = client
-                .request::<RawRename>(json!({
-                    "textDocument": { "uri": child_uri },
-                    "position": symbol_position,
-                    "newName": "renamedCount"
-                }))
-                .await
-                .unwrap();
+            let declaration_end = position(&source, declaration_offset + "count".len());
+            let usage_start = position(&source, symbol_offset);
+            let usage_end = position(&source, symbol_offset + "count".len());
+            let highlights = document_highlights(&client, &child_uri, &symbol_position).await;
+            assert_no_generated_uri_or_zero_range(&highlights);
+            assert!(
+                contains_range(&highlights, &declaration_position, &declaration_end),
+                "{highlights:#}"
+            );
+            assert!(
+                contains_range(&highlights, &usage_start, &usage_end),
+                "{highlights:#}"
+            );
+
+            let rename = rename(&client, &child_uri, &symbol_position, "renamedCount").await;
             assert_no_generated_uri_or_zero_range(&rename);
             let rename_text = serde_json::to_string(&rename).unwrap();
             assert!(rename_text.contains(child_uri.as_str()), "{rename:#}");

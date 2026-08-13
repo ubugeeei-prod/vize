@@ -2,6 +2,7 @@ use corsa::lsp::LspClient;
 use serde_json::{Value, json};
 
 pub struct RawReferences;
+pub struct RawDocumentHighlight;
 pub struct RawRename;
 
 impl lsp_types::request::Request for RawReferences {
@@ -16,12 +17,28 @@ impl lsp_types::request::Request for RawRename {
     const METHOD: &'static str = "textDocument/rename";
 }
 
+impl lsp_types::request::Request for RawDocumentHighlight {
+    type Params = Value;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/documentHighlight";
+}
+
 pub async fn references(client: &LspClient, uri: &str, position: &Value) -> Value {
     client
         .request::<RawReferences>(json!({
             "textDocument": { "uri": uri },
             "position": position,
             "context": { "includeDeclaration": true }
+        }))
+        .await
+        .unwrap()
+}
+
+pub async fn document_highlights(client: &LspClient, uri: &str, position: &Value) -> Value {
+    client
+        .request::<RawDocumentHighlight>(json!({
+            "textDocument": { "uri": uri },
+            "position": position
         }))
         .await
         .unwrap()
@@ -46,6 +63,17 @@ pub fn contains_location_range(value: &Value, uri: &str, start: &Value, end: &Va
         Value::Object(object) => {
             object.get("uri") == Some(&Value::String(uri.to_owned()))
                 && object.get("range").and_then(|range| range.get("start")) == Some(start)
+                && object.get("range").and_then(|range| range.get("end")) == Some(end)
+        }
+        _ => false,
+    }
+}
+
+pub fn contains_range(value: &Value, start: &Value, end: &Value) -> bool {
+    match value {
+        Value::Array(values) => values.iter().any(|value| contains_range(value, start, end)),
+        Value::Object(object) => {
+            object.get("range").and_then(|range| range.get("start")) == Some(start)
                 && object.get("range").and_then(|range| range.get("end")) == Some(end)
         }
         _ => false,
