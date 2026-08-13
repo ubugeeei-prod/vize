@@ -40,16 +40,16 @@ exports.runRealServerScenario = async function runRealServerScenario() {
   // the host is aborted on a wall-clock budget without a suite failure, so the
   // last step logged here is the only evidence of where a stall happened.
   const steps = [
-    ["diagnostic at authored span", () => stepDiagnosticAtAuthoredSpan(document)],
-    ["quick fix", () => stepQuickFix(document, editor)],
-    ["format on save", () => stepFormatOnSave(document)],
-    ["semantic tokens", () => stepSemanticTokens(document)],
-    ["rename", () => stepRename(document)],
+    { label: "diagnostic at authored span", run: () => stepDiagnosticAtAuthoredSpan(document) },
+    { label: "quick fix", run: () => stepQuickFix(document, editor) },
+    { label: "format on save", run: () => stepFormatOnSave(document) },
+    { label: "semantic tokens", run: () => stepSemanticTokens(document) },
+    { label: "rename", run: () => stepRename(document) },
   ];
-  for (const [label, step] of steps) {
+  for (const { label, run } of steps) {
     const startedAt = Date.now();
     console.log(`[vize-host-real] scenario ${label}`);
-    await step();
+    await run();
     console.log(`[vize-host-real] scenario ${label} finished after ${Date.now() - startedAt}ms`);
   }
 };
