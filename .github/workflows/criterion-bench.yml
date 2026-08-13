@@ -49,7 +49,7 @@ env:
 jobs:
   criterion-ab:
     name: criterion-ab
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     permissions:
       contents: read
@@ -141,7 +141,7 @@ jobs:
 
   dialect-guard:
     name: dialect-guard
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     permissions:
       contents: read

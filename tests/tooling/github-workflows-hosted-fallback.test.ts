@@ -42,6 +42,7 @@ const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
     "test-report",
     "test-report-comment",
   ],
+  "criterion-bench.yml": ["criterion-ab", "dialect-guard"],
   "e2e.yml": ["app-readiness-producer", "app-e2e-producer"],
   "miri.yml": ["miri"],
   "pkg-pr-new.yml": ["publish-preview"],
