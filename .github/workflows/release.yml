@@ -446,9 +446,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: ".node-version", cache: true, run-install: false }
+      - name: Setup runtime package managers
+        uses: ./.github/actions/setup-runtime-package-managers
+        with: { node-version-file: ".node-version" }
       - uses: ./.github/actions/setup-moonbit
       - name: Install native package tooling dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...'

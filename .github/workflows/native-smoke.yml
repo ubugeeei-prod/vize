@@ -139,11 +139,10 @@ jobs:
       - name: Select Node compatibility version
         shell: bash
         run: echo "${{ matrix.node-version }}" > .node-version.ci
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      - name: Setup runtime package managers
+        uses: ./.github/actions/setup-runtime-package-managers
         with:
           node-version-file: ".node-version.ci"
-          cache: true
-          run-install: false
       # MSVC env vars (INCLUDE, LIB, etc.) must be set at job scope, not just
       # inside the setup-moonbit composite action — `vp run … build` later in
       # the job invokes moonbit's `cc` integration through `generate:rule-types`

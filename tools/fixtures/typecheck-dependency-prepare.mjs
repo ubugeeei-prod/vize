@@ -34,13 +34,16 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   requireCleanFixture(fixtureRoot, "before dependency installation");
 
   const manager = performance.packageManager;
-  const probe = spawnSync(manager, ["--version"], {
+  const managerRunner = packageManagerRunner(manager, performance.packageManagerVersion);
+  const probe = runPackageManager(managerRunner, ["--version"], {
     cwd: fixtureRoot,
     encoding: "utf8",
     timeout: 10_000,
   });
   if (probe.error != null || probe.status !== 0) {
-    throw new Error(`${manager} is not runnable: ${errorMessage(probe.error ?? probe.status)}`);
+    throw new Error(
+      `${managerRunner.label} is not runnable: ${errorMessage(probe.error ?? probe.status)}`,
+    );
   }
   const detectedVersion = (probe.stdout ?? "").trim();
   if (detectedVersion !== performance.packageManagerVersion) {
@@ -51,7 +54,7 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
 
   const installArgs = installArguments(manager);
   const startedAt = Date.now();
-  const install = spawnSync(manager, installArgs, {
+  const install = runPackageManager(managerRunner, installArgs, {
     cwd: fixtureRoot,
     encoding: "utf8",
     env: {
@@ -65,10 +68,10 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   });
   const durationMs = Date.now() - startedAt;
   if (install.error != null) {
-    throw new Error(`${manager} install failed to run: ${errorMessage(install.error)}`);
+    throw new Error(`${managerRunner.label} install failed to run: ${errorMessage(install.error)}`);
   }
   if (install.status !== 0) {
-    throw new Error(`${manager} install exited with status ${install.status}`);
+    throw new Error(`${managerRunner.label} install exited with status ${install.status}`);
   }
 
   const lockfileAfter = readFileSync(lockfilePath);
@@ -76,7 +79,7 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
     throw new Error(`${manager} install modified frozen lockfile ${performance.lockfile}`);
   }
   requireCleanFixture(fixtureRoot, "after dependency installation");
-  const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs);
+  const baselinePrepare = runBaselinePrepare(project, fixtureRoot, args.timeoutMs, managerRunner);
   validateTypecheckPerformanceTarget(project, fixtureRoot, { requireBaseline: true });
   requireCleanFixture(fixtureRoot, "after baseline preparation");
   const artifact = {
@@ -109,17 +112,11 @@ export function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   return artifact;
 }
 
-function runBaselinePrepare(project, fixtureRoot, timeoutMs) {
+function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
   const command = project.typecheckPerformance.baseline?.prepare;
   if (command == null) return null;
   const startedAt = Date.now();
-  const prepared = spawnSync(command[0], command.slice(1), {
-    cwd: fixtureRoot,
-    encoding: "utf8",
-    env: { ...process.env, CI: "true", NUXT_TELEMETRY_DISABLED: "1" },
-    maxBuffer: 1024 * 1024 * 1024,
-    timeout: timeoutMs,
-  });
+  const prepared = runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner);
   const durationMs = Date.now() - startedAt;
   if (prepared.error != null) {
     throw new Error(`baseline prepare failed to run: ${errorMessage(prepared.error)}`);
@@ -136,12 +133,49 @@ function runBaselinePrepare(project, fixtureRoot, timeoutMs) {
   };
 }
 
+function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner) {
+  const options = {
+    cwd: fixtureRoot,
+    encoding: "utf8",
+    env: { ...process.env, CI: "true", NUXT_TELEMETRY_DISABLED: "1" },
+    maxBuffer: 1024 * 1024 * 1024,
+    timeout: timeoutMs,
+  };
+  if (command[0] === managerRunner.manager) {
+    return runPackageManager(managerRunner, command.slice(1), options);
+  }
+  return spawnSync(command[0], command.slice(1), options);
+}
+
 export function installArguments(manager) {
   return {
     npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
     pnpm: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     yarn: ["install", "--immutable", "--mode=skip-build"],
   }[manager];
+}
+
+function packageManagerRunner(manager, version) {
+  if (manager === "pnpm" || manager === "yarn") {
+    return {
+      manager,
+      command: "corepack",
+      prefixArgs: [`${manager}@${version}`],
+      label: `${manager}@${version}`,
+    };
+  }
+  return { manager, command: manager, prefixArgs: [], label: manager };
+}
+
+function runPackageManager(runner, args, options) {
+  if (runner.prefixArgs.length === 0) {
+    return spawnSync(runner.command, args, options);
+  }
+  // Fixtures intentionally carry the pinned package-manager contract in the
+  // registry, not package.json. Prevent Corepack from walking up to the
+  // repository root and applying Vize's own packageManager field instead.
+  const env = { ...process.env, ...options.env, COREPACK_ENABLE_PROJECT_SPEC: "0" };
+  return spawnSync(runner.command, [...runner.prefixArgs, ...args], { ...options, env });
 }
 
 function requireCleanFixture(fixtureRoot, phase) {

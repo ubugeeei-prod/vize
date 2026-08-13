@@ -2,152 +2,27 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const script = path.join(root, "tools", "fixtures", "typecheck-dependency-prepare.mjs");
-const commitSha = "a".repeat(40);
-const packageManagers = [
-  {
-    name: "npm",
-    version: "11.9.0",
-    lockfile: "package-lock.json",
-    lockfileContents: '{"lockfileVersion":3}\n',
-    installArgs: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
-  },
-  {
-    name: "pnpm",
-    version: "10.0.0",
-    lockfile: "pnpm-lock.yaml",
-    lockfileContents: "lockfileVersion: '9.0'\n",
-    installArgs: ["install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
-  },
-  {
-    name: "yarn",
-    version: "4.9.2",
-    lockfile: "yarn.lock",
-    lockfileContents: "__metadata:\n  version: 8\n",
-    installArgs: ["install", "--immutable", "--mode=skip-build"],
-  },
-] as const;
-
-function setup(packageManager: (typeof packageManagers)[number] = packageManagers[1]) {
-  const fixtureRoot = fs.mkdtempSync(
-    path.join(root, "tests", "_fixtures", "typecheck-dependencies-"),
-  );
-  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typecheck-dependencies-out-"));
-  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typecheck-dependencies-manager-"));
-  const fixturePath = path.relative(root, fixtureRoot);
-  const project = {
-    id: "fixture",
-    fixturePath,
-    revision: "b".repeat(40),
-    vueGlobs: ["src/**/*.vue"],
-    tsconfig: "tsconfig.json",
-    typecheckPerformance: {
-      enabled: true,
-      compareTo: "vue-tsc",
-      packageManager: packageManager.name,
-      packageManagerVersion: packageManager.version,
-      lockfile: packageManager.lockfile,
-      hangTimeoutMs: 5_000,
-      maxFalsePositiveRatio: 0.05,
-      maxFalseNegativeRatio: 0.05,
-    },
-  };
-  fs.mkdirSync(path.join(fixtureRoot, "src"));
-  fs.writeFileSync(path.join(fixtureRoot, "src", "App.vue"), "<template />\n");
-  fs.writeFileSync(path.join(fixtureRoot, "tsconfig.json"), "{}\n");
-  fs.writeFileSync(path.join(fixtureRoot, "package.json"), '{"name":"fixture"}\n');
-  fs.writeFileSync(
-    path.join(fixtureRoot, packageManager.lockfile),
-    packageManager.lockfileContents,
-  );
-  const registryPath = path.join(fixtureRoot, "registry.json");
-  writeJson(registryPath, { projects: [project] });
-  git(fixtureRoot, ["init", "-q"]);
-  git(fixtureRoot, ["add", "."]);
-  commit(fixtureRoot, "fixture");
-  const invocationPath = path.join(fakeDir, "invocation.json");
-  const manager = path.join(fakeDir, packageManager.name);
-  writeManager(manager, invocationPath, packageManager.version, successBody);
-  return {
-    fixtureRoot,
-    outputDir,
-    fakeDir,
-    registryPath,
-    invocationPath,
-    manager,
-    packageManager,
-    project,
-  };
-}
-
-const successBody = `fs.mkdirSync("node_modules", { recursive: true }); fs.writeFileSync("node_modules/installed", "yes"); process.stdout.write("installed");`;
-
-function writeManager(
-  pathname: string,
-  invocationPath: string,
-  version: string,
-  installBody: string,
-) {
-  fs.writeFileSync(
-    pathname,
-    `#!/usr/bin/env node\nimport fs from "node:fs";\nif (process.argv.includes("--version")) { console.log(${JSON.stringify(version)}); process.exit(0); }\nfs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2), env: { CI: process.env.CI, npm: process.env.npm_config_ignore_scripts, yarn: process.env.YARN_ENABLE_SCRIPTS } }));\n${installBody}\n`,
-  );
-  fs.chmodSync(pathname, 0o755);
-}
-
-function run(fixture: ReturnType<typeof setup>, extraArgs: string[] = []) {
-  return spawnSync(
-    process.execPath,
-    [script, "--registry", fixture.registryPath, "--output-dir", fixture.outputDir, ...extraArgs],
-    {
-      cwd: root,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        GITHUB_SHA: commitSha,
-        PATH: `${fixture.fakeDir}${path.delimiter}${process.env.PATH}`,
-      },
-    },
-  );
-}
-
-function git(cwd: string, args: string[]) {
-  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
-  assert.equal(result.status, 0, result.stderr);
-}
-
-// CI runners have no git identity, so every commit has to carry its own.
-function commit(cwd: string, message: string) {
-  git(cwd, [
-    "-c",
-    "user.name=Fixture",
-    "-c",
-    "user.email=fixture@example.com",
-    "commit",
-    "-qm",
-    message,
-  ]);
-}
-
-function artifactPath(fixture: ReturnType<typeof setup>) {
-  return path.join(fixture.outputDir, "fixture-typecheck-dependencies.json");
-}
-
-function writeJson(pathname: string, value: unknown) {
-  fs.writeFileSync(pathname, `${JSON.stringify(value, null, 2)}\n`);
-}
-
-function cleanup(fixture: ReturnType<typeof setup>) {
-  fs.rmSync(fixture.fixtureRoot, { recursive: true, force: true });
-  fs.rmSync(fixture.outputDir, { recursive: true, force: true });
-  fs.rmSync(fixture.fakeDir, { recursive: true, force: true });
-}
+import {
+  artifactPath,
+  cleanup,
+  commit,
+  commitSha,
+  expectedInvocationArgs,
+  expectedInvocationCommand,
+  expectedInvocationEnv,
+  git,
+  packageManagers,
+  root,
+  run,
+  script,
+  setup,
+  successBody,
+  writeJson,
+  writeManager,
+} from "./support/typecheck-dependency-prepare-fixture.ts";
 
 test("dependency prepare uses each pinned manager's immutable install command", () => {
   for (const packageManager of packageManagers) {
@@ -190,8 +65,10 @@ test("dependency prepare uses each pinned manager's immutable install command", 
       assert.match(artifact.install.stderrSha256, /^[0-9a-f]{64}$/);
       assert.deepEqual(JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8")), {
         cwd: fixture.fixtureRoot,
-        args: packageManager.installArgs,
-        env: { CI: "true", npm: "true", yarn: "false" },
+        command: expectedInvocationCommand(packageManager),
+        args: expectedInvocationArgs(packageManager),
+        managerArgs: packageManager.installArgs,
+        env: expectedInvocationEnv(packageManager),
       });
     } finally {
       cleanup(fixture);
@@ -202,7 +79,9 @@ test("dependency prepare uses each pinned manager's immutable install command", 
 test("dependency prepare rejects a mismatched detected package manager version", () => {
   const fixture = setup();
   try {
-    writeManager(fixture.manager, fixture.invocationPath, "9.0.0", successBody);
+    writeManager(fixture.runner, fixture.invocationPath, "9.0.0", successBody, {
+      spec: "pnpm@10.0.0",
+    });
     const result = run(fixture);
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Detected pnpm version 9.0.0 does not match 10.0.0/);
@@ -230,19 +109,21 @@ test("dependency prepare materializes and records an explicit generated baseline
     git(fixture.fixtureRoot, ["add", "registry.json"]);
     commit(fixture.fixtureRoot, "configure generated baseline");
     writeManager(
-      fixture.manager,
+      fixture.runner,
       fixture.invocationPath,
       "10.0.0",
       `if (process.argv[2] === "install") { ${successBody} } else process.exit(9);`,
+      { spec: "pnpm@10.0.0" },
     );
     const failed = run(fixture);
     assert.equal(failed.status, 1);
     assert.match(failed.stderr, /baseline prepare exited with status 9/);
     writeManager(
-      fixture.manager,
+      fixture.runner,
       fixture.invocationPath,
       "10.0.0",
       `if (process.argv[2] === "install") { ${successBody} } else { fs.mkdirSync(".generated", { recursive: true }); fs.writeFileSync(".generated/tsconfig.json", "{}\\n"); process.stdout.write("prepared"); }`,
+      { spec: "pnpm@10.0.0" },
     );
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
@@ -251,6 +132,11 @@ test("dependency prepare materializes and records an explicit generated baseline
     assert.equal(artifact.baselinePrepare.exitCode, 0);
     assert.match(artifact.baselinePrepare.stdoutSha256, /^[0-9a-f]{64}$/);
     assert.equal(fs.existsSync(path.join(fixture.fixtureRoot, ".generated/tsconfig.json")), true);
+    const invocation = JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8"));
+    assert.equal(invocation.command, "corepack");
+    assert.deepEqual(invocation.args, ["pnpm@10.0.0", "exec", "fixture", "prepare"]);
+    assert.deepEqual(invocation.managerArgs, ["exec", "fixture", "prepare"]);
+    assert.equal(invocation.env.corepackProjectSpec, "0");
   } finally {
     cleanup(fixture);
   }
@@ -259,10 +145,10 @@ test("dependency prepare materializes and records an explicit generated baseline
 test("dependency prepare rejects an unavailable pinned package manager", () => {
   const fixture = setup();
   try {
-    fs.writeFileSync(fixture.manager, "#!/bin/sh\nexit 12\n");
+    fs.writeFileSync(fixture.runner, "#!/bin/sh\nexit 12\n");
     const result = run(fixture);
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /pnpm is not runnable/);
+    assert.match(result.stderr, /pnpm@10\.0\.0 is not runnable/);
     assert.equal(fs.existsSync(artifactPath(fixture)), false);
   } finally {
     cleanup(fixture);
@@ -276,7 +162,9 @@ test("dependency prepare rejects lockfile and tracked-source mutations", () => {
   ] as const) {
     const fixture = setup();
     try {
-      writeManager(fixture.manager, fixture.invocationPath, "10.0.0", body);
+      writeManager(fixture.runner, fixture.invocationPath, "10.0.0", body, {
+        spec: "pnpm@10.0.0",
+      });
       const result = run(fixture);
       assert.equal(result.status, 1);
       assert.match(result.stderr, message);
@@ -312,7 +200,9 @@ test("dependency prepare rejects failed and timed-out installs", () => {
   ] as const) {
     const fixture = setup();
     try {
-      writeManager(fixture.manager, fixture.invocationPath, "10.0.0", body);
+      writeManager(fixture.runner, fixture.invocationPath, "10.0.0", body, {
+        spec: "pnpm@10.0.0",
+      });
       const result = run(fixture, [...args]);
       assert.equal(result.status, 1);
       assert.match(result.stderr, message);
