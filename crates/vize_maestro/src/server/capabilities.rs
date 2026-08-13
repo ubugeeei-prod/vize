@@ -11,7 +11,7 @@ use tower_lsp::lsp_types::{
     SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
     SemanticTokensServerCapabilities, ServerCapabilities, SignatureHelpOptions,
     TextDocumentSyncCapability, TextDocumentSyncKind, TextDocumentSyncOptions,
-    TextDocumentSyncSaveOptions, WorkDoneProgressOptions,
+    TextDocumentSyncSaveOptions, TypeDefinitionProviderCapability, WorkDoneProgressOptions,
     WorkspaceFileOperationsServerCapabilities, WorkspaceFoldersServerCapabilities,
     WorkspaceServerCapabilities,
 };
@@ -209,8 +209,11 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             .document_links
             .then_some(ColorProviderCapability::Simple(true)),
 
+        // Checker-backed type definitions share the go-to-definition switch:
+        // disabling navigation must not spawn type-checker/editor work.
+        type_definition_provider: (features.definition && cfg!(feature = "native"))
+            .then_some(TypeDefinitionProviderCapability::Simple(true)),
         // Features not yet implemented
-        type_definition_provider: None,
         implementation_provider: None,
         declaration_provider: None,
         execute_command_provider: None,

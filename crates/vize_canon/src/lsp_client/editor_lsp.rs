@@ -6,9 +6,8 @@
 //! `hoverProvider` over its LSP transport, so editor features route through a
 //! second, lazily spawned session that mirrors the virtual documents in.
 //!
-//! The session is lazy on purpose: typecheck-only runs (the common case) never
-//! pay for the extra process, and a session that has answered one hover is
-//! reused for every later request.
+//! The session is lazy on purpose: typecheck-only runs never pay for the extra
+//! process, and a session that has answered one hover is reused later.
 
 use super::{
     CorsaProjectClient, diagnostics_lsp::initialize_lsp_client,
@@ -34,6 +33,7 @@ mod readiness;
 mod requests;
 #[cfg(test)]
 mod tests;
+mod type_definition;
 
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,

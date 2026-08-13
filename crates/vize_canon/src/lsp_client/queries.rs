@@ -73,6 +73,15 @@ impl CorsaProjectClient {
         }
     }
 
+    pub(crate) fn type_definition_raw(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<Value>, String> {
+        self.type_definition_via_editor_lsp(uri, line, character)
+    }
+
     pub(crate) fn references_raw(
         &mut self,
         uri: &str,

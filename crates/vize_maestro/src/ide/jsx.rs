@@ -43,6 +43,8 @@ mod service;
 mod service_project;
 #[cfg(all(test, feature = "native"))]
 mod signature_help_trace;
+#[cfg(feature = "native")]
+mod type_definition;
 
 #[cfg(feature = "native")]
 pub use references::JsxReferencesService;
@@ -52,3 +54,5 @@ pub use rename::JsxRenameService;
 pub use service::JsxService;
 #[cfg(all(test, feature = "native"))]
 pub(in crate::ide) use signature_help_trace::signature_help_traced;
+#[cfg(feature = "native")]
+pub use type_definition::JsxTypeDefinitionService;

@@ -29,7 +29,10 @@ fn individual_feature_flags_gate_matching_providers() {
         (
             "definition",
             |features| features.definition = false,
-            |capabilities| capabilities.definition_provider.is_some(),
+            |capabilities| {
+                capabilities.definition_provider.is_some()
+                    || capabilities.type_definition_provider.is_some()
+            },
         ),
         (
             "references",

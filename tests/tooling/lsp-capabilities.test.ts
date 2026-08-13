@@ -108,6 +108,7 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     retriggerCharacters: [")"],
   },
   definitionProvider: true,
+  typeDefinitionProvider: true,
   referencesProvider: true,
   documentHighlightProvider: true,
   documentSymbolProvider: true,
@@ -180,10 +181,10 @@ const EDITOR_BUNDLE_CAPABILITIES = {
     },
   },
   // Absent on purpose, and therefore absent from this object: the three
-  // formatting providers (opt-in, see below), `typeDefinitionProvider`,
-  // `implementationProvider`, `declarationProvider`,
-  // `executeCommandProvider`, `callHierarchyProvider`, `monikerProvider` and
-  // `experimental` is absent unless the private client explicitly opts in.
+  // formatting providers (opt-in, see below), `implementationProvider`,
+  // `declarationProvider`, `executeCommandProvider`, `callHierarchyProvider`,
+  // `monikerProvider` and `experimental` is absent unless the private client
+  // explicitly opts in.
 };
 
 test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
@@ -231,6 +232,7 @@ test("vize lsp editor:false strips editor providers but keeps lint-driven codeAc
       assert.equal(capabilities.workspaceSymbolProvider, undefined);
       assert.equal(capabilities.hoverProvider, undefined);
       assert.equal(capabilities.definitionProvider, undefined);
+      assert.equal(capabilities.typeDefinitionProvider, undefined);
       assert.equal(capabilities.referencesProvider, undefined);
       assert.equal(capabilities.documentHighlightProvider, undefined);
 

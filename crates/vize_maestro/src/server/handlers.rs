@@ -4,6 +4,7 @@
 //! requests to the appropriate IDE services.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+use tower_lsp::lsp_types::request::{GotoTypeDefinitionParams, GotoTypeDefinitionResponse};
 use tower_lsp::{
     LanguageServer,
     jsonrpc::Result,
@@ -36,10 +37,11 @@ use super::{MaestroServer, server_capabilities};
 #[cfg(feature = "native")]
 use crate::ide::SignatureHelpService;
 use crate::ide::{
-    CompletionService, DefinitionService, DocumentHighlightService, DocumentLinkService,
-    HoverService, IdeContext, ReferencesService, RenameService, SemanticTokensService,
-    position_to_offset,
+    CompletionService, DocumentHighlightService, DocumentLinkService, HoverService, IdeContext,
+    ReferencesService, RenameService, SemanticTokensService, position_to_offset,
 };
+
+mod navigation;
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
@@ -295,54 +297,14 @@ impl LanguageServer for MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
-        if !self.state.lsp_features().definition {
-            return Ok(None);
-        }
+        navigation::goto_definition(self, params).await
+    }
 
-        let uri = &params.text_document_position_params.text_document.uri;
-        let position = params.text_document_position_params.position;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
-
-        // Type-aware go-to-definition for `.jsx`/`.tsx` (opt-in
-        // `typeChecker.jsxTypecheck`). React `.tsx` is untouched when off.
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(response) = crate::ide::JsxService::definition(&ctx, corsa_bridge).await
-                {
-                    return Ok(Some(response));
-                }
-            }
-            return Ok(None);
-        }
-
-        {
-            #[cfg(feature = "native")]
-            {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(response) =
-                    DefinitionService::definition_with_corsa(&ctx, corsa_bridge).await
-                {
-                    return Ok(Some(response));
-                }
-            }
-
-            #[cfg(not(feature = "native"))]
-            if let Some(response) = DefinitionService::definition(&ctx) {
-                return Ok(Some(response));
-            }
-        }
-
-        Ok(None)
+    async fn goto_type_definition(
+        &self,
+        params: GotoTypeDefinitionParams,
+    ) -> Result<Option<GotoTypeDefinitionResponse>> {
+        navigation::goto_type_definition(self, params).await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {

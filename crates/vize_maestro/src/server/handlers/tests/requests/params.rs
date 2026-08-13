@@ -91,6 +91,14 @@ pub(super) fn definition_params(uri: &Url) -> GotoDefinitionParams {
     }
 }
 
+pub(super) fn type_definition_params(uri: &Url) -> GotoTypeDefinitionParams {
+    GotoTypeDefinitionParams {
+        text_document_position_params: text_pos(uri),
+        work_done_progress_params: WorkDoneProgressParams::default(),
+        partial_result_params: PartialResultParams::default(),
+    }
+}
+
 pub(super) fn references_params(uri: &Url) -> ReferenceParams {
     ReferenceParams {
         text_document_position: text_pos(uri),

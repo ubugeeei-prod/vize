@@ -29,6 +29,14 @@ impl lsp_types::request::Request for RawDefinitionRequest {
     const METHOD: &'static str = "textDocument/definition";
 }
 
+pub(super) struct RawTypeDefinitionRequest;
+
+impl lsp_types::request::Request for RawTypeDefinitionRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "textDocument/typeDefinition";
+}
+
 pub(super) struct RawReferencesRequest;
 
 impl lsp_types::request::Request for RawReferencesRequest {

@@ -34,6 +34,7 @@ pub mod signature_help;
 pub(crate) mod tag_pair;
 mod template_expression;
 pub(crate) mod tsconfig_paths;
+pub mod type_definition;
 pub mod type_service;
 pub mod workspace_symbols;
 pub use auto_insert::AutoInsertService;
@@ -54,13 +55,14 @@ pub use jsx::{
     JsxSemanticTokensService,
 };
 #[cfg(feature = "native")]
-pub use jsx::{JsxReferencesService, JsxRenameService, JsxService};
+pub use jsx::{JsxReferencesService, JsxRenameService, JsxService, JsxTypeDefinitionService};
 pub use references::ReferencesService;
 pub use rename::RenameService;
 pub use selection_range::SelectionRangeService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
 pub use signature_help::SignatureHelpService;
 pub(crate) use template_expression::is_in_vue_template_expression;
+pub use type_definition::TypeDefinitionService;
 pub use type_service::{LspTypeCheckOptions, TypeService};
 pub use workspace_symbols::WorkspaceSymbolsService;
 

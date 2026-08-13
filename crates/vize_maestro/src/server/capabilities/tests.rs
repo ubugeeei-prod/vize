@@ -70,6 +70,10 @@ fn default_features_advertise_non_opinionated_providers() {
     let capabilities = server_capabilities(LspFeatureConfig::default());
 
     assert!(capabilities.signature_help_provider.is_some());
+    assert_eq!(
+        capabilities.type_definition_provider.is_some(),
+        cfg!(feature = "native")
+    );
     assert!(matches!(
         capabilities.selection_range_provider,
         Some(SelectionRangeProviderCapability::Simple(true))
@@ -128,6 +132,10 @@ fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
     assert!(capabilities.completion_provider.is_some());
     assert!(capabilities.hover_provider.is_some());
     assert!(capabilities.definition_provider.is_some());
+    assert_eq!(
+        capabilities.type_definition_provider.is_some(),
+        cfg!(feature = "native")
+    );
     assert!(capabilities.references_provider.is_some());
     assert!(capabilities.document_symbol_provider.is_some());
     assert!(capabilities.workspace_symbol_provider.is_some());
