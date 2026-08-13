@@ -217,11 +217,6 @@ jobs:
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      # Bound Vize's Rayon fan-out in the fixture lane. The lane already runs a
-      # single Corsa server/checker; leaving virtual-project generation at the
-      # 32-vCPU runner width can still exhaust the runner's transient task
-      # budget while the real-world fixtures spawn Corsa repeatedly.
-      RAYON_NUM_THREADS: "4"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

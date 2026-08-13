@@ -8,9 +8,7 @@ use std::{
 
 use windows_sys::Win32::{
     Foundation::{HANDLE, INVALID_HANDLE_VALUE},
-    System::Console::{
-        GetConsoleMode, GetStdHandle, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, SetConsoleMode,
-    },
+    System::Console::{GetConsoleMode, GetStdHandle, STD_INPUT_HANDLE, SetConsoleMode},
 };
 
 static RAW_SNAPSHOT_ACTIVE: AtomicBool = AtomicBool::new(false);
@@ -18,9 +16,6 @@ static RAW_SNAPSHOT_PUBLISHED: AtomicBool = AtomicBool::new(false);
 static RAW_SNAPSHOT_READERS: AtomicUsize = AtomicUsize::new(0);
 static RAW_SNAPSHOT_HANDLE: AtomicIsize = AtomicIsize::new(0);
 static RAW_SNAPSHOT_MODE: AtomicU32 = AtomicU32::new(0);
-static RAW_SNAPSHOT_OUTPUT_HANDLE: AtomicIsize = AtomicIsize::new(0);
-static RAW_SNAPSHOT_OUTPUT_MODE: AtomicU32 = AtomicU32::new(0);
-static RAW_SNAPSHOT_HAS_OUTPUT_MODE: AtomicBool = AtomicBool::new(false);
 static RAW_SNAPSHOT_OWNS_CROSSTERM: AtomicBool = AtomicBool::new(false);
 
 /// Enable raw input while retaining the exact prior Windows console mode.
@@ -52,8 +47,7 @@ pub(in crate::terminal::backend::lifecycle) fn enable_raw_mode() -> io::Result<(
             return Err(error);
         }
     };
-    let original_output = output_mode_snapshot();
-    publish_snapshot(handle, original_input, original_output, !crossterm_was_raw);
+    publish_snapshot(handle, original_input, !crossterm_was_raw);
     if !crossterm_was_raw && let Err(enable) = crossterm::terminal::enable_raw_mode() {
         return fail_enable_transition(enable);
     }
@@ -65,7 +59,10 @@ pub(in crate::terminal::backend::lifecycle) fn disable_raw_mode() -> io::Result<
     let Some(snapshot) = RawSnapshotReader::acquire() else {
         return Ok(());
     };
-    let mut restoration = restore_snapshot_modes(snapshot.snapshot);
+    let mut restoration = set_console_mode(
+        snapshot.snapshot.input_handle,
+        snapshot.snapshot.input_original,
+    );
     if restoration.is_ok() && snapshot.snapshot.owns_crossterm_raw_mode {
         restoration = crossterm::terminal::disable_raw_mode();
     }
@@ -87,16 +84,17 @@ pub(in crate::terminal::backend::lifecycle) fn emergency_restore_raw_mode() -> b
     let Some(snapshot) = RawSnapshotReader::acquire() else {
         return true;
     };
-    restore_snapshot_modes(snapshot.snapshot).is_ok()
+    set_console_mode(
+        snapshot.snapshot.input_handle,
+        snapshot.snapshot.input_original,
+    )
+    .is_ok()
 }
 
 #[derive(Clone, Copy)]
 struct RawSnapshot {
     input_handle: HANDLE,
     input_original: u32,
-    output_handle: HANDLE,
-    output_original: u32,
-    has_output_mode: bool,
     owns_crossterm_raw_mode: bool,
 }
 
@@ -120,9 +118,6 @@ impl RawSnapshotReader {
             snapshot: RawSnapshot {
                 input_handle,
                 input_original: RAW_SNAPSHOT_MODE.load(Ordering::SeqCst),
-                output_handle: RAW_SNAPSHOT_OUTPUT_HANDLE.load(Ordering::SeqCst) as HANDLE,
-                output_original: RAW_SNAPSHOT_OUTPUT_MODE.load(Ordering::SeqCst),
-                has_output_mode: RAW_SNAPSHOT_HAS_OUTPUT_MODE.load(Ordering::SeqCst),
                 owns_crossterm_raw_mode: RAW_SNAPSHOT_OWNS_CROSSTERM.load(Ordering::SeqCst),
             },
         })
@@ -135,30 +130,21 @@ impl Drop for RawSnapshotReader {
     }
 }
 
-fn publish_snapshot(
-    handle: HANDLE,
-    original: u32,
-    output: Option<(HANDLE, u32)>,
-    owns_crossterm_raw_mode: bool,
-) {
+fn publish_snapshot(handle: HANDLE, original: u32, owns_crossterm_raw_mode: bool) {
     RAW_SNAPSHOT_HANDLE.store(handle as isize, Ordering::SeqCst);
     RAW_SNAPSHOT_MODE.store(original, Ordering::SeqCst);
-    if let Some((output_handle, output_mode)) = output {
-        RAW_SNAPSHOT_OUTPUT_HANDLE.store(output_handle as isize, Ordering::SeqCst);
-        RAW_SNAPSHOT_OUTPUT_MODE.store(output_mode, Ordering::SeqCst);
-        RAW_SNAPSHOT_HAS_OUTPUT_MODE.store(true, Ordering::SeqCst);
-    } else {
-        RAW_SNAPSHOT_OUTPUT_HANDLE.store(0, Ordering::SeqCst);
-        RAW_SNAPSHOT_OUTPUT_MODE.store(0, Ordering::SeqCst);
-        RAW_SNAPSHOT_HAS_OUTPUT_MODE.store(false, Ordering::SeqCst);
-    }
     RAW_SNAPSHOT_OWNS_CROSSTERM.store(owns_crossterm_raw_mode, Ordering::SeqCst);
     RAW_SNAPSHOT_PUBLISHED.store(true, Ordering::SeqCst);
 }
 
 fn fail_enable_transition(enable: io::Error) -> io::Result<()> {
     let rollback = RawSnapshotReader::acquire()
-        .map(|snapshot| restore_snapshot_modes(snapshot.snapshot))
+        .map(|snapshot| {
+            set_console_mode(
+                snapshot.snapshot.input_handle,
+                snapshot.snapshot.input_original,
+            )
+        })
         .unwrap_or(Ok(()));
     if rollback.is_ok() {
         deactivate_snapshot();
@@ -191,37 +177,10 @@ fn release_unpublished_snapshot_claim() {
     RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
 }
 
-fn restore_snapshot_modes(snapshot: RawSnapshot) -> io::Result<()> {
-    let mut restoration = set_console_mode(snapshot.input_handle, snapshot.input_original);
-    if snapshot.has_output_mode
-        && let Err(error) = set_console_mode(snapshot.output_handle, snapshot.output_original)
-        && restoration.is_ok()
-    {
-        restoration = Err(error);
-    }
-    restoration
-}
-
 fn stdin_handle() -> io::Result<HANDLE> {
     // SAFETY: `STD_INPUT_HANDLE` is the documented selector for the
     // process standard input handle.
     let handle = unsafe { GetStdHandle(STD_INPUT_HANDLE) };
-    if handle.is_null() || handle == INVALID_HANDLE_VALUE {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(handle)
-}
-
-fn output_mode_snapshot() -> Option<(HANDLE, u32)> {
-    let handle = stdout_handle().ok()?;
-    let mode = console_mode(handle).ok()?;
-    Some((handle, mode))
-}
-
-fn stdout_handle() -> io::Result<HANDLE> {
-    // SAFETY: `STD_OUTPUT_HANDLE` is the documented selector for the
-    // process standard output handle.
-    let handle = unsafe { GetStdHandle(STD_OUTPUT_HANDLE) };
     if handle.is_null() || handle == INVALID_HANDLE_VALUE {
         return Err(io::Error::last_os_error());
     }

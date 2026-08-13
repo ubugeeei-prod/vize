@@ -249,3 +249,5 @@ fn set_console_output_mode(handle: windows_sys::Win32::Foundation::HANDLE, mode:
 
 #[cfg(test)]
 mod tests;
+#[cfg(all(test, windows))]
+mod windows_tests;

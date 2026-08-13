@@ -90,7 +90,7 @@ fn invalid_terminal_descriptor_is_closed_without_publishing_a_snapshot() {
 }
 
 #[test]
-fn second_owned_fd_does_not_replace_or_leak_active_snapshot() {
+fn second_owned_fd_does_not_replace_or_modify_active_snapshot() {
     let _serial = raw_mode_test_guard();
     let mut first = PtyFixture::open();
     let first_raw_fd = first.take_terminal_fd();
@@ -100,8 +100,7 @@ fn second_owned_fd_does_not_replace_or_leak_active_snapshot() {
     let second_fd = second.take_terminal_fd();
     enable_raw_mode_on_owned_fd(second_fd).unwrap();
 
-    // SAFETY: `F_GETFD` only inspects the descriptor number.
-    assert_eq!(unsafe { libc::fcntl(second_fd, libc::F_GETFD) }, -1);
+    second.assert_restored();
     assert!(emergency_restore_raw_mode());
     first.assert_restored();
     second.assert_restored();

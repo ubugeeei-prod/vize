@@ -11,10 +11,12 @@ runs:
     - name: Record runner process budget baseline
       shell: bash
       run: |
+        export RAYON_NUM_THREADS=4
+        echo "RAYON_NUM_THREADS=$RAYON_NUM_THREADS" >> "$GITHUB_ENV"
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
         {
           echo "cpus=$(nproc)"
-          echo "rayon_num_threads=${RAYON_NUM_THREADS:-auto}"
+          echo "rayon_num_threads=$RAYON_NUM_THREADS"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
           echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"
