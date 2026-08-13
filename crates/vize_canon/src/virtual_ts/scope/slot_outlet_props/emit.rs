@@ -43,15 +43,35 @@ pub(super) fn emit_slot_outlet_helpers(
         return;
     }
 
-    ts.push_str("  type __VizeSlotOutletIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+    // The payload is resolved through indexed access rather than a
+    // `__K extends keyof __S` conditional: a slots type that instantiates the
+    // SFC's own type parameters (`Slots<T>`, typically widened by a mapped type
+    // over `T`) has a generic `keyof`, so such a conditional stays deferred and
+    // nothing is assignable to it. `Parameters<…>` of the indexed slot resolves
+    // even then, and both guards below keep the permissive fallbacks: a key the
+    // slots type does not declare, or a slot that takes no payload, still types
+    // the outlet literal as `unknown` instead of `never`/`undefined`.
+    ts.push_str("  type __VizeSlotOutletFn = (...args: any[]) => any;\n");
     if needs_static {
         ts.push_str(
-            "  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = __VizeSlotOutletIsAny<__S> extends true ? any : __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : unknown) : unknown;\n",
+            "  type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;\n",
+        );
+        ts.push_str(
+            "  type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;\n",
+        );
+        ts.push_str(
+            "  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];\n",
         );
     }
     if needs_dynamic {
         ts.push_str(
-            "  type __VizeAnySlotOutletPayload<__S> = __VizeSlotOutletIsAny<__S> extends true ? any : { [__K in keyof __S]: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S] extends infer __P ? ([__P] extends [never] ? unknown : __P) : unknown;\n",
+            "  type __VizeAnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, __VizeSlotOutletFn>;\n",
+        );
+        ts.push_str(
+            "  type __VizeAnySlotOutletArgs<__S> = [__VizeAnySlotOutletTarget<__S>] extends [never] ? [] : Parameters<__VizeAnySlotOutletTarget<__S>>;\n",
+        );
+        ts.push_str(
+            "  type __VizeAnySlotOutletPayload<__S> = [__VizeAnySlotOutletArgs<__S>] extends [[]] ? unknown : __VizeAnySlotOutletArgs<__S>[0];\n",
         );
     }
 }

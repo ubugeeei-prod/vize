@@ -135,8 +135,10 @@ function __setup<Mode extends 'row' | 'cell', TEvent extends Mode>() {
   const event = props["event"];
   void event;
 
-  type __VizeSlotOutletIsAny<T> = 0 extends (1 & T) ? true : false;
-  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = __VizeSlotOutletIsAny<__S> extends true ? any : __K extends keyof __S ? (NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : unknown) : unknown;
+  type __VizeSlotOutletFn = (...args: any[]) => any;
+  type __VizeSlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, __VizeSlotOutletFn>;
+  type __VizeSlotOutletArgs<__S, __K extends PropertyKey> = [__VizeSlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<__VizeSlotOutletTarget<__S, __K>>;
+  type __VizeSlotOutletPayload<__S, __K extends PropertyKey> = [__VizeSlotOutletArgs<__S, __K>] extends [[]] ? unknown : __VizeSlotOutletArgs<__S, __K>[0];
   ((__vize_slot_props: __VizeSlotOutletPayload<Slots<Mode, TEvent>, "default">) => { void __vize_slot_props; })({
     "mode": props.mode,
     "event": props.event,
