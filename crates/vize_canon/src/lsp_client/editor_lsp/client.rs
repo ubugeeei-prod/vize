@@ -1,11 +1,15 @@
 //! `CorsaProjectClient` entry points that route editor requests through the
 //! lazily spawned editor LSP session.
 
+use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
-use vize_carton::{String, cstr};
+use std::path::PathBuf;
+use vize_carton::{FxHashMap, String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession};
-use crate::lsp_client::lsp_transport_error_is_transient;
+use crate::lsp_client::{
+    lsp_transport_error_is_transient, session_paths::overlay_root_for_project,
+};
 
 impl CorsaProjectClient {
     /// Answer a hover through the editor LSP transport, spawning the session on
@@ -119,6 +123,44 @@ impl CorsaProjectClient {
         })
     }
 
+    pub(in crate::lsp_client) fn diagnostics_via_editor_lsp(
+        &mut self,
+        document_uri: &str,
+        documents: &FxHashMap<String, String>,
+    ) -> Result<DocumentDiagnosticReportResult, String> {
+        if !documents.contains_key(document_uri) {
+            return Err(cstr!(
+                "Editor LSP diagnostic project does not contain {document_uri}"
+            ));
+        }
+        self.request_with_editor_lsp_documents_recovery(documents, |session| {
+            session.diagnostics(document_uri)
+        })
+    }
+
+    pub(in crate::lsp_client) fn will_rename_files_via_editor_lsp(
+        &mut self,
+        renames: &[(&str, &str)],
+    ) -> Result<Option<Value>, String> {
+        if renames.is_empty() || self.editor_lsp_will_rename_supported == Some(false) {
+            return Ok(None);
+        }
+
+        let result =
+            self.request_with_editor_lsp_recovery(|session| session.will_rename_files(renames));
+        match result {
+            Ok(edit) => {
+                self.editor_lsp_will_rename_supported = Some(true);
+                Ok(edit)
+            }
+            Err(error) if editor_lsp_will_rename_error_is_unsupported(&error) => {
+                self.editor_lsp_will_rename_supported = Some(false);
+                Ok(None)
+            }
+            Err(error) => Err(error),
+        }
+    }
+
     /// Execute an idempotent editor query and rebuild the reusable LSP session
     /// once when its transport has become unusable.
     ///
@@ -139,12 +181,33 @@ impl CorsaProjectClient {
         )
     }
 
+    fn request_with_editor_lsp_documents_recovery<T>(
+        &mut self,
+        documents: &FxHashMap<String, String>,
+        mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
+    ) -> Result<T, String> {
+        let first = self
+            .editor_lsp_session_for_documents(documents)
+            .and_then(&mut request);
+        retry_transient_editor_request(
+            self,
+            first,
+            CorsaProjectClient::retire_editor_lsp,
+            |client| {
+                client
+                    .editor_lsp_session_for_documents(documents)
+                    .and_then(request)
+            },
+        )
+    }
+
     fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
+        let project_root = self.editor_lsp_project_root();
         if self.editor_lsp.is_none() {
             self.editor_lsp = Some(EditorLspSession::spawn(
                 self.executable.as_str(),
                 &self.cwd,
-                &self.project_root,
+                &project_root,
             )?);
             self.editor_lsp_documents_dirty = true;
         }
@@ -159,6 +222,39 @@ impl CorsaProjectClient {
         Ok(session)
     }
 
+    fn editor_lsp_session_for_documents(
+        &mut self,
+        documents: &FxHashMap<String, String>,
+    ) -> Result<&mut EditorLspSession, String> {
+        let project_root = self.editor_lsp_project_root();
+        let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
+        if self.editor_lsp.is_none() {
+            self.editor_lsp = Some(EditorLspSession::spawn(
+                self.executable.as_str(),
+                &self.cwd,
+                &project_root,
+            )?);
+            self.editor_lsp_documents_dirty = true;
+        }
+        let session = self
+            .editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
+        if self.editor_lsp_documents_dirty || !session.has_documents(documents) {
+            session.synchronize(documents)?;
+            self.editor_lsp_documents_dirty = keep_dirty_after_sync;
+        }
+        Ok(session)
+    }
+
+    fn editor_lsp_project_root(&self) -> PathBuf {
+        if self.materialized_project_session {
+            overlay_root_for_project(&self.project_root)
+        } else {
+            self.project_root.clone()
+        }
+    }
+
     /// Drop the editor session so the next request respawns it after a project
     /// session transition.
     pub(in crate::lsp_client) fn retire_editor_lsp(&mut self) -> Result<(), String> {
@@ -170,6 +266,23 @@ impl CorsaProjectClient {
         self.editor_lsp_documents_dirty = true;
         result
     }
+}
+
+fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, String>) -> bool {
+    lhs.len() == rhs.len()
+        && lhs
+            .iter()
+            .all(|(uri, text)| rhs.get(uri.as_str()).is_some_and(|current| current == text))
+}
+
+fn editor_lsp_will_rename_error_is_unsupported(error: &str) -> bool {
+    error.contains("workspace/willRenameFiles")
+        && (error.contains("unknown method")
+            || error.contains("method not found")
+            || error.contains("InvalidRequest")
+            || error.contains("Unsupported")
+            || error.contains("unsupported")
+            || error.contains("not supported"))
 }
 
 /// Apply the editor transport's one-retry policy without coupling its state

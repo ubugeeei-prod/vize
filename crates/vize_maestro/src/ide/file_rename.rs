@@ -84,7 +84,25 @@ impl FileRenameService {
             .map(|file| (file.old_uri.as_str(), file.new_uri.as_str()))
             .collect::<Vec<_>>();
 
-        let edit = bridge.will_rename_files(&renames).await.ok()??;
+        let edit = match bridge.will_rename_files(&renames).await {
+            Ok(Some(edit)) => edit,
+            Ok(None) => {
+                tracing::debug!(
+                    rename_count = renames.len(),
+                    "native tsgo file-rename request unavailable; falling back to import scanner"
+                );
+                return None;
+            }
+            Err(error) => {
+                tracing::warn!(
+                    rename_count = renames.len(),
+                    error = %error,
+                    "native tsgo file-rename request failed; falling back to import scanner"
+                );
+                return None;
+            }
+        };
+
         serde_json::from_value(edit).ok()
     }
 

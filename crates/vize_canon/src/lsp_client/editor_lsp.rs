@@ -1,10 +1,12 @@
-//! Editor-feature fallback over Corsa's `--lsp --stdio` transport.
+//! Reusable project editor state over Corsa's `--lsp --stdio` transport.
 //!
 //! The project-session API exposes diagnostics but rejects `hover` (and the
 //! other editor requests) as `CorsaError::Unsupported` on every pinned runtime
 //! — see ubugeeei-prod/corsa-bind#409. The very same runtime does advertise
 //! `hoverProvider` over its LSP transport, so editor features route through a
-//! second, lazily spawned session that mirrors the virtual documents in.
+//! lazily spawned session that mirrors the virtual documents in. Standard tsgo
+//! diagnostics use the same session so semantic requests share one project
+//! identity and one overlay generation.
 //!
 //! The session is lazy on purpose: typecheck-only runs never pay for the extra
 //! process, and a session that has answered one hover is reused later.
@@ -15,7 +17,7 @@ use super::{
 };
 use corsa::runtime::block_on;
 use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
-use lsp_types::Uri;
+use lsp_types::{DocumentDiagnosticReportResult, Uri};
 use serde_json::Value;
 use std::{
     path::Path,
@@ -37,10 +39,11 @@ mod type_definition;
 
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
-    RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest,
+    RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,
 };
 
-/// A reusable `--lsp --stdio` session used only for editor requests.
+/// A reusable `--lsp --stdio` session for standard diagnostics and editor
+/// requests.
 pub(super) struct EditorLspSession {
     client: LspClient,
     overlay: LspOverlay,
@@ -263,6 +266,25 @@ impl EditorLspSession {
         .map_err(|error| cstr!("Failed to request editor LSP signature help: {error}"))
     }
 
+    fn diagnostics(
+        &mut self,
+        document_uri: &str,
+    ) -> Result<DocumentDiagnosticReportResult, String> {
+        let uri = self.ready_document_uri(document_uri)?;
+        super::diagnostics_lsp::request_lsp_document_diagnostics(&self.client, &uri).map_err(
+            |error| cstr!("Failed to request editor LSP diagnostics for {document_uri}: {error}"),
+        )
+    }
+
+    fn will_rename_files(&mut self, renames: &[(&str, &str)]) -> Result<Option<Value>, String> {
+        self.ready_workspace_request()?;
+        block_on(
+            self.client
+                .request::<RawWillRenameFilesRequest>(will_rename_files_request_params(renames)),
+        )
+        .map_err(|error| cstr!("Failed to request editor LSP workspace/willRenameFiles: {error}"))
+    }
+
     /// Complete the standard LSP lifecycle before closing and reaping the
     /// owned process. The responder remains alive until `shutdown` returns so
     /// server-initiated requests cannot deadlock the final response.
@@ -347,4 +369,17 @@ fn signature_help_request_params(
         "position": { "line": line, "character": character },
         "context": context,
     })
+}
+
+fn will_rename_files_request_params(renames: &[(&str, &str)]) -> Value {
+    let files = renames
+        .iter()
+        .map(|(old_uri, new_uri)| {
+            serde_json::json!({
+                "oldUri": old_uri,
+                "newUri": new_uri,
+            })
+        })
+        .collect::<Vec<_>>();
+    serde_json::json!({ "files": files })
 }

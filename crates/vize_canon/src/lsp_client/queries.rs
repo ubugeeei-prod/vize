@@ -147,9 +147,9 @@ impl CorsaProjectClient {
 
     pub(crate) fn will_rename_files_raw(
         &mut self,
-        _renames: &[(&str, &str)],
+        renames: &[(&str, &str)],
     ) -> Result<Option<Value>, String> {
-        Ok(None)
+        self.will_rename_files_via_editor_lsp(renames)
     }
 
     pub(crate) fn completion_raw(

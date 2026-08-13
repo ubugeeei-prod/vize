@@ -70,6 +70,7 @@ impl CorsaProjectClient {
             temp_dir,
             editor_lsp: None,
             editor_lsp_documents_dirty: true,
+            editor_lsp_will_rename_supported: None,
             closed: false,
         })
     }

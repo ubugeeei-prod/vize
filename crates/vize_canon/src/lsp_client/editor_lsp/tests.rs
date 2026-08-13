@@ -28,3 +28,21 @@ fn signature_help_request_preserves_client_context_losslessly() {
 
     assert_eq!(params["context"], context);
 }
+
+#[test]
+fn will_rename_files_request_uses_lsp_file_rename_shape() {
+    let params = will_rename_files_request_params(&[(
+        "file:///workspace/src/Old.vue",
+        "file:///workspace/src/New.vue",
+    )]);
+
+    assert_eq!(
+        params,
+        serde_json::json!({
+            "files": [{
+                "oldUri": "file:///workspace/src/Old.vue",
+                "newUri": "file:///workspace/src/New.vue"
+            }]
+        })
+    );
+}

@@ -68,3 +68,11 @@ impl lsp_types::request::Request for RawSignatureHelpRequest {
     type Result = Option<Value>;
     const METHOD: &'static str = "textDocument/signatureHelp";
 }
+
+pub(super) struct RawWillRenameFilesRequest;
+
+impl lsp_types::request::Request for RawWillRenameFilesRequest {
+    type Params = Value;
+    type Result = Option<Value>;
+    const METHOD: &'static str = "workspace/willRenameFiles";
+}

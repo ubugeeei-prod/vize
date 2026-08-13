@@ -56,10 +56,14 @@ pub struct CorsaProjectClient {
     /// Temporary directory for tsconfig.json (cleaned up on drop).
     temp_dir: Option<PathBuf>,
     /// Lazily spawned `--lsp --stdio` session answering editor requests the
-    /// project-session API rejects as unsupported (corsa-bind#409).
+    /// project-session API rejects as unsupported (corsa-bind#409), and the
+    /// standard-tsgo diagnostics path when no project-session API exists.
     editor_lsp: Option<editor_lsp::EditorLspSession>,
     /// Whether the reusable editor LSP needs the latest virtual project mirror.
     editor_lsp_documents_dirty: bool,
+    /// Runtime support for `workspace/willRenameFiles`, probed through the
+    /// reusable editor LSP because the project-session API has no equivalent.
+    editor_lsp_will_rename_supported: Option<bool>,
     closed: bool,
 }
 
@@ -82,6 +86,7 @@ impl CorsaProjectClient {
             temp_dir: None,
             editor_lsp: None,
             editor_lsp_documents_dirty: true,
+            editor_lsp_will_rename_supported: None,
             closed: false,
         }
     }

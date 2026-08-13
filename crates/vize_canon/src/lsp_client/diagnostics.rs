@@ -1,27 +1,18 @@
 use super::{
     CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
     diagnostics_api::{document_identifier_uri, flatten_file_diagnostics, map_project_diagnostics},
-    diagnostics_lsp::{initialize_lsp_client, request_lsp_document_diagnostics},
-    language_id::for_uri as language_id_for_uri,
     session::uri_document_identifier,
-    session_paths::overlay_root_for_project,
     utils::convert_diagnostics,
 };
 use crate::file_uri::file_uri_to_path;
 use corsa::{CorsaError, runtime::block_on};
-use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
-use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportResult, Uri};
-use std::{
-    str::FromStr,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-    },
-    time::Duration,
-};
+use lsp_types::{Diagnostic, DocumentDiagnosticReport, DocumentDiagnosticReportResult};
+use std::time::Duration;
 use vize_carton::{FxHashMap, String, cstr};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
+type EditorLspDiagnosticDocuments = FxHashMap<String, String>;
+type EditorLspDiagnosticPairs = Vec<(String, String)>;
 const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
 const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
@@ -419,7 +410,8 @@ impl CorsaProjectClient {
             return Ok(Some(Vec::new()));
         }
 
-        if !self.materialized_project_session
+        if self.has_project_session()
+            && !self.materialized_project_session
             && uris.iter().any(|uri| {
                 self.document_texts.contains_key(uri.as_str())
                     && file_uri_to_path(uri.as_str()).is_none_or(|path| !path.exists())
@@ -428,60 +420,16 @@ impl CorsaProjectClient {
             self.activate_materialized_project_session()?;
         }
 
-        let client = block_on(LspClient::spawn(
-            LspSpawnConfig::new(self.executable.as_str()).with_cwd(self.cwd.clone()),
-        ))
-        .map_err(|error| cstr!("Failed to start Corsa LSP session: {error}"))?;
-        let stop = Arc::new(AtomicBool::new(false));
-        let responder = spawn_lsp_responder(client.clone(), stop.clone());
+        let (documents, document_pairs) = self.editor_lsp_diagnostic_documents(uris)?;
 
-        let lsp_project_root = if self.materialized_project_session {
-            overlay_root_for_project(&self.project_root)
-        } else {
-            self.project_root.clone()
-        };
-        let initialize_result = initialize_lsp_client(&client, &lsp_project_root);
-        if let Err(error) = initialize_result {
-            stop.store(true, Ordering::Relaxed);
-            let _ = block_on(client.close());
-            let _ = responder.join();
-            return Err(error);
-        }
-
-        let overlay = client.overlay();
-        let mut opened_documents = Vec::with_capacity(uris.len());
-        for uri in uris {
-            let document_uri = self.session_document_uri(uri.as_str());
-            let text = self
-                .document_texts
-                .get(uri.as_str())
-                .cloned()
-                .or_else(|| read_file_uri(document_uri.as_str()))
-                .or_else(|| read_file_uri(uri.as_str()))
-                .ok_or_else(|| cstr!("Failed to load document text for {uri}"))?;
-            let lsp_uri = Uri::from_str(document_uri.as_str())
-                .map_err(|error| cstr!("Invalid LSP document URI {document_uri}: {error}"))?;
-            let document = VirtualDocument::new(
-                lsp_uri.clone(),
-                language_id_for_uri(document_uri.as_str()),
-                text.as_str(),
-            );
-            overlay
-                .open(document)
-                .map_err(|error| cstr!("Failed to open LSP overlay for {document_uri}: {error}"))?;
-            opened_documents.push((uri.clone(), lsp_uri));
-        }
-
-        let mut results = Vec::with_capacity(opened_documents.len());
-        for (external_uri, lsp_uri) in &opened_documents {
-            let report = match request_lsp_document_diagnostics(&client, lsp_uri) {
+        let mut results = Vec::with_capacity(document_pairs.len());
+        for (external_uri, document_uri) in document_pairs {
+            let report = match self.diagnostics_via_editor_lsp(document_uri.as_str(), &documents) {
                 Ok(report) => report,
                 Err(error) if diagnostics_api_error_is_unsupported(&error) => {
-                    cleanup_lsp_session(&overlay, &opened_documents, stop, responder, &client);
                     return Ok(None);
                 }
                 Err(error) => {
-                    cleanup_lsp_session(&overlay, &opened_documents, stop, responder, &client);
                     return Err(cstr!(
                         "Failed to request LSP diagnostics for {external_uri}: {error}"
                     ));
@@ -494,8 +442,48 @@ impl CorsaProjectClient {
             results.push((external_uri.clone(), convert_diagnostics(&diagnostics)));
         }
 
-        cleanup_lsp_session(&overlay, &opened_documents, stop, responder, &client);
         Ok(Some(results))
+    }
+
+    fn editor_lsp_diagnostic_documents(
+        &mut self,
+        uris: &[String],
+    ) -> Result<(EditorLspDiagnosticDocuments, EditorLspDiagnosticPairs), String> {
+        let mut documents = FxHashMap::default();
+        let current_documents = self
+            .document_texts
+            .iter()
+            .map(|(uri, text)| (uri.clone(), text.clone()))
+            .collect::<Vec<_>>();
+
+        for (uri, text) in current_documents {
+            let document_uri = self.editor_lsp_diagnostic_document_uri(uri.as_str());
+            documents.insert(document_uri, text);
+        }
+
+        let mut pairs = Vec::with_capacity(uris.len());
+        for uri in uris {
+            let document_uri = self.editor_lsp_diagnostic_document_uri(uri.as_str());
+            let text = documents
+                .get(document_uri.as_str())
+                .cloned()
+                .or_else(|| self.document_texts.get(uri.as_str()).cloned())
+                .or_else(|| read_file_uri(document_uri.as_str()))
+                .or_else(|| read_file_uri(uri.as_str()))
+                .ok_or_else(|| cstr!("Failed to load document text for {uri}"))?;
+            documents.entry(document_uri.clone()).or_insert(text);
+            pairs.push((uri.clone(), document_uri));
+        }
+
+        Ok((documents, pairs))
+    }
+
+    fn editor_lsp_diagnostic_document_uri(&mut self, uri: &str) -> String {
+        if self.materialized_project_session {
+            self.session_document_uri(uri)
+        } else {
+            uri.into()
+        }
     }
 }
 
@@ -521,37 +509,6 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
     diagnostics_api_is_unsupported(cstr!("{error}").as_str())
-}
-
-fn spawn_lsp_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
-    let events = client.subscribe();
-    std::thread::spawn(move || {
-        while !stop.load(Ordering::Relaxed) {
-            match events.recv_timeout(Duration::from_millis(50)) {
-                Ok(InboundEvent::Request { id, method, .. }) => {
-                    let response = match method.as_ref() {
-                        "workspace/configuration" => serde_json::json!([]),
-                        _ => serde_json::Value::Null,
-                    };
-                    let _ = client.respond(id, response);
-                }
-                Ok(_) => {}
-                Err(_) => {}
-            }
-        }
-    })
-}
-
-fn cleanup_lsp_session(
-    _overlay: &LspOverlay,
-    _opened_documents: &[(String, Uri)],
-    stop: Arc<AtomicBool>,
-    responder: std::thread::JoinHandle<()>,
-    client: &LspClient,
-) {
-    let _ = block_on(client.graceful_close());
-    stop.store(true, Ordering::Relaxed);
-    let _ = responder.join();
 }
 
 fn extract_lsp_report_diagnostics(report: DocumentDiagnosticReportResult) -> Vec<Diagnostic> {
