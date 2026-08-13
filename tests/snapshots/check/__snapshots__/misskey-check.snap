@@ -274,9 +274,7 @@
     },
     {
       "file": "src/components/MkDraggable.vue",
-      "diagnostics": [
-        "error:39:47 [TS7006] Parameter 'ev' implicitly has an 'any' type."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkDrive.file.vue",
@@ -352,21 +350,11 @@
     },
     {
       "file": "src/components/MkFoldableSection.vue",
-      "diagnostics": [
-        "error:21:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:22:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:23:11 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:24:16 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkFolder.vue",
-      "diagnostics": [
-        "error:63:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:64:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:65:13 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:66:18 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkFolderPage.vue",
@@ -842,12 +830,7 @@
     },
     {
       "file": "src/components/MkTabs.vue",
-      "diagnostics": [
-        "error:33:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:34:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:35:14 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:36:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/MkTagCloud.vue",
@@ -1079,12 +1062,7 @@
     },
     {
       "file": "src/components/global/MkPageHeader.tabs.vue",
-      "diagnostics": [
-        "error:31:35 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:31:55 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:31:75 [TS2345] Argument of type '(el: Element) => Promise<void>' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more.",
-        "error:32:19 [TS2345] Argument of type '(el: Element) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'el' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'Element': attributes, classList, className, clientHeight, and 183 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/components/global/MkPageHeader.vue",
@@ -1967,9 +1945,7 @@
     },
     {
       "file": "src/pages/page-editor/page-editor.blocks.vue",
-      "diagnostics": [
-        "error:18:91 [TS2345] Argument of type '(v: { id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'v' and '_e' are incompatible.\nType 'Event' is not assignable to type '{ id: string; type: \"text\"; text: string; } | { id: string; type: \"section\"; title: string; children: ({ id: string; type: \"text\"; text: string; } | ... | { id: string; type: \"image\"; fileId: string | null; } | { ...; })[]; } | { ...; } | { ...; }'.\nType 'Event' is missing the following properties from type '{ id: string; type: \"note\"; detailed: boolean; note: string | null; }': id, detailed, note"
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/pages/page-editor/page-editor.container.vue",
@@ -2537,9 +2513,7 @@
     },
     {
       "file": "src/ui/deck.vue",
-      "diagnostics": [
-        "error:38:22 [TS2345] Argument of type '(ev: WheelEvent) => void' is not assignable to parameter of type '(_e: Event) => unknown'.\nTypes of parameters 'ev' and '_e' are incompatible.\nType 'Event' is missing the following properties from type 'WheelEvent': deltaMode, deltaX, deltaY, deltaZ, and 30 more."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/ui/deck/antenna-column.vue",
