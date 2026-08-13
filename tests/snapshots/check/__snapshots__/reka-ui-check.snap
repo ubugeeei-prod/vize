@@ -5427,13 +5427,7 @@
         "error:6:86 [TS2307] Cannot find module '@/shared' or its corresponding type declarations.",
         "error:72:37 [TS2307] Cannot find module '@/VisuallyHidden' or its corresponding type declarations.",
         "error:75:137 [TS2835] Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './utils.js'?",
-        "error:177:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'.",
-        "error:187:51 [TS2345] Argument of type 'Event' is not assignable to parameter of type 'number'.",
-        "error:188:49 [TS2345] Argument of type 'Event' is not assignable to parameter of type 'number'.",
-        "error:194:54 [TS2339] Property 'key' does not exist on type 'Event'.",
-        "error:195:49 [TS2339] Property 'shiftKey' does not exist on type 'Event'.",
-        "error:195:87 [TS2339] Property 'key' does not exist on type 'Event'.",
-        "error:199:55 [TS18048] 'direction' is possibly 'undefined'."
+        "error:177:12 [TS7053] Element implicitly has an 'any' type because expression of type '\"as\"' can't be used to index type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'.\nProperty 'as' does not exist on type 'Omit<__LooseRequired<SliderRootProps>, \"as\" | \"defaultValue\" | \"disabled\" | \"inverted\" | \"max\" | \"min\" | \"minStepsBetweenThumbs\" | \"orientation\" | \"step\" | \"thumbAlignment\"> & { ...; }'."
       ]
     },
     {
