@@ -142,7 +142,10 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
     [
       "forged broken mutation state",
       (entries: Record<string, string>) =>
-        mutateDivergence(entries, (artifact) => (artifact.mutationOracle.states[1].sharedCount = 0)),
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[1].sharedCount = 0),
+        ),
       /seeded mutation oracle/,
     ],
     [

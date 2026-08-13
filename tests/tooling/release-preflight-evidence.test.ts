@@ -171,4 +171,3 @@ test("matrix-sensitive release gates require every successful job", () => {
     /real projects \(0\/11\) is completed\/failure/,
   );
 });
-

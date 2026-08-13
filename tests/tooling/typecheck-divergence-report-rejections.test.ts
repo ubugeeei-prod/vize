@@ -14,7 +14,6 @@ import {
   writeVueTsc,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
 
-
 test("typecheck divergence report fails closed on mismatched matrix artifacts", () => {
   const fixture = setup();
   try {
