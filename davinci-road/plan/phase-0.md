@@ -203,11 +203,12 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** the enforcement tooling for charter #21.
 
 **Steps:**
-- [ ] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (entry = path + justification + expiry)
-- [ ] CI self-test: fixture with a deliberately bad assertion that the lint must flag (lint the linter)
-- [ ] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section; CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison
-- [ ] Construct taxonomy `davinci-road/plan/taxonomy.toml`: dimensions = element kind (native/component/slot/template/svg/mathml) × directive (`v-if/-else-if/-else, v-for, v-on, v-bind, v-model, v-show, v-html, v-text, v-once, v-memo, v-cloak, v-pre, custom`) × modifier classes × binding sources (setup/props/data/inject/global) × block combinations — **review point: maintainer signs off dimensions**
-- [ ] Matrix generator skeleton `tools/davinci/matrix-gen.mjs`: taxonomy → fixture stubs under `tests/fixtures/davinci-matrix/` (generation only; expected outputs arrive with the stages that consume them)
+- [x] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (entry = path + justification + expiry)
+- [x] CI self-test: fixture with a deliberately bad assertion that the lint must flag (lint the linter) — `tests/tooling/davinci-assertion-lint.test.ts`
+- [ ] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section; CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison (deferred: pending local disk headroom; runs in the nightly lane once recorded)
+- [x] Construct taxonomy DRAFT `davinci-road/plan/taxonomy.toml`: dimensions = element kind (native/component/slot/template/svg/mathml) × directive (`v-if/-else-if/-else, v-for, v-on, v-bind, v-model, v-show, v-html, v-text, v-once, v-memo, v-cloak, v-pre, custom`) × modifier classes × binding sources (setup/props/data/inject/global) × block combinations
+- [ ] Taxonomy dimensions signed off — **review point: awaiting maintainer sign-off**
+- [x] Matrix generator skeleton `tools/davinci/matrix-gen.mjs`: taxonomy → fixture stubs under `tests/fixtures/davinci-matrix/` (generation only; expected outputs arrive with the stages that consume them — skeleton covers the element-kind × directive plane, deterministic, `--check` staleness mode; fixtures not yet committed)
 
 **Acceptance:** lint self-test green and wired to CI; mutation scores committed + ratcheted; taxonomy signed off; generator emits deterministic fixture sets (two runs identical).
 

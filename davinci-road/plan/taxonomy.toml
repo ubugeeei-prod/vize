@@ -1,0 +1,229 @@
+# Davinci construct taxonomy — the dimension catalog behind the construct
+# matrices (davinci-road/assurance.md, "Edge cases must not exist —
+# elimination by enumeration").
+#
+# DRAFT — pending maintainer sign-off (P0-12 review point); dimensions may
+# change until signed off.
+#
+# Consumers:
+#   tools/davinci/matrix-gen.mjs      — generates fixture stubs from this file
+#   tools/davinci/corpus-coverage.mjs — (P0-6) reports real-project counts
+#                                       against the same ids
+#
+# Every generated matrix fixture combines one value per dimension. A new
+# surface construct means a new entry here first — a construct without a
+# taxonomy row cannot merge. File format is the TOML subset implemented by
+# tools/davinci/toml-lite.mjs (quoted strings, arrays of tables).
+
+[taxonomy]
+version = 1
+status = "draft"
+review = "P0-12 maintainer sign-off pending"
+
+# ---------------------------------------------------------------------------
+# Dimension 1: element kind — what the directive is attached to.
+# `representative` is the tag matrix-gen emits for the stub.
+
+[[element_kind]]
+id = "native"
+description = "Plain HTML element"
+representative = "div"
+
+[[element_kind]]
+id = "component"
+description = "User component reference (PascalCase)"
+representative = "ExampleComponent"
+
+[[element_kind]]
+id = "slot"
+description = "<slot> outlet"
+representative = "slot"
+
+[[element_kind]]
+id = "template"
+description = "<template> pseudo-element (structural grouping, no rendered node)"
+representative = "template"
+
+[[element_kind]]
+id = "svg"
+description = "SVG-namespace element"
+representative = "svg"
+
+[[element_kind]]
+id = "mathml"
+description = "MathML-namespace element"
+representative = "math"
+
+# ---------------------------------------------------------------------------
+# Dimension 2: directive — the built-in directive set plus the custom-
+# directive escape hatch. `usage` is the canonical attribute text matrix-gen
+# writes into stubs; directives with `needs_prior_branch = true` require a
+# preceding v-if sibling to form a valid branch chain.
+
+[[directive]]
+id = "v-if"
+category = "structural"
+usage = 'v-if="visible"'
+
+[[directive]]
+id = "v-else-if"
+category = "structural"
+usage = 'v-else-if="alternate"'
+needs_prior_branch = true
+
+[[directive]]
+id = "v-else"
+category = "structural"
+usage = "v-else"
+needs_prior_branch = true
+
+[[directive]]
+id = "v-for"
+category = "structural"
+usage = 'v-for="item in items"'
+
+[[directive]]
+id = "v-on"
+category = "event"
+usage = 'v-on:click="onEvent"'
+
+[[directive]]
+id = "v-bind"
+category = "binding"
+usage = 'v-bind:id="boundId"'
+
+[[directive]]
+id = "v-model"
+category = "binding"
+usage = 'v-model="modelValue"'
+
+[[directive]]
+id = "v-show"
+category = "display"
+usage = 'v-show="shown"'
+
+[[directive]]
+id = "v-html"
+category = "content"
+usage = 'v-html="rawHtml"'
+
+[[directive]]
+id = "v-text"
+category = "content"
+usage = 'v-text="textContent"'
+
+[[directive]]
+id = "v-once"
+category = "optimization"
+usage = "v-once"
+
+[[directive]]
+id = "v-memo"
+category = "optimization"
+usage = 'v-memo="[dep]"'
+
+[[directive]]
+id = "v-cloak"
+category = "display"
+usage = "v-cloak"
+
+[[directive]]
+id = "v-pre"
+category = "optimization"
+usage = "v-pre"
+
+[[directive]]
+id = "custom"
+category = "custom"
+usage = 'v-example="payload"'
+
+# ---------------------------------------------------------------------------
+# Dimension 3: modifier class — grouped by the directive they attach to.
+# The matrix expands each class member onto its `applies_to` directive.
+
+[[modifier_class]]
+id = "event"
+applies_to = "v-on"
+modifiers = ["stop", "prevent", "capture", "self", "once", "passive"]
+
+[[modifier_class]]
+id = "key"
+applies_to = "v-on"
+modifiers = [
+  "enter",
+  "tab",
+  "delete",
+  "esc",
+  "space",
+  "up",
+  "down",
+  "left",
+  "right",
+  "ctrl",
+  "alt",
+  "shift",
+  "meta",
+  "exact",
+]
+
+[[modifier_class]]
+id = "mouse-button"
+applies_to = "v-on"
+modifiers = ["left", "right", "middle"]
+
+[[modifier_class]]
+id = "v-bind"
+applies_to = "v-bind"
+modifiers = ["prop", "camel", "attr"]
+
+[[modifier_class]]
+id = "v-model"
+applies_to = "v-model"
+modifiers = ["lazy", "number", "trim"]
+
+# ---------------------------------------------------------------------------
+# Dimension 4: binding source — where the identifier referenced by the
+# directive expression is declared.
+
+[[binding_source]]
+id = "setup"
+description = "Declared in <script setup> top-level scope"
+
+[[binding_source]]
+id = "props"
+description = "Declared via defineProps / the props option"
+
+[[binding_source]]
+id = "data"
+description = "Options API data() return value"
+
+[[binding_source]]
+id = "inject"
+description = "Provided by an ancestor via provide/inject"
+
+[[binding_source]]
+id = "global"
+description = "Template global (app.config.globalProperties or whitelisted globals such as Math)"
+
+# ---------------------------------------------------------------------------
+# Dimension 5: block combination — which SFC blocks surround the template.
+
+[[block_combination]]
+id = "template-only"
+blocks = ["template"]
+
+[[block_combination]]
+id = "template-script-setup"
+blocks = ["template", "script-setup"]
+
+[[block_combination]]
+id = "template-script"
+blocks = ["template", "script"]
+
+[[block_combination]]
+id = "template-both-scripts"
+blocks = ["template", "script", "script-setup"]
+
+[[block_combination]]
+id = "template-script-setup-style-scoped"
+blocks = ["template", "script-setup", "style-scoped"]
