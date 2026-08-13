@@ -1840,10 +1840,17 @@ export const nuxtUiApp: AppConfig = {
     patchNuxtUiLinkComponent(nuxtUiLinkPath);
     patchNuxtUiFormComponent(nuxtUiFormPath);
     let nuxtConfig = fs.readFileSync(nuxtConfigPath, "utf-8");
-    if (!nuxtConfig.includes("@nuxt/content")) {
+    if (nuxtConfig.includes("  devtools: {\n    enabled: true\n  },")) {
       nuxtConfig = nuxtConfig.replace(
-        "modules: [\n    '@vizejs/nuxt',",
-        "modules: [\n    '@vizejs/nuxt',\n    '@nuxt/content',",
+        "  devtools: {\n    enabled: true\n  },",
+        "  devtools: {\n    enabled: false\n  },",
+      );
+      fs.writeFileSync(nuxtConfigPath, nuxtConfig);
+    }
+    if (!nuxtConfig.includes("content: true")) {
+      nuxtConfig = nuxtConfig.replace(
+        "  css: ['~/assets/css/main.css'],",
+        "  css: ['~/assets/css/main.css'],\n\n  ui: {\n    content: true\n  },",
       );
       fs.writeFileSync(nuxtConfigPath, nuxtConfig);
     }

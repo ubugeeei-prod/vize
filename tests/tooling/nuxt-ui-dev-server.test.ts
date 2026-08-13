@@ -32,3 +32,16 @@ test("nuxt-ui warmups do not abort slow hosted SSR compilation too early", () =>
   assert.match(source, /isHealthyNuxtUiSsrResponse\(res\.status, body\)/);
   assert.match(source, /isHealthyNuxtUiSsrResponse\(status, html\)/);
 });
+
+test("nuxt-ui setup avoids the Nuxt Content module on hosted readiness runners", () => {
+  const source = readRepoFile("tests", "_helpers", "apps.ts");
+  const start = source.indexOf("export const nuxtUiApp: AppConfig = {");
+  const end = source.indexOf("export const rekaUiApp: AppConfig = {");
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const nuxtUiSetup = source.slice(start, end);
+
+  assert.doesNotMatch(nuxtUiSetup, /@nuxt\/content/);
+  assert.match(nuxtUiSetup, /enabled: false/);
+  assert.match(nuxtUiSetup, /content: true/);
+});
