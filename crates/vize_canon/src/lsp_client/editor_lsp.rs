@@ -16,7 +16,7 @@ use super::{
     language_id::for_uri as language_id_for_uri,
 };
 use corsa::runtime::block_on;
-use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
+use corsa_lsp::{LspClient, LspOverlay, LspSpawnConfig, VirtualDocument};
 use lsp_types::{DocumentDiagnosticReportResult, Uri};
 use serde_json::Value;
 use std::{
@@ -26,13 +26,15 @@ use std::{
         Arc,
         atomic::{AtomicBool, Ordering},
     },
-    time::Duration,
 };
 use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 mod client;
+mod file_rename;
 mod readiness;
 mod requests;
+mod responder;
+mod retry;
 #[cfg(test)]
 mod tests;
 mod type_definition;
@@ -40,7 +42,9 @@ mod type_definition;
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
     RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,
+    signature_help_request_params, will_rename_files_request_params,
 };
+use responder::spawn_responder;
 
 /// A reusable `--lsp --stdio` session for standard diagnostics and editor
 /// requests.
@@ -319,67 +323,4 @@ impl Drop for EditorLspSession {
     fn drop(&mut self) {
         let _ = self.shutdown();
     }
-}
-
-/// Answers the server-initiated requests tsgo makes during startup; without a
-/// reply the server blocks before it ever serves an editor request.
-fn spawn_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
-    let events = client.subscribe();
-    std::thread::spawn(move || {
-        while !stop.load(Ordering::Relaxed) {
-            if let Ok(InboundEvent::Request { id, method, params }) =
-                events.recv_timeout(Duration::from_millis(50))
-            {
-                let response = match method.as_ref() {
-                    "workspace/configuration" => configuration_response(&params),
-                    _ => Value::Null,
-                };
-                let _ = client.respond(id, response);
-            }
-        }
-    })
-}
-
-/// `workspace/configuration` results are positional: the array must hold one
-/// entry per requested item, in request order, with `null` for settings the
-/// client cannot supply. We supply none, so every slot is `null`. A bare `[]`
-/// would misalign servers that read `result[i]` for `items[i]`.
-fn configuration_response(params: &Value) -> Value {
-    let requested = params
-        .get("items")
-        .and_then(Value::as_array)
-        .map_or(0, Vec::len);
-    Value::Array(vec![Value::Null; requested])
-}
-
-fn signature_help_request_params(
-    uri: &Uri,
-    line: u32,
-    character: u32,
-    context: Option<Value>,
-) -> Value {
-    let context = context.unwrap_or_else(|| {
-        serde_json::json!({
-            "triggerKind": 1,
-            "isRetrigger": false
-        })
-    });
-    serde_json::json!({
-        "textDocument": { "uri": uri },
-        "position": { "line": line, "character": character },
-        "context": context,
-    })
-}
-
-fn will_rename_files_request_params(renames: &[(&str, &str)]) -> Value {
-    let files = renames
-        .iter()
-        .map(|(old_uri, new_uri)| {
-            serde_json::json!({
-                "oldUri": old_uri,
-                "newUri": new_uri,
-            })
-        })
-        .collect::<Vec<_>>();
-    serde_json::json!({ "files": files })
 }

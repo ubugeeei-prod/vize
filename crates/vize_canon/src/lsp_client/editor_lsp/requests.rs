@@ -3,6 +3,7 @@
 //! The pinned runtime answers editor requests over `--lsp --stdio` with
 //! untyped payloads, so every request keeps `Value` params and results.
 
+use lsp_types::Uri;
 use serde_json::Value;
 
 pub(super) struct RawHoverRequest;
@@ -75,4 +76,36 @@ impl lsp_types::request::Request for RawWillRenameFilesRequest {
     type Params = Value;
     type Result = Option<Value>;
     const METHOD: &'static str = "workspace/willRenameFiles";
+}
+
+pub(super) fn signature_help_request_params(
+    uri: &Uri,
+    line: u32,
+    character: u32,
+    context: Option<Value>,
+) -> Value {
+    let context = context.unwrap_or_else(|| {
+        serde_json::json!({
+            "triggerKind": 1,
+            "isRetrigger": false
+        })
+    });
+    serde_json::json!({
+        "textDocument": { "uri": uri },
+        "position": { "line": line, "character": character },
+        "context": context,
+    })
+}
+
+pub(super) fn will_rename_files_request_params(renames: &[(&str, &str)]) -> Value {
+    let files = renames
+        .iter()
+        .map(|(old_uri, new_uri)| {
+            serde_json::json!({
+                "oldUri": old_uri,
+                "newUri": new_uri,
+            })
+        })
+        .collect::<Vec<_>>();
+    serde_json::json!({ "files": files })
 }

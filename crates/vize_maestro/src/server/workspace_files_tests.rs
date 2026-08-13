@@ -1,8 +1,10 @@
-use tower_lsp::lsp_types::{ClientCapabilities, CreateFilesParams, DeleteFilesParams, Url};
+use tower_lsp::lsp_types::{
+    ClientCapabilities, CreateFilesParams, DeleteFilesParams, FileChangeType, FileEvent, Url,
+};
 
 use super::{
-    ServerState, record_created_files, record_deleted_files, record_watcher_support,
-    typecheck_dependency_watcher_registration,
+    ServerState, changes_invalidate_disk_project_state, record_created_files, record_deleted_files,
+    record_watcher_support, typecheck_dependency_watcher_registration,
 };
 
 #[test]
@@ -68,4 +70,31 @@ fn vue_file_events_track_only_existing_created_files_and_forget_deletes() {
     record_deleted_files(&state, &deleted);
 
     assert!(state.workspace_vue_file_uris().is_empty());
+}
+
+#[test]
+fn only_vue_content_changes_keep_the_cached_disk_project_state() {
+    let vue = "file:///workspace/src/App.vue";
+    let declaration = "file:///workspace/components.d.ts";
+    let changed = |uri: &str| FileEvent {
+        uri: Url::parse(uri).unwrap(),
+        typ: FileChangeType::CHANGED,
+    };
+
+    assert!(!changes_invalidate_disk_project_state(&[changed(vue)]));
+    assert!(changes_invalidate_disk_project_state(&[changed(
+        declaration
+    )]));
+    assert!(changes_invalidate_disk_project_state(&[FileEvent {
+        uri: Url::parse(vue).unwrap(),
+        typ: FileChangeType::CREATED,
+    }]));
+    assert!(changes_invalidate_disk_project_state(&[FileEvent {
+        uri: Url::parse(vue).unwrap(),
+        typ: FileChangeType::DELETED,
+    }]));
+    assert!(changes_invalidate_disk_project_state(&[
+        changed(vue),
+        changed(declaration)
+    ]));
 }

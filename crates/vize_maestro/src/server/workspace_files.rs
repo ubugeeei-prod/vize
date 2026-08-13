@@ -1,7 +1,7 @@
 //! Workspace file-event handling used by LSP diagnostics and rename support.
 
 #[cfg(feature = "native")]
-use tower_lsp::lsp_types::FileChangeType;
+use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
     MessageType, RenameFilesParams, WorkspaceEdit,
@@ -14,7 +14,8 @@ use crate::ide::FileRenameService;
 mod dependents;
 #[cfg(feature = "native")]
 use dependents::{
-    affected_vue_source_paths, forget_corsa_vue_files, versioned_open_typecheck_dependents,
+    affected_vue_source_paths, forget_corsa_vue_files, invalidate_corsa_disk_state,
+    versioned_open_typecheck_dependents,
 };
 
 #[cfg(feature = "native")]
@@ -88,6 +89,9 @@ pub(super) async fn did_change_watched_files(
 ) {
     #[cfg(feature = "native")]
     {
+        if changes_invalidate_disk_project_state(&params.changes) {
+            invalidate_corsa_disk_state(&server.state).await;
+        }
         // Any watched change can affect an open importer; declaration changes
         // additionally invalidate the discoverable global-component cache.
         let global_components_invalidated = server.state.invalidate_global_component_references(
@@ -116,6 +120,19 @@ pub(super) async fn did_change_watched_files(
     let _ = (server, params);
 }
 
+/// Whether watched changes moved project state the type checker only sees on disk.
+///
+/// Editing a `.vue` source reaches the checker through its synchronized virtual
+/// document, so treating those edits as disk changes would retire the reusable
+/// editor session on every save. Everything else is disk-only state: declaration
+/// and manifest edits, plus any create or delete regardless of extension.
+#[cfg(feature = "native")]
+fn changes_invalidate_disk_project_state(changes: &[FileEvent]) -> bool {
+    changes.iter().any(|change| {
+        change.typ != FileChangeType::CHANGED || !change.uri.as_str().ends_with(".vue")
+    })
+}
+
 pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {
     #[cfg(feature = "native")]
     {
@@ -124,6 +141,7 @@ pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFile
             params.files.iter().map(|file| file.uri.as_str()),
         );
         record_created_files(&server.state, params);
+        invalidate_corsa_disk_state(&server.state).await;
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
@@ -159,6 +177,7 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
         );
         record_deleted_files(&server.state, params);
         forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        invalidate_corsa_disk_state(&server.state).await;
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
@@ -221,6 +240,7 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         }
         server.state.invalidate_batch_cache();
         forget_corsa_vue_files(&server.state, &renamed_paths).await;
+        invalidate_corsa_disk_state(&server.state).await;
         publish_versioned_dependents(server, dependents).await;
     }
     if !server.state.lsp_features().file_rename {

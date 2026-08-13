@@ -253,6 +253,18 @@ impl CorsaProjectClient {
         Ok(())
     }
 
+    /// Drop the on-disk project view cached by the reusable editor LSP session.
+    ///
+    /// The session outlives a single request, so its runtime keeps the file
+    /// contents and the file-existence view it read while building its program.
+    /// Workspace file events change that view without touching any mirrored
+    /// virtual document, so the next semantic request has to run against a
+    /// freshly spawned session to see the current workspace.
+    pub fn invalidate_disk_project_state(&mut self) -> Result<(), String> {
+        self.clear_diagnostics_cache();
+        self.retire_editor_lsp()
+    }
+
     pub(crate) fn diagnostics_cache_len(&self) -> usize {
         self.diagnostics.len()
     }

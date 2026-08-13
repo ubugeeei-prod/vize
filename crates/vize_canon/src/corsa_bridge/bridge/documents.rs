@@ -101,6 +101,17 @@ impl CorsaBridge {
         Ok(())
     }
 
+    /// Forget the on-disk project view cached for editor requests so the next
+    /// request re-reads workspace files that changed outside the overlays.
+    pub async fn invalidate_disk_project_state(&self) -> Result<(), CorsaBridgeError> {
+        self.with_client(|client| {
+            client
+                .invalidate_disk_project_state()
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
+
     pub async fn get_diagnostics(&self, uri: &str) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {
         let uri = uri.to_owned();
         let (used_cache, cache_len, diagnostics) = self
