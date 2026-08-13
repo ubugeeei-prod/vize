@@ -336,7 +336,11 @@ function submitMessage() {
       assert.ok(labels.includes("count"), labels.join(", "));
       assert.ok(labels.includes("message"), labels.join(", "));
       for (const forbidden of ["v-if", "class", "@click"]) {
-        assert.equal(labels.includes(forbidden), false, `${forbidden} leaked into ${labels}`);
+        assert.equal(
+          labels.includes(forbidden),
+          false,
+          `${forbidden} leaked into ${labels.join(", ")}`,
+        );
       }
       const count = normalizeItems(response).find((item) => item.label === "count");
       assert.equal(count?.sortText, "0count");
