@@ -29,6 +29,27 @@ function actionSteps(action: string): Array<{ name: string; run: string }> {
     });
 }
 
+// The `env:` entries a named composite-action step passes, with YAML quoting
+// removed, so tests can assert the values a step actually exports instead of the
+// formatting the workflow happens to use.
+function stepEnvironment(action: string, stepName: string): Record<string, string> {
+  const stepAt = action.indexOf(`- name: ${stepName}\n`);
+  assert.ok(stepAt >= 0, `missing composite-action step: ${stepName}`);
+  const step = action.slice(stepAt).split(/\n {4}- name: /)[0];
+  const environment = /^ {6}env:\n((?: {8}\S.*\n?)*)/m.exec(step)?.[1] ?? "";
+
+  return Object.fromEntries(
+    environment
+      .split("\n")
+      .filter((line) => line.trim().length > 0)
+      .map((line) => {
+        const [, key, value] = /^ {8}([\w.-]+): *(.*?) *$/.exec(line) ?? [];
+        assert.ok(key, `unparsed env entry in ${stepName}: ${line}`);
+        return [key, value.replace(/^(["'])(.*)\1$/, "$2")];
+      }),
+  );
+}
+
 // Packs `editors/vim` the way `package:vim-extension` does — optionally
 // dropping entries first — and runs the packaging guard over the archive, so
 // tests can assert what the guard accepts and rejects instead of its source.
@@ -84,7 +105,13 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     "every real-server scenario and host health check must consume the one built binary",
   );
   assert.match(action, /vp run --workspace-root test:vscode-extension:host-real/);
-  assert.match(action, /VIZE_TEST_VSCODE_VERSION: "1\.107\.1"/);
+  // The pin is the value the step passes, not how YAML happens to quote it.
+  assert.equal(
+    stepEnvironment(action, "Run VS Code host smoke against the real server")
+      .VIZE_TEST_VSCODE_VERSION,
+    "1.107.1",
+    "the VS Code host smoke step must pin the editor build it downloads",
+  );
   assert.match(action, /vp run --workspace-root test:nvim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:vim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:zed-extension:real-server/);
