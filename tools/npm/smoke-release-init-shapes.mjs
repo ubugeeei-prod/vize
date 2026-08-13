@@ -312,9 +312,7 @@ const CHECK_TRIPLE = {
     },
     {
       file: "src/components/HelloWorld.vue",
-      diagnostics: [
-        "error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'.",
-      ],
+      diagnostics: ["error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'."],
     },
   ],
 };

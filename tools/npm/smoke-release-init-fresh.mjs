@@ -86,11 +86,7 @@ function runFreshProjectCell(context, cell) {
   const shape = PROJECT_SHAPES[cell.shape];
   const projectRoot = path.join(context.freshRoot, `${shape.id}-${manager.id}`);
   const authored = { ...shape.files(context.peers), ...manager.projectFiles };
-  const tracked = [
-    ...Object.keys(authored),
-    ...shape.createdFiles,
-    ...shape.updatedFiles,
-  ];
+  const tracked = [...Object.keys(authored), ...shape.createdFiles, ...shape.updatedFiles];
 
   fs.mkdirSync(projectRoot, { recursive: true });
   writeFiles(projectRoot, authored);
