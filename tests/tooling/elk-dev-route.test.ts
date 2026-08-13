@@ -53,6 +53,9 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
     devSpec,
     /ELK_RENDER_ROUTE_LINKS = \["\/settings\/interface", "\/settings\/about"\]/,
   );
+  const appHelpers = fs.readFileSync(path.join(root, "tests/_helpers/apps.ts"), "utf8");
+  assert.match(appHelpers, /"@nuxtjs\/i18n": "10\.1\.0"/);
+  assert.match(appHelpers, /vite: "\^8\.0\.0"/);
   assert.doesNotMatch(devSpec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
   assert.doesNotMatch(devSpec, /verifySSRContent\(page,\s*app\.url\)/);
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);

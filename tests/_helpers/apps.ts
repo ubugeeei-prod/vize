@@ -671,6 +671,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
   }
 
   addPnpmOverrides(path.join(elkDir, "package.json"), {
+    "@nuxtjs/i18n": "10.1.0",
     vite: "^8.0.0",
   });
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
