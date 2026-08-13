@@ -212,6 +212,29 @@ void test("Nuxt client manifest closeBundle bridge is idempotent per build scope
   assert.equal(calls, 1);
 });
 
+void test("Nuxt client manifest closeBundle bridge keeps failed teardown retryable", async () => {
+  let calls = 0;
+  const scope = {};
+  const plugin: NuxtClientManifestVitePlugin = {
+    name: "nuxt:client-manifest",
+    closeBundle() {
+      calls++;
+      if (calls === 1) {
+        return Promise.reject(new Error("teardown failed"));
+      }
+      return "retried";
+    },
+  };
+
+  patchNuxtClientManifestCloseBundlePlugin(plugin, scope);
+
+  await assert.rejects(invokeCloseBundle(plugin), /teardown failed/);
+  assert.equal(await invokeCloseBundle(plugin), "retried");
+  assert.equal(calls, 2);
+  assert.equal(await invokeCloseBundle(plugin), "retried");
+  assert.equal(calls, 2);
+});
+
 void test("Nuxt client manifest closeBundle bridge supports hook objects", async () => {
   let calls = 0;
   const plugin: NuxtClientManifestVitePlugin = {

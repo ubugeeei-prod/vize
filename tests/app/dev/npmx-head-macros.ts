@@ -48,7 +48,7 @@ function expectedHead(
   };
 }
 
-async function captureHead(page: Page, html: string | null = null): Promise<HeadState> {
+export async function captureHead(page: Page, html: string | null = null): Promise<HeadState> {
   return page.evaluate((markup) => {
     const root = markup === null ? document : new DOMParser().parseFromString(markup, "text/html");
     const attributes = (selector: string, attribute: string): string[] =>

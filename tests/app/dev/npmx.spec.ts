@@ -20,6 +20,7 @@ import {
   verifySSRContent,
 } from "../../_helpers/assertions";
 import {
+  captureHead,
   navigateWithNuxtRouter,
   readCurrentRoute,
   verifyNpmxHeadMacros,
@@ -116,9 +117,10 @@ test.describe("npmx.dev dev", () => {
     const url = app.url + "/docs/nuxt/v/4.0.0";
     const html = await verifySSRContent(page, url);
 
-    expect(html).toContain("<title>nuxt@4.0.0 docs - npmx</title>");
-    expect(html).toContain('property="og:title" content="nuxt - Docs"');
-    expect(html).toContain('name="description" content="MIT"');
+    const head = await captureHead(page, html);
+    expect(head.title).toContain("nuxt@4.0.0 docs - npmx");
+    expect(head.ogTitle).toContain("nuxt - Docs");
+    expect(head.description).toContain("MIT");
 
     await page.goto(url, {
       waitUntil: app.waitUntil ?? "networkidle",

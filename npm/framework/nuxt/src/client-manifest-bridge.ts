@@ -59,6 +59,13 @@ function runOnceForScope(buildScope: object, run: () => unknown): Promise<unknow
   } catch (error) {
     next = Promise.reject(error);
   }
-  closeBundleByScope.set(buildScope, next);
-  return next;
+  // A failed teardown must stay retryable, so only successful runs stay cached.
+  const tracked: Promise<unknown> = next.catch((error: unknown) => {
+    if (closeBundleByScope.get(buildScope) === tracked) {
+      closeBundleByScope.delete(buildScope);
+    }
+    throw error;
+  });
+  closeBundleByScope.set(buildScope, tracked);
+  return tracked;
 }
