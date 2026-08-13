@@ -30,7 +30,7 @@ fn hover_with_corsa_resolves_art_variant_script_callable() {
         .unwrap();
 
         let source = r#"<script setup lang="ts">
-import { imported } from './format'
+import { imported, imported as importedAlias } from './format'
 const simpleLabel: string = 'typed'
 function format(value: string, precision: number): string {
   return value.repeat(precision)
@@ -39,7 +39,7 @@ function format(value: string, precision: number): string {
 
 <art title="Button" component="./Button.vue">
   <variant name="Primary">
-    <p>ラベル → {{ simpleLabel }} ・ 桁 ✅ {{ format('art', 2) }} {{ imported(10, 16) }}</p>
+    <p>ラベル → {{ simpleLabel }} ・ 桁 ✅ {{ format('art', 2) }} {{ imported(10, 16) }} {{ importedAlias(10, 16) }}</p>
   </variant>
 </art>
 "#;
@@ -80,6 +80,11 @@ function format(value: string, precision: number): string {
                 "imported",
                 &["imported", "value: number", "radix: number"][..],
             ),
+            (
+                "importedAlias(10",
+                "importedAlias",
+                &["imported", "value: number", "radix: number"][..],
+            ),
         ] {
             let offset = source.rfind(marker).unwrap() + marker.find(authored_word).unwrap() + 2;
             let ctx = IdeContext::new(&state, &uri, offset).unwrap();
@@ -91,7 +96,7 @@ function format(value: string, precision: number): string {
             assert!(
                 template
                     .content
-                    .contains("import { imported } from './format'"),
+                    .contains("import { imported, imported as importedAlias } from './format'"),
                 "typed art template lost workspace import:\n{}",
                 template.content
             );
