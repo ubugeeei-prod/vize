@@ -59,6 +59,7 @@ mod ai_context;
 #[cfg(feature = "application-analysis")]
 pub mod application_analysis;
 mod cache_identity;
+mod capability_execution;
 mod capability_snapshot;
 mod contract;
 mod filter;
@@ -77,6 +78,10 @@ pub use cache_identity::{
     CAPABILITY_CACHE_KEY_PREFIX, CapabilityCacheIdentity, CapabilityCacheIdentityError,
     CapabilityCacheInput, CapabilityCacheKey, CapabilityCacheKeyParseError, CapabilityInvalidation,
     DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
+};
+pub use capability_execution::{
+    CapabilityExecutionError, CapabilityExecutionOutcome, CapabilitySnapshotCache,
+    MemoryCapabilitySnapshotCache, MemoryCapabilitySnapshotCacheError, execute_cached_capability,
 };
 pub use capability_snapshot::{
     CapabilitySnapshot, CapabilitySnapshotError, DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION,

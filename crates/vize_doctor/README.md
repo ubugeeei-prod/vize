@@ -149,6 +149,55 @@ assert_eq!(report.findings().len(), 1);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+`execute_cached_capability` connects those contracts to execution reuse. A cache
+hit is accepted only when the returned snapshot is exactly bound to the requested
+identity, and the analysis runner is not invoked on a trusted hit. On a miss,
+analysis output must validate as a snapshot before storage, and a miss is
+reported only after the cache acknowledges the same identity and output. The
+provided `MemoryCapabilitySnapshotCache` makes identical re-stores idempotent
+and rejects divergent output for one cache key.
+
+```rust
+use std::{collections::BTreeMap, convert::Infallible};
+use vize_doctor::{
+    AnalysisProvenance, CapabilityCacheIdentity, ContentFingerprint, DoctorCategory,
+    DoctorFinding, FindingAssessment, FindingConfidence, FindingImpact, FindingSeverity,
+    HealthPenalty, MemoryCapabilitySnapshotCache, RuleCost, SourceLocation,
+    execute_cached_capability,
+};
+
+let source = ContentFingerprint::digest("source");
+let identity = CapabilityCacheIdentity::from_fingerprints(
+    "template-semantics",
+    ContentFingerprint::digest("template-analyzer-v2"),
+    ContentFingerprint::digest("strict=true"),
+    [("src/App.vue", source)],
+)?;
+let mut cache = MemoryCapabilitySnapshotCache::new();
+
+let outcome = execute_cached_capability(&mut cache, identity.clone(), |_| {
+    Ok::<_, Infallible>([DoctorFinding::new(
+        "VIZE_DOCTOR_TEMPLATE_001",
+        DoctorCategory::Correctness,
+        FindingAssessment::new(
+            FindingSeverity::Warning,
+            FindingConfidence::Certain,
+            FindingImpact::Medium,
+            HealthPenalty::new(10, "List render without a stable key"),
+        ),
+        SourceLocation::new("src/App.vue", 42, 58),
+        "List render has no key",
+        "Add a stable `:key` to the `v-for`.",
+        AnalysisProvenance::new("template-semantics", RuleCost::Low)
+            .with_invalidation_fingerprints(BTreeMap::from([("src/App.vue".into(), source)])),
+    )])
+})?;
+
+assert!(outcome.is_cache_miss());
+assert_eq!(cache.len(), 1);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 ## Reporter integrations
 
 External CI, editor, code-hosting, and AI integrations implement the object-safe
