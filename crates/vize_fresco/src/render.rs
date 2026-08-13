@@ -13,6 +13,10 @@ mod painter;
 mod tree;
 
 #[cfg(test)]
+mod frame_recovery_tests;
+#[cfg(test)]
+mod frame_test_support;
+#[cfg(test)]
 mod frame_tests;
 
 pub use frame::{
