@@ -148,6 +148,7 @@ runs:
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+        VIZE_TEST_VSCODE_VERSION: "1.107.1"
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
 
     - name: Run the packaged Neovim unit spec

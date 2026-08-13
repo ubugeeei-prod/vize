@@ -84,6 +84,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     "every real-server scenario and host health check must consume the one built binary",
   );
   assert.match(action, /vp run --workspace-root test:vscode-extension:host-real/);
+  assert.match(action, /VIZE_TEST_VSCODE_VERSION: "1\.107\.1"/);
   assert.match(action, /vp run --workspace-root test:nvim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:vim-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:zed-extension:real-server/);

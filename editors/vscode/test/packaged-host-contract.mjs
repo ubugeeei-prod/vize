@@ -55,6 +55,7 @@ export async function runPackagedExtensionHost(
     installTimeoutMs,
     onOutput,
     userDataPath,
+    vscodeVersion,
     vsixPath,
     workspacePath,
   },
@@ -68,6 +69,7 @@ export async function runPackagedExtensionHost(
     await runVSCodeCommandWithTimeout(runCommand, installArgs, {
       environment: installEnvironment,
       timeoutMs: installTimeoutMs,
+      version: vscodeVersion,
     }),
   );
 
@@ -83,6 +85,7 @@ export async function runPackagedExtensionHost(
     await runVSCodeCommandWithTimeout(runCommand, launchArgs, {
       environment: hostEnvironment,
       timeoutMs: hostTimeoutMs,
+      version: vscodeVersion,
     }),
   );
 
@@ -105,13 +108,18 @@ export function resolveInstalledExtensionPath(extensionsPath, extensionId) {
   return fs.realpathSync(matches[0]);
 }
 
-export async function runVSCodeCommandWithTimeout(runCommand, args, { environment, timeoutMs }) {
+export async function runVSCodeCommandWithTimeout(
+  runCommand,
+  args,
+  { environment, timeoutMs, version },
+) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await runCommand(args, {
       spawn: { env: environment, signal: controller.signal },
+      version,
     });
   } catch (error) {
     if (controller.signal.aborted) {

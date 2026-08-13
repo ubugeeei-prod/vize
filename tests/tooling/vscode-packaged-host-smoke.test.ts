@@ -132,6 +132,7 @@ test("packaged host aborts a stuck VS Code command", async () => {
     runVSCodeCommandWithTimeout(stuckCommand, ["--version"], {
       environment: {},
       timeoutMs: 5,
+      version: "1.107.1",
     }),
     /VS Code command timed out after 5ms/,
   );
@@ -161,9 +162,12 @@ test("real host runner installs the VSIX and launches the host from the installe
   fs.writeFileSync(vsixPath, "");
 
   try {
-    const invocations: { args: string[]; environment: unknown }[] = [];
-    const runCommand = async (args: string[], options: { spawn: { env: unknown } }) => {
-      invocations.push({ args, environment: options.spawn.env });
+    const invocations: { args: string[]; environment: unknown; version: string }[] = [];
+    const runCommand = async (
+      args: string[],
+      options: { spawn: { env: unknown }; version: string },
+    ) => {
+      invocations.push({ args, environment: options.spawn.env, version: options.version });
       if (args.includes("--install-extension")) {
         writeManifest(path.join(extensionsPath, "ubugeeei.vize-0.311.0"), "ubugeeei", "vize");
       }
@@ -183,6 +187,7 @@ test("real host runner installs the VSIX and launches the host from the installe
       installTimeoutMs: 120_000,
       onOutput: () => {},
       userDataPath,
+      vscodeVersion: "1.107.1",
       vsixPath,
       workspacePath: path.join(profilePath, "workspace"),
     });
@@ -190,6 +195,8 @@ test("real host runner installs the VSIX and launches the host from the installe
     assert.equal(invocations.length, 2);
     assert.equal(invocations[0].args[0], "--install-extension");
     assert.equal(invocations[0].args[1], vsixPath);
+    assert.equal(invocations[0].version, "1.107.1");
+    assert.equal(invocations[1].version, "1.107.1");
 
     const launchArgs = invocations[1].args;
     assert.equal(
@@ -230,6 +237,7 @@ test("real host runner refuses to launch without a packaged VSIX", async () => {
           installTimeoutMs: 1000,
           onOutput: () => {},
           userDataPath: path.join(profilePath, "user-data"),
+          vscodeVersion: "1.107.1",
           vsixPath: path.join(profilePath, "vize.vsix"),
           workspacePath: path.join(profilePath, "workspace"),
         },

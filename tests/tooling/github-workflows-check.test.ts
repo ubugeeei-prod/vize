@@ -183,6 +183,7 @@ test("check workflow runs the editor extension host smoke against a real vize se
   );
   assert.match(smokeAction, /cargo build --profile ci -p vize/);
   assert.match(smokeAction, /VIZE_SERVER_PATH:[^\n]*target\/ci\/vize/);
+  assert.match(smokeAction, /VIZE_TEST_VSCODE_VERSION:\s*"1\.107\.1"/);
   assert.match(smokeAction, /xvfb-run -a vp run [^\n]*test:vscode-extension:host-real/);
 });
 
