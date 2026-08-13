@@ -26,13 +26,13 @@ test("the vue-parity runner baseline caps process pools only on GitHub-hosted ru
   );
   assert.equal(
     hosted.githubEnv.get("VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR"),
-    "8",
+    "12",
     "GitHub-hosted runners must export the temporary cycle-budget floor",
   );
   assert.equal(hosted.baseline.get("runner_environment"), "github-hosted");
   assert.equal(hosted.baseline.get("rayon_num_threads"), "1");
   assert.equal(hosted.baseline.get("gomaxprocs"), "1");
-  assert.equal(hosted.baseline.get("budget_cpu_floor"), "8");
+  assert.equal(hosted.baseline.get("budget_cpu_floor"), "12");
   // The settle step compares live pressure against this number, so it has to be
   // an integer and it has to be the same count the artifact reports.
   assert.match(hosted.githubEnv.get("VIZE_RUNNER_BASELINE_THREADS") ?? "", /^[0-9]+$/);

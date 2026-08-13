@@ -127,7 +127,10 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   const cycles = steps.find(
     (step) => step.name === "Bound fixture process topology under a constrained PID budget",
   );
-  assert.deepEqual(cycles?.env, { VIZE_TEST_BIN: "target/ci/vize" });
+  assert.deepEqual(cycles?.env, {
+    VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: "${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}",
+    VIZE_TEST_BIN: "target/ci/vize",
+  });
   assert.equal(cycles?.run, "vp run --filter './tests' test:check:fixtures:cycles");
   assert.equal(
     testsPackage.scripts["test:check:fixtures:cycles"],

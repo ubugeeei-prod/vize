@@ -36,7 +36,7 @@ runs:
           # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove this floor.
           export RAYON_NUM_THREADS=1
           export GOMAXPROCS=1
-          export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=8
+          export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=12
         else
           export RAYON_NUM_THREADS=4
         fi
@@ -143,6 +143,7 @@ runs:
       shell: bash
       env:
         VIZE_TEST_BIN: target/ci/vize
+        VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: ${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}
       run: vp run --filter './tests' test:check:fixtures:cycles
 
     - name: Check Tier-L batch incremental session reuse
