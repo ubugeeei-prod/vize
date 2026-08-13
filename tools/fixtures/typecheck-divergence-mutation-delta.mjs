@@ -26,9 +26,19 @@ export function summarizeMutationObservations({
 }
 
 function mutationState(name, source, observed, delta) {
+  // `observed.sourceSha256` is the digest of the bytes both checkers actually
+  // inspected. Binding it to the planned input here turns a mutation-write or
+  // path-selection defect into a hard failure instead of evidence for content
+  // no checker ever saw.
+  const plannedSha256 = sha256(source);
+  if (observed.sourceSha256 !== plannedSha256) {
+    throw new Error(
+      `Seeded ${name} oracle source digest ${observed.sourceSha256} does not match the planned source digest ${plannedSha256}`,
+    );
+  }
   return {
     name,
-    sourceSha256: sha256(source),
+    sourceSha256: observed.sourceSha256,
     ...delta,
     observed: summaryEvidence(observed.comparison.summary),
     vize: runEvidence(observed.vize),

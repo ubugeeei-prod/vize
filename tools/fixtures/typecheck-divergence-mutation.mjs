@@ -42,7 +42,19 @@ export function executeSeededMutationOracle({
     primaryError = error;
   }
 
-  restoreSource(sourcePath, cleanSource);
+  try {
+    restoreSource(sourcePath, cleanSource);
+  } catch (restoreError) {
+    // A restore failure must not swallow the reason the oracle failed: the
+    // shard artifact records that message as `unusableReason`.
+    if (primaryError != null) {
+      throw new AggregateError(
+        [primaryError, restoreError],
+        `${errorMessage(primaryError)}; ${errorMessage(restoreError)}`,
+      );
+    }
+    throw restoreError;
+  }
   if (primaryError != null) throw primaryError;
   return result;
 
@@ -67,4 +79,8 @@ function restoreSource(sourcePath, cleanSource) {
   } catch (error) {
     throw new Error(`Seeded mutation oracle could not restore ${sourcePath}`, { cause: error });
   }
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }

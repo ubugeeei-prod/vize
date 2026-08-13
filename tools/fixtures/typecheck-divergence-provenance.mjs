@@ -7,6 +7,7 @@ import { installArguments } from "./typecheck-dependency-prepare.mjs";
 import {
   buildSeededMutation,
   executeSeededMutationOracle,
+  seededMutationDiagnostic,
 } from "./typecheck-divergence-mutation.mjs";
 
 const mutationSchema = "vize.fixtureTypecheckSeededMutationOracle";
@@ -139,13 +140,15 @@ export function createSeededMutationOracle({
     );
   }
   const { file, cleanSource, brokenSource, line, column } = candidate;
+  // The probe statement and its expected diagnostic are one contract, so both
+  // sides come from `seededMutationDiagnostic` rather than repeated literals.
   const diagnostic = {
     file,
-    severity: "error",
+    severity: seededMutationDiagnostic.severity,
     line,
     column,
-    code: 2322,
-    message: "Type 'number' is not assignable to type 'string'.",
+    code: seededMutationDiagnostic.code,
+    message: seededMutationDiagnostic.message,
   };
 
   let observed;

@@ -16,6 +16,7 @@ if (process.argv.includes("--version")) { console.log("vize 0.0.0-test"); proces
 const sourcePath = ${JSON.stringify(sourcePath)};
 const source = fs.readFileSync(sourcePath, "utf8");
 const diagnostics = ${JSON.stringify(options.baselineDiagnostics)};
+${mutationScript()}
 const mutation = mutationDiagnostic(source, ${JSON.stringify(options.mutation)}, "vize");
 if (mutation != null) diagnostics.push(mutation);
 const report = {
@@ -26,7 +27,6 @@ const report = {
 };
 process.stdout.write(JSON.stringify(report));
 process.exit(report.errorCount > 0 ? 1 : 0);
-${mutationScript()}
 `,
   );
   fs.chmodSync(pathname, 0o755);
@@ -64,12 +64,12 @@ export function writeVueTscFixture(
   const runBody = `
 const source = fs.readFileSync(${JSON.stringify(sourcePath)}, "utf8");
 let output = ${JSON.stringify(options.baselineOutput)};
+${mutationScript()}
 const mutation = mutationDiagnostic(source, ${JSON.stringify(options.mutation)}, "vue-tsc");
 if (mutation != null) output += mutation;
 output += ${JSON.stringify(files)};
 process.stdout.write(output);
 process.exit(2);
-${mutationScript()}
 `;
   writeVueTsc(pathname, runBody, invocationPath);
 }

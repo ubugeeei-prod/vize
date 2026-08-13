@@ -219,15 +219,21 @@ test("seeded mutation oracle fails when either checker misses or mismatches the 
     try {
       const result = run(fixture);
       assert.equal(result.status, 1, label);
-      assert.equal(
-        result.stderr,
-        `${unusableFailure(
-          "seeded mutation oracle did not produce one shared broken diagnostic and clean repair",
-        )}\n`,
+      // The instrument-failure classification is behavior, so it stays in the
+      // assertion, but matching a substring keeps the test off the exact stream
+      // shape (trailing newline, unrelated warnings).
+      assert.ok(
+        result.stderr.includes(
+          unusableFailure(
+            "seeded mutation oracle did not produce one shared broken diagnostic and clean repair",
+          ),
+        ),
+        label,
       );
       assert.equal(
         fs.readFileSync(path.join(fixture.fixtureRoot, "src", "App.vue"), "utf8"),
         "<template />\n",
+        label,
       );
       const oracle = readJson(
         path.join(fixture.reportDir, "fixture-typecheck-divergence.json"),

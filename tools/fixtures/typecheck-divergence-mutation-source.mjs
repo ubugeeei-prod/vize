@@ -29,9 +29,13 @@ export function buildSeededMutation(cleanSource) {
 
 function findScriptBlocks(source) {
   const blocks = [];
+  // A commented-out opening tag would otherwise win the block selection and the
+  // probe would land inside the comment, where neither typechecker compiles it.
+  // The mask preserves length, so indices stay aligned with `source`.
+  const scannable = source.replaceAll(/<!--[\s\S]*?-->/g, (comment) => " ".repeat(comment.length));
   const pattern = /<script\b([^>]*)>/gi;
   let match;
-  while ((match = pattern.exec(source)) != null) {
+  while ((match = pattern.exec(scannable)) != null) {
     blocks.push({
       setup: /\bsetup(?:\s|=|>|$)/i.test(match[1]),
       typescript: /\blang\s*=\s*(?:"tsx?"|'tsx?'|tsx?)(?:\s|>|$)/i.test(match[1]),
