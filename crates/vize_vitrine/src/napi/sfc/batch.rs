@@ -2,163 +2,19 @@ use glob::glob;
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    time::Instant,
-};
-use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::{FxHashMap, hash::hash_str};
+use std::{fs, time::Instant};
+use vize_carton::FxHashMap;
 
 use super::{
+    batch_helpers::{
+        BatchCompileJob, BatchCompileKey, BatchStats, batch_compile_key, batch_options_bits,
+        should_cache_batch_compile,
+    },
     experimentals::ExperimentalTemplateOptions,
     thread_pool::BatchThreadPool,
     types::{BatchCompileOptionsNapi, BatchCompileResultNapi},
 };
 use crate::template_syntax::resolve_template_syntax;
-
-/// Aggregate counters for the native batch stats surface.
-#[derive(Default)]
-struct BatchStats {
-    success: usize,
-    failed: usize,
-    input_bytes: usize,
-    output_bytes: usize,
-}
-
-impl BatchStats {
-    fn failed() -> Self {
-        Self {
-            failed: 1,
-            ..Default::default()
-        }
-    }
-
-    fn add(mut self, other: Self) -> Self {
-        self.success += other.success;
-        self.failed += other.failed;
-        self.input_bytes += other.input_bytes;
-        self.output_bytes += other.output_bytes;
-        self
-    }
-}
-
-/// Fingerprint used to collapse repeated batch inputs before compiling.
-///
-/// - source hash and length identify the repeated SFC body without storing a
-///   second owned copy of the source in the map key.
-/// - parent hash and length prevent grouping across directories, where
-///   relative type imports inside `<script setup>` can resolve differently.
-/// - component name length preserves output byte counts for the generated
-///   `__name` field, while `should_cache_batch_compile` filters out cases where
-///   the actual name can alter compilation through self-component resolution.
-/// - option bits separate SSR, vapor, TypeScript, and parser-quirk modes.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct BatchCompileKey {
-    source_hash: u64,
-    source_len: usize,
-    parent_hash: u64,
-    parent_len: usize,
-    component_name_len: usize,
-    options: u16,
-}
-
-/// One physical compile job, possibly standing in for many logical files.
-struct BatchCompileJob {
-    path: PathBuf,
-    source: String,
-    repeats: usize,
-    input_bytes: usize,
-}
-
-impl BatchCompileJob {
-    fn single(path: PathBuf, source: String) -> Self {
-        let input_bytes = source.len();
-        Self {
-            path,
-            source,
-            repeats: 1,
-            input_bytes,
-        }
-    }
-}
-
-/// Packs options that can change aggregate compile results into the cache key.
-fn batch_options_bits(
-    ssr: bool,
-    vapor: bool,
-    is_ts: bool,
-    template_syntax: TemplateSyntaxMode,
-    standalone: bool,
-    experimental_bits: u16,
-) -> u16 {
-    u16::from(ssr)
-        | (u16::from(vapor) << 1)
-        | (u16::from(is_ts) << 2)
-        | (u16::from(template_syntax_bits(template_syntax)) << 3)
-        | (u16::from(standalone) << 5)
-        | experimental_bits
-}
-
-fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
-    match template_syntax {
-        TemplateSyntaxMode::Standard => 0,
-        TemplateSyntaxMode::Strict => 1,
-        TemplateSyntaxMode::Quirks => 2,
-        _ => 3,
-    }
-}
-
-/// Returns whether a repeated source body is safe to group for aggregate stats.
-///
-/// Different filenames normally only change fixed-width scope IDs or the length
-/// of `__name`, both of which the key accounts for. A source that mentions its
-/// own component name is different: self-component resolution can change helper
-/// usage and code shape depending on the representative filename. Such files are
-/// left ungrouped.
-fn should_cache_batch_compile(source: &str, component_name: &str) -> bool {
-    if component_name.is_empty() {
-        return true;
-    }
-
-    !source.contains(component_name)
-        && !source.contains(component_name_to_kebab_case(component_name).as_str())
-}
-
-/// Converts a PascalCase filename stem to the kebab-case spelling used in templates.
-///
-/// This is only a cheap guard for the common ASCII component-name case. It does
-/// not need to be a complete Vue name canonicalizer because exact stem matching
-/// is checked separately.
-fn component_name_to_kebab_case(component_name: &str) -> String {
-    let mut out = String::with_capacity(component_name.len());
-    for (index, ch) in component_name.chars().enumerate() {
-        if ch.is_ascii_uppercase() {
-            if index != 0 {
-                out.push('-');
-            }
-            out.push(ch.to_ascii_lowercase());
-        } else {
-            out.push(ch);
-        }
-    }
-    out
-}
-
-/// Returns parent-directory fingerprint parts for the batch grouping key.
-///
-/// The N-API batch path passes the full file path into SFC compilation. That
-/// lets script setup type imports resolve relative to the file's directory, so
-/// two identical source strings in different directories cannot always share a
-/// compile result. Grouping by parent keeps the optimization useful for
-/// generated corpora while preserving that path-sensitive behavior.
-fn parent_cache_parts(path: &Path) -> (u64, usize) {
-    let Some(parent) = path.parent() else {
-        return (hash_str(""), 0);
-    };
-    let parent = parent.to_string_lossy();
-    (hash_str(parent.as_ref()), parent.len())
-}
 
 /// Compiles a glob of Vue SFCs and returns aggregate stats for the native API.
 ///
@@ -250,15 +106,7 @@ fn compile_sfc_batch_inner(
             .and_then(|name| name.to_str())
             .unwrap_or("");
         if should_cache_batch_compile(&source, component_name) {
-            let (parent_hash, parent_len) = parent_cache_parts(&path);
-            let key = BatchCompileKey {
-                source_hash: hash_str(&source),
-                source_len: source.len(),
-                parent_hash,
-                parent_len,
-                component_name_len: component_name.len(),
-                options: option_bits,
-            };
+            let key = batch_compile_key(&path, &source, component_name, option_bits);
             if let Some(index) = grouped.get(&key).copied() {
                 let job = &mut jobs[index];
                 job.repeats += 1;
@@ -308,12 +156,28 @@ fn compile_sfc_batch_inner(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
-                    compiler_options: Some(experimentals.dom_options()),
+                    compiler_options: {
+                        let mut dom_options = experimentals.dom_options();
+                        if let Some(value) = opts.template_cache_handlers {
+                            dom_options.cache_handlers = value;
+                        }
+                        if let Some(value) = opts.template_comments {
+                            dom_options.comments = value;
+                        }
+                        if let Some(value) = opts.template_hoist_static {
+                            dom_options.hoist_static = value;
+                        }
+                        if let Some(value) = opts.template_prefix_identifiers {
+                            dom_options.prefix_identifiers = value;
+                        }
+                        Some(dom_options)
+                    },
                     ..Default::default()
                 },
                 style: StyleCompileOptions {
                     id: filename,
                     scoped: has_scoped,
+                    trim: opts.style_trim.unwrap_or(false),
                     ..Default::default()
                 },
                 vapor,

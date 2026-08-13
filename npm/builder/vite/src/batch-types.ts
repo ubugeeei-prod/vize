@@ -48,6 +48,11 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string;
+  styleTrim?: boolean;
+  templateCacheHandlers?: boolean;
+  templateComments?: boolean;
+  templateHoistStatic?: boolean;
+  templatePrefixIdentifiers?: boolean;
   threads?: number;
   /**
    * Include per-block style metadata (incl. `styles[].content`). Default OFF.

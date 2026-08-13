@@ -16,6 +16,7 @@ import {
   invalidateModules,
   preferAcceptingClientModules,
 } from "./hmr-module-graph.ts";
+import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 
 export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
 export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
@@ -161,6 +162,17 @@ export async function handleHotUpdateHook(
       );
 
       const hasDelegated = hasDelegatedStyles(newCompiled);
+      const customElement = isPluginVueCustomElement(state.mergedOptions, file);
+
+      if (customElement && updateType === "style-only") {
+        if (modules.size > 0) {
+          state.pendingHmrUpdateTypes.set(file, "full-reload");
+          invalidateModules(server, modules);
+          return [...modules];
+        }
+        state.pendingHmrUpdateTypes.delete(file);
+        return [];
+      }
 
       if (hasDelegated && updateType === "style-only") {
         const affectedModules: Set<import("vite").ModuleNode> = new Set();

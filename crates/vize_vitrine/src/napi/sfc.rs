@@ -13,6 +13,7 @@
 )]
 
 mod batch;
+mod batch_helpers;
 mod batch_results;
 mod bundler;
 mod compile;

@@ -173,7 +173,6 @@ pub(crate) fn compile_template_block(
     // which are captured in the setup() function scope
     if inline && bindings.is_some() {
         dom_opts.inline = true;
-        dom_opts.hoist_static = true;
         dom_opts.cache_handlers = true;
     }
 

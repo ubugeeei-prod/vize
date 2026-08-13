@@ -55,11 +55,7 @@ pub(super) fn compile_template_only(
             )
         )
     } else {
-        // Enable hoisting for template-only SFCs (hoisted consts go at module level)
-        let mut template_opts = input.options.template.clone();
-        let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
-        dom_opts.hoist_static = true;
-        template_opts.compiler_options = Some(dom_opts);
+        let template_opts = input.options.template.clone();
         // Also pass scope IDs to the client template compiler. Vue's runtime
         // normally propagates __scopeId, but wrapper components such as NuxtLink
         // can otherwise lose parent scoped attrs before the final DOM root.

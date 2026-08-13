@@ -12,12 +12,13 @@ import os from "node:os";
 import path from "node:path";
 import type { Plugin } from "vite";
 
-import { createUpstreamPlugin } from "./vite-plugin-vue-parity.ts";
+import { catalogVersion, createUpstreamPlugin } from "./vite-plugin-vue-parity.ts";
 import { vize } from "../../../npm/builder/vite/src/plugin/index.ts";
 
 type FilterApi = {
   exclude?: unknown;
   include?: unknown;
+  version?: unknown;
 };
 
 type AnyHook = (...args: never[]) => unknown;
@@ -98,6 +99,12 @@ export function probeFilterApi(): void {
   // reports the real one and this assertion keeps the difference deliberate.
   assert.equal(upstreamApi().exclude, undefined);
   assert.deepEqual(shimApi().exclude, /node_modules/);
+}
+
+/** `api.version` tracks the pinned plugin-vue compatibility target. */
+export function probeVersionApi(): void {
+  assert.equal(shimApi().version, upstreamApi().version);
+  assert.equal(shimApi().version, catalogVersion());
 }
 
 /**

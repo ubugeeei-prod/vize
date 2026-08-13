@@ -102,6 +102,11 @@ export interface GenerateOutputOptions {
    * Required for generating virtual style imports for preprocessor/CSS Modules delegation.
    */
   filePath?: string;
+  /**
+   * `@vitejs/plugin-vue` custom-element mode attaches CSS strings to
+   * `_sfc_main.styles` instead of injecting or extracting ordinary component CSS.
+   */
+  customElement?: boolean;
 }
 
 /**
@@ -116,7 +121,9 @@ function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptio
   return (
     !!options.filePath &&
     !!compiled.styles?.length &&
-    (hasDelegatedStyles(compiled) || (!options.ssr && options.isProduction && !!options.extractCss))
+    (options.customElement ||
+      hasDelegatedStyles(compiled) ||
+      (!options.ssr && options.isProduction && !!options.extractCss))
   );
 }
 
@@ -139,6 +146,7 @@ function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptio
 export function embedsInlineCss(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
   return (
     !usesStyleImports(compiled, options) &&
+    !options.customElement &&
     !options.ssr &&
     !!compiled.css &&
     !(options.isProduction && !!options.extractCss)
@@ -161,7 +169,7 @@ export function generateOutputWithMap(
   compiled: CompiledModule,
   options: GenerateOutputOptions,
 ): { code: string; map: SourceMapV3 | null } {
-  const { isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
+  const { customElement, isProduction, isDev, ssr, hmrUpdateType, extractCss, filePath } = options;
 
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
 
@@ -226,6 +234,7 @@ export function generateOutputWithMap(
     // Emit virtual style imports for ALL blocks so Vite handles them uniformly.
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
+    const customElementStyleBindings: string[] = [];
 
     for (const block of compiled.styles!) {
       const lang = block.lang ?? "css";
@@ -236,7 +245,16 @@ export function generateOutputWithMap(
       if (block.scoped) params.set("scoped", `data-v-${compiled.scopeId}`);
       params.set("lang", lang);
 
-      if (isCssModule(block)) {
+      if (customElement) {
+        if (isCssModule(block)) {
+          throw new Error("<style module> is not supported in custom element mode");
+        }
+        params.set("inline", "");
+        const bindingName = `_style_${block.index}`;
+        const importUrl = `${filePath}?${params.toString()}`;
+        styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
+        customElementStyleBindings.push(bindingName);
+      } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
@@ -258,7 +276,15 @@ export function generateOutputWithMap(
     }
 
     // Inject CSS module bindings into the component
-    if (cssModuleImports.length > 0) {
+    if (customElementStyleBindings.length > 0) {
+      emitted.edit(
+        insertBeforeSfcMainDefaultExport(
+          emitted.code,
+          `_sfc_main.styles = [${customElementStyleBindings.join(", ")}];`,
+          { normalizeSemicolon: true },
+        ),
+      );
+    } else if (cssModuleImports.length > 0) {
       // Extract binding names from the CSS module imports
       const moduleBindings: { name: string; bindingName: string }[] = [];
       for (const block of compiled.styles!) {

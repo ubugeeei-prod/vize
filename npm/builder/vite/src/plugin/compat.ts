@@ -16,6 +16,7 @@ import { DEFAULT_EXCLUDE_PATTERN, DEFAULT_INCLUDE_PATTERN } from "../utils/filte
 import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
 import { transformVirtualTypeScript } from "./vite-transform.ts";
+import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
 
@@ -77,6 +78,7 @@ export function createVueCompatPlugin(state: VizePluginState, options: VizeOptio
         assertUnresolved("exclude");
         options.exclude = value;
       },
+      version: PLUGIN_VUE_COMPAT_VERSION,
     },
   };
 }

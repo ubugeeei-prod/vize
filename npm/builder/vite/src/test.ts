@@ -40,6 +40,7 @@ import "./plugin/precompile-cache.test.ts";
 import "./plugin/precompile-cache-corrupt.test.ts";
 import "./plugin/precompile-cache-manifest.test.ts";
 import "./plugin/precompile-cache-store.test.ts";
+import "./plugin/state-compile-options.test.ts";
 import "./plugin/ssr-modules.test.ts";
 import "./plugin/ssr-modules-load.test.ts";
 import "./plugin/state.test.ts";

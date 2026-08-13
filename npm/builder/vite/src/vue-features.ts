@@ -1,3 +1,8 @@
+import type {
+  VitePluginVueComponentIdGenerator,
+  VitePluginVueCustomElementOption,
+} from "./plugin-vue-types.ts";
+
 /** Vue runtime feature flags shared with `@vitejs/plugin-vue`. */
 export interface VizeVueFeatures {
   /**
@@ -18,4 +23,13 @@ export interface VizeVueFeatures {
    * @default false
    */
   prodHydrationMismatchDetails?: boolean;
+
+  /** Custom-element matcher from `@vitejs/plugin-vue`'s `features` bag. */
+  customElement?: VitePluginVueCustomElementOption;
+
+  /** Vue 3.5 reactive props destructure feature flag. */
+  propsDestructure?: boolean | "error";
+
+  /** Scope-id strategy hook accepted for plugin-vue config compatibility. */
+  componentIdGenerator?: VitePluginVueComponentIdGenerator;
 }

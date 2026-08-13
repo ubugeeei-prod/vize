@@ -32,6 +32,8 @@ import {
   rewriteStaticAssetUrls,
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
+import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
+import { normalizeStyleVirtualId } from "./load-style.ts";
 
 export { normalizeVueServerRendererImport };
 
@@ -78,15 +80,6 @@ function findMacroArtifactModule(
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
 }
 
-function normalizeStyleVirtualId(id: string): string {
-  const withoutPrefix = id.startsWith("\0") ? id.slice(1) : id;
-  if (!withoutPrefix.includes("?vue")) {
-    return id;
-  }
-
-  return withoutPrefix.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
-}
-
 function loadCompiledSfcModule(
   state: VizePluginState,
   realPath: string,
@@ -101,7 +94,8 @@ function loadCompiledSfcModule(
   }
 
   const cache = getEnvironmentCache(state, isSsr);
-  const extractCss = shouldExtractCssForRequest(state, isSsr);
+  const customElement = isPluginVueCustomElement(state.mergedOptions, realPath);
+  const extractCss = shouldExtractCssForRequest(state, isSsr) && !customElement;
   let compiled = cache.get(realPath);
 
   // On-demand compile if not cached
@@ -128,6 +122,7 @@ function loadCompiledSfcModule(
     ssr: isSsr,
     hmrUpdateType: loadOptions?.ssr ? undefined : state.pendingHmrUpdateTypes.get(realPath),
     extractCss,
+    customElement,
     filePath: realPath,
   };
   if (compiled.css && !hasDelegated && embedsInlineCss(compiled, outputOptions)) {

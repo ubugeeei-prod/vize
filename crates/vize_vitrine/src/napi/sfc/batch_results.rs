@@ -125,10 +125,23 @@ fn compile_sfc_batch_with_results_inner(
                 vec![]
             };
             let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-            let template_compiler_options = Some(vize_atelier_dom::DomCompilerOptions {
-                scope_id: has_scoped.then(|| cstr!("data-v-{scope_id}")),
-                ..experimentals.dom_options()
-            });
+            let template_compiler_options = {
+                let mut dom_options = experimentals.dom_options();
+                dom_options.scope_id = has_scoped.then(|| cstr!("data-v-{scope_id}"));
+                if let Some(value) = opts.template_cache_handlers {
+                    dom_options.cache_handlers = value;
+                }
+                if let Some(value) = opts.template_comments {
+                    dom_options.comments = value;
+                }
+                if let Some(value) = opts.template_hoist_static {
+                    dom_options.hoist_static = value;
+                }
+                if let Some(value) = opts.template_prefix_identifiers {
+                    dom_options.prefix_identifiers = value;
+                }
+                Some(dom_options)
+            };
             // `parse.filename` is left empty: compile falls back to `script.id`,
             // which carries the same value, so no per-file clone is needed.
             // `template.id` is never read by the template compiler.
@@ -151,6 +164,7 @@ fn compile_sfc_batch_with_results_inner(
                 style: StyleCompileOptions {
                     id: filename_cs,
                     scoped: has_scoped,
+                    trim: opts.style_trim.unwrap_or(false),
                     ..Default::default()
                 },
                 vapor,

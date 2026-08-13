@@ -29,6 +29,7 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
+import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 
 /**
  * The options the pre-compile batch actually compiles with.
@@ -37,10 +38,11 @@ import {
  * that reaches the native compiler reaches the key with it.
  */
 function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOptions {
+  const requestOptions = getCompileOptionsForRequest(state, false);
   return {
     // The batch fills the same caches `load` serves from, so it has to make the
     // same source-map decision the on-demand path makes (#3399).
-    sourceMap: getCompileOptionsForRequest(state, false).sourceMap,
+    sourceMap: requestOptions.sourceMap,
     ssr: false,
     vapor: state.mergedOptions.vapor ?? false,
     mode: state.mergedOptions.mode,
@@ -52,6 +54,11 @@ function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOpti
     runtimeModuleName: state.mergedOptions.runtimeModuleName,
     runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
     vueVersion: state.mergedOptions.vueVersion,
+    styleTrim: requestOptions.styleTrim,
+    templateCacheHandlers: requestOptions.templateCacheHandlers,
+    templateComments: requestOptions.templateComments,
+    templateHoistStatic: requestOptions.templateHoistStatic,
+    templatePrefixIdentifiers: requestOptions.templatePrefixIdentifiers,
   };
 }
 
@@ -173,7 +180,14 @@ export async function compileAll(state: VizePluginState): Promise<void> {
         if (metadata) {
           state.precompileMetadata.set(file, metadata);
         }
-        syncCollectedCssForFile(state, file, restored);
+        syncCollectedCssForFile(
+          {
+            ...state,
+            extractCss: state.extractCss && !isPluginVueCustomElement(state.mergedOptions, file),
+          },
+          file,
+          restored,
+        );
         restoredCount++;
         continue;
       }
@@ -224,7 +238,15 @@ export async function compileAll(state: VizePluginState): Promise<void> {
         cache.set(fileResult.path, sourceHash, compiled);
       }
 
-      syncCollectedCssForFile(state, fileResult.path, compiled);
+      syncCollectedCssForFile(
+        {
+          ...state,
+          extractCss:
+            state.extractCss && !isPluginVueCustomElement(state.mergedOptions, fileResult.path),
+        },
+        fileResult.path,
+        compiled,
+      );
     }
   }
 

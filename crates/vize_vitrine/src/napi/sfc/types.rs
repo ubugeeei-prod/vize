@@ -77,6 +77,11 @@ pub struct SfcCompileOptionsNapi {
     pub runtime_module_name: Option<String>,
     pub runtime_global_name: Option<String>,
     pub vue_version: Option<String>,
+    pub style_trim: Option<bool>,
+    pub template_cache_handlers: Option<bool>,
+    pub template_comments: Option<bool>,
+    pub template_hoist_static: Option<bool>,
+    pub template_prefix_identifiers: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Scope ID for scoped CSS (e.g., "data-v-abc123")
@@ -150,6 +155,11 @@ pub struct BatchCompileOptionsNapi {
     pub runtime_module_name: Option<String>,
     pub runtime_global_name: Option<String>,
     pub vue_version: Option<String>,
+    pub style_trim: Option<bool>,
+    pub template_cache_handlers: Option<bool>,
+    pub template_comments: Option<bool>,
+    pub template_hoist_static: Option<bool>,
+    pub template_prefix_identifiers: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Worker threads for this call (1-256). Omit to use Rayon's global pool.

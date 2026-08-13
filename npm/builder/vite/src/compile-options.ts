@@ -1,7 +1,8 @@
 import type { BatchCompileOptionsNapi, SfcCompileOptionsNapi } from "./types.ts";
 import { generateScopeId } from "./utils/index.ts";
+import type { PluginVueCompileOptions } from "./plugin/plugin-vue-options.ts";
 
-export interface CompileFileOptions {
+export interface CompileFileOptions extends PluginVueCompileOptions {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -16,7 +17,7 @@ export interface CompileFileOptions {
   vueVersion?: string | number;
 }
 
-export interface CompileBatchOptions {
+export interface CompileBatchOptions extends PluginVueCompileOptions {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
@@ -45,6 +46,19 @@ export function buildCompileFileOptions(
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
     scopeId: `data-v-${generateScopeId(filePath)}`,
+    styleTrim: options.styleTrim,
+    ...(options.templateCacheHandlers === undefined
+      ? {}
+      : { templateCacheHandlers: options.templateCacheHandlers }),
+    ...(options.templateComments === undefined
+      ? {}
+      : { templateComments: options.templateComments }),
+    ...(options.templateHoistStatic === undefined
+      ? {}
+      : { templateHoistStatic: options.templateHoistStatic }),
+    ...(options.templatePrefixIdentifiers === undefined
+      ? {}
+      : { templatePrefixIdentifiers: options.templatePrefixIdentifiers }),
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined
@@ -74,6 +88,19 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     // Also part of the pre-compile cache key, so a run that wants maps cannot
     // be served entries compiled without them (#3399).
     includeSourceMap: options.sourceMap,
+    styleTrim: options.styleTrim,
+    ...(options.templateCacheHandlers === undefined
+      ? {}
+      : { templateCacheHandlers: options.templateCacheHandlers }),
+    ...(options.templateComments === undefined
+      ? {}
+      : { templateComments: options.templateComments }),
+    ...(options.templateHoistStatic === undefined
+      ? {}
+      : { templateHoistStatic: options.templateHoistStatic }),
+    ...(options.templatePrefixIdentifiers === undefined
+      ? {}
+      : { templatePrefixIdentifiers: options.templatePrefixIdentifiers }),
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined

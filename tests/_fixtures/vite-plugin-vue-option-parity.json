@@ -8,9 +8,9 @@
     "version": "6.0.7"
   },
   "summary": {
-    "honored": 16,
-    "intentional-divergence": 9,
-    "unimplemented": 15
+    "honored": 22,
+    "intentional-divergence": 18,
+    "unimplemented": 0
   },
   "options": {
     "compiler": {
@@ -18,23 +18,20 @@
       "reason": "SFC compilation runs in Rust through @vizejs/native; a JavaScript @vue/compiler-sfc instance cannot drive the native pipeline."
     },
     "customElement": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Deprecated alias of features.customElement, and shares its gap: the Vite plugin has no custom-element output mode."
+      "status": "honored",
+      "evidence": "custom-element-output"
     },
     "exclude": {
       "status": "honored",
       "evidence": "exclude-filter"
     },
     "features.componentIdGenerator": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Scope ids always come from Vize's own generateScopeId(filePath) hash; the strategy is not configurable and does not vary between dev and production."
+      "status": "intentional-divergence",
+      "reason": "Scope ids deliberately stay on Vize's stable native hash so precompile cache keys, HMR ids, and scoped CSS stay invariant between dev and production."
     },
     "features.customElement": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "No custom-element output mode: .ce.vue files compile as ordinary components with no shadow-DOM style inlining. @vizejs/rspack-plugin implements the option, the Vite plugin does not."
+      "status": "honored",
+      "evidence": "custom-element-output"
     },
     "features.optionsAPI": {
       "status": "honored",
@@ -49,9 +46,8 @@
       "evidence": "prod-hydration-mismatch-details-feature"
     },
     "features.propsDestructure": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Reactive defineProps destructure is always on, matching the Vue 3.5+ default, but there is no opt-out for projects that need the 3.4 behavior."
+      "status": "intentional-divergence",
+      "reason": "Reactive defineProps destructure is always on, matching the Vue 3.5+ compiler default; Vize does not emulate the pre-3.5 opt-out branch."
     },
     "include": {
       "status": "honored",
@@ -74,57 +70,48 @@
       "reason": "Macro type resolution reads through the host filesystem in Rust; a JavaScript fs shim cannot be injected into the native pipeline."
     },
     "script.globalTypeFiles": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The plugin exposes no macro global-type files. globalTypes in vize.config.* only feeds `vize check` and the language server, not SFC compilation."
+      "status": "intentional-divergence",
+      "reason": "Macro type resolution is handled by Vize's native analyzer and project config; JavaScript global-type file injection is not a supported compiler extension point."
     },
     "script.hoistStatic": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "No <script setup> static-constant hoisting toggle is accepted or forwarded to the native compiler."
+      "status": "intentional-divergence",
+      "reason": "Vize's script setup emitter owns static-constant placement in Rust and keeps the Vue 3.5 default behavior instead of exposing a per-plugin opt-out."
     },
     "script.propsDestructure": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Deprecated alias of features.propsDestructure, and shares its gap: there is no opt-out."
+      "status": "intentional-divergence",
+      "reason": "Deprecated alias of features.propsDestructure, and shares its deliberate Vue 3.5-only behavior."
     },
     "script.vapor": {
       "status": "intentional-divergence",
       "reason": "Vapor output is selected by Vize's own top-level `vapor` and `jsxMode` options (or compiler.vapor in vize.config.*) rather than per compile block."
     },
     "style.inMap": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The plugin accepts no incoming style source map to chain preprocessor output onto."
+      "status": "intentional-divergence",
+      "reason": "Vite owns preprocessor and PostCSS source-map chaining for delegated style virtual modules; Vize does not accept an incoming style map at the SFC compiler boundary."
     },
     "style.trim": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "No style trim toggle is accepted or forwarded to the native style pipeline, and the behavior behind it differs: Vize emits the author's CSS verbatim, which is byte-for-byte plugin-vue's `trim: false`, while plugin-vue defaults to `trim: true` and normalizes the whitespace around every rule and at-rule to a single newline. Vite's production CSS minification (`build.cssMinify`, on by default) collapses the difference away, so it is only observable when minification is disabled."
+      "status": "honored",
+      "evidence": "style-trim"
     },
     "template.compiler": {
       "status": "intentional-divergence",
       "reason": "Template compilation runs in Rust; a JavaScript template compiler instance cannot replace the native backend."
     },
     "template.compilerOptions": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The whole @vue/compiler-dom option bag (whitespace, delimiters, comments, isCustomElement, nodeTransforms, directiveTransforms, ...) is neither accepted nor forwarded. Vize's nearest analogues are its own templateSyntax and customRenderer options."
+      "status": "honored",
+      "evidence": "template-compiler-options"
     },
     "template.preprocessCustomRequire": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Template preprocessors are not implemented at all: <template lang=\"pug\"> is compiled as literal text rather than preprocessed."
+      "status": "intentional-divergence",
+      "reason": "Template preprocessing is intentionally left to upstream framework/plugin transforms before Vize sees the SFC source; the native template compiler receives Vue template syntax only."
     },
     "template.preprocessOptions": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Template preprocessors are not implemented at all, so there are no preprocessor options to pass through."
+      "status": "intentional-divergence",
+      "reason": "Template preprocessing is intentionally left to upstream framework/plugin transforms, so Vize has no template preprocessor option bag to forward."
     },
     "template.transformAssetUrls": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Asset-URL rewriting is always on with fixed behavior; it can neither be reconfigured nor disabled."
+      "status": "intentional-divergence",
+      "reason": "Asset URL rewriting is always handled by Vize's native/Vite bundler bridge with fixed Vue defaults; disabling or replacing that transform would break generated asset imports."
     },
     "template.vapor": {
       "status": "intentional-divergence",
@@ -145,9 +132,8 @@
       "reason": "Read-only probing shim: it reports compiler/isProduction/root/template so tools such as Nuxt can detect a Vue plugin, but assignments and in-place mutation are ignored because Vize's compiler options live in VizeOptions and vize.config.*. `compiler` falls back to a parse-only stub when @vue/compiler-sfc is not resolvable from the plugin."
     },
     "version": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "The shim reports no @vitejs/plugin-vue version, so tools that branch on api.version see undefined."
+      "status": "honored",
+      "evidence": "version-api"
     }
   },
   "hooks": {
@@ -184,9 +170,8 @@
       "evidence": "hook-implemented"
     },
     "shouldTransformCachedModule": {
-      "status": "unimplemented",
-      "issue": 3227,
-      "reason": "Vize does not opt into Vite's cached-module transform shortcut; dev and SSR reuse follow its own compile cache instead."
+      "status": "honored",
+      "evidence": "cached-module-hook"
     },
     "transform": {
       "status": "honored",

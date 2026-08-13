@@ -2,7 +2,7 @@
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import type { VizeOptions, ConfigEnv, ResolvedVizeConfig } from "../types.ts";
+import type { VizeOptions, ConfigEnv } from "../types.ts";
 import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
@@ -33,56 +33,17 @@ import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
 import { resolveExperimentalCompilerOptions } from "./experimentals.ts";
-import {
-  createLegacyVueCompatibilityPlugin,
-  isLegacyVueCompatibilityMode,
-  isLegacyVueVersion,
-} from "./vue-version.ts";
+import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
 import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
+import {
+  aliasSortKey,
+  resolveCompatibilityOptions,
+  shouldExtractCssForBuild,
+} from "./index-helpers.ts";
 
 export type { VizePluginState } from "./state.ts";
-
-function aliasSortKey(find: string | RegExp): number {
-  return typeof find === "string" ? find.length : find.source.length;
-}
-
-function shouldExtractCssForBuild(
-  state: Pick<VizePluginState, "extractCss" | "isProduction">,
-  context: { environment?: { name?: string } },
-): boolean {
-  if (!state.isProduction) {
-    return false;
-  }
-
-  const environmentName = context.environment?.name;
-  if (environmentName === "client" || environmentName === "browser") {
-    return true;
-  }
-  if (environmentName === "ssr" || environmentName === "server") {
-    return false;
-  }
-
-  return state.extractCss;
-}
-
-function resolveCompatibilityOptions(
-  options: VizeOptions,
-  compilerConfig: ResolvedVizeConfig["compiler"] = {},
-): NonNullable<VizeOptions["compatibility"]> {
-  const compatibility = {
-    ...compilerConfig.compatibility,
-    ...options.compatibility,
-  };
-  const vueVersion = options.vueVersion ?? compatibility.vueVersion ?? 3;
-
-  if (compatibility.hostCompiler === undefined && isLegacyVueVersion(vueVersion)) {
-    compatibility.hostCompiler = true;
-  }
-
-  return compatibility;
-}
 
 export function vize(options: VizeOptions = {}): Plugin[] {
   if (isLegacyVueCompatibilityMode(options)) {
@@ -317,6 +278,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
     async hotUpdate(options) {
       return handleHotUpdateEnvironmentHook(state, this.environment, options);
+    },
+
+    shouldTransformCachedModule({ id }: { id?: string }) {
+      return id?.includes(".vue") ? true : undefined;
     },
 
     // Vite 7.3+ prefers `hotUpdate` when both hooks exist. Keep this deprecated

@@ -13,6 +13,10 @@ import { type DynamicImportAliasRule } from "../virtual.ts";
 import { createLogger } from "../transform.ts";
 import type { HmrUpdateType } from "../hmr.ts";
 import type { PrecompileFileMetadata } from "./precompile.ts";
+import {
+  resolvePluginVueCompileOptions,
+  type PluginVueCompileOptions,
+} from "./plugin-vue-options.ts";
 
 export {
   DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
@@ -83,12 +87,13 @@ export type CompileOptionsForRequest = {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
-} & Partial<
-  Pick<
-    VizeOptions,
-    "experimentalInTagComments" | "experimentalPatternedTemplate" | "experimentalServerScript"
-  >
->;
+} & PluginVueCompileOptions &
+  Partial<
+    Pick<
+      VizeOptions,
+      "experimentalInTagComments" | "experimentalPatternedTemplate" | "experimentalServerScript"
+    >
+  >;
 
 export function getCompileOptionsForRequest(
   state: Pick<VizePluginState, "isProduction" | "mergedOptions" | "viteBuildSourcemap">,
@@ -102,6 +107,7 @@ export function getCompileOptionsForRequest(
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),
     customRenderer: state.mergedOptions?.customRenderer ?? false,
     templateSyntax: state.mergedOptions?.templateSyntax ?? "standard",
+    ...resolvePluginVueCompileOptions(state.mergedOptions ?? {}),
   };
 
   if (state.mergedOptions?.mode !== undefined) {
