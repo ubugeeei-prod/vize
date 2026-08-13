@@ -1,4 +1,6 @@
 import type { ChildProcess } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import { nuxtUiApp } from "../../_helpers/apps";
 import {
   ensurePortFree,
@@ -7,6 +9,7 @@ import {
   startDevServer,
   waitForServerReady,
 } from "../../_helpers/server";
+import { withViteNodeRequestBudget } from "./nuxt-ui-vite-node";
 
 const app = nuxtUiApp;
 
@@ -19,8 +22,12 @@ const app = nuxtUiApp;
 export const DEAD_NUXT_UI_SSR_BRIDGE = /IPC connection closed/;
 const BOOT_ATTEMPTS = 3;
 const SSR_READY_ATTEMPTS = 2;
-const SSR_READY_TIMEOUT_MS = 90_000;
+// One shared window for every readiness probe of a boot: a per-probe timeout would
+// multiply into the row budget once it is wide enough for a slow hosted compile.
+const SSR_READY_TIMEOUT_MS = 180_000;
 const SSR_READY_RETRY_DELAY_MS = 2_000;
+
+const NUXT_UI_CONFIG_SEGMENTS = ["playgrounds", "nuxt", "nuxt.config.ts"] as const;
 
 export type NuxtUiDevServer = {
   devServer: ChildProcess;
@@ -50,13 +57,27 @@ function hasDeadSsrBridge(devServer: ChildProcess): boolean {
   return hasDeadNuxtUiSsrBridgeLog(getProcessLogs(devServer));
 }
 
+/** Widen the playground's vite-node request budget so slow SSR compiles survive. */
+function ensureViteNodeRequestBudget(): void {
+  const configPath = path.join(app.cwd, ...NUXT_UI_CONFIG_SEGMENTS);
+  if (!fs.existsSync(configPath)) return;
+
+  const config = fs.readFileSync(configPath, "utf-8");
+  const patched = withViteNodeRequestBudget(config);
+  if (patched !== config) fs.writeFileSync(configPath, patched);
+}
+
 async function waitForHealthySsrResponse(devServer: ChildProcess): Promise<boolean> {
+  const deadline = Date.now() + SSR_READY_TIMEOUT_MS;
+
   for (let attempt = 1; attempt <= SSR_READY_ATTEMPTS; attempt++) {
     if (hasDeadSsrBridge(devServer)) return false;
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
 
     try {
       const response = await fetch(app.url, {
-        signal: AbortSignal.timeout(SSR_READY_TIMEOUT_MS),
+        signal: AbortSignal.timeout(remainingMs),
       });
       const body = await response.text();
       if (isHealthyNuxtUiSsrResponse(response.status, body)) {
@@ -84,6 +105,7 @@ async function waitForHealthySsrResponse(devServer: ChildProcess): Promise<boole
 }
 
 async function bootDevServer(): Promise<NuxtUiDevServerBoot> {
+  ensureViteNodeRequestBudget();
   await ensurePortFree(app.port);
 
   console.log(`Starting dev server for ${app.name}...`);

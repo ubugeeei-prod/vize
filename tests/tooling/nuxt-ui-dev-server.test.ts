@@ -4,6 +4,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import {
+  VITE_NODE_REQUEST_TIMEOUT_MS,
+  withViteNodeRequestBudget,
+} from "../app/dev/nuxt-ui-vite-node.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readRepoFile(...segments: string[]): string {
@@ -15,11 +20,44 @@ test("nuxt-ui startup waits for a healthy SSR page before returning ready", () =
 
   assert.doesNotMatch(source, /waitForHttpReady/);
   assert.match(source, /const BOOT_ATTEMPTS = 3;/);
-  assert.match(source, /const SSR_READY_TIMEOUT_MS = 90_000;/);
-  assert.match(source, /AbortSignal\.timeout\(SSR_READY_TIMEOUT_MS\)/);
+  assert.match(source, /const SSR_READY_TIMEOUT_MS = 180_000;/);
+  assert.match(source, /const deadline = Date\.now\(\) \+ SSR_READY_TIMEOUT_MS;/);
+  assert.match(source, /AbortSignal\.timeout\(remainingMs\)/);
   assert.match(source, /isHealthyNuxtUiSsrResponse\(response\.status, body\)/);
   assert.match(source, /DEAD_NUXT_UI_SSR_BRIDGE\.test\(body\) \|\| hasDeadSsrBridge/);
   assert.match(source, /throw new Error\(`\$\{app\.name\} dev server failed startup:/);
+});
+
+test("nuxt-ui boots widen the playground vite-node request budget", () => {
+  const source = readRepoFile("tests", "app", "dev", "nuxt-ui-dev-server.ts");
+
+  // A budget under our own SSR readiness window would let vite-node reject the slow
+  // first module fetch and destroy the bridge before a probe can observe it.
+  assert.equal(VITE_NODE_REQUEST_TIMEOUT_MS, 600_000);
+  assert.ok(VITE_NODE_REQUEST_TIMEOUT_MS > 180_000);
+  assert.match(source, /ensureViteNodeRequestBudget\(\);\n  await ensurePortFree/);
+
+  const patched = withViteNodeRequestBudget(
+    [
+      "export default defineNuxtConfig({",
+      "  vite: {",
+      "    optimizeDeps: { include: [] },",
+      "  },",
+      "",
+      "  compatibilityDate: '2024-07-09',",
+      "})",
+      "",
+    ].join("\n"),
+  );
+  assert.match(patched, /vite: \{\n {4}viteNode: \{ requestTimeout: 600000 \},\n {4}optimizeDeps:/);
+  assert.equal(withViteNodeRequestBudget(patched), patched);
+
+  const withoutViteBlock = withViteNodeRequestBudget(
+    ["export default defineNuxtConfig({", "  compatibilityDate: '2024-07-09',", "})", ""].join(
+      "\n",
+    ),
+  );
+  assert.match(withoutViteBlock, /vite: \{\n {4}viteNode: \{ requestTimeout: 600000 \},\n {2}\},/);
 });
 
 test("nuxt-ui warmups do not abort slow hosted SSR compilation too early", () => {
