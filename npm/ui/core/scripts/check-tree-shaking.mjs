@@ -4,6 +4,8 @@ import { gzipSync } from "node:zlib";
 
 import { build } from "vite";
 
+import { uiFamilyCatalog } from "../src/family-catalog.ts";
+
 const virtualConsumerId = path.resolve(".vize-ui-tree-shaking-consumer.mjs");
 
 /**
@@ -67,157 +69,21 @@ function consumerSource(exportName, packageEntry) {
   return `import { ${exportName} } from ${JSON.stringify(packageEntry)};globalThis.__vizeUiConsumer=${exportName};`;
 }
 
-const familySignatures = Object.freeze({
-  button: /aria-busy/,
-  checkbox: /aria-checked/,
-  collection: /VIZE_UI_COLLECTION_DISPOSED/,
-  "composite-navigation": /VIZE_UI_COMPOSITE_NAVIGATION_DISPOSED/,
-  id: /DeterministicIdProvider/,
-  "inert-outside": /VIZE_UI_INERT_OUTSIDE_DISPOSED/,
-  "interaction-modality": /VIZE_UI_INTERACTION_MODALITY_DISPOSED/,
-  focus: /VIZE_UI_FOCUS_DISPOSED/,
-  "focus-scope": /VIZE_UI_FOCUS_SCOPE_DISPOSED/,
-  "focus-guards": /VIZE_UI_FOCUS_GUARDS_DISPOSED/,
-  hover: /VIZE_UI_HOVER_DISPOSED/,
-  "long-press": /VIZE_UI_LONG_PRESS_DISPOSED/,
-  move: /VIZE_UI_MOVE_DISPOSED/,
-  press: /VIZE_UI_PRESS_DISPOSED/,
-  "scroll-lock": /VIZE_UI_SCROLL_LOCK_DISPOSED/,
-  "spatial-navigation": /VIZE_UI_SPATIAL_NAVIGATION_DISPOSED/,
-  typeahead: /VIZE_UI_TYPEAHEAD_DISPOSED/,
-  primitive: /data-vize-ui.+primitive/,
-  "visually-hidden": /visually-hidden/,
-});
+const treeShakingEntries = uiFamilyCatalog.filter((entry) => entry.bundleBudget);
+const familySignatures = new Map(
+  treeShakingEntries.map((entry) => [
+    entry.canonicalName,
+    new RegExp(entry.bundleBudget.retainedSignature),
+  ]),
+);
 
-const retainedFamilies = Object.freeze({
-  "composite-navigation": new Set(["composite-navigation", "typeahead"]),
-  focus: new Set(["focus", "interaction-modality"]),
-  "long-press": new Set(["long-press", "press"]),
-});
-
-const componentCases = [
-  {
-    family: "button",
-    exportName: "Button",
-    maximumJavaScriptGzipBytes: 1_000,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "checkbox",
-    exportName: "Checkbox",
-    maximumJavaScriptGzipBytes: 1_100,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "collection",
-    exportName: "createCollectionRegistry",
-    maximumJavaScriptGzipBytes: 3_150,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "composite-navigation",
-    exportName: "createCompositeNavigation",
-    maximumJavaScriptGzipBytes: 3_900,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "id",
-    exportName: "IdProvider",
-    maximumJavaScriptGzipBytes: 1_050,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "inert-outside",
-    exportName: "createInertOutside",
-    maximumJavaScriptGzipBytes: 2_175,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "interaction-modality",
-    exportName: "createInteractionModalityTracker",
-    maximumJavaScriptGzipBytes: 1_650,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "focus",
-    exportName: "createFocus",
-    maximumJavaScriptGzipBytes: 3_300,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "focus-scope",
-    exportName: "createFocusScope",
-    maximumJavaScriptGzipBytes: 4_050,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "focus-guards",
-    exportName: "createFocusGuards",
-    maximumJavaScriptGzipBytes: 3_500,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "hover",
-    exportName: "createHover",
-    maximumJavaScriptGzipBytes: 1_450,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "long-press",
-    exportName: "createLongPress",
-    maximumJavaScriptGzipBytes: 5_150,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "move",
-    exportName: "createMove",
-    maximumJavaScriptGzipBytes: 2_750,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "press",
-    exportName: "createPress",
-    maximumJavaScriptGzipBytes: 3_550,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "scroll-lock",
-    exportName: "createScrollLock",
-    maximumJavaScriptGzipBytes: 2_150,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "spatial-navigation",
-    exportName: "createSpatialNavigation",
-    maximumJavaScriptGzipBytes: 2_600,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "typeahead",
-    exportName: "createTypeahead",
-    maximumJavaScriptGzipBytes: 1_375,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "primitive",
-    exportName: "Primitive",
-    maximumJavaScriptGzipBytes: 500,
-    maximumCssGzipBytes: 0,
-  },
-  {
-    family: "visually-hidden",
-    exportName: "VisuallyHidden",
-    maximumJavaScriptGzipBytes: 400,
-    maximumCssGzipBytes: 180,
-  },
-];
-
-for (const {
-  family,
-  exportName,
-  maximumJavaScriptGzipBytes,
-  maximumCssGzipBytes,
-} of componentCases) {
+for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
+  const {
+    exportName,
+    allowedRetainedFamilies = [],
+    maximumJavaScriptGzipBytes,
+    maximumCssGzipBytes,
+  } = bundleBudget;
   const rootOutput = await bundleConsumer(consumerSource(exportName, "@vizejs/ui"));
   const subpathOutput = await bundleConsumer(consumerSource(exportName, `@vizejs/ui/${family}`));
   assert.equal(
@@ -231,8 +97,8 @@ for (const {
     `${exportName} root and subpath exports emitted different CSS`,
   );
 
-  for (const [signatureFamily, signature] of Object.entries(familySignatures)) {
-    const allowed = retainedFamilies[family] ?? new Set([family]);
+  for (const [signatureFamily, signature] of familySignatures) {
+    const allowed = new Set([family, ...allowedRetainedFamilies]);
     if (allowed.has(signatureFamily)) {
       assert.match(
         rootOutput.javascript,

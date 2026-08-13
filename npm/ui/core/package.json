@@ -64,6 +64,11 @@
       "import": "./dist/controllable-state.mjs",
       "default": "./dist/controllable-state.mjs"
     },
+    "./catalog": {
+      "types": "./dist/catalog.d.mts",
+      "import": "./dist/catalog.mjs",
+      "default": "./dist/catalog.mjs"
+    },
     "./id": {
       "types": "./dist/id.d.mts",
       "import": "./dist/id.mjs",
@@ -165,6 +170,7 @@
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
     "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
     "test": "vp test run",
+    "check:catalog": "vp test run src/family-catalog.test.ts",
     "check": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "check:size": "node scripts/check-size.mjs",

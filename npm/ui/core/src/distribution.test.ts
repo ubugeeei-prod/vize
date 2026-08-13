@@ -5,28 +5,12 @@ import path from "node:path";
 
 import { test } from "vite-plus/test";
 
+import { uiFamilyCatalog } from "./family-catalog.ts";
+
 const publicEntries = [
   ".",
-  "./button",
-  "./checkbox",
-  "./collection",
-  "./composite-navigation",
-  "./controllable-state",
-  "./id",
-  "./inert-outside",
-  "./interaction-modality",
-  "./focus",
-  "./focus-scope",
-  "./focus-guards",
-  "./hover",
-  "./long-press",
-  "./move",
-  "./press",
-  "./scroll-lock",
-  "./spatial-navigation",
-  "./typeahead",
-  "./primitive",
-  "./visually-hidden",
+  "./catalog",
+  ...uiFamilyCatalog.map((entry) => entry.packageSubpath),
 ] as const;
 
 test("every public entry exposes generated JavaScript and declarations", async () => {
