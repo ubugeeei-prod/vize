@@ -180,6 +180,8 @@ pub fn parse_template(
 ) -> Result<serde_json::Value> {
     let allocator = Bump::new();
     let opts = options.unwrap_or_default();
+    let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
         &allocator,
@@ -192,7 +194,7 @@ pub fn parse_template(
         vize_atelier_core::options::CustomElementMatcher::from_patterns(
             crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
         ),
-        vize_atelier_core::TemplateSyntaxMode::Standard,
+        template_syntax,
     );
 
     if !errors.is_empty() {

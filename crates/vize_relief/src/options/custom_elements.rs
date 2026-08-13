@@ -60,7 +60,7 @@ fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
     if pattern.is_empty() {
         return false;
     }
-    if pattern == "*" {
+    if pattern.bytes().all(|byte| byte == b'*') {
         return true;
     }
     if !pattern.contains('*') {
@@ -123,5 +123,30 @@ mod tests {
         assert!(matcher.matches("three-buffer-geometry"));
         assert!(!matcher.matches("MyComponent"));
         assert!(!matcher.matches("NestedTresMesh"));
+    }
+
+    #[test]
+    fn custom_element_matcher_treats_all_wildcard_patterns_as_match_all() {
+        for pattern in ["*", "**", "***"] {
+            let matcher = CustomElementMatcher::from_patterns(vec![String::from(pattern)]);
+
+            assert!(matcher.matches("div"), "pattern {pattern} should match div");
+            assert!(
+                matcher.matches("TresMesh"),
+                "pattern {pattern} should match TresMesh"
+            );
+            assert!(
+                matcher.matches("three-buffer-geometry"),
+                "pattern {pattern} should match three-buffer-geometry"
+            );
+        }
+    }
+
+    #[test]
+    fn custom_element_matcher_ignores_empty_patterns() {
+        let matcher = CustomElementMatcher::from_patterns(vec![String::new("")]);
+
+        assert!(!matcher.matches(""));
+        assert!(!matcher.matches("div"));
     }
 }

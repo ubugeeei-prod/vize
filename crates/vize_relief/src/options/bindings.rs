@@ -101,6 +101,7 @@ impl BindingType {
     /// - `props` → `$props.`
     /// - `data` → `$data.`
     /// - `options` (computed / methods / inject) → `$options.`
+    /// - `vue-global` (`$slots`, `$emit`, `$attrs`, ...) → `_ctx.`
     ///
     /// `props-aliased` is intentionally not handled here: it rewrites to
     /// `$props['<original-key>']` and must be resolved via the props-alias map
@@ -118,14 +119,16 @@ impl BindingType {
             Self::Props | Self::PropsAliased => "$props.",
             Self::Data => "$data.",
             Self::Options => "$options.",
-            // Globals and external-module bindings are resolved to `_ctx.` by the
-            // caller; this arm keeps the match exhaustive and conservative.
+            // Vue globals (`$slots`, `$emit`, `$attrs`, ...) live on the render
+            // context, never on the setup object.
+            Self::VueGlobal => "_ctx.",
+            // JS globals are skipped before this call site (they need no prefix);
+            // external-module bindings behave like setup bindings in function mode.
             Self::JsGlobalUniversal
             | Self::JsGlobalBrowser
             | Self::JsGlobalNode
             | Self::JsGlobalDeno
             | Self::JsGlobalBun
-            | Self::VueGlobal
             | Self::ExternalModule => "$setup.",
         }
     }
@@ -216,6 +219,13 @@ mod tests {
             BindingType::Options.non_inline_template_prefix(),
             "$options."
         );
+    }
+
+    #[test]
+    fn non_inline_template_prefix_keeps_vue_globals_on_render_context() {
+        // `$slots` / `$emit` and friends live on the render context, so function
+        // mode must emit `_ctx.$slots`, never `$setup.$slots`.
+        assert_eq!(BindingType::VueGlobal.non_inline_template_prefix(), "_ctx.");
     }
 
     #[test]
