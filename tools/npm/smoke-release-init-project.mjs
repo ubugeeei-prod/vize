@@ -280,10 +280,24 @@ export function checkReport(projectRoot) {
 }
 
 function normalizeReportedFile(file, projectRoot) {
-  let normalized = file.replaceAll("\\", "/");
-  const normalizedRoot = projectRoot.replaceAll("\\", "/");
+  const normalized = file.replaceAll("\\", "/");
+  const normalizedRoot = path.posix.normalize(projectRoot.replaceAll("\\", "/"));
+  const relativeToRoot = (target) => {
+    const relative = path.posix.relative(normalizedRoot, target);
+    if (relative === "" || (!relative.startsWith("../") && relative !== "..")) {
+      return relative;
+    }
+    return null;
+  };
   if (path.posix.isAbsolute(normalized) || /^[A-Za-z]:\//u.test(normalized)) {
-    normalized = path.posix.relative(normalizedRoot, normalized);
+    const relative = relativeToRoot(path.posix.normalize(normalized));
+    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
+  }
+  if (normalized === "." || normalized === ".." || /^[.]{1,2}\//u.test(normalized)) {
+    const relative = relativeToRoot(
+      path.posix.normalize(path.posix.join(normalizedRoot, normalized)),
+    );
+    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
   }
   return normalized.startsWith("./") ? normalized.slice(2) : normalized;
 }

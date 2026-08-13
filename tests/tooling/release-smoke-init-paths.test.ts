@@ -33,4 +33,27 @@ test("reported diagnostics are normalized relative to the fresh project", () => 
     ),
     [{ file: "src/App.vue", diagnostics }],
   );
+  assert.deepEqual(
+    reportedDiagnostics(
+      {
+        files: [
+          {
+            file: "../../../../../../../runneradmin/AppData/Local/Temp/vize/fresh/app/src/App.vue",
+            diagnostics,
+          },
+        ],
+      },
+      "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\vize\\fresh\\app",
+    ),
+    [{ file: "src/App.vue", diagnostics }],
+  );
+  assert.deepEqual(
+    reportedDiagnostics(
+      {
+        files: [{ file: "../other/src/App.vue", diagnostics }],
+      },
+      "/tmp/vize/fresh/app",
+    ),
+    [{ file: "../other/src/App.vue", diagnostics }],
+  );
 });
