@@ -95,6 +95,12 @@ test("full and readiness plans preserve every isolated execution row", () => {
     "75m",
   );
   assert.equal(readinessRows.find((row) => row.shard === "check")?.timeout, "12m");
+  assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");
+  assert.equal(
+    readinessRows.find((row) => row.shard === "dev-nuxt-ui")?.timeout,
+    "15m",
+    "hosted Nuxt UI dev readiness needs enough wall-clock budget for server boot and warmups",
+  );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,
     "5m",

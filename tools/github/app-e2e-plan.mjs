@@ -77,7 +77,7 @@ export const fullAppE2eRows = [
 
 export const readinessRows = [
   // Temporary hosted-runner fallback while Blacksmith is degraded.
-  // Restore to 5m with blacksmith-32vcpu-ubuntu-2404.
+  // Restore check to 5m and dev-nuxt-ui to 8m with blacksmith-32vcpu-ubuntu-2404.
   row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "12m"),
   row(
     "readiness",
@@ -106,7 +106,7 @@ export const readinessRows = [
     "test:readiness:dev:nuxt-ui",
     ["nuxt-ui"],
     true,
-    "8m",
+    "15m",
   ),
 ];
 

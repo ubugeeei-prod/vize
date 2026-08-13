@@ -33,10 +33,12 @@ runs:
         }
         if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
           # Temporary hosted-runner fallback while Blacksmith is degraded.
-          # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove this floor.
+          # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove these hosted caps/scales.
           export RAYON_NUM_THREADS=1
           export GOMAXPROCS=1
           export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=12
+          export VIZE_TIER_L_BUDGET_SCALE=2
+          export VIZE_PERF_BUDGET_SCALE=2
         else
           export RAYON_NUM_THREADS=4
         fi
@@ -47,6 +49,12 @@ runs:
         if [ -n "${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-}" ]; then
           echo "VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=$VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR" >> "$GITHUB_ENV"
         fi
+        if [ -n "${VIZE_TIER_L_BUDGET_SCALE:-}" ]; then
+          echo "VIZE_TIER_L_BUDGET_SCALE=$VIZE_TIER_L_BUDGET_SCALE" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${VIZE_PERF_BUDGET_SCALE:-}" ]; then
+          echo "VIZE_PERF_BUDGET_SCALE=$VIZE_PERF_BUDGET_SCALE" >> "$GITHUB_ENV"
+        fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
         threads_total="$(thread_count)"
         echo "VIZE_RUNNER_BASELINE_THREADS=$threads_total" >> "$GITHUB_ENV"
@@ -56,6 +64,8 @@ runs:
           echo "rayon_num_threads=$RAYON_NUM_THREADS"
           echo "gomaxprocs=${GOMAXPROCS:-unset}"
           echo "budget_cpu_floor=${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-unset}"
+          echo "tier_l_budget_scale=${VIZE_TIER_L_BUDGET_SCALE:-unset}"
+          echo "perf_budget_scale=${VIZE_PERF_BUDGET_SCALE:-unset}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
           echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ' || echo unavailable)"
@@ -161,6 +171,7 @@ runs:
         VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
         VIZE_TIER_L_CORSA_BIN: node_modules/.bin/tsgo
         VIZE_TIER_L_METRICS_DIR: target/vize-tests/metrics/vben-batch-incremental
+        VIZE_TIER_L_BUDGET_SCALE: ${{ env.VIZE_TIER_L_BUDGET_SCALE }}
         VIZE_RUNTIME_NODE_MODULES: node_modules
       run: cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture
 
@@ -184,13 +195,15 @@ runs:
       shell: bash
       env:
         VIZE_LSP_BIN: target/ci/vize
-      run: vp run --filter './tests' test:performance:lsp-incremental
+        VIZE_PERF_BUDGET_SCALE: ${{ env.VIZE_PERF_BUDGET_SCALE }}
+      run: vp run --no-cache --filter './tests' test:performance:lsp-incremental
 
     - name: Stress LSP edit churn against Misskey
       shell: bash
       env:
         VIZE_LSP_BIN: target/ci/vize
-      run: vp run --filter './tests' test:performance:lsp-churn
+        VIZE_PERF_BUDGET_SCALE: ${{ env.VIZE_PERF_BUDGET_SCALE }}
+      run: vp run --no-cache --filter './tests' test:performance:lsp-churn
 
     - name: Publish incremental LSP summaries
       if: ${{ always() }}

@@ -180,6 +180,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     VIZE_TIER_L_FIXTURE: "tests/_fixtures/_git/vue-vben-admin",
     VIZE_TIER_L_CORSA_BIN: "node_modules/.bin/tsgo",
     VIZE_TIER_L_METRICS_DIR: "target/vize-tests/metrics/vben-batch-incremental",
+    VIZE_TIER_L_BUDGET_SCALE: "${{ env.VIZE_TIER_L_BUDGET_SCALE }}",
     VIZE_RUNTIME_NODE_MODULES: "node_modules",
   });
   assert.equal(
@@ -211,12 +212,21 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   const incremental = steps.find(
     (step) => step.name === "Check incremental LSP against Misskey and Vue Vben Admin",
   );
-  assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
-  assert.equal(incremental?.run, "vp run --filter './tests' test:performance:lsp-incremental");
+  assert.deepEqual(incremental?.env, {
+    VIZE_LSP_BIN: "target/ci/vize",
+    VIZE_PERF_BUDGET_SCALE: "${{ env.VIZE_PERF_BUDGET_SCALE }}",
+  });
+  assert.equal(
+    incremental?.run,
+    "vp run --no-cache --filter './tests' test:performance:lsp-incremental",
+  );
 
   const churn = steps.find((step) => step.name === "Stress LSP edit churn against Misskey");
-  assert.deepEqual(churn?.env, { VIZE_LSP_BIN: "target/ci/vize" });
-  assert.equal(churn?.run, "vp run --filter './tests' test:performance:lsp-churn");
+  assert.deepEqual(churn?.env, {
+    VIZE_LSP_BIN: "target/ci/vize",
+    VIZE_PERF_BUDGET_SCALE: "${{ env.VIZE_PERF_BUDGET_SCALE }}",
+  });
+  assert.equal(churn?.run, "vp run --no-cache --filter './tests' test:performance:lsp-churn");
 
   const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");
