@@ -122,27 +122,58 @@ test("a cycle rejects a check that degraded, sampled, or stopped reporting", () 
   );
 });
 
-test("the cycle targets pin one single-Corsa and one maximum-shard fixture", () => {
+test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shard fixtures", () => {
   assert.deepEqual(
     cycleTargets.map((target) => `${target.id}:${target.corsaProcesses}`),
-    ["single-corsa:1", "maximum-shard:8"],
+    ["single-corsa:1", "ecosystem-products-virtual-ts:1", "maximum-shard:8"],
   );
-  const [single, shard] = cycleTargets as [(typeof cycleTargets)[0], (typeof cycleTargets)[1]];
+  const [single, ecosystem, shard] = cycleTargets as [
+    (typeof cycleTargets)[0],
+    (typeof cycleTargets)[1],
+    (typeof cycleTargets)[2],
+  ];
   assert.equal(single.projectDir, "tests/_fixtures/_projects/typecheck-errors");
   assert.equal(single.servers, null, "the 18-file fixture must keep auto-tuning to one process");
+  assert.equal(single.showVirtualTs, false);
   assert.equal(single.peakGroupProcessBound, 2, "one vize process plus one Corsa process");
   assert.equal(single.expectedFileCount, 18, "the fixture the issue names has 18 Vue files");
   assert.equal(single.expectsDiagnostics, true, "typecheck-errors plants intentional errors");
+  assert.equal(
+    ecosystem.projectDir,
+    "tests/_fixtures/_projects/ecosystem-products",
+    "the dependency-heavy fixture that failed in vue-parity must stay budgeted",
+  );
+  assert.equal(
+    ecosystem.servers,
+    null,
+    "the six-file fixture must keep auto-tuning to one process",
+  );
+  assert.equal(
+    ecosystem.showVirtualTs,
+    true,
+    "the cycle must cover the snapshot phase's high-output virtual TS mode",
+  );
+  assert.equal(ecosystem.peakGroupProcessBound, 2, "one vize process plus one Corsa process");
+  assert.equal(
+    ecosystem.expectedFileCount,
+    9,
+    "virtual TS output includes helper and generated program entries",
+  );
+  assert.equal(ecosystem.expectsDiagnostics, false, "the ecosystem corpus plants no errors");
   assert.equal(shard.projectDir, "tests/_fixtures/_git/create-vue");
   assert.equal(shard.servers, 8, "the shard cap is eight Corsa servers");
+  assert.equal(shard.showVirtualTs, false);
   assert.equal(shard.peakGroupProcessBound, 9, "one vize process plus eight Corsa processes");
   assert.equal(shard.expectedFileCount, 42, "the pinned create-vue submodule carries 42 templates");
   assert.equal(shard.expectsDiagnostics, false, "the create-vue corpus plants no errors");
   // The bound has to scale with the runner: a Corsa process sizes its Go
   // runtime from the core count, and every thread is a task in the budget.
   assert.equal(single.taskBudget(32), 320);
+  assert.equal(ecosystem.taskBudget(32), 640);
   assert.equal(shard.taskBudget(32), 1152);
   assert.ok(shard.taskBudget(32) > single.taskBudget(32));
+  assert.ok(ecosystem.taskBudget(32) > single.taskBudget(32));
+  assert.ok(shard.taskBudget(32) > ecosystem.taskBudget(32));
   assert.deepEqual(checkArgv(single, "/bin/tsgo"), [
     "check",
     "src/**/*.vue",
@@ -151,6 +182,16 @@ test("the cycle targets pin one single-Corsa and one maximum-shard fixture", () 
     "--quiet",
     "--corsa-path",
     "/bin/tsgo",
+  ]);
+  assert.deepEqual(checkArgv(ecosystem, "/bin/tsgo"), [
+    "check",
+    "src/**/*.vue",
+    "--format",
+    "json",
+    "--quiet",
+    "--corsa-path",
+    "/bin/tsgo",
+    "--show-virtual-ts",
   ]);
   assert.deepEqual(checkArgv(shard, "/bin/tsgo"), [
     "check",

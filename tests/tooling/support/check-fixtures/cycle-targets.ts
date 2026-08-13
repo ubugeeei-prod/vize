@@ -1,4 +1,4 @@
-//! The two focused cycle targets and their documented bounds (#4126).
+//! Focused cycle targets and their documented bounds (#4126).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -12,6 +12,14 @@ export type CycleTarget = {
   readonly patterns: readonly string[];
   /** Explicit `--servers`, or `null` to let `vize` auto-tune. */
   readonly servers: number | null;
+  /**
+   * Whether the cycle includes generated virtual TypeScript in JSON output.
+   *
+   * The high-output ecosystem-products fixture hit the original spawn
+   * exhaustion after printing virtual TS, so the constrained guard must cover
+   * that output mode rather than only the quiet diagnostic report.
+   */
+  readonly showVirtualTs: boolean;
   /** Corsa CLI processes the run is expected to reach at its widest. */
   readonly corsaProcesses: number;
   /**
@@ -56,7 +64,22 @@ export const cycleTargets: readonly CycleTarget[] = [
     peakGroupProcessBound: 2,
     projectDir: "tests/_fixtures/_projects/typecheck-errors",
     servers: null,
+    showVirtualTs: false,
     taskBudget: (cpuCount) => 64 + 8 * cpuCount,
+  },
+  {
+    corsaProcesses: 1,
+    description:
+      "the dependency-heavy ecosystem-products fixture in the same `--show-virtual-ts` mode as the blocking snapshot phase",
+    expectedFileCount: 9,
+    expectsDiagnostics: false,
+    id: "ecosystem-products-virtual-ts",
+    patterns: ["src/**/*.vue"],
+    peakGroupProcessBound: 2,
+    projectDir: "tests/_fixtures/_projects/ecosystem-products",
+    servers: null,
+    showVirtualTs: true,
+    taskBudget: (cpuCount) => 128 + 16 * cpuCount,
   },
   {
     corsaProcesses: 8,
@@ -69,6 +92,7 @@ export const cycleTargets: readonly CycleTarget[] = [
     peakGroupProcessBound: 9,
     projectDir: "tests/_fixtures/_git/create-vue",
     servers: 8,
+    showVirtualTs: false,
     taskBudget: (cpuCount) => 128 + 32 * cpuCount,
   },
 ];
@@ -119,6 +143,9 @@ export function checkArgv(target: CycleTarget, corsaBin: string): string[] {
   ];
   if (target.servers != null) {
     argv.push("--servers", String(target.servers));
+  }
+  if (target.showVirtualTs) {
+    argv.push("--show-virtual-ts");
   }
   return argv;
 }
