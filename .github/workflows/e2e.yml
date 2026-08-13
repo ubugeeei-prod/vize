@@ -142,7 +142,7 @@ jobs:
     name: app-readiness (${{ matrix.shard }})
     needs: app-readiness-plan
     if: needs.app-readiness-plan.outputs.run == 'true'
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -302,7 +302,7 @@ jobs:
     name: app-e2e (${{ matrix.suite }}:${{ matrix.shard }})
     needs: app-e2e-plan
     if: needs.app-e2e-plan.result == 'success'
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     strategy:
       fail-fast: false

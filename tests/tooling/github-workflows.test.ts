@@ -90,7 +90,9 @@ test("temporary hosted runner fallback keeps Blacksmith restore labels", () => {
   for (const workflowName of [
     "benchmark.yml",
     "check.yml",
+    "e2e.yml",
     "miri.yml",
+    "pkg-pr-new.yml",
     "release-preflight.yml",
     "release.yml",
     "tool-benchmark.yml",

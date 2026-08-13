@@ -4,6 +4,9 @@ import { parse } from "yaml";
 
 import { readRepoFile } from "./support/github-workflows.ts";
 
+const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
+const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
+
 type Step = {
   continueOnError?: boolean;
   env?: Record<string, string>;
@@ -100,7 +103,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   assert.equal(producer.name, "app-readiness (${{ matrix.shard }})");
   assert.equal(producer.needs, "app-readiness-plan");
   assert.equal(producer.if, "needs.app-readiness-plan.outputs.run == 'true'");
-  assert.equal(producer["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(producer["runs-on"], TEMPORARY_HOSTED_RUNNER);
   assert.equal(producer.strategy?.["fail-fast"], false);
   assert.equal(
     producer.strategy?.matrix,
@@ -160,6 +163,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
 
   assert.equal(producer.name, "app-e2e (${{ matrix.suite }}:${{ matrix.shard }})");
   assert.equal(producer.needs, "app-e2e-plan");
+  assert.equal(producer["runs-on"], TEMPORARY_HOSTED_RUNNER);
   assert.equal(producer.strategy?.["fail-fast"], false);
   assert.equal(producer.strategy?.matrix, "${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}");
   assert.ok(producer.steps?.some((step) => step.uses === "./.github/actions/app-e2e-row"));
@@ -190,6 +194,24 @@ test("every producer and aggregator checks out the exact event target", () => {
   assert.match(
     namedStep(jobs.testbox, "Validate optional target SHA").run ?? "",
     /\^\[0-9a-f\]\{40\}\$/,
+  );
+});
+
+test("temporary App E2E hosted fallback keeps Blacksmith restore labels", () => {
+  const source = readRepoFile(".github", "workflows", "e2e.yml");
+  for (const job of ["app-readiness-producer", "app-e2e-producer"]) {
+    assert.match(
+      source,
+      new RegExp(
+        `${job}:[\\s\\S]*runs-on: ${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`,
+      ),
+      `${job} must keep the Blacksmith restore label while hosted fallback is active`,
+    );
+  }
+  assert.match(
+    source,
+    new RegExp(`testbox:[\\s\\S]*runs-on: ${RESTORE_BLACKSMITH_RUNNER}`),
+    "Blacksmith Testbox dispatch must keep its native Blacksmith runner",
   );
 });
 
