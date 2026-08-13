@@ -181,7 +181,10 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
     use windows_sys::Win32::{
         Foundation::{HANDLE, INVALID_HANDLE_VALUE},
         Storage::FileSystem::WriteFile,
-        System::Console::{GetStdHandle, STD_OUTPUT_HANDLE},
+        System::Console::{
+            ENABLE_PROCESSED_OUTPUT, ENABLE_VIRTUAL_TERMINAL_PROCESSING, GetStdHandle,
+            STD_OUTPUT_HANDLE,
+        },
     };
 
     // SAFETY: `STD_OUTPUT_HANDLE` is the documented selector for standard
@@ -190,6 +193,14 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
     if handle.is_null() || handle == INVALID_HANDLE_VALUE {
         return false;
     }
+    let original_mode = console_output_mode(handle);
+    if let Some(mode) = original_mode {
+        let emergency_mode = mode | ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        if emergency_mode != mode {
+            let _ = set_console_output_mode(handle, emergency_mode);
+        }
+    }
+    let mut complete = true;
     while !bytes.is_empty() {
         let chunk_len = bytes.len().min(u32::MAX as usize) as u32;
         let mut written = 0_u32;
@@ -205,11 +216,35 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
             )
         };
         if ok == 0 || written == 0 || written > chunk_len {
-            return false;
+            complete = false;
+            break;
         }
         bytes = &bytes[written as usize..];
     }
-    true
+    if let Some(mode) = original_mode {
+        let _ = set_console_output_mode(handle, mode);
+    }
+    complete
+}
+
+#[cfg(windows)]
+fn console_output_mode(handle: windows_sys::Win32::Foundation::HANDLE) -> Option<u32> {
+    use std::ptr;
+    use windows_sys::Win32::System::Console::GetConsoleMode;
+
+    let mut mode = 0_u32;
+    // SAFETY: `mode` points to writable storage and `handle` is the process
+    // standard output handle accepted by `GetStdHandle`.
+    (unsafe { GetConsoleMode(handle, ptr::addr_of_mut!(mode)) } != 0).then_some(mode)
+}
+
+#[cfg(windows)]
+fn set_console_output_mode(handle: windows_sys::Win32::Foundation::HANDLE, mode: u32) -> bool {
+    use windows_sys::Win32::System::Console::SetConsoleMode;
+
+    // SAFETY: `mode` is either the exact value read from this output handle or
+    // that value with documented virtual-terminal output flags added.
+    unsafe { SetConsoleMode(handle, mode) != 0 }
 }
 
 #[cfg(test)]

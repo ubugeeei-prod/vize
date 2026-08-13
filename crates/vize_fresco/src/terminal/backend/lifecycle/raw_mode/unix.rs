@@ -11,6 +11,7 @@ use std::{
 
 static RAW_SNAPSHOT: RawSnapshotCell = RawSnapshotCell::new();
 static RAW_SNAPSHOT_ACTIVE: AtomicBool = AtomicBool::new(false);
+static RAW_SNAPSHOT_PUBLISHED: AtomicBool = AtomicBool::new(false);
 static RAW_SNAPSHOT_READERS: AtomicUsize = AtomicUsize::new(0);
 
 struct RawSnapshotCell(UnsafeCell<MaybeUninit<NativeRawSnapshot>>);
@@ -21,9 +22,8 @@ impl RawSnapshotCell {
     }
 
     fn write(&self, snapshot: NativeRawSnapshot) {
-        // SAFETY: only the process-terminal lease owner writes, and it
-        // publishes `RAW_SNAPSHOT_ACTIVE` after this write. A new owner
-        // cannot write until deactivation has observed zero readers.
+        // SAFETY: only the snapshot claimant writes, and it publishes after
+        // this write. A new claimant waits until readers drain.
         unsafe { (*self.0.get()).write(snapshot) };
     }
 
@@ -60,7 +60,7 @@ pub(super) struct RawSnapshotReader {
 impl RawSnapshotReader {
     pub(super) fn acquire() -> Option<Self> {
         RAW_SNAPSHOT_READERS.fetch_add(1, Ordering::SeqCst);
-        if !RAW_SNAPSHOT_ACTIVE.load(Ordering::SeqCst) {
+        if !RAW_SNAPSHOT_PUBLISHED.load(Ordering::SeqCst) {
             RAW_SNAPSHOT_READERS.fetch_sub(1, Ordering::SeqCst);
             return None;
         }
@@ -81,14 +81,21 @@ impl Drop for RawSnapshotReader {
 /// A pre-existing Crossterm raw-mode session is borrowed, not claimed, so
 /// Fresco's later restoration cannot disable application-owned raw mode.
 pub(in crate::terminal::backend::lifecycle) fn enable_raw_mode() -> io::Result<()> {
-    if RAW_SNAPSHOT_ACTIVE.load(Ordering::SeqCst) {
+    if !claim_snapshot() {
         return Ok(());
     }
-    let fd = open_controlling_terminal()?;
+    let fd = match open_controlling_terminal() {
+        Ok(fd) => fd,
+        Err(error) => {
+            release_unpublished_snapshot_claim();
+            return Err(error);
+        }
+    };
     let crossterm_was_raw = match crossterm::terminal::is_raw_mode_enabled() {
         Ok(enabled) => enabled,
         Err(error) => {
             close_owned_fd(fd);
+            release_unpublished_snapshot_claim();
             return Err(error);
         }
     };
@@ -119,7 +126,7 @@ pub(in crate::terminal::backend::lifecycle) fn disable_raw_mode() -> io::Result<
 
 /// Return whether raw mode owns a native snapshot requiring restoration.
 pub(in crate::terminal::backend::lifecycle) fn raw_mode_requires_restoration() -> bool {
-    RAW_SNAPSHOT_ACTIVE.load(Ordering::SeqCst)
+    RAW_SNAPSHOT_PUBLISHED.load(Ordering::SeqCst)
 }
 
 /// Restore raw mode from a panic hook without releasing conservative state.
@@ -140,6 +147,10 @@ pub(in crate::terminal::backend::lifecycle) fn emergency_restore_raw_mode() -> b
 
 #[cfg(test)]
 pub(super) fn enable_raw_mode_on_owned_fd(fd: RawFd) -> io::Result<()> {
+    if !claim_snapshot() {
+        close_owned_fd(fd);
+        return Ok(());
+    }
     let original = publish_snapshot(fd, false)?;
     let mut raw = original;
     // SAFETY: `raw` is an initialized termios value owned by this function.
@@ -156,6 +167,7 @@ fn publish_snapshot(fd: RawFd, owns_crossterm_raw_mode: bool) -> io::Result<libc
         Ok(attributes) => attributes,
         Err(error) => {
             close_owned_fd(fd);
+            release_unpublished_snapshot_claim();
             return Err(error);
         }
     };
@@ -165,9 +177,9 @@ fn publish_snapshot(fd: RawFd, owns_crossterm_raw_mode: bool) -> io::Result<libc
         owns_crossterm_raw_mode,
     });
     // Sequential consistency closes the late-reader race: a reader that
-    // increments after deactivation must observe inactive, while a reader
-    // that observes active is counted before the owner can reuse storage.
-    RAW_SNAPSHOT_ACTIVE.store(true, Ordering::SeqCst);
+    // increments after deactivation must observe unpublished, while a reader
+    // that observes published is counted before the owner can reuse storage.
+    RAW_SNAPSHOT_PUBLISHED.store(true, Ordering::SeqCst);
     Ok(original)
 }
 
@@ -209,10 +221,8 @@ fn open_controlling_terminal() -> io::Result<RawFd> {
         return duplicate_cloexec(libc::STDIN_FILENO);
     }
 
-    // SAFETY: the path is a static NUL-terminated C string and `open`
-    // receives no variadic mode because `O_CREAT` is absent. `O_CLOEXEC`
-    // sets the flag atomically, so a concurrent `fork`/`exec` cannot leak
-    // the descriptor through the window a follow-up `F_SETFD` would leave.
+    // SAFETY: the path is static and NUL-terminated. `O_CLOEXEC` sets the
+    // flag atomically, leaving no descriptor-inheritance window.
     let fd = unsafe { libc::open(c"/dev/tty".as_ptr(), libc::O_RDWR | libc::O_CLOEXEC) };
     if fd < 0 {
         return Err(io::Error::last_os_error());
@@ -223,8 +233,7 @@ fn open_controlling_terminal() -> io::Result<RawFd> {
 fn duplicate_cloexec(fd: RawFd) -> io::Result<RawFd> {
     // SAFETY: duplicating a valid descriptor does not borrow its resource,
     // and `F_DUPFD_CLOEXEC` takes one integer minimum-descriptor argument.
-    // The duplicate is created close-on-exec atomically, leaving no window
-    // in which a concurrent `exec` could inherit the terminal descriptor.
+    // The duplicate is created close-on-exec atomically.
     let duplicate = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 0) };
     if duplicate < 0 {
         return Err(io::Error::last_os_error());
@@ -233,7 +242,7 @@ fn duplicate_cloexec(fd: RawFd) -> io::Result<RawFd> {
 }
 
 fn deactivate_snapshot() {
-    RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
+    RAW_SNAPSHOT_PUBLISHED.store(false, Ordering::SeqCst);
     let mut spins = 0_u8;
     while RAW_SNAPSHOT_READERS.load(Ordering::SeqCst) != 0 {
         if spins < 64 {
@@ -244,6 +253,17 @@ fn deactivate_snapshot() {
         }
     }
     close_owned_fd(RAW_SNAPSHOT.read().fd);
+    RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
+}
+
+fn claim_snapshot() -> bool {
+    RAW_SNAPSHOT_ACTIVE
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_ok()
+}
+
+fn release_unpublished_snapshot_claim() {
+    RAW_SNAPSHOT_ACTIVE.store(false, Ordering::SeqCst);
 }
 
 fn close_owned_fd(fd: RawFd) {
