@@ -53,19 +53,23 @@ function runInit(context, projectRoot, args) {
  *
  * Only the *source* of a Vize-owned package is redirected: the names, their
  * order, and the manager's own install argv are the planner's. Direct
- * dependencies take the tarball on the command line because npm rejects an
- * `overrides` entry that collides with a direct spec; transitive ones (the
- * native package and its per-platform binary) go through the redirect table.
+ * dependencies always take the tarball on the command line. Package managers
+ * that still resolve transitive copies of those names also get the redirect
+ * table; npm does not, because it rejects an override that collides with a
+ * direct spec.
  */
 function installPlannedDependencies(context, projectRoot, manager, shape) {
   const manifestPath = path.join(projectRoot, "package.json");
   const manifest = readJson(manifestPath);
   const redirects = {};
   for (const [name, tarball] of context.packed) {
-    if (!shape.plannedDependencies.includes(name)) redirects[name] = `file:${tarball}`;
+    if (manager.redirectPlannedDependencies || !shape.plannedDependencies.includes(name)) {
+      redirects[name] = `file:${tarball}`;
+    }
   }
-  manager.redirect(manifest, redirects);
+  const redirectFiles = manager.redirect(manifest, redirects) ?? {};
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFiles(projectRoot, redirectFiles);
 
   const specs = shape.plannedDependencies.map((name) => {
     const tarball = context.packed.get(name);
@@ -81,8 +85,12 @@ function runFreshProjectCell(context, cell) {
   const manager = PACKAGE_MANAGERS[cell.packageManager];
   const shape = PROJECT_SHAPES[cell.shape];
   const projectRoot = path.join(context.freshRoot, `${shape.id}-${manager.id}`);
-  const authored = shape.files(context.peers);
-  const tracked = [...Object.keys(authored), ...shape.createdFiles, ...shape.updatedFiles];
+  const authored = { ...shape.files(context.peers), ...manager.projectFiles };
+  const tracked = [
+    ...Object.keys(authored),
+    ...shape.createdFiles,
+    ...shape.updatedFiles,
+  ];
 
   fs.mkdirSync(projectRoot, { recursive: true });
   writeFiles(projectRoot, authored);

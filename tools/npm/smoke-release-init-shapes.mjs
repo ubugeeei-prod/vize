@@ -25,15 +25,29 @@
  * does not pass it, so a genuine peer conflict in the published packages has to
  * red-light here.
  */
+function pnpmWorkspaceOverrides(redirects) {
+  return [
+    "overrides:",
+    ...Object.entries(redirects).map(
+      ([name, spec]) => `  ${JSON.stringify(name)}: ${JSON.stringify(spec)}`,
+    ),
+    "",
+  ].join("\n");
+}
+
 export const PACKAGE_MANAGERS = {
   npm: {
     id: "npm",
     binary: "npm",
     binaryEnv: "NPM_BIN",
+    detectedPackageManager: "npm",
+    corsaInstallCommand: "npm",
     lockfile: "package-lock.json",
     bootstrapArgs: ["install", "--no-audit", "--fund=false", "--include=optional"],
     installArgs: ["install", "-D"],
     installFlags: ["--no-audit", "--fund=false", "--include=optional"],
+    projectFiles: {},
+    redirectPlannedDependencies: false,
     runScriptArgs: (script, extra) =>
       extra.length === 0
         ? ["run", "--silent", script]
@@ -42,10 +56,87 @@ export const PACKAGE_MANAGERS = {
       manifest.overrides = { ...manifest.overrides, ...redirects };
     },
   },
+  pnpm: {
+    id: "pnpm",
+    binary: "pnpm",
+    binaryEnv: "PNPM_BIN",
+    detectedPackageManager: "pnpm",
+    corsaInstallCommand: "pnpm",
+    lockfile: "pnpm-lock.yaml",
+    bootstrapArgs: ["install", "--config.optional=true"],
+    installArgs: ["add", "-D"],
+    installFlags: ["--config.optional=true"],
+    projectFiles: {},
+    redirectPlannedDependencies: true,
+    runScriptArgs: (script, extra) => ["run", "--silent", script, ...extra],
+    redirect: (_manifest, redirects) => ({
+      "pnpm-workspace.yaml": pnpmWorkspaceOverrides(redirects),
+    }),
+  },
+  yarn: {
+    id: "yarn",
+    binary: "yarn",
+    binaryEnv: "YARN_BIN",
+    detectedPackageManager: "yarn",
+    corsaInstallCommand: "yarn",
+    lockfile: "yarn.lock",
+    bootstrapArgs: ["install"],
+    installArgs: ["add", "-D"],
+    installFlags: [],
+    // Yarn 4 defaults to Plug'n'Play. The CLI currently ships a node_modules
+    // binary contract, so the release smoke pins the linker users need today.
+    projectFiles: { ".yarnrc.yml": "nodeLinker: node-modules\n" },
+    redirectPlannedDependencies: true,
+    runScriptArgs: (script, extra) => ["run", "--silent", script, ...extra],
+    redirect: (manifest, redirects) => {
+      manifest.resolutions = { ...manifest.resolutions, ...redirects };
+    },
+  },
+  bun: {
+    id: "bun",
+    binary: "bun",
+    binaryEnv: "BUN_BIN",
+    detectedPackageManager: "bun",
+    corsaInstallCommand: "bun",
+    lockfile: "bun.lock",
+    bootstrapArgs: ["install"],
+    installArgs: ["add", "-D"],
+    installFlags: [],
+    projectFiles: {},
+    redirectPlannedDependencies: true,
+    runScriptArgs: (script, extra) => ["run", "--silent", script, ...extra],
+    redirect: (manifest, redirects) => {
+      manifest.overrides = { ...manifest.overrides, ...redirects };
+    },
+  },
+  vp: {
+    id: "vp",
+    binary: "vp",
+    binaryEnv: "VP_BIN",
+    detectedPackageManager: "pnpm",
+    corsaInstallCommand: "pnpm",
+    lockfile: "pnpm-lock.yaml",
+    bootstrapArgs: ["install"],
+    installArgs: ["add", "-D"],
+    installFlags: [],
+    projectFiles: {},
+    redirectPlannedDependencies: true,
+    runScriptArgs: (script, extra) =>
+      extra.length === 0 ? ["run", script] : ["exec", "vize", "check", ...extra],
+    redirect: (_manifest, redirects) => ({
+      "pnpm-workspace.yaml": pnpmWorkspaceOverrides(redirects),
+    }),
+  },
 };
 
 /** Cells this slice runs. Further cells are added here, not in the driver. */
-export const FRESH_INIT_MATRIX = [{ packageManager: "npm", shape: "vite-vue-ts" }];
+export const FRESH_INIT_MATRIX = [
+  { packageManager: "npm", shape: "vite-vue-ts" },
+  { packageManager: "pnpm", shape: "vite-vue-ts" },
+  { packageManager: "yarn", shape: "vite-vue-ts" },
+  { packageManager: "bun", shape: "vite-vue-ts" },
+  { packageManager: "vp", shape: "vite-plus-vue-ts" },
+];
 
 const APP_TITLE_CLEAN = 'const title: string = "vize";';
 const APP_TITLE_BROKEN = 'const title: number = "vize";';
@@ -136,6 +227,98 @@ function viteVueTsFiles(peers) {
   };
 }
 
+function vitePlusVueTsFiles(peers) {
+  const files = viteVueTsFiles(peers);
+  const packageJson = JSON.parse(files["package.json"]);
+  packageJson.name = "vize-fresh-init-vite-plus-vue-ts";
+  packageJson.scripts = { dev: "vp dev", check: "vp check" };
+  packageJson.devDependencies["vite-plus"] = peers["vite-plus"];
+  files["package.json"] = `${JSON.stringify(packageJson, null, 2)}\n`;
+  files["vite.config.ts"] = [
+    'import { defineConfig } from "vite-plus";',
+    "",
+    "export default defineConfig({",
+    "  plugins: [],",
+    "});",
+    "",
+  ].join("\n");
+  return files;
+}
+
+function viteDetection(manager, framework = "Vite") {
+  return [
+    `  framework:       ${framework} (vite.config.ts)`,
+    `  package manager: ${manager.detectedPackageManager}`,
+    "  language:        TypeScript (tsconfig.json)",
+    framework === "Vite+" ? "  lint command:    vp lint" : "  lint command:    oxlint",
+    "  vize config:     none",
+    "  oxlint config:   none",
+  ];
+}
+
+function configuredViteDetection(manager, framework = "Vite") {
+  return [
+    `  framework:       ${framework} (vite.config.ts)`,
+    `  package manager: ${manager.detectedPackageManager}`,
+    "  language:        TypeScript (tsconfig.json)",
+    framework === "Vite+" ? "  lint command:    vp lint" : "  lint command:    oxlint",
+    "  vize config:     vize.config.ts",
+    "  oxlint config:   none",
+  ];
+}
+
+const EXPECTED_VIZE_CONFIG = [
+  'import { defineConfig } from "vize";',
+  "",
+  "export default defineConfig({",
+  "  compiler: {",
+  '    templateSyntax: "standard",',
+  "  },",
+  "  formatter: {",
+  "    singleAttributePerLine: false,",
+  "    sortBlocks: true,",
+  "  },",
+  "  typeChecker: {",
+  "    enabled: true,",
+  "    strict: true,",
+  "    jsxTypecheck: true,",
+  "  },",
+  "  vite: {",
+  '    scanPatterns: ["src/**/*.vue"],',
+  "  },",
+  "});",
+  "",
+].join("\n");
+
+const EXPECTED_EXTENSIONS = `${JSON.stringify({ recommendations: ["ubugeeei.vize"] }, null, 2)}\n`;
+
+const CHECK_TRIPLE = {
+  broken: {
+    "src/App.vue": appSource(true),
+    "src/components/HelloWorld.vue": helloWorldSource(true),
+  },
+  // Authored positions taken from vue-tsc 3.3.9 over this exact project:
+  //   src/App.vue(2,16): error TS2322: Type 'number' is not assignable to type 'string'.
+  //   src/App.vue(8,7): error TS2322: Type 'string' is not assignable to type 'number'.
+  //   src/components/HelloWorld.vue(2,35): error TS2339: Property 'notAMethod'
+  //     does not exist on type 'string'.
+  brokenDiagnostics: [
+    {
+      file: "src/App.vue",
+      diagnostics: [
+        "error:2:16 [TS2322] Type 'number' is not assignable to type 'string'.",
+        "error:8:7 [TS2322] Type 'string' is not assignable to type 'number'.",
+      ],
+    },
+    {
+      file: "src/components/HelloWorld.vue",
+      diagnostics: [
+        "error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'.",
+      ],
+    },
+  ],
+};
+
 /**
  * Project shapes.
  *
@@ -153,14 +336,7 @@ export const PROJECT_SHAPES = {
     // `--no-lint` because the lint plan pulls `oxlint` and `oxlint-plugin-vize`,
     // and `oxlint-plugin-vize` is not packed by every caller of this smoke.
     initFlags: ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
-    detection: [
-      "  framework:       Vite (vite.config.ts)",
-      "  package manager: npm",
-      "  language:        TypeScript (tsconfig.json)",
-      "  lint command:    oxlint",
-      "  vize config:     none",
-      "  oxlint config:   none",
-    ],
+    detection: (manager) => viteDetection(manager),
     features: [
       "  lint      skipped    not selected",
       "  bundler   configured adds vize() to vite.config.ts",
@@ -168,14 +344,7 @@ export const PROJECT_SHAPES = {
       "  typecheck configured writes vize.config.ts",
       "  editor    configured writes .vscode/extensions.json recommending ubugeeei.vize",
     ],
-    reconfiguredDetection: [
-      "  framework:       Vite (vite.config.ts)",
-      "  package manager: npm",
-      "  language:        TypeScript (tsconfig.json)",
-      "  lint command:    oxlint",
-      "  vize config:     vize.config.ts",
-      "  oxlint config:   none",
-    ],
+    reconfiguredDetection: (manager) => configuredViteDetection(manager),
     reconfiguredFeatures: [
       "  lint      skipped    not selected",
       "  bundler   unchanged  vite.config.ts already uses @vizejs/vite-plugin",
@@ -198,29 +367,8 @@ export const PROJECT_SHAPES = {
       "vize:check": "vize check",
     },
     expectedFiles: {
-      "vize.config.ts": [
-        'import { defineConfig } from "vize";',
-        "",
-        "export default defineConfig({",
-        "  compiler: {",
-        '    templateSyntax: "standard",',
-        "  },",
-        "  formatter: {",
-        "    singleAttributePerLine: false,",
-        "    sortBlocks: true,",
-        "  },",
-        "  typeChecker: {",
-        "    enabled: true,",
-        "    strict: true,",
-        "    jsxTypecheck: true,",
-        "  },",
-        "  vite: {",
-        '    scanPatterns: ["src/**/*.vue"],',
-        "  },",
-        "});",
-        "",
-      ].join("\n"),
-      ".vscode/extensions.json": `${JSON.stringify({ recommendations: ["ubugeeei.vize"] }, null, 2)}\n`,
+      "vize.config.ts": EXPECTED_VIZE_CONFIG,
+      ".vscode/extensions.json": EXPECTED_EXTENSIONS,
       "vite.config.ts": [
         'import { defineConfig } from "vite";',
         'import vize from "@vizejs/vite-plugin";',
@@ -236,31 +384,54 @@ export const PROJECT_SHAPES = {
      * repaired states are `files()` itself, so a repair cannot silently drift
      * from the state the clean run already proved.
      */
-    check: {
-      broken: {
-        "src/App.vue": appSource(true),
-        "src/components/HelloWorld.vue": helloWorldSource(true),
-      },
-      // Authored positions taken from vue-tsc 3.3.9 over this exact project:
-      //   src/App.vue(2,16): error TS2322: Type 'number' is not assignable to type 'string'.
-      //   src/App.vue(8,7): error TS2322: Type 'string' is not assignable to type 'number'.
-      //   src/components/HelloWorld.vue(2,35): error TS2339: Property 'notAMethod'
-      //     does not exist on type 'string'.
-      brokenDiagnostics: [
-        {
-          file: "src/App.vue",
-          diagnostics: [
-            "error:2:16 [TS2322] Type 'number' is not assignable to type 'string'.",
-            "error:8:7 [TS2322] Type 'string' is not assignable to type 'number'.",
-          ],
-        },
-        {
-          file: "src/components/HelloWorld.vue",
-          diagnostics: [
-            "error:2:35 [TS2339] Property 'notAMethod' does not exist on type 'string'.",
-          ],
-        },
-      ],
+    check: CHECK_TRIPLE,
+  },
+  "vite-plus-vue-ts": {
+    id: "vite-plus-vue-ts",
+    requires: ["vize", "@vizejs/vite-plugin"],
+    files: vitePlusVueTsFiles,
+    initFlags: ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
+    detection: (manager) => viteDetection(manager, "Vite+"),
+    features: [
+      "  lint      skipped    not selected",
+      "  bundler   configured adds vize() to vite.config.ts",
+      "  fmt       configured writes vize.config.ts",
+      "  typecheck configured writes vize.config.ts",
+      "  editor    configured writes .vscode/extensions.json recommending ubugeeei.vize",
+    ],
+    reconfiguredDetection: (manager) => configuredViteDetection(manager, "Vite+"),
+    reconfiguredFeatures: [
+      "  lint      skipped    not selected",
+      "  bundler   unchanged  vite.config.ts already uses @vizejs/vite-plugin",
+      "  fmt       unchanged  vize.config.ts already exists and was left unchanged",
+      "  typecheck unchanged  vize.config.ts already exists and was left unchanged",
+      "  editor    unchanged  .vscode/extensions.json already recommends ubugeeei.vize",
+    ],
+    createdFiles: ["vize.config.ts", ".vscode/extensions.json"],
+    updatedFiles: ["vite.config.ts", "package.json"],
+    addedScripts: ["vize:fmt", "vize:fmt:fix", "vize:check"],
+    plannedDependencies: ["@vizejs/vite-plugin", "vize"],
+    expectedDevDependencies: ["@vizejs/vite-plugin", "typescript", "vite", "vite-plus", "vize"],
+    expectedScripts: {
+      dev: "vp dev",
+      check: "vp check",
+      "vize:fmt": "vize fmt --check src",
+      "vize:fmt:fix": "vize fmt --write src",
+      "vize:check": "vize check",
     },
+    expectedFiles: {
+      "vize.config.ts": EXPECTED_VIZE_CONFIG,
+      ".vscode/extensions.json": EXPECTED_EXTENSIONS,
+      "vite.config.ts": [
+        'import { defineConfig } from "vite-plus";',
+        'import vize from "@vizejs/vite-plugin";',
+        "",
+        "export default defineConfig({",
+        "  plugins: [vize()],",
+        "});",
+        "",
+      ].join("\n"),
+    },
+    check: CHECK_TRIPLE,
   },
 };

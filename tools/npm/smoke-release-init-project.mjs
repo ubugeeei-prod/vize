@@ -7,6 +7,7 @@
  */
 
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -78,6 +79,11 @@ export function readJson(filename) {
   return JSON.parse(fs.readFileSync(filename, "utf8"));
 }
 
+function resolveShapeField(shape, name, ...args) {
+  const value = shape[name];
+  return typeof value === "function" ? value(...args) : value;
+}
+
 /**
  * Proves the project is genuinely fresh before `init` touches it.
  *
@@ -130,7 +136,7 @@ export function expectedInitOutput(shape, projectRoot, manager, mode) {
   const dependencies = shape.plannedDependencies.join(" ");
   const installCommand = `${manager.id} ${manager.installArgs.join(" ")} ${dependencies}`;
   const applied = {
-    detection: shape.detection,
+    detection: resolveShapeField(shape, "detection", manager),
     features: shape.features,
     created: shape.createdFiles,
     updated: shape.updatedFiles,
@@ -141,7 +147,7 @@ export function expectedInitOutput(shape, projectRoot, manager, mode) {
     apply: { ...applied, verb: "will", command: null, editors: true },
     rerun: {
       verb: "will",
-      detection: shape.reconfiguredDetection,
+      detection: resolveShapeField(shape, "reconfiguredDetection", manager),
       features: shape.reconfiguredFeatures,
       created: [],
       updated: [],
@@ -163,26 +169,38 @@ export function expectedInitOutput(shape, projectRoot, manager, mode) {
 /**
  * Proves binary discovery resolved inside the fresh project.
  *
- * The installed tree must be a real directory (not a link back into the
- * checkout), must carry the packed version, and must have brought the Corsa
- * runtime the CLI declares as an optional dependency -- the release-only failure
- * an `--omit=optional` install or a trimmed tarball would cause.
+ * The installed tree must resolve inside the fresh project, must carry the
+ * packed version, and must have brought the Corsa runtime the CLI declares as
+ * an optional dependency -- the release-only failure an `--omit=optional`
+ * install or a trimmed tarball would cause.
  */
 export function assertProjectLocalToolchain(context, projectRoot, shape) {
   const nodeModules = path.join(projectRoot, "node_modules");
+  const realProjectRoot = fs.realpathSync(projectRoot);
+  const installedRoots = new Map();
   const binName = process.platform === "win32" ? "vize.cmd" : "vize";
   assert.ok(fs.existsSync(path.join(nodeModules, ".bin", binName)), "no project-local vize bin");
   for (const name of shape.plannedDependencies) {
     const installed = path.join(nodeModules, ...name.split("/"));
-    const link = fs.lstatSync(installed).isSymbolicLink();
-    assert.equal(link, false, `${name} was linked, not installed`);
+    assert.ok(fs.existsSync(installed), `${name} is missing from the fresh project`);
     const resolved = fs.realpathSync(installed);
     assert.ok(isOutside(context.repoRoot, resolved), `${name} resolved into the Vize checkout`);
     assert.ok(isOutside(context.installDir, resolved), `${name} resolved into the install tree`);
+    assert.ok(
+      !isOutside(realProjectRoot, resolved),
+      `${name} resolved outside the fresh project: ${resolved}`,
+    );
     assert.equal(readJson(path.join(resolved, "package.json")).version, context.versions.get(name));
+    installedRoots.set(name, resolved);
   }
-  const corsaPackage = path.join(nodeModules, "@typescript", "native-preview");
-  assert.ok(fs.existsSync(corsaPackage), "installed vize did not bring @typescript/native-preview");
+  const vizeRoot = installedRoots.get("vize");
+  assert.equal(typeof vizeRoot, "string", "fresh project did not install vize");
+  const vizeRequire = createRequire(path.join(vizeRoot, "package.json"));
+  const corsaManifest = vizeRequire.resolve("@typescript/native-preview/package.json");
+  assert.ok(
+    !isOutside(realProjectRoot, fs.realpathSync(corsaManifest)),
+    "installed vize did not bring project-local @typescript/native-preview",
+  );
 }
 
 /** Runs the `vize:check` script `init` generated, through the project's manager. */
@@ -239,7 +257,7 @@ export function assertMissingCorsaGuidance(projectRoot, manager) {
       "",
       "To install, run:",
       "",
-      `  ${manager.id} ${manager.installArgs.join(" ")} @typescript/native-preview`,
+      `  ${manager.corsaInstallCommand} ${manager.installArgs.join(" ")} @typescript/native-preview`,
     ].join("\n"),
   );
   const scripted = runGeneratedCheck(projectRoot, manager, [], { CORSA_PATH: missing });

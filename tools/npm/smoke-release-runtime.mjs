@@ -9,6 +9,7 @@ import { runInitTypecheckChecks } from "./smoke-release-init-typecheck.mjs";
 export const RUNTIME_PEER_DEPENDENCIES = {
   typescript: "6.0.3",
   vite: "^8.0.0",
+  "vite-plus": "0.1.24",
   vue: "3.5.34",
 };
 
@@ -173,7 +174,7 @@ export function runInstalledContentMapperChecks(installDir, repoRoot, run) {
 export function runRuntimeChecks(
   installDir,
   packages,
-  { repoRoot, resolveInstalledBin, run, tempDir },
+  { allPackages = packages, repoRoot, resolveInstalledBin, run, tempDir },
 ) {
   writeRuntimeSmokeProject(installDir);
 
@@ -226,11 +227,11 @@ export function runRuntimeChecks(
     runInitTypecheckChecks(installDir, vizeBin, repoRoot, RUNTIME_PEER_DEPENDENCIES);
     runFreshProjectInitChecks({
       installDir,
-      packed: new Map(packages.map((pkg) => [pkg.name, pkg.tarball])),
+      packed: new Map(allPackages.map((pkg) => [pkg.name, pkg.tarball])),
       peers: RUNTIME_PEER_DEPENDENCIES,
       repoRoot,
       tempDir,
-      versions: new Map(packages.map((pkg) => [pkg.name, pkg.version])),
+      versions: new Map(allPackages.map((pkg) => [pkg.name, pkg.version])),
       vizeBin,
     });
   }

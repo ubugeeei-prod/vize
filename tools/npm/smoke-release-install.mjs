@@ -357,6 +357,7 @@ function main() {
 
     if (options.runtimeChecks) {
       runRuntimeChecks(installDir, installable, {
+        allPackages: packages,
         repoRoot: root,
         resolveInstalledBin,
         run,

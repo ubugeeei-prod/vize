@@ -32,10 +32,14 @@ const byCodeUnit = (left: string, right: string): number =>
 
 const MANAGER_KEYS = [
   "bootstrapArgs",
+  "corsaInstallCommand",
+  "detectedPackageManager",
   "installArgs",
   "installFlags",
   "lockfile",
+  "projectFiles",
   "redirect",
+  "redirectPlannedDependencies",
   "runScriptArgs",
 ];
 
@@ -69,11 +73,29 @@ test("the fresh-project matrix is data, so new cells need no driver change", () 
   }
 });
 
+test("the fresh-project matrix covers every documented package manager", () => {
+  const guide = readRepoFile("docs", "content", "guide", "init.md");
+  const packageManagerRow = guide
+    .split("\n")
+    .find((line) => line.includes("--package-manager <PM>"));
+  assert.ok(packageManagerRow, "docs/content/guide/init.md must document package managers");
+  const documented = [...packageManagerRow.matchAll(/`([^`]+)`/gu)]
+    .map((match) => match[1])
+    .filter((value) => value !== "--package-manager <PM>");
+  assert.deepEqual(documented, ["pnpm", "npm", "yarn", "bun", "vp"]);
+  const matrixManagers = new Set(FRESH_INIT_MATRIX.map((cell) => cell.packageManager));
+  for (const manager of documented) {
+    assert.ok(matrixManagers.has(manager), `fresh-project matrix does not cover ${manager}`);
+  }
+});
+
 test("every shape drives a clean, broken, and repaired check", () => {
   for (const shape of Object.values(PROJECT_SHAPES)) {
     const broken = Object.keys(shape.check.broken);
     assert.ok(broken.length > 0, `${shape.id} has no broken variant`);
-    const authored = Object.keys(shape.files({ typescript: "0", vite: "0", vue: "0" }));
+    const authored = Object.keys(
+      shape.files({ typescript: "0", vite: "0", "vite-plus": "0", vue: "0" }),
+    );
     for (const name of broken) {
       assert.ok(authored.includes(name), `${shape.id} breaks ${name}, which it never authored`);
     }
@@ -156,6 +178,12 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
     assert.ok(context.has(key), `runFreshProjectInitChecks must receive ${key}`);
   }
   assert.match(runtime, /from "\.\/smoke-release-init-fresh\.mjs"/u);
+  const installer = readRepoFile("tools", "npm", "smoke-release-install.mjs");
+  assert.match(
+    installer,
+    /runRuntimeChecks\(installDir, installable, \{\s*allPackages: packages,/u,
+    "fresh-project redirects must see pack-only optional platform tarballs",
+  );
 
   const project = readRepoFile("tools", "npm", "smoke-release-init-project.mjs");
   // The isolation contract: outside the install tree, outside the checkout, and
@@ -163,7 +191,7 @@ test("the release runtime smoke runs the fresh-project matrix", () => {
   assert.match(project, /is inside the install tree/u);
   assert.match(project, /is inside the Vize checkout/u);
   assert.match(project, /would leak into the fresh project/u);
-  assert.match(project, /installed vize did not bring @typescript\/native-preview/u);
+  assert.match(project, /installed vize did not bring project-local @typescript\/native-preview/u);
   assert.match(project, /a missing Corsa runtime silently disabled type checking/u);
 
   for (const workflow of ["release.yml", "native-smoke.yml"]) {
