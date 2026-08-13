@@ -32,6 +32,14 @@ pub use presentation::{
 };
 
 /// Semantic keyboard focus within a diagnostic master-detail workspace.
+///
+/// Focus is independent from the responsive pane currently visible on screen.
+/// In split mode, findings and detail can both be presented while exactly one
+/// semantic target receives keyboard commands. In stacked mode,
+/// [`DiagnosticWorkspaceState::active_stacked_pane`] derives the visible pane
+/// from this value. Findings and detail remain focusable in empty or zero-row
+/// viewports; evidence is focusable only when a related-evidence item is
+/// selected.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum DiagnosticWorkspaceFocus {
     /// The virtualized finding list.
@@ -49,6 +57,13 @@ pub enum DiagnosticWorkspaceFocus {
 /// never owns finding or evidence rows. Callers retain immutable report data and
 /// pass stable-key slices when reconciling or navigating. This keeps retained
 /// state O(1) while [`VirtualListState`] bounds visible row materialization.
+///
+/// The default workspace uses [`DiagnosticWorkspaceOptions::default`]: split
+/// layout begins at 80 columns, the finding list receives 40% of split width,
+/// 3 rows are reserved for chrome, and 2 rows of overscan are retained before
+/// and after each visible virtualized list. Construction and mutation perform
+/// no terminal I/O, so the same state contract can be asserted through
+/// headless tests and reused by non-terminal renderers.
 #[derive(Debug, Clone)]
 pub struct DiagnosticWorkspaceState<FindingKey, EvidenceKey> {
     findings: VirtualListState<FindingKey>,

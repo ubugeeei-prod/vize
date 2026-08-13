@@ -10,6 +10,19 @@ const DEFAULT_CHROME_ROWS: u16 = 3;
 const DEFAULT_OVERSCAN: usize = 2;
 
 /// Responsive geometry options for a diagnostic workspace.
+///
+/// These defaults define the reusable diagnostic workspace contract rather than
+/// a Doctor-specific skin. At 80 columns or wider, master and detail panes are
+/// both presented; below 80 columns, the workspace stacks panes and chooses the
+/// visible pane from semantic focus. The list gets 40% of split width, 3 rows
+/// are reserved for application chrome, and each virtualized list retains 2
+/// off-screen rows before and after the viewport.
+///
+/// `split_width` is normalized to at least 3 columns and `list_percent` is
+/// clamped to 10..=90 so invalid caller input cannot create empty split panes.
+/// `chrome_rows` is capped by the current viewport height during layout, and a
+/// zero-height content area remains valid for headless and narrow-terminal
+/// assertions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DiagnosticWorkspaceOptions {
     /// Width at which master and detail panes split. Defaults to 80 columns.
@@ -46,6 +59,10 @@ impl DiagnosticWorkspaceOptions {
 }
 
 /// Responsive pane mode selected from the current viewport width.
+///
+/// The mode is derived solely from viewport width and
+/// [`DiagnosticWorkspaceOptions::split_width`], making resize behavior
+/// deterministic and stable under repeated headless renders.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DiagnosticWorkspaceMode {
     /// Finding and detail panes are visible side by side.
@@ -64,6 +81,11 @@ pub enum DiagnosticWorkspacePane {
 }
 
 /// Deterministic responsive pane rectangles for one terminal viewport.
+///
+/// The layout contains only terminal-cell geometry. It does not inspect
+/// rendered findings, evidence, terminal capabilities, or process state, so
+/// callers can assert narrow-terminal overflow and split-pane behavior without
+/// opening a terminal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DiagnosticWorkspaceLayout {
     width: u16,

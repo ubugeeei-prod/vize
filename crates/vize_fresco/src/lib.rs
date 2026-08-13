@@ -17,6 +17,53 @@
 //! - **Diagnostic Workspaces**: Stable, virtualized master-detail navigation
 //! - **Headless Assertions**: Deterministic visual and semantic frame snapshots
 //!
+//! # Diagnostic Workspace Contracts
+//!
+//! Fresco's diagnostic workspace primitives are semantic state contracts, not a
+//! reporter-specific terminal runtime. Diagnostic tools own their immutable
+//! report model and pass stable item keys into [`DiagnosticWorkspaceState`],
+//! which preserves selection, focus, scrolling, and related-evidence navigation
+//! across filtering, reordering, and resize.
+//!
+//! Defaults are intentionally conservative and deterministic:
+//!
+//! - [`DiagnosticWorkspaceOptions::default`] switches to split master-detail
+//!   layout at 80 columns, assigns 40% of split width to the finding list,
+//!   reserves 3 chrome rows, and retains 2 virtualized overscan rows on each
+//!   side of a viewport.
+//! - [`TerminalProfileOptions::default`] resolves color, Unicode, and
+//!   interactivity from explicit probe data; widths below 60 cells are marked
+//!   narrow.
+//! - [`terminal::TerminalOptions::default`] acquires raw mode, alternate
+//!   screen, bracketed paste, and hidden cursor, while leaving mouse capture
+//!   disabled.
+//!
+//! Unsupported or downgraded terminal capabilities are represented by
+//! [`CapabilityDecision`] and [`CapabilityReason`] instead of being inferred
+//! from rendered text. `NO_COLOR`, forced color, non-UTF-8 locales, redirected
+//! output, `TERM=dumb`, CI, and Fresco-specific Unicode or interactivity
+//! overrides all produce stable reasons suitable for snapshots and docs.
+//!
+//! Focus is semantic and renderer-independent. Findings and detail remain
+//! focusable even in zero-row viewports; evidence focus is available only when a
+//! related-evidence item is selected. Narrow terminals use stacked panes
+//! selected from semantic focus, while split terminals present findings and
+//! detail simultaneously.
+//!
+//! Terminal restoration is explicit and best-effort. [`Backend::restore`]
+//! attempts every mode owned or possibly owned by the backend in deterministic
+//! order, including raw mode, cursor visibility and shape, bracketed paste,
+//! mouse capture, and alternate screen. Failed cleanups remain owned for a later
+//! retry or [`Drop`], and [`TerminalRestorationError`] reports every failure.
+//! Process panic and signal supervision are exposed separately through
+//! [`install_terminal_panic_hook`] and [`install_terminal_signal_hook`].
+//!
+//! Performance limits are part of the API shape. Virtualized lists materialize
+//! only the viewport plus configured overscan, workspace state retains constant
+//! selection and viewport data instead of report rows, and [`FrameTelemetry`]
+//! exposes layout time, paint time, output time, changed cells, bytes written,
+//! retained nodes, and dropped or coalesced frame requests.
+//!
 //! # Architecture
 //!
 //! ```text

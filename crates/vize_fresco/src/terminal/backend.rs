@@ -32,6 +32,14 @@ pub use lifecycle::{
 pub use output::FrameOutputTelemetry;
 
 /// Terminal mode switches used during backend initialization.
+///
+/// Defaults acquire the modes expected by interactive diagnostic workspaces:
+/// raw input, alternate screen, bracketed paste, and hidden cursor. Mouse
+/// capture is disabled by default because keyboard navigation is the portable
+/// baseline and pointer tracking can surprise terminals that do not expect it.
+///
+/// Restoration for every enabled or possibly enabled mode is handled by
+/// [`Backend::restore`] and by the backend's [`Drop`] implementation.
 #[derive(Debug, Clone, Copy)]
 pub struct TerminalOptions {
     /// Enable process-terminal raw input. Defaults to `true`.
@@ -79,6 +87,13 @@ impl TerminalOptions {
 /// explicit viewport, enabling deterministic headless tests without replacing
 /// process-global standard output. Terminal mode escape sequences, clear
 /// operations, differential frames, and restoration all use the same writer.
+///
+/// A backend records the terminal presentation modes it owns, including modes
+/// that may have been partially accepted before an I/O failure. Restoration is
+/// best-effort and deterministic: mouse capture, bracketed paste, alternate
+/// screen, cursor shape, cursor visibility, and raw mode are each attempted
+/// independently. Failed modes remain owned so callers can retry restoration or
+/// rely on the final [`Drop`] attempt.
 pub struct Backend<W: Write = io::Stdout> {
     pub(super) current: Buffer,
     pub(super) previous: Buffer,

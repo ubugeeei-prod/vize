@@ -7,6 +7,23 @@ use super::{
 use crate::component::VirtualListNavigation;
 
 #[test]
+fn documented_workspace_defaults_are_stable() {
+    let options = DiagnosticWorkspaceOptions::default();
+    let state = DiagnosticWorkspaceState::<u64, u64>::new(80, 6);
+
+    assert_eq!(options.split_width, 80);
+    assert_eq!(options.list_percent, 40);
+    assert_eq!(options.chrome_rows, 3);
+    assert_eq!(options.overscan, 2);
+    assert_eq!(state.options(), options);
+    assert_eq!(state.layout().mode(), DiagnosticWorkspaceMode::Split);
+    assert_eq!(state.layout().content().height, 3);
+    assert_eq!(state.findings().overscan(), 2);
+    assert_eq!(state.evidence().overscan(), 2);
+    assert_eq!(state.focus(), DiagnosticWorkspaceFocus::Findings);
+}
+
+#[test]
 fn default_split_layout_reserves_chrome_and_a_divider() {
     let state = DiagnosticWorkspaceState::<u64, u64>::new(120, 30);
     let layout = state.layout();

@@ -1,4 +1,13 @@
 //! Transactional terminal-mode initialization and restoration.
+//!
+//! Fresco tracks terminal ownership as an explicit session contract. Successful
+//! initialization records every mode acquired by the backend. Partial writer
+//! failures conservatively leave possibly accepted modes marked active, and
+//! restoration attempts each independent cleanup before reporting aggregate
+//! failure. This protects raw mode, cursor state, bracketed paste, mouse
+//! capture, and alternate-screen restoration across normal returns, I/O errors,
+//! panics supervised by [`install_terminal_panic_hook`], and signals supervised
+//! by [`install_terminal_signal_hook`].
 
 use std::{
     error::Error,
