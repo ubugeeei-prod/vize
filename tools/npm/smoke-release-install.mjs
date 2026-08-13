@@ -351,9 +351,8 @@ function main() {
 
     const installable = packages.filter((pkg) => pkg.compatible);
     assert.ok(installable.length > 0, "no package tarballs are compatible with this runner");
-    const installDir = installPackedPackages(tempDir, installable, {
-      includeRuntimePeers: options.runtimeChecks || options.contentMapperChecks,
-    });
+    const includeRuntimePeers = options.runtimeChecks || options.contentMapperChecks;
+    const installDir = installPackedPackages(tempDir, installable, { includeRuntimePeers });
 
     if (options.runtimeChecks) {
       runRuntimeChecks(installDir, installable, {

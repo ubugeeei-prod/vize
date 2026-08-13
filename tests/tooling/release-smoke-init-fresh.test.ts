@@ -3,11 +3,8 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { projectEnv } from "../../tools/npm/smoke-release-init-project.mjs";
-import {
-  FRESH_INIT_MATRIX,
-  PACKAGE_MANAGERS,
-  PROJECT_SHAPES,
-} from "../../tools/npm/smoke-release-init-shapes.mjs";
+import { PACKAGE_MANAGERS } from "../../tools/npm/smoke-release-init-managers.mjs";
+import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "../../tools/npm/smoke-release-init-shapes.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 const SHAPE_KEYS = [

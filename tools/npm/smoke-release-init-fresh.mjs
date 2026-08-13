@@ -20,11 +20,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { run } from "./smoke-process.mjs";
-import {
-  FRESH_INIT_MATRIX,
-  PACKAGE_MANAGERS,
-  PROJECT_SHAPES,
-} from "./smoke-release-init-shapes.mjs";
+import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
+import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
 import {
   assertFreshProject,
   assertMissingCorsaGuidance,
