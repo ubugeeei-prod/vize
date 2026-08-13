@@ -281,13 +281,10 @@ test("release gate bootstrap dispatches only missing gates and waits for exact e
     pollIntervalMs: 1_000,
   });
 
-  assert.deepEqual(dispatched, [
-    "Benchmark",
-    "App E2E",
-    "Native Smoke",
-    "Real Project Matrix",
-    "Fuzz",
-  ]);
+  assert.deepEqual(
+    dispatched,
+    plans.map((plan) => plan.workflowName),
+  );
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
 });
 
@@ -307,13 +304,10 @@ test("release gate bootstrap attempts every missing dispatch before reporting fa
     }),
     /Failed to dispatch release gates:[\s\S]*Benchmark: dispatch denied[\s\S]*Fuzz: dispatch denied/,
   );
-  assert.deepEqual(attempts, [
-    "Benchmark",
-    "App E2E",
-    "Native Smoke",
-    "Real Project Matrix",
-    "Fuzz",
-  ]);
+  assert.deepEqual(
+    attempts,
+    releasePlans().map((plan) => plan.workflowName),
+  );
 });
 
 test("release gate bootstrap never retries or hides a red latest run", async () => {
