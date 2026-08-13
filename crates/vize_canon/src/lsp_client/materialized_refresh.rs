@@ -25,8 +25,14 @@ impl CorsaProjectClient {
         };
 
         self.clear_diagnostics_cache();
+        // The reusable editor session runs its own process against the mirror it
+        // read when it built its program, and a project-session refresh does not
+        // reach that copy. Retiring it keeps the next request, including the
+        // batch diagnostics that fall back to this transport, on the files the
+        // delta just wrote.
+        self.retire_editor_lsp()?;
         if !self.has_project_session() {
-            return self.retire_editor_lsp();
+            return Ok(());
         }
         block_on(self.project_session_mut()?.refresh(Some(file_changes)))
             .map_err(|error| cstr!("Failed to refresh materialized Corsa files: {error}"))
