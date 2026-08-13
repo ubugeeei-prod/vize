@@ -13,6 +13,24 @@ runs:
       env:
         RUNNER_ENVIRONMENT: ${{ runner.environment }}
       run: |
+        cpu_count() {
+          if command -v nproc >/dev/null 2>&1; then
+            nproc
+          elif command -v sysctl >/dev/null 2>&1; then
+            sysctl -n hw.ncpu 2>/dev/null || echo 1
+          else
+            echo 1
+          fi
+        }
+        thread_count() {
+          local count
+          if [ -d /proc ]; then
+            count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
+          else
+            count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
+          fi
+          echo "${count:-0}"
+        }
         if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
           export RAYON_NUM_THREADS=1
           export GOMAXPROCS=1
@@ -24,22 +42,18 @@ runs:
           echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
         fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
-        threads_total="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+        threads_total="$(thread_count)"
         echo "VIZE_RUNNER_BASELINE_THREADS=$threads_total" >> "$GITHUB_ENV"
         {
           echo "runner_environment=$RUNNER_ENVIRONMENT"
-          echo "cpus=$(nproc)"
+          echo "cpus=$(cpu_count)"
           echo "rayon_num_threads=$RAYON_NUM_THREADS"
           echo "gomaxprocs=${GOMAXPROCS:-unset}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
-          echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"
+          echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ' || echo unavailable)"
           echo "pids_current=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo unavailable)"
           echo "pids_max=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo unavailable)"
-          # `grep -s` reads the files rather than `awk`: a process that exits
-          # between the glob expanding and the read makes `awk` fail without
-          # running `END`, which discarded the whole thread count. `grep`
-          # reports a vanished file as a skipped input instead.
           echo "threads_total=$threads_total"
         } > target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
         cat target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
@@ -84,9 +98,18 @@ runs:
         budget_threads=$((baseline_threads + 96))
         deadline=$((SECONDS + 30))
         sample=0
+        thread_count() {
+          local count
+          if [ -d /proc ]; then
+            count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
+          else
+            count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
+          fi
+          echo "${count:-0}"
+        }
         while true; do
           sample=$((sample + 1))
-          threads_total="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+          threads_total="$(thread_count)"
           {
             echo "sample=$sample"
             echo "threads_total=$threads_total"

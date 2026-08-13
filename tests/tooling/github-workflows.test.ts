@@ -86,6 +86,35 @@ test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => 
   assert.equal(notice.if, "${{ runner.environment == 'github-hosted' }}");
 });
 
+test("temporary hosted runner fallback keeps Blacksmith restore labels", () => {
+  for (const workflowName of [
+    "benchmark.yml",
+    "check.yml",
+    "miri.yml",
+    "release-preflight.yml",
+    "release.yml",
+    "tool-benchmark.yml",
+  ]) {
+    assert.match(
+      readRepoFile(".github", "workflows", workflowName),
+      /blacksmith-32vcpu-ubuntu-2404/,
+      `${workflowName} must keep the restore runner label while hosted fallback is active`,
+    );
+  }
+  assert.match(
+    readRepoFile(".github", "workflows", "tool-benchmark.yml"),
+    /--runner-label "blacksmith-32vcpu-ubuntu-2404"/,
+  );
+  assert.match(
+    readRepoFile("tools", "github", "release-platforms.mjs"),
+    /blacksmith-12vcpu-macos-15/,
+  );
+  assert.match(
+    readRepoFile("tools", "github", "release-platforms.mjs"),
+    /blacksmith-32vcpu-ubuntu-2404-arm/,
+  );
+});
+
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
   // We use Blacksmith-hosted runners where compatible and intentionally let
   // any matching vCPU SKU pass — bumping vCPU shouldn't need a test change.

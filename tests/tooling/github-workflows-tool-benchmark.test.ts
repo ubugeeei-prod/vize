@@ -20,7 +20,7 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   assert.match(workflow, /musea_file_count:[\s\S]*default:\s*"240"/);
   assert.match(workflow, /VIZE_TOOL_BENCH_MUSEA_FILE_COUNT:/);
   assert.match(workflow, /VIZE_TOOL_BENCH_LARGE_BLOCKS:/);
-  const runsOn = benchmarkJob.match(/^\s*runs-on:\s*(\S+)\s*$/m)?.[1];
+  const runsOn = benchmarkJob.match(/^\s*runs-on:\s*([^#\s]+)(?:\s*#.*)?$/m)?.[1];
   assert.ok(runsOn, "missing runs-on for the tool-benchmark job");
   assert.match(runsOn, hostedOrBlacksmithExact("ubuntu-24.04"));
   assert.match(benchmarkJob, /contents:\s*read/);
@@ -38,7 +38,8 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   // The label is written into published benchmark metadata, so it has to name
   // the runner the benchmark actually ran on rather than merely be an accepted
   // label: an independent check passes while the two select different pools.
-  const runnerLabel = benchmarkJob.match(/--runner-label "([^"]+)"/)?.[1];
+  const activeBenchmarkJob = benchmarkJob.replace(/^\s*#.*$/gm, "");
+  const runnerLabel = activeBenchmarkJob.match(/--runner-label "([^"]+)"/)?.[1];
   assert.ok(runnerLabel, "missing --runner-label for the benchmark run");
   assert.match(runnerLabel, hostedOrBlacksmithExact("ubuntu-24.04"));
   assert.equal(runnerLabel, runsOn, "benchmark metadata must record the runner that produced it");
