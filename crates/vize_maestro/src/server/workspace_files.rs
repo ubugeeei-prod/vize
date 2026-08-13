@@ -1,11 +1,11 @@
 //! Workspace file-event handling used by LSP diagnostics and rename support.
 
-#[cfg(feature = "native")]
-use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 use tower_lsp::lsp_types::{
     ClientCapabilities, CreateFilesParams, DeleteFilesParams, DidChangeWatchedFilesParams,
     MessageType, RenameFilesParams, WorkspaceEdit,
 };
+#[cfg(feature = "native")]
+use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
 use super::{MaestroServer, ServerState};
 use crate::ide::FileRenameService;

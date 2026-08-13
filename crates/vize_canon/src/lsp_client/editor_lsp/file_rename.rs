@@ -45,11 +45,9 @@ impl CorsaProjectClient {
 /// completion, and diagnostics, so a rename the runtime cannot represent must
 /// never reach it; the caller falls back to the import scanner instead.
 fn is_script_document_uri(uri: &str) -> bool {
-    [
-        ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs",
-    ]
-    .iter()
-    .any(|extension| uri.ends_with(extension))
+    [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"]
+        .iter()
+        .any(|extension| uri.ends_with(extension))
 }
 
 fn editor_lsp_will_rename_error_is_unsupported(error: &str) -> bool {

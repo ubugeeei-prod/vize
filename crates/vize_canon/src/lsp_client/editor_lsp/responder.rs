@@ -12,7 +12,10 @@ use std::{
 
 /// Answers the server-initiated requests tsgo makes during startup; without a
 /// reply the server blocks before it ever serves an editor request.
-pub(super) fn spawn_responder(client: LspClient, stop: Arc<AtomicBool>) -> std::thread::JoinHandle<()> {
+pub(super) fn spawn_responder(
+    client: LspClient,
+    stop: Arc<AtomicBool>,
+) -> std::thread::JoinHandle<()> {
     let events = client.subscribe();
     std::thread::spawn(move || {
         while !stop.load(Ordering::Relaxed) {

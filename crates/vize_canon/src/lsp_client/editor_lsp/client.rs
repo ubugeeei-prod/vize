@@ -249,4 +249,3 @@ fn document_maps_equal(lhs: &FxHashMap<String, String>, rhs: &FxHashMap<String, 
             .iter()
             .all(|(uri, text)| rhs.get(uri.as_str()).is_some_and(|current| current == text))
 }
-
