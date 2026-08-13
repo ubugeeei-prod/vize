@@ -1,0 +1,701 @@
+{
+  "schemaVersion": 1,
+  "trackingIssue": 3224,
+  "baseline": {
+    "name": "vuejs/language-tools",
+    "server": "Vue Language Server",
+    "contract": "Vize must match or exceed the editor-visible Vue Language Server protocol surface for the listed feature dimensions. Each dimension has positive and negative oracles that are enforced by executable tests, not by this artifact alone.",
+    "versionEvidence": [
+      {
+        "file": "pnpm-workspace.yaml",
+        "contains": ["vue-tsc: \"3.3.4\"", "typescript: \"6.0.3\""]
+      },
+      {
+        "file": "tests/package.json",
+        "contains": ["\"vue-tsc\": \"catalog:typescript\""]
+      }
+    ]
+  },
+  "featureMatrix": [
+    {
+      "dimension": "diagnostics",
+      "lspMethods": ["textDocument/publishDiagnostics"],
+      "mustInclude": [
+        {
+          "id": "authored-type-diagnostic",
+          "summary": "TS2322 prop and template mismatches publish on the authored Vue range.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-typecheck-template.test.ts",
+              "contains": ["Type 'string' is not assignable to type 'number'.", "bindingStart"]
+            },
+            {
+              "file": "editors/vscode/test/suite/real-scenario-expected.cjs",
+              "contains": ["source: \"vize/types\"", "range: [7, 9, 7, 14]"]
+            }
+          ]
+        },
+        {
+          "id": "lint-diagnostic-authored-span",
+          "summary": "Fixable lint diagnostics publish on the authored gap, with code descriptions.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-code-action-kinds.test.ts",
+              "contains": ["vue/no-multi-spaces", "sfcRange"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "stale-repaired-diagnostics",
+          "summary": "Repaired buffers and clean documents do not retain stale diagnostics.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-diagnostics-lifecycle.test.ts",
+              "contains": [
+                "didClose clears diagnostics",
+                "assert.deepEqual(closePublish.diagnostics, [])"
+              ]
+            },
+            {
+              "file": "editors/vscode/test/suite/extension-host-real.cjs",
+              "contains": ["repairedDiagnostics", "assert.deepEqual(diagnostics, [])"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "completion",
+      "lspMethods": ["textDocument/completion"],
+      "mustInclude": [
+        {
+          "id": "template-expression-bindings",
+          "summary": "Template expression completion includes script/setup bindings.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-authoring-core.test.ts",
+              "contains": [
+                "completionItems.includes(\"count\")",
+                "!completionItems.includes(\"v-if\")"
+              ]
+            },
+            {
+              "file": "tests/tooling/lsp-template-completion.test.ts",
+              "contains": [
+                "component prop completion tracks unsaved child edits",
+                "labels.includes(\"disabled\")"
+              ]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "context-leakage",
+          "summary": "Expression, attribute, directive, and comment contexts reject unrelated labels.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-editor-production-gates.test.ts",
+              "contains": ["!labels.includes(\"v-if\")", "!labels.includes(\"count\")"]
+            },
+            {
+              "file": "tests/tooling/lsp-template-completion.test.ts",
+              "contains": ["!labels.includes(\"disk-only\")", "!labels.includes(\"Transition\")"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "hover",
+      "lspMethods": ["textDocument/hover"],
+      "mustInclude": [
+        {
+          "id": "template-binding-hover",
+          "summary": "Template binding hover reports the script binding and type/provenance.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-hover-template.test.ts",
+              "contains": ["Ref<string>", "Template binding from script"]
+            },
+            {
+              "file": "tests/tooling/lsp-editor-production-gates.test.ts",
+              "contains": ["Vue event listener", "MDN reference"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "wrong-hover-provider",
+          "summary": "Type-aware VS Code hover does not fall back to removed heuristic preambles.",
+          "evidence": [
+            {
+              "file": "editors/vscode/test/suite/extension-host-real.cjs",
+              "contains": [
+                "!markdown.includes(\"TypeScript quick info\")",
+                "!markdown.includes(\"Template binding from script\")"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "definition",
+      "lspMethods": ["textDocument/definition"],
+      "mustInclude": [
+        {
+          "id": "template-binding-definition",
+          "summary": "Template bindings jump to their authored script declarations.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-authoring-core.test.ts",
+              "contains": ["textDocument/definition", "declarationPosition"]
+            },
+            {
+              "file": "tests/tooling/lsp-definition-navigation.test.ts",
+              "contains": ["textDocument/definition", "Child.vue"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "closed-or-invalid-definition",
+          "summary": "Closed/unopened documents and invalid positions do not return stale definitions.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-smoke.test.ts",
+              "contains": ["assertEmptyEditorRequests", "surrogateInteriorPosition"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "references",
+      "lspMethods": ["textDocument/references", "textDocument/documentHighlight"],
+      "mustInclude": [
+        {
+          "id": "binding-references",
+          "summary": "References include declaration, event-handler usage, and interpolation usage.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-editor-production-gates.test.ts",
+              "contains": ["textDocument/references", "interpolationStart"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "references-disabled",
+          "summary": "Disabling references also disables document highlights without affecting siblings.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-editor-feature-isolation.test.ts",
+              "contains": ["references-off", "textDocument/documentHighlight"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "rename",
+      "lspMethods": ["textDocument/prepareRename", "textDocument/rename"],
+      "mustInclude": [
+        {
+          "id": "binding-rename",
+          "summary": "Renaming a template-used binding edits declaration and usages.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-rename-guards.test.ts",
+              "contains": ["rename of a template-used binding", "edits.length, 2"]
+            },
+            {
+              "file": "editors/vscode/test/suite/real-scenario-expected.cjs",
+              "contains": ["renameEdit", "renameNewName"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "non-renamable-directive",
+          "summary": "Directive names, whitespace, and non-identifiers cannot be renamed.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-rename-guards.test.ts",
+              "contains": [
+                "prepareRename returns null on a Vue directive name",
+                "prepareRename returns null on whitespace"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "code-actions",
+      "lspMethods": ["textDocument/codeAction"],
+      "mustInclude": [
+        {
+          "id": "quickfix-kinds",
+          "summary": "Lint diagnostics expose preferred quick fixes and suppression actions.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-code-action-kinds.test.ts",
+              "contains": [
+                "Fix: Replace multiple spaces with single space",
+                "Suppress with @vize:forget"
+              ]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "requested-kind-filter",
+          "summary": "Refactor/source requests and child quickfix kinds do not leak root quick fixes.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-code-action-kinds.test.ts",
+              "contains": ["[\"refactor\", \"source\"]", "[\"quickfix.fixAll\"]"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "semantic-tokens",
+      "lspMethods": ["textDocument/semanticTokens/full", "textDocument/semanticTokens/range"],
+      "mustInclude": [
+        {
+          "id": "semantic-token-tuples",
+          "summary": "Semantic tokens return LSP 5-tuples for Vue and art-vue template ranges.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-smoke.test.ts",
+              "contains": [
+                "semantic token range requests are implemented",
+                "response.data.length % 5"
+              ]
+            },
+            {
+              "file": "tests/tooling/lsp-workspace-semantic.test.ts",
+              "contains": ["semanticTokens/full", "tokenTypes"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "plain-text-lookalikes",
+          "summary": "Plain text that looks like directives or emails produces no semantic tokens.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-smoke.test.ts",
+              "contains": [
+                "semantic tokens ignore directive lookalikes in plain text",
+                "assert.deepEqual(response.data, [])"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "inlay-hints",
+      "lspMethods": ["textDocument/inlayHint"],
+      "mustInclude": [
+        {
+          "id": "reactive-type-hints",
+          "summary": "Reactive ref/computed bindings and i18n keys render inlay hints.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-inlay-codelens.test.ts",
+              "contains": [": Ref<number>", ": ComputedRef<number>", "= Log in"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "inlay-disabled",
+          "summary": "Granular inlay-hint disable leaves code lens and hover alive.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-editor-feature-isolation.test.ts",
+              "contains": ["inlay-hints-off", "assertCodeLensWorks"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "document-features",
+      "lspMethods": [
+        "textDocument/documentSymbol",
+        "textDocument/documentLink",
+        "textDocument/foldingRange",
+        "textDocument/codeLens",
+        "textDocument/documentColor",
+        "textDocument/selectionRange"
+      ],
+      "mustInclude": [
+        {
+          "id": "document-structure",
+          "summary": "Document symbols, links, folding, color, code lens, and selection ranges work on authored SFCs.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-document-features.test.ts",
+              "contains": ["documentSymbol", "style module=m"]
+            },
+            {
+              "file": "tests/tooling/lsp-document-link.test.ts",
+              "contains": ["textDocument/documentLink", "Dep.vue"]
+            },
+            {
+              "file": "tests/tooling/lsp-folding-range.test.ts",
+              "contains": ["textDocument/foldingRange", "template"]
+            },
+            {
+              "file": "tests/tooling/lsp-document-color.test.ts",
+              "contains": ["textDocument/documentColor", "colorPresentation"]
+            },
+            {
+              "file": "tests/tooling/lsp-selection-range.test.ts",
+              "contains": ["textDocument/selectionRange", "selectionRange"]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "document-feature-lifecycle",
+          "summary": "Unopened and empty documents return null or empty results instead of stale structure.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-document-features.test.ts",
+              "contains": ["unopenedSymbols", "emptySymbols.length, 0"]
+            },
+            {
+              "file": "tests/tooling/lsp-smoke.test.ts",
+              "contains": ["assertEmptyEditorRequests", "a closed document"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "file-rename",
+      "lspMethods": ["workspace/willRenameFiles", "workspace/didRenameFiles"],
+      "mustInclude": [
+        {
+          "id": "specifier-rewrites",
+          "summary": "File rename rewrites Vue imports, dynamic imports, block src attributes, and CSS imports.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-file-rename-workspace.test.ts",
+              "contains": [
+                "workspace/willRenameFiles",
+                "./components/Bar.vue",
+                "./styles/modern-reset.css"
+              ]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "external-and-disabled-renames",
+          "summary": "External URLs and disabled file rename mode produce no edits.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-file-rename-workspace.test.ts",
+              "contains": ["https://cdn.example.test/remote.css"]
+            },
+            {
+              "file": "tests/tooling/lsp-editor-feature-isolation.test.ts",
+              "contains": ["file-rename-off", "workspace/willRenameFiles"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "dimension": "workspace-symbols",
+      "lspMethods": ["workspace/symbol"],
+      "mustInclude": [
+        {
+          "id": "open-document-symbol-index",
+          "summary": "Workspace symbols index open Vue components and script/setup bindings.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-workspace-semantic.test.ts",
+              "contains": ["query: \"myCounter\"", "query: \"Widget\"", "query: \"handleSubmit\""]
+            }
+          ]
+        }
+      ],
+      "mustExclude": [
+        {
+          "id": "stale-symbol-index",
+          "summary": "Unopened, changed, closed, and unmatched documents do not retain stale workspace symbols.",
+          "evidence": [
+            {
+              "file": "tests/tooling/lsp-workspace-semantic.test.ts",
+              "contains": [
+                "beforeOpen",
+                "queryWorkspaceSymbols(session, \"staleName\")",
+                "freshName"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "editorBreadth": [
+    {
+      "editor": "VS Code",
+      "coverage": "packaged-real-server",
+      "ciJob": "editor-host-smoke",
+      "task": "test:vscode-extension:host-real",
+      "mustInclude": [
+        "diagnostics",
+        "completion",
+        "hover",
+        "quick-fix",
+        "format-on-save",
+        "semantic-tokens",
+        "rename",
+        "unsaved-buffer-repair"
+      ],
+      "mustExclude": ["extension-development-path"],
+      "evidence": [
+        {
+          "file": "editors/vscode/test/suite/real-scenario.cjs",
+          "contains": [
+            "type bug -> diagnostic",
+            "stepQuickFix",
+            "stepFormatOnSave",
+            "stepSemanticTokens",
+            "stepRename"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": [
+            "Run VS Code host smoke against the real server",
+            "test:vscode-extension:host-real"
+          ]
+        }
+      ]
+    },
+    {
+      "editor": "Zed",
+      "coverage": "package-validated-real-server",
+      "ciJob": "editor-host-smoke",
+      "task": "test:zed-extension:real-server",
+      "mustInclude": [
+        "diagnostics",
+        "completion",
+        "hover",
+        "quick-fix",
+        "formatting-request",
+        "semantic-tokens",
+        "rename"
+      ],
+      "mustExclude": ["substring-only-assertions"],
+      "evidence": [
+        {
+          "file": "tools/zed-vize/run-real-server.mjs",
+          "contains": [
+            "assert.deepEqual(diagnostics.diagnostics, expectedDiagnostics)",
+            "assert.deepEqual(formatting, expectedFormatting)",
+            "assert.deepEqual(rename, expectedRename(uri))"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": [
+            "Install pinned Zed extension CLI",
+            "Run the Zed scenario against the real server"
+          ]
+        }
+      ]
+    },
+    {
+      "editor": "Neovim",
+      "coverage": "packaged-real-server",
+      "ciJob": "editor-host-smoke",
+      "task": "test:nvim-extension:real-server",
+      "mustInclude": [
+        "diagnostics",
+        "completion",
+        "hover",
+        "quick-fix",
+        "format-on-save",
+        "semantic-tokens",
+        "rename"
+      ],
+      "mustExclude": ["buffer-wide-sync-requests"],
+      "evidence": [
+        {
+          "file": "editors/nvim/test/vize_e2e_spec.lua",
+          "contains": [
+            "step_diagnostics",
+            "step_quick_fix",
+            "step_format_on_save",
+            "step_semantic_tokens",
+            "step_rename"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": [
+            "Run the Neovim scenario against the real server",
+            "test:nvim-extension:real-server"
+          ]
+        }
+      ]
+    },
+    {
+      "editor": "Helix",
+      "coverage": "official-health-plus-real-server",
+      "ciJob": "editor-host-smoke",
+      "task": "test:helix-extension:real-server",
+      "mustInclude": [
+        "diagnostics",
+        "completion",
+        "hover",
+        "quick-fix",
+        "semantic-tokens",
+        "rename"
+      ],
+      "mustExclude": ["formatting-provider-when-not-configured"],
+      "evidence": [
+        {
+          "file": "tools/helix-vize/run-real-server.mjs",
+          "contains": [
+            "assert.deepEqual(helixServer.config, helixRecommendedOptions)",
+            "documentFormattingProvider, undefined",
+            "assert.deepEqual(rename, expectedRename(uri))"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": [
+            "Install pinned Helix",
+            "Check the Helix package with the official CLI",
+            "Run the Helix scenario against the real server"
+          ]
+        }
+      ]
+    },
+    {
+      "editor": "Vim",
+      "coverage": "packaged-real-server-vim-lsp",
+      "ciJob": "editor-host-smoke",
+      "task": "test:vim-extension:real-server",
+      "mustInclude": [
+        "diagnostics",
+        "completion",
+        "hover",
+        "quick-fix",
+        "formatting-request",
+        "semantic-tokens",
+        "rename"
+      ],
+      "mustExclude": ["ambient-vim-lsp-revision"],
+      "evidence": [
+        {
+          "file": "editors/vim/test/vize_e2e_spec.vim",
+          "contains": [
+            "real server did not publish the scenario diagnostics",
+            "textDocument/formatting",
+            "textDocument/rename"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": ["Install pinned vim-lsp", "Run the Vim scenario against the real server"]
+        }
+      ]
+    },
+    {
+      "editor": "Emacs",
+      "coverage": "packaged-eglot-spec",
+      "ciJob": "editor-host-smoke",
+      "task": "test:emacs-extension:headless",
+      "mustInclude": [
+        "eglot-command",
+        "recommended-init-options",
+        "mode-registration",
+        "archive-package"
+      ],
+      "mustExclude": ["real-server-e2e-claim"],
+      "evidence": [
+        {
+          "file": "editors/emacs/test/vize-test.el",
+          "contains": [
+            "vize-eglot-default-program",
+            ":initializationOptions",
+            "vize-setup-eglot-registers-each-configured-major-mode"
+          ]
+        },
+        {
+          "file": ".github/actions/vscode-host-smoke/action.yml",
+          "contains": ["Run the packaged Emacs ERT suite", "test:emacs-extension:headless"]
+        }
+      ]
+    }
+  ],
+  "latencyBudgets": [
+    {
+      "fixtureId": "misskey",
+      "fixtureName": "Misskey",
+      "suite": "misskey-lsp-incremental",
+      "budgetSource": "tests/_fixtures/vue-ecosystem-fixtures.json",
+      "ciJob": "vue-parity",
+      "ciStep": "Check incremental LSP against Misskey and Vue Vben Admin",
+      "completionLane": "completion",
+      "hoverLane": "hover",
+      "diagnosticsToStableLanes": [
+        "coldOpen",
+        "warmNoop",
+        "leafBroken",
+        "leafRepaired",
+        "sharedBroken",
+        "sharedRepaired"
+      ]
+    },
+    {
+      "fixtureId": "vue-vben-admin",
+      "fixtureName": "Vue Vben Admin",
+      "suite": "vben-lsp-incremental",
+      "budgetSource": "tests/_fixtures/vue-ecosystem-fixtures.json",
+      "ciJob": "vue-parity",
+      "ciStep": "Check incremental LSP against Misskey and Vue Vben Admin",
+      "completionLane": "completion",
+      "hoverLane": "hover",
+      "diagnosticsToStableLanes": [
+        "coldOpen",
+        "coldOpenSecondApp",
+        "warmNoop",
+        "leafBroken",
+        "leafRepaired",
+        "sharedBroken",
+        "sharedBrokenSecondApp",
+        "sharedRepaired",
+        "sharedRepairedSecondApp",
+        "warmNoopSecondApp",
+        "cancellationConverge"
+      ]
+    }
+  ]
+}
