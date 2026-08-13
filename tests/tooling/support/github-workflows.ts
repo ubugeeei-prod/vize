@@ -47,6 +47,13 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// A runner label is a complete YAML scalar, so every pattern below ends at a
+// label boundary. Without it the pattern only matches a prefix, and an
+// assertion for `ubuntu-24.04` would be satisfied by `ubuntu-24.04-arm` (a
+// different architecture) whenever the caller has no closing delimiter of its
+// own.
+const LABEL_BOUNDARY = "(?![\\w.-])";
+
 // Runner pairs (hosted GitHub label, equivalent Blacksmith label) accepted by
 // the workflow-shape tests. Letting either form match keeps the cross-platform
 // coverage assertion strict on _which_ platforms are present without pinning the
@@ -54,16 +61,21 @@ function escapeRegExp(value: string): string {
 // and vice versa.
 export function hostedOrBlacksmith(hostedLabel: string): string {
   if (hostedLabel === "ubuntu-24.04") {
-    return "(?:ubuntu-24\\.04|blacksmith-\\d+vcpu-ubuntu-2404)";
+    return `(?:ubuntu-24\\.04|blacksmith-\\d+vcpu-ubuntu-2404)${LABEL_BOUNDARY}`;
   }
   if (hostedLabel === "ubuntu-24.04-arm") {
-    return "(?:ubuntu-24\\.04-arm|blacksmith-\\d+vcpu-ubuntu-2404-arm)";
+    return `(?:ubuntu-24\\.04-arm|blacksmith-\\d+vcpu-ubuntu-2404-arm)${LABEL_BOUNDARY}`;
   }
   if (hostedLabel === "macos-15") {
-    return "(?:macos-15|blacksmith-(?:6|12)vcpu-macos-15)";
+    return `(?:macos-15|blacksmith-(?:6|12)vcpu-macos-15)${LABEL_BOUNDARY}`;
   }
   if (hostedLabel === "windows-2025") {
-    return "(?:windows-2025|blacksmith-\\d+vcpu-windows-2025)";
+    return `(?:windows-2025|blacksmith-\\d+vcpu-windows-2025)${LABEL_BOUNDARY}`;
   }
-  return escapeRegExp(hostedLabel);
+  return `${escapeRegExp(hostedLabel)}${LABEL_BOUNDARY}`;
+}
+
+/** Match a full runner label, for callers that compare an extracted scalar. */
+export function hostedOrBlacksmithExact(hostedLabel: string): RegExp {
+  return new RegExp(`^${hostedOrBlacksmith(hostedLabel)}$`);
 }
