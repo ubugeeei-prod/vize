@@ -6,6 +6,7 @@ use std::{
     sync::{
         Arc,
         atomic::{AtomicBool, Ordering},
+        mpsc::RecvTimeoutError,
     },
     time::Duration,
 };
@@ -19,15 +20,21 @@ pub(super) fn spawn_responder(
     let events = client.subscribe();
     std::thread::spawn(move || {
         while !stop.load(Ordering::Relaxed) {
-            if let Ok(InboundEvent::Request { id, method, params }) =
-                events.recv_timeout(Duration::from_millis(50))
-            {
-                let response = match method.as_ref() {
-                    "workspace/configuration" => configuration_response(&params),
-                    _ => Value::Null,
-                };
-                let _ = client.respond(id, response);
-            }
+            let InboundEvent::Request { id, method, params } =
+                (match events.recv_timeout(Duration::from_millis(50)) {
+                    Ok(event) => event,
+                    Err(RecvTimeoutError::Timeout) => continue,
+                    Err(RecvTimeoutError::Disconnected) => break,
+                })
+            else {
+                continue;
+            };
+
+            let response = match method.as_ref() {
+                "workspace/configuration" => configuration_response(&params),
+                _ => Value::Null,
+            };
+            let _ = client.respond(id, response);
         }
     })
 }
