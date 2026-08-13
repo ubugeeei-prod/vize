@@ -1,7 +1,7 @@
 //! Compiler options.
 
-use vize_carton::config::VueVersion;
 use vize_carton::String;
+use vize_carton::config::VueVersion;
 
 mod bindings;
 mod custom_elements;
