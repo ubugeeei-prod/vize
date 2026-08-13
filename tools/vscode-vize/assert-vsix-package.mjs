@@ -84,7 +84,7 @@ const forbiddenEntries = [
   /^extension\/dist\/.*\.map$/,
   tsVueVsix.forbiddenNonPluginNodeModules,
   /^extension\/package-lock\.json$/,
-  /^extension\/pnpm-lock\.yaml$/,
+  /^extension\/pnpm-(?:lock|workspace)\.yaml$/,
   /^extension\/src\//,
   /^extension\/test(?:s)?\//,
   /^extension\/test-fixtures\//,

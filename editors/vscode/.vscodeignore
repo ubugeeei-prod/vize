@@ -10,4 +10,5 @@ test-fixtures/
 tsconfig.json
 vite.config.ts
 pnpm-lock.yaml
+pnpm-workspace.yaml
 packageManager
