@@ -73,6 +73,7 @@ test("nuxt-ui warmups do not abort slow hosted SSR compilation too early", () =>
 
 test("nuxt-ui setup avoids the Nuxt Content module on hosted readiness runners", () => {
   const source = readRepoFile("tests", "_helpers", "apps.ts");
+  const configPatch = readRepoFile("tests", "_helpers", "nuxt-ui-config.ts");
   const start = source.indexOf("export const nuxtUiApp: AppConfig = {");
   const end = source.indexOf("export const rekaUiApp: AppConfig = {");
   assert.notEqual(start, -1);
@@ -80,6 +81,7 @@ test("nuxt-ui setup avoids the Nuxt Content module on hosted readiness runners",
   const nuxtUiSetup = source.slice(start, end);
 
   assert.doesNotMatch(nuxtUiSetup, /@nuxt\/content/);
-  assert.match(nuxtUiSetup, /enabled: false/);
-  assert.match(nuxtUiSetup, /content: true/);
+  assert.doesNotMatch(configPatch, /@nuxt\/content/);
+  assert.match(configPatch, /enabled: false/);
+  assert.match(configPatch, /content: true/);
 });
