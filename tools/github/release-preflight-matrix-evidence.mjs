@@ -7,6 +7,19 @@ import {
 } from "./release-preflight-artifact-entries.mjs";
 
 export const requiredRealProjectMatrixShardCount = 11;
+export const realProjectMatrixWorkflowName = "Real Project Matrix";
+
+// Release evidence for the full corpus is mandatory: a selection that omits the
+// workflow must fail the gate instead of silently skipping all shard artifacts.
+export function requireRealProjectMatrixRun(selectedRuns) {
+  const run = selectedRuns?.get?.(realProjectMatrixWorkflowName);
+  if (run == null) {
+    throw new Error(
+      `${realProjectMatrixWorkflowName} release evidence is required; no exact-SHA run was selected`,
+    );
+  }
+  return run;
+}
 
 export async function assertRealProjectMatrixReleaseArtifacts({
   run,
@@ -160,8 +173,13 @@ function assertReleaseMutationOracle(artifactName, mutationOracle) {
     !hasMutationStateEvidence(clean) ||
     !hasMutationStateEvidence(broken) ||
     !hasMutationStateEvidence(repaired) ||
+    !isSha256(clean.sourceSha256) ||
+    !isSha256(broken.sourceSha256) ||
+    !isSha256(repaired.sourceSha256) ||
+    clean.sharedCount !== 0 ||
     clean.falsePositiveCount !== 0 ||
     clean.falseNegativeCount !== 0 ||
+    broken.sourceSha256 === clean.sourceSha256 ||
     broken.sharedCount !== 1 ||
     broken.messageMismatchCount !== 0 ||
     broken.documentedDifferenceCount !== 0 ||

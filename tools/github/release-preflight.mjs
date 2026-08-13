@@ -26,7 +26,10 @@ import {
   workflowRequiresJobEvidence,
 } from "./release-preflight-evidence.mjs";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
-import { assertRealProjectMatrixReleaseArtifacts } from "./release-preflight-matrix-evidence.mjs";
+import {
+  assertRealProjectMatrixReleaseArtifacts,
+  requireRealProjectMatrixRun,
+} from "./release-preflight-matrix-evidence.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const releasePackageRoots = ["editors", "npm"];
@@ -227,8 +230,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
         assertRequiredWorkflowJobs(workflowName, jobs);
       }),
     (async () => {
-      const run = selectedRuns.get("Real Project Matrix");
-      if (run == null) return;
+      const run = requireRealProjectMatrixRun(selectedRuns);
       const artifacts = await githubApiPages({
         apiUrl,
         repository,

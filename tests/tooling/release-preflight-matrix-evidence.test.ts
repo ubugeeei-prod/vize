@@ -4,6 +4,7 @@ import { test } from "node:test";
 
 import {
   assertRealProjectMatrixReleaseArtifacts,
+  requireRealProjectMatrixRun,
   requiredRealProjectMatrixShardCount,
 } from "../../tools/github/release-preflight-matrix-evidence.mjs";
 import { releaseSha, successfulReleaseRun } from "./support/release-preflight.ts";
@@ -158,6 +159,44 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
       /seeded mutation oracle/,
     ],
     [
+      "unchanged broken mutation source",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) =>
+            (artifact.mutationOracle.states[1].sourceSha256 =
+              artifact.mutationOracle.states[0].sourceSha256),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
+      "unhashed mutation source",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[1].sourceSha256 = "not-a-digest"),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
+      "diagnostic-bearing clean mutation state",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[0].sharedCount = 1),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
+      "diagnostic-bearing repaired mutation state",
+      (entries: Record<string, string>) =>
+        mutateDivergence(
+          entries,
+          (artifact) => (artifact.mutationOracle.states[2].sharedCount = 1),
+        ),
+      /seeded mutation oracle/,
+    ],
+    [
       "failed surface verdict",
       (entries: Record<string, string>) => {
         entries["surface-verdict.json"] = json({ status: "failure" });
@@ -201,6 +240,17 @@ test("release preflight requires same-corpus coverage, mutation oracle, and prep
       }),
       message,
       label,
+    );
+  }
+});
+
+test("release preflight requires a selected Real Project Matrix run", () => {
+  const run = successfulReleaseRun("Real Project Matrix", 530);
+  assert.equal(requireRealProjectMatrixRun(new Map([["Real Project Matrix", run]])), run);
+  for (const selected of [new Map(), new Map([["Benchmark", run]])] as Map<string, unknown>[]) {
+    assert.throws(
+      () => requireRealProjectMatrixRun(selected),
+      /Real Project Matrix release evidence is required/,
     );
   }
 });
