@@ -1,16 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const ELK_RENDER_ROUTE = "/settings/about";
+export const ELK_RENDER_ROUTE = "/settings";
 
 export const ELK_RENDER_ROUTE_SOURCE_CONTRACTS = {
   "app/pages/index.vue": {
     description: "root route is an empty auth middleware handoff",
     anchors: ["middleware: 'auth'", "<template>\n  <div />\n</template>"],
   },
-  "app/pages/settings/about/index.vue": {
-    description: "render route has stable authored content before backend timeline data",
-    anchors: ["<MainContent", "settings.about.label", 'text="GitHub"', "useHydratedHead({"],
+  "app/pages/settings.vue": {
+    description: "render route exposes the stable settings navigation shell",
+    anchors: ["wideLayout: true", "<SettingsItem", 'to="/settings/about"', "<NuxtPage"],
   },
   "app/layouts/default.vue": {
     description: "render route exercises the normal Elk layout/navigation shell",
