@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import type { SpawnSyncOptionsWithStringEncoding, SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -8,6 +9,8 @@ import {
   CHECK_FIXTURE_NODE_ARGS,
   checkFixturePhases,
 } from "./support/check-fixtures/manifest.ts";
+import { CORSA_BIN, VIZE_BIN } from "../_helpers/apps.ts";
+import { buildVizeCheckArgs, runVizeCheckJson } from "../_helpers/vize-check.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 /**
@@ -65,6 +68,43 @@ const PHASE_FILES_BEFORE_SUPERVISION = [
   "tooling/compat-ratchet.test.ts",
 ];
 
+const HIGH_OUTPUT_PHASE_FILES = [
+  "snapshots/check/typecheck-errors.ts",
+  "snapshots/check/compiler-macros.ts",
+  "snapshots/check/style-preprocessors.ts",
+  "snapshots/check/ecosystem-products.ts",
+] as const;
+
+type SpawnInvocation = {
+  args: string[];
+  command: string;
+  options: SpawnSyncOptionsWithStringEncoding;
+};
+
+function captureSuccessfulVizeCheckSpawn(invocations: SpawnInvocation[]) {
+  return (
+    command: string,
+    args: readonly string[],
+    options: SpawnSyncOptionsWithStringEncoding,
+  ): SpawnSyncReturns<string> => {
+    invocations.push({ args: [...args], command, options });
+    const stdout = JSON.stringify({
+      errorCount: 0,
+      fileCount: 1,
+      files: [],
+      warningCount: 0,
+    });
+    return {
+      output: ["", stdout, ""],
+      pid: 1,
+      signal: null,
+      status: 0,
+      stderr: "",
+      stdout,
+    } as SpawnSyncReturns<string>;
+  };
+}
+
 test("the phase manifest carries every fixture the shell string ran, in order", () => {
   assert.deepEqual(
     checkFixturePhases.map((phase) => phase.file),
@@ -112,4 +152,72 @@ test("the fixture scripts delegate to the supervisor and the cycle harness", () 
   // A second enumeration of the fixtures would be a second source of truth, and
   // the two would drift; the manifest is the only list.
   assert.doesNotMatch(scripts["test:check:fixtures"]!, /snapshots\/check\//);
+});
+
+test("high-output virtual TS phases spawn vize directly", () => {
+  const highOutputPhaseFiles = new Set<string>(HIGH_OUTPUT_PHASE_FILES);
+  const highOutputPhases = checkFixturePhases.filter((phase) =>
+    highOutputPhaseFiles.has(phase.file),
+  );
+  assert.deepEqual(
+    highOutputPhases.map((phase) => phase.file),
+    [...HIGH_OUTPUT_PHASE_FILES],
+  );
+
+  for (const phase of highOutputPhases) {
+    const invocations: SpawnInvocation[] = [];
+    const cwd = path.join(root, "tests", "_fixtures", phase.id);
+
+    assert.deepEqual(
+      runVizeCheckJson(cwd, [phase.file], {
+        showVirtualTs: true,
+        spawnSync: captureSuccessfulVizeCheckSpawn(invocations),
+      }),
+      { errorCount: 0, fileCount: 1, files: [], warningCount: 0 },
+    );
+
+    assert.deepEqual(invocations, [
+      {
+        args: [
+          "check",
+          phase.file,
+          "--format",
+          "json",
+          "--quiet",
+          "--show-virtual-ts",
+          "--corsa-path",
+          CORSA_BIN,
+        ],
+        command: VIZE_BIN,
+        options: {
+          cwd,
+          encoding: "utf8",
+          env: { ...process.env, LANG: "C", LC_ALL: "C" },
+          maxBuffer: 128 * 1024 * 1024,
+          timeout: 120_000,
+        },
+      },
+    ]);
+  }
+});
+
+test("the virtual TS helper keeps glob patterns as argv entries", () => {
+  const args = buildVizeCheckArgs(["src/**/*.vue"], {
+    showVirtualTs: true,
+    tsconfig: "tsconfig.fixture.json",
+  });
+
+  assert.deepEqual(args, [
+    "check",
+    "src/**/*.vue",
+    "--format",
+    "json",
+    "--quiet",
+    "--show-virtual-ts",
+    "--tsconfig",
+    "tsconfig.fixture.json",
+    "--corsa-path",
+    CORSA_BIN,
+  ]);
+  assert.ok(!args.includes("'src/**/*.vue'"), "glob patterns must not be shell-quoted");
 });
