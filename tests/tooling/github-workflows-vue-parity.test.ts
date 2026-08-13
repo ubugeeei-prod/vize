@@ -61,10 +61,24 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-vben-admin/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vitepress/);
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
-  assert.equal(
-    steps.find((step) => step.name === "Build vize CLI")?.run,
-    "cargo build --profile ci -p vize --features legacy",
+  const build = steps.find((step) => step.name === "Build vize CLI");
+  assert.deepEqual(build?.env, { RUNNER_ENVIRONMENT: "${{ runner.environment }}" });
+  assert.match(
+    build?.run ?? "",
+    /cargo_args=\(build --profile ci -p vize --features legacy\)/,
+    "the hosted-runner fallback must keep the same vize build command shape",
   );
+  assert.match(
+    build?.run ?? "",
+    /\[ "\$RUNNER_ENVIRONMENT" = "github-hosted" \]/,
+    "the hosted-runner fallback must make build pressure runner-aware",
+  );
+  assert.match(
+    build?.run ?? "",
+    /cargo_args\+=\(--jobs 2\)/,
+    "GitHub-hosted vue-parity builds must avoid saturating the smaller runner before Corsa starts",
+  );
+  assert.match(build?.run ?? "", /cargo "\$\{cargo_args\[@\]\}"/);
   // The first step of the action writes the process-budget baseline, so the
   // always-uploaded artifact exists even when a later step is killed by the
   // spawn exhaustion this lane is guarding against (#4126).
@@ -102,6 +116,11 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   );
   assert.match(
     steps[0]?.run ?? "",
+    /echo "VIZE_RUNNER_BASELINE_THREADS=\$threads_total" >> "\$GITHUB_ENV"/,
+    "later steps must be able to compare hosted-runner pressure to the original baseline",
+  );
+  assert.match(
+    steps[0]?.run ?? "",
     /echo "runner_environment=\$RUNNER_ENVIRONMENT"/,
     "the runner baseline must record which runner profile selected the process caps",
   );
@@ -118,6 +137,26 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   for (const fact of ["nproc", "ulimit -u", "ulimit -Hu", "pids.current", "pids.max", "Threads:"]) {
     assert.ok((steps[0]?.run ?? "").includes(fact), `the runner baseline must record ${fact}`);
   }
+
+  const buildIndex = steps.findIndex((step) => step.name === "Build vize CLI");
+  const settle = steps[buildIndex + 1];
+  assert.equal(settle?.name, "Settle hosted runner task budget");
+  assert.equal(settle?.if, "${{ runner.environment == 'github-hosted' }}");
+  assert.match(
+    settle?.run ?? "",
+    /VIZE_RUNNER_BASELINE_THREADS/,
+    "hosted-runner settling must compare against the captured baseline",
+  );
+  assert.match(
+    settle?.run ?? "",
+    /budget_threads=\$\(\(baseline_threads \+ 96\)\)/,
+    "hosted-runner settling must reserve the fixture cycle's bounded process budget",
+  );
+  assert.match(
+    settle?.run ?? "",
+    /post-build-settle\.txt/,
+    "hosted-runner settling must publish its samples with the existing topology artifact",
+  );
 
   const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });

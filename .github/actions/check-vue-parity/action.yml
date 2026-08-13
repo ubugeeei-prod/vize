@@ -24,6 +24,8 @@ runs:
           echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
         fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
+        threads_total="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+        echo "VIZE_RUNNER_BASELINE_THREADS=$threads_total" >> "$GITHUB_ENV"
         {
           echo "runner_environment=$RUNNER_ENVIRONMENT"
           echo "cpus=$(nproc)"
@@ -38,7 +40,7 @@ runs:
           # between the glob expanding and the read makes `awk` fail without
           # running `END`, which discarded the whole thread count. `grep`
           # reports a vanished file as a skipped input instead.
-          echo "threads_total=$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+          echo "threads_total=$threads_total"
         } > target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
         cat target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
 
@@ -61,7 +63,45 @@ runs:
 
     - name: Build vize CLI
       shell: bash
-      run: cargo build --profile ci -p vize --features legacy
+      env:
+        RUNNER_ENVIRONMENT: ${{ runner.environment }}
+      run: |
+        cargo_args=(build --profile ci -p vize --features legacy)
+        if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          cargo_args+=(--jobs 2)
+        fi
+        cargo "${cargo_args[@]}"
+
+    - name: Settle hosted runner task budget
+      if: ${{ runner.environment == 'github-hosted' }}
+      shell: bash
+      run: |
+        mkdir -p target/vize-tests/metrics/check-fixtures-topology
+        baseline_threads="${VIZE_RUNNER_BASELINE_THREADS:-0}"
+        if ! [[ "$baseline_threads" =~ ^[0-9]+$ ]]; then
+          baseline_threads=0
+        fi
+        budget_threads=$((baseline_threads + 96))
+        deadline=$((SECONDS + 30))
+        sample=0
+        while true; do
+          sample=$((sample + 1))
+          threads_total="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+          {
+            echo "sample=$sample"
+            echo "threads_total=$threads_total"
+            echo "baseline_threads=$baseline_threads"
+            echo "budget_threads=$budget_threads"
+          } | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+          if [ "$baseline_threads" -eq 0 ] || [ "$threads_total" -le "$budget_threads" ]; then
+            break
+          fi
+          if [ "$SECONDS" -ge "$deadline" ]; then
+            echo "warning=hosted runner thread count did not settle below budget" | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+            break
+          fi
+          sleep 1
+        done
 
     - name: Check Vue compiler and typecheck parity
       shell: bash
