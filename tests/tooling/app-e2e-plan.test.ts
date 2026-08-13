@@ -10,6 +10,7 @@ import {
   FRONTEND_PHPCON_E2E_API_BASE,
   FRONTEND_PHPCON_STAFF_ROUTE_RELATIVE_PATH,
   npmxGeneratorTaskArgs,
+  patchNuxtPrerenderForE2E,
   readDotenvValue,
 } from "../_helpers/app-fixture-runtime.ts";
 import { elkApp, frontendPhpconApp, npmxApp } from "../_helpers/apps.ts";
@@ -111,6 +112,13 @@ test("upstream app fixtures keep deterministic CI setup", () => {
   assert.equal(elkApp.env?.CONTEXT, "dev");
   assert.equal(typeof elkApp.env?.MOCK_USER, "string");
   assert.match(elkApp.args.join(" "), /pnpm@10 exec nuxt dev/);
+  const nuxtConfigPath = path.join(tempDir, "nuxt.config.ts");
+  fs.writeFileSync(nuxtConfigPath, "'/': { prerender: true },\ncrawlLinks: true,\n");
+  patchNuxtPrerenderForE2E(nuxtConfigPath);
+  assert.equal(
+    fs.readFileSync(nuxtConfigPath, "utf-8"),
+    "'/': { prerender: false },\ncrawlLinks: false,\n",
+  );
 
   assert.deepEqual(npmxGeneratorTaskArgs("generate:lexicons"), [
     "-y",

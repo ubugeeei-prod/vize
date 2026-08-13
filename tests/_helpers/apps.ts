@@ -14,6 +14,7 @@ import {
   VUEFES_E2E_ENV,
   execNpxCommand,
   npmxGeneratorTaskArgs,
+  patchNuxtPrerenderForE2E,
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
 } from "./app-fixture-runtime.ts";
@@ -672,6 +673,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
     vite: "^8.0.0",
   });
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
+  patchNuxtPrerenderForE2E(path.join(elkDir, "nuxt.config.ts"));
 
   installPnpmDependencies(elkDir, {
     timeout: 300_000,

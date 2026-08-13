@@ -68,6 +68,19 @@ export function npmxGeneratorTaskArgs(task: "generate:lexicons" | "generate:spri
   return ["-y", "pnpm@10", "exec", "vp", "run", "--no-cache", task];
 }
 
+export function patchNuxtPrerenderForE2E(configPath: string): void {
+  const source = fs.readFileSync(configPath, "utf-8");
+  const nextSource = source
+    .replace("'/' : { prerender: true }", "'/' : { prerender: false }")
+    .replace("'/' : { prerender: true },", "'/' : { prerender: false },")
+    .replace("'/': { prerender: true }", "'/': { prerender: false }")
+    .replace("'/': { prerender: true },", "'/': { prerender: false },")
+    .replace("crawlLinks: true", "crawlLinks: false");
+  if (nextSource !== source) {
+    fs.writeFileSync(configPath, nextSource);
+  }
+}
+
 export function writeFrontendPhpconStaffRoute(
   frontendDir: string,
   writeFile: (filePath: string, content: string) => void,
