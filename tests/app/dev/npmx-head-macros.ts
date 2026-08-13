@@ -1,8 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import {
-  readNpmxHeadFixtureContent,
-  readNpmxHeadSourceEvidence,
-} from "./npmx-head-contract.ts";
+import { readNpmxHeadFixtureContent, readNpmxHeadSourceEvidence } from "./npmx-head-contract.ts";
 
 type HeadState = {
   canonical: string[];
