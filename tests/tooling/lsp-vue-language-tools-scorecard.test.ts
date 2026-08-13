@@ -555,9 +555,8 @@ function submitMessage() {
     } catch (error) {
       if (failure == null) {
         failure = error;
-      } else {
-        await session.kill().catch(() => undefined);
       }
+      await session.kill().catch(() => undefined);
     }
     fs.rmSync(workspaceDir, { recursive: true, force: true });
     fs.rmSync(testRootDir, { recursive: true, force: true });
