@@ -1,0 +1,16 @@
+# Hand-corrections for the generated rule-parity matrix (Davinci P0-8).
+#
+# The generator (tools/davinci/rule-parity.mjs) applies these AFTER its
+# heuristic classification and marks overridden rows with `*` in
+# davinci-road/plan/rule-parity.md. Never edit the generated artifact —
+# record corrections here, then `node tools/davinci/rule-parity.mjs --write`.
+#
+# Schema — one table per corrected rule, keyed by the exact rule name:
+#
+#   [overrides."vue/some-rule"]
+#   classification = "neutral-core-candidate"  # or "vue-dialect-bound" / "container-bound"
+#   reason = "why the heuristic misclassifies this rule"  # required; shown in the artifact
+#
+# Only `classification` and `reason` are recognized. Unknown rule names,
+# unknown keys, and invalid classification values fail the generator, so a
+# typo can never silently no-op.

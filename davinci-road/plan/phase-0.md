@@ -16,7 +16,7 @@
 - [ ] P0-5 Corpus baseline snapshot + diff tool
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
-- [ ] P0-8 Rule-parity matrix (SFC × JSX)
+- [x] P0-8 Rule-parity matrix (SFC × JSX) — surfaces derived from trait impls + overridden hooks per rule file; SFC/JSX membership derived from the registration sites and the `lint_jsx` three-lane partition (`as_markup_rule` / `jsx_needs_lowering` / legacy fallback), with drift asserts on the dispatch source
 - [ ] P0-9 `Span` type + `SourceLocation` consumer inventory
 - [ ] P0-10 Folio harness skeleton + VIR absorption
 - [ ] P0-11 Profiler source-level attribution + stable export
@@ -155,9 +155,9 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `tools/davinci/rule-parity.mjs`: walks `crates/vize_patina/src/rules/**` (345 files), extracts per rule: registration surface (template/script/markup-facade), whether it runs on `lint()` vs `lint_jsx()` paths, croquis usage — resolved **symbol-aware** (syn-based `use`-path resolution, not raw text matching)
-- [ ] First-cut classification column: `neutral-core-candidate` / `vue-dialect-bound` / `container-bound`, derived heuristically (uses `v-`-specific node kinds ⇒ dialect; uses SFC block structure ⇒ container) — hand-corrections stored in a sidecar `rule-parity-overrides.toml`, never edited into generated output
-- [ ] Committed artifact `davinci-road/plan/rule-parity.md` + staleness check in `tests/tooling/davinci-matrices.test.ts`
+- [x] `tools/davinci/rule-parity.mjs`: walks `crates/vize_patina/src/rules/**` (345 files), extracts per rule: registration surface (template/script/markup-facade), whether it runs on `lint()` vs `lint_jsx()` paths, croquis usage — resolved **symbol-aware** (syn-based `use`-path resolution, not raw text matching) _(landed on the shared P0-7 `use`-declaration parser: 345 files = 245 META-bearing rule files + 100 helpers/organizers/tests; **surface** = which trait the file implements and which hooks each impl overrides (`Rule` template-visitor hooks / `run_on_sfc` / `MarkupRule` / `ScriptRule` / `CssRule` / musea / corsa `TYPE_AWARE_RULES`); **path membership** = mechanically joined from the `register…(Box::new(…))` sites plus `Linter::lint_jsx`'s three-lane partition — `as_markup_rule` ⇒ IR lane, `+ jsx_needs_lowering` ⇒ lowered-IR lane, template hooks only ⇒ lowering fallback, `run_on_sfc`/corsa-only ⇒ dispatched-but-inert — and the generator hard-fails if the dispatch anchors in `linter/engine.rs` drift; script/css/musea registries never reach `lint_jsx`, asserted likewise)_
+- [x] First-cut classification column: `neutral-core-candidate` / `vue-dialect-bound` / `container-bound`, derived heuristically (uses `v-`-specific node kinds ⇒ dialect; uses SFC block structure ⇒ container) — hand-corrections stored in a sidecar `rule-parity-overrides.toml`, never edited into generated output _(precedence container > dialect > neutral; overrides validate rule names/values and mark rows `*`)_
+- [x] Committed artifact `davinci-road/plan/rule-parity.md` + staleness check in `tests/tooling/davinci-matrices.test.ts`
 
 **Acceptance:** totals reconcile with the file count; JSX-runnable count matches the markup-facade migration list; staleness check wired.
 

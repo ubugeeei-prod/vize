@@ -16,6 +16,11 @@ const matrices = [
     generator: "tools/davinci/croquis-consumers.mjs",
     artifact: "davinci-road/plan/croquis-consumption.md",
   },
+  {
+    name: "rule-parity matrix (SFC × JSX)",
+    generator: "tools/davinci/rule-parity.mjs",
+    artifact: "davinci-road/plan/rule-parity.md",
+  },
 ];
 
 function runCheck(generator: string) {
