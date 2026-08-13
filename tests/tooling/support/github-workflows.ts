@@ -44,16 +44,24 @@ export function workflowJobBody(workflow: string, jobName: string): string {
 }
 
 /**
- * The `runs-on:` value declared by one job, including any trailing comment.
- * Scoping to the owning job keeps runner assertions from being satisfied by a
- * different job that happens to carry the expected label.
+ * A top-level job key's value, including any trailing comment. Scoping to the
+ * owning job keeps assertions from being satisfied by a different job that
+ * happens to carry the expected value.
  */
-export function workflowJobRunsOn(workflow: string, jobName: string): string | undefined {
-  const prefix = "    runs-on:";
+export function workflowJobField(
+  workflow: string,
+  jobName: string,
+  field: string,
+): string | undefined {
+  const prefix = `    ${field}:`;
   const line = workflowJobBody(workflow, jobName)
     .split("\n")
     .find((candidate) => candidate.startsWith(prefix));
   return line?.slice(prefix.length).trim();
+}
+
+export function workflowJobRunsOn(workflow: string, jobName: string): string | undefined {
+  return workflowJobField(workflow, jobName, "runs-on");
 }
 
 function escapeRegExp(value: string): string {

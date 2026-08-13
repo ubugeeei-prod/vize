@@ -6,7 +6,7 @@ import {
   cliReleasePlatforms,
   nativeReleasePlatforms,
 } from "../../tools/github/release-platforms.mjs";
-import { readRepoFile, workflowJobRunsOn } from "./support/github-workflows.ts";
+import { readRepoFile, workflowJobField, workflowJobRunsOn } from "./support/github-workflows.ts";
 
 const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
 const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
@@ -82,6 +82,15 @@ test("temporary hosted runner fallback keeps Blacksmith restore labels per job",
       `${workflowName} annotates a different set of jobs than the hosted fallback covers`,
     );
   }
+});
+
+test("hosted fallback keeps the restore contract on the budgets it widened", () => {
+  const source = readRepoFile(".github", "workflows", "e2e.yml");
+  assert.equal(
+    workflowJobField(source, "app-readiness-producer", "timeout-minutes"),
+    `40 # restore: 30 with ${RESTORE_BLACKSMITH_RUNNER}`,
+    "the hosted readiness budget must state the Blacksmith value it replaced",
+  );
 });
 
 test("tool benchmark metadata records the hosted runner and its restore label", () => {
