@@ -5,6 +5,7 @@
 //! is delegated to specialized modules.
 
 mod bindings;
+mod diagnostics;
 mod empty_component;
 mod helpers;
 mod normal_script;
@@ -33,6 +34,7 @@ use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
 use self::bindings::{
     collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
 };
+use self::diagnostics::{create_v_model_reactive_const_warning, create_vapor_ssr_fallback_warning};
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
     trim_trailing_newlines,
@@ -47,33 +49,6 @@ use self::styles::compile_styles;
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
 use vize_carton::{String, ToCompactString, profile};
-
-fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
-    SfcError {
-        message: "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
-            .to_compact_string(),
-        code: Some("VAPOR_SSR_FALLBACK".to_compact_string()),
-        loc: descriptor
-            .template
-            .as_ref()
-            .map(|template| template.loc.clone()),
-    }
-}
-
-fn create_v_model_reactive_const_warning(
-    script_setup: &crate::types::SfcScriptBlock<'_>,
-    binding_name: &str,
-) -> SfcError {
-    let mut message = String::from("`v-model` cannot update the const reactive binding `");
-    message.push_str(binding_name);
-    message.push_str("`. The compiler transformed it to `let` so the update can work.");
-
-    SfcError {
-        message,
-        code: Some("V_MODEL_CONST_REACTIVE_DEMOTED".to_compact_string()),
-        loc: Some(script_setup.loc.clone()),
-    }
-}
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
