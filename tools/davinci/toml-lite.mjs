@@ -13,8 +13,10 @@
 //   - `key = value` with bare keys ([A-Za-z0-9_-]+)
 //   - values: basic strings "…" (escapes: \" \\ \n \r \t \uXXXX),
 //     literal strings '…' (no escapes), integers, plain decimal floats
-//     (`-?digits.digits` — no exponents, no `inf`/`nan`), booleans, and
-//     (possibly multi-line) arrays of those scalars
+//     (`-?digits.digits` — no exponents, no `inf`/`nan`), booleans,
+//     (possibly multi-line) arrays of those scalars, and single-line inline
+//     tables `{ key = value, … }` (the shape budgets.toml uses for its
+//     uniform per-bench entries)
 //
 // Dates are written as quoted strings by convention in these files
 // (e.g. expires = "2026-12-31"); native TOML date values are rejected.
@@ -115,7 +117,36 @@ function readValue(text, lineNo) {
       }
     }
   }
-  const scalar = /^[^\s,\]#]+/.exec(trimmed);
+  if (trimmed.startsWith("{")) {
+    const table = {};
+    let rest = trimmed.slice(1);
+    for (;;) {
+      // Inline tables are single-line per the TOML spec, so a newline before
+      // the closing brace is an error rather than a continuation.
+      rest = rest.replace(/^[ \t]+/, "");
+      if (rest.startsWith("}")) return { value: table, rest: rest.slice(1) };
+      if (rest.length === 0 || rest.startsWith("\n")) {
+        throw new TomlLiteError("unterminated inline table", lineNo);
+      }
+      const equals = rest.indexOf("=");
+      if (equals === -1) throw new TomlLiteError("expected key = value in inline table", lineNo);
+      const keyParts = parseDottedKey(rest.slice(0, equals), lineNo);
+      if (keyParts.length !== 1) {
+        throw new TomlLiteError("dotted keys in inline tables are not supported", lineNo);
+      }
+      const key = keyParts[0];
+      if (key in table) throw new TomlLiteError(`duplicate key ${key} in inline table`, lineNo);
+      const item = readValue(rest.slice(equals + 1), lineNo);
+      table[key] = item.value;
+      rest = item.rest.replace(/^[ \t]+/, "");
+      if (rest.startsWith(",")) {
+        rest = rest.slice(1);
+      } else if (!rest.startsWith("}")) {
+        throw new TomlLiteError("expected `,` or `}` in inline table", lineNo);
+      }
+    }
+  }
+  const scalar = /^[^\s,\]}#]+/.exec(trimmed);
   if (scalar == null) throw new TomlLiteError("missing value", lineNo);
   const raw = scalar[0];
   const rest = trimmed.slice(raw.length);

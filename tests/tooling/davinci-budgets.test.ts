@@ -1,24 +1,21 @@
-// Davinci bench budget registry + compare gate (plan/phase-0.md P0-4).
+// Davinci bench budget registry (plan/phase-0.md P0-4).
 //
-// Three suites:
+// Two suites:
 //   1. Registry reconciliation — every bench id constructed in the davinci
-//      bench sources (cstr!-built or literal) has a [bench.<id>] entry in
-//      davinci-road/plan/budgets.toml, and vice versa, with the offending id
-//      named on mismatch. Entries carry exactly the documented field set and
-//      hold the tolerance ceilings (0.05; 0.10 for stage-window benches:
-//      `_transform_`, vapor lower, ssr codegen) — ceilings, not equalities,
-//      because the ratchet allows
-//      tightening.
+//      bench sources (cstr!-built or literal) has a `<id> = { … }` entry under
+//      [bench] in davinci-road/plan/budgets.toml, and vice versa, with the
+//      offending id named on mismatch. Entries carry exactly the documented
+//      field set and hold the tolerance ceilings (0.05; 0.10 for stage-window
+//      benches: `_transform_`, vapor lower, ssr codegen) — ceilings, not
+//      equalities, because the ratchet allows tightening.
 //   2. The ratchet header — budgets.toml carries the exact machine-checked
 //      ratchet line (the documented-in-file variant of the P0-4 ratchet rule).
-//   3. The bench-compare gate — exact stdout/stderr/exit oracles over the
-//      committed fixture pairs in tests/_fixtures/davinci-bench-compare/,
-//      including the DAVINCI_BASELINE_REFRESH refusal path.
+//
+// The compare gate's stdout/exit oracles live in
+// tests/tooling/davinci-bench-compare.test.ts.
 
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -27,9 +24,6 @@ import { parseTomlLite } from "../../tools/davinci/toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");
-const comparePath = path.join(repoRoot, "tools", "davinci", "bench-compare.mjs");
-const fixtureRel = "tests/_fixtures/davinci-bench-compare";
-const fixtureDir = path.join(repoRoot, fixtureRel);
 
 const budgetsText = fs.readFileSync(budgetsPath, "utf8");
 const budgets = parseTomlLite(budgetsText) as {
@@ -174,6 +168,38 @@ test("every budget entry carries exactly the documented fields within the tolera
   }
 });
 
+test("every bench entry is one single-line inline table", () => {
+  const entryLines = budgetsText.split("\n").filter((line) => /^[A-Za-z0-9._-]+ = \{/.test(line));
+  assert.equal(
+    entryLines.length,
+    Object.keys(budgets.bench).length,
+    "every [bench] entry must be exactly one `<id> = { … }` line (the registry grows per bench, " +
+      "so the six-line table form would push budgets.toml past the source-length ceiling)",
+  );
+  for (const line of entryLines) {
+    assert.match(
+      line,
+      /^[A-Za-z0-9._-]+ = \{ wall_p50_ns = \d+, allocs = \d+, rss_peak_bytes = \d+, wall_tolerance = 0\.\d+ \}$/,
+      `bench entries must keep the canonical field order and spacing:\n${line}`,
+    );
+  }
+});
+
+test("toml-lite parses inline tables and rejects malformed ones", () => {
+  assert.deepEqual(parseTomlLite("[bench]\na = { x = 1, y = 0.5 }\n"), {
+    bench: { a: { x: 1, y: 0.5 } },
+  });
+  assert.throws(() => parseTomlLite("[bench]\na = { x = 1,\n"), /unterminated inline table/);
+  assert.throws(
+    () => parseTomlLite("[bench]\na = { x = 1 y = 2 }\n"),
+    /expected `,` or `\}` in inline table/,
+  );
+  assert.throws(
+    () => parseTomlLite("[bench]\na = { x = 1, x = 2 }\n"),
+    /duplicate key x in inline table/,
+  );
+});
+
 test("budgets.toml carries the exact ratchet header line", () => {
   const ratchetLine =
     "# ratchet: numbers may only tighten; loosening requires " +
@@ -182,196 +208,4 @@ test("budgets.toml carries the exact ratchet header line", () => {
     budgetsText.split("\n").includes(ratchetLine),
     `budgets.toml must contain the exact line:\n${ratchetLine}`,
   );
-});
-
-// --- bench-compare gate over the committed fixture pairs -----------------
-
-function runCompare(
-  args: string[],
-  options: { cwd?: string; refreshEnv?: string } = {},
-): ReturnType<typeof spawnSync<string>> {
-  const env = { ...process.env };
-  delete env.DAVINCI_BASELINE_REFRESH;
-  if (options.refreshEnv != null) env.DAVINCI_BASELINE_REFRESH = options.refreshEnv;
-  return spawnSync(process.execPath, [comparePath, ...args], {
-    cwd: options.cwd ?? repoRoot,
-    encoding: "utf8",
-    env,
-  });
-}
-
-function compareArgs(scenario: string, overrides: { budgets?: string; baseline?: string } = {}) {
-  return [
-    "--budgets",
-    overrides.budgets ?? `${fixtureRel}/budgets.toml`,
-    "--baseline",
-    overrides.baseline ?? `${fixtureRel}/baseline`,
-    "--results",
-    `${fixtureRel}/${scenario}/current`,
-  ];
-}
-
-function header(scenario: string, overrides: { budgets?: string; baseline?: string } = {}) {
-  return (
-    `bench-compare: budgets=${overrides.budgets ?? `${fixtureRel}/budgets.toml`} ` +
-    `baseline=${overrides.baseline ?? `${fixtureRel}/baseline`} ` +
-    `results=${fixtureRel}/${scenario}/current\n`
-  );
-}
-
-test("bench-compare exits 0 when the current run sits inside each bench's own tolerance", () => {
-  const result = runCompare(compareArgs("within-tolerance"));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 0, result.stdout);
-  // The +8% transform run is inside its 0.10 stage-window tolerance but would
-  // breach the 0.05 whole-routine one, so this also pins per-bench tolerance.
-  assert.equal(
-    result.stdout,
-    header("within-tolerance") +
-      "ok fixture_parse_small wall_p50 104000ns (baseline 100000ns limit 105000ns) " +
-      "allocs 42 rss 8192B\n" +
-      "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
-      "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=0 gated_ok=2 report_only=0 registered=2\n",
-  );
-});
-
-test("bench-compare exits 1 when wall p50 breaches the baseline tolerance", () => {
-  const result = runCompare(compareArgs("wall-breach"));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 1, result.stdout);
-  assert.equal(
-    result.stdout,
-    header("wall-breach") +
-      "FAIL fixture_parse_small wall_p50 106000ns > limit 105000ns " +
-      "(baseline 100000ns + 5% tolerance)\n" +
-      "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
-      "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=1 gated_ok=1 report_only=0 registered=2\n",
-  );
-});
-
-test("bench-compare exits 1 on any allocation-count change (exact gate)", () => {
-  const result = runCompare(compareArgs("allocs-breach"));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 1, result.stdout);
-  assert.equal(
-    result.stdout,
-    header("allocs-breach") +
-      "FAIL fixture_parse_small allocs 42 -> 43 (exact gate: allocs are deterministic)\n" +
-      "ok fixture_transform_medium wall_p50 216000ns (baseline 200000ns limit 220000ns) " +
-      "allocs 1000 rss 16384B\n" +
-      "bench-compare: breaches=1 gated_ok=1 report_only=0 registered=2\n",
-  );
-});
-
-test("bench-compare exits 1 on registry drift in either direction", () => {
-  const result = runCompare(compareArgs("drift"));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 1, result.stdout);
-  assert.equal(
-    result.stdout,
-    header("drift") +
-      "ok fixture_parse_small wall_p50 104000ns (baseline 100000ns limit 105000ns) " +
-      "allocs 42 rss 8192B\n" +
-      "FAIL fixture_transform_medium bench disappeared " +
-      "(budgets.toml entry has no current result)\n" +
-      "FAIL fixture_unknown_new unregistered bench " +
-      "(current result has no budgets.toml [bench] entry)\n" +
-      "bench-compare: breaches=2 gated_ok=1 report_only=0 registered=2\n",
-  );
-});
-
-test("bench-compare lists missing-baseline benches as unbaselined and report-only", () => {
-  const overrides = { baseline: `${fixtureRel}/no-baseline` };
-  const result = runCompare(compareArgs("within-tolerance", overrides));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 0, result.stdout);
-  assert.equal(
-    result.stdout,
-    header("within-tolerance", overrides) +
-      "unbaselined fixture_parse_small wall_p50 104000ns allocs 42 rss 8192B (report-only)\n" +
-      "unbaselined fixture_transform_medium wall_p50 216000ns allocs 1000 rss 16384B " +
-      "(report-only)\n" +
-      "bench-compare: breaches=0 gated_ok=0 report_only=2 registered=2\n",
-  );
-});
-
-test("bench-compare treats all-zero (unrecorded) budget entries as report-only", () => {
-  const overrides = { budgets: `${fixtureRel}/budgets-unrecorded.toml` };
-  const result = runCompare(compareArgs("within-tolerance", overrides));
-  assert.equal(result.stderr, "");
-  assert.equal(result.status, 0, result.stdout);
-  assert.equal(
-    result.stdout,
-    header("within-tolerance", overrides) +
-      "unrecorded fixture_parse_small wall_p50 104000ns allocs 42 rss 8192B " +
-      "(report-only: budgets.toml baseline not yet recorded)\n" +
-      "unrecorded fixture_transform_medium wall_p50 216000ns allocs 1000 rss 16384B " +
-      "(report-only: budgets.toml baseline not yet recorded)\n" +
-      "bench-compare: breaches=0 gated_ok=0 report_only=2 registered=2\n",
-  );
-});
-
-const refusalMessage =
-  "bench-compare: refusing --update-baseline without DAVINCI_BASELINE_REFRESH=1.\n" +
-  "The committed baseline is the reference every PR is gated against; refreshing it\n" +
-  "must be a deliberate act on the reference runner, not a side effect. Re-run with\n" +
-  "DAVINCI_BASELINE_REFRESH=1 in the environment to proceed.\n";
-
-function baselineSnapshot(dir: string): Record<string, string> {
-  const snapshot: Record<string, string> = {};
-  for (const name of fs.readdirSync(dir).sort()) {
-    snapshot[name] = fs.readFileSync(path.join(dir, name), "utf8");
-  }
-  return snapshot;
-}
-
-test("--update-baseline refuses without DAVINCI_BASELINE_REFRESH=1 and writes nothing", () => {
-  const baselineDir = path.join(fixtureDir, "baseline");
-  const before = baselineSnapshot(baselineDir);
-  for (const refreshEnv of [undefined, "0"]) {
-    const result = runCompare([...compareArgs("within-tolerance"), "--update-baseline"], {
-      refreshEnv,
-    });
-    assert.equal(result.status, 2, result.stderr);
-    assert.equal(result.stdout, "");
-    assert.equal(result.stderr, refusalMessage);
-  }
-  assert.deepEqual(baselineSnapshot(baselineDir), before, "refusal must not touch the baseline");
-});
-
-test("--update-baseline copies current over baseline when the refresh env var is set", () => {
-  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-bench-compare-"));
-  try {
-    fs.cpSync(fixtureDir, tmpRoot, { recursive: true });
-    const result = runCompare(
-      [
-        "--budgets",
-        "budgets.toml",
-        "--baseline",
-        "baseline",
-        "--results",
-        "within-tolerance/current",
-        "--update-baseline",
-      ],
-      { cwd: tmpRoot, refreshEnv: "1" },
-    );
-    assert.equal(result.stderr, "");
-    assert.equal(result.status, 0, result.stdout);
-    assert.equal(
-      result.stdout,
-      "bench-compare: budgets=budgets.toml baseline=baseline results=within-tolerance/current\n" +
-        "updated baseline fixture_parse_small\n" +
-        "updated baseline fixture_transform_medium\n" +
-        "bench-compare: baseline updated (2 benches) under baseline\n",
-    );
-    assert.deepEqual(
-      baselineSnapshot(path.join(tmpRoot, "baseline")),
-      baselineSnapshot(path.join(tmpRoot, "within-tolerance", "current")),
-      "the refreshed baseline must be a byte copy of the current reports",
-    );
-  } finally {
-    fs.rmSync(tmpRoot, { recursive: true, force: true });
-  }
 });
