@@ -7,7 +7,12 @@ import {
   resolveBudget,
   verifyBudget,
 } from "./support/check-fixtures/cycle-runner.ts";
-import { BUDGET_CPU_FLOOR_ENV, resolveBudgetCpuCount } from "./support/check-fixtures/cycles.ts";
+import {
+  BUDGET_CPU_FLOOR_ENV,
+  DEFAULT_CYCLES,
+  resolveBudgetCpuCount,
+  resolveTargetCycles,
+} from "./support/check-fixtures/cycles.ts";
 import { checkArgv, cycleTargets } from "./support/check-fixtures/cycle-targets.ts";
 import {
   parseProcLimits,
@@ -136,6 +141,7 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
   assert.equal(single.projectDir, "tests/_fixtures/_projects/typecheck-errors");
   assert.equal(single.servers, null, "the 18-file fixture must keep auto-tuning to one process");
   assert.equal(single.showVirtualTs, false);
+  assert.equal(single.maxCycles, null, "a sub-second cycle runs the full requested count");
   assert.equal(single.peakGroupProcessBound, 2, "one vize process plus one Corsa process");
   assert.equal(single.expectedFileCount, 18, "the fixture the issue names has 18 Vue files");
   assert.equal(single.expectsDiagnostics, true, "typecheck-errors plants intentional errors");
@@ -154,6 +160,11 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
     true,
     "the cycle must cover the snapshot phase's high-output virtual TS mode",
   );
+  assert.equal(
+    ecosystem.maxCycles,
+    3,
+    "a ~69s hosted cycle must stay far below the vue-parity job timeout",
+  );
   assert.equal(ecosystem.peakGroupProcessBound, 2, "one vize process plus one Corsa process");
   assert.equal(
     ecosystem.expectedFileCount,
@@ -164,6 +175,7 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
   assert.equal(shard.projectDir, "tests/_fixtures/_git/create-vue");
   assert.equal(shard.servers, 8, "the shard cap is eight Corsa servers");
   assert.equal(shard.showVirtualTs, false);
+  assert.equal(shard.maxCycles, null, "a six-second cycle runs the full requested count");
   assert.equal(shard.peakGroupProcessBound, 9, "one vize process plus eight Corsa processes");
   assert.equal(shard.expectedFileCount, 42, "the pinned create-vue submodule carries 42 templates");
   assert.equal(shard.expectsDiagnostics, false, "the create-vue corpus plants no errors");
@@ -205,6 +217,39 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
     "--servers",
     "8",
   ]);
+});
+
+// A target that overruns `vue-parity`'s 30-minute timeout reports as a
+// cancelled job, so the gate fails with no assertion to read. The
+// ~69s-per-cycle ecosystem target has to stay capped, and the cap must only
+// ever narrow the requested count so `--cycles 1` remains a one-cycle run.
+test("a target's cycle cap narrows the requested count without ever widening it", () => {
+  const [single, ecosystem, shard] = cycleTargets as [
+    (typeof cycleTargets)[0],
+    (typeof cycleTargets)[1],
+    (typeof cycleTargets)[2],
+  ];
+  assert.equal(resolveTargetCycles(single, DEFAULT_CYCLES), DEFAULT_CYCLES);
+  assert.equal(resolveTargetCycles(shard, DEFAULT_CYCLES), DEFAULT_CYCLES);
+  assert.equal(resolveTargetCycles(ecosystem, DEFAULT_CYCLES), 3);
+  assert.equal(resolveTargetCycles(ecosystem, 1), 1);
+  assert.equal(resolveTargetCycles(ecosystem, 2), 2);
+  assert.equal(resolveTargetCycles(ecosystem, 100), 3);
+  assert.ok(
+    resolveTargetCycles(ecosystem, DEFAULT_CYCLES) >= 2,
+    "one cycle cannot compare an output hash against anything",
+  );
+  // Measured hosted-lane cycle costs (run 31762580592): 0.2s, 69s and 6s. The
+  // whole step has to fit the ~13 minutes of slack the 30-minute job leaves
+  // after the build and snapshot phases.
+  const hostedSeconds =
+    resolveTargetCycles(single, DEFAULT_CYCLES) * 0.2 +
+    resolveTargetCycles(ecosystem, DEFAULT_CYCLES) * 69 +
+    resolveTargetCycles(shard, DEFAULT_CYCLES) * 6;
+  assert.ok(
+    hostedSeconds < 480,
+    `projected hosted cycles step of ${Math.round(hostedSeconds)}s must stay under 8 minutes`,
+  );
 });
 
 test("the hosted-runner fallback raises only the documented task-budget CPU floor", () => {

@@ -63,6 +63,16 @@ export function resolveBudgetCpuCount(
   return Math.max(cpuCount, parsed);
 }
 
+/**
+ * Cycles a target really runs.
+ *
+ * A target's own cap only ever narrows `--cycles`, never widens it, so
+ * `--cycles 1` stays a one-cycle smoke run for every target.
+ */
+export function resolveTargetCycles(target: CycleTarget, cycles: number): number {
+  return target.maxCycles == null ? cycles : Math.min(cycles, target.maxCycles);
+}
+
 function summarizeTarget(target: CycleTarget, records: readonly CycleRecord[]): string[] {
   const failures = records.flatMap((record) =>
     record.failures.map((failure) => `cycle ${record.index}: ${failure}`),
@@ -101,6 +111,7 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
   const startedAt = performance.now();
   for (const target of targets) {
     const records: CycleRecord[] = [];
+    const targetCycles = resolveTargetCycles(target, cycles);
     const entry = {
       argv: [vizeBin, ...checkArgv(target, corsaBin)],
       bounds: {
@@ -112,12 +123,13 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
       description: target.description,
       failures: [] as string[],
       id: target.id,
+      plannedCycles: targetCycles,
       projectDir: target.projectDir,
       status: "running" as CyclesReport["targets"][number]["status"],
     };
     report.targets.push(entry);
 
-    for (let index = 1; index <= cycles; index += 1) {
+    for (let index = 1; index <= targetCycles; index += 1) {
       const first = records[0];
       const record = await runCycle(target, index, {
         corsaBin,
@@ -131,7 +143,7 @@ export async function runCycles(options: CyclesOptions = {}): Promise<CyclesRepo
       });
       records.push(record);
       console.log(
-        `[check-fixtures-cycles] ${target.id} cycle ${index}/${cycles}: ${record.durationMs}ms, ` +
+        `[check-fixtures-cycles] ${target.id} cycle ${index}/${targetCycles}: ${record.durationMs}ms, ` +
           `peak ${record.peakGroupProcesses} procs / ${record.peakGroupLiveTasks} tasks, ` +
           `${record.peakCorsaProcesses} corsa, ulimit -u ${record.budget.ulimitProcesses}` +
           (record.failures.length === 0 ? "" : ` — ${record.failures.join("; ")}`) +
