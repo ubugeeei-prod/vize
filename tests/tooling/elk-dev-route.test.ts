@@ -6,6 +6,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { applyElkRuntimePnpmOverrides } from "../_helpers/apps.ts";
 import {
+  ELK_E2E_OPTIMIZE_DEPS,
+  patchElkViteOptimizeDeps,
+} from "../_helpers/app-fixture-runtime.ts";
+import {
   assertElkRenderRouteAnchors,
   ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
   ELK_EXPLORE_ROUTE_LINKS,
@@ -38,6 +42,7 @@ test("elk render route source contract fails closed for each fixture anchor", ()
     ["app/pages/index.vue", "middleware: 'auth'"],
     ["app/pages/settings.vue", 'to="/settings/about"'],
     ["app/layouts/default.vue", "<NavSide command"],
+    ["app/pages/[[server]]/explore.vue", "disabled: !isHydrated.value || !currentUser.value"],
   ] as const) {
     const sources = validSyntheticSources();
     sources[relativePath] = sources[relativePath]!.replace(anchor, "removed");
@@ -157,9 +162,10 @@ test("elk readiness gating consumes the route-specific links and thresholds", ()
 
 test("elk visual readiness requires route-specific stable links", () => {
   assert.deepEqual(ELK_RENDER_ROUTE_LINKS, ["/settings/interface", "/settings/about"]);
-  assert.deepEqual(ELK_EXPLORE_ROUTE_LINKS, ["/explore/users", "/explore/tags", "/explore/links"]);
+  assert.deepEqual(ELK_EXPLORE_ROUTE_LINKS, ["/explore/tags", "/explore/links"]);
   assert.deepEqual(elkRequiredRouteLinks(ELK_RENDER_ROUTE), [...ELK_RENDER_ROUTE_LINKS]);
   assert.deepEqual(elkRequiredRouteLinks("/explore"), [...ELK_EXPLORE_ROUTE_LINKS]);
+  assert.ok(!elkRequiredRouteLinks("/explore").includes("/explore/users"));
   assert.deepEqual(elkRouteReadinessExpectation(ELK_RENDER_ROUTE), {
     links: [...ELK_RENDER_ROUTE_LINKS],
     minElements: ELK_RENDER_ROUTE_MIN_ELEMENTS,
@@ -227,6 +233,69 @@ test("elk setup pins runtime overrides in the generated package manifest", (t) =
     vite: "^8.0.0",
   });
 });
+
+test("elk setup pre-bundles explore route lazy dependencies", (t) => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-elk-optimize-deps-"));
+  t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
+
+  const configPath = path.join(tempDir, "nuxt.config.ts");
+  fs.writeFileSync(
+    configPath,
+    [
+      "export default defineNuxtConfig({",
+      "  unrelated: \"'virtua/vue' should not satisfy optimizeDeps\",",
+      "  vite: {",
+      "    optimizeDeps: {",
+      "      include: [",
+      '        "punycode/",',
+      "        'string-length',",
+      "        'workbox-expiration'",
+      "      ],",
+      "    },",
+      "  },",
+      "})",
+      "",
+    ].join("\n"),
+  );
+
+  patchElkViteOptimizeDeps(configPath);
+
+  const patched = fs.readFileSync(configPath, "utf8");
+  const includeDeps = extractOptimizeDepsInclude(patched);
+  for (const dep of ELK_E2E_OPTIMIZE_DEPS) {
+    assert.equal(countOccurrences(includeDeps, dep), 1);
+  }
+  assert.deepEqual(includeDeps.slice(-3), ["string-length", "workbox-expiration", "virtua/vue"]);
+  assert.ok(extractOptimizeDepsIncludeLines(patched).every((line) => line.trimEnd().endsWith(",")));
+
+  patchElkViteOptimizeDeps(configPath);
+  assert.equal(fs.readFileSync(configPath, "utf8"), patched);
+});
+
+function extractOptimizeDepsInclude(config: string): string[] {
+  return Array.from(extractOptimizeDepsIncludeLines(config), (line) => {
+    const match = line.match(/^\s*['"]([^'"]+)['"],?\s*$/);
+    assert.ok(match);
+    return match[1]!;
+  });
+}
+
+function extractOptimizeDepsIncludeLines(config: string): string[] {
+  const includeAnchor = "    optimizeDeps: {\n      include: [\n";
+  const includeStart = config.indexOf(includeAnchor);
+  assert.notEqual(includeStart, -1);
+
+  const includeBodyStart = includeStart + includeAnchor.length;
+  const includeBodyEnd = config.indexOf("\n      ],", includeBodyStart);
+  assert.notEqual(includeBodyEnd, -1);
+
+  const includeBody = config.slice(includeBodyStart, includeBodyEnd);
+  return includeBody.split("\n").filter((line) => line.trim().length > 0);
+}
+
+function countOccurrences(items: readonly string[], item: string): number {
+  return items.filter((value) => value === item).length;
+}
 
 function escapeRegExp(source: string): string {
   return source.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

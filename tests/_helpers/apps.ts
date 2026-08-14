@@ -16,14 +16,13 @@ import {
   execNpxCommand,
   npmxGeneratorTaskArgs,
   patchNpmxRegistryFixtures,
+  patchElkViteOptimizeDeps,
   patchNuxtPrerenderForE2E,
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
 } from "./app-fixture-runtime.ts";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const TESTS_DIR = path.resolve(__dirname, "..");
 const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
@@ -674,6 +673,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
   applyElkRuntimePnpmOverrides(path.join(elkDir, "package.json"));
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
   patchNuxtPrerenderForE2E(path.join(elkDir, "nuxt.config.ts"));
+  patchElkViteOptimizeDeps(path.join(elkDir, "nuxt.config.ts"));
 
   installPnpmDependencies(elkDir, {
     timeout: 300_000,

@@ -24,6 +24,7 @@ export const FRONTEND_PHPCON_E2E_ENV = {
   NUXT_PUBLIC_API_BASE: FRONTEND_PHPCON_E2E_API_BASE,
   NUXT_TELEMETRY_DISABLED: "1",
 } as const;
+export const ELK_E2E_OPTIMIZE_DEPS = ["virtua/vue", "punycode/"] as const;
 
 const HELPERS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const NPMX_REGISTRY_FIXTURE_SOURCE = path.resolve(
@@ -210,6 +211,45 @@ export function patchNuxtPrerenderForE2E(configPath: string): void {
   if (nextSource !== source) {
     fs.writeFileSync(configPath, nextSource);
   }
+}
+
+export function patchElkViteOptimizeDeps(configPath: string): void {
+  const source = fs.readFileSync(configPath, "utf-8");
+  const includeAnchor = "    optimizeDeps: {\n      include: [\n";
+  const includeStart = source.indexOf(includeAnchor);
+  if (includeStart === -1) {
+    throw new Error(`missing Elk optimizeDeps patch anchor in ${configPath}`);
+  }
+
+  const includeBodyStart = includeStart + includeAnchor.length;
+  const includeBodyEnd = source.indexOf("\n      ],", includeBodyStart);
+  if (includeBodyEnd === -1) {
+    throw new Error(`missing Elk optimizeDeps include closing anchor in ${configPath}`);
+  }
+
+  const includeBody = source.slice(includeBodyStart, includeBodyEnd);
+  const existingDeps = readViteOptimizeDeps(includeBody);
+  const missingDeps = ELK_E2E_OPTIMIZE_DEPS.filter((dep) => !existingDeps.includes(dep));
+  if (missingDeps.length === 0) {
+    return;
+  }
+
+  const trimmedIncludeBody = includeBody.trimEnd();
+  const trailingWhitespace = includeBody.slice(trimmedIncludeBody.length);
+  const nextIncludeBody =
+    trimmedIncludeBody.length > 0 && !trimmedIncludeBody.endsWith(",")
+      ? `${trimmedIncludeBody},${trailingWhitespace}`
+      : includeBody;
+  const separator = nextIncludeBody.trim().length === 0 ? "" : "\n";
+  const deps = missingDeps.map((dep) => `        '${dep}',`).join("\n");
+  fs.writeFileSync(
+    configPath,
+    `${source.slice(0, includeBodyStart)}${nextIncludeBody}${separator}${deps}${source.slice(includeBodyEnd)}`,
+  );
+}
+
+function readViteOptimizeDeps(includeBody: string): string[] {
+  return Array.from(includeBody.matchAll(/^\s*['"]([^'"]+)['"],?\s*$/gm), (match) => match[1]!);
 }
 
 export function writeFrontendPhpconStaffRoute(

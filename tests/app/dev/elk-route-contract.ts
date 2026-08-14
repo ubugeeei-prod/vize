@@ -5,18 +5,16 @@ export const ELK_RENDER_ROUTE = "/settings";
 
 export const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
 
-export const ELK_EXPLORE_ROUTE_LINKS = [
-  "/explore/users",
-  "/explore/tags",
-  "/explore/links",
-] as const;
+export const ELK_EXPLORE_ROUTE_LINKS = ["/explore/tags", "/explore/links"] as const;
 
 export const ELK_RENDER_ROUTE_MIN_ELEMENTS = 100;
 
 export const ELK_DEFAULT_ROUTE_MIN_ELEMENTS = 60;
 
 // Only the deterministic render route ships the pinned settings navigation, so
-// other routes must not gate readiness on those links.
+// other routes must not gate readiness on those links. The VRT storage state is
+// unauthenticated, so the user suggestions tab is disabled and not a stable link
+// on the top-level explore route.
 export function elkRequiredRouteLinks(routePath: string): string[] {
   const pathname = elkRoutePathname(routePath);
   if (pathname === ELK_RENDER_ROUTE) return [...ELK_RENDER_ROUTE_LINKS];
@@ -83,6 +81,14 @@ export const ELK_RENDER_ROUTE_SOURCE_CONTRACTS = {
   "app/layouts/default.vue": {
     description: "render route exercises the normal Elk layout/navigation shell",
     anchors: ["<NavSide command", "<slot />", "<NavBottom"],
+  },
+  "app/pages/[[server]]/explore.vue": {
+    description: "explore route exposes only public tabs before sign-in",
+    anchors: [
+      "to: isHydrated.value ? `/${currentServer.value}/explore/tags` : '/explore/tags'",
+      "to: isHydrated.value ? `/${currentServer.value}/explore/links` : '/explore/links'",
+      "disabled: !isHydrated.value || !currentUser.value",
+    ],
   },
 } as const satisfies Record<string, { description: string; anchors: readonly string[] }>;
 
