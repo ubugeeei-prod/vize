@@ -114,12 +114,12 @@ async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
 
 async function runRealCompletionSmoke(mismatchDocument) {
   const position = positionAfter(mismatchDocument, "{{ label }}", "{{ label");
-  const completions = await vscode.commands.executeCommand(
-    "vscode.executeCompletionItemProvider",
-    mismatchDocument.uri,
-    position,
-  );
-  const labels = (completions?.items ?? []).map((item) =>
+  const completions = await vscode.commands.executeCommand("vize.test.executeCompletion", {
+    uri: mismatchDocument.uri.toString(),
+    line: position.line,
+    character: position.character,
+  });
+  const labels = completionItems(completions).map((item) =>
     typeof item.label === "string" ? item.label : item.label.label,
   );
 
@@ -136,6 +136,13 @@ async function runRealCompletionSmoke(mismatchDocument) {
       `template expression completion must not surface ${JSON.stringify(forbidden)}: ${JSON.stringify(labels)}`,
     );
   }
+}
+
+function completionItems(response) {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  return response?.items ?? [];
 }
 
 async function runRealHoverSmoke(mismatchDocument) {

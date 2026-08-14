@@ -120,6 +120,8 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   assert.match(extensionSource, /void syncClientToConfiguration\(context,\s*reason\)/);
   assert.match(extensionSource, /nextClient\.setTrace\(trace\)/);
   assert.match(extensionSource, /Trace\.(Verbose|Messages|Off)/);
+  assert.match(extensionSource, /VIZE_TEST_ENABLE_HOST_COMMANDS/);
+  assert.match(extensionSource, /vize\.test\.executeCompletion/);
 });
 
 test("vscode-vize grammar keeps quote-aware block lookaheads", () => {

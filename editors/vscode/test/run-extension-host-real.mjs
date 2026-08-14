@@ -74,6 +74,7 @@ await withPinnedFixtureWorkspace(
         extensionTestsPath,
         hostEnvironment: {
           ...process.env,
+          VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
           VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
           VIZE_TEST_PINNED_CREATE_VUE_RESULT_PATH: resultPath,
           VIZE_TEST_SERVER_PATH: serverPath,

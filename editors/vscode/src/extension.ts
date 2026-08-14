@@ -69,6 +69,11 @@ type ReleaseServerTarget = {
   archiveName: string;
   targetName: string;
 };
+type TestCompletionRequest = {
+  character: number;
+  line: number;
+  uri: string;
+};
 type VizeStatus = "disabled" | "starting" | "ready" | "missing-server" | "failed";
 type VizeStatusAction =
   | "recommended"
@@ -159,8 +164,48 @@ export async function activate(context: ExtensionContext): Promise<void> {
       }
     }),
   );
+  registerHostTestCommands(context);
 
   await syncClientToConfiguration(context, "initial activation");
+}
+
+function registerHostTestCommands(context: ExtensionContext): void {
+  if (process.env.VIZE_TEST_ENABLE_HOST_COMMANDS !== "1") {
+    return;
+  }
+
+  // Hidden host-smoke hooks keep the packaged extension test on the Vize
+  // LanguageClient without waiting on unrelated VS Code completion providers.
+  context.subscriptions.push(
+    commands.registerCommand(
+      "vize.test.executeCompletion",
+      async (request: TestCompletionRequest) => {
+        const activeClient = client;
+        if (!activeClient) {
+          throw new Error("Vize test completion command requires an active language client.");
+        }
+        assertTestCompletionRequest(request);
+
+        return activeClient.sendRequest("textDocument/completion", {
+          textDocument: { uri: request.uri },
+          position: { line: request.line, character: request.character },
+        });
+      },
+    ),
+  );
+}
+
+function assertTestCompletionRequest(request: TestCompletionRequest): void {
+  if (
+    request == null ||
+    typeof request.uri !== "string" ||
+    !Number.isInteger(request.line) ||
+    !Number.isInteger(request.character) ||
+    request.line < 0 ||
+    request.character < 0
+  ) {
+    throw new TypeError("Invalid Vize test completion request.");
+  }
 }
 
 function scheduleClientSync(context: ExtensionContext, reason: string): void {

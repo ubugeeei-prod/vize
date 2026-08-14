@@ -151,6 +151,21 @@ test("packaged host strips Node-only options from the VS Code app environment", 
   );
 });
 
+test("real host smoke routes completion through the packaged Vize language client", () => {
+  const suite = fs.readFileSync(
+    path.join(root, "editors/vscode/test/suite/extension-host-real.cjs"),
+    "utf8",
+  );
+  const runner = fs.readFileSync(
+    path.join(root, "editors/vscode/test/run-extension-host-real.mjs"),
+    "utf8",
+  );
+
+  assert.match(suite, /vize\.test\.executeCompletion/);
+  assert.match(suite, /completionItems\(completions\)/);
+  assert.match(runner, /VIZE_TEST_ENABLE_HOST_COMMANDS:\s*"1"/);
+});
+
 test("real host task packages and statically validates the same VSIX that it runs", () => {
   const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
 
@@ -192,6 +207,7 @@ test("real host runner installs the VSIX and launches the host from the installe
       extensionTestsPath: path.join(sourceExtensionPath, "test/suite/extension-host-real.cjs"),
       hostEnvironment: {
         NODE_OPTIONS: "--disable-warning=DEP0040",
+        VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
         VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
         VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
       },
@@ -220,6 +236,7 @@ test("real host runner installs the VSIX and launches the host from the installe
     assert.ok(launchArgs.includes(`--extensionDevelopmentPath=${installedExtensionPath}`));
     assert.equal(launchArgs.includes(`--extensionDevelopmentPath=${sourceExtensionPath}`), false);
     assert.deepEqual(invocations[1].environment, {
+      VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
       VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
       VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
     });
