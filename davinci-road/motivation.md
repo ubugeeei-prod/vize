@@ -61,7 +61,7 @@ for compile/lint/type-check.
 virtual TS independently. Within canon alone, diagnostic messages are assembled
 on two independent paths (persistent session vs Corsa CLI), so a fix applied to
 one silently misses the other. SSR and Vapor emit **no source maps at all**, and
-SFC-level maps are *recovered* by matching emitted lines back to authored text
+SFC-level maps are _recovered_ by matching emitted lines back to authored text
 (`crates/vize_atelier_sfc/src/source_map.rs` is candid about this).
 
 ### 6. Node and span costs on the hot path
@@ -88,7 +88,7 @@ ad-hoc result caches keyed on content hashes.
 Patina's rule corpus is SFC-rich — 345 rule files — but JSX receives only the
 subset migrated onto the markup facade, and the facade's JSX hot path
 deliberately bypasses the JSX→Relief lowering (`MarkupDocument::from_jsx`)
-because Relief is Vue-shaped. Sharing by *lowering into Vue's tree* makes every
+because Relief is Vue-shaped. Sharing by _lowering into Vue's tree_ makes every
 other dialect a second-class citizen; the rules need a genuinely neutral
 abstraction to target.
 
@@ -115,11 +115,11 @@ Davinci should make that claim true rather than delete it.
 
 These are proofs, not aspirations — each one already works in-tree.
 
-| Asset | Where | What it proves |
-| ----- | ----- | -------------- |
-| JSX lowering | `crates/vize_atelier_jsx` | A second surface syntax can lower into one shared representation and reuse every backend, the type checker, and the linter. Davinci generalizes exactly this pattern. |
-| Markup facade IR | `crates/vize_patina/src/{markup,ir}.rs` | A zero-copy, dialect-neutral *view* over Vue templates and raw OXC JSX can drive shared rules. `ir.rs` already reserves Svelte/Astro variants. This is the precedent for HIR consumer views. |
-| Legacy dialect capabilities | `crates/vize_armature/src/legacy.rs` | A dialect can be resolved **once per file** into a capability struct, hot paths read fields only, and an off-by-default cargo feature keeps the cost of the default path at zero. This is the template for every Davinci dialect gate. |
-| Real-project corpus | `tests/_fixtures/_git` + `tools/fixtures/tool-matrix-report.mjs` | 134 pinned projects, ~35k `.vue` files, with compiler/linter/formatter/type-checker oracles already trusted (536 runs, 0 failures). This is the migration parity oracle. |
-| Profiler | `vize_carton::profiler` | Nested-span instrumentation (`profile!`) is already threaded through parse/transform/codegen; pass-level timing comes almost for free. |
-| Cache identity contract | `crates/vize_doctor/src/cache_identity/` | Domain-separated cache keys with explicit invalidation reasons — the most principled caching design in the repo, and the seed of the stage-artifact keying scheme. |
+| Asset                       | Where                                                            | What it proves                                                                                                                                                                                                                         |
+| --------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| JSX lowering                | `crates/vize_atelier_jsx`                                        | A second surface syntax can lower into one shared representation and reuse every backend, the type checker, and the linter. Davinci generalizes exactly this pattern.                                                                  |
+| Markup facade IR            | `crates/vize_patina/src/{markup,ir}.rs`                          | A zero-copy, dialect-neutral _view_ over Vue templates and raw OXC JSX can drive shared rules. `ir.rs` already reserves Svelte/Astro variants. This is the precedent for HIR consumer views.                                           |
+| Legacy dialect capabilities | `crates/vize_armature/src/legacy.rs`                             | A dialect can be resolved **once per file** into a capability struct, hot paths read fields only, and an off-by-default cargo feature keeps the cost of the default path at zero. This is the template for every Davinci dialect gate. |
+| Real-project corpus         | `tests/_fixtures/_git` + `tools/fixtures/tool-matrix-report.mjs` | 134 pinned projects, ~35k `.vue` files, with compiler/linter/formatter/type-checker oracles already trusted (536 runs, 0 failures). This is the migration parity oracle.                                                               |
+| Profiler                    | `vize_carton::profiler`                                          | Nested-span instrumentation (`profile!`) is already threaded through parse/transform/codegen; pass-level timing comes almost for free.                                                                                                 |
+| Cache identity contract     | `crates/vize_doctor/src/cache_identity/`                         | Domain-separated cache keys with explicit invalidation reasons — the most principled caching design in the repo, and the seed of the stage-artifact keying scheme.                                                                     |

@@ -101,11 +101,11 @@ JSX — and on Svelte/Solid through the input-dialect contract — wherever the
 underlying semantics exist. Today fails that test: Patina's SFC rule corpus is
 rich (345 rule files) while JSX gets a migrated subset, and the JSX hot path
 deliberately bypasses the JSX→Relief lowering (`MarkupDocument::from_jsx`)
-because Relief is Vue-shaped. Lowering *into a Vue-shaped tree* is the wrong
+because Relief is Vue-shaped. Lowering _into a Vue-shaped tree_ is the wrong
 fix; a genuinely neutral S2 is the right one.
 
 **Two-way binding — contract vs realization.** `v-model` is the instructive
-boundary case: it is *not* sugar for `:value` + `@input` — the runtime
+boundary case: it is _not_ sugar for `:value` + `@input` — the runtime
 realization guards IME composition events, handles checkbox arrays, `.lazy`'s
 change-vs-input switch, and select-multiple. So the neutral core carries
 `ui.model` as the **binding contract only** (what is read, what is written,
@@ -182,12 +182,12 @@ ordering constraints are **explicit state edges** (RVSDG-style), not implicit
 walk order, so partition and grouping decisions are local graph queries;
 placement alternatives (hoisted / cached / inline / grouped-effect) stay
 explicit on the node and are resolved at **one cost-driven extraction point**
-— executed Flambda2-style as *try-measure-commit*: perform the candidate,
+— executed Flambda2-style as _try-measure-commit_: perform the candidate,
 simplify locally with fact-engine approximations in scope, measure (emitted
 size, reactive-edge count, update-path length), commit only on measured
 benefit under a decrementing per-component budget; and correctness has a
-mechanical oracle from the IVM framing — *incremental update output ≡
-from-scratch render* — with patch flags and SSR plans derived from operator
+mechanical oracle from the IVM framing — _incremental update output ≡
+from-scratch render_ — with patch flags and SSR plans derived from operator
 linearity (a keyed `v-for` is a linear operator; non-linear mixes are where
 cache ops belong).
 
@@ -209,14 +209,14 @@ themselves **fusable** (single-visit, local, synthesized-attribute style) or
 adjacent fusable passes into one walk. Physical plans then differ per product:
 
 - **`vize build` fuses aggressively.** Parsing can emit S2 directly — S1 is a
-  *capability*, materialized only when a consumer needs losslessness (the
+  _capability_, materialized only when a consumer needs losslessness (the
   formatter, lint autofix). Cheap semantic facts are computed as synthesized
   attributes during lowering; emission runs as the exit action of the final
   walk where the target allows. The budget is explicit: the fused compile path
   must not walk the tree more times than today's pipeline — which is already
   parse + transform + hoist + codegen plus 20+ per-expression re-parses, and
   for Vapor an additional discarded transform and re-lower. Multi-stage IR done
-  right *reduces* traversals here; it does not add them.
+  right _reduces_ traversals here; it does not add them.
 - **`vize check`, lint, and the LSP materialize.** They query S2 and fact
   tables repeatedly and incrementally, so artifact caching (phase 5) dominates,
   not traversal count.
@@ -277,7 +277,7 @@ child list) forces the re-visits that a region-owning `ui.if` op never needs.
   not chosen optimizations. Incrementalization is hybrid — only genuinely recursive
   fact groups (graph reachability, route typing, transitive slots) are
   incremental; block-local facts recompute from content-keyed artifacts.
-  *Below* salsa sits a Lean-style **snapshot tree**: stage tasks at natural
+  _Below_ salsa sits a Lean-style **snapshot tree**: stage tasks at natural
   joints (header → block → S2 region) with one reuse rule — old syntax ≡ new
   syntax ⇒ adopt the old subtree — plus cascade-cancellation tokens, covering
   most keystroke traffic without pushing salsa finer.
@@ -287,12 +287,12 @@ child list) forces the re-visits that a region-owning `ui.if` op never needs.
 Four published extension surfaces — three WIT contracts plus the JS plugin
 tier; in-tree implementations are Vue-family only:
 
-| Contract | Plugs in at | In-tree | External (examples) |
-| -------- | ----------- | ------- | ------------------- |
-| Input dialect | S1 parser + S1→S2 lowering | Vue 3, Vue 2 (`legacy`), SFC, JSX, pug | Svelte, Solid, Astro |
-| Expression dialect | S2 `ExprRef` capability set | JS/TS (oxc) | MoonBit, Elixir-hosted |
-| Output target | S3/S2 → S4 emitter | VDOM, Vapor, SSR, virtual TS, `.d.ts` | Volt (Elixir), other hosts |
-| **JS plugins / custom rules** (charter #29) | S2 neutral-core view + fact query API, via napi/vitrine | rule authoring SDK | user-land lint rules, project-local plugins |
+| Contract                                    | Plugs in at                                             | In-tree                                | External (examples)                         |
+| ------------------------------------------- | ------------------------------------------------------- | -------------------------------------- | ------------------------------------------- |
+| Input dialect                               | S1 parser + S1→S2 lowering                              | Vue 3, Vue 2 (`legacy`), SFC, JSX, pug | Svelte, Solid, Astro                        |
+| Expression dialect                          | S2 `ExprRef` capability set                             | JS/TS (oxc)                            | MoonBit, Elixir-hosted                      |
+| Output target                               | S3/S2 → S4 emitter                                      | VDOM, Vapor, SSR, virtual TS, `.d.ts`  | Volt (Elixir), other hosts                  |
+| **JS plugins / custom rules** (charter #29) | S2 neutral-core view + fact query API, via napi/vitrine | rule authoring SDK                     | user-land lint rules, project-local plugins |
 
 The JS tier serves end users (Vue developers write JS, not Rust) across all
 four charter-#29 hook families, each with a defined boundary: **custom rules
@@ -399,7 +399,7 @@ than fought (see [Open Questions](./open-questions.md)).
 
 Three layers share one data model:
 
-1. **Folio dumps** carry *what* each stage holds; every op records provenance
+1. **Folio dumps** carry _what_ each stage holds; every op records provenance
    (which pass/rule produced it — by name, so WASM extensions get first-class
    provenance — from which source node, with before/after pairs at lowering
    decisions). Provenance **survives failure**: partial S2/S3 fragments are

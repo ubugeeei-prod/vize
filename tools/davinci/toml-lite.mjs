@@ -187,7 +187,8 @@ export function parseTomlLite(text) {
       continue;
     }
     const equals = line.indexOf("=");
-    if (equals === -1) throw new TomlLiteError(`expected key = value, got ${JSON.stringify(line)}`, lineNo);
+    if (equals === -1)
+      throw new TomlLiteError(`expected key = value, got ${JSON.stringify(line)}`, lineNo);
     const keyParts = parseDottedKey(line.slice(0, equals), lineNo);
     if (keyParts.length !== 1) {
       throw new TomlLiteError("dotted keys in assignments are not supported", lineNo);

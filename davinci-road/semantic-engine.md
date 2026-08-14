@@ -12,14 +12,14 @@ Croquis already computes a remarkable amount of semantics (~25 tracker products
 on `crates/vize_croquis/src/croquis.rs`). Almost nobody consumes it. Verified
 2026-08-13:
 
-| Croquis product | External consumers today |
-| --------------- | ------------------------ |
-| `EffectGraph` | **Doctor only** (`crates/vize/src/commands/doctor/analysis.rs`). The Vapor backend — the natural consumer of fine-grained effect information — never sees it. |
-| `RaceConditionTracker` | **None.** Computed, never read outside croquis. |
-| `ProvideInjectTracker` | **None.** Computed, never read outside croquis. |
-| `unused_bindings` | WASM analyze surface + one legacy CLI test. Not the linter. |
-| `CroquisSemanticSnapshot` / `Summary` | Inspector payload only (`vize_curator`). |
-| `component_usages`, `undefined_refs`, `bindings` | Real consumers (canon: 58 files; maestro IDE features; 1 patina rule). This is the healthy subset. |
+| Croquis product                                  | External consumers today                                                                                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EffectGraph`                                    | **Doctor only** (`crates/vize/src/commands/doctor/analysis.rs`). The Vapor backend — the natural consumer of fine-grained effect information — never sees it. |
+| `RaceConditionTracker`                           | **None.** Computed, never read outside croquis.                                                                                                               |
+| `ProvideInjectTracker`                           | **None.** Computed, never read outside croquis.                                                                                                               |
+| `unused_bindings`                                | WASM analyze surface + one legacy CLI test. Not the linter.                                                                                                   |
+| `CroquisSemanticSnapshot` / `Summary`            | Inspector payload only (`vize_curator`).                                                                                                                      |
+| `component_usages`, `undefined_refs`, `bindings` | Real consumers (canon: 58 files; maestro IDE features; 1 patina rule). This is the healthy subset.                                                            |
 
 Consumer-side breadth is just as lopsided:
 
@@ -79,14 +79,14 @@ reactivity lattice (static constant → props-stable → reactive → unstable),
 with effect dependency sets on top. **The same facts serve Vapor and
 non-Vapor alike:**
 
-| Consumer | Reads the lattice as |
-| -------- | -------------------- |
-| VDOM backend | Patch flags, static hoisting, cache decisions |
-| Vapor backend | Effect grouping, direct-DOM operation planning |
-| SSR backend | Static string partition |
-| Patina | Reactivity rules: lost reactivity on destructure, never-reactive computed, unnecessary `ref` |
-| Canon projection | Tighter virtual-code types (ref unwrapping, stability) |
-| LSP | Reactivity overlay (already prototyped in `vize_vitrine`'s wasm surface) |
+| Consumer         | Reads the lattice as                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| VDOM backend     | Patch flags, static hoisting, cache decisions                                                |
+| Vapor backend    | Effect grouping, direct-DOM operation planning                                               |
+| SSR backend      | Static string partition                                                                      |
+| Patina           | Reactivity rules: lost reactivity on destructure, never-reactive computed, unnecessary `ref` |
+| Canon projection | Tighter virtual-code types (ref unwrapping, stability)                                       |
+| LSP              | Reactivity overlay (already prototyped in `vize_vitrine`'s wasm surface)                     |
 
 Today the VDOM path infers patch flags at codegen time, Vapor re-derives its
 own dynamic info during lowering, and the effect graph sits unread. One

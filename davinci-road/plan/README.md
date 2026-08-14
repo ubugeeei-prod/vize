@@ -35,17 +35,17 @@ carry the full contract.
 
 ## Phase files
 
-| File | Phase | Status |
-| ---- | ----- | ------ |
-| [phase-0.md](./phase-0.md) | Instrumentation and groundwork | **Drafted, full detail** — ready to execute |
-| [phase-1.md](./phase-1.md) | One arena, real expressions | **Drafted, full detail** — dependency chain explicit |
-| [phase-2.md](./phase-2.md) | Disegno and the pass manager | Drafted, provisional — re-cut at P1 exit |
-| [phase-3.md](./phase-3.md) | Impeto and backend convergence | Drafted, provisional — re-cut at P2 exit |
-| [phase-4.md](./phase-4.md) | Consumer convergence | Drafted, provisional — re-cut at P3 exit |
-| [phase-5.md](./phase-5.md) | Incrementality substrate | Drafted, provisional — re-cut at P4 exit |
-| [phase-6.md](./phase-6.md) | Extension contracts GA | Drafted, provisional — re-cut at P5 exit |
-| [continuous.md](./continuous.md) | Cross-phase workstreams (Spolvero, AI loop, corpus, assurance, formal) | Drafted — items trigger on their substrate |
-| [test-suites.md](./test-suites.md) | The canonical suite registry (TS-1..51): commands, oracles, and the phase → mandatory-suite map | Drafted |
+| File                               | Phase                                                                                           | Status                                               |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [phase-0.md](./phase-0.md)         | Instrumentation and groundwork                                                                  | **Drafted, full detail** — ready to execute          |
+| [phase-1.md](./phase-1.md)         | One arena, real expressions                                                                     | **Drafted, full detail** — dependency chain explicit |
+| [phase-2.md](./phase-2.md)         | Disegno and the pass manager                                                                    | Drafted, provisional — re-cut at P1 exit             |
+| [phase-3.md](./phase-3.md)         | Impeto and backend convergence                                                                  | Drafted, provisional — re-cut at P2 exit             |
+| [phase-4.md](./phase-4.md)         | Consumer convergence                                                                            | Drafted, provisional — re-cut at P3 exit             |
+| [phase-5.md](./phase-5.md)         | Incrementality substrate                                                                        | Drafted, provisional — re-cut at P4 exit             |
+| [phase-6.md](./phase-6.md)         | Extension contracts GA                                                                          | Drafted, provisional — re-cut at P5 exit             |
+| [continuous.md](./continuous.md)   | Cross-phase workstreams (Spolvero, AI loop, corpus, assurance, formal)                          | Drafted — items trigger on their substrate           |
+| [test-suites.md](./test-suites.md) | The canonical suite registry (TS-1..51): commands, oracles, and the phase → mandatory-suite map | Drafted                                              |
 
 P0 and P1 carry full per-task **Steps** sub-checklists (concrete paths,
 commands, type names). P2–P6 are enumerated to maximum known detail as

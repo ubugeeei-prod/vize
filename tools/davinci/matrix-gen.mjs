@@ -57,7 +57,8 @@ function loadTaxonomy() {
   try {
     parsed = parseTomlLite(fs.readFileSync(taxonomyPath, "utf8"));
   } catch (error) {
-    if (error instanceof TomlLiteError) fail(`malformed taxonomy ${taxonomyPath}: ${error.message}`);
+    if (error instanceof TomlLiteError)
+      fail(`malformed taxonomy ${taxonomyPath}: ${error.message}`);
     throw error;
   }
   for (const dimension of DIMENSIONS) {
@@ -172,9 +173,7 @@ function main() {
       for (const name of missing) console.log(`missing: ${name}`);
       for (const name of stale) console.log(`stale: ${name}`);
       for (const name of extra) console.log(`extra: ${name}`);
-      console.log(
-        `matrix-gen: ${relative(outDir)} is out of date — rerun with --write and commit`,
-      );
+      console.log(`matrix-gen: ${relative(outDir)} is out of date — rerun with --write and commit`);
       return 1;
     }
     console.log(`matrix-gen: ${stubs.size} fixture stubs up to date in ${relative(outDir)}`);
@@ -198,7 +197,9 @@ function main() {
   }
 
   console.log(`matrix-gen (skeleton): ${plane} -> ${stubs.size} fixture stubs`);
-  console.log(`dry run — nothing written; target ${relative(outDir)} (--write to emit, --check to verify)`);
+  console.log(
+    `dry run — nothing written; target ${relative(outDir)} (--write to emit, --check to verify)`,
+  );
   return 0;
 }
 

@@ -27,6 +27,7 @@
 ## P1-1 — Arena unification in carton
 
 **Steps:**
+
 - [ ] `crates/vize_carton/src/allocator.rs`: `Allocator` becomes a re-export/newtype of `oxc_allocator::Allocator` (already bumpalo-backed; the workspace pins the oxc rev in root `Cargo.toml`); keep `vize_carton::{Box, Vec}` aliases pointing at the oxc arena types
 - [ ] Audit bumpalo-API deltas used in-tree (`alloc_str`, `reset`, iteration helpers) — shim what's trivial, list what isn't in the PR description
 - [ ] Node-size static asserts from P0-9 unchanged
@@ -37,6 +38,7 @@
 ## P1-2 — Allocator plumbing
 
 **Steps:**
+
 - [ ] Thread `&'a Allocator` through `vize_armature` entry points (`crates/vize_armature/src/parser/entry.rs`, `parser.rs`) and the atelier lanes (`vize_atelier_core::lane::transform`, sfc `compile_template`) so template structures and future oxc ASTs share `'a`
 - [ ] `vize_atelier_jsx` (already oxc-based) switches its local allocator to the caller-provided one
 
@@ -46,6 +48,7 @@
 ## P1-3 — Retire per-node `source` strings
 
 **Steps:**
+
 - [ ] `SourceLocation` (in `crates/vize_relief/src/relief/core.rs`): remove `source: String`; add `span: Span` (P0-9 type); every consumer from `davinci-road/plan/sourcelocation-inventory.md` switches to `Span::slice(source_text)` — inventory rows checked off in the PR
 - [ ] Diagnostic excerpt rendering reads via span + the file's source text (threaded where missing)
 - [ ] Re-pin node-size static asserts (they shrink)
@@ -56,6 +59,7 @@
 ## P1-4 — Retire dead line/column
 
 **Steps:**
+
 - [ ] `Position` reduced to `offset: u32` (or `Position` deleted in favor of `Span`); line/col derived only in diagnostic rendering and `SourceMapBuilder::finish()` (`crates/vize_atelier_core/src/codegen/source_map.rs` — it already re-derives from offsets because parser line info was unreliable)
 - [ ] Delete the parser's vestigial line-tracking fields
 
@@ -65,6 +69,7 @@
 ## P1-5 — Retained expressions: parse-once storage
 
 **Steps:**
+
 - [ ] `crates/vize_relief/src/relief/expressions.rs`: `JsExpression<'a>` replaces the `raw: String + PhantomData` stub with `ast: &'a oxc_ast::ast::Expression<'a>` (+ `raw: &'a str` slice for display); decide parse point by bench — during template parse (armature) vs first semantic touch (croquis) — record the measurement in the PR
 - [ ] Parse via `oxc_parser` with the shared arena from P1-2; template-expression parse errors keep today's diagnostic behavior (differential-checked)
 - [ ] Profiler counter `davinci.expr.parses` incremented at the single parse site; exported via P0-11
@@ -80,10 +85,11 @@ Corpus parity; benches hold or improve.
 ## P1-6 — Consumer migration wave A (croquis)
 
 **Steps:**
+
 - [ ] `crates/vize_croquis/src/drawer/helpers/identifiers/slow.rs` — reads the retained AST instead of re-parsing (its local `Allocator::default()` dies)
 - [ ] `crates/vize_croquis/src/drawer/helpers/v_for/oxc.rs`, `visit_element/second_pass.rs` — same
 - [ ] Differential lane: for one release, CI compares old-path vs new-path results (identifier sets, v-for destructure shapes) over the corpus; divergences are bugs in one side — investigate, don't average
-- [ ] Charter #37 note: only the *input layer* moves; tracker internals untouched
+- [ ] Charter #37 note: only the _input layer_ moves; tracker internals untouched
 
 **Acceptance:** differential lane green over the corpus; `davinci.expr.parses` drops (record); croquis bench improves.
 **Deps:** P1-5.
@@ -91,6 +97,7 @@ Corpus parity; benches hold or improve.
 ## P1-7 — Consumer migration wave B (atelier)
 
 **Steps:**
+
 - [ ] `crates/vize_atelier_core/src/codegen/patch_flag.rs` — retained AST, local arena dies
 - [ ] Remaining reparse sites from the P0-3 counter baseline (~20 in `vize_atelier_core`), checklist generated from that baseline and checked off per site
 - [ ] Same differential-lane pattern as P1-6
@@ -101,6 +108,7 @@ Corpus parity; benches hold or improve.
 ## P1-8 — Delete the fast/slow scanner split
 
 **Steps:**
+
 - [ ] Pre-deletion differential run: byte-scanner (`identifiers/fast.rs`) vs retained-AST walk over the whole corpus — committed report proving agreement (or documenting scanner bugs the AST walk fixes; those are waiver-reviewed)
 - [ ] Delete `identifiers/{fast,slow}.rs` and the dispatch; single AST-walk implementation remains
 - [ ] Bench check: if the scanner was faster on `stress-*` fixtures, the walk must close the gap before deletion merges (measured, not assumed)
@@ -111,6 +119,7 @@ Corpus parity; benches hold or improve.
 ## P1-9 — Identifier prefixing as AST transform
 
 **Steps:**
+
 - [ ] Replace string rewriting in `crates/vize_atelier_core/src/transforms/transform_expression/{prefix,rewrite,nesting}.rs` with an AST-level transform over retained expressions (scope-aware via croquis bindings) and span-preserving emission
 - [ ] Source-map assertions for rewritten identifiers added to the P0 fixture set
 - [ ] **Waiver budget: zero.** Prefixing output is the most visible codegen surface; any corpus diff is a bug in this task
@@ -121,6 +130,7 @@ Corpus parity; benches hold or improve.
 ## P1-10 — Node strings to `&'a str` / atoms; delete manual `Drop`s
 
 **Steps:**
+
 - [ ] Interner in `vize_carton` (arena-backed atoms for names appearing repeatedly: tags, directive names, well-known attrs); node fields (`name`, `tag`, `content`) become `&'a str` slices or atoms — per-field decision recorded in the PR
 - [ ] Delete `ensure_sufficient_stack` `Drop` impls: `crates/vize_relief/src/relief/elements.rs`, `relief/control_flow.rs`, `crates/vize_atelier_vapor/src/ir_drop.rs` (arena drop is free once nothing owns heap strings)
 - [ ] `stress-deep.vue` fixture passes without the stack guard (the guard's reason is gone, prove it)
@@ -132,8 +142,9 @@ Corpus parity; benches hold or improve.
 ## P1-11 — Arena reuse across files
 
 **Steps:**
+
 - [ ] Pool in the CLI batch path (`crates/vize/src/commands/build/`): per-rayon-worker `Allocator` reset between files (`Allocator::reset()`, available in the pinned oxc_allocator), not reallocated
-- [ ] **Lifetime contract documented and enforced:** every arena-backed value is consumed or converted to its owned form (stage artifacts, cached results, diagnostics) *before* reset — caches never hold `&'a` references and never pin an arena (see the architecture arena/cache contract)
+- [ ] **Lifetime contract documented and enforced:** every arena-backed value is consumed or converted to its owned form (stage artifacts, cached results, diagnostics) _before_ reset — caches never hold `&'a` references and never pin an arena (see the architecture arena/cache contract)
 - [ ] Escape check: asan/miri lane over the pool (nothing borrows across `reset`), plus a `#[cfg(debug_assertions)]` arena-generation counter that panics on cross-file survivals; includes a **resident-cache reset scenario** (cache populated → arena reset → cache read) proving cached data is owned
 
 **Acceptance:** peak RSS on the corpus batch drops (pin as ratchet); asan/miri lane green.
@@ -142,6 +153,7 @@ Corpus parity; benches hold or improve.
 ## P1-12 — Performance-doc truth pass
 
 **Steps:**
+
 - [ ] `docs/content/architecture/performance.md`: every claim (interning, arenas, allocation behavior, string handling) rewritten to match shipped code, with numbers from this phase's benches; the stale pre-Davinci claims deleted
 
 **Acceptance:** review point — maintainer signs off claims against `bench/results/davinci/`.

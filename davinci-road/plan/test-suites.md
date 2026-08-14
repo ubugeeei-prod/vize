@@ -9,100 +9,100 @@
 
 ## Existing suites (inherited, stay green throughout)
 
-| ID | Suite | Command | Oracle |
-| -- | ----- | ------- | ------ |
-| TS-1 | Crate unit/fixture tests | `cargo test -p <crate>` (workspace: `cargo test`) | exact fixture/insta snapshots |
-| TS-2 | Expected-output runner | `cargo test -p vize_test_runner` (+ `node tests/tooling/support/generate-expected.ts <fixture>` to regen) | committed expected files, byte-exact |
-| TS-3 | Repo invariants | `node --test tests/tooling/*.test.ts` | per-invariant asserts (incl. snapshot-baselines, readme-benchmark-rows) |
-| TS-4 | Real-project corpus matrix | `node tools/fixtures/tool-matrix-report.mjs --shard-index N --shard-count M --vize-bin target/release/vize` | per-surface success + output hashes |
-| TS-5 | Glyph corpus properties | formatter lane of TS-4 with `VIZE_TEST_BIN` + `FIXTURE_REPORT_DIR` | idempotence, parse-preservation, lint-agreement, pug — exact, empty waiver ledger |
-| TS-6 | JSX babel-compat oracle | `cargo test -p vize_atelier_jsx` (`babel_compat_oracle`) | exact parity vs `@vue/babel-plugin-jsx` fixtures |
-| TS-7 | LSP smoke | `node --test tests/tooling/lsp-smoke.test.ts` | protocol-level exact expectations |
-| TS-8 | Fuzz targets | `cargo +nightly fuzz run <target>` (`tests/fuzz`) | no crash; fixed crashes carry deterministic reproducers |
-| TS-9 | Lint/check fixtures | `vp run --filter './tests' test:lint`, `test:check:fixtures` | exact diagnostic snapshots |
+| ID   | Suite                      | Command                                                                                                     | Oracle                                                                            |
+| ---- | -------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| TS-1 | Crate unit/fixture tests   | `cargo test -p <crate>` (workspace: `cargo test`)                                                           | exact fixture/insta snapshots                                                     |
+| TS-2 | Expected-output runner     | `cargo test -p vize_test_runner` (+ `node tests/tooling/support/generate-expected.ts <fixture>` to regen)   | committed expected files, byte-exact                                              |
+| TS-3 | Repo invariants            | `node --test tests/tooling/*.test.ts`                                                                       | per-invariant asserts (incl. snapshot-baselines, readme-benchmark-rows)           |
+| TS-4 | Real-project corpus matrix | `node tools/fixtures/tool-matrix-report.mjs --shard-index N --shard-count M --vize-bin target/release/vize` | per-surface success + output hashes                                               |
+| TS-5 | Glyph corpus properties    | formatter lane of TS-4 with `VIZE_TEST_BIN` + `FIXTURE_REPORT_DIR`                                          | idempotence, parse-preservation, lint-agreement, pug — exact, empty waiver ledger |
+| TS-6 | JSX babel-compat oracle    | `cargo test -p vize_atelier_jsx` (`babel_compat_oracle`)                                                    | exact parity vs `@vue/babel-plugin-jsx` fixtures                                  |
+| TS-7 | LSP smoke                  | `node --test tests/tooling/lsp-smoke.test.ts`                                                               | protocol-level exact expectations                                                 |
+| TS-8 | Fuzz targets               | `cargo +nightly fuzz run <target>` (`tests/fuzz`)                                                           | no crash; fixed crashes carry deterministic reproducers                           |
+| TS-9 | Lint/check fixtures        | `vp run --filter './tests' test:lint`, `test:check:fixtures`                                                | exact diagnostic snapshots                                                        |
 
 ## Davinci suites (new; the phase that creates each is noted)
 
 ### Instrumentation & budgets
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-10 | Micro-bench budget gate | `tools/davinci/bench-compare.mjs` after `cargo bench` | `budgets.toml` thresholds (wall/allocs/RSS); ratchet-only | P0-4 |
-| TS-11 | Corpus baseline diff | `node tools/davinci/corpus-diff.mjs` | byte-hash equality per surface×project; "empty" passes only with scope proof (artifact exists, project/surface counts match the corpus manifest — a zero-file run fails) | P0-5 |
-| TS-12 | Matrix staleness | `node --test tests/tooling/davinci-matrices.test.ts` | committed artifacts == regenerated (consumption, rule-parity, coverage) | P0-7/8 |
-| TS-13 | Assertion lint | `node tools/davinci/assertion-lint.mjs` | zero banned assertion patterns outside the justified allowlist | P0-12 |
-| TS-14 | Mutation score | `cargo mutants -p <crate>` (nightly CI lane) | score ≥ `budgets.toml [mutation]`; ratchet-only | P0-12 |
-| TS-15 | Profiler export schema | compile a corpus project with `--profile-json` | JSON-schema validation + zero-overhead-when-off (via TS-10) | P0-11 |
+| ID    | Suite                   | Command                                               | Oracle                                                                                                                                                                   | From   |
+| ----- | ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| TS-10 | Micro-bench budget gate | `tools/davinci/bench-compare.mjs` after `cargo bench` | `budgets.toml` thresholds (wall/allocs/RSS); ratchet-only                                                                                                                | P0-4   |
+| TS-11 | Corpus baseline diff    | `node tools/davinci/corpus-diff.mjs`                  | byte-hash equality per surface×project; "empty" passes only with scope proof (artifact exists, project/surface counts match the corpus manifest — a zero-file run fails) | P0-5   |
+| TS-12 | Matrix staleness        | `node --test tests/tooling/davinci-matrices.test.ts`  | committed artifacts == regenerated (consumption, rule-parity, coverage)                                                                                                  | P0-7/8 |
+| TS-13 | Assertion lint          | `node tools/davinci/assertion-lint.mjs`               | zero banned assertion patterns outside the justified allowlist                                                                                                           | P0-12  |
+| TS-14 | Mutation score          | `cargo mutants -p <crate>` (nightly CI lane)          | score ≥ `budgets.toml [mutation]`; ratchet-only                                                                                                                          | P0-12  |
+| TS-15 | Profiler export schema  | compile a corpus project with `--profile-json`        | JSON-schema validation + zero-overhead-when-off (via TS-10)                                                                                                              | P0-11  |
 
 ### Folio & stage integrity
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-16 | Folio round-trip | `davinci-opt --roundtrip <fixtures>` + per-type property tests | `parse ∘ print == id` in `--full` mode, byte-exact | P0-10 |
-| TS-17 | Pass snapshot tests | `davinci-opt --pipeline ... < fixture.folio` via insta | full normalized folio snapshots (targeted structural asserts as supplements only) | P2-4 |
-| TS-18 | Stage verifiers | debug/CI builds run verifiers between passes; invalid-folio fixture set | verifier rejects each committed invalid artifact with the exact diagnostic | P2-6 |
-| TS-19 | S1 byte fidelity | property over corpus + malformed fixtures | `render(parse(src)) == src` bytes, including `Unexpected`/`Missing` paths | P2-7 |
-| TS-20 | Lowering totality fuzz | fuzz targets for S1→S2, folio parsers | no panic on arbitrary bytes; diagnostics not crashes | P2-8 |
-| TS-21 | Metamorphic equivalence | mutator suite over matrix fixtures + corpus shard | S2 (later S3) folios identical modulo declared normalization | P2-15 |
-| TS-22 | Walk-count budget | observer-instrumented compile on fixture ladder | traversal count ≤ `budgets.toml`; fused groups reported | P2-12 |
-| TS-23 | Crash-repro replay | injected-panic test | `repro.folio` written and `vize repro` replays to the same failure | P2-13 |
-| TS-24 | Portability lanes | `cargo build -p vize_davinci -p vize_disegno --target wasm32-wasip2` + `--no-default-features` | builds green | P2-14 |
+| ID    | Suite                   | Command                                                                                        | Oracle                                                                            | From  |
+| ----- | ----------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----- |
+| TS-16 | Folio round-trip        | `davinci-opt --roundtrip <fixtures>` + per-type property tests                                 | `parse ∘ print == id` in `--full` mode, byte-exact                                | P0-10 |
+| TS-17 | Pass snapshot tests     | `davinci-opt --pipeline ... < fixture.folio` via insta                                         | full normalized folio snapshots (targeted structural asserts as supplements only) | P2-4  |
+| TS-18 | Stage verifiers         | debug/CI builds run verifiers between passes; invalid-folio fixture set                        | verifier rejects each committed invalid artifact with the exact diagnostic        | P2-6  |
+| TS-19 | S1 byte fidelity        | property over corpus + malformed fixtures                                                      | `render(parse(src)) == src` bytes, including `Unexpected`/`Missing` paths         | P2-7  |
+| TS-20 | Lowering totality fuzz  | fuzz targets for S1→S2, folio parsers                                                          | no panic on arbitrary bytes; diagnostics not crashes                              | P2-8  |
+| TS-21 | Metamorphic equivalence | mutator suite over matrix fixtures + corpus shard                                              | S2 (later S3) folios identical modulo declared normalization                      | P2-15 |
+| TS-22 | Walk-count budget       | observer-instrumented compile on fixture ladder                                                | traversal count ≤ `budgets.toml`; fused groups reported                           | P2-12 |
+| TS-23 | Crash-repro replay      | injected-panic test                                                                            | `repro.folio` written and `vize repro` replays to the same failure                | P2-13 |
+| TS-24 | Portability lanes       | `cargo build -p vize_davinci -p vize_disegno --target wasm32-wasip2` + `--no-default-features` | builds green                                                                      | P2-14 |
 
 ### Semantics & backends
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-25 | Differential migration lanes | old-path vs new-path comparison jobs (P1-6/7 identifiers, P1-8 scanner, P4 projection) | exact agreement; divergence = investigated bug, never averaged | P1-6 |
-| TS-26 | Expr parse-count assert | profiler export check in CI | `davinci.expr.parses == distinct expressions` | P1-7 |
-| TS-27 | Impeto phase validator | between-pass validator + invalid-IR fixtures | edges resolve, regions nest, effects well-scoped — exact rejections | P3-1 |
-| TS-28 | Lean reference differential | Lean-built reference runner vs compiled output on S3 fixtures | exact agreement on observable semantics | P3-4 |
-| TS-29 | IVM oracle | incremental-update vs from-scratch render on reference semantics | equality per fixture; keyed `v-for` linearity cases enumerated | P3-11 |
-| TS-30 | Behavioral (sprout) runner | mount compiled VDOM + Vapor, scripted prop/interaction traces | trace equality between backends and vs reference — **includes IME composition scripts for `ui.model`** | P3-12 |
-| TS-31 | Source-map coverage | map-presence + span-accuracy assertions per backend | coverage metric ≥ budget; rewritten-identifier spans exact | P3-9 |
-| TS-32 | Remarks diff | corpus remarks comparison between compiler versions | no unexplained applied→missed transitions | P3-13 |
-| TS-33 | Vapor behavioral parity | TS-30 traces vs upstream `@vue/runtime-vapor` semantics | behavior-level equality (charter #23 experimental tier) | P3-6 |
+| ID    | Suite                        | Command                                                                                | Oracle                                                                                                 | From  |
+| ----- | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----- |
+| TS-25 | Differential migration lanes | old-path vs new-path comparison jobs (P1-6/7 identifiers, P1-8 scanner, P4 projection) | exact agreement; divergence = investigated bug, never averaged                                         | P1-6  |
+| TS-26 | Expr parse-count assert      | profiler export check in CI                                                            | `davinci.expr.parses == distinct expressions`                                                          | P1-7  |
+| TS-27 | Impeto phase validator       | between-pass validator + invalid-IR fixtures                                           | edges resolve, regions nest, effects well-scoped — exact rejections                                    | P3-1  |
+| TS-28 | Lean reference differential  | Lean-built reference runner vs compiled output on S3 fixtures                          | exact agreement on observable semantics                                                                | P3-4  |
+| TS-29 | IVM oracle                   | incremental-update vs from-scratch render on reference semantics                       | equality per fixture; keyed `v-for` linearity cases enumerated                                         | P3-11 |
+| TS-30 | Behavioral (sprout) runner   | mount compiled VDOM + Vapor, scripted prop/interaction traces                          | trace equality between backends and vs reference — **includes IME composition scripts for `ui.model`** | P3-12 |
+| TS-31 | Source-map coverage          | map-presence + span-accuracy assertions per backend                                    | coverage metric ≥ budget; rewritten-identifier spans exact                                             | P3-9  |
+| TS-32 | Remarks diff                 | corpus remarks comparison between compiler versions                                    | no unexplained applied→missed transitions                                                              | P3-13 |
+| TS-33 | Vapor behavioral parity      | TS-30 traces vs upstream `@vue/runtime-vapor` semantics                                | behavior-level equality (charter #23 experimental tier)                                                | P3-6  |
 
 ### Analysis & consumers
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-34 | Fact-group differential oracles | naive declarative-rule evaluator vs production fixpoint, per group | exact agreement over corpus shard (Polonius spec discipline) | P4-3 |
-| TS-35 | Fact demand enforcement | debug detector + stratification check | zero undeclared accesses; demand graph acyclic by strata | P4-1 |
-| TS-36 | Witness verification | every error diagnostic's witness re-checked against the fact base | all witnesses verify; unverifiable witness = CI failure | P4-6 |
-| TS-37 | Seeded-defect recall | `tools/davinci/seed-defects.mjs` full matrix | 100% detection per in-domain defect class, count-exact | P0-13→P4-15 |
-| TS-38 | Suppression telemetry | `tools/davinci/suppression-telemetry.mjs` over corpus | FP-candidate ledger fully triaged (`fixed` / `justified-with-witness`) | P0-13→P4-15 |
-| TS-39 | Rule-parity convergence | TS-12 matrices trend check | neutral-core rules run on SFC and JSX; per-wave lint-agreement | P4-8 |
-| TS-40 | Projection parity | `vize check` corpus + `--show-virtual-ts` fixtures | diagnostics parity vs baseline; single-mapping-model asserts (canon/maestro duplicates deleted) | P4-5 |
-| TS-41 | Style-spec fixtures | glyph fixture set from the written style spec | exact formatted output per spec decision; TS-5 properties unchanged | P4-12 |
+| ID    | Suite                           | Command                                                            | Oracle                                                                                          | From        |
+| ----- | ------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ----------- |
+| TS-34 | Fact-group differential oracles | naive declarative-rule evaluator vs production fixpoint, per group | exact agreement over corpus shard (Polonius spec discipline)                                    | P4-3        |
+| TS-35 | Fact demand enforcement         | debug detector + stratification check                              | zero undeclared accesses; demand graph acyclic by strata                                        | P4-1        |
+| TS-36 | Witness verification            | every error diagnostic's witness re-checked against the fact base  | all witnesses verify; unverifiable witness = CI failure                                         | P4-6        |
+| TS-37 | Seeded-defect recall            | `tools/davinci/seed-defects.mjs` full matrix                       | 100% detection per in-domain defect class, count-exact                                          | P0-13→P4-15 |
+| TS-38 | Suppression telemetry           | `tools/davinci/suppression-telemetry.mjs` over corpus              | FP-candidate ledger fully triaged (`fixed` / `justified-with-witness`)                          | P0-13→P4-15 |
+| TS-39 | Rule-parity convergence         | TS-12 matrices trend check                                         | neutral-core rules run on SFC and JSX; per-wave lint-agreement                                  | P4-8        |
+| TS-40 | Projection parity               | `vize check` corpus + `--show-virtual-ts` fixtures                 | diagnostics parity vs baseline; single-mapping-model asserts (canon/maestro duplicates deleted) | P4-5        |
+| TS-41 | Style-spec fixtures             | glyph fixture set from the written style spec                      | exact formatted output per spec decision; TS-5 properties unchanged                             | P4-12       |
 
 ### Incrementality & editor
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-42 | Incremental ≡ clean | corpus CI job on the salsa tier | artifact-level **and diagnostic-level** equality between incremental and from-scratch results | P5-9 |
-| TS-43 | Key stability | two-platform key computation + edit-locality cases | identical keys cross-platform; edits above a block change zero keys | P5-1 |
-| TS-44 | Keystroke latency/RSS budgets | LSP perf tests on large corpus projects | p95 latency + RSS ceiling + idle-CPU per `budgets.toml` | P5-11 |
-| TS-45 | Multi-client LSP conformance | Neovim headless / Helix / Zed / VS Code scenario suite | exact protocol expectations per client | P5-12 |
-| TS-46 | Snapshot-adoption correctness | intra-file edit scenarios | unchanged-region snapshots adopted (cache-hit accounting), changed ones cancelled | P5-5 |
-| TS-47 | Broken-file resilience | fault-tolerance scenarios (parse errors mid-file) | facts/features live for well-formed regions; no diagnostics regression | P5-10 |
+| ID    | Suite                         | Command                                                | Oracle                                                                                        | From  |
+| ----- | ----------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ----- |
+| TS-42 | Incremental ≡ clean           | corpus CI job on the salsa tier                        | artifact-level **and diagnostic-level** equality between incremental and from-scratch results | P5-9  |
+| TS-43 | Key stability                 | two-platform key computation + edit-locality cases     | identical keys cross-platform; edits above a block change zero keys                           | P5-1  |
+| TS-44 | Keystroke latency/RSS budgets | LSP perf tests on large corpus projects                | p95 latency + RSS ceiling + idle-CPU per `budgets.toml`                                       | P5-11 |
+| TS-45 | Multi-client LSP conformance  | Neovim headless / Helix / Zed / VS Code scenario suite | exact protocol expectations per client                                                        | P5-12 |
+| TS-46 | Snapshot-adoption correctness | intra-file edit scenarios                              | unchanged-region snapshots adopted (cache-hit accounting), changed ones cancelled             | P5-5  |
+| TS-47 | Broken-file resilience        | fault-tolerance scenarios (parse errors mid-file)      | facts/features live for well-formed regions; no diagnostics regression                        | P5-10 |
 
 ### Contracts & plugins
 
-| ID | Suite | Command | Oracle | From |
-| -- | ----- | ------- | ------ | ---- |
-| TS-48 | WIT contract round-trip | host↔guest handshake + golden exchanges for **all three worlds** (input, expression, output), in **both hosting modes** (out-of-process + wasmtime in-process, same guest binary) | capability negotiation incl. version-mismatch rejection + serialized-payload byte equality | P6-1 |
-| TS-49 | MoonBit projection | pinned `moonc.wasm` check over `.mbti`+`.mbt` fixtures | span-mapped diagnostics exact; moonc version in cache key | P6-4 |
-| TS-50 | External-consumer build | third-party build against a tagged release | builds without patching vize internals | P6-9 |
-| TS-51 | JS plugin SDK | real custom rules through the napi batch path | two-stage: **P5-13 pre-check** = deterministic across runs + content-key cached (plugin version + declared demands in the key); **P6-7 GA** adds cost attribution and all four hook families | P5-13 → P6-7 |
+| ID    | Suite                   | Command                                                                                                                                                                           | Oracle                                                                                                                                                                                       | From         |
+| ----- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| TS-48 | WIT contract round-trip | host↔guest handshake + golden exchanges for **all three worlds** (input, expression, output), in **both hosting modes** (out-of-process + wasmtime in-process, same guest binary) | capability negotiation incl. version-mismatch rejection + serialized-payload byte equality                                                                                                   | P6-1         |
+| TS-49 | MoonBit projection      | pinned `moonc.wasm` check over `.mbti`+`.mbt` fixtures                                                                                                                            | span-mapped diagnostics exact; moonc version in cache key                                                                                                                                    | P6-4         |
+| TS-50 | External-consumer build | third-party build against a tagged release                                                                                                                                        | builds without patching vize internals                                                                                                                                                       | P6-9         |
+| TS-51 | JS plugin SDK           | real custom rules through the napi batch path                                                                                                                                     | two-stage: **P5-13 pre-check** = deterministic across runs + content-key cached (plugin version + declared demands in the key); **P6-7 GA** adds cost attribution and all four hook families | P5-13 → P6-7 |
 
 ## Phase → mandatory-suite map
 
-| Phase | Must be green at exit |
-| ----- | --------------------- |
-| P0 | TS-1..9 (unchanged) + TS-10..16 established |
-| P1 | all of P0 + TS-25, TS-26; TS-11 **empty** |
-| P2 | all prior + TS-17..24; TS-11 empty for DOM |
-| P3 | all prior + TS-27..33; TS-11 empty for SSR (byte) / TS-33 for Vapor |
-| P4 | all prior + TS-34..41; TS-37 at 100% recall per class, TS-38 zero untriaged |
-| P5 | all prior + TS-42..47 |
-| P6 | all prior + TS-48..51 |
+| Phase | Must be green at exit                                                       |
+| ----- | --------------------------------------------------------------------------- |
+| P0    | TS-1..9 (unchanged) + TS-10..16 established                                 |
+| P1    | all of P0 + TS-25, TS-26; TS-11 **empty**                                   |
+| P2    | all prior + TS-17..24; TS-11 empty for DOM                                  |
+| P3    | all prior + TS-27..33; TS-11 empty for SSR (byte) / TS-33 for Vapor         |
+| P4    | all prior + TS-34..41; TS-37 at 100% recall per class, TS-38 zero untriaged |
+| P5    | all prior + TS-42..47                                                       |
+| P6    | all prior + TS-48..51                                                       |

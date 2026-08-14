@@ -212,10 +212,10 @@ real-world JS custom rule runs cached and cost-attributed.
 
 ## Risks
 
-| Risk | Mitigation |
-| ---- | ---------- |
-| Parity drift discovered late | Corpus gate per phase, not per program; waiver ledger must be empty at phase exit |
-| Perf regression hides in end-to-end noise | Phase-0 microbenches localize; budgets are merge gates, not dashboards |
-| Strangler stalls mid-way (two lanes forever) | Each phase deletes the code it replaces at exit; deletion is part of the gate |
-| Scope creep toward in-tree multi-framework | Decision 1 recorded; external dialects validate contracts, never merge |
-| Bus factor | These documents + Folio dumps keep every stage inspectable; aligns with `ubugeeei-redundancy.md` |
+| Risk                                         | Mitigation                                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Parity drift discovered late                 | Corpus gate per phase, not per program; waiver ledger must be empty at phase exit                |
+| Perf regression hides in end-to-end noise    | Phase-0 microbenches localize; budgets are merge gates, not dashboards                           |
+| Strangler stalls mid-way (two lanes forever) | Each phase deletes the code it replaces at exit; deletion is part of the gate                    |
+| Scope creep toward in-tree multi-framework   | Decision 1 recorded; external dialects validate contracts, never merge                           |
+| Bus factor                                   | These documents + Folio dumps keep every stage inspectable; aligns with `ubugeeei-redundancy.md` |

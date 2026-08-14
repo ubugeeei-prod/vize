@@ -31,6 +31,7 @@
 criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
+
 - [x] Create `benchmarks/davinci_harness/` (add to `[workspace] members` in root `Cargo.toml`); `publish = false`, stability `experimental`
 - [x] `src/alloc.rs`: `CountingAllocator` (wraps the global allocator; counts `alloc` calls + running/peak bytes; `#[global_allocator]` opt-in via `davinci_harness::main!` macro; default inner allocator is mimalloc, matching the shipped `vize` binary)
 - [x] `src/rss.rs`: peak-RSS sampling (`ru_maxrss` via `libc::getrusage` on macOS/Linux; stub returning `None` elsewhere). Platform semantics documented and normalized: `ru_maxrss` is KB on Linux, bytes on macOS, and is a **process-wide peak** — report baseline-subtracted deltas per bench process, never raw values
@@ -40,6 +41,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [x] Wire a `vp` task: `bench:davinci` at workspace root
 
 **Acceptance:**
+
 - `cargo bench -p davinci_harness` emits schema-valid JSON with all four metric families non-null on macOS/Linux
 - `node --test tests/tooling/` conventions untouched; no existing bench affected
 
@@ -50,12 +52,14 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** criterion benches over a committed fixture ladder.
 
 **Steps:**
+
 - [ ] Fixture ladder at `benchmarks/davinci_harness/fixtures/`: `small.vue` (~30 lines), `medium.vue` (~200 lines, real corpus extract), `large.vue` (~1k lines, corpus extract), `stress-deep.vue` (64-deep nesting), `stress-wide.vue` (200 attributes), `stress-interp.vue` (500 interpolations) — each with a `PROVENANCE.md` naming source project + commit
 - [ ] `crates/vize_armature/benches/davinci.rs`: `tokenize` and `parse` cases per fixture (add `[[bench]]` + `davinci_harness` dev-dep to `crates/vize_armature/Cargo.toml`)
 - [ ] `crates/vize_croquis/benches/davinci.rs`: `analyze_sfc_descriptor` with `SfcCroquisOptions::full()` and `::for_compile()` per fixture
 - [ ] Confirm `clippy.toml` bans hold in bench code (use `vize_carton` types)
 
 **Acceptance:**
+
 - `cargo bench -p vize_armature -p vize_croquis` produces per-case JSON in `bench/results/davinci/`
 - Two consecutive runs differ < 5% wall on the same machine (measured, recorded in the PR body)
 
@@ -66,6 +70,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** per-stage benches so P1–P3 regressions localize.
 
 **Steps:**
+
 - [ ] `crates/vize_atelier_core/benches/davinci.rs`: `transform` (lane only, pre-parsed AST input) per fixture
 - [ ] `crates/vize_atelier_dom/benches/davinci.rs`: `compile_template` split into `transform` vs `codegen` timings (wrap stages with harness timers, not one blob)
 - [ ] `crates/vize_atelier_vapor/benches/davinci.rs`: `lower` and `generate` separately — this pins the cost of today's run-then-discard double transform as a number
@@ -81,6 +86,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** committed baselines + a PR gate with ratchet semantics.
 
 **Steps:**
+
 - [ ] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12)
 - [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/`
 - [ ] Compare script `tools/davinci/bench-compare.mjs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate
@@ -88,6 +94,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [ ] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body)
 
 **Acceptance:**
+
 - A test branch with an injected `std::thread::sleep(10ms)` in the parser fails the gate; reverting passes
 - Noise-level variance (< threshold in `budgets.toml`) passes 10/10 reruns
 
@@ -98,12 +105,14 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** a reproducible whole-corpus output fingerprint to diff every later phase against.
 
 **Steps:**
+
 - [ ] `tools/davinci/corpus-baseline.mjs`: runs `tools/fixtures/tool-matrix-report.mjs` across all shards, then reduces each project's per-surface outputs (compile dom/vapor/ssr, lint JSON, format output, check diagnostics) to `{surface, project, file_count, content_hash}` rows
 - [ ] Baseline artifact `tests/_fixtures/davinci-baseline.json` (hashes only — small) committed
 - [ ] `tools/davinci/corpus-diff.mjs`: compares a fresh run against the baseline; reports per-surface/per-project drift; `--surface` filter
 - [ ] Reproducibility check: two runs on the same tree produce byte-identical baseline files (this will surface any nondeterminism in current output — if found, file it, do not fix it in this task)
 
 **Acceptance:**
+
 - `node tools/davinci/corpus-diff.mjs` exits 0 on the committed baseline
 - Injected one-character change in a corpus `.vue` file is reported with the right project + surface
 - Two-run reproducibility holds (or the nondeterminism is filed as a tracked issue and shard-scoped)
@@ -115,6 +124,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** coverage report + new pinned corpus projects for pug / JSX / Vapor / petite-vue.
 
 **Steps:**
+
 - [ ] `tools/davinci/corpus-coverage.mjs`: scans corpus `.vue`/`.jsx`/`.tsx` sources for the construct taxonomy dimensions (P0-12's `taxonomy.toml`) and emits counts per construct per project
 - [ ] Committed report `davinci-road/plan/corpus-coverage.md` (generated, with a staleness header)
 - [ ] Candidate list of real projects filling the gaps (pug-using Vue apps, JSX/TSX Vue apps, Vapor early adopters, petite-vue sites) with license + size + rationale — **review point: maintainer approves the list before submodules land**
@@ -130,6 +140,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** the [semantic-engine measurement](../semantic-engine.md#the-problem-measured) mechanized.
 
 **Steps:**
+
 - [ ] `tools/davinci/croquis-consumers.mjs`: for each public product on `crates/vize_croquis/src/croquis.rs` (the ~25 `pub` fields + exported types), resolves consumers **symbol-aware** — rustdoc-JSON or a syn-based scan over `use` paths and field accesses, so aliases/re-exports resolve — with plain text grep only as a cross-check; emits `davinci-road/plan/croquis-consumption.md` with `product × consuming-crate × site-count`
 - [ ] Verify output matches the hand-audited 2026-08-13 numbers (`EffectGraph`→doctor only; `RaceConditionTracker`/`ProvideInjectTracker`→none; etc.) — discrepancies get investigated, not papered over
 - [ ] Staleness check `tests/tooling/davinci-matrices.test.ts`: regenerates and diffs; fails CI when committed artifact is stale
@@ -143,6 +154,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** classification substrate for charter #7's fairness metric.
 
 **Steps:**
+
 - [ ] `tools/davinci/rule-parity.mjs`: walks `crates/vize_patina/src/rules/**` (345 files), extracts per rule: registration surface (template/script/markup-facade), whether it runs on `lint()` vs `lint_jsx()` paths, croquis usage — resolved **symbol-aware** (syn-based `use`-path resolution, not raw text matching)
 - [ ] First-cut classification column: `neutral-core-candidate` / `vue-dialect-bound` / `container-bound`, derived heuristically (uses `v-`-specific node kinds ⇒ dialect; uses SFC block structure ⇒ container) — hand-corrections stored in a sidecar `rule-parity-overrides.toml`, never edited into generated output
 - [ ] Committed artifact `davinci-road/plan/rule-parity.md` + staleness check in `tests/tooling/davinci-matrices.test.ts`
@@ -156,6 +168,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** the future span type, landed unused, plus the migration map P1 executes.
 
 **Steps:**
+
 - [ ] `crates/vize_carton/src/span.rs`: `Span { start: u32, end: u32 }` with `slice(&'a str) -> &'a str`, `to_block_relative(block_start) -> Span`, `len()`; `#[derive(Copy, Clone, PartialEq, Eq, Hash)]`; size static-assert (8 bytes)
 - [ ] Block-relative hashing helper (`hash_relative(hasher, block_start)`) per the rustc relative-span import
 - [ ] Inventory script `tools/davinci/sourcelocation-inventory.mjs`: every read of `SourceLocation::{source, start.line, start.column, end.line, end.column}` across the workspace, grouped by crate and function; committed as `davinci-road/plan/sourcelocation-inventory.md` with counts
@@ -170,6 +183,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** the dump/round-trip substrate; croquis's "VIR" becomes the first folio page.
 
 **Steps:**
+
 - [ ] `crates/vize_davinci/` crate skeleton (workspace member, `no_std + alloc`, `experimental`): only `folio` module for now — `trait Folio { fn print(&self, w: &mut W, mode: FolioMode) -> fmt::Result; fn parse(input: &str) -> Result<Self, FolioError>; }` with `FolioMode { Full, Display }`. **Equality laws are mode-explicit:** `Full` is the injective, parseable form (round-trip laws apply); `Display` elides spans/defaults for humans and carries **no** round-trip law. Normalization (stable sequential ids, sorted map iteration) applies to both
 - [ ] Normalization rules documented in `davinci-road/plan/folio-format.md` (the "test-mode printer" contract: what is elided, what is stable)
 - [ ] `crates/vize_davinci/src/bin/davinci-opt.rs` (or a `tools/` binary if binary-in-lib is awkward): `davinci-opt --roundtrip <file>` — parse → print → byte-compare; `--stage croquis` initially
@@ -178,6 +192,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [ ] insta helper: `assert_folio_snapshot!(value)` using the normalized printer (allowed `#[allow(clippy::disallowed_macros)]` per existing insta convention)
 
 **Acceptance:**
+
 - `davinci-opt --roundtrip` is identity on ≥10 committed croquis-folio fixtures (drawn from the P0-2 fixture ladder). **Folio identity is defined post-normalization:** the round-trip law is `print(parse(t)) == t` for canonical (normalized) text `t`, plus structural equality `parse(print(v)) == v` for values — non-canonical input is normalized by the first print, by design
 - Existing VIR consumers' tests pass untouched
 - `wasm32-wasip2` target compiles for `vize_davinci` (`cargo build -p vize_davinci --target wasm32-wasip2`)
@@ -189,6 +204,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** `vize_carton::profiler` speaks pass × stage × block × span, exports machine-readable.
 
 **Steps:**
+
 - [ ] Extend the span key in `crates/vize_carton/src/profiler.rs`: today's dotted string (`"atelier.dom.template.parse"`) gains optional structured fields `{stage, pass, file_id, block, span}` — additive, existing `profile!` call sites unchanged
 - [ ] Existing allocation-tracking option surfaces per-span alloc counts in the export
 - [ ] Export: `--profile-json <path>` on the CLI (`crates/vize/src/commands/` shared arg), schema `davinci-road/plan/profile-export.schema.json`, size-budgeted per `vize_doctor::ai_context` conventions (`crates/vize_doctor/src/ai_context/`)
@@ -203,6 +219,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 **Deliverable:** the enforcement tooling for charter #21.
 
 **Steps:**
+
 - [x] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (entry = path + justification + expiry)
 - [x] CI self-test: fixture with a deliberately bad assertion that the lint must flag (lint the linter) — `tests/tooling/davinci-assertion-lint.test.ts`
 - [ ] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section; CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison (deferred: pending local disk headroom; runs in the nightly lane once recorded)
@@ -216,9 +233,10 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 ## P0-13 — Seeded-defect + suppression-telemetry pilots
 
-**Deliverable:** both FP/FN oracles running against the *existing* toolchain.
+**Deliverable:** both FP/FN oracles running against the _existing_ toolchain.
 
 **Steps:**
+
 - [ ] Seeded-defect generator `tools/davinci/seed-defects.mjs`: two pilot classes — (a) undefined template ref: rename a `<script setup>` binding referenced from the template; (b) unused binding: inject an unreferenced `const` — applied to matrix fixtures and a corpus shard copy
 - [ ] Recall assertion: current Patina must flag 100% of seeded class-(a) instances (`no_undefined_refs` rule) — asserted by **identity, not count**: the seeded-defect manifest records each injection's file + span + expected rule id, and the assertion compares the exact diagnostic set against the manifest (count-only matching is banned by the assurance doctrine); class-(b) recall recorded (not gated yet — `unused_bindings` has no lint consumer today, which this pilot documents as a finding)
 - [ ] Suppression scan `tools/davinci/suppression-telemetry.mjs`: collects `eslint-disable` comments in corpus sources with rule names mapped to vize analogs; reports vize diagnostics firing on those exact lines as FP candidates

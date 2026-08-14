@@ -98,7 +98,7 @@ a worker pool; how a JS rule's declared fact demands are expressed in the JS
 SDK; how rule output caching keys include the plugin's own version/content;
 and whether the same SDK surface doubles for the WASM tier (one authoring
 model, two runtimes). ESLint-compatibility (running existing eslint-plugin-vue
-rules unchanged) is explicitly *not* the goal — the SDK targets the
+rules unchanged) is explicitly _not_ the goal — the SDK targets the
 neutral-core view. Needs a phase-4/5 spike with a real custom-rule case.
 
 ## App-level fact provider contract

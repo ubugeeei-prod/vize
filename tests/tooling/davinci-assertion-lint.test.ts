@@ -54,9 +54,10 @@ test("assertion lint exits 0 on the real tree under the committed allowlist", ()
   // entry (the list only shrinks — assurance doctrine ratchet).
   assert.equal(result.stderr, "");
   assert.equal(result.status, 0, result.stdout);
-  const summary = /^assertion-lint: OK \((\d+) findings in (\d+) files suppressed by allowlist\)\n$/.exec(
-    result.stdout,
-  );
+  const summary =
+    /^assertion-lint: OK \((\d+) findings in (\d+) files suppressed by allowlist\)\n$/.exec(
+      result.stdout,
+    );
   assert.ok(summary, `unexpected lint output: ${result.stdout}`);
   assert.equal(
     Number(summary[2]),

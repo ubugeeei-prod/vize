@@ -26,7 +26,7 @@ none of those three buckets is a design defect, not a bug.
   and keys are newtypes; raw→canonical is a type-level transition; a
   non-canonical artifact cannot reach an optional pass or an emitter.
 - **Totality.** Library code does not panic on any input. Malformed source is
-  a *represented* state (`Unexpected`/`Missing` S1 nodes), so "broken input"
+  a _represented_ state (`Unexpected`/`Missing` S1 nodes), so "broken input"
   is a normal value flowing through total functions, not an edge case.
   Fuzzing (existing `tests/fuzz` lanes, extended per stage) proves no-crash
   over arbitrary bytes; a fuzz crash fix is complete only with its
@@ -44,7 +44,7 @@ none of those three buckets is a design defect, not a bug.
 
 ## No false positives, no false negatives — verdicts are proofs
 
-Rice's theorem says zero-FP *and* zero-FN over arbitrary programs is
+Rice's theorem says zero-FP _and_ zero-FN over arbitrary programs is
 undecidable — but Davinci's domain is not arbitrary programs. Templates are a
 small, closed, structured language; the reactivity API surface is finite;
 heavy inference exists only at the JS boundary. Domain restriction is what
@@ -56,15 +56,15 @@ creed credible here. The mechanisms:
   import). Policy, enforced by the rule SDK's types: **error-severity
   diagnostics fire only on `proven`** — zero FP by construction. `unknown`
   never produces an error; it produces silence, or an explicitly-labeled
-  hint/suggestion severity that *says* it is not a proof. A rule cannot
+  hint/suggestion severity that _says_ it is not a proof. A rule cannot
   express "error on maybe".
 - **Witness-carrying diagnostics.** An error must carry its witness — the
   concrete fact chain that proves the violation (binding → escape → effect
   edge, with spans via provenance). The witness is machine-checkable against
   the fact base, so a false positive is not a matter of opinion: it is a
   witness that fails verification, caught by the same verifier
-  infrastructure as everything else. No witness, no diagnostic. *Migration
-  note:* today's diagnostics (cross-file paths, reactivity `InternalIssue`
+  infrastructure as everything else. No witness, no diagnostic. _Migration
+  note:_ today's diagnostics (cross-file paths, reactivity `InternalIssue`
   conversions) carry no witness field — the shared witness type and verifier
   arrive with the unified channel (plan P4-6), and phase 4 exits on "every
   error-severity diagnostic carries a verifying witness"; until then legacy
@@ -75,22 +75,22 @@ creed credible here. The mechanisms:
   `sound` (no-FN over its declared domain) / `complete` (no-FP) /
   `heuristic`. Heuristic rules are barred from error severity by policy, the
   tier renders in the docs, and the declared domain is part of the rule's
-  contract — "no FN" always means *no FN within the declared domain*, and
+  contract — "no FN" always means _no FN within the declared domain_, and
   shrinking the domain silently is a breaking change.
 - **Seeded-defect recall — the FN oracle.** FN rates are measured, not
-  assumed: the construct matrices generate corpora with *known injected
-  defects* (remove the provider, break the prop type, drop a `key`, race the
+  assumed: the construct matrices generate corpora with _known injected
+  defects_ (remove the provider, break the prop type, drop a `key`, race the
   await), and in-domain defect classes require **100% detection** at the
   phase gate. A defect class we claim to catch, we catch every time.
 - **Suppression telemetry — the FP oracle.** Real projects carry
   suppressions (`eslint-disable`, waivers). Corpus runs track every vize
   diagnostic on lines users suppressed for the analogous upstream rule, and
-  every new suppression Real World Testing users add against *our*
+  every new suppression Real World Testing users add against _our_
   diagnostics — each is an FP candidate triaged to `fixed` or
   `justified-with-witness`, never left ambient.
 - **Divergence is justified or it is a bug.** Charter #23 already bans silent
   divergence from vue-tsc/eslint behavior; under this creed, an unjustified
-  divergence is *classified* — it is either our FP/FN or theirs, and the
+  divergence is _classified_ — it is either our FP/FN or theirs, and the
   ledger records which, with the witness.
 
 ## Never regress — ratchets, not dashboards
@@ -109,7 +109,7 @@ silently. The mechanisms are one-way:
   suites. The test outlives the fix and the code it fixed.
 - **A deleted failure class stays deleted.** Its reappearance reopens the
   phase that deleted it — not a ticket (standing gate). Remarks-diff over the
-  corpus catches *optimization* regressions the output diff can't see.
+  corpus catches _optimization_ regressions the output diff can't see.
 - **Baselines are committed artifacts.** Corpus snapshots, bench baselines,
   consumption matrices — diffs against them are reviewed like code, so drift
   is a PR conversation, not an archaeology project.
@@ -121,7 +121,7 @@ payoff is a load-bearing guarantee — and nowhere else (the Effekt retreat is
 the cautionary tale for formalism as a lifestyle). The targets, in order:
 
 1. **S3's executable reference semantics in Lean.** The MIR anti-lesson says
-   pin down what an Impeto effect *means* before optimizing; the React-tRace
+   pin down what an Impeto effect _means_ before optimizing; the React-tRace
    precedent says make the semantics executable and differential-test the
    optimized implementation against it. Writing that reference in Lean makes
    it simultaneously the spec, a test oracle, and a proof substrate.
@@ -133,7 +133,7 @@ the cautionary tale for formalism as a lifestyle). The targets, in order:
 3. **An independent Folio checker.** Because Folio round-trips, stage
    invariants can be verified out-of-process by a second implementation that
    shares no code with the compiler (the Lean4Lean discipline) — potentially
-   *written in Lean*, parsing folios and checking S2/S3 invariants in CI.
+   _written in Lean_, parsing folios and checking S2/S3 invariants in CI.
 4. **Decidable checkers proved total.** The HTML content-model checker and
    region well-formedness are finite, decidable domains where `exact`
    precision (zero FP/FN) is a provable property, not an aspiration.
@@ -165,18 +165,18 @@ owning the input space:
 
 ## 3. Every conceivable pattern is tested — the tier ladder
 
-| Tier | Unit | Oracle |
-| ---- | ---- | ------ |
-| Fixture | one construct, one stage | full normalized Folio snapshot (exact) |
-| Pass | one pass via `davinci-opt` | full normalized Folio snapshot (exact) |
-| Verifier | invalid artifact | exact diagnostic (code + span + full message, pinned to the canonical locale) |
-| Matrix | construct combinations | generated expected outputs, exact |
-| Property | generated inputs | invariant holds — no exceptions list |
-| Metamorphic | mutated SFC pairs | folio equality modulo declared normalization |
-| Differential | vs reference implementation | exact agreement or explicit, reviewed waiver |
-| Behavioral | compiled output, mounted | scripted interaction trace equality (sprout-style) |
-| Corpus | 134 projects | byte-identical or waivered; ledger empty at phase exit |
-| Editor | LSP scenarios | exact protocol-level expectations, multi-client |
+| Tier         | Unit                        | Oracle                                                                        |
+| ------------ | --------------------------- | ----------------------------------------------------------------------------- |
+| Fixture      | one construct, one stage    | full normalized Folio snapshot (exact)                                        |
+| Pass         | one pass via `davinci-opt`  | full normalized Folio snapshot (exact)                                        |
+| Verifier     | invalid artifact            | exact diagnostic (code + span + full message, pinned to the canonical locale) |
+| Matrix       | construct combinations      | generated expected outputs, exact                                             |
+| Property     | generated inputs            | invariant holds — no exceptions list                                          |
+| Metamorphic  | mutated SFC pairs           | folio equality modulo declared normalization                                  |
+| Differential | vs reference implementation | exact agreement or explicit, reviewed waiver                                  |
+| Behavioral   | compiled output, mounted    | scripted interaction trace equality (sprout-style)                            |
+| Corpus       | 134 projects                | byte-identical or waivered; ledger empty at phase exit                        |
+| Editor       | LSP scenarios               | exact protocol-level expectations, multi-client                               |
 
 Every phase's exit gate names which tiers it extends. A feature testable in a
 tier but not tested there is untested.
@@ -195,7 +195,7 @@ tier but not tested there is untested.
   nondeterministic, the fix is normalization in the printer (stable ids,
   sorted maps), never a looser assertion.
 - **Targeted assertions supplement, never replace.** The rustc FileCheck
-  practice is adopted *under* this rule: a pass test's oracle is the full
+  practice is adopted _under_ this rule: a pass test's oracle is the full
   normalized folio; targeted structural assertions may document the specific
   property the pass claims, in addition — an exact structural match on a named
   sub-object, never a substring.
@@ -204,7 +204,7 @@ tier but not tested there is untested.
   virtual-path leak into its expected message and froze the leak). Expected
   values must be justified — against Vue/TypeScript reference behavior, a
   spec, or a documented decision — not merely recorded. Snapshot review asks
-  "why is this output *right*?", not "did it change?".
+  "why is this output _right_?", not "did it change?".
 - **Rebaseline discipline.** Snapshots are reviewed contracts
   (language-engineering-practices). A PR refreshing more than a handful of
   snapshots must explain every group of diffs; bulk-accept is prohibited.
