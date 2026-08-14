@@ -117,12 +117,8 @@ test("fresh-project toolchain accepts package-manager-specific Windows shims", (
     fs.mkdirSync(binDir, { recursive: true });
     fs.writeFileSync(path.join(binDir, shim), "");
     assert.equal(hasProjectLocalBin(nodeModules, "vize", "win32"), true, `${shim} was ignored`);
+    assert.equal(hasProjectLocalBin(nodeModules, "vize", "linux"), false, `${shim} counted here`);
   }
-
-  fs.rmSync(binDir, { recursive: true, force: true });
-  fs.mkdirSync(binDir, { recursive: true });
-  fs.writeFileSync(path.join(binDir, "vize.cmd"), "");
-  assert.equal(hasProjectLocalBin(nodeModules, "vize", "linux"), false);
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {
