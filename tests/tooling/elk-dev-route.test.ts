@@ -7,9 +7,15 @@ import { fileURLToPath } from "node:url";
 import { applyElkRuntimePnpmOverrides } from "../_helpers/apps.ts";
 import {
   assertElkRenderRouteAnchors,
+  ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
+  ELK_EXPLORE_ROUTE_LINKS,
   ELK_RENDER_ROUTE,
+  ELK_RENDER_ROUTE_LINKS,
+  ELK_RENDER_ROUTE_MIN_ELEMENTS,
   ELK_RENDER_ROUTE_SOURCE_CONTRACTS,
   elkRequiredRouteLinks,
+  elkRouteReadinessExpectation,
+  elkRouteMinElements,
 } from "../app/dev/elk-route-contract.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -50,31 +56,66 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   };
 
   assert.equal(ELK_RENDER_ROUTE, "/settings");
+  assert.equal(ELK_RENDER_ROUTE_MIN_ELEMENTS, 100);
+  assert.equal(ELK_DEFAULT_ROUTE_MIN_ELEMENTS, 60);
   assert.match(devSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
-  assert.match(devSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
   assert.match(
     devSpec,
-    /ELK_RENDER_ROUTE_LINKS = \["\/settings\/interface", "\/settings\/about"\]/,
+    /const ELK_RENDER_READINESS = elkRouteReadinessExpectation\(ELK_RENDER_ROUTE\);/,
   );
+  assert.match(devSpec, /links: ELK_RENDER_READINESS\.links/);
+  assert.match(devSpec, /minElements: ELK_RENDER_READINESS\.minElements/);
   assert.doesNotMatch(devSpec, /\b(?:warmupPage|page)\.goto\(app\.url\b/);
   assert.doesNotMatch(devSpec, /verifySSRContent\(page,\s*app\.url\)/);
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
   assert.match(visualSpec, /path: ELK_RENDER_ROUTE/);
-  assert.match(visualSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
+  assert.match(visualSpec, /const readiness = elkRouteReadinessExpectation\(route\.path\);/);
+  assert.match(
+    visualSpec,
+    /elkRouteContentState\(page, readiness\.links, readiness\.minElements\)/,
+  );
   assert.doesNotMatch(visualSpec, /path: "\/"(?:[,}])/);
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:vrt:elk"] ?? "", /app\/vrt\/elk\.spec\.ts/);
 });
 
-test("elk visual readiness requires settings links only on the deterministic render route", () => {
-  assert.deepEqual(elkRequiredRouteLinks(ELK_RENDER_ROUTE), [
-    "/settings/interface",
-    "/settings/about",
-  ]);
+test("elk visual readiness requires route-specific stable links", () => {
+  assert.deepEqual(ELK_RENDER_ROUTE_LINKS, ["/settings/interface", "/settings/about"]);
+  assert.deepEqual(ELK_EXPLORE_ROUTE_LINKS, ["/explore/users", "/explore/tags", "/explore/links"]);
+  assert.deepEqual(elkRequiredRouteLinks(ELK_RENDER_ROUTE), [...ELK_RENDER_ROUTE_LINKS]);
+  assert.deepEqual(elkRequiredRouteLinks("/explore"), [...ELK_EXPLORE_ROUTE_LINKS]);
+  assert.deepEqual(elkRouteReadinessExpectation(ELK_RENDER_ROUTE), {
+    links: [...ELK_RENDER_ROUTE_LINKS],
+    minElements: ELK_RENDER_ROUTE_MIN_ELEMENTS,
+  });
+  assert.deepEqual(elkRouteReadinessExpectation("/settings?tab=interface"), {
+    links: [...ELK_RENDER_ROUTE_LINKS],
+    minElements: ELK_RENDER_ROUTE_MIN_ELEMENTS,
+  });
+  assert.deepEqual(elkRouteReadinessExpectation("/explore"), {
+    links: [...ELK_EXPLORE_ROUTE_LINKS],
+    minElements: ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
+  });
+  assert.deepEqual(elkRouteReadinessExpectation("/explore?tab=users"), {
+    links: [...ELK_EXPLORE_ROUTE_LINKS],
+    minElements: ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
+  });
+
+  for (const routePath of ["/public", "/settings/interface", "/share-target?text=hi"]) {
+    assert.deepEqual(elkRequiredRouteLinks(routePath), []);
+    assert.deepEqual(elkRouteReadinessExpectation(routePath), {
+      links: [],
+      minElements: ELK_DEFAULT_ROUTE_MIN_ELEMENTS,
+    });
+  }
+});
+
+test("elk visual readiness uses route-specific element thresholds", () => {
+  assert.equal(elkRouteMinElements(ELK_RENDER_ROUTE), ELK_RENDER_ROUTE_MIN_ELEMENTS);
 
   for (const routePath of ["/explore", "/public", "/settings/interface", "/share-target?text=hi"]) {
-    assert.deepEqual(elkRequiredRouteLinks(routePath), []);
+    assert.equal(elkRouteMinElements(routePath), ELK_DEFAULT_ROUTE_MIN_ELEMENTS);
   }
 });
 

@@ -21,14 +21,14 @@ import {
 } from "../../_helpers/assertions";
 import {
   ELK_RENDER_ROUTE,
+  elkRouteReadinessExpectation,
   readElkRenderRouteSourceEvidence,
   type ElkRenderRouteSourceEvidence,
 } from "./elk-route-contract";
 
 const app = elkApp;
 const ELK_RENDER_URL = `${app.url}${ELK_RENDER_ROUTE}`;
-const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
-const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
+const ELK_RENDER_READINESS = elkRouteReadinessExpectation(ELK_RENDER_ROUTE);
 
 test.describe("elk dev", () => {
   let devServer: ChildProcess;
@@ -93,7 +93,7 @@ test.describe("elk dev", () => {
     const mountEl = page.locator(app.mountSelector);
     await expect(mountEl).toBeAttached({ timeout: 15_000 });
     await waitForElkPageContent(page);
-    for (const href of ELK_RENDER_ROUTE_LINKS) {
+    for (const href of ELK_RENDER_READINESS.links) {
       await expect(page.locator(`a[href="${href}"]`).first()).toBeAttached();
     }
   });
@@ -247,8 +247,8 @@ async function elkRenderRouteContentState(page: Page): Promise<string> {
       return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
     },
     {
-      links: [...ELK_RENDER_ROUTE_LINKS],
-      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      links: ELK_RENDER_READINESS.links,
+      minElements: ELK_RENDER_READINESS.minElements,
       selector: app.mountSelector,
     },
   );

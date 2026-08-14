@@ -13,6 +13,7 @@ export const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 export const MOBILE_VIEWPORT = { width: 390, height: 844 };
 export const FRONTEND_PHPCON_VRT_TIMEOUT = 900_000;
 export const STRICT_ROUTE_MAX_DIFF_RATIO = 0.004;
+export const NEWS_ROUTE_MAX_DIFF_RATIO = 0.008;
 export const PREVIEW_MOBILE_MAX_DIFF_PIXELS = 43_887;
 
 export const frontendPhpconVisualModes: FrontendPhpconVisualMode[] = ["dev", "preview"];
@@ -34,12 +35,20 @@ export const frontendPhpconVisualRoutes: FrontendPhpconVisualRouteConfig[] = [
     maxDiffPixelsByMode: { preview: PREVIEW_MOBILE_MAX_DIFF_PIXELS },
   },
   { name: "about", path: "/about" },
-  { name: "news", path: "/news/2026-05-06-social-gathering-ticket" },
+  {
+    name: "news",
+    path: "/news/2026-05-06-social-gathering-ticket",
+    maxDiffRatio: NEWS_ROUTE_MAX_DIFF_RATIO,
+  },
   { name: "timetable", path: "/timetable" },
   { name: "job-board", path: "/job-board", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   { name: "english-home", path: "/en", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   { name: "english-about", path: "/en/about" },
-  { name: "english-news", path: "/en/news/2026-05-06-social-gathering-ticket" },
+  {
+    name: "english-news",
+    path: "/en/news/2026-05-06-social-gathering-ticket",
+    maxDiffRatio: NEWS_ROUTE_MAX_DIFF_RATIO,
+  },
   { name: "english-job-board", path: "/en/job-board", maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO },
   {
     name: "language-switch",

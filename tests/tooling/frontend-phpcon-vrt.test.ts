@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   MOBILE_VIEWPORT,
+  NEWS_ROUTE_MAX_DIFF_RATIO,
   PREVIEW_MOBILE_MAX_DIFF_PIXELS,
   STRICT_ROUTE_MAX_DIFF_RATIO,
   frontendPhpconVisualRoutes,
@@ -14,6 +15,7 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   const mobileMenu = route("mobile-menu");
 
   assert.equal(STRICT_ROUTE_MAX_DIFF_RATIO, 0.004);
+  assert.equal(NEWS_ROUTE_MAX_DIFF_RATIO, 0.008);
   assert.equal(PREVIEW_MOBILE_MAX_DIFF_PIXELS, 43_887);
   assert.deepEqual(homeMobile.viewport, MOBILE_VIEWPORT);
   assert.equal(homeMobile.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
@@ -23,6 +25,11 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   assert.equal(mobileMenu.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "preview"), 43_887);
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "dev"), undefined);
+});
+
+test("frontend-phpcon news routes have article-specific visual tolerance", () => {
+  assert.equal(route("news").maxDiffRatio, NEWS_ROUTE_MAX_DIFF_RATIO);
+  assert.equal(route("english-news").maxDiffRatio, NEWS_ROUTE_MAX_DIFF_RATIO);
 });
 
 function route(name: string) {

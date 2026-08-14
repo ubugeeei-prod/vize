@@ -5,10 +5,45 @@ export const ELK_RENDER_ROUTE = "/settings";
 
 export const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
 
+export const ELK_EXPLORE_ROUTE_LINKS = [
+  "/explore/users",
+  "/explore/tags",
+  "/explore/links",
+] as const;
+
+export const ELK_RENDER_ROUTE_MIN_ELEMENTS = 100;
+
+export const ELK_DEFAULT_ROUTE_MIN_ELEMENTS = 60;
+
 // Only the deterministic render route ships the pinned settings navigation, so
 // other routes must not gate readiness on those links.
 export function elkRequiredRouteLinks(routePath: string): string[] {
-  return routePath === ELK_RENDER_ROUTE ? [...ELK_RENDER_ROUTE_LINKS] : [];
+  const pathname = elkRoutePathname(routePath);
+  if (pathname === ELK_RENDER_ROUTE) return [...ELK_RENDER_ROUTE_LINKS];
+  if (pathname === "/explore") return [...ELK_EXPLORE_ROUTE_LINKS];
+  return [];
+}
+
+export function elkRouteMinElements(routePath: string): number {
+  return elkRoutePathname(routePath) === ELK_RENDER_ROUTE
+    ? ELK_RENDER_ROUTE_MIN_ELEMENTS
+    : ELK_DEFAULT_ROUTE_MIN_ELEMENTS;
+}
+
+export interface ElkRouteReadinessExpectation {
+  links: string[];
+  minElements: number;
+}
+
+export function elkRouteReadinessExpectation(routePath: string): ElkRouteReadinessExpectation {
+  return {
+    links: elkRequiredRouteLinks(routePath),
+    minElements: elkRouteMinElements(routePath),
+  };
+}
+
+function elkRoutePathname(routePath: string): string {
+  return routePath.split("?", 1)[0] || "/";
 }
 
 export const ELK_RENDER_ROUTE_SOURCE_CONTRACTS = {

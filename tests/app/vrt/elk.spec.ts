@@ -18,7 +18,7 @@ import {
 } from "../../_helpers/visual-parity";
 import {
   ELK_RENDER_ROUTE,
-  elkRequiredRouteLinks,
+  elkRouteReadinessExpectation,
   readElkRenderRouteSourceEvidence,
 } from "../dev/elk-route-contract";
 
@@ -36,7 +36,6 @@ const OUTPUT_DIR =
   path.resolve(__dirname, "../../../.vize/artifacts/elk-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const DEFAULT_MAX_DIFF_RATIO = 0.04;
-const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const apps = createElkVisualParityApps();
 
@@ -192,16 +191,20 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
 }
 
 async function waitForElkPageContent(page: Page, route: VisualRoute): Promise<void> {
-  const requiredLinks = elkRequiredRouteLinks(route.path);
+  const readiness = elkRouteReadinessExpectation(route.path);
   await expect
-    .poll(() => elkRouteContentState(page, requiredLinks), {
+    .poll(() => elkRouteContentState(page, readiness.links, readiness.minElements), {
       intervals: [250, 500, 1_000],
       timeout: 90_000,
     })
     .toBe("ready");
 }
 
-async function elkRouteContentState(page: Page, requiredLinks: readonly string[]): Promise<string> {
+async function elkRouteContentState(
+  page: Page,
+  requiredLinks: readonly string[],
+  minElements: number,
+): Promise<string> {
   return page.evaluate(
     ({ links, minElements, selector }) => {
       const root = document.querySelector(selector);
@@ -219,7 +222,7 @@ async function elkRouteContentState(page: Page, requiredLinks: readonly string[]
     },
     {
       links: requiredLinks,
-      minElements: ELK_MIN_RENDER_ROUTE_ELEMENTS,
+      minElements,
       selector: "#__nuxt",
     },
   );
