@@ -3805,6 +3805,7 @@ dependencies = [
  "compact_str 0.9.0",
  "insta",
  "once_cell",
+ "oxc_allocator",
  "phf 0.13.1",
  "pklrust",
  "regex-lite",

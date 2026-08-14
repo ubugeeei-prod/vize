@@ -9,8 +9,10 @@ description = "Carton - The artist's toolbox for Vize compiler"
 metadata.vize.stability = "alpha-supported"
 
 [dependencies]
-# Arena allocator
+# Arena allocators: bumpalo backs the drop-running template containers,
+# oxc_allocator the retained-AST pool (Davinci P1-1; collapses at P1-10).
 bumpalo = { workspace = true }
+oxc_allocator = { workspace = true }
 compact_str = { workspace = true }
 
 # Utilities

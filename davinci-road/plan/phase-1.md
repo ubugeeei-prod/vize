@@ -8,7 +8,7 @@
 
 ## TODO index
 
-- [ ] P1-1 Arena unification in carton
+- [x] P1-1 Arena unification in carton
 - [ ] P1-2 Allocator plumbing through armature/atelier
 - [ ] P1-3 `SourceLocation` diet: retire per-node `source` strings
 - [ ] P1-4 `SourceLocation` diet: retire dead line/column
@@ -28,9 +28,9 @@
 
 **Steps:**
 
-- [ ] `crates/vize_carton/src/allocator.rs`: `Allocator` becomes a re-export/newtype of `oxc_allocator::Allocator` (already bumpalo-backed; the workspace pins the oxc rev in root `Cargo.toml`); keep `vize_carton::{Box, Vec}` aliases pointing at the oxc arena types
-- [ ] Audit bumpalo-API deltas used in-tree (`alloc_str`, `reset`, iteration helpers) — shim what's trivial, list what isn't in the PR description
-- [ ] Node-size static asserts from P0-9 unchanged
+- [x] `crates/vize_carton/src/allocator.rs`: `Allocator` becomes the unified per-compile handle `{ bump: Bump, oxc: oxc_allocator::Allocator }` — one value, one lifetime, one `reset()` covering both pools; `as_oxc()` exposes the retained-AST pool P1-5 parses into _(amended in-PR: the original step assumed oxc_allocator was still bumpalo-backed and the container aliases could flip here. At the pinned rev (0.142, `fc702c1`) oxc ships its own `Arena` — no bumpalo inside — and `oxc_allocator::{Box, Vec}` reject `Drop` payloads with a const assertion, which today's string-owning nodes trip. The aliases flip at P1-10 once the string diet makes nodes `Drop`-free; until then the two-pool handle is the chartered in-phase transitional state (#26))_
+- [x] Audit bumpalo-API deltas used in-tree _(finding: `Deref<Target = Bump>` is preserved, so every `Box::new_in`/`Vec::new_in`/`BumpString`/`BumpVec` call site compiles unchanged; `alloc_str`/`as_bump`/`reset` keep their signatures; `allocated_bytes` now reports both pools' bytes — sole external consumer is vize_maestro's virtual-code metrics, where the sum is the truthful number; nothing needed a shim)_
+- [x] Node-size static asserts from P0-9 unchanged _(no node type changes in this task)_
 
 **Acceptance:** workspace compiles, full test suite green, P0 benches within noise, `tools/davinci/corpus-diff.mjs` empty.
 **Deps:** P0-4, P0-9.
@@ -132,6 +132,7 @@ Corpus parity; benches hold or improve.
 **Steps:**
 
 - [ ] Interner in `vize_carton` (arena-backed atoms for names appearing repeatedly: tags, directive names, well-known attrs); node fields (`name`, `tag`, `content`) become `&'a str` slices or atoms — per-field decision recorded in the PR
+- [ ] Collapse the P1-1 two-pool handle: flip `vize_carton::{Box, Vec}` aliases to the oxc arena types (their no-`Drop` const assert passes once nodes are string-free), delete the `bump` pool from `Allocator`, and retire the `Bump`/`BumpString`/`BumpVec` re-exports
 - [ ] Delete `ensure_sufficient_stack` `Drop` impls: `crates/vize_relief/src/relief/elements.rs`, `relief/control_flow.rs`, `crates/vize_atelier_vapor/src/ir_drop.rs` (arena drop is free once nothing owns heap strings)
 - [ ] `stress-deep.vue` fixture passes without the stack guard (the guard's reason is gone, prove it)
 - [ ] The `docs/content/architecture/performance.md` interning claim becomes true — note for P1-12
