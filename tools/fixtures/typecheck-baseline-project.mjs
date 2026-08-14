@@ -28,7 +28,14 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * must not reach into installed or built output. It cannot narrow the compared
  * corpus, because `exclude` never applies to `files`.
  *
- * The source config's own directory is globbed as well as the fixture root,
+ * The generated baseline lives beside the source config rather than at fixture
+ * root. Several workspace fixtures, including vue-vben-admin, resolve
+ * `compilerOptions.types` through package-local `node_modules` entries such as
+ * `playground/node_modules/@vben/types`; moving the config to a root-level
+ * `.vize-baseline` directory makes TypeScript skip those package-local links and
+ * turns a usable baseline into a configuration failure.
+ *
+ * The source config's own directory is also globbed as well as the fixture root,
  * because a TypeScript wildcard segment never descends into a dot-directory:
  * `<fixture>/**\/*.d.ts` misses `.nuxt/imports.d.ts` while `<fixture>/.nuxt/**`
  * matches it, the segment being literal. That is the whole of elk's generated
@@ -37,11 +44,15 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * inside the first and adds nothing.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
-  const artifactPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
-  const outputPath = join(fixtureRoot, ".vize-baseline", `${project.id}-vue-tsc.tsconfig.json`);
-  const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
   const sourcePath = resolve(fixtureRoot, sourceProject);
+  const artifactPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
+  const outputPath = join(
+    dirname(sourcePath),
+    ".vize-baseline",
+    `${project.id}-vue-tsc.tsconfig.json`,
+  );
+  const configDir = dirname(outputPath);
   const ambientRoots = [
     ...new Set(
       [fixtureRoot, dirname(sourcePath)].map((root) => configRelativePath(configDir, root)),
@@ -55,6 +66,11 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
       // project diagnostics, and without this the baseline aborts before it can
       // measure the same SFC corpus as Vize.
       ignoreDeprecations: "6.0",
+      // The generated config is the measurement harness, not a source root. If
+      // TypeScript infers `rootDir` from `.vize-baseline`, every file outside
+      // that directory becomes TS6059 noise and the baseline stops measuring
+      // Vize. Pin it to the fixture corpus root instead.
+      rootDir: configRelativePath(configDir, fixtureRoot),
     },
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)

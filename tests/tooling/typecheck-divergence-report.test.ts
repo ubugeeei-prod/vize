@@ -150,6 +150,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     const invocation = readJson(fixture.invocationPath);
     const baselineProject = path.join(
       fixture.fixtureRoot,
+      ".generated",
       ".vize-baseline",
       "fixture-vue-tsc.tsconfig.json",
     );
@@ -164,19 +165,21 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     );
     // The elk shape: the baseline config is generated into a dot-directory, which
     // a TypeScript wildcard segment never descends into, so it is globbed by name.
-    const generatedBase = "../.generated";
+    const fixtureBase = "../..";
+    const generatedBase = "..";
     assert.deepEqual(readJson(baselineArtifact), {
-      extends: `${generatedBase}/tsconfig.json`,
+      extends: "../tsconfig.json",
       compilerOptions: {
         ignoreDeprecations: "6.0",
+        rootDir: fixtureBase,
       },
-      files: ["../src/App.vue"],
+      files: [`${fixtureBase}/src/App.vue`],
       // #3738: ambient declarations are the fixture's type environment, and a
       // `files`-only program drops every one of them.
-      include: ["../**/*.d.ts", `${generatedBase}/**/*.d.ts`],
+      include: [`${fixtureBase}/**/*.d.ts`, `${generatedBase}/**/*.d.ts`],
       exclude: [
-        "../**/node_modules/**",
-        "../**/dist/**",
+        `${fixtureBase}/**/node_modules/**`,
+        `${fixtureBase}/**/dist/**`,
         `${generatedBase}/**/node_modules/**`,
         `${generatedBase}/**/dist/**`,
       ],
