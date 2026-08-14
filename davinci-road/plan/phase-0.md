@@ -229,7 +229,8 @@ detection.
 
 - [x] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (`[[allow]]` group = justification + expiry + covered paths)
 - [x] CI self-test: fixture with a deliberately bad assertion that the lint must flag (lint the linter) — `tests/tooling/davinci-assertion-lint.test.ts`
-- [ ] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section; CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison (deferred: pending local disk headroom; runs in the nightly lane once recorded)
+- [x] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section _(measured: carton 0.4678 over 654 viable mutants, relief 0.8372 over 43 — run record + missed-mutant listings in `mutation-baseline.md`)_
+- [ ] Mutation CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison — the reviewed job definition lives in `mutation-baseline.md`; it lands with the reference-runner baselines (P0-4's Blacksmith re-record), which also re-record the `[mutation]` floors on the reference runner
 - [x] Construct taxonomy DRAFT `davinci-road/plan/taxonomy.toml`: dimensions = element kind (native/component/slot/template/svg/mathml) × directive (`v-if/-else-if/-else, v-for, v-on, v-bind, v-model, v-show, v-html, v-text, v-once, v-memo, v-cloak, v-pre, custom`) × modifier classes × binding sources (setup/props/data/inject/global) × block combinations
 - [ ] Taxonomy dimensions signed off — **review point: awaiting maintainer sign-off**
 - [x] Matrix generator skeleton `tools/davinci/matrix-gen.mjs`: taxonomy → fixture stubs under `tests/fixtures/davinci-matrix/` (generation only; expected outputs arrive with the stages that consume them — skeleton covers the element-kind × directive plane, deterministic, `--check` staleness mode; fixtures not yet committed)
@@ -263,6 +264,6 @@ detection.
 - [x] `Span` landed unused; `SourceLocation` inventory committed (P0-9)
 - [x] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
 - [x] Profiler export schema validating; zero overhead when off (P0-11) — schema-validated in CI by the carton export test; the bench-measured overhead comparison joins the P0-4 gate once reference baselines exist
-- [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12) — lint live in CI with the 236-file debt allowlist; mutation baseline recording in flight; **taxonomy dimensions still awaiting maintainer sign-off**
+- [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12) — lint live in CI with the 236-file debt allowlist; mutation baseline recorded (`vize_carton` 0.4678, `vize_relief` 0.8372 — `mutation-baseline.md`; the nightly ratchet lane lands with the reference-runner re-record); **taxonomy dimensions still awaiting maintainer sign-off**
 - [x] FP/FN pilot oracles running with committed ledgers (P0-13) — CI covers the committed miniature set; corpus-shard lane joins CI with corpus hydration (P0-6)
 - [x] `tools/davinci/corpus-diff.mjs` across the whole phase: **empty** (zero behavior change) — verified at the phase-final davinci head: zero gating drift across all rows, scope proof matched (the filed unstable row surfaced non-gating, by design)

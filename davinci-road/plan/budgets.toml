@@ -157,7 +157,13 @@ atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes 
 atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 0, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 [mutation]
-# cargo-mutants minimum scores per crate. Populated by P0-12.
+# cargo-mutants minimum scores per crate (P0-12). score = caught / viable,
+# truncated to four decimal places; run record, missed-mutant listings, and
+# the nightly ratchet job that enforces these floors: mutation-baseline.md.
+# Local seeds — re-recorded on the reference runner when the nightly lane
+# lands (same PR as the P0-4 Blacksmith re-record).
+carton_score = 0.4678
+relief_score = 0.8372
 
 [traversal]
 # Fused compile-path walk-count ceilings per fixture. Populated by P2-12.
