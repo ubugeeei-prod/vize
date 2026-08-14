@@ -103,10 +103,11 @@ impl BindingType {
     /// - `options` (computed / methods / inject) → `$options.`
     /// - `vue-global` (`$slots`, `$emit`, `$attrs`, ...) → `_ctx.`
     ///
-    /// `props-aliased` is intentionally not handled here: it rewrites to
-    /// `$props['<original-key>']` and must be resolved via the props-alias map
-    /// by the caller. Globals/external bindings fall back to `_ctx.` at the call
-    /// site and are not represented here.
+    /// `props-aliased` also returns `$props.` here; the caller must still resolve
+    /// the original key through the props-alias map, which rewrites the prefixed
+    /// access to `$props['<original-key>']`. JavaScript globals are skipped
+    /// before this call site, so their `$setup.` arm is unused in practice, and
+    /// `external-module` bindings behave like setup bindings in function mode.
     #[inline]
     pub const fn non_inline_template_prefix(self) -> &'static str {
         match self {

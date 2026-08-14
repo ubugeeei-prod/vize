@@ -98,6 +98,38 @@ fn compiler_options_change_runtime_names_syntax_and_source_maps() {
 }
 
 #[test]
+fn custom_element_patterns_compile_matched_tags_as_elements() {
+    let matched = compile_internal(
+        "<TresMesh><TresSpotLight /></TresMesh>",
+        &CompilerOptions {
+            custom_elements: Some(vec!["Tres*".to_string()]),
+            ..Default::default()
+        },
+        false,
+        None,
+    )
+    .expect("custom-element patterns should compile");
+    assert!(
+        matched.code.contains("\"TresMesh\"") && matched.code.contains("\"TresSpotLight\""),
+        "matched tags should be emitted as element tags:\n{}",
+        matched.code
+    );
+    assert!(
+        !matched.code.contains("_resolveComponent"),
+        "matched tags must not use runtime component resolution:\n{}",
+        matched.code
+    );
+
+    let unmatched = compile_internal("<TresMesh />", &CompilerOptions::default(), false, None)
+        .expect("control compile should succeed");
+    assert!(
+        unmatched.code.contains("_resolveComponent(\"TresMesh\")"),
+        "without patterns the tag should stay a component:\n{}",
+        unmatched.code
+    );
+}
+
+#[test]
 fn sfc_compiler_options_change_module_and_standalone_runtimes() {
     let descriptor = parse_sfc("<template><div></div></template>", Default::default())
         .expect("fixture should parse");

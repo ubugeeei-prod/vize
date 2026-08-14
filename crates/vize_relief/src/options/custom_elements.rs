@@ -126,6 +126,22 @@ mod tests {
     }
 
     #[test]
+    fn custom_element_matcher_supports_leading_and_middle_wildcards() {
+        let matcher = CustomElementMatcher::from_patterns(vec![
+            String::from("*-mesh"),
+            String::from("Tres*Material"),
+        ]);
+
+        assert!(matcher.matches("three-mesh"));
+        assert!(matcher.matches("-mesh"));
+        assert!(!matcher.matches("three-mesh-child"));
+        assert!(matcher.matches("TresBasicMaterial"));
+        assert!(matcher.matches("TresMaterial"));
+        assert!(!matcher.matches("TresMaterialX"));
+        assert!(!matcher.matches("MyTresBasicMaterial"));
+    }
+
+    #[test]
     fn custom_element_matcher_treats_all_wildcard_patterns_as_match_all() {
         for pattern in ["*", "**", "***"] {
             let matcher = CustomElementMatcher::from_patterns(vec![String::from(pattern)]);

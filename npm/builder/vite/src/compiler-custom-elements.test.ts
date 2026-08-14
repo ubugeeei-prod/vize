@@ -53,3 +53,23 @@ assert.doesNotMatch(
   /_resolveComponent\("Tres(?:Canvas|Mesh|SpotLight)"\)/,
   "Matched PascalCase renderer tags must not use runtime component resolution",
 );
+
+// Control: without `customElements`, `customRenderer` alone keeps the same tags
+// as components resolved at runtime.
+const customRendererOnlyCompiled = compileFile(
+  "/src/TresCustomElements.vue",
+  new Map(),
+  {
+    sourceMap: false,
+    ssr: false,
+    vapor: false,
+    customRenderer: true,
+  },
+  customElementPatternSource,
+);
+
+assert.match(
+  customRendererOnlyCompiled.code,
+  /_resolveComponent\("TresMesh"\)/,
+  "Without customElements patterns, renderer tags stay runtime-resolved components",
+);

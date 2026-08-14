@@ -83,10 +83,10 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
             return None;
         }
         let array = js_sys::Array::from(&value);
-        let mut values = Vec::with_capacity(array.length() as usize);
-        for value in array.iter() {
-            values.push(value.as_string()?);
-        }
+        // Keep every string element and ignore the rest: a single non-string
+        // entry must not silently discard the whole option. The `Vec` grows on
+        // demand instead of reserving from the JS-controlled array length.
+        let values: Vec<String> = array.iter().filter_map(|value| value.as_string()).collect();
         Some(values)
     };
 
