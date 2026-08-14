@@ -115,13 +115,11 @@ test("tool benchmark metadata records the hosted runner and its restore label", 
 
 test("release platform metadata keeps the Blacksmith restore mapping on its tables", () => {
   const source = readRepoFile("tools", "github", "release-platforms.mjs");
-  const restoreNotice =
-    "// Temporary hosted-runner fallback:\n" +
-    "// - restore macos-15-intel/macos-15 to blacksmith-12vcpu-macos-15\n" +
-    "// - restore ubuntu-24.04/ubuntu-24.04-arm to blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm\n";
+  const cliTableStart = source.indexOf("export const cliReleasePlatforms = [");
+  assert.notEqual(cliTableStart, -1, "missing CLI release platform table");
   assert.ok(
-    source.includes(`${restoreNotice}export const cliReleasePlatforms = [`),
-    "the restore mapping must sit on the migrated platform tables, not float as a stray comment",
+    source.slice(0, cliTableStart).includes("restore macos-15 to blacksmith-12vcpu-macos-15"),
+    "the macOS hosted fallback must keep the Blacksmith restore mapping on the platform table",
   );
 
   // Each migrated host has to remain reachable from a real platform entry;
@@ -131,15 +129,19 @@ test("release platform metadata keeps the Blacksmith restore mapping on its tabl
   const nativeByTarget = new Map(
     nativeReleasePlatforms.map((platform) => [platform.target, platform]),
   );
-  assert.equal(cliByTarget.get("x86_64-apple-darwin")?.host, "macos-15-intel");
+  assert.equal(cliByTarget.get("x86_64-apple-darwin")?.host, "macos-15");
   assert.equal(nativeByTarget.get("x86_64-apple-darwin")?.host, "macos-15");
   assert.equal(nativeByTarget.get("aarch64-apple-darwin")?.host, "macos-15");
-  for (const host of ["macos-15-intel", "macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]) {
+  for (const host of ["macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]) {
     assert.ok(
       platforms.some((platform: { host: string }) => platform.host === host),
       `no release platform entry uses the temporary hosted runner ${host}`,
     );
   }
+  assert.ok(
+    !platforms.some((platform: { host: string }) => platform.host === "macos-15-intel"),
+    "MoonBit release scripts do not run on macOS Intel hosted runners",
+  );
   for (const restored of [
     "blacksmith-12vcpu-macos-15",
     RESTORE_BLACKSMITH_RUNNER,
