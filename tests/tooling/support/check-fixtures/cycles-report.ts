@@ -32,6 +32,7 @@ export type CyclesReport = {
   readonly vizeBin: string;
   readonly corsaBin: string;
   readonly cyclesPerTarget: number;
+  readonly budgetCpuCount: number;
   readonly nodeVersion: string;
   readonly runner: RunnerFacts;
   readonly targets: CyclesTargetReport[];
@@ -43,9 +44,10 @@ export function createCyclesReport(options: {
   readonly vizeBin: string;
   readonly corsaBin: string;
   readonly cycles: number;
-  readonly cpuCount: number;
+  readonly budgetCpuCount: number;
 }): CyclesReport {
   return {
+    budgetCpuCount: options.budgetCpuCount,
     corsaBin: options.corsaBin,
     cyclesPerTarget: options.cycles,
     finishedAtIso: null,
@@ -113,6 +115,7 @@ export function renderCyclesSummary(report: CyclesReport): string {
     "",
     `- status: **${report.status}**`,
     `- runner: ${platform}, ${cpuCount} CPUs, \`ulimit -u\` ${ulimitProcesses ?? "unavailable"}`,
+    `- budget CPU count: ${report.budgetCpuCount}`,
     `- cgroup \`pids.current\` / \`pids.max\`: ${cgroupPids.current ?? "unavailable"} / ${cgroupPids.max ?? "unavailable"}`,
     `- cycles per target: ${report.cyclesPerTarget}`,
     "",

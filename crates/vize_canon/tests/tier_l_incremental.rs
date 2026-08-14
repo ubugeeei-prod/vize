@@ -14,6 +14,7 @@ mod artifact;
 use artifact::{Artifact, BatchIncrementalBudget, FixtureEvidence, lane, write_artifact};
 
 const FIXTURE_ID: &str = "vue-vben-admin";
+const BUDGET_SCALE_ENV: &str = "VIZE_TIER_L_BUDGET_SCALE";
 const TIER_L_VUE_FILES: usize = 500;
 const INJECTED_FILE: &str = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
 const CLEAN_SOURCE: &str = r#"<script setup lang="ts">
@@ -80,6 +81,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         .batch_incremental_budget
         .expect("Vben must own a batchIncrementalBudget");
     assert_budget(&budget);
+    let budget_scale = budget_scale();
 
     let fixture_root = env_path("VIZE_TIER_L_FIXTURE", &repo_root)
         .unwrap_or_else(|| repo_root.join("tests/_fixtures/_git/vue-vben-admin"))
@@ -124,7 +126,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
     assert_no_injected_diagnostics(&cold);
     let cold_metrics = checker.incremental_metrics();
     assert_cold_metrics(cold_metrics, &budget);
-    assert_within_budget("cold", cold_ms, budget.cold_ms);
+    assert_within_budget("cold", cold_ms, budget.cold_ms, budget_scale);
 
     injected.write(BROKEN_SOURCE);
     let broken_started = Instant::now();
@@ -156,7 +158,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
     );
     let broken_metrics = checker.incremental_metrics();
     assert_warm_metrics(broken_metrics, 2, 1, &budget);
-    assert_within_budget("broken warm", broken_ms, budget.warm_ms);
+    assert_within_budget("broken warm", broken_ms, budget.warm_ms, budget_scale);
 
     injected.write(CLEAN_SOURCE);
     let repaired_started = Instant::now();
@@ -167,7 +169,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
     assert_no_injected_diagnostics(&repaired);
     let repaired_metrics = checker.incremental_metrics();
     assert_warm_metrics(repaired_metrics, 3, 2, &budget);
-    assert_within_budget("repaired warm", repaired_ms, budget.warm_ms);
+    assert_within_budget("repaired warm", repaired_ms, budget.warm_ms, budget_scale);
 
     let artifact = Artifact {
         schema_version: 1,
@@ -177,6 +179,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
             injected_file: INJECTED_FILE,
         },
         budget,
+        budget_scale,
         file_count: checker.file_count(),
         lanes: vec![
             lane("cold", cold_ms, cold_metrics),
@@ -244,6 +247,26 @@ fn assert_budget(budget: &BatchIncrementalBudget) {
     );
 }
 
+fn budget_scale() -> f64 {
+    match std::env::var(BUDGET_SCALE_ENV) {
+        Ok(raw) if raw.is_empty() => 1.0,
+        Ok(raw) => {
+            let scale = raw.parse::<f64>().unwrap_or_else(|_| {
+                panic!(
+                    "{BUDGET_SCALE_ENV} must be a finite number greater than 0 and at most 100, got {raw:?}"
+                )
+            });
+            assert!(
+                scale.is_finite() && scale > 0.0 && scale <= 100.0,
+                "{BUDGET_SCALE_ENV} must be a finite number greater than 0 and at most 100, got {raw:?}"
+            );
+            scale
+        }
+        Err(std::env::VarError::NotPresent) => 1.0,
+        Err(error) => panic!("{BUDGET_SCALE_ENV} must be valid UTF-8: {error}"),
+    }
+}
+
 fn assert_no_injected_diagnostics(result: &vize_canon::BatchTypeCheckResult) {
     assert!(
         result.diagnostics.iter().all(|diagnostic| {
@@ -307,9 +330,10 @@ fn assert_requested_budget(metrics: IncrementalCheckMetrics, budget: &BatchIncre
     );
 }
 
-fn assert_within_budget(lane: &str, elapsed_ms: u128, budget_ms: u64) {
+fn assert_within_budget(lane: &str, elapsed_ms: u128, budget_ms: u64, budget_scale: f64) {
+    let scaled_budget_ms = (budget_ms as f64 * budget_scale).ceil() as u128;
     assert!(
-        elapsed_ms < u128::from(budget_ms),
-        "{lane} took {elapsed_ms}ms, budget is {budget_ms}ms"
+        elapsed_ms < scaled_budget_ms,
+        "{lane} took {elapsed_ms}ms, budget is {budget_ms}ms at scale {budget_scale} ({scaled_budget_ms}ms)"
     );
 }

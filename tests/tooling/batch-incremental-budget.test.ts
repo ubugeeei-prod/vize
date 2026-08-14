@@ -44,6 +44,8 @@ test("the Tier-L oracle gates deterministic incremental work and emits evidence"
   assert.match(source, /session_to_cli_fallbacks, 0/);
   assert.match(source, /last_changed_files, budget\.max_changed_files/);
   assert.match(source, /last_requested_files <= budget\.max_requested_files/);
+  assert.match(source, /VIZE_TIER_L_BUDGET_SCALE/);
+  assert.match(source, /budget_scale/);
   assert.match(source, /metrics\.json/);
   assert.match(source, /summary\.md/);
   assert.doesNotMatch(source, /broken_ms\s*[<>]=?\s*cold_ms/);

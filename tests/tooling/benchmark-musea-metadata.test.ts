@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildCommands, buildMetadata } from "../../bench/compare-tools-metadata.mjs";
+import {
+  buildCommands,
+  buildMetadata,
+  TOOL_BENCHMARK_RUNNER_LABEL,
+} from "../../bench/compare-tools-metadata.mjs";
 
 const options = {
   runs: 3,
@@ -19,8 +23,7 @@ test("Musea corpus size is present in metadata and both reproduction commands", 
     workflowDispatch:
       "gh workflow run tool-benchmark.yml --ref <branch> -f file_count=3000 -f check_file_count=500 -f vite_file_count=1000 -f nuxt_file_count=250 -f musea_file_count=240 -f large_blocks=300 -f runs=3 -f warmups=1 -f commit_results=true",
     generate: "node bench/generate.mjs 3000",
-    benchmark:
-      'node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize --runs 3 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 250 --musea-file-count 240 --large-blocks 300 --runner-label "blacksmith-32vcpu-ubuntu-2404" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md',
+    benchmark: `node bench/compare-tools.mjs --input bench/__in__ --vize-bin target/release/vize --runs 3 --warmups 1 --check-file-count 500 --vite-file-count 1000 --nuxt-file-count 250 --musea-file-count 240 --large-blocks 300 --runner-label "${TOOL_BENCHMARK_RUNNER_LABEL}" --out tool-benchmark-summary.md --json tool-benchmark-results.json --doc performance-blacksmith.md`,
   });
 
   const metadata = buildMetadata({

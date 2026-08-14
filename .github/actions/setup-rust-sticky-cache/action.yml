@@ -28,26 +28,34 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Skip Blacksmith sticky disks on GitHub-hosted runners
+      if: ${{ runner.environment == 'github-hosted' }}
+      shell: bash
+      run: echo "GitHub-hosted runner detected; skipping Blacksmith sticky disks."
+
     - name: Mount Cargo registry sticky disk
+      if: ${{ runner.environment != 'github-hosted' }}
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
         key: ${{ github.repository }}-cargo-registry-${{ inputs.cache-key-suffix }}
         path: ~/.cargo/registry
 
     - name: Mount Cargo git sticky disk
+      if: ${{ runner.environment != 'github-hosted' }}
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
         key: ${{ github.repository }}-cargo-git-${{ inputs.cache-key-suffix }}
         path: ~/.cargo/git
 
     - name: Mount Rust target sticky disk
+      if: ${{ runner.environment != 'github-hosted' }}
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
         key: ${{ github.repository }}-${{ inputs.key }}-target-${{ inputs.cache-key-suffix }}
         path: ${{ inputs.target-path }}
 
     - name: Mount secondary Rust target sticky disk
-      if: ${{ inputs.secondary-target-path != '' }}
+      if: ${{ runner.environment != 'github-hosted' && inputs.secondary-target-path != '' }}
       uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
       with:
         key: ${{ github.repository }}-${{ inputs.secondary-key }}-target-${{ inputs.secondary-cache-key-suffix }}

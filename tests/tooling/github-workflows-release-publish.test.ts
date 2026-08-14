@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 type ReleaseJob = {
   env?: Record<string, string>;
@@ -206,7 +206,7 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   const buildJob = workflowJobBody(workflow, "build-wasm-package");
   const publishJob = workflowJobBody(workflow, "release-npm-wasm");
 
-  assert.match(buildJob, /runs-on:\s*blacksmith-\d+vcpu-ubuntu-2404/);
+  assert.match(buildJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(buildJob, /npm\/wasm\/index\.js/);
   assert.match(buildJob, /npm\/wasm\/index\.d\.ts/);
   assert.match(buildJob, /moon run --target native tools\/moon\/cmd\/build_vize_wasm_package --/);

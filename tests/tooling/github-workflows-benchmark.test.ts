@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
+import { hostedOrBlacksmith, readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 type ParsedWorkflow = {
   jobs?: Record<
@@ -263,7 +263,7 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
 
   // A/B: alternating base/head criterion baselines compared with critcmp into a
   // shared target dir; report-only by default (no threshold blocks the PR).
-  assert.match(abJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
+  assert.match(abJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(abJob, /contents:\s*read/);
   assert.doesNotMatch(abJob, /contents:\s*write/);
   const checkoutHead = workflowStepBody(abJob, "Checkout head");
@@ -310,7 +310,7 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
 
   // Dialect guard: build vize with legacy OFF and ON, then assert byte-identical
   // Vue 3 codegen plus a small A/B timing budget.
-  assert.match(guardJob, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
+  assert.match(guardJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(guardJob, /cargo build --profile ci-opt -p vize --target-dir target\/off/);
   assert.match(
     guardJob,

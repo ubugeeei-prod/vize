@@ -22,7 +22,7 @@ test("Criterion driver snapshots both baselines before comparing them", () => {
     {
       cwd: "/work/head",
       env: { CARGO_TARGET_DIR: "/work/head/target" },
-      capture: true,
+      capture: false,
     },
   );
   assert.deepEqual(criterionEnvironment("/work/head/target"), {
