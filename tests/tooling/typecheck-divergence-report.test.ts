@@ -148,31 +148,35 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       artifact.mutationOracle.states[0].sourceSha256,
     );
     const invocation = readJson(fixture.invocationPath);
-    const baselineProject = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
+    const baselineProject = path.join(
+      fixture.fixtureRoot,
+      ".vize-baseline",
+      "fixture-vue-tsc.tsconfig.json",
+    );
+    const baselineArtifact = path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json");
     assert.deepEqual(invocation, {
       cwd: fixture.fixtureRoot,
       args: ["--noEmit", "--pretty", "false", "--listFiles", "-p", baselineProject],
     });
-    const fixtureBase = path.relative(fixture.reportDir, fixture.fixtureRoot).replaceAll("\\", "/");
+    assert.equal(
+      fs.readFileSync(baselineArtifact, "utf8"),
+      fs.readFileSync(baselineProject, "utf8"),
+    );
     // The elk shape: the baseline config is generated into a dot-directory, which
     // a TypeScript wildcard segment never descends into, so it is globbed by name.
-    const generatedBase = `${fixtureBase}/.generated`;
-    assert.deepEqual(readJson(baselineProject), {
+    const generatedBase = "../.generated";
+    assert.deepEqual(readJson(baselineArtifact), {
       extends: `${generatedBase}/tsconfig.json`,
       compilerOptions: {
         ignoreDeprecations: "6.0",
       },
-      files: [
-        path
-          .relative(fixture.reportDir, path.join(fixture.fixtureRoot, "src/App.vue"))
-          .replaceAll("\\", "/"),
-      ],
+      files: ["../src/App.vue"],
       // #3738: ambient declarations are the fixture's type environment, and a
       // `files`-only program drops every one of them.
-      include: [`${fixtureBase}/**/*.d.ts`, `${generatedBase}/**/*.d.ts`],
+      include: ["../**/*.d.ts", `${generatedBase}/**/*.d.ts`],
       exclude: [
-        `${fixtureBase}/**/node_modules/**`,
-        `${fixtureBase}/**/dist/**`,
+        "../**/node_modules/**",
+        "../**/dist/**",
         `${generatedBase}/**/node_modules/**`,
         `${generatedBase}/**/dist/**`,
       ],

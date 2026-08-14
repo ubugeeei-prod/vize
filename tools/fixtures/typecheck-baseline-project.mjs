@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 /**
@@ -37,7 +37,8 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * inside the first and adds nothing.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
-  const outputPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
+  const artifactPath = join(reportDir, `${project.id}-vue-tsc.tsconfig.json`);
+  const outputPath = join(fixtureRoot, ".vize-baseline", `${project.id}-vue-tsc.tsconfig.json`);
   const configDir = dirname(outputPath);
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
   const sourcePath = resolve(fixtureRoot, sourceProject);
@@ -63,7 +64,9 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     references: [],
   };
   const source = `${JSON.stringify(config, null, 2)}\n`;
+  mkdirSync(configDir, { recursive: true });
   writeFileSync(outputPath, source);
+  writeFileSync(artifactPath, source);
   return { path: outputPath, source, sourceProject };
 }
 
