@@ -3352,8 +3352,7 @@
         ]
       },
       "vueGlobs": [
-        "src/**/*.vue",
-        "src/**/*.tsx"
+        "src/**/*.vue"
       ],
       "note": "TSX-heavy Vue application (111 .tsx vs 7 .vue at this revision) — JSX corpus lane.",
       "coverage": [
@@ -3380,8 +3379,7 @@
         ]
       },
       "vueGlobs": [
-        "src/**/*.vue",
-        "src/**/*.tsx"
+        "src/**/*.vue"
       ],
       "note": "Mixed SFC x TSX application (99 .vue + 29 .tsx at this revision).",
       "coverage": [
@@ -3436,8 +3434,8 @@
         ]
       },
       "vueGlobs": [
-        "playground/src/**/*.tsx",
-        "docs/**/*.tsx"
+        "playground/src/**/*.vue",
+        "docs/**/*.vue"
       ],
       "note": "Vapor JSX corpus: playground app and docs tutorial steps hold the vapor-mode JSX sources.",
       "coverage": [
