@@ -22,6 +22,8 @@ import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { formatTable } from "./lib/markdown.mjs";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CRATES_DIR = path.join(repoRoot, "crates");
 const CROQUIS_CRATE_DIR = "vize_croquis";
@@ -143,7 +145,8 @@ function stripRust(source) {
  */
 function findUseDecls(stripped) {
   const decls = [];
-  const re = /(^|[^A-Za-z0-9_])((?:pub(?:\s*\(\s*(?:crate|super|self|in\s+[A-Za-z0-9_:]+)\s*\))?\s+)?use\s+[^;]+;)/g;
+  const re =
+    /(^|[^A-Za-z0-9_])((?:pub(?:\s*\(\s*(?:crate|super|self|in\s+[A-Za-z0-9_:]+)\s*\))?\s+)?use\s+[^;]+;)/g;
   let m;
   while ((m = re.exec(stripped)) !== null) {
     const stmt = m[2];
@@ -423,7 +426,10 @@ function collectCroquisProducers(allCrates) {
           const last = entry.segments[entry.segments.length - 1];
           if (last !== "Croquis") continue;
           const root = entry.segments[0];
-          if (root === CROQUIS_CRATE_NAME || (inCroquis && (root === "crate" || root === "super" || root === "self"))) {
+          if (
+            root === CROQUIS_CRATE_NAME ||
+            (inCroquis && (root === "crate" || root === "super" || root === "self"))
+          ) {
             tokens.push(entry.alias ?? "Croquis");
           }
         }
@@ -431,7 +437,8 @@ function collectCroquisProducers(allCrates) {
       const tokenAlt = [...new Set(tokens)]
         .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
         .join("|");
-      const returnsCroquis = (retText) => new RegExp(`(?<![A-Za-z0-9_])(?:${tokenAlt})(?![A-Za-z0-9_])`).test(retText);
+      const returnsCroquis = (retText) =>
+        new RegExp(`(?<![A-Za-z0-9_])(?:${tokenAlt})(?![A-Za-z0-9_])`).test(retText);
       // pub fns returning Croquis (multi-line signatures included).
       const fnRe = /pub(?:\s*\([^)]*\))?\s+(?:const\s+)?(?:async\s+)?fn\s+([a-z_][a-z0-9_]*)/g;
       let fm;
@@ -482,7 +489,10 @@ function analyzeConsumers(products) {
       // Mask use decls out of the reference-counting text.
       let masked = stripped;
       for (const d of decls) {
-        masked = masked.slice(0, d.start) + maskKeepNewlines(stripped.slice(d.start, d.end)) + masked.slice(d.end);
+        masked =
+          masked.slice(0, d.start) +
+          maskKeepNewlines(stripped.slice(d.start, d.end)) +
+          masked.slice(d.end);
       }
       const entries = [];
       for (const d of decls) {
@@ -548,7 +558,8 @@ function analyzeConsumers(products) {
               modulePath = entry.segments.slice(1).join("::");
             }
           } else if (crateNames.has(root) || root === "crate") {
-            const exports = root === "crate" ? crateExports.get(crate.name) : crateExports.get(root);
+            const exports =
+              root === "crate" ? crateExports.get(crate.name) : crateExports.get(root);
             const last = entry.alias ?? entry.segments[entry.segments.length - 1];
             const target = exports?.get(entry.segments[entry.segments.length - 1]);
             if (target) {
@@ -584,14 +595,14 @@ function analyzeConsumers(products) {
   }
 
   // Reference + field-access counting.
-  const rows = new Map(); // key `${product} ${crate}` -> { sites, files:Set }
+  const rows = new Map(); // key `${product}\0${crate}` -> { sites, files:Set }
   const nonProduct = new Map(); // same keying for non-product croquis items
   const grepRows = new Map(); // naive lane
   const globFiles = [];
 
   const bump = (map, product, crate, file, count) => {
     if (count <= 0) return;
-    const key = product + " " + crate;
+    const key = product + "\u0000" + crate;
     if (!map.has(key)) map.set(key, { product, crate, sites: 0, files: new Set() });
     const row = map.get(key);
     row.sites += count;
@@ -684,9 +695,15 @@ function analyzeConsumers(products) {
             const rhs = m[2];
             let bound = false;
             if (fnAlt && new RegExp(`[.:](?:${fnAlt})\\s*\\(`).test(rhs)) bound = true;
-            if (!bound && fieldAltP && new RegExp(`\\.(?:${fieldAltP})\\b(?!\\s*\\()`).test(rhs)) bound = true;
+            if (!bound && fieldAltP && new RegExp(`\\.(?:${fieldAltP})\\b(?!\\s*\\()`).test(rhs))
+              bound = true;
             // Constructor / associated calls: `let c = Croquis::default();`
-            if (!bound && new RegExp(`(?<![A-Za-z0-9_])(?:${ctorAlt})\\s*::\\s*[a-z_][a-z0-9_]*\\s*\\(`).test(rhs)) {
+            if (
+              !bound &&
+              new RegExp(`(?<![A-Za-z0-9_])(?:${ctorAlt})\\s*::\\s*[a-z_][a-z0-9_]*\\s*\\(`).test(
+                rhs,
+              )
+            ) {
               bound = true;
             }
             if (bound) receivers.add(m[1]);
@@ -723,9 +740,7 @@ function analyzeConsumers(products) {
         if (producers.fields.size > 0) {
           // Inline chains through a croquis-typed field: `entry.analysis.race_conditions`.
           const pfAlt = [...producers.fields].sort().join("|");
-          collect(
-            new RegExp(`\\.\\s*(?:${pfAlt})\\s*\\.\\s*(${fieldAlt})(?![A-Za-z0-9_(])`, "g"),
-          );
+          collect(new RegExp(`\\.\\s*(?:${pfAlt})\\s*\\.\\s*(${fieldAlt})(?![A-Za-z0-9_(])`, "g"));
         }
         for (const [field, count] of fieldHits) {
           bump(rows, "Croquis." + field, crate.name, file.rel, count);
@@ -886,15 +901,26 @@ function renderArtifact(products, analysis) {
 
   lines.push("## Products with external consumers");
   lines.push("");
-  lines.push("| product | kind | module | consuming crate | files | sites |");
-  lines.push("| --- | --- | --- | --- | ---: | ---: |");
+  const productRows = [];
   for (const p of consumed) {
     for (const row of rowsByProduct.get(p.id)) {
-      lines.push(
-        `| \`${p.id}\` | ${p.kind} | \`${p.module}\` | \`${row.crate}\` | ${row.files.size} | ${row.sites} |`,
-      );
+      productRows.push([
+        `\`${p.id}\``,
+        p.kind,
+        `\`${p.module}\``,
+        `\`${row.crate}\``,
+        String(row.files.size),
+        String(row.sites),
+      ]);
     }
   }
+  lines.push(
+    formatTable(
+      ["product", "kind", "module", "consuming crate", "files", "sites"],
+      ["left", "left", "left", "left", "right", "right"],
+      productRows,
+    ).trimEnd(),
+  );
   lines.push("");
 
   lines.push("## Products with no external consumers");
@@ -926,14 +952,21 @@ function renderArtifact(products, analysis) {
       " by `croquis.rs`). Kept visible so nothing resolved is silently dropped.",
   );
   lines.push("");
-  lines.push("| item | consuming crate | files | sites |");
-  lines.push("| --- | --- | ---: | ---: |");
   const nonProductRows = [...nonProduct.values()].sort(
     (a, b) => byKey(a.product, b.product) || byKey(a.crate, b.crate),
   );
-  for (const row of nonProductRows) {
-    lines.push(`| \`${row.product}\` | \`${row.crate}\` | ${row.files.size} | ${row.sites} |`);
-  }
+  lines.push(
+    formatTable(
+      ["item", "consuming crate", "files", "sites"],
+      ["left", "left", "right", "right"],
+      nonProductRows.map((row) => [
+        `\`${row.product}\``,
+        `\`${row.crate}\``,
+        String(row.files.size),
+        String(row.sites),
+      ]),
+    ).trimEnd(),
+  );
   lines.push("");
 
   lines.push("## Cross-check: symbol-resolved vs naive grep");
@@ -948,8 +981,7 @@ function renderArtifact(products, analysis) {
       " resolver bug and must be investigated.",
   );
   lines.push("");
-  lines.push("| product | resolved | grep | disagreeing crates (resolved/grep) |");
-  lines.push("| --- | ---: | ---: | --- |");
+  const crossCheckRows = [];
   const perProduct = new Map();
   const addTo = (map, key, crate, sites) => {
     if (!map.has(key)) map.set(key, new Map());
@@ -969,8 +1001,15 @@ function renderArtifact(products, analysis) {
     const rTotal = [...r.values()].reduce((a, b) => a + b, 0);
     const gTotal = [...g.values()].reduce((a, b) => a + b, 0);
     const detail = diffs.map((c) => `\`${c}\` (${r.get(c) ?? 0}/${g.get(c) ?? 0})`).join(", ");
-    lines.push(`| \`${id}\` | ${rTotal} | ${gTotal} | ${detail} |`);
+    crossCheckRows.push([`\`${id}\``, String(rTotal), String(gTotal), detail]);
   }
+  lines.push(
+    formatTable(
+      ["product", "resolved", "grep", "disagreeing crates (resolved/grep)"],
+      ["left", "right", "right", "left"],
+      crossCheckRows,
+    ).trimEnd(),
+  );
   lines.push("");
   return lines.join("\n");
 }

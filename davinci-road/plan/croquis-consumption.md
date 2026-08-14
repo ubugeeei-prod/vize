@@ -31,160 +31,160 @@ Which workspace crates consume the public analysis products of `crates/vize_croq
 
 ## Products with external consumers
 
-| product | kind | module | consuming crate | files | sites |
-| --- | --- | --- | --- | ---: | ---: |
-| `Analyzer` | type | `analyzer` | `vize_canon` | 28 | 120 |
-| `Analyzer` | type | `analyzer` | `vize_croquis_cf` | 18 | 40 |
-| `Analyzer` | type | `analyzer` | `vize_maestro` | 1 | 1 |
-| `Analyzer` | type | `analyzer` | `vize_vitrine` | 1 | 1 |
-| `AnalyzerOptions` | type | `analyzer` | `vize_canon` | 28 | 116 |
-| `AnalyzerOptions` | type | `analyzer` | `vize_croquis_cf` | 12 | 19 |
-| `AnalyzerOptions` | type | `analyzer` | `vize_maestro` | 1 | 1 |
-| `AnalyzerOptions` | type | `analyzer` | `vize_vitrine` | 1 | 1 |
-| `BindingMetadata` | type | `croquis` | `vize_atelier_jsx` | 1 | 1 |
-| `BindingMetadata` | type | `croquis` | `vize_atelier_sfc` | 1 | 1 |
-| `BindingMetadata` | type | `croquis` | `vize_canon` | 2 | 5 |
-| `COMPILER_MACRO_NAMES` | type | `croquis` | `vize_patina` | 1 | 1 |
-| `ComponentShape` | type | `croquis` | `vize_maestro` | 1 | 1 |
-| `ComponentUsage` | type | `croquis::template` | `vize_canon` | 12 | 29 |
-| `ComponentUsage` | type | `croquis::template` | `vize_croquis_cf` | 13 | 38 |
-| `ComponentUsage` | type | `croquis::template` | `vize_maestro` | 2 | 5 |
-| `Croquis` | type | `croquis` | `vize` | 1 | 1 |
-| `Croquis` | type | `croquis` | `vize_atelier_core` | 3 | 15 |
-| `Croquis` | type | `croquis` | `vize_atelier_dom` | 2 | 2 |
-| `Croquis` | type | `croquis` | `vize_atelier_jsx` | 6 | 9 |
-| `Croquis` | type | `croquis` | `vize_atelier_sfc` | 7 | 16 |
-| `Croquis` | type | `croquis` | `vize_atelier_ssr` | 1 | 1 |
-| `Croquis` | type | `croquis` | `vize_canon` | 54 | 134 |
-| `Croquis` | type | `croquis` | `vize_croquis_cf` | 40 | 101 |
-| `Croquis` | type | `croquis` | `vize_maestro` | 3 | 3 |
-| `Croquis` | type | `croquis` | `vize_patina` | 7 | 19 |
-| `Croquis` | type | `croquis` | `vize_vitrine` | 1 | 1 |
-| `CroquisSemanticSnapshot` | type | `croquis` | `vize_curator` | 1 | 3 |
-| `CroquisSemanticSummary` | type | `croquis` | `vize_curator` | 1 | 1 |
-| `Drawer` | type | `drawer` | `vize_atelier_jsx` | 1 | 1 |
-| `Drawer` | type | `drawer` | `vize_atelier_sfc` | 2 | 7 |
-| `Drawer` | type | `drawer` | `vize_maestro` | 16 | 20 |
-| `Drawer` | type | `drawer` | `vize_patina` | 1 | 1 |
-| `DrawerOptions` | type | `drawer` | `vize_atelier_sfc` | 1 | 5 |
-| `DrawerOptions` | type | `drawer` | `vize_maestro` | 16 | 20 |
-| `EffectGraphScript` | type | `effect_graph` | `vize` | 1 | 2 |
-| `EffectGraphScript` | type | `effect_graph` | `vize_croquis_cf` | 1 | 1 |
-| `EffectGraphSummary` | type | `effect_graph` | `vize_croquis_cf` | 9 | 20 |
-| `ElementIdKind` | type | `croquis::template` | `vize_croquis_cf` | 1 | 3 |
-| `ElementIdKind` | type | `croquis::template` | `vize_patina` | 1 | 2 |
-| `EventHandlerScopeData` | type | `scope` | `vize_canon` | 6 | 9 |
-| `EventHandlerScopeData` | type | `scope` | `vize_croquis_cf` | 1 | 1 |
-| `EventListener` | type | `croquis::template` | `vize_canon` | 1 | 1 |
-| `EventListener` | type | `croquis::template` | `vize_croquis_cf` | 6 | 10 |
-| `EventListener` | type | `croquis::template` | `vize_maestro` | 1 | 2 |
-| `InvalidExportKind` | type | `croquis` | `vize_vitrine` | 1 | 6 |
-| `MacroTracker` | type | `macros` | `vize_canon` | 1 | 1 |
-| `NonScriptSetupScopeData` | type | `scope` | `vize_canon` | 1 | 3 |
-| `OptionGroup` | type | `croquis` | `vize_canon` | 2 | 7 |
-| `OptionMember` | type | `croquis` | `vize_patina` | 2 | 3 |
-| `PassedProp` | type | `croquis::template` | `vize_canon` | 8 | 14 |
-| `PassedProp` | type | `croquis::template` | `vize_croquis_cf` | 8 | 17 |
-| `PassedProp` | type | `croquis::template` | `vize_maestro` | 2 | 4 |
-| `ReactivityTracker` | type | `reactivity` | `vize_vitrine` | 1 | 1 |
-| `Scope` | type | `scope` | `vize_canon` | 9 | 15 |
-| `ScopeBinding` | type | `scope` | `vize_atelier_core` | 1 | 1 |
-| `ScopeChain` | type | `scope` | `vize_atelier_core` | 2 | 2 |
-| `ScopeChain` | type | `scope` | `vize_canon` | 2 | 7 |
-| `ScopeData` | type | `scope` | `vize_canon` | 12 | 17 |
-| `ScopeData` | type | `scope` | `vize_croquis_cf` | 8 | 8 |
-| `ScopeData` | type | `scope` | `vize_patina` | 2 | 2 |
-| `ScopeId` | type | `scope` | `vize_canon` | 5 | 13 |
-| `ScopeId` | type | `scope` | `vize_croquis_cf` | 13 | 23 |
-| `ScopeId` | type | `scope` | `vize_maestro` | 1 | 1 |
-| `ScopeKind` | type | `scope` | `vize_atelier_core` | 1 | 1 |
-| `ScopeKind` | type | `scope` | `vize_canon` | 10 | 32 |
-| `ScopeKind` | type | `scope` | `vize_croquis_cf` | 10 | 21 |
-| `ScopeKind` | type | `scope` | `vize_maestro` | 5 | 40 |
-| `ScopeKind` | type | `scope` | `vize_vitrine` | 1 | 4 |
-| `SlotUsage` | type | `croquis::template` | `vize_croquis_cf` | 2 | 3 |
-| `SlotUsage` | type | `croquis::template` | `vize_maestro` | 1 | 2 |
-| `SpreadProp` | type | `croquis::template` | `vize_canon` | 4 | 5 |
-| `TemplateExpression` | type | `croquis` | `vize_canon` | 7 | 20 |
-| `TemplateExpression` | type | `croquis` | `vize_croquis_cf` | 2 | 3 |
-| `TemplateExpressionKind` | type | `croquis` | `vize_canon` | 4 | 8 |
-| `TemplateExpressionKind` | type | `croquis` | `vize_croquis_cf` | 5 | 9 |
-| `TypeExport` | type | `croquis` | `vize_canon` | 2 | 9 |
-| `TypeExportKind` | type | `croquis` | `vize_canon` | 2 | 9 |
-| `TypeExportKind` | type | `croquis` | `vize_vitrine` | 1 | 2 |
-| `UnusedVarContext` | type | `croquis` | `vize_patina` | 1 | 4 |
-| `VForScopeData` | type | `scope` | `vize_atelier_core` | 1 | 1 |
-| `VForScopeData` | type | `scope` | `vize_canon` | 1 | 4 |
-| `VForScopeData` | type | `scope` | `vize_croquis_cf` | 3 | 5 |
-| `VSlotScopeData` | type | `scope` | `vize_atelier_core` | 1 | 1 |
-| `VSlotScopeData` | type | `scope` | `vize_canon` | 1 | 3 |
-| `VSlotScopeData` | type | `scope` | `vize_croquis_cf` | 1 | 1 |
-| `build_effect_graph_from_script` | type | `effect_graph` | `vize_croquis_cf` | 1 | 2 |
-| `build_effect_graph_from_script_setup` | type | `effect_graph` | `vize_croquis_cf` | 1 | 1 |
-| `build_effect_graph_from_sfc_scripts` | type | `effect_graph` | `vize` | 1 | 1 |
-| `build_effect_graph_from_sfc_scripts` | type | `effect_graph` | `vize_croquis_cf` | 1 | 1 |
-| `Croquis.binding_spans` | field | `croquis` | `vize_atelier_sfc` | 1 | 1 |
-| `Croquis.binding_spans` | field | `croquis` | `vize_canon` | 5 | 8 |
-| `Croquis.binding_spans` | field | `croquis` | `vize_maestro` | 2 | 2 |
-| `Croquis.binding_spans` | field | `croquis` | `vize_vitrine` | 1 | 1 |
-| `Croquis.bindings` | field | `croquis` | `vize_atelier_core` | 1 | 2 |
-| `Croquis.bindings` | field | `croquis` | `vize_atelier_jsx` | 1 | 1 |
-| `Croquis.bindings` | field | `croquis` | `vize_atelier_sfc` | 6 | 16 |
-| `Croquis.bindings` | field | `croquis` | `vize_canon` | 21 | 35 |
-| `Croquis.bindings` | field | `croquis` | `vize_croquis_cf` | 2 | 2 |
-| `Croquis.bindings` | field | `croquis` | `vize_maestro` | 4 | 8 |
-| `Croquis.bindings` | field | `croquis` | `vize_patina` | 1 | 1 |
-| `Croquis.bindings` | field | `croquis` | `vize_vitrine` | 1 | 2 |
-| `Croquis.component_registrations` | field | `croquis` | `vize_patina` | 1 | 1 |
-| `Croquis.component_shape` | field | `croquis` | `vize_maestro` | 1 | 1 |
-| `Croquis.component_usages` | field | `croquis` | `vize_canon` | 10 | 11 |
-| `Croquis.component_usages` | field | `croquis` | `vize_croquis_cf` | 18 | 33 |
-| `Croquis.component_usages` | field | `croquis` | `vize_maestro` | 5 | 6 |
-| `Croquis.element_ids` | field | `croquis` | `vize_croquis_cf` | 1 | 1 |
-| `Croquis.element_ids` | field | `croquis` | `vize_patina` | 1 | 2 |
-| `Croquis.import_statements` | field | `croquis` | `vize_atelier_sfc` | 1 | 2 |
-| `Croquis.import_statements` | field | `croquis` | `vize_canon` | 4 | 5 |
-| `Croquis.import_statements` | field | `croquis` | `vize_patina` | 1 | 1 |
-| `Croquis.invalid_exports` | field | `croquis` | `vize_canon` | 1 | 1 |
-| `Croquis.invalid_exports` | field | `croquis` | `vize_croquis_cf` | 1 | 2 |
-| `Croquis.invalid_exports` | field | `croquis` | `vize_vitrine` | 1 | 2 |
-| `Croquis.macros` | field | `croquis` | `vize_atelier_sfc` | 3 | 8 |
-| `Croquis.macros` | field | `croquis` | `vize_canon` | 16 | 55 |
-| `Croquis.macros` | field | `croquis` | `vize_croquis_cf` | 14 | 25 |
-| `Croquis.macros` | field | `croquis` | `vize_maestro` | 6 | 12 |
-| `Croquis.macros` | field | `croquis` | `vize_patina` | 6 | 17 |
-| `Croquis.macros` | field | `croquis` | `vize_vitrine` | 1 | 3 |
-| `Croquis.options_descriptor` | field | `croquis` | `vize_canon` | 2 | 2 |
-| `Croquis.provide_inject` | field | `croquis` | `vize_croquis_cf` | 10 | 26 |
-| `Croquis.provide_inject` | field | `croquis` | `vize_vitrine` | 1 | 2 |
-| `Croquis.race_conditions` | field | `croquis` | `vize_croquis_cf` | 1 | 1 |
-| `Croquis.re_exports` | field | `croquis` | `vize_canon` | 1 | 1 |
-| `Croquis.reactivity` | field | `croquis` | `vize_canon` | 2 | 2 |
-| `Croquis.reactivity` | field | `croquis` | `vize_croquis_cf` | 11 | 22 |
-| `Croquis.reactivity` | field | `croquis` | `vize_maestro` | 5 | 6 |
-| `Croquis.reactivity` | field | `croquis` | `vize_patina` | 1 | 1 |
-| `Croquis.reactivity` | field | `croquis` | `vize_vitrine` | 1 | 1 |
-| `Croquis.scopes` | field | `croquis` | `vize_canon` | 16 | 39 |
-| `Croquis.scopes` | field | `croquis` | `vize_croquis_cf` | 17 | 27 |
-| `Croquis.scopes` | field | `croquis` | `vize_maestro` | 4 | 5 |
-| `Croquis.scopes` | field | `croquis` | `vize_patina` | 2 | 2 |
-| `Croquis.scopes` | field | `croquis` | `vize_vitrine` | 1 | 2 |
-| `Croquis.setup_context` | field | `croquis` | `vize_canon` | 1 | 1 |
-| `Croquis.setup_context` | field | `croquis` | `vize_croquis_cf` | 1 | 1 |
-| `Croquis.template_expressions` | field | `croquis` | `vize_canon` | 6 | 9 |
-| `Croquis.template_expressions` | field | `croquis` | `vize_croquis_cf` | 6 | 12 |
-| `Croquis.template_info` | field | `croquis` | `vize_canon` | 1 | 3 |
-| `Croquis.template_info` | field | `croquis` | `vize_croquis_cf` | 5 | 14 |
-| `Croquis.type_exports` | field | `croquis` | `vize_canon` | 10 | 21 |
-| `Croquis.type_exports` | field | `croquis` | `vize_croquis_cf` | 1 | 1 |
-| `Croquis.type_exports` | field | `croquis` | `vize_vitrine` | 1 | 2 |
-| `Croquis.types` | field | `croquis` | `vize_canon` | 6 | 9 |
-| `Croquis.undefined_refs` | field | `croquis` | `vize_canon` | 6 | 8 |
-| `Croquis.undefined_refs` | field | `croquis` | `vize_patina` | 1 | 1 |
-| `Croquis.unused_bindings` | field | `croquis` | `vize_vitrine` | 1 | 1 |
-| `Croquis.used_components` | field | `croquis` | `vize_canon` | 5 | 7 |
-| `Croquis.used_components` | field | `croquis` | `vize_croquis_cf` | 16 | 30 |
-| `Croquis.used_components` | field | `croquis` | `vize_patina` | 1 | 1 |
+| product                                | kind  | module              | consuming crate     | files | sites |
+| -------------------------------------- | ----- | ------------------- | ------------------- | ----: | ----: |
+| `Analyzer`                             | type  | `analyzer`          | `vize_canon`        |    28 |   120 |
+| `Analyzer`                             | type  | `analyzer`          | `vize_croquis_cf`   |    18 |    40 |
+| `Analyzer`                             | type  | `analyzer`          | `vize_maestro`      |     1 |     1 |
+| `Analyzer`                             | type  | `analyzer`          | `vize_vitrine`      |     1 |     1 |
+| `AnalyzerOptions`                      | type  | `analyzer`          | `vize_canon`        |    28 |   116 |
+| `AnalyzerOptions`                      | type  | `analyzer`          | `vize_croquis_cf`   |    12 |    19 |
+| `AnalyzerOptions`                      | type  | `analyzer`          | `vize_maestro`      |     1 |     1 |
+| `AnalyzerOptions`                      | type  | `analyzer`          | `vize_vitrine`      |     1 |     1 |
+| `BindingMetadata`                      | type  | `croquis`           | `vize_atelier_jsx`  |     1 |     1 |
+| `BindingMetadata`                      | type  | `croquis`           | `vize_atelier_sfc`  |     1 |     1 |
+| `BindingMetadata`                      | type  | `croquis`           | `vize_canon`        |     2 |     5 |
+| `COMPILER_MACRO_NAMES`                 | type  | `croquis`           | `vize_patina`       |     1 |     1 |
+| `ComponentShape`                       | type  | `croquis`           | `vize_maestro`      |     1 |     1 |
+| `ComponentUsage`                       | type  | `croquis::template` | `vize_canon`        |    12 |    29 |
+| `ComponentUsage`                       | type  | `croquis::template` | `vize_croquis_cf`   |    13 |    38 |
+| `ComponentUsage`                       | type  | `croquis::template` | `vize_maestro`      |     2 |     5 |
+| `Croquis`                              | type  | `croquis`           | `vize`              |     1 |     1 |
+| `Croquis`                              | type  | `croquis`           | `vize_atelier_core` |     3 |    15 |
+| `Croquis`                              | type  | `croquis`           | `vize_atelier_dom`  |     2 |     2 |
+| `Croquis`                              | type  | `croquis`           | `vize_atelier_jsx`  |     6 |     9 |
+| `Croquis`                              | type  | `croquis`           | `vize_atelier_sfc`  |     7 |    16 |
+| `Croquis`                              | type  | `croquis`           | `vize_atelier_ssr`  |     1 |     1 |
+| `Croquis`                              | type  | `croquis`           | `vize_canon`        |    54 |   134 |
+| `Croquis`                              | type  | `croquis`           | `vize_croquis_cf`   |    40 |   101 |
+| `Croquis`                              | type  | `croquis`           | `vize_maestro`      |     3 |     3 |
+| `Croquis`                              | type  | `croquis`           | `vize_patina`       |     7 |    19 |
+| `Croquis`                              | type  | `croquis`           | `vize_vitrine`      |     1 |     1 |
+| `CroquisSemanticSnapshot`              | type  | `croquis`           | `vize_curator`      |     1 |     3 |
+| `CroquisSemanticSummary`               | type  | `croquis`           | `vize_curator`      |     1 |     1 |
+| `Drawer`                               | type  | `drawer`            | `vize_atelier_jsx`  |     1 |     1 |
+| `Drawer`                               | type  | `drawer`            | `vize_atelier_sfc`  |     2 |     7 |
+| `Drawer`                               | type  | `drawer`            | `vize_maestro`      |    16 |    20 |
+| `Drawer`                               | type  | `drawer`            | `vize_patina`       |     1 |     1 |
+| `DrawerOptions`                        | type  | `drawer`            | `vize_atelier_sfc`  |     1 |     5 |
+| `DrawerOptions`                        | type  | `drawer`            | `vize_maestro`      |    16 |    20 |
+| `EffectGraphScript`                    | type  | `effect_graph`      | `vize`              |     1 |     2 |
+| `EffectGraphScript`                    | type  | `effect_graph`      | `vize_croquis_cf`   |     1 |     1 |
+| `EffectGraphSummary`                   | type  | `effect_graph`      | `vize_croquis_cf`   |     9 |    20 |
+| `ElementIdKind`                        | type  | `croquis::template` | `vize_croquis_cf`   |     1 |     3 |
+| `ElementIdKind`                        | type  | `croquis::template` | `vize_patina`       |     1 |     2 |
+| `EventHandlerScopeData`                | type  | `scope`             | `vize_canon`        |     6 |     9 |
+| `EventHandlerScopeData`                | type  | `scope`             | `vize_croquis_cf`   |     1 |     1 |
+| `EventListener`                        | type  | `croquis::template` | `vize_canon`        |     1 |     1 |
+| `EventListener`                        | type  | `croquis::template` | `vize_croquis_cf`   |     6 |    10 |
+| `EventListener`                        | type  | `croquis::template` | `vize_maestro`      |     1 |     2 |
+| `InvalidExportKind`                    | type  | `croquis`           | `vize_vitrine`      |     1 |     6 |
+| `MacroTracker`                         | type  | `macros`            | `vize_canon`        |     1 |     1 |
+| `NonScriptSetupScopeData`              | type  | `scope`             | `vize_canon`        |     1 |     3 |
+| `OptionGroup`                          | type  | `croquis`           | `vize_canon`        |     2 |     7 |
+| `OptionMember`                         | type  | `croquis`           | `vize_patina`       |     2 |     3 |
+| `PassedProp`                           | type  | `croquis::template` | `vize_canon`        |     8 |    14 |
+| `PassedProp`                           | type  | `croquis::template` | `vize_croquis_cf`   |     8 |    17 |
+| `PassedProp`                           | type  | `croquis::template` | `vize_maestro`      |     2 |     4 |
+| `ReactivityTracker`                    | type  | `reactivity`        | `vize_vitrine`      |     1 |     1 |
+| `Scope`                                | type  | `scope`             | `vize_canon`        |     9 |    15 |
+| `ScopeBinding`                         | type  | `scope`             | `vize_atelier_core` |     1 |     1 |
+| `ScopeChain`                           | type  | `scope`             | `vize_atelier_core` |     2 |     2 |
+| `ScopeChain`                           | type  | `scope`             | `vize_canon`        |     2 |     7 |
+| `ScopeData`                            | type  | `scope`             | `vize_canon`        |    12 |    17 |
+| `ScopeData`                            | type  | `scope`             | `vize_croquis_cf`   |     8 |     8 |
+| `ScopeData`                            | type  | `scope`             | `vize_patina`       |     2 |     2 |
+| `ScopeId`                              | type  | `scope`             | `vize_canon`        |     5 |    13 |
+| `ScopeId`                              | type  | `scope`             | `vize_croquis_cf`   |    13 |    23 |
+| `ScopeId`                              | type  | `scope`             | `vize_maestro`      |     1 |     1 |
+| `ScopeKind`                            | type  | `scope`             | `vize_atelier_core` |     1 |     1 |
+| `ScopeKind`                            | type  | `scope`             | `vize_canon`        |    10 |    32 |
+| `ScopeKind`                            | type  | `scope`             | `vize_croquis_cf`   |    10 |    21 |
+| `ScopeKind`                            | type  | `scope`             | `vize_maestro`      |     5 |    40 |
+| `ScopeKind`                            | type  | `scope`             | `vize_vitrine`      |     1 |     4 |
+| `SlotUsage`                            | type  | `croquis::template` | `vize_croquis_cf`   |     2 |     3 |
+| `SlotUsage`                            | type  | `croquis::template` | `vize_maestro`      |     1 |     2 |
+| `SpreadProp`                           | type  | `croquis::template` | `vize_canon`        |     4 |     5 |
+| `TemplateExpression`                   | type  | `croquis`           | `vize_canon`        |     7 |    20 |
+| `TemplateExpression`                   | type  | `croquis`           | `vize_croquis_cf`   |     2 |     3 |
+| `TemplateExpressionKind`               | type  | `croquis`           | `vize_canon`        |     4 |     8 |
+| `TemplateExpressionKind`               | type  | `croquis`           | `vize_croquis_cf`   |     5 |     9 |
+| `TypeExport`                           | type  | `croquis`           | `vize_canon`        |     2 |     9 |
+| `TypeExportKind`                       | type  | `croquis`           | `vize_canon`        |     2 |     9 |
+| `TypeExportKind`                       | type  | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `UnusedVarContext`                     | type  | `croquis`           | `vize_patina`       |     1 |     4 |
+| `VForScopeData`                        | type  | `scope`             | `vize_atelier_core` |     1 |     1 |
+| `VForScopeData`                        | type  | `scope`             | `vize_canon`        |     1 |     4 |
+| `VForScopeData`                        | type  | `scope`             | `vize_croquis_cf`   |     3 |     5 |
+| `VSlotScopeData`                       | type  | `scope`             | `vize_atelier_core` |     1 |     1 |
+| `VSlotScopeData`                       | type  | `scope`             | `vize_canon`        |     1 |     3 |
+| `VSlotScopeData`                       | type  | `scope`             | `vize_croquis_cf`   |     1 |     1 |
+| `build_effect_graph_from_script`       | type  | `effect_graph`      | `vize_croquis_cf`   |     1 |     2 |
+| `build_effect_graph_from_script_setup` | type  | `effect_graph`      | `vize_croquis_cf`   |     1 |     1 |
+| `build_effect_graph_from_sfc_scripts`  | type  | `effect_graph`      | `vize`              |     1 |     1 |
+| `build_effect_graph_from_sfc_scripts`  | type  | `effect_graph`      | `vize_croquis_cf`   |     1 |     1 |
+| `Croquis.binding_spans`                | field | `croquis`           | `vize_atelier_sfc`  |     1 |     1 |
+| `Croquis.binding_spans`                | field | `croquis`           | `vize_canon`        |     5 |     8 |
+| `Croquis.binding_spans`                | field | `croquis`           | `vize_maestro`      |     2 |     2 |
+| `Croquis.binding_spans`                | field | `croquis`           | `vize_vitrine`      |     1 |     1 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_atelier_core` |     1 |     2 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_atelier_jsx`  |     1 |     1 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_atelier_sfc`  |     6 |    16 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_canon`        |    21 |    35 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_croquis_cf`   |     2 |     2 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_maestro`      |     4 |     8 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_patina`       |     1 |     1 |
+| `Croquis.bindings`                     | field | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `Croquis.component_registrations`      | field | `croquis`           | `vize_patina`       |     1 |     1 |
+| `Croquis.component_shape`              | field | `croquis`           | `vize_maestro`      |     1 |     1 |
+| `Croquis.component_usages`             | field | `croquis`           | `vize_canon`        |    10 |    11 |
+| `Croquis.component_usages`             | field | `croquis`           | `vize_croquis_cf`   |    18 |    33 |
+| `Croquis.component_usages`             | field | `croquis`           | `vize_maestro`      |     5 |     6 |
+| `Croquis.element_ids`                  | field | `croquis`           | `vize_croquis_cf`   |     1 |     1 |
+| `Croquis.element_ids`                  | field | `croquis`           | `vize_patina`       |     1 |     2 |
+| `Croquis.import_statements`            | field | `croquis`           | `vize_atelier_sfc`  |     1 |     2 |
+| `Croquis.import_statements`            | field | `croquis`           | `vize_canon`        |     4 |     5 |
+| `Croquis.import_statements`            | field | `croquis`           | `vize_patina`       |     1 |     1 |
+| `Croquis.invalid_exports`              | field | `croquis`           | `vize_canon`        |     1 |     1 |
+| `Croquis.invalid_exports`              | field | `croquis`           | `vize_croquis_cf`   |     1 |     2 |
+| `Croquis.invalid_exports`              | field | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_atelier_sfc`  |     3 |     8 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_canon`        |    16 |    55 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_croquis_cf`   |    14 |    25 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_maestro`      |     6 |    12 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_patina`       |     6 |    17 |
+| `Croquis.macros`                       | field | `croquis`           | `vize_vitrine`      |     1 |     3 |
+| `Croquis.options_descriptor`           | field | `croquis`           | `vize_canon`        |     2 |     2 |
+| `Croquis.provide_inject`               | field | `croquis`           | `vize_croquis_cf`   |    10 |    26 |
+| `Croquis.provide_inject`               | field | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `Croquis.race_conditions`              | field | `croquis`           | `vize_croquis_cf`   |     1 |     1 |
+| `Croquis.re_exports`                   | field | `croquis`           | `vize_canon`        |     1 |     1 |
+| `Croquis.reactivity`                   | field | `croquis`           | `vize_canon`        |     2 |     2 |
+| `Croquis.reactivity`                   | field | `croquis`           | `vize_croquis_cf`   |    11 |    22 |
+| `Croquis.reactivity`                   | field | `croquis`           | `vize_maestro`      |     5 |     6 |
+| `Croquis.reactivity`                   | field | `croquis`           | `vize_patina`       |     1 |     1 |
+| `Croquis.reactivity`                   | field | `croquis`           | `vize_vitrine`      |     1 |     1 |
+| `Croquis.scopes`                       | field | `croquis`           | `vize_canon`        |    16 |    39 |
+| `Croquis.scopes`                       | field | `croquis`           | `vize_croquis_cf`   |    17 |    27 |
+| `Croquis.scopes`                       | field | `croquis`           | `vize_maestro`      |     4 |     5 |
+| `Croquis.scopes`                       | field | `croquis`           | `vize_patina`       |     2 |     2 |
+| `Croquis.scopes`                       | field | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `Croquis.setup_context`                | field | `croquis`           | `vize_canon`        |     1 |     1 |
+| `Croquis.setup_context`                | field | `croquis`           | `vize_croquis_cf`   |     1 |     1 |
+| `Croquis.template_expressions`         | field | `croquis`           | `vize_canon`        |     6 |     9 |
+| `Croquis.template_expressions`         | field | `croquis`           | `vize_croquis_cf`   |     6 |    12 |
+| `Croquis.template_info`                | field | `croquis`           | `vize_canon`        |     1 |     3 |
+| `Croquis.template_info`                | field | `croquis`           | `vize_croquis_cf`   |     5 |    14 |
+| `Croquis.type_exports`                 | field | `croquis`           | `vize_canon`        |    10 |    21 |
+| `Croquis.type_exports`                 | field | `croquis`           | `vize_croquis_cf`   |     1 |     1 |
+| `Croquis.type_exports`                 | field | `croquis`           | `vize_vitrine`      |     1 |     2 |
+| `Croquis.types`                        | field | `croquis`           | `vize_canon`        |     6 |     9 |
+| `Croquis.undefined_refs`               | field | `croquis`           | `vize_canon`        |     6 |     8 |
+| `Croquis.undefined_refs`               | field | `croquis`           | `vize_patina`       |     1 |     1 |
+| `Croquis.unused_bindings`              | field | `croquis`           | `vize_vitrine`      |     1 |     1 |
+| `Croquis.used_components`              | field | `croquis`           | `vize_canon`        |     5 |     7 |
+| `Croquis.used_components`              | field | `croquis`           | `vize_croquis_cf`   |    16 |    30 |
+| `Croquis.used_components`              | field | `croquis`           | `vize_patina`       |     1 |     1 |
 
 ## Products with no external consumers
 
@@ -206,168 +206,168 @@ Computed (or exported) by `vize_croquis`, referenced by no other workspace crate
 
 Items consumers import from `vize_croquis` that are outside the product set above (module-path items never re-exported at the crate root nor referenced by `croquis.rs`). Kept visible so nothing resolved is silently dropped.
 
-| item | consuming crate | files | sites |
-| --- | --- | ---: | ---: |
-| `BindingType` | `vize_atelier_core` | 1 | 11 |
-| `BindingType` | `vize_canon` | 7 | 18 |
-| `DEFINE_EMITS` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_EMITS` | `vize_canon` | 2 | 2 |
-| `DEFINE_EXPOSE` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_EXPOSE` | `vize_canon` | 1 | 1 |
-| `DEFINE_MODEL` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_MODEL` | `vize_canon` | 1 | 1 |
-| `DEFINE_OPTIONS` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_PROPS` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_PROPS` | `vize_canon` | 3 | 3 |
-| `DEFINE_SLOTS` | `vize_atelier_sfc` | 1 | 2 |
-| `DEFINE_SLOTS` | `vize_canon` | 1 | 1 |
-| `EmitDefinition` | `vize_atelier_sfc` | 1 | 1 |
-| `EmitDefinition` | `vize_croquis_cf` | 3 | 3 |
-| `InjectEntry` | `vize_croquis_cf` | 4 | 8 |
-| `InjectPattern` | `vize_croquis_cf` | 4 | 21 |
-| `InjectPattern` | `vize_vitrine` | 1 | 8 |
-| `MacroCall` | `vize_canon` | 1 | 1 |
-| `MacroKind` | `vize_canon` | 2 | 3 |
-| `MacroKind` | `vize_croquis_cf` | 1 | 1 |
-| `MacroKind` | `vize_patina` | 2 | 2 |
-| `ModelDefinition` | `vize_atelier_sfc` | 1 | 1 |
-| `ModelDefinition` | `vize_canon` | 3 | 5 |
-| `PropDefinition` | `vize_atelier_sfc` | 2 | 4 |
-| `PropDefinition` | `vize_canon` | 1 | 1 |
-| `PropDefinition` | `vize_croquis_cf` | 3 | 3 |
-| `PropsDestructuredBindings` | `vize_canon` | 1 | 1 |
-| `ProvideEntry` | `vize_croquis_cf` | 2 | 7 |
-| `ProvideKey` | `vize_croquis_cf` | 7 | 34 |
-| `ProvideKey` | `vize_vitrine` | 1 | 4 |
-| `RaceConditionRisk` | `vize_croquis_cf` | 2 | 4 |
-| `RaceConditionRiskKind` | `vize_croquis_cf` | 2 | 3 |
-| `ReactiveKind` | `vize_atelier_core` | 1 | 4 |
-| `ReactiveKind` | `vize_croquis_cf` | 7 | 37 |
-| `ReactiveKind` | `vize_maestro` | 5 | 41 |
-| `ReactiveKind` | `vize_patina` | 1 | 1 |
-| `ReactiveSource` | `vize_croquis_cf` | 1 | 1 |
-| `ReactivityLoss` | `vize_patina` | 1 | 2 |
-| `ReactivityLossKind` | `vize_canon` | 1 | 11 |
-| `ReactivityLossKind` | `vize_croquis_cf` | 2 | 18 |
-| `ReactivityLossKind` | `vize_patina` | 1 | 21 |
-| `ScriptParseResult` | `vize_atelier_sfc` | 1 | 1 |
-| `ScriptParseResult` | `vize_patina` | 2 | 2 |
-| `ScriptParserOptions` | `vize_atelier_sfc` | 1 | 1 |
-| `ScriptParserOptions` | `vize_patina` | 1 | 1 |
-| `SetupContextViolation` | `vize_croquis_cf` | 1 | 1 |
-| `SetupContextViolationKind` | `vize_croquis_cf` | 2 | 11 |
-| `ViolationSeverity` | `vize_canon` | 1 | 3 |
-| `ViolationSeverity` | `vize_croquis_cf` | 1 | 6 |
-| `VirtualTsConfig` | `vize_patina` | 1 | 1 |
-| `VirtualTsOutput` | `vize_patina` | 5 | 16 |
-| `WITH_DEFAULTS` | `vize_atelier_sfc` | 1 | 2 |
-| `WITH_DEFAULTS` | `vize_canon` | 2 | 2 |
-| `analyze_script_setup_program` | `vize_atelier_sfc` | 1 | 1 |
-| `artifact_macro_names` | `vize_atelier_sfc` | 1 | 1 |
-| `collect_options_descriptor` | `vize_patina` | 4 | 4 |
-| `collect_options_object` | `vize_patina` | 1 | 1 |
-| `extract_identifier_refs_oxc` | `vize_canon` | 1 | 1 |
-| `extract_identifiers_oxc` | `vize_canon` | 5 | 5 |
-| `extract_identifiers_oxc` | `vize_maestro` | 1 | 1 |
-| `extract_slot_props` | `vize_patina` | 1 | 1 |
-| `generate_declaration_ts` | `vize_vitrine` | 1 | 2 |
-| `generate_declaration_ts_with_split_scripts` | `vize_vitrine` | 1 | 1 |
-| `generate_virtual_ts_with_croquis` | `vize_patina` | 1 | 1 |
-| `hyphenate` | `vize_patina` | 1 | 2 |
-| `is_builtin_component` | `vize_atelier_sfc` | 1 | 1 |
-| `is_builtin_component` | `vize_patina` | 3 | 7 |
-| `is_builtin_macro` | `vize_atelier_sfc` | 2 | 2 |
-| `is_camel_case` | `vize_patina` | 2 | 3 |
-| `is_event_local` | `vize_canon` | 1 | 1 |
-| `is_global_allowed` | `vize_atelier_core` | 5 | 14 |
-| `is_global_allowed` | `vize_atelier_sfc` | 1 | 1 |
-| `is_global_allowed` | `vize_atelier_vapor` | 2 | 3 |
-| `is_js_global` | `vize_canon` | 1 | 1 |
-| `is_kebab_case` | `vize_maestro` | 1 | 1 |
-| `is_kebab_case_loose` | `vize_patina` | 1 | 1 |
-| `is_keyword` | `vize_canon` | 1 | 1 |
-| `is_pascal_case` | `vize_patina` | 2 | 2 |
-| `is_render_local` | `vize_canon` | 1 | 1 |
-| `is_runtime_erased_macro` | `vize_atelier_sfc` | 1 | 1 |
-| `is_vue_builtin` | `vize_canon` | 1 | 1 |
-| `macro_artifact_kind` | `vize_atelier_sfc` | 1 | 3 |
-| `names_match` | `vize_patina` | 3 | 3 |
-| `parse_script_setup` | `vize_atelier_sfc` | 1 | 2 |
-| `parse_script_setup` | `vize_maestro` | 2 | 4 |
-| `parse_script_setup` | `vize_musea` | 2 | 2 |
-| `parse_script_setup` | `vize_patina` | 3 | 3 |
-| `parse_script_setup_with_generic_and_jsx` | `vize_patina` | 1 | 1 |
-| `parse_script_with_options` | `vize_patina` | 1 | 1 |
-| `parse_script_with_options_and_jsx` | `vize_atelier_sfc` | 1 | 1 |
-| `parse_v_for_expression` | `vize_patina` | 1 | 1 |
-| `runtime_erased_macro_names` | `vize_atelier_sfc` | 3 | 5 |
-| `strip_js_comments` | `vize_canon` | 3 | 4 |
-| `to_pascal_case` | `vize_canon` | 2 | 2 |
-| `to_pascal_case` | `vize_patina` | 2 | 2 |
+| item                                         | consuming crate      | files | sites |
+| -------------------------------------------- | -------------------- | ----: | ----: |
+| `BindingType`                                | `vize_atelier_core`  |     1 |    11 |
+| `BindingType`                                | `vize_canon`         |     7 |    18 |
+| `DEFINE_EMITS`                               | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_EMITS`                               | `vize_canon`         |     2 |     2 |
+| `DEFINE_EXPOSE`                              | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_EXPOSE`                              | `vize_canon`         |     1 |     1 |
+| `DEFINE_MODEL`                               | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_MODEL`                               | `vize_canon`         |     1 |     1 |
+| `DEFINE_OPTIONS`                             | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_PROPS`                               | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_PROPS`                               | `vize_canon`         |     3 |     3 |
+| `DEFINE_SLOTS`                               | `vize_atelier_sfc`   |     1 |     2 |
+| `DEFINE_SLOTS`                               | `vize_canon`         |     1 |     1 |
+| `EmitDefinition`                             | `vize_atelier_sfc`   |     1 |     1 |
+| `EmitDefinition`                             | `vize_croquis_cf`    |     3 |     3 |
+| `InjectEntry`                                | `vize_croquis_cf`    |     4 |     8 |
+| `InjectPattern`                              | `vize_croquis_cf`    |     4 |    21 |
+| `InjectPattern`                              | `vize_vitrine`       |     1 |     8 |
+| `MacroCall`                                  | `vize_canon`         |     1 |     1 |
+| `MacroKind`                                  | `vize_canon`         |     2 |     3 |
+| `MacroKind`                                  | `vize_croquis_cf`    |     1 |     1 |
+| `MacroKind`                                  | `vize_patina`        |     2 |     2 |
+| `ModelDefinition`                            | `vize_atelier_sfc`   |     1 |     1 |
+| `ModelDefinition`                            | `vize_canon`         |     3 |     5 |
+| `PropDefinition`                             | `vize_atelier_sfc`   |     2 |     4 |
+| `PropDefinition`                             | `vize_canon`         |     1 |     1 |
+| `PropDefinition`                             | `vize_croquis_cf`    |     3 |     3 |
+| `PropsDestructuredBindings`                  | `vize_canon`         |     1 |     1 |
+| `ProvideEntry`                               | `vize_croquis_cf`    |     2 |     7 |
+| `ProvideKey`                                 | `vize_croquis_cf`    |     7 |    34 |
+| `ProvideKey`                                 | `vize_vitrine`       |     1 |     4 |
+| `RaceConditionRisk`                          | `vize_croquis_cf`    |     2 |     4 |
+| `RaceConditionRiskKind`                      | `vize_croquis_cf`    |     2 |     3 |
+| `ReactiveKind`                               | `vize_atelier_core`  |     1 |     4 |
+| `ReactiveKind`                               | `vize_croquis_cf`    |     7 |    37 |
+| `ReactiveKind`                               | `vize_maestro`       |     5 |    41 |
+| `ReactiveKind`                               | `vize_patina`        |     1 |     1 |
+| `ReactiveSource`                             | `vize_croquis_cf`    |     1 |     1 |
+| `ReactivityLoss`                             | `vize_patina`        |     1 |     2 |
+| `ReactivityLossKind`                         | `vize_canon`         |     1 |    11 |
+| `ReactivityLossKind`                         | `vize_croquis_cf`    |     2 |    18 |
+| `ReactivityLossKind`                         | `vize_patina`        |     1 |    21 |
+| `ScriptParseResult`                          | `vize_atelier_sfc`   |     1 |     1 |
+| `ScriptParseResult`                          | `vize_patina`        |     2 |     2 |
+| `ScriptParserOptions`                        | `vize_atelier_sfc`   |     1 |     1 |
+| `ScriptParserOptions`                        | `vize_patina`        |     1 |     1 |
+| `SetupContextViolation`                      | `vize_croquis_cf`    |     1 |     1 |
+| `SetupContextViolationKind`                  | `vize_croquis_cf`    |     2 |    11 |
+| `ViolationSeverity`                          | `vize_canon`         |     1 |     3 |
+| `ViolationSeverity`                          | `vize_croquis_cf`    |     1 |     6 |
+| `VirtualTsConfig`                            | `vize_patina`        |     1 |     1 |
+| `VirtualTsOutput`                            | `vize_patina`        |     5 |    16 |
+| `WITH_DEFAULTS`                              | `vize_atelier_sfc`   |     1 |     2 |
+| `WITH_DEFAULTS`                              | `vize_canon`         |     2 |     2 |
+| `analyze_script_setup_program`               | `vize_atelier_sfc`   |     1 |     1 |
+| `artifact_macro_names`                       | `vize_atelier_sfc`   |     1 |     1 |
+| `collect_options_descriptor`                 | `vize_patina`        |     4 |     4 |
+| `collect_options_object`                     | `vize_patina`        |     1 |     1 |
+| `extract_identifier_refs_oxc`                | `vize_canon`         |     1 |     1 |
+| `extract_identifiers_oxc`                    | `vize_canon`         |     5 |     5 |
+| `extract_identifiers_oxc`                    | `vize_maestro`       |     1 |     1 |
+| `extract_slot_props`                         | `vize_patina`        |     1 |     1 |
+| `generate_declaration_ts`                    | `vize_vitrine`       |     1 |     2 |
+| `generate_declaration_ts_with_split_scripts` | `vize_vitrine`       |     1 |     1 |
+| `generate_virtual_ts_with_croquis`           | `vize_patina`        |     1 |     1 |
+| `hyphenate`                                  | `vize_patina`        |     1 |     2 |
+| `is_builtin_component`                       | `vize_atelier_sfc`   |     1 |     1 |
+| `is_builtin_component`                       | `vize_patina`        |     3 |     7 |
+| `is_builtin_macro`                           | `vize_atelier_sfc`   |     2 |     2 |
+| `is_camel_case`                              | `vize_patina`        |     2 |     3 |
+| `is_event_local`                             | `vize_canon`         |     1 |     1 |
+| `is_global_allowed`                          | `vize_atelier_core`  |     5 |    14 |
+| `is_global_allowed`                          | `vize_atelier_sfc`   |     1 |     1 |
+| `is_global_allowed`                          | `vize_atelier_vapor` |     2 |     3 |
+| `is_js_global`                               | `vize_canon`         |     1 |     1 |
+| `is_kebab_case`                              | `vize_maestro`       |     1 |     1 |
+| `is_kebab_case_loose`                        | `vize_patina`        |     1 |     1 |
+| `is_keyword`                                 | `vize_canon`         |     1 |     1 |
+| `is_pascal_case`                             | `vize_patina`        |     2 |     2 |
+| `is_render_local`                            | `vize_canon`         |     1 |     1 |
+| `is_runtime_erased_macro`                    | `vize_atelier_sfc`   |     1 |     1 |
+| `is_vue_builtin`                             | `vize_canon`         |     1 |     1 |
+| `macro_artifact_kind`                        | `vize_atelier_sfc`   |     1 |     3 |
+| `names_match`                                | `vize_patina`        |     3 |     3 |
+| `parse_script_setup`                         | `vize_atelier_sfc`   |     1 |     2 |
+| `parse_script_setup`                         | `vize_maestro`       |     2 |     4 |
+| `parse_script_setup`                         | `vize_musea`         |     2 |     2 |
+| `parse_script_setup`                         | `vize_patina`        |     3 |     3 |
+| `parse_script_setup_with_generic_and_jsx`    | `vize_patina`        |     1 |     1 |
+| `parse_script_with_options`                  | `vize_patina`        |     1 |     1 |
+| `parse_script_with_options_and_jsx`          | `vize_atelier_sfc`   |     1 |     1 |
+| `parse_v_for_expression`                     | `vize_patina`        |     1 |     1 |
+| `runtime_erased_macro_names`                 | `vize_atelier_sfc`   |     3 |     5 |
+| `strip_js_comments`                          | `vize_canon`         |     3 |     4 |
+| `to_pascal_case`                             | `vize_canon`         |     2 |     2 |
+| `to_pascal_case`                             | `vize_patina`        |     2 |     2 |
 
 ## Cross-check: symbol-resolved vs naive grep
 
 The naive lane counts raw word-boundary text matches per product name (`\.field` matches for field rows) over the same files — comments, strings, doc text, and same-named unrelated symbols included, imports included. Disagreements are listed, **not** reconciled: `grep > resolved` usually means comments/unrelated same-named symbols (for field rows: field accesses on non-`Croquis` receivers); `grep < resolved` would indicate a resolver bug and must be investigated.
 
-| product | resolved | grep | disagreeing crates (resolved/grep) |
-| --- | ---: | ---: | --- |
-| `Analyzer` | 162 | 243 | `vize_canon` (120/190), `vize_croquis_cf` (40/49), `vize_doctor` (0/1), `vize_vitrine` (1/2) |
-| `AnalyzerOptions` | 137 | 244 | `vize_canon` (116/186), `vize_croquis_cf` (19/56) |
-| `BindingMetadata` | 7 | 126 | `vize_atelier_core` (0/23), `vize_atelier_dom` (0/16), `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (1/51), `vize_atelier_ssr` (0/2), `vize_atelier_vapor` (0/14), `vize_canon` (5/8), `vize_relief` (0/5), `vize_vitrine` (0/5) |
-| `COMPILER_MACRO_NAMES` | 1 | 3 | `vize_canon` (0/1), `vize_patina` (1/2) |
-| `ComponentShape` | 1 | 2 | `vize_maestro` (1/2) |
-| `ComponentUsage` | 72 | 134 | `vize_canon` (29/41), `vize_croquis_cf` (38/85), `vize_maestro` (5/8) |
-| `Croquis` | 302 | 480 | `vize` (1/2), `vize_atelier_core` (15/21), `vize_atelier_dom` (2/7), `vize_atelier_jsx` (9/21), `vize_atelier_sfc` (16/42), `vize_atelier_ssr` (1/4), `vize_canon` (134/193), `vize_croquis_cf` (101/127), `vize_maestro` (3/17), `vize_patina` (19/42), `vize_vitrine` (1/4) |
-| `CroquisSemanticSnapshot` | 3 | 4 | `vize_curator` (3/4) |
-| `CroquisSemanticSummary` | 1 | 2 | `vize_curator` (1/2) |
-| `Drawer` | 29 | 48 | `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (7/9), `vize_canon` (0/1), `vize_maestro` (20/34), `vize_patina` (1/2) |
-| `DrawerOptions` | 25 | 41 | `vize_atelier_sfc` (5/6), `vize_maestro` (20/35) |
-| `EffectGraphScript` | 3 | 5 | `vize` (2/3), `vize_croquis_cf` (1/2) |
-| `EffectGraphSummary` | 20 | 32 | `vize_croquis_cf` (20/32) |
-| `ElementIdKind` | 5 | 7 | `vize_croquis_cf` (3/4), `vize_patina` (2/3) |
-| `EventHandlerScopeData` | 10 | 17 | `vize_canon` (9/15), `vize_croquis_cf` (1/2) |
-| `EventListener` | 13 | 22 | `vize_canon` (1/2), `vize_croquis_cf` (10/16), `vize_maestro` (2/4) |
-| `MacroTracker` | 1 | 2 | `vize_croquis_cf` (0/1) |
-| `NonScriptSetupScopeData` | 3 | 4 | `vize_canon` (3/4) |
-| `OptionGroup` | 7 | 9 | `vize_canon` (7/9) |
-| `OptionMember` | 3 | 5 | `vize_patina` (3/5) |
-| `PassedProp` | 35 | 55 | `vize_canon` (14/23), `vize_croquis_cf` (17/25), `vize_maestro` (4/7) |
-| `ProvideInjectTracker` | 0 | 1 | `vize_croquis_cf` (0/1) |
-| `ReactivityTracker` | 1 | 4 | `vize_atelier_core` (0/1), `vize_atelier_sfc` (0/1), `vize_vitrine` (1/2) |
-| `Scope` | 15 | 72 | `vize` (0/1), `vize_atelier_core` (0/2), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (15/42), `vize_maestro` (0/7), `vize_patina` (0/6), `vize_relief` (0/2), `vize_vitrine` (0/2) |
-| `ScopeBinding` | 1 | 2 | `vize_atelier_core` (1/2) |
-| `ScopeChain` | 9 | 12 | `vize_atelier_core` (2/3), `vize_canon` (7/9) |
-| `ScopeData` | 27 | 40 | `vize_canon` (17/28), `vize_patina` (2/4) |
-| `ScopeId` | 37 | 57 | `vize_canon` (13/19), `vize_croquis_cf` (23/33), `vize_maestro` (1/2), `vize_patina` (0/1), `vize_vitrine` (0/2) |
-| `ScopeKind` | 98 | 117 | `vize_atelier_core` (1/2), `vize_canon` (32/42), `vize_croquis_cf` (21/25), `vize_maestro` (40/44) |
-| `SlotUsage` | 5 | 13 | `vize_canon` (0/1), `vize_croquis_cf` (3/8), `vize_maestro` (2/4) |
-| `Span` | 0 | 266 | `vize_atelier_jsx` (0/62), `vize_atelier_sfc` (0/5), `vize_canon` (0/56), `vize_maestro` (0/2), `vize_patina` (0/141) |
-| `SpreadProp` | 5 | 9 | `vize_canon` (5/9) |
-| `Symbol` | 0 | 64 | `vize_atelier_core` (0/5), `vize_atelier_sfc` (0/3), `vize_atelier_ssr` (0/2), `vize_canon` (0/3), `vize_croquis_cf` (0/27), `vize_fresco` (0/2), `vize_maestro` (0/1), `vize_patina` (0/14), `vize_relief` (0/5), `vize_vitrine` (0/2) |
-| `SymbolFlags` | 0 | 5 | `vize_atelier_sfc` (0/5) |
-| `TemplateExpression` | 23 | 45 | `vize_canon` (20/26), `vize_croquis_cf` (3/5), `vize_maestro` (0/14) |
-| `TemplateExpressionKind` | 17 | 26 | `vize_canon` (8/12), `vize_croquis_cf` (9/14) |
-| `TypeExport` | 9 | 12 | `vize_canon` (9/12) |
-| `TypeExportKind` | 11 | 13 | `vize_canon` (9/11) |
-| `TypeResolver` | 0 | 5 | `vize_canon` (0/5) |
-| `UnusedVarContext` | 4 | 5 | `vize_patina` (4/5) |
-| `VForScopeData` | 10 | 14 | `vize_atelier_core` (1/2), `vize_canon` (4/5), `vize_croquis_cf` (5/7) |
-| `VSlotScopeData` | 5 | 8 | `vize_atelier_core` (1/2), `vize_canon` (3/4), `vize_croquis_cf` (1/2) |
-| `build_effect_graph_from_script` | 2 | 3 | `vize_croquis_cf` (2/3) |
-| `build_effect_graph_from_script_setup` | 1 | 2 | `vize_croquis_cf` (1/2) |
-| `build_effect_graph_from_sfc_scripts` | 2 | 4 | `vize` (1/2), `vize_croquis_cf` (1/2) |
-| `Croquis.binding_spans` | 12 | 13 | `vize_maestro` (2/3) |
-| `Croquis.bindings` | 67 | 381 | `vize` (0/2), `vize_atelier_core` (2/26), `vize_atelier_sfc` (16/225), `vize_atelier_ssr` (0/3), `vize_atelier_vapor` (0/4), `vize_canon` (35/76), `vize_croquis_cf` (2/10), `vize_curator` (0/1), `vize_fresco` (0/6), `vize_maestro` (8/12), `vize_musea` (0/1), `vize_patina` (1/6), `vize_relief` (0/1), `vize_vitrine` (2/7) |
-| `Croquis.component_usages` | 50 | 55 | `vize_croquis_cf` (33/38) |
-| `Croquis.hoists` | 0 | 11 | `vize_atelier_core` (0/8), `vize_atelier_sfc` (0/2), `vize_relief` (0/1) |
-| `Croquis.import_statements` | 8 | 10 | `vize_maestro` (0/1), `vize_musea` (0/1) |
-| `Croquis.macros` | 120 | 234 | `vize_atelier_sfc` (8/99), `vize_canon` (55/57), `vize_croquis_cf` (25/27), `vize_maestro` (12/20), `vize_musea` (0/2), `vize_patina` (17/26) |
-| `Croquis.provide_inject` | 28 | 36 | `vize_croquis_cf` (26/34) |
-| `Croquis.race_conditions` | 1 | 4 | `vize_croquis_cf` (1/4) |
-| `Croquis.reactivity` | 32 | 36 | `vize_atelier_core` (0/1), `vize_patina` (1/4) |
-| `Croquis.scopes` | 75 | 102 | `vize` (0/1), `vize_atelier_core` (0/4), `vize_atelier_jsx` (0/6), `vize_canon` (39/41), `vize_curator` (0/1), `vize_patina` (2/15) |
-| `Croquis.setup_context` | 2 | 5 | `vize_croquis_cf` (1/4) |
-| `Croquis.template_info` | 17 | 19 | `vize_croquis_cf` (14/15), `vize_patina` (0/1) |
-| `Croquis.types` | 9 | 26 | `vize` (0/1), `vize_atelier_sfc` (0/13), `vize_canon` (9/11), `vize_maestro` (0/1) |
-| `Croquis.undefined_refs` | 9 | 10 | `vize_canon` (8/9) |
-| `Croquis.used_components` | 38 | 42 | `vize_croquis_cf` (30/34) |
+| product                                | resolved | grep | disagreeing crates (resolved/grep)                                                                                                                                                                                                                                                                                                |
+| -------------------------------------- | -------: | ---: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Analyzer`                             |      162 |  243 | `vize_canon` (120/190), `vize_croquis_cf` (40/49), `vize_doctor` (0/1), `vize_vitrine` (1/2)                                                                                                                                                                                                                                      |
+| `AnalyzerOptions`                      |      137 |  244 | `vize_canon` (116/186), `vize_croquis_cf` (19/56)                                                                                                                                                                                                                                                                                 |
+| `BindingMetadata`                      |        7 |  126 | `vize_atelier_core` (0/23), `vize_atelier_dom` (0/16), `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (1/51), `vize_atelier_ssr` (0/2), `vize_atelier_vapor` (0/14), `vize_canon` (5/8), `vize_relief` (0/5), `vize_vitrine` (0/5)                                                                                                  |
+| `COMPILER_MACRO_NAMES`                 |        1 |    3 | `vize_canon` (0/1), `vize_patina` (1/2)                                                                                                                                                                                                                                                                                           |
+| `ComponentShape`                       |        1 |    2 | `vize_maestro` (1/2)                                                                                                                                                                                                                                                                                                              |
+| `ComponentUsage`                       |       72 |  134 | `vize_canon` (29/41), `vize_croquis_cf` (38/85), `vize_maestro` (5/8)                                                                                                                                                                                                                                                             |
+| `Croquis`                              |      302 |  480 | `vize` (1/2), `vize_atelier_core` (15/21), `vize_atelier_dom` (2/7), `vize_atelier_jsx` (9/21), `vize_atelier_sfc` (16/42), `vize_atelier_ssr` (1/4), `vize_canon` (134/193), `vize_croquis_cf` (101/127), `vize_maestro` (3/17), `vize_patina` (19/42), `vize_vitrine` (1/4)                                                     |
+| `CroquisSemanticSnapshot`              |        3 |    4 | `vize_curator` (3/4)                                                                                                                                                                                                                                                                                                              |
+| `CroquisSemanticSummary`               |        1 |    2 | `vize_curator` (1/2)                                                                                                                                                                                                                                                                                                              |
+| `Drawer`                               |       29 |   48 | `vize_atelier_jsx` (1/2), `vize_atelier_sfc` (7/9), `vize_canon` (0/1), `vize_maestro` (20/34), `vize_patina` (1/2)                                                                                                                                                                                                               |
+| `DrawerOptions`                        |       25 |   41 | `vize_atelier_sfc` (5/6), `vize_maestro` (20/35)                                                                                                                                                                                                                                                                                  |
+| `EffectGraphScript`                    |        3 |    5 | `vize` (2/3), `vize_croquis_cf` (1/2)                                                                                                                                                                                                                                                                                             |
+| `EffectGraphSummary`                   |       20 |   32 | `vize_croquis_cf` (20/32)                                                                                                                                                                                                                                                                                                         |
+| `ElementIdKind`                        |        5 |    7 | `vize_croquis_cf` (3/4), `vize_patina` (2/3)                                                                                                                                                                                                                                                                                      |
+| `EventHandlerScopeData`                |       10 |   17 | `vize_canon` (9/15), `vize_croquis_cf` (1/2)                                                                                                                                                                                                                                                                                      |
+| `EventListener`                        |       13 |   22 | `vize_canon` (1/2), `vize_croquis_cf` (10/16), `vize_maestro` (2/4)                                                                                                                                                                                                                                                               |
+| `MacroTracker`                         |        1 |    2 | `vize_croquis_cf` (0/1)                                                                                                                                                                                                                                                                                                           |
+| `NonScriptSetupScopeData`              |        3 |    4 | `vize_canon` (3/4)                                                                                                                                                                                                                                                                                                                |
+| `OptionGroup`                          |        7 |    9 | `vize_canon` (7/9)                                                                                                                                                                                                                                                                                                                |
+| `OptionMember`                         |        3 |    5 | `vize_patina` (3/5)                                                                                                                                                                                                                                                                                                               |
+| `PassedProp`                           |       35 |   55 | `vize_canon` (14/23), `vize_croquis_cf` (17/25), `vize_maestro` (4/7)                                                                                                                                                                                                                                                             |
+| `ProvideInjectTracker`                 |        0 |    1 | `vize_croquis_cf` (0/1)                                                                                                                                                                                                                                                                                                           |
+| `ReactivityTracker`                    |        1 |    4 | `vize_atelier_core` (0/1), `vize_atelier_sfc` (0/1), `vize_vitrine` (1/2)                                                                                                                                                                                                                                                         |
+| `Scope`                                |       15 |   72 | `vize` (0/1), `vize_atelier_core` (0/2), `vize_atelier_dom` (0/1), `vize_atelier_jsx` (0/1), `vize_atelier_sfc` (0/5), `vize_atelier_ssr` (0/3), `vize_canon` (15/42), `vize_maestro` (0/7), `vize_patina` (0/6), `vize_relief` (0/2), `vize_vitrine` (0/2)                                                                       |
+| `ScopeBinding`                         |        1 |    2 | `vize_atelier_core` (1/2)                                                                                                                                                                                                                                                                                                         |
+| `ScopeChain`                           |        9 |   12 | `vize_atelier_core` (2/3), `vize_canon` (7/9)                                                                                                                                                                                                                                                                                     |
+| `ScopeData`                            |       27 |   40 | `vize_canon` (17/28), `vize_patina` (2/4)                                                                                                                                                                                                                                                                                         |
+| `ScopeId`                              |       37 |   57 | `vize_canon` (13/19), `vize_croquis_cf` (23/33), `vize_maestro` (1/2), `vize_patina` (0/1), `vize_vitrine` (0/2)                                                                                                                                                                                                                  |
+| `ScopeKind`                            |       98 |  117 | `vize_atelier_core` (1/2), `vize_canon` (32/42), `vize_croquis_cf` (21/25), `vize_maestro` (40/44)                                                                                                                                                                                                                                |
+| `SlotUsage`                            |        5 |   13 | `vize_canon` (0/1), `vize_croquis_cf` (3/8), `vize_maestro` (2/4)                                                                                                                                                                                                                                                                 |
+| `Span`                                 |        0 |  266 | `vize_atelier_jsx` (0/62), `vize_atelier_sfc` (0/5), `vize_canon` (0/56), `vize_maestro` (0/2), `vize_patina` (0/141)                                                                                                                                                                                                             |
+| `SpreadProp`                           |        5 |    9 | `vize_canon` (5/9)                                                                                                                                                                                                                                                                                                                |
+| `Symbol`                               |        0 |   64 | `vize_atelier_core` (0/5), `vize_atelier_sfc` (0/3), `vize_atelier_ssr` (0/2), `vize_canon` (0/3), `vize_croquis_cf` (0/27), `vize_fresco` (0/2), `vize_maestro` (0/1), `vize_patina` (0/14), `vize_relief` (0/5), `vize_vitrine` (0/2)                                                                                           |
+| `SymbolFlags`                          |        0 |    5 | `vize_atelier_sfc` (0/5)                                                                                                                                                                                                                                                                                                          |
+| `TemplateExpression`                   |       23 |   45 | `vize_canon` (20/26), `vize_croquis_cf` (3/5), `vize_maestro` (0/14)                                                                                                                                                                                                                                                              |
+| `TemplateExpressionKind`               |       17 |   26 | `vize_canon` (8/12), `vize_croquis_cf` (9/14)                                                                                                                                                                                                                                                                                     |
+| `TypeExport`                           |        9 |   12 | `vize_canon` (9/12)                                                                                                                                                                                                                                                                                                               |
+| `TypeExportKind`                       |       11 |   13 | `vize_canon` (9/11)                                                                                                                                                                                                                                                                                                               |
+| `TypeResolver`                         |        0 |    5 | `vize_canon` (0/5)                                                                                                                                                                                                                                                                                                                |
+| `UnusedVarContext`                     |        4 |    5 | `vize_patina` (4/5)                                                                                                                                                                                                                                                                                                               |
+| `VForScopeData`                        |       10 |   14 | `vize_atelier_core` (1/2), `vize_canon` (4/5), `vize_croquis_cf` (5/7)                                                                                                                                                                                                                                                            |
+| `VSlotScopeData`                       |        5 |    8 | `vize_atelier_core` (1/2), `vize_canon` (3/4), `vize_croquis_cf` (1/2)                                                                                                                                                                                                                                                            |
+| `build_effect_graph_from_script`       |        2 |    3 | `vize_croquis_cf` (2/3)                                                                                                                                                                                                                                                                                                           |
+| `build_effect_graph_from_script_setup` |        1 |    2 | `vize_croquis_cf` (1/2)                                                                                                                                                                                                                                                                                                           |
+| `build_effect_graph_from_sfc_scripts`  |        2 |    4 | `vize` (1/2), `vize_croquis_cf` (1/2)                                                                                                                                                                                                                                                                                             |
+| `Croquis.binding_spans`                |       12 |   13 | `vize_maestro` (2/3)                                                                                                                                                                                                                                                                                                              |
+| `Croquis.bindings`                     |       67 |  381 | `vize` (0/2), `vize_atelier_core` (2/26), `vize_atelier_sfc` (16/225), `vize_atelier_ssr` (0/3), `vize_atelier_vapor` (0/4), `vize_canon` (35/76), `vize_croquis_cf` (2/10), `vize_curator` (0/1), `vize_fresco` (0/6), `vize_maestro` (8/12), `vize_musea` (0/1), `vize_patina` (1/6), `vize_relief` (0/1), `vize_vitrine` (2/7) |
+| `Croquis.component_usages`             |       50 |   55 | `vize_croquis_cf` (33/38)                                                                                                                                                                                                                                                                                                         |
+| `Croquis.hoists`                       |        0 |   11 | `vize_atelier_core` (0/8), `vize_atelier_sfc` (0/2), `vize_relief` (0/1)                                                                                                                                                                                                                                                          |
+| `Croquis.import_statements`            |        8 |   10 | `vize_maestro` (0/1), `vize_musea` (0/1)                                                                                                                                                                                                                                                                                          |
+| `Croquis.macros`                       |      120 |  234 | `vize_atelier_sfc` (8/99), `vize_canon` (55/57), `vize_croquis_cf` (25/27), `vize_maestro` (12/20), `vize_musea` (0/2), `vize_patina` (17/26)                                                                                                                                                                                     |
+| `Croquis.provide_inject`               |       28 |   36 | `vize_croquis_cf` (26/34)                                                                                                                                                                                                                                                                                                         |
+| `Croquis.race_conditions`              |        1 |    4 | `vize_croquis_cf` (1/4)                                                                                                                                                                                                                                                                                                           |
+| `Croquis.reactivity`                   |       32 |   36 | `vize_atelier_core` (0/1), `vize_patina` (1/4)                                                                                                                                                                                                                                                                                    |
+| `Croquis.scopes`                       |       75 |  102 | `vize` (0/1), `vize_atelier_core` (0/4), `vize_atelier_jsx` (0/6), `vize_canon` (39/41), `vize_curator` (0/1), `vize_patina` (2/15)                                                                                                                                                                                               |
+| `Croquis.setup_context`                |        2 |    5 | `vize_croquis_cf` (1/4)                                                                                                                                                                                                                                                                                                           |
+| `Croquis.template_info`                |       17 |   19 | `vize_croquis_cf` (14/15), `vize_patina` (0/1)                                                                                                                                                                                                                                                                                    |
+| `Croquis.types`                        |        9 |   26 | `vize` (0/1), `vize_atelier_sfc` (0/13), `vize_canon` (9/11), `vize_maestro` (0/1)                                                                                                                                                                                                                                                |
+| `Croquis.undefined_refs`               |        9 |   10 | `vize_canon` (8/9)                                                                                                                                                                                                                                                                                                                |
+| `Croquis.used_components`              |       38 |   42 | `vize_croquis_cf` (30/34)                                                                                                                                                                                                                                                                                                         |
