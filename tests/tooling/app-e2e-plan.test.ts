@@ -15,6 +15,10 @@ import {
 } from "../_helpers/app-fixture-runtime.ts";
 import { elkApp, frontendPhpconApp, npmxApp } from "../_helpers/apps.ts";
 import {
+  resolveVizeE2EFastNpmMetaVersion,
+  resolveVizeE2ENpmRegistryCachedResponse,
+} from "../_fixtures/npmx-e2e-registry-fixtures.ts";
+import {
   fullAppE2eRows,
   planAppE2eRows,
   readinessRows,
@@ -150,6 +154,16 @@ test("upstream app fixtures keep deterministic CI setup", () => {
   ]);
   assert.equal(npmxApp.env?.NUXT_TEST_FIXTURES, "true");
   assert.equal(npmxApp.env?.VIZE_E2E_DISABLE_LUNARIA, "1");
+  const manifest = resolveVizeE2ENpmRegistryCachedResponse<{ dist: { unpackedSize: number } }>(
+    "vue/3.5.29",
+  );
+  assert.equal(manifest.handled, true);
+  if (!manifest.handled) throw new Error("expected vue package manifest fixture");
+  assert.equal(manifest.data.data.dist.unpackedSize, 2_600_000);
+  assert.deepEqual(resolveVizeE2EFastNpmMetaVersion("https://npm.antfu.dev/vue"), {
+    handled: true,
+    data: "3.5.29",
+  });
 
   assert.equal(frontendPhpconApp.env?.NUXT_PUBLIC_API_BASE, FRONTEND_PHPCON_E2E_API_BASE);
   assert.equal(

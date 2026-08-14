@@ -15,6 +15,7 @@ import {
   VUEFES_E2E_ENV,
   execNpxCommand,
   npmxGeneratorTaskArgs,
+  patchNpmxRegistryFixtures,
   patchNuxtPrerenderForE2E,
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
@@ -668,9 +669,7 @@ function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): st
   const enableVize = opts?.enableVize ?? true;
   const elkDir = syncGitFixtureWorktree("elk", opts?.variant);
 
-  if (enableVize) {
-    ensureLocalVizePackagesBuilt();
-  }
+  if (enableVize) ensureLocalVizePackagesBuilt();
 
   applyElkRuntimePnpmOverrides(path.join(elkDir, "package.json"));
   patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
@@ -1180,14 +1179,13 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     });
   }
 
-  if (enableVize) {
-    createVizeSymlinks(nmDir);
-  }
+  if (enableVize) createVizeSymlinks(nmDir);
 
   patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
     enableVize,
     removeModules: ["@nuxtjs/html-validator"],
   });
+  patchNpmxRegistryFixtures(npmxDir);
   patchNpmxPrerenderRoutes(path.join(npmxDir, "nuxt.config.ts"));
   patchNpmxLunariaModule(path.join(npmxDir, "modules", "lunaria.ts"));
 
