@@ -4,6 +4,8 @@
 //! Existing `Analyzer` names are kept as compatibility aliases in [`crate::analyzer`].
 
 mod core;
+#[cfg(any(test, feature = "davinci-differential"))]
+pub mod differential;
 mod helpers;
 mod options;
 mod script;

@@ -30,7 +30,7 @@ pub struct VForScopeAliases {
 #[inline]
 pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, CompactString) {
     let expr = expr.trim();
-    parse_first_v_for_candidate(expr, |alias_part, source_part| {
+    let parsed = parse_first_v_for_candidate(expr, |alias_part, source_part| {
         if let Some(bindings) = parse_simple_v_for_bindings(alias_part) {
             return Some((bindings, CompactString::new(source_part)));
         }
@@ -42,14 +42,18 @@ pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, Comp
         );
 
         (!bindings.is_empty()).then_some((bindings, source))
-    })
-    .unwrap_or_else(|| (smallvec![], CompactString::new(expr)))
+    });
+    #[cfg(any(test, feature = "davinci-differential"))]
+    if parsed.is_some() {
+        crate::drawer::differential::record_v_for_shape();
+    }
+    parsed.unwrap_or_else(|| (smallvec![], CompactString::new(expr)))
 }
 
 /// Parse v-for expression into structured scope aliases.
 #[inline]
 pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
-    parse_first_v_for_candidate(expr.trim(), |alias_part, source_part| {
+    let aliases = parse_first_v_for_candidate(expr.trim(), |alias_part, source_part| {
         if let Some(aliases) = parse_simple_v_for_scope_aliases(alias_part, source_part) {
             return Some(aliases);
         }
@@ -60,7 +64,12 @@ pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
             "croquis.helpers.v_for.scope_oxc",
             oxc::parse_v_for_scope_aliases(alias_part.trim_start_matches("const ").trim(), source)
         )
-    })
+    });
+    #[cfg(any(test, feature = "davinci-differential"))]
+    if aliases.is_some() {
+        crate::drawer::differential::record_v_for_shape();
+    }
+    aliases
 }
 
 fn parse_first_v_for_candidate<T>(

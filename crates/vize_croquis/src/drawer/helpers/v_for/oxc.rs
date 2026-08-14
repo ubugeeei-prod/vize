@@ -1,3 +1,18 @@
+//! OXC binding-pattern parses for complex v-for aliases.
+//!
+//! Davinci P1-6 record: these parses stay on local throwaway arenas. They
+//! parse *synthesized* pattern text (`let [<alias>] = x`) — text that never
+//! existed as a template expression — so no parse-once retained AST (P1-5,
+//! `SimpleExpressionNode::js_ast`) corresponds to it. The v-for value's own
+//! retained AST (when the `in`-form happens to parse as a JS `in` binary
+//! expression) must not be consumed either: Vue's v-for grammar splits at
+//! the *first* viable `in`/`of` boundary while JS `in` associates left, so
+//! the two disagree on inputs like `a in b in c`. The drawer also holds no
+//! per-compile allocator handle (`Croquis`/`Drawer` are owned and
+//! lifetime-free under the arena/cache contract), so per the P1-6 fallback
+//! clause the local `Allocator::default()` stays for exactly these
+//! binding-pattern parses until the P1-8 unification.
+
 use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;

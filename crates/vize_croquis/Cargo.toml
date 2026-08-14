@@ -27,6 +27,12 @@ oxc_syntax.workspace = true
 oxc_span.workspace = true
 oxc_allocator.workspace = true
 
+[features]
+# Davinci P1-6 differential lane: dual-runs the retained-AST expression reads
+# against the legacy re-parse paths and panics on divergence. Also active
+# under cfg(test); zero-cost when off. Deleted with the lane at P1-8.
+davinci-differential = []
+
 [dev-dependencies]
 tempfile.workspace = true
 vize_armature.workspace = true
@@ -43,3 +49,10 @@ vize_atelier_sfc = { path = "../vize_atelier_sfc" }
 [[bench]]
 name = "davinci"
 harness = false
+
+# The P1-6 differential lane's corpus-runnable entry; skipped unless the lane
+# feature is on so the plain workspace suite stays single-sided outside
+# vize_croquis's own unit tests.
+[[test]]
+name = "davinci_differential"
+required-features = ["davinci-differential"]

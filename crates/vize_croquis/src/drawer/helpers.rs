@@ -14,7 +14,8 @@ mod v_for;
 mod v_scope;
 
 pub use identifiers::{
-    IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
+    IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc,
+    extract_identifiers_retained, strip_js_comments,
 };
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub use slots::{extract_inline_callback_params, extract_slot_props};

@@ -10,7 +10,7 @@ use vize_carton::{CompactString, profile};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
-use super::super::helpers::{extract_identifiers_oxc, is_keyword};
+use super::super::helpers::{extract_identifiers_retained, is_keyword};
 
 /// Attributes that take ID references (not the ID itself).
 const ID_REFERENCE_ATTRIBUTES: &[&str] = &[
@@ -158,25 +158,27 @@ impl Drawer {
         scope_vars: &[CompactString],
     ) {
         let compound_content;
-        let content = match expr {
-            ExpressionNode::Simple(s) => s.content.as_str(),
+        let (content, retained) = match expr {
+            ExpressionNode::Simple(s) => (s.content.as_str(), s.js_ast.as_ref()),
             ExpressionNode::Compound(c) => {
                 compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
-                compound_content.as_str()
+                (compound_content.as_str(), None)
             }
         };
         let base_offset = expr.loc().span.start;
 
         // Identifier extraction is a pure function of the expression text, and
         // template expressions repeat heavily (the same bindings/handlers across
-        // every v-for iteration's rendered element). Memoize the parse+walk per
+        // every v-for iteration's rendered element). Memoize the walk per
         // distinct expression; scope resolution below still runs per call. The
         // cached idents are read by reference (disjoint from `self.croquis`), so
-        // a hit costs neither a parse nor a clone.
+        // a hit costs neither a walk nor a clone. Nodes carrying the parse-once
+        // retained AST (P1-5) feed the walk directly; the retained parse is a
+        // pure function of the same text, so cache entries stay path-agnostic.
         if !self.ident_cache.contains_key(content) {
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
-                extract_identifiers_oxc(content)
+                extract_identifiers_retained(content, retained)
             );
             self.ident_cache
                 .insert(CompactString::new(content), computed);
