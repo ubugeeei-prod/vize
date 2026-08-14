@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
+import { normalizeReportedFile } from "./smoke-release-init-paths.mjs";
 import { renderOutput, run, runResult } from "./smoke-process.mjs";
 
 /** Overrides that would let the host, not the installed package, pick Corsa. */
@@ -277,29 +278,6 @@ export function checkReport(projectRoot) {
     });
   }
   return { rendered, report, status: result.status };
-}
-
-function normalizeReportedFile(file, projectRoot) {
-  const normalized = file.replaceAll("\\", "/");
-  const normalizedRoot = path.posix.normalize(projectRoot.replaceAll("\\", "/"));
-  const relativeToRoot = (target) => {
-    const relative = path.posix.relative(normalizedRoot, target);
-    if (relative === "" || (!relative.startsWith("../") && relative !== "..")) {
-      return relative;
-    }
-    return null;
-  };
-  if (path.posix.isAbsolute(normalized) || /^[A-Za-z]:\//u.test(normalized)) {
-    const relative = relativeToRoot(path.posix.normalize(normalized));
-    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
-  }
-  if (normalized === "." || normalized === ".." || /^[.]{1,2}\//u.test(normalized)) {
-    const relative = relativeToRoot(
-      path.posix.normalize(path.posix.join(normalizedRoot, normalized)),
-    );
-    if (relative !== null) return relative.startsWith("./") ? relative.slice(2) : relative;
-  }
-  return normalized.startsWith("./") ? normalized.slice(2) : normalized;
 }
 
 export function reportedDiagnostics(report, projectRoot) {
