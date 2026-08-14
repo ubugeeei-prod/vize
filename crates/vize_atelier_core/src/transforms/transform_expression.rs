@@ -35,8 +35,7 @@ pub fn is_event_handler_reference_expression(content: &str) -> bool {
     if !expression_is_safe_to_parse(content) {
         return false;
     }
-    crate::expr_parse_probe::note_expr_parse();
-    let allocator = oxc_allocator::Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
     let Ok(expr) = parser.parse_expression() else {
         return false;
@@ -60,8 +59,7 @@ pub fn is_function_expression(content: &str) -> bool {
     if !expression_is_safe_to_parse(content) {
         return false;
     }
-    crate::expr_parse_probe::note_expr_parse();
-    let allocator = oxc_allocator::Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
     let Ok(expr) = parser.parse_expression() else {
         return false;

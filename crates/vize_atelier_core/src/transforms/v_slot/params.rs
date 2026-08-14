@@ -1,6 +1,5 @@
 //! Slot parameter binding extraction.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -20,8 +19,7 @@ pub fn extract_slot_prop_names(pattern: &str) -> Vec<String> {
     source.push_str(trimmed);
     source.push_str(" = __slotProps");
 
-    crate::expr_parse_probe::note_expr_parse();
-    let allocator = Allocator::default();
+    let allocator = crate::expr_parse_probe::parse_arena();
     let source_type = SourceType::default().with_typescript(true);
     let parsed = Parser::new(&allocator, source.as_str(), source_type).parse();
 

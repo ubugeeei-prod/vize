@@ -2,8 +2,11 @@
 //!
 //! Counts every oxc parse of template-expression text on the compile path -
 //! one increment per parse-scoped `oxc_allocator::Allocator` the transform,
-//! codegen, and Vapor generate stages create today. The P0-3 benches read the
-//! counter to record the per-fixture re-parse baseline
+//! codegen, and Vapor generate stages create today. Counting happens inside
+//! [`parse_arena`], the constructor those sites now use instead of
+//! `Allocator::default()`, so a counted parse and a parse arena are the same
+//! event by construction. The P0-3 benches read the counter to record the
+//! per-fixture re-parse baseline
 //! (`davinci-road/plan/expr-reparse-baseline.md`); phase 1 replaces the
 //! parse-copy-reparse round trips with retained ASTs, TS-26 then asserts
 //! `davinci.expr.parses == distinct expressions`, and this module is deleted
@@ -16,13 +19,17 @@
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
+use oxc_allocator::Allocator;
+
 static EXPR_PARSES: AtomicU64 = AtomicU64::new(0);
 
-/// Count one expression parse. Placed next to every parse-scoped arena
-/// creation on the compile path.
+/// Create a parse-scoped oxc arena and count the expression parse it is
+/// built for. Drop-in replacement for `Allocator::default()` at every
+/// expression parse site on the compile path.
 #[inline]
-pub fn note_expr_parse() {
+pub fn parse_arena() -> Allocator {
     EXPR_PARSES.fetch_add(1, Ordering::Relaxed);
+    Allocator::default()
 }
 
 /// Total counted expression parses since process start (monotone).
