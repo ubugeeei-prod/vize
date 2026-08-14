@@ -1,0 +1,153 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { parse } from "yaml";
+
+import {
+  cliReleasePlatforms,
+  nativeReleasePlatforms,
+} from "../../tools/github/release-platforms.mjs";
+import { readRepoFile, workflowJobField, workflowJobRunsOn } from "./support/github-workflows.ts";
+
+const TEMPORARY_HOSTED_RUNNER = "ubuntu-24.04";
+const RESTORE_BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
+const RESTORE_RUNS_ON = `${TEMPORARY_HOSTED_RUNNER} # restore: ${RESTORE_BLACKSMITH_RUNNER}`;
+
+// Every job the temporary fallback moved off Blacksmith, keyed by workflow. The
+// inline `# restore:` comment is the rollback contract for this migration, so
+// each job is checked by name: a file-wide label match keeps passing after a
+// migrated job silently drops its restore label, and other jobs in these files
+// (`ubuntu-latest` planners, release jobs that were always GitHub-hosted) must
+// not be annotated.
+const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
+  "benchmark.yml": ["pr-benchmark", "pr-benchmark-budget", "pr-benchmark-comment"],
+  "check.yml": [
+    "nix-flake",
+    "fmt-rust",
+    "check-js",
+    "semver-checks",
+    "security-audit",
+    "node-engine-compat",
+    "check-vize-apps",
+    "vue-parity",
+    "test-scripts",
+    "editor-extensions",
+    "editor-host-smoke",
+    "build-js-packages",
+    "test-js-packages",
+    "clippy-and-test",
+    "coverage",
+    "source-coverage",
+    "branch-coverage",
+    "playground-test",
+    "test-report",
+    "test-report-comment",
+  ],
+  "criterion-bench.yml": ["criterion-ab", "dialect-guard"],
+  "e2e.yml": ["app-readiness-producer", "app-e2e-producer"],
+  "miri.yml": ["miri"],
+  "pkg-pr-new.yml": ["publish-preview"],
+  "release-preflight.yml": ["verify", "validate-crates"],
+  "release.yml": [
+    "plan-release-platforms",
+    "build-editor-extensions",
+    "release-vscode-extension",
+    "build-release-packages",
+    "build-wasm-package",
+    "smoke-release-packages",
+    "release-crates",
+    "create-github-release",
+  ],
+  "tool-benchmark.yml": [
+    "tool-benchmark-impact",
+    "tool-benchmark",
+    "tool-benchmark-comment",
+    "tool-benchmark-commit",
+  ],
+};
+
+test("temporary hosted runner fallback keeps Blacksmith restore labels per job", () => {
+  for (const [workflowName, expectedJobs] of Object.entries(HOSTED_FALLBACK_JOBS)) {
+    const source = readRepoFile(".github", "workflows", workflowName);
+    const jobs = Object.keys((parse(source) as { jobs?: Record<string, unknown> }).jobs ?? {});
+
+    for (const job of expectedJobs) {
+      assert.equal(
+        workflowJobRunsOn(source, job),
+        RESTORE_RUNS_ON,
+        `${workflowName} job ${job} must run on the temporary hosted runner and keep its restore label`,
+      );
+    }
+    assert.deepEqual(
+      jobs.filter((job) => workflowJobRunsOn(source, job) === RESTORE_RUNS_ON),
+      expectedJobs,
+      `${workflowName} annotates a different set of jobs than the hosted fallback covers`,
+    );
+  }
+});
+
+test("hosted fallback keeps the restore contract on the budgets it widened", () => {
+  const source = readRepoFile(".github", "workflows", "e2e.yml");
+  assert.equal(
+    workflowJobField(source, "app-readiness-producer", "timeout-minutes"),
+    `40 # restore: 30 with ${RESTORE_BLACKSMITH_RUNNER}`,
+    "the hosted readiness budget must state the Blacksmith value it replaced",
+  );
+});
+
+test("tool benchmark metadata records the hosted runner and its restore label", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "tool-benchmark.yml")) as {
+    jobs?: Record<string, { steps?: Array<{ name?: string; run?: string }> }>;
+  };
+  const compare = workflow.jobs?.["tool-benchmark"]?.steps?.find(
+    (step) => step.name === "Compare Vize with existing tools",
+  );
+  assert.ok(compare, "missing the tool benchmark comparison step");
+  const run = compare.run ?? "";
+  assert.ok(
+    run.includes(`--runner-label "${TEMPORARY_HOSTED_RUNNER}"`),
+    "the comparison must label its metadata with the runner it actually used",
+  );
+  assert.ok(
+    run.includes(`# --runner-label "${RESTORE_BLACKSMITH_RUNNER}"`),
+    "the comparison step must keep the Blacksmith metadata label for restoration",
+  );
+});
+
+test("release platform metadata keeps the Blacksmith restore mapping on its tables", () => {
+  const source = readRepoFile("tools", "github", "release-platforms.mjs");
+  const restoreNotice =
+    "// Temporary hosted-runner fallback:\n" +
+    "// - restore macos-15-intel/macos-15 to blacksmith-12vcpu-macos-15\n" +
+    "// - restore ubuntu-24.04/ubuntu-24.04-arm to blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm\n";
+  assert.ok(
+    source.includes(`${restoreNotice}export const cliReleasePlatforms = [`),
+    "the restore mapping must sit on the migrated platform tables, not float as a stray comment",
+  );
+
+  // Each migrated host has to remain reachable from a real platform entry;
+  // otherwise the mapping above documents a rollback nothing depends on.
+  const platforms = [...cliReleasePlatforms, ...nativeReleasePlatforms];
+  const cliByTarget = new Map(cliReleasePlatforms.map((platform) => [platform.target, platform]));
+  const nativeByTarget = new Map(
+    nativeReleasePlatforms.map((platform) => [platform.target, platform]),
+  );
+  assert.equal(cliByTarget.get("x86_64-apple-darwin")?.host, "macos-15-intel");
+  assert.equal(nativeByTarget.get("x86_64-apple-darwin")?.host, "macos-15");
+  assert.equal(nativeByTarget.get("aarch64-apple-darwin")?.host, "macos-15");
+  for (const host of ["macos-15-intel", "macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]) {
+    assert.ok(
+      platforms.some((platform: { host: string }) => platform.host === host),
+      `no release platform entry uses the temporary hosted runner ${host}`,
+    );
+  }
+  for (const restored of [
+    "blacksmith-12vcpu-macos-15",
+    RESTORE_BLACKSMITH_RUNNER,
+    `${RESTORE_BLACKSMITH_RUNNER}-arm`,
+  ]) {
+    assert.ok(
+      !platforms.some((platform: { host: string }) => platform.host === restored),
+      `${restored} is still an active release platform host, so the fallback is inconsistent`,
+    );
+  }
+});

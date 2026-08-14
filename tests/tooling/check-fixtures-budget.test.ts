@@ -7,6 +7,7 @@ import {
   resolveBudget,
   verifyBudget,
 } from "./support/check-fixtures/cycle-runner.ts";
+import { BUDGET_CPU_FLOOR_ENV, resolveBudgetCpuCount } from "./support/check-fixtures/cycles.ts";
 import { checkArgv, cycleTargets } from "./support/check-fixtures/cycle-targets.ts";
 import {
   parseProcLimits,
@@ -204,4 +205,19 @@ test("the cycle targets pin single-Corsa, ecosystem virtual TS, and maximum-shar
     "--servers",
     "8",
   ]);
+});
+
+test("the hosted-runner fallback raises only the documented task-budget CPU floor", () => {
+  assert.equal(resolveBudgetCpuCount(4, {}), 4);
+  assert.equal(resolveBudgetCpuCount(4, { [BUDGET_CPU_FLOOR_ENV]: "12" }), 12);
+  assert.equal(resolveBudgetCpuCount(32, { [BUDGET_CPU_FLOOR_ENV]: "12" }), 32);
+  assert.throws(
+    () => resolveBudgetCpuCount(4, { [BUDGET_CPU_FLOOR_ENV]: "bad" }),
+    /must be a positive integer/,
+  );
+
+  const [single, shard] = cycleTargets as [(typeof cycleTargets)[0], (typeof cycleTargets)[1]];
+  const hostedBudgetCpuCount = resolveBudgetCpuCount(4, { [BUDGET_CPU_FLOOR_ENV]: "12" });
+  assert.equal(single.taskBudget(hostedBudgetCpuCount), 160);
+  assert.equal(shard.taskBudget(hostedBudgetCpuCount), 512);
 });

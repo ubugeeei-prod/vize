@@ -14,7 +14,7 @@ env:
 jobs:
   verify:
     name: Verify release safety contract
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     permissions:
       actions: write
@@ -37,7 +37,7 @@ jobs:
 
   validate-crates:
     name: Validate crates.io publish plan
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04 # restore: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     permissions:
       contents: read

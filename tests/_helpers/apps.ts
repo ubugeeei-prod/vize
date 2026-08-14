@@ -8,6 +8,7 @@ import {
   ensureLocalVizePackagesBuilt,
   ensureSymlink,
 } from "./vize-local-packages.ts";
+import { patchNuxtUiPlaygroundConfig } from "./nuxt-ui-config.ts";
 import {
   FRONTEND_PHPCON_E2E_ENV,
   NPMX_E2E_ENV,
@@ -1839,14 +1840,7 @@ export const nuxtUiApp: AppConfig = {
     patchNuxtConfig(nuxtConfigPath);
     patchNuxtUiLinkComponent(nuxtUiLinkPath);
     patchNuxtUiFormComponent(nuxtUiFormPath);
-    let nuxtConfig = fs.readFileSync(nuxtConfigPath, "utf-8");
-    if (!nuxtConfig.includes("@nuxt/content")) {
-      nuxtConfig = nuxtConfig.replace(
-        "modules: [\n    '@vizejs/nuxt',",
-        "modules: [\n    '@vizejs/nuxt',\n    '@nuxt/content',",
-      );
-      fs.writeFileSync(nuxtConfigPath, nuxtConfig);
-    }
+    let nuxtConfig = patchNuxtUiPlaygroundConfig(nuxtConfigPath);
     if (!nuxtConfig.includes("handleNodeModulesVue: false")) {
       nuxtConfig = nuxtConfig.replace(
         "vize: {\n    musea: false,\n  },",

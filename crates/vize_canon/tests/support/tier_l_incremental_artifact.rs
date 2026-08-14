@@ -20,6 +20,7 @@ pub(super) struct Artifact {
     pub(super) schema_version: u8,
     pub(super) fixture: FixtureEvidence,
     pub(super) budget: BatchIncrementalBudget,
+    pub(super) budget_scale: f64,
     pub(super) file_count: usize,
     pub(super) lanes: Vec<LaneEvidence>,
 }
@@ -106,7 +107,11 @@ pub(super) fn write_artifact(repo_root: &Path, artifact: &Artifact) {
             lane.metrics.session_to_cli_fallbacks,
         );
     }
-    summary.push_str("\nDeterministic gates require one session start, two reuses, exact one-file warm deltas, and zero CLI fallbacks. Durations are independent hard ceilings.\n");
+    append!(
+        summary,
+        "\nDeterministic gates require one session start, two reuses, exact one-file warm deltas, and zero CLI fallbacks. Durations are independent hard ceilings at budget scale {}.\n",
+        artifact.budget_scale,
+    );
     fs::write(output_dir.join("summary.md"), summary).expect("metrics summary should write");
 }
 

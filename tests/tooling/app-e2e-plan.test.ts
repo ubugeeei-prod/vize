@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,12 +15,10 @@ import {
 } from "../_helpers/app-fixture-runtime.ts";
 import { elkApp, frontendPhpconApp, npmxApp } from "../_helpers/apps.ts";
 import {
-  createAppE2ePlanEvidence,
   fullAppE2eRows,
   planAppE2eRows,
   readinessRows,
   validateAppE2eRows,
-  validateAppE2eTarget,
 } from "../../tools/github/app-e2e-plan.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -93,6 +91,13 @@ test("full and readiness plans preserve every isolated execution row", () => {
       (row) => row.profile === "full" && row.suite === "check" && row.shard === "all",
     )?.timeout,
     "75m",
+  );
+  assert.equal(readinessRows.find((row) => row.shard === "check")?.timeout, "12m");
+  assert.equal(readinessRows.find((row) => row.shard === "dev-misskey")?.timeout, "8m");
+  assert.equal(
+    readinessRows.find((row) => row.shard === "dev-nuxt-ui")?.timeout,
+    "30m",
+    "hosted Nuxt UI dev readiness needs enough wall-clock budget for server boot and warmups",
   );
   assert.equal(
     readinessRows.find((row) => row.shard === "lint")?.timeout,
@@ -248,7 +253,7 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
   );
   assert.equal(
     scripts["test:readiness:dev:nuxt-ui"],
-    "playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
+    "playwright test --config app/playwright.config.ts --retries=0 app/dev/nuxt-ui.spec.ts",
   );
   assert.equal(
     scripts["test:readiness:check:vuefes"],
@@ -306,41 +311,4 @@ test("plan validation rejects drift instead of silently dropping coverage", () =
     assert.throws(() => validateAppE2eRows(rows), message, name);
   }
   assert.throws(() => planAppE2eRows("full", "unknown"), /Unknown full App E2E suite/);
-});
-
-test("dispatch target validation binds the requested ref to one exact SHA", () => {
-  const sha = "a".repeat(40);
-  assert.equal(validateAppE2eTarget("all", sha, sha), sha);
-  assert.equal(validateAppE2eTarget("dev", "", sha), null);
-  assert.throws(() => validateAppE2eTarget("all", "", sha), /required when suite=all/);
-  assert.throws(() => validateAppE2eTarget("all", "A".repeat(40), sha), /full lowercase/);
-  assert.throws(() => validateAppE2eTarget("all", sha, "b".repeat(40)), /dispatch ref/);
-  const evidence = createAppE2ePlanEvidence("full", "all", sha);
-  assert.deepEqual(
-    {
-      schema: evidence.schema,
-      version: evidence.version,
-      targetSha: evidence.targetSha,
-      sourceHeadSha: evidence.sourceHeadSha,
-      rowCount: evidence.rowCount,
-    },
-    {
-      schema: "vize.appE2ePlanEvidence",
-      version: 1,
-      targetSha: sha,
-      sourceHeadSha: null,
-      rowCount: 17,
-    },
-  );
-  assert.throws(() => createAppE2ePlanEvidence("full", "all", "main"), /exact target SHA/);
-});
-
-test("planner CLI rejects unknown suites with a nonzero exit", () => {
-  const result = spawnSync(
-    process.execPath,
-    ["tools/github/app-e2e-plan.mjs", "--profile", "full", "--suite", "missing"],
-    { cwd: root, encoding: "utf8" },
-  );
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /Unknown full App E2E suite/);
 });

@@ -207,6 +207,7 @@ test("pkg.pr.new workflow publishes built npm packages from the lockfile", () =>
   const workflow = readRepoFile(".github", "workflows", "pkg-pr-new.yml");
   const job = workflowJobBody(workflow, "publish-preview");
 
+  assert.match(job, /runs-on:\s*ubuntu-24\.04\s*# restore: blacksmith-32vcpu-ubuntu-2404/);
   assert.match(job, /timeout-minutes:\s*30/);
   assert.match(job, /vp run --workspace-root build:packages/);
   assert.match(job, /vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update/);

@@ -14,6 +14,7 @@ import { collectBinaryHashes, collectVersions } from "./benchmark-provenance.mjs
 
 export const BLACKSMITH_MAX_LABEL = "blacksmith-32vcpu-ubuntu-2404";
 export const BLACKSMITH_MAX_SPEC = "32 vCPU / 128 GB RAM / 1.5 TB storage";
+export const TOOL_BENCHMARK_RUNNER_LABEL = "ubuntu-24.04";
 
 function githubRunUrl() {
   const server = process.env.GITHUB_SERVER_URL;
@@ -47,7 +48,7 @@ export function buildCommands(inputFileCount, options) {
     `--nuxt-file-count ${options.nuxtFileCount}`,
     `--musea-file-count ${options.museaFileCount}`,
     `--large-blocks ${options.largeBlocks}`,
-    `--runner-label "${BLACKSMITH_MAX_LABEL}"`,
+    `--runner-label "${TOOL_BENCHMARK_RUNNER_LABEL}"`,
     "--out tool-benchmark-summary.md",
     "--json tool-benchmark-results.json",
     "--doc performance-blacksmith.md",

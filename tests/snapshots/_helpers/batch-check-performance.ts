@@ -11,6 +11,8 @@ export interface BatchCheckBudget {
   warmMs: number;
 }
 
+export const batchCheckBudgetScaleVariable = "VIZE_BATCH_CHECK_BUDGET_SCALE";
+
 const registryPath = "tests/_fixtures/vue-ecosystem-fixtures.json";
 
 export function loadBatchCheckBudget(projectId: string): BatchCheckBudget {
@@ -36,11 +38,34 @@ export function loadBatchCheckBudget(projectId: string): BatchCheckBudget {
   return budget;
 }
 
+export function resolveBatchCheckBudgetScale(
+  environment: Record<string, string | undefined> = process.env,
+): number {
+  const raw = environment[batchCheckBudgetScaleVariable];
+  if (raw == null || raw === "") return 1;
+  const scale = Number(raw);
+  assert.ok(
+    Number.isFinite(scale) && scale > 0 && scale <= 100,
+    `${batchCheckBudgetScaleVariable} must be a finite number greater than 0 and at most 100, got ${JSON.stringify(raw)}`,
+  );
+  return scale;
+}
+
+function scaleBatchCheckBudget(budget: BatchCheckBudget, scale: number): BatchCheckBudget {
+  return {
+    coldMs: Math.ceil(budget.coldMs * scale),
+    warmMs: Math.ceil(budget.warmMs * scale),
+  };
+}
+
 export function runBudgetedBatchVizeCheck(app: AppConfig): {
   cold: VizeCheckSummary;
   warm: VizeCheckSummary;
 } {
-  const budget = loadBatchCheckBudget(app.name);
+  const budget = scaleBatchCheckBudget(
+    loadBatchCheckBudget(app.name),
+    resolveBatchCheckBudgetScale(),
+  );
   const cold = runCrashFreeVizeCheck(app, { timeoutMs: budget.coldMs });
   const warm = runCrashFreeVizeCheck(app, { timeoutMs: budget.warmMs });
 

@@ -178,6 +178,41 @@ test("lockfiles and shared benchmark infrastructure select the full inventory", 
   }
 });
 
+test("hosted fallback smoke-runs Criterion infrastructure-only changes", () => {
+  const result = selectCriterionSuites({
+    changedPaths: [
+      ".github/workflows/check.yml",
+      ".github/workflows/criterion-bench.yml",
+      "bench/criterion-ab.mjs",
+      "crates/vize_canon/tests/tier_l_incremental.rs",
+      "tests/tooling/criterion-baselines.test.ts",
+    ],
+    metadata: metadata(),
+    repoDir,
+    hostedFallback: true,
+  });
+
+  assert.equal(result.mode, "hosted-smoke");
+  assert.deepEqual(result.selected, ["vize_glyph"]);
+  assert.deepEqual(
+    result.skipped,
+    suiteNames.filter((suite) => suite !== "vize_glyph"),
+  );
+  assert.match(result.reason, /Criterion infrastructure changed without Rust benchmark subjects/);
+});
+
+test("hosted fallback preserves full Criterion coverage for Rust benchmark subjects", () => {
+  const result = selectCriterionSuites({
+    changedPaths: ["Cargo.lock", "bench/criterion-ab.mjs"],
+    metadata: metadata(),
+    repoDir,
+    hostedFallback: true,
+  });
+
+  assert.equal(result.mode, "full");
+  assert.deepEqual(result.selected, suiteNames);
+});
+
 test("unowned foundational Rust paths fail safe to the full inventory", () => {
   const result = selectCriterionSuites({
     changedPaths: ["crates/foundation/config.rs"],

@@ -149,7 +149,7 @@ export function criterionBenchRunOptions({ checkoutDir, targetDir }) {
   return {
     cwd: checkoutDir,
     env: criterionEnvironment(targetDir),
-    capture: true,
+    capture: false,
   };
 }
 
