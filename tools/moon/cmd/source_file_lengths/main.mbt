@@ -61,7 +61,7 @@ fn is_excluded_path(path : String) -> Bool {
   // without breaking producer contracts or their public package paths.
   (path.has_prefix("bench/results/") ||
   path == "npm/cli/schemas/vize.config.schema.json" ||
-  path == "npm/cli/src/types/generated.ts" || path == "davinci-road/plan/croquis-consumption.md" ||
+  path == "npm/cli/src/types/generated.ts" || path == "davinci-road/plan/croquis-consumption.md" || path == "davinci-road/plan/corpus-coverage.md" ||
   path == "editors/vscode/package.json") ||
   path.has_prefix("docs/content/ja/") || path.has_prefix("docs/content/zh-CN/") ||
   path.has_prefix("docs/content/pt-BR/") || path.has_prefix("docs/content/fr/") ||
