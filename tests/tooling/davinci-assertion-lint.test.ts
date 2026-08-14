@@ -20,6 +20,15 @@ function runLint(args: string[]) {
   return spawnSync(process.execPath, [lintPath, ...args], { cwd: repoRoot, encoding: "utf8" });
 }
 
+// Paths listed by the committed allowlist: every `[[allow]]` group carries a
+// justification, an expiry, and the `paths = [ … ]` array it covers.
+function allowlistPaths(): string[] {
+  const allowlist = fs.readFileSync(allowlistPath, "utf8");
+  const groups = allowlist.split("\n").filter((line) => line.trim() === "[[allow]]").length;
+  assert.ok(groups > 0, "committed allowlist must declare [[allow]] groups");
+  return [...allowlist.matchAll(/^ {2}"([^"]+)",$/gm)].map(([, entry]) => entry);
+}
+
 test("assertion lint flags every marked weak assertion in the bad fixture, and only those", () => {
   const fixture = fs.readFileSync(path.join(fixtureDir, "bad_example.rs"), "utf8");
   // The fixture is the ground truth: every line carrying a `// FLAG [category]`
@@ -44,8 +53,7 @@ test("assertion lint flags every marked weak assertion in the bad fixture, and o
 });
 
 test("assertion lint exits 0 on the real tree under the committed allowlist", () => {
-  const allowlist = fs.readFileSync(allowlistPath, "utf8");
-  const entryCount = allowlist.split("\n").filter((line) => line.trim() === "[[allow]]").length;
+  const entryCount = allowlistPaths().length;
   assert.ok(entryCount > 0, "committed allowlist must not be empty while the debt exists");
 
   const result = runLint([]);
@@ -67,8 +75,7 @@ test("assertion lint exits 0 on the real tree under the committed allowlist", ()
 });
 
 test("committed allowlist entries point at files that still exist", () => {
-  const allowlist = fs.readFileSync(allowlistPath, "utf8");
-  const paths = [...allowlist.matchAll(/^path = "([^"]+)"$/gm)].map(([, entry]) => entry);
+  const paths = allowlistPaths();
   assert.ok(paths.length > 0, "allowlist must declare [[allow]] paths");
   for (const entry of paths) {
     assert.ok(

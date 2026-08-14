@@ -220,7 +220,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [x] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (entry = path + justification + expiry)
+- [x] Banned-assertion lint `tools/davinci/assertion-lint.mjs`: scans `#[cfg(test)]` code and `tests/**` for `contains(`, `starts_with(`/`ends_with(` in asserts, regex-matching asserts, and partial-JSON comparisons; allowlist `davinci-road/plan/assertion-allowlist.toml` (`[[allow]]` group = justification + expiry + covered paths)
 - [x] CI self-test: fixture with a deliberately bad assertion that the lint must flag (lint the linter) — `tests/tooling/davinci-assertion-lint.test.ts`
 - [ ] `cargo-mutants` baseline: run on `vize_carton` + `vize_relief` (pilot pair); scores recorded in `budgets.toml` `[mutation]` section; CI job (nightly lane, not per-PR — runtime cost) with ratchet comparison (deferred: pending local disk headroom; runs in the nightly lane once recorded)
 - [x] Construct taxonomy DRAFT `davinci-road/plan/taxonomy.toml`: dimensions = element kind (native/component/slot/template/svg/mathml) × directive (`v-if/-else-if/-else, v-for, v-on, v-bind, v-model, v-show, v-html, v-text, v-once, v-memo, v-cloak, v-pre, custom`) × modifier classes × binding sources (setup/props/data/inject/global) × block combinations

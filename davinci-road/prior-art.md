@@ -90,8 +90,7 @@ carrying timing, Folio printing, budget enforcement, and remarks at zero cost
 when detached — reporting **fusion grouping explicitly so timing never lies**;
 `--folio-after-change` (hash-gated printing) turning "which pass broke this"
 into reading; crash reproducers = last-good folio + pipeline string, replayable
-via `vize repro`; machine-readable timing (JSON) so CI gates on the traversal
-budget.
+via `vize repro`; machine-readable timing (JSON) so CI gates on the traversal budget.
 
 **`davinci-opt`.** MLIR's testing culture rests on `mlir-opt` + round-tripping
 textual IR. _Import:_ Folio must **parse, not just print**, for S2/S3; a
@@ -272,8 +271,7 @@ _Import:_ the capability handshake goes into the WIT world verbatim;
 sandbox + determinism is the stated contract that makes extension output
 cacheable; and the decisive one — **the extension SDK ships as a prebuilt,
 versioned artifact from day one** (the component model gives us the stable
-binary contract Swift lacked). Compatibility _policy_ is written down, not
-just a version number.
+binary contract Swift lacked). Compatibility _policy_ is written down, not just a version number.
 
 **Request evaluator / incremental builds.** Hashable queries with automatic
 cycle detection — except cycle diagnostics are disabled in production ("too
@@ -283,8 +281,7 @@ nominal / member granularity.
 _Import:_ per-SFC summaries split into fingerprinted **facets** (signature,
 prop/emit/slot types, member-level info) so consumers invalidate only on
 facets they used; and fact-group cycles are made **impossible by
-stratification** (a group may demand only earlier strata), never detected at
-runtime.
+stratification** (a group may demand only earlier strata), never detected at runtime.
 _Anti-lesson:_ queries retrofitted onto mutable state is the negative proof
 for our immutable-stage + resident-only-salsa split; and two parallel
 dependency systems is accidental complexity — the fact engine is the single
@@ -326,8 +323,7 @@ each module records the fingerprints of everything it _used_; recompilation is
 skipped iff every used fingerprint is unchanged — the 15-years-proven rule
 ([Tweag deep-dive](https://www.tweag.io/blog/2022-11-03-blog_recompilation/)).
 Orphan instances punch through the firewall and force reading every orphan
-interface; unfoldings-in-interfaces buy optimization at the cost of cascading
-invalidation.
+interface; unfoldings-in-interfaces buy optimization at the cost of cascading invalidation.
 _Import:_ per-declaration fingerprints + record-what-you-used becomes the
 per-SFC summary invalidation rule; the **orphan equivalent is named now** —
 app-global facts (global components, app-level provide/inject, dialect-wide
@@ -406,8 +402,7 @@ file/summary granularity, snapshot-adoption inside an SFC at natural joints
 (header → block → S2 region), covering most keystroke traffic without pushing
 salsa finer. Cancellation tokens through every stage task; worker isolation by
 threads + catch-unwind (not per-file processes — Lean's file sizes afford
-those, ours don't); "header changed ⇒ restart" maps to the per-SFC summary
-firewall.
+those, ours don't); "header changed ⇒ restart" maps to the per-SFC summary firewall.
 
 **Kernel discipline — verify the artifact, not the pass.** Lean's tiny kernel
 re-checks elaborator output through a closed term language; its independence

@@ -2,1190 +2,257 @@
 # tools/davinci/assertion-lint.mjs, doctrine in davinci-road/assurance.md
 # ("Strict oracles — no partial matching").
 #
-# One entry suppresses every finding in one file. Entries carry a
-# justification and an expiry; expired entries stop suppressing and the
+# Each [[allow]] group carries one justification and one expiry, and lists
+# every file path it covers; a listed path suppresses every finding in that
+# file until the group expires. Expired groups stop suppressing and the
 # findings come back. New test code must never be added here — fix the
-# assertion instead. This list only shrinks.
+# assertion instead. This list only shrinks: a path whose findings are all
+# cleaned up must be dropped, or the lint warns about it.
+#
+# Split a path into its own group when it needs a narrower justification or
+# a shorter expiry than the group it currently sits in.
 #
 # Initial population: the pre-existing violation set found when the lint
 # first landed (236 files, captured 2026-08-14 on the davinci branch).
 
 [[allow]]
-path = "crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs"
 justification = "pre-davinci debt, triage in P0-12 completion"
 expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/check/patterns.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/env_info.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/fmt/patterns.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/inspector/compare_error.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/lint/cross_file.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/src/commands/lint/patterns.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/build_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/build_output_paths_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/build_profile_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_absolute_paths_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_allowjs_imports_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_allowjs_imports_cli/imported_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_allowjs_imports_cli/referenced_compiler_options.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_allowjs_imports_cli/referenced_projects.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_ambient_export_assignment_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_base_url_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_canon_graphql_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_canon_path_alias_json_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_declaration_emit_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_declaration_emit_cli/workspace_package_vue_exports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_declaration_emit_vue_floor_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_default_imports_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_default_imports_cli/aliased_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_default_imports_cli/base_url_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_default_imports_cli/workspace_package_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_default_imports_cli/workspace_package_vue_exports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_define_props_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_directory_self_imports_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_function_props_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_hoisted_workspace_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_importer_scoped_package_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_instance_props_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_jsx_component_contract_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_class_bindings_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_event_alias_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_event_payload_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_helpers_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_no_unused_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_ref_unwrap_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_template_scope_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_legacy_vue2_vfor_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_multistatement_v_on_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt2_fallback_guidance_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt2_template_globals_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_ambient_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_bridge_shims_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_composition_api_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_composition_api_plugin_augmentation_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_legacy_tsconfig_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_monorepo_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_tsconfig_failure_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_tsconfig_isolation_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_nuxt_tsconfig_paths_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_package_cwd_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_package_external_import_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_plain_script_named_exports_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_ref_enum_template_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_reference_types_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_sfc_import_suppressions_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_sfc_string_blocks_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_symlinked_node_modules_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_tsconfig_types_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_tsx_intrinsic_elements_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_tsx_sfc_attrs_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_vue2_vuetify_props_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_vue_reexports_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_workspace_package_boundary_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/check_workspace_vue_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_importer_scoped_packages.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_lsp_support/leak_assertions.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_lsp_support/mod.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_tsgo_build.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_tsgo_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_tsgo_lsp.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/doctor_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/doctor_filter_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/doctor_tui_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/env_info_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/fmt_config_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/fmt_lint_agreement_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/fmt_plain_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/fmt_supported_targets_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/inspector_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/inspector_compare_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_config_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_preset_scope_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_rule_severity_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_storybook_tsx_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_supported_targets_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/lint_vue_compatibility_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/musea_migrate_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/musea_static_build_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/plain_script_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/source_write_atomic_cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize/tests/support/lsp_process.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/src/runtime_helpers.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/src/transforms/legacy.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/src/transforms/transform_expression.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/src/transforms/transform_expression/inline_handler.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/expression_nesting_guard_type_angles.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/legacy_event_modifiers.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/legacy_filters.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/legacy_template_sugar.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/scoped_slot_shadowing.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_core/tests/v_if_spread_order.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/branch_keys.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/conditional_v_model_quirks.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/dom_snapshot.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/expression_nesting_guard.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/slot_outlet_hoist.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_dom/tests/table_control_flow.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/analysis.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/babel_is_custom_element.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/babel_merge_props.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/babel_spread_child.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/babel_tag_classification.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/compat_mode.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/directives.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/module_code.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/module_props.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_jsx/tests/pragma.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/compile_script/artifacts.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/compile_script/inline/tests.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/compile_script/lazy_hydration.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/compile_script/tests.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/script/context/props.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/script/type_resolution.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/src/vite_plugin/css.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/tests/emitter_javascript_output.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/tests/imported_type_cache.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/tests/scoped_slot_shadowing.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_sfc/tests/setup_component_unref.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_ssr/src/lib.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_ssr/tests/event_props.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_atelier_ssr/tests/ssr_snapshot.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/executor/cli/diagnostic_paths.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/executor/diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/executor/diagnostics/virtual_path_message.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/materialize_lock.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/virtual_project/external_mirror.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/virtual_project/identity.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/batch/virtual_project/passthrough_resolution.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/lsp_client/editor_lsp/client.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/lsp_client/materialized_refresh.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/source_map.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/tests.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/virtual_ts/generator/script_module.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/virtual_ts/generator/setup_type_exports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/src/virtual_ts/props/with_defaults.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/ambient_declarations.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/auto_import_ref_unwrap.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/component_event_arity.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/empty_template_interpolation.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/escaped_regex_template_expression.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/imported_ref_unwrap.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/jsx_component_props.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/leading_semicolon_event_handler.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/lsp_import_resolution.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/lsp_import_resolution/virtual_dependencies.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/no_space_default_export.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/nuxt_false_positives.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/options_api_runtime_props_value_scope.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/plain_script_named_exports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/plain_script_namespace_hoisting.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/recovered_parse_codegen.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/relative_extensionless_vue_imports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/reserved_enum_member.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/reserved_template_literals.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/runtime_function_prop_union.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/setup_scoped_type_exports.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/tier_l_incremental.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_canon/tests/tsconfig_option_diagnostics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_carton/src/config/model/vue.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_carton/src/corsa_resolver.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_carton/src/flags.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_carton/src/source_range.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_carton/tests/loading.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/src/declaration_ts.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/src/effect_graph.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/src/hoist.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/src/import_resolver.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/src/reactivity_tracking/summary.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/tests/macro_type_arguments.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis/tests/template_globals.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis_cf/src/module_paths.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis_cf/src/registry.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis_cf/src/rules/cross_file_reactivity/store_detection.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_croquis_cf/src/rules/provide_inject/summary.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_fresco/src/layout/rect.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/src/lib.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/src/style.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/script_idempotence.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/sfc_empty_script_blocks.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/sfc_opaque_template_language.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/sfc_script_idempotence.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/template_directive_attributes.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/template_literal_interpolation.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/template_runtime_semantics.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_glyph/tests/template_suppression_line.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/code_action.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/completion/items.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/completion/template/component_docs.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/corsa_support/html_tag.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/diagnostics/corsa/message.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/hover.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/hover/component_prop.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/hover/component_tag.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/hover/html.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/jsx/scoped_style.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/ide/markup.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/server/annotations/document_color/scan/hsl.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/server/state/global_components.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_maestro/src/virtual_code/script_code.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_marquette/tests/adapter_conformance.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_marquette/tests/cli.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_marquette/tests/test_run_schema.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/linter/corsa_session/paths.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/linter/corsa_session/session.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/linter/native_type_aware/source_path.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/linter/script_rules/html_scripts.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/markup.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_vitrine/src/napi/lint/empty_result.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_vitrine/src/napi/sfc/thread_pool.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
-
-[[allow]]
-path = "crates/vize_vitrine/src/wasm/jsx.rs"
-justification = "pre-davinci debt, triage in P0-12 completion"
-expires = "2026-12-31"
+paths = [
+  "crates/vize/src/commands/check/nuxt/tsconfig_aliases.rs",
+  "crates/vize/src/commands/check/patterns.rs",
+  "crates/vize/src/commands/env_info.rs",
+  "crates/vize/src/commands/fmt/patterns.rs",
+  "crates/vize/src/commands/inspector/compare_error.rs",
+  "crates/vize/src/commands/lint/cross_file.rs",
+  "crates/vize/src/commands/lint/patterns.rs",
+  "crates/vize/tests/build_cli.rs",
+  "crates/vize/tests/build_output_paths_cli.rs",
+  "crates/vize/tests/build_profile_cli.rs",
+  "crates/vize/tests/check_absolute_paths_cli.rs",
+  "crates/vize/tests/check_allowjs_imports_cli.rs",
+  "crates/vize/tests/check_allowjs_imports_cli/imported_diagnostics.rs",
+  "crates/vize/tests/check_allowjs_imports_cli/referenced_compiler_options.rs",
+  "crates/vize/tests/check_allowjs_imports_cli/referenced_projects.rs",
+  "crates/vize/tests/check_ambient_export_assignment_cli.rs",
+  "crates/vize/tests/check_base_url_cli.rs",
+  "crates/vize/tests/check_canon_graphql_cli.rs",
+  "crates/vize/tests/check_canon_path_alias_json_cli.rs",
+  "crates/vize/tests/check_cli.rs",
+  "crates/vize/tests/check_declaration_emit_cli.rs",
+  "crates/vize/tests/check_declaration_emit_cli/workspace_package_vue_exports.rs",
+  "crates/vize/tests/check_declaration_emit_vue_floor_cli.rs",
+  "crates/vize/tests/check_default_imports_cli.rs",
+  "crates/vize/tests/check_default_imports_cli/aliased_diagnostics.rs",
+  "crates/vize/tests/check_default_imports_cli/base_url_diagnostics.rs",
+  "crates/vize/tests/check_default_imports_cli/workspace_package_diagnostics.rs",
+  "crates/vize/tests/check_default_imports_cli/workspace_package_vue_exports.rs",
+  "crates/vize/tests/check_define_props_cli.rs",
+  "crates/vize/tests/check_directory_self_imports_cli.rs",
+  "crates/vize/tests/check_function_props_cli.rs",
+  "crates/vize/tests/check_hoisted_workspace_cli.rs",
+  "crates/vize/tests/check_importer_scoped_package_cli.rs",
+  "crates/vize/tests/check_instance_props_cli.rs",
+  "crates/vize/tests/check_jsx_component_contract_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_class_bindings_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_event_alias_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_event_payload_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_helpers_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_no_unused_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_ref_unwrap_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_template_scope_cli.rs",
+  "crates/vize/tests/check_legacy_vue2_vfor_cli.rs",
+  "crates/vize/tests/check_multistatement_v_on_cli.rs",
+  "crates/vize/tests/check_nuxt2_fallback_guidance_cli.rs",
+  "crates/vize/tests/check_nuxt2_template_globals_cli.rs",
+  "crates/vize/tests/check_nuxt_ambient_cli.rs",
+  "crates/vize/tests/check_nuxt_bridge_shims_cli.rs",
+  "crates/vize/tests/check_nuxt_composition_api_cli.rs",
+  "crates/vize/tests/check_nuxt_composition_api_plugin_augmentation_cli.rs",
+  "crates/vize/tests/check_nuxt_legacy_tsconfig_cli.rs",
+  "crates/vize/tests/check_nuxt_monorepo_cli.rs",
+  "crates/vize/tests/check_nuxt_tsconfig_failure_cli.rs",
+  "crates/vize/tests/check_nuxt_tsconfig_isolation_cli.rs",
+  "crates/vize/tests/check_nuxt_tsconfig_paths_cli.rs",
+  "crates/vize/tests/check_package_cwd_cli.rs",
+  "crates/vize/tests/check_package_external_import_cli.rs",
+  "crates/vize/tests/check_plain_script_named_exports_cli.rs",
+  "crates/vize/tests/check_ref_enum_template_cli.rs",
+  "crates/vize/tests/check_reference_types_cli.rs",
+  "crates/vize/tests/check_sfc_import_suppressions_cli.rs",
+  "crates/vize/tests/check_sfc_string_blocks_cli.rs",
+  "crates/vize/tests/check_symlinked_node_modules_cli.rs",
+  "crates/vize/tests/check_tsconfig_types_cli.rs",
+  "crates/vize/tests/check_tsx_intrinsic_elements_cli.rs",
+  "crates/vize/tests/check_tsx_sfc_attrs_cli.rs",
+  "crates/vize/tests/check_vue2_vuetify_props_cli.rs",
+  "crates/vize/tests/check_vue_reexports_cli.rs",
+  "crates/vize/tests/check_workspace_package_boundary_cli.rs",
+  "crates/vize/tests/check_workspace_vue_cli.rs",
+  "crates/vize/tests/content_mapper_importer_scoped_packages.rs",
+  "crates/vize/tests/content_mapper_lsp_support/leak_assertions.rs",
+  "crates/vize/tests/content_mapper_lsp_support/mod.rs",
+  "crates/vize/tests/content_mapper_tsgo_build.rs",
+  "crates/vize/tests/content_mapper_tsgo_cli.rs",
+  "crates/vize/tests/content_mapper_tsgo_lsp.rs",
+  "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs",
+  "crates/vize/tests/doctor_cli.rs",
+  "crates/vize/tests/doctor_filter_cli.rs",
+  "crates/vize/tests/doctor_tui_cli.rs",
+  "crates/vize/tests/env_info_cli.rs",
+  "crates/vize/tests/fmt_config_cli.rs",
+  "crates/vize/tests/fmt_lint_agreement_cli.rs",
+  "crates/vize/tests/fmt_plain_cli.rs",
+  "crates/vize/tests/fmt_supported_targets_cli.rs",
+  "crates/vize/tests/inspector_cli.rs",
+  "crates/vize/tests/inspector_compare_cli.rs",
+  "crates/vize/tests/lint_config_cli.rs",
+  "crates/vize/tests/lint_preset_scope_cli.rs",
+  "crates/vize/tests/lint_rule_severity_cli.rs",
+  "crates/vize/tests/lint_storybook_tsx_cli.rs",
+  "crates/vize/tests/lint_supported_targets_cli.rs",
+  "crates/vize/tests/lint_vue_compatibility_cli.rs",
+  "crates/vize/tests/musea_migrate_cli.rs",
+  "crates/vize/tests/musea_static_build_cli.rs",
+  "crates/vize/tests/plain_script_cli.rs",
+  "crates/vize/tests/source_write_atomic_cli.rs",
+  "crates/vize/tests/support/lsp_process.rs",
+  "crates/vize_atelier_core/src/runtime_helpers.rs",
+  "crates/vize_atelier_core/src/transforms/legacy.rs",
+  "crates/vize_atelier_core/src/transforms/transform_expression.rs",
+  "crates/vize_atelier_core/src/transforms/transform_expression/inline_handler.rs",
+  "crates/vize_atelier_core/tests/dynamic_slot_forwarding.rs",
+  "crates/vize_atelier_core/tests/expression_nesting_guard_type_angles.rs",
+  "crates/vize_atelier_core/tests/legacy_event_modifiers.rs",
+  "crates/vize_atelier_core/tests/legacy_filters.rs",
+  "crates/vize_atelier_core/tests/legacy_template_sugar.rs",
+  "crates/vize_atelier_core/tests/scoped_slot_shadowing.rs",
+  "crates/vize_atelier_core/tests/v_if_spread_order.rs",
+  "crates/vize_atelier_dom/tests/branch_keys.rs",
+  "crates/vize_atelier_dom/tests/conditional_v_model_quirks.rs",
+  "crates/vize_atelier_dom/tests/dom_snapshot.rs",
+  "crates/vize_atelier_dom/tests/expression_nesting_guard.rs",
+  "crates/vize_atelier_dom/tests/invalid_expression_diagnostics.rs",
+  "crates/vize_atelier_dom/tests/slot_outlet_hoist.rs",
+  "crates/vize_atelier_dom/tests/table_control_flow.rs",
+  "crates/vize_atelier_jsx/tests/analysis.rs",
+  "crates/vize_atelier_jsx/tests/babel_is_custom_element.rs",
+  "crates/vize_atelier_jsx/tests/babel_merge_props.rs",
+  "crates/vize_atelier_jsx/tests/babel_spread_child.rs",
+  "crates/vize_atelier_jsx/tests/babel_tag_classification.rs",
+  "crates/vize_atelier_jsx/tests/compat_mode.rs",
+  "crates/vize_atelier_jsx/tests/directives.rs",
+  "crates/vize_atelier_jsx/tests/module_code.rs",
+  "crates/vize_atelier_jsx/tests/module_props.rs",
+  "crates/vize_atelier_jsx/tests/pragma.rs",
+  "crates/vize_atelier_sfc/src/compile_script/artifacts.rs",
+  "crates/vize_atelier_sfc/src/compile_script/inline/tests.rs",
+  "crates/vize_atelier_sfc/src/compile_script/lazy_hydration.rs",
+  "crates/vize_atelier_sfc/src/compile_script/tests.rs",
+  "crates/vize_atelier_sfc/src/script/context/props.rs",
+  "crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs",
+  "crates/vize_atelier_sfc/src/script/type_resolution.rs",
+  "crates/vize_atelier_sfc/src/vite_plugin/css.rs",
+  "crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs",
+  "crates/vize_atelier_sfc/tests/emitter_javascript_output.rs",
+  "crates/vize_atelier_sfc/tests/imported_type_cache.rs",
+  "crates/vize_atelier_sfc/tests/scoped_slot_shadowing.rs",
+  "crates/vize_atelier_sfc/tests/setup_component_unref.rs",
+  "crates/vize_atelier_ssr/src/codegen/helpers/destructure.rs",
+  "crates/vize_atelier_ssr/src/lib.rs",
+  "crates/vize_atelier_ssr/tests/event_props.rs",
+  "crates/vize_atelier_ssr/tests/ssr_snapshot.rs",
+  "crates/vize_canon/src/batch/executor/cli/diagnostic_paths.rs",
+  "crates/vize_canon/src/batch/executor/diagnostics.rs",
+  "crates/vize_canon/src/batch/executor/diagnostics/virtual_path_message.rs",
+  "crates/vize_canon/src/batch/materialize_lock.rs",
+  "crates/vize_canon/src/batch/virtual_project/external_mirror.rs",
+  "crates/vize_canon/src/batch/virtual_project/identity.rs",
+  "crates/vize_canon/src/batch/virtual_project/passthrough_resolution.rs",
+  "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes.rs",
+  "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+  "crates/vize_canon/src/lsp_client/materialized_refresh.rs",
+  "crates/vize_canon/src/source_map.rs",
+  "crates/vize_canon/src/tests.rs",
+  "crates/vize_canon/src/virtual_ts/generator/script_module.rs",
+  "crates/vize_canon/src/virtual_ts/generator/setup_type_exports.rs",
+  "crates/vize_canon/src/virtual_ts/props/with_defaults.rs",
+  "crates/vize_canon/tests/ambient_declarations.rs",
+  "crates/vize_canon/tests/auto_import_ref_unwrap.rs",
+  "crates/vize_canon/tests/component_event_arity.rs",
+  "crates/vize_canon/tests/empty_template_interpolation.rs",
+  "crates/vize_canon/tests/escaped_regex_template_expression.rs",
+  "crates/vize_canon/tests/imported_ref_unwrap.rs",
+  "crates/vize_canon/tests/jsx_component_props.rs",
+  "crates/vize_canon/tests/leading_semicolon_event_handler.rs",
+  "crates/vize_canon/tests/lsp_import_resolution.rs",
+  "crates/vize_canon/tests/lsp_import_resolution/virtual_dependencies.rs",
+  "crates/vize_canon/tests/no_space_default_export.rs",
+  "crates/vize_canon/tests/nuxt_false_positives.rs",
+  "crates/vize_canon/tests/options_api_runtime_props_value_scope.rs",
+  "crates/vize_canon/tests/plain_script_named_exports.rs",
+  "crates/vize_canon/tests/plain_script_namespace_hoisting.rs",
+  "crates/vize_canon/tests/recovered_parse_codegen.rs",
+  "crates/vize_canon/tests/relative_extensionless_vue_imports.rs",
+  "crates/vize_canon/tests/reserved_enum_member.rs",
+  "crates/vize_canon/tests/reserved_template_literals.rs",
+  "crates/vize_canon/tests/runtime_function_prop_union.rs",
+  "crates/vize_canon/tests/setup_scoped_type_exports.rs",
+  "crates/vize_canon/tests/tier_l_incremental.rs",
+  "crates/vize_canon/tests/tsconfig_option_diagnostics.rs",
+  "crates/vize_carton/src/config/model/vue.rs",
+  "crates/vize_carton/src/corsa_resolver.rs",
+  "crates/vize_carton/src/flags.rs",
+  "crates/vize_carton/src/source_range.rs",
+  "crates/vize_carton/tests/loading.rs",
+  "crates/vize_croquis/src/declaration_ts.rs",
+  "crates/vize_croquis/src/effect_graph.rs",
+  "crates/vize_croquis/src/hoist.rs",
+  "crates/vize_croquis/src/import_resolver.rs",
+  "crates/vize_croquis/src/reactivity_tracking/summary.rs",
+  "crates/vize_croquis/tests/macro_type_arguments.rs",
+  "crates/vize_croquis/tests/template_globals.rs",
+  "crates/vize_croquis_cf/src/module_paths.rs",
+  "crates/vize_croquis_cf/src/registry.rs",
+  "crates/vize_croquis_cf/src/rules/cross_file_reactivity/store_detection.rs",
+  "crates/vize_croquis_cf/src/rules/provide_inject/summary.rs",
+  "crates/vize_fresco/src/layout/rect.rs",
+  "crates/vize_glyph/src/lib.rs",
+  "crates/vize_glyph/src/style.rs",
+  "crates/vize_glyph/tests/script_idempotence.rs",
+  "crates/vize_glyph/tests/sfc_empty_script_blocks.rs",
+  "crates/vize_glyph/tests/sfc_opaque_template_language.rs",
+  "crates/vize_glyph/tests/sfc_script_idempotence.rs",
+  "crates/vize_glyph/tests/template_directive_attributes.rs",
+  "crates/vize_glyph/tests/template_literal_interpolation.rs",
+  "crates/vize_glyph/tests/template_runtime_semantics.rs",
+  "crates/vize_glyph/tests/template_suppression_line.rs",
+  "crates/vize_maestro/src/ide/code_action.rs",
+  "crates/vize_maestro/src/ide/completion/items.rs",
+  "crates/vize_maestro/src/ide/completion/template/component_docs.rs",
+  "crates/vize_maestro/src/ide/corsa_support/html_tag.rs",
+  "crates/vize_maestro/src/ide/diagnostics/corsa/message.rs",
+  "crates/vize_maestro/src/ide/hover.rs",
+  "crates/vize_maestro/src/ide/hover/component_prop.rs",
+  "crates/vize_maestro/src/ide/hover/component_tag.rs",
+  "crates/vize_maestro/src/ide/hover/html.rs",
+  "crates/vize_maestro/src/ide/jsx/scoped_style.rs",
+  "crates/vize_maestro/src/ide/markup.rs",
+  "crates/vize_maestro/src/server/annotations/document_color/scan/hsl.rs",
+  "crates/vize_maestro/src/server/state/global_components.rs",
+  "crates/vize_maestro/src/virtual_code/script_code.rs",
+  "crates/vize_marquette/tests/adapter_conformance.rs",
+  "crates/vize_marquette/tests/cli.rs",
+  "crates/vize_marquette/tests/test_run_schema.rs",
+  "crates/vize_patina/src/linter/corsa_session/paths.rs",
+  "crates/vize_patina/src/linter/corsa_session/session.rs",
+  "crates/vize_patina/src/linter/native_type_aware/source_path.rs",
+  "crates/vize_patina/src/linter/script_rules/html_scripts.rs",
+  "crates/vize_patina/src/markup.rs",
+  "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
+  "crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs",
+  "crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs",
+  "crates/vize_vitrine/src/napi/lint/empty_result.rs",
+  "crates/vize_vitrine/src/napi/sfc/thread_pool.rs",
+  "crates/vize_vitrine/src/wasm/jsx.rs",
+]
