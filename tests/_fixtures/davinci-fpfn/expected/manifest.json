@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "tool": "tools/davinci/seed-defects.mjs",
+  "source": {
+    "kind": "fixtures",
+    "label": "tests/_fixtures/davinci-fpfn"
+  },
+  "scope": {
+    "filesCopied": 4,
+    "classAEligible": 3,
+    "classAInjections": 3,
+    "classBInjections": 4
+  },
+  "files": [
+    {
+      "path": "BaselineDrift.vue",
+      "classA": true,
+      "classB": true
+    },
+    {
+      "path": "HelloCounter.vue",
+      "classA": true,
+      "classB": true
+    },
+    {
+      "path": "PlainBadge.vue",
+      "classA": false,
+      "classB": true,
+      "classAReason": "no-single-script-setup-and-template"
+    },
+    {
+      "path": "SuppressedSpaces.vue",
+      "classA": true,
+      "classB": true
+    }
+  ],
+  "injections": [
+    {
+      "class": "undefined-template-ref",
+      "path": "BaselineDrift.vue",
+      "expectedRule": "vue/no-undefined-refs",
+      "identifier": {
+        "original": "message",
+        "seeded": "message__davinci_seeded"
+      },
+      "scriptRenameCount": 1,
+      "expected": {
+        "span": [
+          137,
+          144
+        ],
+        "line": 7,
+        "column": 24,
+        "endLine": 7,
+        "endColumn": 31
+      }
+    },
+    {
+      "class": "unused-binding",
+      "path": "BaselineDrift.vue",
+      "expectedRule": null,
+      "identifier": {
+        "original": null,
+        "seeded": "__davinci_seeded_unused"
+      },
+      "createdScriptSetupBlock": false,
+      "expected": {
+        "span": [
+          21,
+          44
+        ],
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 30
+      },
+      "note": "vize_croquis unused_bindings has no lint consumer (documented FN, ledger-fn.md)"
+    },
+    {
+      "class": "undefined-template-ref",
+      "path": "HelloCounter.vue",
+      "expectedRule": "vue/no-undefined-refs",
+      "identifier": {
+        "original": "count",
+        "seeded": "count__davinci_seeded"
+      },
+      "scriptRenameCount": 2,
+      "expected": {
+        "span": [
+          288,
+          293
+        ],
+        "line": 14,
+        "column": 60,
+        "endLine": 14,
+        "endColumn": 65
+      }
+    },
+    {
+      "class": "unused-binding",
+      "path": "HelloCounter.vue",
+      "expectedRule": null,
+      "identifier": {
+        "original": null,
+        "seeded": "__davinci_seeded_unused"
+      },
+      "createdScriptSetupBlock": false,
+      "expected": {
+        "span": [
+          21,
+          44
+        ],
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 30
+      },
+      "note": "vize_croquis unused_bindings has no lint consumer (documented FN, ledger-fn.md)"
+    },
+    {
+      "class": "unused-binding",
+      "path": "PlainBadge.vue",
+      "expectedRule": null,
+      "identifier": {
+        "original": null,
+        "seeded": "__davinci_seeded_unused"
+      },
+      "createdScriptSetupBlock": true,
+      "expected": {
+        "span": [
+          21,
+          44
+        ],
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 30
+      },
+      "note": "vize_croquis unused_bindings has no lint consumer (documented FN, ledger-fn.md)"
+    },
+    {
+      "class": "undefined-template-ref",
+      "path": "SuppressedSpaces.vue",
+      "expectedRule": "vue/no-undefined-refs",
+      "identifier": {
+        "original": "spacing",
+        "seeded": "spacing__davinci_seeded"
+      },
+      "scriptRenameCount": 1,
+      "expected": {
+        "span": [
+          257,
+          264
+        ],
+        "line": 11,
+        "column": 29,
+        "endLine": 11,
+        "endColumn": 36
+      }
+    },
+    {
+      "class": "unused-binding",
+      "path": "SuppressedSpaces.vue",
+      "expectedRule": null,
+      "identifier": {
+        "original": null,
+        "seeded": "__davinci_seeded_unused"
+      },
+      "createdScriptSetupBlock": false,
+      "expected": {
+        "span": [
+          21,
+          44
+        ],
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 30
+      },
+      "note": "vize_croquis unused_bindings has no lint consumer (documented FN, ledger-fn.md)"
+    }
+  ],
+  "edits": {
+    "BaselineDrift.vue": [
+      {
+        "span": [
+          15,
+          15
+        ],
+        "delta": 35
+      },
+      {
+        "span": [
+          21,
+          28
+        ],
+        "delta": 16
+      }
+    ],
+    "HelloCounter.vue": [
+      {
+        "span": [
+          15,
+          15
+        ],
+        "delta": 35
+      },
+      {
+        "span": [
+          49,
+          54
+        ],
+        "delta": 16
+      },
+      {
+        "span": [
+          120,
+          125
+        ],
+        "delta": 16
+      }
+    ],
+    "PlainBadge.vue": [
+      {
+        "span": [
+          0,
+          0
+        ],
+        "delta": 61
+      }
+    ],
+    "SuppressedSpaces.vue": [
+      {
+        "span": [
+          15,
+          15
+        ],
+        "delta": 35
+      },
+      {
+        "span": [
+          82,
+          89
+        ],
+        "delta": 16
+      }
+    ]
+  }
+}

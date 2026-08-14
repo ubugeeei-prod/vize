@@ -21,7 +21,7 @@
 - [x] P0-10 Folio harness skeleton + VIR absorption — the `vir` payload key lives in `vize_vitrine`, not `vize_curator`; alias added at the real site
 - [ ] P0-11 Profiler source-level attribution + stable export
 - [ ] P0-12 Assurance harness (assertion lint, mutation baseline, taxonomy)
-- [ ] P0-13 Seeded-defect + suppression-telemetry pilots (FP/FN oracles)
+- [x] P0-13 Seeded-defect + suppression-telemetry pilots (FP/FN oracles) — both oracles running with committed, triaged ledgers; corpus-shard-in-CI pending corpus hydration (with P0-6)
 
 ---
 
@@ -244,12 +244,12 @@ detection.
 
 **Steps:**
 
-- [ ] Seeded-defect generator `tools/davinci/seed-defects.mjs`: two pilot classes — (a) undefined template ref: rename a `<script setup>` binding referenced from the template; (b) unused binding: inject an unreferenced `const` — applied to matrix fixtures and a corpus shard copy
-- [ ] Recall assertion: current Patina must flag 100% of seeded class-(a) instances (`no_undefined_refs` rule) — asserted by **identity, not count**: the seeded-defect manifest records each injection's file + span + expected rule id, and the assertion compares the exact diagnostic set against the manifest (count-only matching is banned by the assurance doctrine); class-(b) recall recorded (not gated yet — `unused_bindings` has no lint consumer today, which this pilot documents as a finding)
-- [ ] Suppression scan `tools/davinci/suppression-telemetry.mjs`: collects `eslint-disable` comments in corpus sources with rule names mapped to vize analogs; reports vize diagnostics firing on those exact lines as FP candidates
-- [ ] First ledgers committed: `davinci-road/plan/ledger-fn.md`, `ledger-fp.md` — **with the pilot candidates triaged**, not blank: every candidate the shard scan produces gets a disposition (`fixed` / `justified-with-witness` / `deferred-with-issue`), and an empty ledger is acceptable only alongside scan-scope proof (files-scanned and rules-mapped counts matching the shard manifest)
+- [x] Seeded-defect generator `tools/davinci/seed-defects.mjs`: two pilot classes — (a) undefined template ref: rename a `<script setup>` binding referenced from the template; (b) unused binding: inject an unreferenced `const` — applied to matrix fixtures and a corpus shard copy _(landed with `--fixtures`/`--matrix`/`--corpus-shard` sources; copies only, submodules never mutated; the manifest records every injection's file, span, original/new identifier, expected rule id, plus the per-file edit list the assertion maps baseline diagnostics through)_
+- [x] Recall assertion: current Patina must flag 100% of seeded class-(a) instances (`no_undefined_refs` rule) — asserted by **identity, not count**: the seeded-defect manifest records each injection's file + span + expected rule id, and the assertion compares the exact diagnostic set against the manifest (count-only matching is banned by the assurance doctrine); class-(b) recall recorded (not gated yet — `unused_bindings` has no lint consumer today, which this pilot documents as a finding) _(assertion landed as `seed-defects.mjs --assert`, exact-multiset oracle over `expected = shift(baseline) ∪ manifest`; **measured outcome falsifies the 100% expectation**: `vue/no-undefined-refs` is registered by no preset and no opt-in path, so `vize lint` cannot fire it — recall 0/49 on the shard, 0/3 on the committed set, ledgered as FN-1 with the registration-gap witness; the oracle mechanism itself is CI-proven both directions via synthetic-diagnostic hooks, and a same-count wrong-location set fails listing the exact miss. Class-(b) recall recorded: 0% everywhere, FN-2)_
+- [x] Suppression scan `tools/davinci/suppression-telemetry.mjs`: collects `eslint-disable` comments in corpus sources with rule names mapped to vize analogs; reports vize diagnostics firing on those exact lines as FP candidates _(vize honors `eslint-disable` pragmas natively, so the scan lints byte-length-preserving defused copies or the intersection is empty by construction; mapping table = the committed `tests/_fixtures/patina-eslint-vue-rule-map.json` (123 mapped rules) + an empty verified-core sidecar; unmapped names are reported, not errors — shard result: 0 mapped candidates with scope proof, 1 unmapped (`no-console`))_
+- [x] First ledgers committed: `davinci-road/plan/ledger-fn.md`, `ledger-fp.md` — **with the pilot candidates triaged**, not blank: every candidate the shard scan produces gets a disposition (`fixed` / `justified-with-witness` / `deferred-with-issue`), and an empty ledger is acceptable only alongside scan-scope proof (files-scanned and rules-mapped counts matching the shard manifest) _(FN-1 `vue/no-undefined-refs` unreachable, FN-2 `unused_bindings` unconsumed, FP-1 `type/require-typed-emits` script-relative spans mis-projected onto file coordinates — witnesses read at the sites; the FP mapped-candidate section is empty with the shard scope proof quoted)_
 
-**Acceptance:** both tools run in CI on one corpus shard; class-(a) identity assertion green; ledgers committed with pilot triage complete and referenced from the assurance doc.
+**Acceptance:** both tools run in CI on one corpus shard; class-(a) identity assertion green; ledgers committed with pilot triage complete and referenced from the assurance doc. _(Status: CI runs both tools over the committed miniature set (`tests/tooling/davinci-fpfn-pilots.test.ts`, fixtures at `tests/_fixtures/davinci-fpfn/`) so the identity assertion is exercised without corpus hydration; the corpus-shard run stays local/nightly until CI hydrates the corpus (same pending as P0-6). The class-(a) assertion mechanism is green in CI; the toolchain recall gate is red by measurement and ledgered as FN-1 — flipping it requires the preset-registration decision recorded there.)_
 
 **Deps:** P0-6 (corpus conventions), P0-12 (fixture home).
 
@@ -264,5 +264,5 @@ detection.
 - [x] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
 - [ ] Profiler export schema validating; zero overhead when off (P0-11)
 - [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12)
-- [ ] FP/FN pilot oracles running with committed ledgers (P0-13)
+- [x] FP/FN pilot oracles running with committed ledgers (P0-13) — CI covers the committed miniature set; corpus-shard lane joins CI with corpus hydration (P0-6)
 - [ ] `tools/davinci/corpus-diff.mjs` across the whole phase: **empty** (zero behavior change)

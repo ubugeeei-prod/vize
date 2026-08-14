@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "tool": "tools/davinci/suppression-telemetry.mjs",
+  "source": {
+    "kind": "fixtures",
+    "label": "tests/_fixtures/davinci-fpfn"
+  },
+  "ruleMap": {
+    "fixture": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+    "mappedRules": 123,
+    "coreSidecarRules": 0
+  },
+  "scope": {
+    "filesScanned": 4,
+    "suppressionComments": 2,
+    "namedSuppressions": 2,
+    "bareSuppressions": 0,
+    "ruleNamesSeen": 2,
+    "mappedNamesSeen": 1,
+    "unmappedNamesSeen": 1,
+    "defusedRunDiagnostics": 2,
+    "diagnosticsOnBareSuppressedLines": 0
+  },
+  "unmapped": [
+    {
+      "rule": "no-console",
+      "occurrences": 1
+    }
+  ],
+  "candidates": [
+    {
+      "path": "SuppressedSpaces.vue",
+      "line": 10,
+      "column": 7,
+      "endLine": 10,
+      "endColumn": 9,
+      "severity": 1,
+      "vizeRule": "vue/no-multi-spaces",
+      "eslintRule": "vue/no-multi-spaces",
+      "commentLine": 9,
+      "kind": "next-line"
+    }
+  ]
+}

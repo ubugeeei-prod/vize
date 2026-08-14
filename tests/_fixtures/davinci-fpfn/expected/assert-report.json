@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "tool": "tools/davinci/seed-defects.mjs --assert",
+  "source": {
+    "kind": "fixtures",
+    "label": "tests/_fixtures/davinci-fpfn"
+  },
+  "scope": {
+    "filesCopied": 4,
+    "classAEligible": 3,
+    "classAInjections": 3,
+    "classBInjections": 4
+  },
+  "lint": {
+    "baselineDiagnostics": 1,
+    "seededDiagnostics": 1
+  },
+  "classA": {
+    "expected": 3,
+    "detected": 0,
+    "misses": [
+      {
+        "path": "BaselineDrift.vue",
+        "ruleId": "vue/no-undefined-refs",
+        "severity": 1,
+        "line": 7,
+        "column": 24,
+        "endLine": 7,
+        "endColumn": 31,
+        "identifier": "message"
+      },
+      {
+        "path": "HelloCounter.vue",
+        "ruleId": "vue/no-undefined-refs",
+        "severity": 1,
+        "line": 14,
+        "column": 60,
+        "endLine": 14,
+        "endColumn": 65,
+        "identifier": "count"
+      },
+      {
+        "path": "SuppressedSpaces.vue",
+        "ruleId": "vue/no-undefined-refs",
+        "severity": 1,
+        "line": 11,
+        "column": 29,
+        "endLine": 11,
+        "endColumn": 36,
+        "identifier": "spacing"
+      }
+    ]
+  },
+  "classB": {
+    "expected": 4,
+    "detected": 0,
+    "note": "not gated: vize_croquis unused_bindings has no lint consumer today (FN ledger)"
+  },
+  "baselineShift": {
+    "mapped": 1,
+    "misses": [],
+    "unmappable": []
+  },
+  "unexpected": [],
+  "verdict": "fail"
+}
