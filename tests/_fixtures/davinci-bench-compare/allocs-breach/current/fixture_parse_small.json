@@ -1,0 +1,9 @@
+{
+  "bench_id": "fixture_parse_small",
+  "fixture": "synthetic:bench-compare-fixture",
+  "wall_ns": { "p50": 104000, "p95": 125000 },
+  "allocs": 43,
+  "alloc_bytes_peak": 4128,
+  "rss_peak_bytes": 8192,
+  "harness_version": "0.0.0-fixture"
+}

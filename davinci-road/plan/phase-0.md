@@ -12,7 +12,7 @@
 - [x] P0-1 Bench harness with memory metrics
 - [x] P0-2 Template-pipeline microbenches, front half (armature, croquis)
 - [x] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
-- [ ] P0-4 Bench baselines and CI gating (`budgets.toml`)
+- [ ] P0-4 Bench baselines and CI gating (`budgets.toml`) — budget registry, compare gate, and tests landed; reference-runner baseline recording + CI lane pending
 - [ ] P0-5 Corpus baseline snapshot + diff tool
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
@@ -94,11 +94,11 @@ detection.
 
 **Steps:**
 
-- [ ] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12)
-- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/`
-- [ ] Compare script `tools/davinci/bench-compare.mjs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate
-- [ ] CI job (extend the existing bench workflow lane) running P0-2/3 benches + compare on PRs touching `crates/**`
-- [ ] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body)
+- [x] `davinci-road/plan/budgets.toml`: per-bench budgets `{wall_p50_ns, allocs, rss_peak_bytes}` + global `traversal_count` placeholder (filled in P2) + mutation-score section (filled by P0-12) _(landed with a `wall_tolerance` field per entry — 0.05 whole-routine, 0.10 for `_transform_` stage windows — and every entry seeded at 0, meaning "reference-runner baseline not yet recorded"; bench-compare treats 0-seeded entries as report-only, and `tests/tooling/davinci-budgets.test.ts` reconciles the registry against the bench sources exactly, both directions)_
+- [ ] Baseline JSONs recorded on the Blacksmith reference runner, committed under `bench/results/davinci/baseline/` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
+- [x] Compare script `tools/davinci/bench-compare.mjs`: baseline vs current, applying `budgets.toml` thresholds; exit non-zero on breach; `--update-baseline` flag gated behind an env var so refresh is always deliberate _(wall p50 gated per-bench-tolerance vs the baseline report, allocs gated exactly, RSS report-only; registry drift fails both directions — "bench disappeared" / "unregistered bench"; refresh requires `DAVINCI_BASELINE_REFRESH=1`; exact-stdout oracles over committed fixture pairs in `tests/_fixtures/davinci-bench-compare/`)_
+- [ ] CI job (extend the existing bench workflow lane) running P0-2/3 benches + compare on PRs touching `crates/**` _(pending: reference-runner recording once Blacksmith lanes drain; wiring lands with the recorded baselines)_
+- [x] Ratchet rule enforced in review tooling: a PR that raises any number in `budgets.toml` must reference a charter decision in its description (checked by a `tests/tooling/davinci-budgets.test.ts` that parses git blame provenance — or, simpler, a CI message requiring the string `budget-loosen:` in the commit body) _(implemented as the documented-in-file variant, not git-blame provenance: `budgets.toml` carries the exact `# ratchet: numbers may only tighten; loosening requires budget-loosen: <charter ref> in the commit body` header, and the budgets test asserts the header plus the tolerance ceilings)_
 
 **Acceptance:**
 

@@ -1,16 +1,19 @@
 // Minimal TOML-subset parser shared by the Davinci tooling
-// (tools/davinci/assertion-lint.mjs, tools/davinci/matrix-gen.mjs).
+// (tools/davinci/assertion-lint.mjs, tools/davinci/matrix-gen.mjs,
+// tools/davinci/bench-compare.mjs).
 //
 // Node builtins only is a hard constraint for these tools, so this file
 // implements exactly the subset the committed Davinci TOML artifacts use
-// (davinci-road/plan/assertion-allowlist.toml, davinci-road/plan/taxonomy.toml)
-// and rejects everything else loudly instead of guessing:
+// (davinci-road/plan/assertion-allowlist.toml, davinci-road/plan/taxonomy.toml,
+// davinci-road/plan/budgets.toml) and rejects everything else loudly instead
+// of guessing:
 //
 //   - `#` comments and blank lines
 //   - `[table]` and `[[array-of-tables]]` headers with bare dotted keys
 //   - `key = value` with bare keys ([A-Za-z0-9_-]+)
 //   - values: basic strings "…" (escapes: \" \\ \n \r \t \uXXXX),
-//     literal strings '…' (no escapes), integers, booleans, and
+//     literal strings '…' (no escapes), integers, plain decimal floats
+//     (`-?digits.digits` — no exponents, no `inf`/`nan`), booleans, and
 //     (possibly multi-line) arrays of those scalars
 //
 // Dates are written as quoted strings by convention in these files
@@ -119,6 +122,7 @@ function readValue(text, lineNo) {
   if (raw === "true") return { value: true, rest };
   if (raw === "false") return { value: false, rest };
   if (/^-?[0-9]+$/.test(raw)) return { value: Number.parseInt(raw, 10), rest };
+  if (/^-?[0-9]+\.[0-9]+$/.test(raw)) return { value: Number.parseFloat(raw), rest };
   throw new TomlLiteError(
     `unsupported value ${JSON.stringify(raw)} (quote dates and other strings)`,
     lineNo,

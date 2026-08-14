@@ -1,0 +1,18 @@
+# Same registry as budgets.toml but with the all-zero seeds every entry
+# starts from before the Blacksmith reference runner records its baseline:
+# bench-compare must treat these entries as report-only even when baseline
+# reports exist.
+
+schema_version = 1
+
+[bench.fixture_parse_small]
+wall_p50_ns = 0
+allocs = 0
+rss_peak_bytes = 0
+wall_tolerance = 0.05
+
+[bench.fixture_transform_medium]
+wall_p50_ns = 0
+allocs = 0
+rss_peak_bytes = 0
+wall_tolerance = 0.10
