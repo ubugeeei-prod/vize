@@ -56,7 +56,7 @@ const requestedFixtures = [
   ["mall-admin-web", "https://github.com/macrozheng/mall-admin-web", "Apache-2.0"],
   ["douyin", "https://github.com/zyronon/douyin", "GPL-3.0-only"],
   ["vuestic-admin", "https://github.com/epicmaxco/vuestic-admin", "MIT"],
-  ["vue-storefront", "https://github.com/vuestorefront/vue-storefront", "NONE"],
+  ["vue-storefront", "https://github.com/vuestorefront/vue-storefront", "MIT"],
   ["vue-virtual-scroller", "https://github.com/Akryum/vue-virtual-scroller", "MIT"],
   ["vue-echarts", "https://github.com/ecomfe/vue-echarts", "MIT"],
   ["gridea", "https://github.com/getgridea/gridea", "MIT"],

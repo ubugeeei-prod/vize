@@ -33,22 +33,26 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
+  buildArtifact,
+  diffRows,
+  renderArtifact,
+  verifyScope,
+} from "./lib/corpus-baseline-artifact.mjs";
+import {
   BASELINE_PATH,
   SURFACES,
   UNSTABLE_REL,
-  buildArtifact,
-  cleanupScratch,
-  diffRows,
   loadManifest,
   loadUnstableRows,
   parseSurfaceFilter,
+} from "./lib/corpus-baseline-contract.mjs";
+import {
+  cleanupScratch,
   reduceShards,
-  renderArtifact,
   resolveVizeBin,
   runMatrix,
   scratchRoot,
-  verifyScope,
-} from "./lib/corpus-baseline-core.mjs";
+} from "./lib/corpus-baseline-run.mjs";
 import { repoRoot } from "./lib/paths.mjs";
 
 function parseArgs(argv) {
