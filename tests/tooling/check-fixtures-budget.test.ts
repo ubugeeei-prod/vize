@@ -216,8 +216,13 @@ test("the hosted-runner fallback raises only the documented task-budget CPU floo
     /must be a positive integer/,
   );
 
-  const [single, shard] = cycleTargets as [(typeof cycleTargets)[0], (typeof cycleTargets)[1]];
+  const [single, ecosystem, shard] = cycleTargets as [
+    (typeof cycleTargets)[0],
+    (typeof cycleTargets)[1],
+    (typeof cycleTargets)[2],
+  ];
   const hostedBudgetCpuCount = resolveBudgetCpuCount(4, { [BUDGET_CPU_FLOOR_ENV]: "12" });
   assert.equal(single.taskBudget(hostedBudgetCpuCount), 160);
+  assert.equal(ecosystem.taskBudget(hostedBudgetCpuCount), 320);
   assert.equal(shard.taskBudget(hostedBudgetCpuCount), 512);
 });
