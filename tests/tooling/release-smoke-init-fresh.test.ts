@@ -5,6 +5,7 @@ import { parse } from "yaml";
 import {
   managerCommand,
   managerEnv,
+  projectLocalBinCandidates,
   projectEnv,
   runManager,
 } from "../../tools/npm/smoke-release-init-project.mjs";
@@ -95,6 +96,11 @@ test("fresh-project package managers use exact Corepack runners where needed", (
     assert.equal(managerEnv(manager).COREPACK_ENABLE_PROJECT_SPEC, undefined);
   }
   assert.match(runManager(PACKAGE_MANAGERS.npm, ["--version"], { cwd: process.cwd() }), /^\d+\./u);
+});
+
+test("fresh-project toolchain accepts package-manager-specific Windows shims", () => {
+  assert.deepEqual(projectLocalBinCandidates("vize", "win32"), ["vize", "vize.cmd", "vize.ps1"]);
+  assert.deepEqual(projectLocalBinCandidates("vize", "linux"), ["vize"]);
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {

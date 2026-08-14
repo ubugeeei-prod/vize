@@ -206,8 +206,7 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   const nodeModules = path.join(projectRoot, "node_modules");
   const realProjectRoot = fs.realpathSync(projectRoot);
   const installedRoots = new Map();
-  const binName = process.platform === "win32" ? "vize.cmd" : "vize";
-  assert.ok(fs.existsSync(path.join(nodeModules, ".bin", binName)), "no project-local vize bin");
+  assert.ok(hasProjectLocalBin(nodeModules, "vize"), "no project-local vize bin");
   for (const name of shape.plannedDependencies) {
     const installed = path.join(nodeModules, ...name.split("/"));
     assert.ok(fs.existsSync(installed), `${name} is missing from the fresh project`);
@@ -228,6 +227,18 @@ export function assertProjectLocalToolchain(context, projectRoot, shape) {
   assert.ok(
     !isOutside(realProjectRoot, fs.realpathSync(corsaManifest)),
     "installed vize did not bring project-local @typescript/native-preview",
+  );
+}
+
+export function projectLocalBinCandidates(binName, platform = process.platform) {
+  if (platform !== "win32") return [binName];
+  return [binName, `${binName}.cmd`, `${binName}.ps1`];
+}
+
+function hasProjectLocalBin(nodeModules, binName) {
+  const binDir = path.join(nodeModules, ".bin");
+  return projectLocalBinCandidates(binName).some((candidate) =>
+    fs.existsSync(path.join(binDir, candidate)),
   );
 }
 
