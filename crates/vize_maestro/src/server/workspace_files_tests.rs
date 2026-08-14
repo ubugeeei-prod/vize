@@ -4,7 +4,7 @@ use tower_lsp::lsp_types::{
 
 use super::{
     ServerState, changes_invalidate_disk_project_state, record_created_files, record_deleted_files,
-    record_watcher_support, typecheck_dependency_watcher_registration,
+    record_watcher_support, typecheck_dependency_watcher_registration, user_watched_file_events,
 };
 
 #[test]
@@ -124,6 +124,33 @@ fn only_vue_content_changes_keep_the_cached_disk_project_state() {
         &state,
         &[changed(vue), changed(declaration)]
     ));
+}
+
+#[test]
+fn internal_corsa_overlay_events_do_not_reenter_watched_file_handling() {
+    let root = tempfile::tempdir().unwrap();
+    let overlay_path = root
+        .path()
+        .join("node_modules/.vize/corsa-overlay/tsconfig.json");
+    let project_tsconfig_path = root.path().join("tsconfig.json");
+    let overlay_event = FileEvent {
+        uri: Url::from_file_path(overlay_path).unwrap(),
+        typ: FileChangeType::CREATED,
+    };
+    let project_event = FileEvent {
+        uri: Url::from_file_path(project_tsconfig_path).unwrap(),
+        typ: FileChangeType::CHANGED,
+    };
+    let state = ServerState::new();
+
+    let ignored = user_watched_file_events(std::slice::from_ref(&overlay_event));
+    assert!(ignored.is_empty());
+    assert!(!changes_invalidate_disk_project_state(&state, &ignored));
+
+    let kept = user_watched_file_events(&[overlay_event, project_event.clone()]);
+    assert_eq!(kept.len(), 1);
+    assert_eq!(kept[0].uri, project_event.uri);
+    assert!(changes_invalidate_disk_project_state(&state, &kept));
 }
 
 #[test]

@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::{
     MessageType, RenameFilesParams, WorkspaceEdit,
 };
 #[cfg(feature = "native")]
-use tower_lsp::lsp_types::{FileChangeType, FileEvent};
+use tower_lsp::lsp_types::{FileChangeType, FileEvent, Url};
 
 use super::{MaestroServer, ServerState};
 use crate::ide::FileRenameService;
@@ -95,22 +95,25 @@ pub(super) async fn did_change_watched_files(
 ) {
     #[cfg(feature = "native")]
     {
-        if changes_invalidate_disk_project_state(&server.state, &params.changes) {
+        let changes = user_watched_file_events(&params.changes);
+        if changes.is_empty() {
+            return;
+        }
+        if changes_invalidate_disk_project_state(&server.state, &changes) {
             invalidate_corsa_disk_state(&server.state).await;
         }
         // Any watched change can affect an open importer; declaration changes
         // additionally invalidate the discoverable global-component cache.
         let global_components_invalidated = server.state.invalidate_global_component_references(
-            params.changes.iter().map(|change| change.uri.as_str()),
+            changes.iter().map(|change| change.uri.as_str()),
         );
         let dependents = versioned_open_typecheck_dependents(
             &server.state,
-            params.changes.iter().map(|change| change.uri.as_str()),
+            changes.iter().map(|change| change.uri.as_str()),
         );
         let deleted_paths = affected_vue_source_paths(
             &server.state,
-            params
-                .changes
+            changes
                 .iter()
                 .filter(|change| change.typ == FileChangeType::DELETED)
                 .map(|change| change.uri.as_str()),
@@ -124,6 +127,22 @@ pub(super) async fn did_change_watched_files(
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
+}
+
+#[cfg(feature = "native")]
+fn user_watched_file_events(changes: &[FileEvent]) -> Vec<FileEvent> {
+    changes
+        .iter()
+        .filter(|change| !is_internal_corsa_overlay_uri(&change.uri))
+        .cloned()
+        .collect()
+}
+
+#[cfg(feature = "native")]
+fn is_internal_corsa_overlay_uri(uri: &Url) -> bool {
+    let path = uri.path();
+    path.contains("/node_modules/.vize/corsa-overlay/")
+        || path.ends_with("/node_modules/.vize/corsa-overlay")
 }
 
 /// Whether watched changes moved project state the type checker only sees on disk.
