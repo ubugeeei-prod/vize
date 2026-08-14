@@ -11,8 +11,8 @@
 > every recorded run.
 >
 > This is the number P1 drives toward "parse once": after P1-7 retains
-> expression ASTs, TS-26 asserts `davinci.expr.parses == distinct
-expressions`. Regenerate by running
+> expression ASTs, TS-26 asserts that
+> `davinci.expr.parses == distinct expressions`. Regenerate by running
 > `cargo bench -p vize_atelier_dom -p vize_atelier_vapor -p vize_atelier_ssr`
 > and reading the `davinci.expr.parses <backend> <fixture> <count>` stderr
 > lines.
