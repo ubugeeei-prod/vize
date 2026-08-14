@@ -1,6 +1,6 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-use vize_carton::{Bump, FxHashMap};
+use vize_carton::{Allocator, FxHashMap};
 
 fn binding_matrix() -> BindingMetadata {
     let mut bindings = FxHashMap::default();
@@ -48,7 +48,7 @@ fn first_call_arg(source: &str) -> Option<String> {
 
 #[test]
 fn setup_component_tag_binding_matrix_matches_ssr_modes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"<RefMenu /><MaybeMenu /><LetMenu /><ImportedMenu /><ShallowMenu /><lowercase-widget /><RefMenu.Item />"#;
 
     let (_, inline_errors, inline_result) = compile_ssr_with_options(

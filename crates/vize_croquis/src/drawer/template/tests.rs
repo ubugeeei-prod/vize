@@ -11,9 +11,9 @@ fn interpolation_guards(
     Option<vize_carton::CompactString>,
 )> {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _errors) = parse(&allocator, template);
     let mut drawer = Drawer::with_options(DrawerOptions::full());
     drawer.draw_template(&root);
@@ -36,9 +36,9 @@ fn interpolation_guards(
 /// detection is active, returning the names flagged as undefined.
 fn undefined_refs_with_empty_script(template: &str) -> Vec<vize_carton::CompactString> {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _errors) = parse(&allocator, template);
     let mut drawer = Drawer::with_options(DrawerOptions::full());
     // Marks the script as drawn so `detect_undefined` runs over the template.
@@ -106,7 +106,7 @@ fn component_v_bind_arg_is_not_an_undefined_template_ref() {
 #[test]
 fn component_usage_records_slots() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let template = r#"<Child :message="msg" @save.once="save">
   <template #item="{ row, index }">
@@ -115,7 +115,7 @@ fn component_usage_records_slots() {
   <span>fallback</span>
 </Child>"#;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "Template should parse without errors");
 
@@ -147,11 +147,11 @@ fn component_usage_records_slots() {
 fn dynamic_component_v_on_uses_is_binding_as_target_component() {
     use crate::scope::ScopeData;
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let template = r#"<component :is="Child" @escape-key-down="handleEscape"></component>"#;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "Template should parse without errors");
 
@@ -174,10 +174,10 @@ fn dynamic_component_v_on_uses_is_binding_as_target_component() {
 fn dynamic_component_v_on_keeps_static_member_target() {
     use crate::scope::ScopeData;
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let template = r#"<component :is="Components.Child" @change="handle"></component>"#;
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "Template should parse without errors");
 
@@ -199,11 +199,11 @@ fn dynamic_component_v_on_keeps_static_member_target() {
 #[test]
 fn nested_v_scope_shadows_outer() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let template = r#"<div v-scope="{ count: 0 }"><span v-scope="{ count: 1, msg: 'x' }">{{ count }}{{ msg }}</span></div>"#;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _errors) = parse(&allocator, template);
     let mut drawer = Drawer::with_options(DrawerOptions::full());
     drawer.draw_script_setup("");
@@ -294,9 +294,9 @@ fn non_conditional_sibling_breaks_v_if_chain() {
 #[test]
 fn test_vif_guard_in_template() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template = r#"<div>
             <p v-if="todo.description">{{ unwrapDescription(todo.description) }}</p>
             <span>{{ todo.title }}</span>

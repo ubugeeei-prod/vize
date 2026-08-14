@@ -8,7 +8,7 @@ mod common;
 
 use common::{snapshot_lang_cases, vdom_code};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, VdomCompileOptions, compile_to_vdom};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn vdom_codegen_matrix() {
@@ -68,7 +68,7 @@ fn vdom_codegen_matrix() {
 
 #[test]
 fn multiple_components_each_compile_with_their_name() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => <a/>;\nconst B = () => <b/>;",
@@ -90,7 +90,7 @@ fn multiple_components_each_compile_with_their_name() {
 
 #[test]
 fn mode_defaults_to_vdom() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => <div/>;",
@@ -103,7 +103,7 @@ fn mode_defaults_to_vdom() {
 
 #[test]
 fn vapor_directive_is_recorded_on_the_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => { \"use vue:vapor\"; return <div/>; };",
@@ -116,7 +116,7 @@ fn vapor_directive_is_recorded_on_the_component() {
 
 #[test]
 fn preamble_imports_runtime_helpers() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => <div>{x}</div>;",

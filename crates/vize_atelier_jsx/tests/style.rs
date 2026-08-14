@@ -5,7 +5,7 @@ use vize_atelier_jsx::{
     JsxLang, VaporCompileOptions, VdomCompileOptions, compile_to_vapor, compile_to_vdom,
     lower_source,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 const SCOPED: &str = r#"
 const Comp = () => (
@@ -29,7 +29,7 @@ const Comp = () => (
 "#;
 
 fn vdom(src: &str, lang: JsxLang) -> vize_atelier_jsx::VdomComponent {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, src, lang, VdomCompileOptions::default());
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     assert_eq!(out.components.len(), 1, "expected one component");
@@ -37,7 +37,7 @@ fn vdom(src: &str, lang: JsxLang) -> vize_atelier_jsx::VdomComponent {
 }
 
 fn vapor(src: &str) -> vize_atelier_jsx::VaporComponent {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(&bump, src, JsxLang::Jsx, VaporCompileOptions::default());
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     assert_eq!(out.components.len(), 1, "expected one component");
@@ -123,7 +123,7 @@ fn vdom_and_vapor_agree_on_scope_id() {
 
 #[test]
 fn scoped_style_interpolations_are_recovered_with_source_spans() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = r#"const Comp = (props: { color: string }) => (
   <>
     <div class="box"/>
@@ -131,7 +131,7 @@ fn scoped_style_interpolations_are_recovered_with_source_spans() {
   </>
 );
 "#;
-    let out = lower_source(&bump, src, JsxLang::Tsx);
+    let out = lower_source(&bump, bump.as_oxc(), src, JsxLang::Tsx);
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     let root = &out.roots[0];
 
@@ -157,8 +157,8 @@ fn scoped_style_interpolations_are_recovered_with_source_spans() {
 
 #[test]
 fn static_scoped_style_has_no_interpolations() {
-    let bump = Bump::new();
-    let out = lower_source(&bump, SCOPED, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(&bump, bump.as_oxc(), SCOPED, JsxLang::Jsx);
 
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     assert!(out.roots[0].scoped_style_exprs.is_empty());

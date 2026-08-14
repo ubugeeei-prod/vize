@@ -10,7 +10,7 @@ use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, VdomCompileOptions, compile_jsx, compile_to_vdom,
     lower_source,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 const SOURCE: &str = "const A = () => <B v-model={[foo, bar]}/>;";
 const ELEMENT_ARG: &str = "const A = () => <input v-model:foo={val}/>;";
@@ -62,7 +62,7 @@ fn babel_compat_plain_element_static_arguments_match_the_oracle() {
     ];
 
     for (source, expected) in cases {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let output = compile_jsx(
             &bump,
             source,
@@ -81,7 +81,7 @@ fn babel_compat_plain_element_static_arguments_match_the_oracle() {
 #[test]
 fn native_plain_element_argument_rejection_is_unchanged() {
     for source in [ELEMENT_ARG, ELEMENT_ARG_MODIFIER] {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let output = compile_jsx(&bump, source, JsxLang::Jsx, &JsxCompileConfig::default());
 
         assert_eq!(output.diagnostics.len(), 1);
@@ -95,7 +95,7 @@ fn native_plain_element_argument_rejection_is_unchanged() {
 
 #[test]
 fn babel_compat_component_argument_behavior_is_unchanged() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx(
         &bump,
         COMPONENT_ARG_MODIFIER,
@@ -129,7 +129,7 @@ fn babel_compat_dynamic_component_argument_emits_computed_prop_keys() {
     // Vize reaches the same props through its dynamic-prop path, so the
     // argument is never `_ctx.`-prefixed: a JSX component closes over module
     // scope, not a render context.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx(
         &bump,
         SOURCE,
@@ -174,7 +174,7 @@ fn babel_compat_dynamic_component_argument_carries_modifiers_and_member_paths() 
             ),
         ),
     ] {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let output = compile_jsx(
             &bump,
             source,
@@ -208,7 +208,7 @@ fn babel_compat_dynamic_argument_stays_rejected_off_the_vdom_component_lane() {
     // A plain element has no computed-prop shape to emit into, and compat mode
     // is a VDOM-only contract, so Vapor and SSR keep the native rejection.
     let element = "const A = () => <input v-model={[foo, bar]}/>;";
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx(
         &bump,
         element,
@@ -228,7 +228,7 @@ fn babel_compat_dynamic_argument_stays_rejected_off_the_vdom_component_lane() {
     );
     assert_eq!(output.module_code(), REJECTED_ELEMENT_MODULE);
 
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let ssr = compile_jsx(
         &bump,
         SOURCE,
@@ -250,8 +250,8 @@ fn babel_compat_dynamic_argument_stays_rejected_off_the_vdom_component_lane() {
 
 #[test]
 fn dynamic_array_argument_is_rejected_without_model_value_fallback() {
-    let bump = Bump::new();
-    let lowered = lower_source(&bump, SOURCE, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let lowered = lower_source(&bump, bump.as_oxc(), SOURCE, JsxLang::Jsx);
     let errors: Vec<_> = lowered
         .diagnostics
         .iter()
@@ -265,7 +265,7 @@ fn dynamic_array_argument_is_rejected_without_model_value_fallback() {
         "bar"
     );
 
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let compiled = compile_to_vdom(&bump, SOURCE, JsxLang::Jsx, VdomCompileOptions::default());
     assert!(compiled.has_errors());
     assert_eq!(compiled.components.len(), 1);

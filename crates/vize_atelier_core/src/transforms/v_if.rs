@@ -66,11 +66,11 @@ mod tests {
     use super::{has_v_else, has_v_else_if, has_v_if};
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_has_v_if() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-if="show">test</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_has_v_else() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-else>test</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {

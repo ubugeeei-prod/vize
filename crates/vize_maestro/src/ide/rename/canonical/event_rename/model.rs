@@ -35,7 +35,7 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
     let Some(template_source) = source.get(template.loc.start..template.loc.end) else {
         return Vec::new();
     };
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template_source);
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_template_scopes: true,

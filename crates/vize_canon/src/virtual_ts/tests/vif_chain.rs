@@ -16,7 +16,7 @@ const navItems: Item[] = []
   </div>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -64,7 +64,7 @@ const aimAtReports: AimAtReport[] = []
   </template>
 </template>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -102,7 +102,7 @@ const items: ViewItem[] = []
   </div>
 </template>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

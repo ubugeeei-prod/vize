@@ -18,7 +18,7 @@ pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::CodegenOptions;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
@@ -65,6 +65,7 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
 
 /// Compile template block
 pub(crate) fn compile_template_block(
+    allocator: &Allocator,
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
@@ -81,7 +82,6 @@ pub(crate) fn compile_template_block(
         bindings,
         croquis,
     } = ctx;
-    let allocator = Bump::new();
     let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
         let mut attr = String::with_capacity(scope_id.len() + 7);
@@ -113,7 +113,7 @@ pub(crate) fn compile_template_block(
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
             vize_atelier_ssr::compile_ssr_with_template_syntax(
-                &allocator,
+                allocator,
                 &template.content,
                 ssr_opts,
                 template_syntax,
@@ -188,7 +188,7 @@ pub(crate) fn compile_template_block(
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
         vize_atelier_dom::compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
-            &allocator,
+            allocator,
             &template.content,
             dom_opts,
             template_syntax,

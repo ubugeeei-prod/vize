@@ -1,10 +1,10 @@
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn quirks_preserves_adjacent_table_control_flow() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"<table>
   <template v-if="hasRows"><tr><td>row</td></tr></template>
   <tr v-else><td>empty</td></tr>

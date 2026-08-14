@@ -4,7 +4,6 @@ use super::compile_vapor;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::Bump;
 
 fn normalize_code(code: &str) -> String {
     code.lines()
@@ -38,7 +37,7 @@ fn assert_parses_as_module(code: &str) {
 // attribute from the rendered element.
 #[test]
 fn test_compile_component_valueless_static_attr_is_empty_string_prop() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, r#"<MyComp data-probe />"#, Default::default());
 
     assert!(
@@ -54,7 +53,7 @@ fn test_compile_component_valueless_static_attr_is_empty_string_prop() {
 
 #[test]
 fn test_compile_dynamic_component_valueless_static_attr_is_empty_string_prop() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<component :is="tag" data-probe>hi</component>"#,

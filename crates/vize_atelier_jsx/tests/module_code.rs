@@ -5,11 +5,11 @@
 //! everything else falls back to plain render exports.
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn module_code_renames_multiple_render_exports_to_component_names() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -30,7 +30,7 @@ fn module_code_renames_multiple_render_exports_to_component_names() {
 
 #[test]
 fn module_code_wraps_block_body_component_setup_state() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -78,7 +78,7 @@ fn module_code_wraps_block_body_component_setup_state() {
 
 #[test]
 fn tsx_component_keeps_destructured_props_signature_bindings() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -115,7 +115,7 @@ fn tsx_component_keeps_destructured_props_signature_bindings() {
 
 #[test]
 fn tsx_generic_component_keeps_its_type_parameters_on_setup() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -139,7 +139,7 @@ fn tsx_generic_component_keeps_its_type_parameters_on_setup() {
 
 #[test]
 fn async_component_keeps_its_async_modifier_on_setup() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -160,7 +160,7 @@ fn async_component_keeps_its_async_modifier_on_setup() {
 
 #[test]
 fn module_code_forwards_plain_props_and_context_parameters_to_setup() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -179,7 +179,7 @@ fn module_code_forwards_plain_props_and_context_parameters_to_setup() {
 
 #[test]
 fn module_code_forwards_rest_parameters_to_setup() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -198,7 +198,7 @@ fn module_code_forwards_rest_parameters_to_setup() {
 
 #[test]
 fn module_code_keeps_an_empty_setup_signature_for_parameterless_components() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -217,7 +217,7 @@ fn module_code_keeps_an_empty_setup_signature_for_parameterless_components() {
 
 #[test]
 fn module_code_forwards_each_components_own_parameters() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -241,7 +241,7 @@ fn module_code_forwards_each_components_own_parameters() {
 
 #[test]
 fn jsx_in_a_parameter_default_falls_back_to_plain_render_exports() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"
@@ -264,7 +264,7 @@ fn jsx_in_a_parameter_default_falls_back_to_plain_render_exports() {
 
 #[test]
 fn module_code_leaves_synchronous_components_without_an_async_setup() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         r#"

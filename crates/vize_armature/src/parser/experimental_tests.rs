@@ -1,14 +1,14 @@
 #![allow(clippy::disallowed_macros)]
 
 use super::{parse, parse_with_options};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::{
     CommentKind, PropNode, TemplateChildNode, errors::ErrorCode, options::ParserOptions,
 };
 
 #[test]
 fn test_parse_experimental_in_tag_comments() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<LegacySelect\n  :options=\"options\"\n  // @vue-expect-error legacy API\n  :selected-id=\"selectedId\"\n/>",
@@ -39,7 +39,7 @@ fn test_parse_experimental_in_tag_comments() {
 
 #[test]
 fn test_parse_in_tag_comments_are_opt_in() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "<LegacySelect\n  // note\n/>");
 
     assert!(
@@ -51,7 +51,7 @@ fn test_parse_in_tag_comments_are_opt_in() {
 
 #[test]
 fn test_parse_in_tag_comments_preserve_when_comments_disabled() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<LegacySelect\n  // note\n/>",
@@ -69,7 +69,7 @@ fn test_parse_in_tag_comments_preserve_when_comments_disabled() {
 
 #[test]
 fn test_parse_slash_slash_inside_attribute_value_is_not_in_tag_comment() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         r#"<div title="not // a comment"></div>"#,

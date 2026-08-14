@@ -4,7 +4,7 @@
 //! in function mode, where the setup function returns bindings for use by a separate
 //! render function.
 
-use vize_carton::{Bump, FxHashSet, String, ToCompactString};
+use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
@@ -643,7 +643,7 @@ fn build_returned_bindings(
 
     // Parse template to get used identifiers
     let template_used_ids: TemplateUsedIdentifiers = if let Some(template_src) = template_content {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (root, _) = vize_atelier_core::parser::parse(&allocator, template_src);
         resolve_template_used_identifiers(&root)
     } else {

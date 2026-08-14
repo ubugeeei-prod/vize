@@ -5,7 +5,7 @@ use super::{
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 fn generate_unchecked_emit_handler(script: &str, template: &str) -> vize_carton::String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

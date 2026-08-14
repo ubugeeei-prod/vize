@@ -12,7 +12,7 @@ use vize_atelier_core::{
     options::{CodegenOptions, ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
 };
-use vize_carton::{Bump, String, profile};
+use vize_carton::{Allocator, String, profile};
 use vize_croquis::Croquis;
 
 use crate::namespace::get_namespace;
@@ -20,7 +20,7 @@ use crate::options::DomCompilerOptions;
 
 /// Compile a Vue template for DOM with default options
 pub fn compile_template<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     compile_template_with_options(allocator, source, DomCompilerOptions::default())
@@ -28,7 +28,7 @@ pub fn compile_template<'a>(
 
 /// Compile a Vue template for DOM with custom options
 pub fn compile_template_with_options<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
@@ -45,7 +45,7 @@ pub fn compile_template_with_options<'a>(
 /// Compile a Vue template for DOM with Vue parser quirk compatibility.
 #[deprecated(note = "use compile_template_with_template_syntax instead")]
 pub fn compile_template_with_vue_parser_quirks<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
@@ -62,7 +62,7 @@ pub fn compile_template_with_vue_parser_quirks<'a>(
 /// Compile a Vue template for DOM with an explicit template syntax mode.
 #[doc(hidden)]
 pub fn compile_template_with_template_syntax<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -85,7 +85,7 @@ pub fn compile_template_with_template_syntax<'a>(
 /// growing [`DomCompilerOptions`] and breaking downstream struct literals.
 #[doc(hidden)]
 pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -104,7 +104,7 @@ pub fn compile_template_with_template_syntax_and_codegen_options<'a>(
 /// Compile a Vue template for DOM with an explicit scope ID for hoisted static VNodes.
 #[doc(hidden)]
 pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     hoisted_scope_id: Option<String>,
@@ -123,7 +123,7 @@ pub fn compile_template_with_options_and_hoisted_scope_id<'a>(
 #[doc(hidden)]
 #[deprecated(note = "use compile_template_with_template_syntax_and_hoisted_scope_id instead")]
 pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     hoisted_scope_id: Option<String>,
@@ -141,7 +141,7 @@ pub fn compile_template_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
 /// Compile a Vue template for DOM with template syntax mode and hoisted scope ID.
 #[doc(hidden)]
 pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -161,7 +161,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id<'a>(
 /// and emission-recorded codegen section boundaries.
 #[doc(hidden)]
 pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -183,7 +183,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
 pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options<
     'a,
 >(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -201,7 +201,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_
 }
 
 fn compile_template_inner<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -220,7 +220,7 @@ fn compile_template_inner<'a>(
 }
 
 fn compile_template_inner_with_sections<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: DomCompilerOptions,
     template_syntax: TemplateSyntaxMode,

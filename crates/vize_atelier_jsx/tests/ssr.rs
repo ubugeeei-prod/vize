@@ -4,10 +4,10 @@ mod common;
 
 use common::{snapshot_cases, snapshot_lang_cases};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, SsrCompileOptions, compile_to_ssr};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn ssr_code(source: &str, lang: JsxLang) -> vize_carton::String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_ssr(&bump, source, lang, SsrCompileOptions::default());
     assert!(
         !out.has_errors(),
@@ -53,7 +53,7 @@ fn ssr_tsx_codegen_snapshot() {
 
 #[test]
 fn ssr_preserves_component_metadata_and_client_mode() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_ssr(
         &bump,
         "const Fast = () => { \"use vue:vapor\"; return <div/>; };",

@@ -5,7 +5,6 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::Bump;
 
 fn normalize_code(code: &str) -> String {
     code.lines()
@@ -36,7 +35,7 @@ fn assert_parses_as_module(code: &str) {
 
 #[test]
 fn test_compile_simple_element() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, "<div>hello</div>", Default::default());
 
     assert!(result.error_messages.is_empty(), "Expected no errors");
@@ -48,7 +47,7 @@ fn test_compile_simple_element() {
 
 #[test]
 fn test_compile_interpolation() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, "<div>{{ msg }}</div>", Default::default());
 
     assert!(result.error_messages.is_empty(), "Expected no errors");
@@ -60,7 +59,7 @@ fn test_compile_interpolation() {
 
 #[test]
 fn test_compile_event() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<button @click="handleClick">Click</button>"#,
@@ -76,7 +75,7 @@ fn test_compile_event() {
 
 #[test]
 fn test_compile_v_if() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-if="show">visible</div>"#,
@@ -96,7 +95,7 @@ fn test_compile_v_if() {
 
 #[test]
 fn test_compile_v_for() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-for="item in items">{{ item }}</div>"#,
@@ -116,7 +115,7 @@ fn test_compile_v_for() {
 
 #[test]
 fn test_compile_nested_dynamic_child_attrs_and_events() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><button :class="cls" @click="onClick">x</button></div>"#,
@@ -135,7 +134,7 @@ fn test_compile_nested_dynamic_child_attrs_and_events() {
 
 #[test]
 fn test_compile_nested_component_child() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, "<div><MyComp /></div>", Default::default());
 
     assert!(
@@ -150,7 +149,7 @@ fn test_compile_nested_component_child() {
 
 #[test]
 fn test_compile_nested_slot_outlet_child() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><slot :row="item" :index="i"></slot></div>"#,
@@ -170,7 +169,7 @@ fn test_compile_nested_slot_outlet_child() {
 
 #[test]
 fn test_compile_component_v_model_uses_update_listener_getter() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<InputBase v-model="searchQuery" />"#,
@@ -189,7 +188,7 @@ fn test_compile_component_v_model_uses_update_listener_getter() {
 
 #[test]
 fn test_compile_component_props_are_getters() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<NuxtLink :to="to" target="_blank" @click="onClick">about</NuxtLink>"#,
@@ -208,7 +207,7 @@ fn test_compile_component_props_are_getters() {
 
 #[test]
 fn test_compile_component_multiline_event_handler_parses() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -235,7 +234,7 @@ fn test_compile_component_multiline_event_handler_parses() {
 
 #[test]
 fn test_compile_branch_component_under_existing_parent() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<main><template v-if="ok"><MyComp /></template></main>"#,
@@ -254,7 +253,7 @@ fn test_compile_branch_component_under_existing_parent() {
 
 #[test]
 fn test_compile_component_resolution_is_scoped_per_branch() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -279,7 +278,7 @@ fn test_compile_component_resolution_is_scoped_per_branch() {
 
 #[test]
 fn test_compile_component_resolution_reuses_outer_scope_inside_branch() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -303,7 +302,7 @@ fn test_compile_component_resolution_reuses_outer_scope_inside_branch() {
 
 #[test]
 fn test_compile_nested_if_under_existing_child() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><button><template v-if="ok"><span>a</span></template></button></div>"#,
@@ -322,7 +321,7 @@ fn test_compile_nested_if_under_existing_child() {
 
 #[test]
 fn test_compile_control_flow_uses_parent_specific_insertion_state() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -350,7 +349,7 @@ fn test_compile_control_flow_uses_parent_specific_insertion_state() {
 
 #[test]
 fn test_compile_mixed_text_static_and_if_children_preserves_template_shape() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -375,7 +374,7 @@ fn test_compile_mixed_text_static_and_if_children_preserves_template_shape() {
 
 #[test]
 fn test_compile_nested_control_flow_avoids_unused_root_insertion_state() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -403,7 +402,7 @@ fn test_compile_nested_control_flow_avoids_unused_root_insertion_state() {
 
 #[test]
 fn test_compile_static_template_ref_uses_template_ref_setter() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, r#"<div ref="el"></div>"#, Default::default());
 
     assert!(
@@ -418,7 +417,7 @@ fn test_compile_static_template_ref_uses_template_ref_setter() {
 
 #[test]
 fn test_compile_dynamic_template_ref_uses_resolved_expression() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div :ref="setEl"></div>"#,
@@ -437,7 +436,7 @@ fn test_compile_dynamic_template_ref_uses_resolved_expression() {
 
 #[test]
 fn test_compile_v_html_resolves_ctx_and_v_for_aliases() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-for="diagnostic in diagnostics"><div v-html="formatHelp(diagnostic.help)"></div></div>"#,
@@ -456,7 +455,7 @@ fn test_compile_v_html_resolves_ctx_and_v_for_aliases() {
 
 #[test]
 fn test_compile_nested_static_template_ref_uses_child_ref() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><span ref="inner"></span></div>"#,
@@ -475,7 +474,7 @@ fn test_compile_nested_static_template_ref_uses_child_ref() {
 
 #[test]
 fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor_with_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -493,7 +492,7 @@ fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
 
 #[test]
 fn test_compile_standard_rewrites_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, "<div /><span></span>", Default::default());
 
     assert!(
@@ -506,7 +505,7 @@ fn test_compile_standard_rewrites_invalid_html_self_closing() {
 
 #[test]
 fn test_compile_strict_rejects_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor_with_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -525,7 +524,7 @@ fn test_compile_strict_rejects_invalid_html_self_closing() {
 
 #[test]
 fn test_compile_complex_comparison_expression() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<button :class="['main-tab', { active: tab === 'atelier' }]">x</button>"#,
@@ -544,7 +543,7 @@ fn test_compile_complex_comparison_expression() {
 
 #[test]
 fn test_compile_v_for_aliases_in_complex_expressions() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<ul><li v-for="item in items" :class="['row', { active: selected.has(item.id) }, `kind-${item.kind}`]" @click="pick(item.id)">{{ item.name }}</li></ul>"#,
@@ -563,7 +562,7 @@ fn test_compile_v_for_aliases_in_complex_expressions() {
 
 #[test]
 fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<ul><li v-for="{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows" :key="itemId" :title="name">{{ total }}</li></ul>"#,
@@ -602,7 +601,7 @@ fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
 
 #[test]
 fn test_compile_nested_v_for_key_uses_outer_alias() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><template v-for="n in 4" :key="`set-${n}`"><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon">{{ icon }}</span></template></div>"#,
@@ -621,7 +620,7 @@ fn test_compile_nested_v_for_key_uses_outer_alias() {
 
 #[test]
 fn test_compile_first_dynamic_child_after_static_sibling() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><span>static</span><button :class="cls">x</button></div>"#,
@@ -640,7 +639,7 @@ fn test_compile_first_dynamic_child_after_static_sibling() {
 
 #[test]
 fn test_compile_dynamic_child_after_multiple_static_siblings() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><header>one</header><p>two</p><button :class="cls">x</button></div>"#,
@@ -659,7 +658,7 @@ fn test_compile_dynamic_child_after_multiple_static_siblings() {
 
 #[test]
 fn test_compile_first_dynamic_child_after_static_text() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div><span>label <span :class="cls">{{ msg }}</span></span></div>"#,
@@ -678,7 +677,7 @@ fn test_compile_first_dynamic_child_after_static_text() {
 
 #[test]
 fn test_compile_self_closing_svg_children_stay_siblings() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<svg><path d="a" /><path d="b" /></svg>"#,
@@ -697,7 +696,7 @@ fn test_compile_self_closing_svg_children_stay_siblings() {
 
 #[test]
 fn test_compile_dynamic_siblings_around_control_flow_children() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"
@@ -737,7 +736,7 @@ fn test_compile_dynamic_siblings_around_control_flow_children() {
 
 #[test]
 fn test_compile_dynamic_text_escapes_multiline_static_part() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     // Condense mode collapses the `\n` in the static part to a space
     // (Vue parity, #960), so a `<pre>` wrapper preserves it for this
     // escape-handling check.
@@ -760,7 +759,7 @@ selected</pre>"#,
 
 #[test]
 fn test_compile_slot_outlet_preserves_static_name_props_and_fallback() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<slot name="header" :item="x"><span>fallback</span></slot>"#,
@@ -780,7 +779,7 @@ fn test_compile_slot_outlet_preserves_static_name_props_and_fallback() {
 
 #[test]
 fn test_compile_slot_outlet_preserves_dynamic_name() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<slot :name="slotName" :item="x">fallback</slot>"#,
@@ -800,7 +799,7 @@ fn test_compile_slot_outlet_preserves_dynamic_name() {
 
 #[test]
 fn test_compile_custom_directive_preserves_payloads() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-focus:[placement].lazy="handler" />"#,
@@ -820,7 +819,7 @@ fn test_compile_custom_directive_preserves_payloads() {
 
 #[test]
 fn test_compile_v_cloak_uses_builtin_lowering() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-cloak>{{ msg }}</div>"#,
@@ -840,7 +839,7 @@ fn test_compile_v_cloak_uses_builtin_lowering() {
 
 #[test]
 fn test_compile_v_once_lowers_without_runtime_directives() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-once>{{ msg }}</div>"#,
@@ -862,7 +861,7 @@ fn test_compile_v_once_lowers_without_runtime_directives() {
 
 #[test]
 fn test_compile_v_memo_empty_array_lowers_without_runtime_directives() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-memo="[]">{{ msg }}</div>"#,
@@ -884,7 +883,7 @@ fn test_compile_v_memo_empty_array_lowers_without_runtime_directives() {
 
 #[test]
 fn test_compile_v_memo_with_dependencies_reports_diagnostic() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<div v-memo="[msg]">{{ msg }}</div>"#,

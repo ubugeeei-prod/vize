@@ -10,7 +10,7 @@
 use super::generate_virtual_ts_with_offsets_options_api;
 
 fn class_component_virtual_ts(script: &str, template: &str) -> vize_carton::String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();

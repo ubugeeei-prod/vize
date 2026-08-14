@@ -14,7 +14,7 @@ const isLoading = false
   :class="{ 'loading-place-holder': isLoading }"
 />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -45,7 +45,7 @@ const benchmarkMirror = 1
 "#;
     let template = r#"<Child :code="String(benchmarkMirror)" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -93,7 +93,7 @@ fn static_attribute_values_are_type_checked_like_dynamic_bindings() {
 "#;
     let template = r#"<HelloWorld msg="You did it!" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -150,7 +150,7 @@ fn static_attribute_values_escape_into_exact_string_literals() {
 "#;
     let template = "<Child label='say \"hi\" \\ done' />";
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -173,7 +173,7 @@ fn valueless_static_attributes_stay_out_of_per_prop_checks() {
 "#;
     let template = r#"<Child disabled />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -195,7 +195,7 @@ const isLoading = false
 "#;
     let template = r#"<Child class="static-card" :class="{ loading: isLoading }" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -247,7 +247,7 @@ const fooBar = 3
 "#;
     let template = r#"<Child v-bind:bind="bind" :sync.camel="sync" :foo-bar="fooBar" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -299,7 +299,7 @@ const total = 1
     // would shift every following range.
     let template = r#"<Child label="😀ハ" :count="total" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

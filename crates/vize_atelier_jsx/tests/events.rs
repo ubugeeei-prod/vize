@@ -10,7 +10,7 @@ mod common;
 
 use common::{as_directive, lower_one, root_element, simple_content, vdom_code};
 use vize_atelier_jsx::JsxLang;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn event_modifier_codegen_snapshot() {
@@ -31,7 +31,7 @@ fn event_modifier_codegen_snapshot() {
 
 #[test]
 fn capture_modifier_lowers_to_a_v_on_directive() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <button onClickCapture={h}/>;");
     let element = root_element(&root);
     assert_eq!(element.props.len(), 1, "expected one prop");

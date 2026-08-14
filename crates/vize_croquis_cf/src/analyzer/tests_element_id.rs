@@ -2,11 +2,11 @@ use super::{CrossFileAnalyzer, CrossFileOptions};
 use crate::diagnostics::{CrossFileDiagnosticKind, DiagnosticSeverity};
 use std::path::Path;
 use vize_armature::parse;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 
 fn analyze_template(template: &str) -> Croquis {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse cleanly");
 

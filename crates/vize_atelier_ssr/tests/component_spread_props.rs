@@ -7,10 +7,10 @@
 //! started server-rendering with `name` undefined and crashed SSR.
 
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 fn compile(src: &str) -> String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_ssr(&allocator, src);
     assert!(errors.is_empty(), "Compilation errors: {errors:?}");
     result.code

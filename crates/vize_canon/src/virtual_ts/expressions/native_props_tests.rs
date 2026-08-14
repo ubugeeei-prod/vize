@@ -9,7 +9,7 @@ use crate::virtual_ts::{
 fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
     let script = r#"const disabledFlag: string = "yes""#;
     let template = r#"<button type="button" :disabled="disabledFlag">go</button>"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template, false);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -90,7 +90,7 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
 fn native_prop_check_covers_every_static_attribute_name() {
     let script = "const value = 'yes'";
     let template = r#"<a :href="value" :tabindex="value" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template, false);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -112,7 +112,7 @@ fn native_prop_check_covers_every_static_attribute_name() {
 fn native_prop_check_ignores_dynamic_names_and_components() {
     let script = "import Child from './Child.vue'\nconst name = 'disabled'\nconst value = 'yes'";
     let template = r#"<button :[name]="value" /><Child :disabled="value" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template, false);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -185,7 +185,7 @@ fn native_element_table_is_guarded_and_kept_referenced() {
 fn legacy_vue2_does_not_require_vue_native_elements() {
     let script = r#"const disabledFlag: string = "yes""#;
     let template = r#"<button :disabled="disabledFlag">go</button>"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template, true);
     let output = generate_virtual_ts_with_offsets_legacy_vue2(
         &summary,
@@ -227,7 +227,7 @@ const FRAGMENT_SCRIPT: &str = "const rows: { text: string | null }[] = []\nconst
 /// and dropping them would trade a false positive for a false negative.
 #[test]
 fn template_fragments_carry_no_element_prop_check() {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, FRAGMENT_SCRIPT, FRAGMENT_TEMPLATE, false);
     let output = generate_virtual_ts(&summary, Some(FRAGMENT_SCRIPT), Some(&root), 0);
 
@@ -251,7 +251,7 @@ fn template_fragments_carry_no_element_prop_check() {
 /// keys reach the checker as ordinary expressions there too.
 #[test]
 fn legacy_vue2_template_fragments_carry_no_element_prop_check() {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, FRAGMENT_SCRIPT, FRAGMENT_TEMPLATE, true);
     let output = generate_virtual_ts_with_offsets_legacy_vue2(
         &summary,
@@ -305,7 +305,7 @@ fn unchecked_v_bind_expressions(code: &str) -> Vec<&str> {
 }
 
 fn analyze<'a>(
-    allocator: &'a vize_carton::Bump,
+    allocator: &'a vize_carton::Allocator,
     script: &str,
     template: &'a str,
     legacy_vue2: bool,

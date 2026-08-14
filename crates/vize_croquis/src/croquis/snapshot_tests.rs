@@ -4,7 +4,7 @@ use crate::{Drawer, DrawerOptions};
 #[test]
 fn semantic_snapshot_collects_contract_facts_from_parsed_sfc_parts() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let script = r#"
 import { computed, inject, provide, reactive, ref } from 'vue'
@@ -29,7 +29,7 @@ function save() {
   <input id="name" v-model="state.name" />
 </section>"#;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse without errors");
 

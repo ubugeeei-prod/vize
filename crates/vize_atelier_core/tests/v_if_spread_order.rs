@@ -16,7 +16,7 @@ fn compile(source: &str) -> String {
 }
 
 fn compile_with_options(source: &str, mut codegen_options: CodegenOptions) -> String {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
     transform(

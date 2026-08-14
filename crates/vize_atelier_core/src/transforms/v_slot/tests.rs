@@ -5,10 +5,10 @@ use crate::lane::traverse::traverse_children;
 use crate::lane::{ParentNode, TransformContext};
 use crate::options::TransformOptions;
 use crate::parser::parse;
-use bumpalo::Bump;
+use vize_carton::Allocator;
 
 fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -20,7 +20,7 @@ fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
 
 #[test]
 fn test_has_v_slot() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(&allocator, r#"<template v-slot:header>content</template>"#);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -30,14 +30,14 @@ fn test_has_v_slot() {
 
 #[test]
 fn test_default_slot_name() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let dir = DirectiveNode::new(&allocator, "slot", SourceLocation::STUB);
     assert_eq!(get_slot_name(&dir).as_str(), "default");
 }
 
 #[test]
 fn test_collect_slots() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<Comp><template #header>H</template><template #footer>F</template></Comp>"#,
@@ -53,7 +53,7 @@ fn test_collect_slots() {
 
 #[test]
 fn test_collect_slots_dedupes_static_duplicate_slot_names() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<Comp><template #header>H1</template><template #header>H2</template></Comp>"#,
@@ -132,7 +132,7 @@ fn test_custom_directive_on_slot_outlet_reports_error() {
 
 #[test]
 fn test_get_slot_prop_names_from_directive() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<Comp><template #default="{ item, active }">{{ item.id }}{{ active }}</template></Comp>"#,

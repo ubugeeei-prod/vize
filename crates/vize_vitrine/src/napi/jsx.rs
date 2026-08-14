@@ -23,7 +23,7 @@ use napi_derive::napi;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// Options for [`compile_jsx`].
 #[napi(object)]
@@ -157,8 +157,8 @@ fn compile_jsx_impl(
     // codegen; enabling it is a no-op for Vapor and SSR output.
     config.vdom.source_map = opts.source_map.unwrap_or(false);
 
-    let bump = Bump::new();
-    let output = jsx_compile(&bump, &source, lang, &config);
+    let allocator = Allocator::new();
+    let output = jsx_compile(&allocator, &source, lang, &config);
 
     // A single self-contained module: the deduplicated runtime-helper preamble
     // followed by every component's render code (the preamble is no longer

@@ -6,7 +6,7 @@ use vize_atelier_jsx::{
     BabelIsCustomElement, BabelJsxCustomizations, BabelJsxOptions, JsxCompatMode, JsxCompileConfig,
     JsxLang, JsxOutputMode, compile_jsx, compile_jsx_with_babel_customizations,
 };
-use vize_carton::{Bump, FxHashSet, String};
+use vize_carton::{Allocator, FxHashSet, String};
 
 static PREDICATE_CALLS: AtomicUsize = AtomicUsize::new(0);
 
@@ -22,7 +22,7 @@ fn compile(
     config: &JsxCompileConfig,
     is_custom_element: Option<&BabelIsCustomElement>,
 ) -> (String, std::vec::Vec<String>) {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = match is_custom_element {
         Some(is_custom_element) => compile_jsx_with_babel_customizations(
             &bump,
@@ -214,7 +214,7 @@ fn captured_predicate_composes_with_other_babel_options() {
     let mut tags = FxHashSet::default();
     tags.insert(String::from("MyEl"));
     let is_custom_element = move |tag: &str| tags.contains(tag);
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx_with_babel_customizations(
         &bump,
         "const A = () => <MyEl class=\"a\" {...p} class={c} on={{ click: h }}/>;",

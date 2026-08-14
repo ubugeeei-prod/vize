@@ -15,7 +15,7 @@
 //! malformed module.
 
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// The diagnostic every non-slots-object `v-slots` value produces.
 fn not_a_slots_object(value: &str) -> String {
@@ -51,7 +51,7 @@ fn render_module(children: Option<&str>) -> String {
 }
 
 fn compile_with_config(source: &str, config: &JsxCompileConfig) -> (String, Vec<String>) {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(&bump, source, JsxLang::Jsx, config);
     (
         out.module_code().to_string(),

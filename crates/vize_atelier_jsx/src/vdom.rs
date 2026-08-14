@@ -18,7 +18,7 @@ use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // for bundlers, and the runtime `Function` (with-block) mode emits an empty
 // body under JSX's no-prefix closure model.
 use vize_atelier_core::CompilerError;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 
 use crate::diagnostics::JsxDiagnostic;
@@ -107,22 +107,22 @@ impl VdomOutput {
 
 /// Compile a JSX/TSX module into Vue VDOM render functions.
 pub fn compile_to_vdom(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     options: VdomCompileOptions,
 ) -> VdomOutput {
-    let lowered = lower_source(bump, source, lang);
+    let lowered = lower_source(allocator.as_bump(), allocator.as_oxc(), source, lang);
     let mut diagnostics = lowered.diagnostics;
     let is_ts = lang.is_typescript();
 
     // Move the analysis into the arena so the transform can borrow it for `'a`.
-    let analysis: &Croquis = &*bump.alloc(lowered.analysis);
+    let analysis: &Croquis = &*allocator.alloc(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
         components.push(compile_root_to_vdom(
-            bump,
+            allocator,
             lowered_root,
             analysis,
             is_ts,
@@ -142,7 +142,7 @@ pub fn compile_to_vdom(
 /// any transform diagnostics. Shared by [`compile_to_vdom`] and the mode-aware
 /// dispatcher in [`crate::compile`].
 pub(crate) fn compile_root_to_vdom(
-    bump: &Bump,
+    allocator: &Allocator,
     lowered: LoweredRoot,
     analysis: &Croquis,
     is_ts: bool,
@@ -180,7 +180,7 @@ pub(crate) fn compile_root_to_vdom(
         ..Default::default()
     };
     let errors = transform_with_jsx_compatibility(
-        bump,
+        allocator,
         &mut root,
         transform_opts,
         Some(analysis),

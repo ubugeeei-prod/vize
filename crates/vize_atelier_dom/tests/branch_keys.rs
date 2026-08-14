@@ -1,9 +1,9 @@
 use vize_atelier_core::{ErrorCode, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn compile_errors(source: &str, syntax: TemplateSyntaxMode) -> Vec<ErrorCode> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, _) = compile_template_with_template_syntax(
         &allocator,
         source,

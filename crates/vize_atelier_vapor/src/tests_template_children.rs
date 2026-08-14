@@ -3,7 +3,7 @@
 
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 const V_MATCH: &str = r#"<div><ul v-match="status"><li v-case="'ready'">Ready</li><li>Plain</li></ul><span>{{ x }}</span></div>"#;
 const DYNAMIC_SIBLING: &str = r#"<div><ul v-match="status"><li v-case="'ready'">Ready</li><li :id="plainId"><span>{{ label }}</span></li></ul><footer :class="cls">Tail</footer></div>"#;
@@ -13,7 +13,7 @@ const TEXT_RUN: &str = r#"<div><ul v-match="status"><li v-case="'ready'">Ready</
 const SEPARATED_TEXT_RUNS: &str = r#"<div><ul v-match="status"><li v-case="'ready'">Ready</li>Before {{ a }}<em>mid</em>After {{ b }}</ul></div>"#;
 
 fn vapor_output(source: &str) -> std::string::String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let result = compile_vapor(
         &allocator,
         source,
@@ -29,7 +29,7 @@ fn vapor_output(source: &str) -> std::string::String {
 }
 
 fn dom_output(source: &str) -> std::string::String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, result) = compile_template_with_options(
         &allocator,
         source,

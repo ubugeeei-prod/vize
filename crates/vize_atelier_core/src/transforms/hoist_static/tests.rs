@@ -2,39 +2,39 @@ use super::static_type::{has_only_native_element_descendants, has_only_static_ne
 use super::{StaticType, get_static_type, is_static_node};
 use crate::TemplateChildNode;
 use crate::parser::parse;
-use bumpalo::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn test_static_text() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(&allocator, "hello");
     assert!(is_static_node(&root.children[0]));
 }
 
 #[test]
 fn test_static_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(&allocator, "<div>static</div>");
     assert!(is_static_node(&root.children[0]));
 }
 
 #[test]
 fn test_dynamic_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(&allocator, "<div :class=\"cls\">dynamic</div>");
     assert!(!is_static_node(&root.children[0]));
 }
 
 #[test]
 fn test_interpolation_not_static() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(&allocator, "{{ msg }}");
     assert!(!is_static_node(&root.children[0]));
 }
 
 #[test]
 fn test_nested_dynamic_class_not_static() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<div class="checkbox"><span class="icon" :class="{ active: checked }" /></div>"#,
@@ -44,7 +44,7 @@ fn test_nested_dynamic_class_not_static() {
 
 #[test]
 fn test_sibling_with_v_if() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<div class="wrapper"><div class="checkbox"><span :class="{ active: checked }" /></div><label v-if="label">{{ label }}</label></div>"#,
@@ -55,7 +55,7 @@ fn test_sibling_with_v_if() {
 
 #[test]
 fn test_nested_static_element_is_static() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<div class="outer"><span class="a">x</span></div>"#,
@@ -66,7 +66,7 @@ fn test_nested_static_element_is_static() {
 
 #[test]
 fn test_deeply_nested_static_element_is_static() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<div class="outer"><div class="inner"><span>deep</span></div></div>"#,
@@ -76,7 +76,7 @@ fn test_deeply_nested_static_element_is_static() {
 
 #[test]
 fn test_nested_with_dynamic_text_not_fully_static() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse(
         &allocator,
         r#"<div class="outer"><span>{{ msg }}</span></div>"#,
@@ -85,7 +85,7 @@ fn test_nested_with_dynamic_text_not_fully_static() {
 }
 
 fn compile_hoisted(src: &str) -> (vize_carton::String, vize_carton::String) {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _errors) = parse(&allocator, src);
     let opts = crate::options::TransformOptions {
         hoist_static: true,
@@ -122,7 +122,7 @@ fn test_codegen_hoisted_nested_vnode_keeps_descendant() {
 
 #[test]
 fn static_nested_predicates_accept_native_dynamic_text_subtrees() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(
         &allocator,
         r#"<div><span title="label">text</span>{{ value }}</div>"#,

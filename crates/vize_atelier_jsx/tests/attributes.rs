@@ -3,11 +3,11 @@
 mod common;
 
 use common::{as_attribute, as_directive, lower_one, lower_one_tsx, root_element, simple_content};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn static_string_attribute() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div class=\"box\"/>;");
     let attr = as_attribute(&root_element(&root).props[0]);
     assert_eq!(attr.name.as_str(), "class");
@@ -16,7 +16,7 @@ fn static_string_attribute() {
 
 #[test]
 fn boolean_attribute_has_no_value() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <input disabled/>;");
     let attr = as_attribute(&root_element(&root).props[0]);
     assert_eq!(attr.name.as_str(), "disabled");
@@ -25,7 +25,7 @@ fn boolean_attribute_has_no_value() {
 
 #[test]
 fn dynamic_attribute_becomes_bind_directive() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div class={cls}/>;");
     let directive = as_directive(&root_element(&root).props[0]);
     assert_eq!(directive.name, "bind");
@@ -35,7 +35,7 @@ fn dynamic_attribute_becomes_bind_directive() {
 
 #[test]
 fn bind_argument_is_static_and_expression_is_dynamic() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div id={x}/>;");
     let directive = as_directive(&root_element(&root).props[0]);
     assert!(common::is_static(directive.arg.as_ref().unwrap()));
@@ -44,7 +44,7 @@ fn bind_argument_is_static_and_expression_is_dynamic() {
 
 #[test]
 fn spread_attribute_becomes_argless_bind() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div {...props}/>;");
     let directive = as_directive(&root_element(&root).props[0]);
     assert_eq!(directive.name, "bind");
@@ -54,7 +54,7 @@ fn spread_attribute_becomes_argless_bind() {
 
 #[test]
 fn namespaced_attribute_name_is_joined() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <use xlink:href=\"#id\"/>;");
     let attr = as_attribute(&root_element(&root).props[0]);
     assert_eq!(attr.name.as_str(), "xlink:href");
@@ -63,7 +63,7 @@ fn namespaced_attribute_name_is_joined() {
 
 #[test]
 fn event_handler_is_a_dynamic_bind() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <button onClick={handler}/>;");
     let directive = as_directive(&root_element(&root).props[0]);
     assert_eq!(directive.name, "bind");
@@ -73,7 +73,7 @@ fn event_handler_is_a_dynamic_bind() {
 
 #[test]
 fn multiple_attributes_preserve_order() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div id=\"x\" class={c} hidden/>;");
     let props = &root_element(&root).props;
     assert_eq!(props.len(), 3);
@@ -84,7 +84,7 @@ fn multiple_attributes_preserve_order() {
 
 #[test]
 fn jsx_element_as_attribute_value_is_dynamic_bind() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <Comp icon={<Icon/>}/>;");
     let directive = as_directive(&root_element(&root).props[0]);
     assert_eq!(directive.name, "bind");
@@ -94,7 +94,7 @@ fn jsx_element_as_attribute_value_is_dynamic_bind() {
 
 #[test]
 fn tsx_kebab_update_handler_preserves_authored_argument() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one_tsx(
         &bump,
         "const a = <Stepper onUpdate:current-step-index={updateStepIndex}/>;",
@@ -113,7 +113,7 @@ fn tsx_kebab_update_handler_preserves_authored_argument() {
 
 #[test]
 fn tsx_kebab_v_model_arg_preserves_authored_argument() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one_tsx(
         &bump,
         "const a = <Stepper v-model:current-step-index={value}/>;",

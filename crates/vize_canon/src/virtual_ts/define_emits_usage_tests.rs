@@ -83,7 +83,7 @@ export default {
 }
 "#;
     let template = r#"<button @click="$emit('click')" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
     analyzer.analyze_script_plain(script);
@@ -109,7 +109,7 @@ export default {
 }
 
 fn generate_setup(script: &str, template: &str, dialect: VueVersion) -> String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

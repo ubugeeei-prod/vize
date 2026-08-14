@@ -8,7 +8,6 @@ use super::compile_vapor;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::Bump;
 
 fn normalize_code(code: &str) -> String {
     code.lines()
@@ -39,7 +38,7 @@ fn assert_parses_as_module(code: &str) {
 
 #[test]
 fn test_compile_component_preserves_dotted_slot_names() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<MyComponent><template #item.alpha="{ value }">{{ value }}</template><template #item.beta="{ value }">{{ value }}</template><template #item.gamma="{ item }">{{ item }}</template></MyComponent>"#,

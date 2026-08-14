@@ -4,12 +4,12 @@ mod common;
 
 use common::{as_directive, as_element, lower_one, root_element, simple_content, vdom_code};
 use vize_atelier_jsx::JsxLang;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::ElementType;
 
 #[test]
 fn lowers_a_single_intrinsic_element() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div></div>;");
     let element = root_element(&root);
     assert_eq!(element.tag.as_str(), "div");
@@ -18,7 +18,7 @@ fn lowers_a_single_intrinsic_element() {
 
 #[test]
 fn self_closing_element_is_flagged() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <img/>;");
     let element = root_element(&root);
     assert_eq!(element.tag.as_str(), "img");
@@ -27,14 +27,14 @@ fn self_closing_element_is_flagged() {
 
 #[test]
 fn element_with_explicit_close_is_not_self_closing() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <div></div>;");
     assert!(!root_element(&root).is_self_closing);
 }
 
 #[test]
 fn capitalized_tag_is_a_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <MyComp/>;");
     let element = root_element(&root);
     assert_eq!(element.tag.as_str(), "MyComp");
@@ -47,7 +47,7 @@ fn capitalized_tag_is_a_component() {
 /// registers, so the element rendered as nothing with no diagnostic (#3421).
 #[test]
 fn member_expression_tag_lowers_to_a_dynamic_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <Foo.Bar.Baz/>;");
     let element = root_element(&root);
     assert_eq!(element.tag.as_str(), "component");
@@ -64,7 +64,7 @@ fn member_expression_tag_lowers_to_a_dynamic_component() {
 
 #[test]
 fn this_member_tag_lowers_to_a_dynamic_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <this.Dynamic/>;");
     let element = root_element(&root);
     assert_eq!(element.tag.as_str(), "component");
@@ -106,7 +106,7 @@ fn member_expression_tag_with_children_keeps_props_and_slots() {
 
 #[test]
 fn nested_elements_are_lowered_recursively() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(&bump, "const a = <ul><li></li><li></li></ul>;");
     let ul = root_element(&root);
     assert_eq!(ul.tag.as_str(), "ul");
@@ -118,7 +118,7 @@ fn nested_elements_are_lowered_recursively() {
 
 #[test]
 fn deeply_nested_tree_preserves_structure() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(
         &bump,
         "const a = <div><section><p><span/></p></section></div>;",
@@ -140,7 +140,7 @@ fn known_namespaced_element_names_are_preserved() {
         ("const a = <svg:circle/>;", "svg:circle"),
         ("const a = <math:mi/>;", "math:mi"),
     ] {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let root = lower_one(&bump, source);
         let element = root_element(&root);
         assert_eq!(element.tag.as_str(), tag);
@@ -151,7 +151,7 @@ fn known_namespaced_element_names_are_preserved() {
 
 #[test]
 fn root_location_points_at_the_element() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <div></div>;";
     let root = lower_one(&bump, src);
     let element = root_element(&root);

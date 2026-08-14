@@ -1,10 +1,10 @@
 //! Lowercase tag classification in opt-in Babel compatibility mode (#3391).
 
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn compile_module(source: &str, compat: JsxCompatMode) -> vize_carton::String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     compile_jsx(
         &bump,
         source,

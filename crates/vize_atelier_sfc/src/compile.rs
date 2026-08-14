@@ -358,10 +358,12 @@ fn compile_sfc_inner(
         // Compile template if present
         if has_template {
             let template = descriptor.template.as_ref().unwrap();
+            let template_allocator = vize_carton::Allocator::new();
             let template_result = if is_vapor {
                 profile!(
                     "atelier.sfc.template.vapor",
                     compile_template_block_vapor(
+                        &template_allocator,
                         template,
                         &scope_id,
                         has_scoped,
@@ -380,6 +382,7 @@ fn compile_sfc_inner(
                 profile!(
                     "atelier.sfc.template.compile",
                     compile_template_block(
+                        &template_allocator,
                         template,
                         &template_opts,
                         TemplateBlockCompileContext {
@@ -677,10 +680,12 @@ fn compile_sfc_inner(
 
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
+        let template_allocator = vize_carton::Allocator::new();
         if is_vapor {
             Some(profile!(
                 "atelier.sfc.template.vapor",
                 compile_template_block_vapor(
+                    &template_allocator,
                     template,
                     &scope_id,
                     has_scoped,
@@ -697,6 +702,7 @@ fn compile_sfc_inner(
             Some(profile!(
                 "atelier.sfc.template.compile",
                 compile_template_block(
+                    &template_allocator,
                     template,
                     &options.template,
                     TemplateBlockCompileContext {

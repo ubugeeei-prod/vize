@@ -11,7 +11,7 @@ const decoy = null
 "#;
     let template = r#"<div ref="activatorRef"><div ref="menuRef" /></div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -49,7 +49,7 @@ const other = 1
 "#;
 
     let generate = |template: &str| {
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template);
 
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

@@ -8,7 +8,7 @@ const TEMPLATE: &str =
     r#"<p :title="$missing('c')">{{ $missing('a') }}{{ $missing('b') }}{{ label }}</p>"#;
 
 fn generate(strict: bool) -> VirtualTsOutput {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

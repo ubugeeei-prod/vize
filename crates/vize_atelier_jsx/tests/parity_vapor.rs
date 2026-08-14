@@ -4,7 +4,7 @@ mod common;
 
 use common::{snapshot_cases, vapor_code};
 use vize_atelier_jsx::{JsxLang, VaporCompileOptions, compile_to_vapor};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn vapor_parity_matrix_snapshot() {
@@ -63,7 +63,7 @@ fn vapor_parity_matrix_snapshot() {
 
 #[test]
 fn templates_are_exposed_on_the_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <div class=\"x\"/>;",
@@ -76,7 +76,7 @@ fn templates_are_exposed_on_the_component() {
 
 #[test]
 fn multiple_components_compile_independently_with_names() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <a/>;\nconst B = () => <b/>;",

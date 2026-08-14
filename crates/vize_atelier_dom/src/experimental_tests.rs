@@ -1,9 +1,9 @@
 use super::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn test_compile_experimental_patterned_template_cases() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let options = DomCompilerOptions {
         experimental_patterned_template: true,
         ..Default::default()
@@ -26,7 +26,7 @@ fn test_compile_experimental_patterned_template_cases() {
 
 #[test]
 fn test_compile_experimental_patterned_template_array_case() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let options = DomCompilerOptions {
         experimental_patterned_template: true,
         ..Default::default()

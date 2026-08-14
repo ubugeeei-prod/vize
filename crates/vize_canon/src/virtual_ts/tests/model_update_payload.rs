@@ -6,7 +6,7 @@
 use crate::virtual_ts::generate_virtual_ts;
 
 fn emits_of(script: &str) -> std::string::String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ model }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

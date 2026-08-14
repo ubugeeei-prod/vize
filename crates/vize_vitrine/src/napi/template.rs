@@ -12,7 +12,7 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
 use vize_atelier_core::{
@@ -27,7 +27,7 @@ use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor_with_template_synta
 #[napi]
 pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
     let opts = options.unwrap_or_default();
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
@@ -111,7 +111,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
 #[napi(js_name = "compileVapor")]
 pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
     let opts = options.unwrap_or_default();
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
@@ -154,7 +154,7 @@ pub fn parse_template(
     template: String,
     options: Option<CompilerOptions>,
 ) -> Result<serde_json::Value> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let opts = options.unwrap_or_default();
 
     let (root, errors) = parse_with_options(

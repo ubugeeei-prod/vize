@@ -1,6 +1,6 @@
 //! TransformContext implementation.
 
-use vize_carton::{Box, Bump, CompactString, String};
+use vize_carton::{Allocator, Box, CompactString, String};
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 
@@ -15,13 +15,13 @@ use super::TransformContext;
 
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
-    pub fn new(allocator: &'a Bump, source: String, options: TransformOptions) -> Self {
+    pub fn new(allocator: &'a Allocator, source: String, options: TransformOptions) -> Self {
         Self::new_with_template_syntax_quirks(allocator, source, options, false)
     }
 
     /// Create a new transform context with template syntax quirk compatibility.
     pub fn new_with_template_syntax_quirks(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: String,
         options: TransformOptions,
         template_syntax_quirks: bool,
@@ -60,7 +60,7 @@ impl<'a> TransformContext<'a> {
     /// Create a new transform context with Vue parser quirk compatibility.
     #[deprecated(note = "use new_with_template_syntax_quirks instead")]
     pub fn new_with_vue_parser_quirks(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: String,
         options: TransformOptions,
         vue_parser_quirks: bool,
@@ -70,7 +70,7 @@ impl<'a> TransformContext<'a> {
 
     /// Create a new transform context with semantic analysis data
     pub fn with_analysis(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: String,
         options: TransformOptions,
         analysis: &'a Croquis,
@@ -80,7 +80,7 @@ impl<'a> TransformContext<'a> {
 
     /// Create a new transform context with semantic analysis data and template syntax quirks.
     pub fn with_analysis_and_template_syntax_quirks(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: String,
         options: TransformOptions,
         analysis: &'a Croquis,
@@ -99,7 +99,7 @@ impl<'a> TransformContext<'a> {
     /// Create a new transform context with semantic analysis data and Vue parser quirks.
     #[deprecated(note = "use with_analysis_and_template_syntax_quirks instead")]
     pub fn with_analysis_and_vue_parser_quirks(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: String,
         options: TransformOptions,
         analysis: &'a Croquis,
@@ -506,7 +506,7 @@ impl<'a> TransformContext<'a> {
 
 /// Clone an expression into the arena
 pub(super) fn clone_expression<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     exp: &ExpressionNode<'a>,
 ) -> ExpressionNode<'a> {
     match exp {

@@ -20,7 +20,7 @@ fn sequence_prop_values_are_grouped_without_mapping_synthetic_parentheses() {
     let expression = "void 0, (value) => value";
     let template = r#"<Child :transform="void 0, (value) => value" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -69,7 +69,7 @@ fn already_parenthesized_sequence_prop_values_are_not_double_wrapped() {
 "#;
     let template = r#"<Child :transform="(void 0, (value) => value)" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -92,7 +92,7 @@ const props = { id: "child" }
 "#;
     let template = r#"<Child class="base" :class="void 0, classes" v-bind="void 0, props" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

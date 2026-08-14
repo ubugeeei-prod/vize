@@ -19,7 +19,7 @@ use wasm_bindgen::prelude::*;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 use super::serde::to_json_js_value;
 
@@ -160,8 +160,8 @@ fn build_jsx_wasm_result(
     // Source maps are emitted by client VDOM codegen; a no-op for Vapor/SSR.
     config.vdom.source_map = source_map;
 
-    let bump = Bump::new();
-    let output = jsx_compile(&bump, source, lang, &config);
+    let allocator = Allocator::new();
+    let output = jsx_compile(&allocator, source, lang, &config);
 
     // A single self-contained module: deduplicated runtime-helper preamble + every
     // component's render code (the preamble is no longer dropped, #1533).

@@ -1,6 +1,6 @@
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn quirks_compiles_html_tree_recovery_cases_without_cascading_errors() {
@@ -12,7 +12,7 @@ fn quirks_compiles_html_tree_recovery_cases_without_cascading_errors() {
     ];
 
     for source in cases {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_template_with_template_syntax(
             &allocator,
             source,

@@ -2,7 +2,7 @@ use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
 };
 use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers};
-use vize_carton::{Bump, FxHashSet, String as CompactString};
+use vize_carton::{Allocator, FxHashSet, String as CompactString};
 
 pub(super) fn collect_art_template_referenced_names(
     descriptor: &SfcDescriptor<'_>,
@@ -81,7 +81,7 @@ fn collect_template_source_referenced_names(
         return;
     }
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, _) = parse_with_options_and_template_syntax(
         &allocator,
         template,

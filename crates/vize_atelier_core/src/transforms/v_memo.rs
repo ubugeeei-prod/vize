@@ -98,11 +98,11 @@ mod tests {
     use super::{get_memo_deps, has_v_memo};
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_has_v_memo() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-memo="[a, b]">memoized</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_get_memo_deps() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-memo="[count]">{{ count }}</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {

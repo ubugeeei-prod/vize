@@ -24,7 +24,7 @@ use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::{CodegenOptions, TransformOptions};
 use vize_atelier_core::parser::Parser;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::{Bump, cstr};
+use vize_carton::{Allocator, cstr};
 
 fn dom_transform_options(dom: &DomCompilerOptions) -> TransformOptions {
     TransformOptions {
@@ -44,12 +44,12 @@ fn davinci(criterion: &mut Criterion) {
 
         let transform_id = cstr!("atelier_dom_transform_{}", fixture.name);
         bench_stage_with_metrics(criterion, &transform_id, fixture.relative_path, |window| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             window.measure(|| transform(&allocator, &mut root, dom_transform_options(&dom), None))
         });
 
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, _errors) = Parser::new(&allocator, template).parse();
         transform(&allocator, &mut root, dom_transform_options(&dom), None);
         let root = root;
@@ -66,7 +66,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let fused_id = cstr!("atelier_dom_compile_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (root, errors, result) =
                 compile_template_with_options(&allocator, template, dom.clone());
             // The AST borrows the iteration-local arena; return owned facts.
@@ -77,7 +77,7 @@ fn davinci(criterion: &mut Criterion) {
     for fixture in &LADDER {
         let template =
             template_block(fixture.source).expect("every ladder fixture has a template block");
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let before = expr_parse_probe::expr_parse_count();
         let _compiled = compile_template_with_options(&allocator, template, dom.clone());
         let parses = expr_parse_probe::expr_parse_count() - before;

@@ -4,11 +4,11 @@ mod common;
 
 use common::{lower_all, root_element};
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn valid_source_has_no_diagnostics() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_all(&bump, "const a = <div/>;");
     assert!(out.diagnostics.is_empty());
     assert!(!out.has_errors());
@@ -16,9 +16,9 @@ fn valid_source_has_no_diagnostics() {
 
 #[test]
 fn syntax_error_is_reported_with_a_range() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <div>;";
-    let out = lower_source(&bump, src, JsxLang::Jsx);
+    let out = lower_source(&bump, bump.as_oxc(), src, JsxLang::Jsx);
     assert!(out.has_errors());
     let diag = &out.diagnostics[0];
     assert!(diag.end > diag.start);
@@ -27,9 +27,9 @@ fn syntax_error_is_reported_with_a_range() {
 
 #[test]
 fn diagnostic_range_maps_into_source() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <div>{</div>;";
-    let out = lower_source(&bump, src, JsxLang::Jsx);
+    let out = lower_source(&bump, bump.as_oxc(), src, JsxLang::Jsx);
     assert!(out.has_errors());
     for diag in &out.diagnostics {
         // Every diagnostic range must be sliceable from the original source.
@@ -39,7 +39,7 @@ fn diagnostic_range_maps_into_source() {
 
 #[test]
 fn element_location_round_trips_through_source() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const App = () => <button class=\"x\">Go</button>;";
     let out = lower_all(&bump, src);
     let element = root_element(&out.roots[0].root);
@@ -50,7 +50,7 @@ fn element_location_round_trips_through_source() {
 
 #[test]
 fn attribute_value_location_round_trips() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <div title=\"hello\"/>;";
     let out = lower_all(&bump, src);
     let attr = match &root_element(&out.roots[0].root).props[0] {
@@ -65,7 +65,7 @@ fn attribute_value_location_round_trips() {
 
 #[test]
 fn line_and_column_are_one_indexed() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     // `<div/>` begins at column 1 of line 2.
     let src = "x;\n<div/>;";
     let out = lower_all(&bump, src);
@@ -91,7 +91,7 @@ fn diagnostic_texts<'d>(
 /// two prefixes that name a real element namespace and rejects the rest (#3421).
 #[test]
 fn unsupported_tag_namespace_is_reported() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <a:b foo={1}/>;";
     let out = lower_all(&bump, src);
 
@@ -119,7 +119,7 @@ fn svg_and_math_namespaced_tags_are_not_reported() {
         "const a = <math:mi/>;",
         "const a = <div><svg:circle/></div>;",
     ] {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let out = lower_all(&bump, source);
         assert_eq!(diagnostic_texts(&out), vec![], "for {source}");
     }
@@ -136,7 +136,7 @@ fn fragments_are_not_reported_at_any_depth() {
         "const a = <B>{() => <><i/></>}</B>;",
         "const a = <div>{cond ? <><i/></> : <b/>}</div>;",
     ] {
-        let bump = Bump::new();
+        let bump = Allocator::new();
         let out = lower_all(&bump, source);
         assert_eq!(diagnostic_texts(&out), vec![], "for {source}");
     }
@@ -144,7 +144,7 @@ fn fragments_are_not_reported_at_any_depth() {
 
 #[test]
 fn spread_child_is_reported() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const a = <div>{...items}</div>;";
     let out = lower_all(&bump, src);
 

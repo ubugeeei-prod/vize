@@ -305,9 +305,9 @@ mod tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Box, Bump, FxHashMap};
+    use vize_carton::{Allocator, Box, Bump, FxHashMap};
 
-    fn test_context<'a>(allocator: &'a Bump) -> TransformContext<'a> {
+    fn test_context<'a>(allocator: &'a Allocator) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
@@ -344,7 +344,7 @@ mod tests {
 
     #[test]
     fn test_process_expression_rewrites_compound_ts_ref_reads() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(
             &allocator,
@@ -362,7 +362,7 @@ mod tests {
 
     #[test]
     fn test_process_expression_uses_setup_proxy_in_function_mode() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut bindings = FxHashMap::default();
         bindings.insert("isExternal".into(), BindingType::SetupRef);
 
@@ -442,7 +442,7 @@ mod tests {
 
     #[test]
     fn test_process_expression_reports_invalid_expression() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(&allocator, "foo(");
 
@@ -474,7 +474,7 @@ mod tests {
         // `class` fails to parse as an expression but is a rewritable simple
         // identifier; vue-core never parses it (simple-identifier fast path)
         // and emits no error.
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(&allocator, "class");
 
@@ -493,7 +493,7 @@ mod tests {
         // heuristic does not lower it, so the JS parse fails — but the
         // official compiler (babel + typescript plugin) accepts it, and the
         // parity rule forbids rejecting what the official compiler accepts.
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(&allocator, "foo<string>");
 
@@ -503,7 +503,7 @@ mod tests {
 
     #[test]
     fn test_process_expression_ts_slot_params_have_no_diagnostic() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let source = "{ open, close }: { open: boolean, close?: () => void }";
         let expr = compound_expression(&allocator, source);
@@ -519,7 +519,7 @@ mod tests {
 
     #[test]
     fn test_clone_expression_preserves_compound_source() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = "foo + bar";
         let expr = compound_expression(&allocator, source);
 

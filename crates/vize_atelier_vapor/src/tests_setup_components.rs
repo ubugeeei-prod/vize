@@ -1,6 +1,6 @@
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_atelier_core::options::{BindingMetadata, BindingType};
-use vize_carton::{Bump, FxHashMap};
+use vize_carton::{Allocator, FxHashMap};
 
 fn component_resolution_lines(code: &str) -> Vec<String> {
     code.lines()
@@ -12,7 +12,7 @@ fn component_resolution_lines(code: &str) -> Vec<String> {
 
 #[test]
 fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("Primitive".into(), BindingType::SetupConst);
     let result = compile_vapor(
@@ -38,7 +38,7 @@ fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
 
 #[test]
 fn test_setup_component_tag_binding_matrix_matches_vapor_behavior() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("RefMenu".into(), BindingType::SetupRef);
     bindings.insert("MaybeMenu".into(), BindingType::SetupMaybeRef);
@@ -80,7 +80,7 @@ fn test_setup_component_tag_binding_matrix_matches_vapor_behavior() {
 // original prop key), while v-for aliases keep shadowing prop names.
 #[test]
 fn test_props_bindings_resolve_through_dollar_props() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("tag".into(), BindingType::Props);
     bindings.insert("theTag".into(), BindingType::PropsAliased);
@@ -106,7 +106,7 @@ fn test_props_bindings_resolve_through_dollar_props() {
 
 #[test]
 fn test_for_alias_shadows_props_binding() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("tag".into(), BindingType::Props);
     bindings.insert("tags".into(), BindingType::Props);

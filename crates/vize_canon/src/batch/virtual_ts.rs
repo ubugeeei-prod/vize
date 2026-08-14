@@ -234,7 +234,7 @@ impl VirtualTsGenerator {
                 .map_err(|error| cstr!("{error:?}"))?;
 
         let analysis = if let Some(ref template) = descriptor.template {
-            let allocator = vize_carton::Bump::new();
+            let allocator = vize_carton::Allocator::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
             analyze_sfc_descriptor(&descriptor, Some(&root), SfcCroquisOptions::full())
         } else {

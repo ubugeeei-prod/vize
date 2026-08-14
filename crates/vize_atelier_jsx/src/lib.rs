@@ -20,10 +20,15 @@
 //!
 //! ```
 //! use vize_atelier_jsx::{lower_source, JsxLang};
-//! use vize_carton::Bump;
+//! use vize_carton::Allocator;
 //!
-//! let bump = Bump::new();
-//! let out = lower_source(&bump, "const App = () => <div class=\"a\">{count}</div>;", JsxLang::Jsx);
+//! let allocator = Allocator::new();
+//! let out = lower_source(
+//!     &allocator,
+//!     allocator.as_oxc(),
+//!     "const App = () => <div class=\"a\">{count}</div>;",
+//!     JsxLang::Jsx,
+//! );
 //! assert_eq!(out.roots.len(), 1);
 //! assert!(out.diagnostics.is_empty());
 //! ```
@@ -195,12 +200,18 @@ impl<'a> LowerOutput<'a> {
 
 /// Parse and lower a JSX/TSX source string into Vize render roots.
 ///
-/// All JSX nodes are lowered into the supplied `bump` arena; the temporary OXC
-/// allocator used for parsing is dropped before returning, so the result only
-/// borrows `bump`.
-pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOutput<'a> {
+/// All JSX nodes are lowered into the supplied `bump` arena; the
+/// caller-provided `allocator` only backs the OXC parse, and nothing in the
+/// result borrows it, so the result only borrows `bump`.
+pub fn lower_source<'a>(
+    bump: &'a Bump,
+    allocator: &oxc_allocator::Allocator,
+    source: &str,
+    lang: JsxLang,
+) -> LowerOutput<'a> {
     lower_source_with_compat(
         bump,
+        allocator,
         source,
         lang,
         JsxCompatMode::Native,
@@ -217,15 +228,15 @@ pub fn lower_source<'a>(bump: &'a Bump, source: &str, lang: JsxLang) -> LowerOut
 /// the mode-aware compiler.
 fn lower_source_with_compat<'a>(
     bump: &'a Bump,
+    allocator: &oxc_allocator::Allocator,
     source: &str,
     lang: JsxLang,
     compat: JsxCompatMode,
     default_mode: JsxOutputMode,
     babel: BabelLoweringOptions<'_>,
 ) -> (LowerOutput<'a>, std::vec::Vec<(u32, u32)>) {
-    let allocator = oxc_allocator::Allocator::default();
     let parse_source = parse::prepare_source_for_parse(source, lang);
-    let parsed = parse::parse_module(&allocator, parse_source.as_ref(), lang);
+    let parsed = parse::parse_module(allocator, parse_source.as_ref(), lang);
     let scoping = babel.is_custom_element.map(|_| {
         SemanticBuilder::new()
             .build(&parsed.program)

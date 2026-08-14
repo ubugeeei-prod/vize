@@ -9,7 +9,7 @@
 ## TODO index
 
 - [x] P1-1 Arena unification in carton
-- [ ] P1-2 Allocator plumbing through armature/atelier
+- [x] P1-2 Allocator plumbing through armature/atelier
 - [ ] P1-3 `SourceLocation` diet: retire per-node `source` strings
 - [ ] P1-4 `SourceLocation` diet: retire dead line/column
 - [ ] P1-5 Retained expressions: parse-once storage
@@ -39,8 +39,8 @@
 
 **Steps:**
 
-- [ ] Thread `&'a Allocator` through `vize_armature` entry points (`crates/vize_armature/src/parser/entry.rs`, `parser.rs`) and the atelier lanes (`vize_atelier_core::lane::transform`, sfc `compile_template`) so template structures and future oxc ASTs share `'a`
-- [ ] `vize_atelier_jsx` (already oxc-based) switches its local allocator to the caller-provided one
+- [x] Thread `&'a Allocator` through `vize_armature` entry points (`crates/vize_armature/src/parser/entry.rs`, `parser.rs`) and the atelier lanes (`vize_atelier_core::lane::transform`, sfc `compile_template`) so template structures and future oxc ASTs share `'a` _(landed: the six `entry.rs` parse wrappers take `&'a Allocator` and extract `allocator.as_bump()` at the boundary — `Parser::*` internals still see `&'a Bump`; `TransformContext.allocator`, its constructors, the four `lane.rs` transform functions, and the `lane/extensions.rs` wrappers carry the handle. The plumbing necessarily extends through the dom/ssr/vapor lane compile entries — they sit between sfc and the lane and a `&Bump` cannot produce a handle — and `compile_template_block` plus its vapor sibling lose their local `Bump::new()`: the birth site is one `vize_carton::Allocator::new()` per template block compile in `compile.rs`/`template_only.rs` (batch pooling stays P1-11). Deref coercion keeps every `Box::new_in`/`Vec::new_in`/codegen call site unchanged)_
+- [x] `vize_atelier_jsx` (already oxc-based) switches its local allocator to the caller-provided one _(landed: `lower_source`/`lower_source_with_compat` gain a caller-provided `&oxc_allocator::Allocator` and the local `Allocator::default()` is deleted; the full-compile entries (`compile_jsx*`, `compile_to_vdom/ssr/vapor`) take `&vize_carton::Allocator` because they run the shared transform lane, and split it via `as_bump()`/`as_oxc()` at the lower boundary. Analysis-only callers (maestro, patina, canon) hold a carton handle and pass `handle.as_oxc()`; the babel pragma-probe's throwaway parse keeps its local oxc arena. Verified: workspace + all-targets + napi/wasm/legacy feature builds compile, both clippy gates clean, `VIZE_TEST_REQUIRE_TSGO=1 cargo test --workspace` 321 suites 0 failed; corpus-diff runs with the orchestrator's rebase, per protocol)_
 
 **Acceptance:** corpus-diff empty; benches hold; no public-API regressions the CLI/vitrine can't absorb (charter #23: internal breakage is free).
 **Deps:** P1-1.

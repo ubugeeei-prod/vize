@@ -16,7 +16,7 @@ use vize_atelier_jsx::{
     BabelIsCustomElement, BabelJsxCustomizations, BabelJsxOptions, JsxCompatMode, JsxCompileConfig,
     JsxLang, compile_jsx_with_babel_customizations,
 };
-use vize_carton::{Bump, FxHashSet};
+use vize_carton::{Allocator, FxHashSet};
 
 /// The relationship between Vize's default output and babel's for one case.
 ///
@@ -197,7 +197,7 @@ pub fn load_recording() -> Recording {
 /// to show what Vize does with inputs babel rejects (and vice versa), so a
 /// diagnosing case is a legitimate, recordable outcome.
 pub fn vize_vdom_output(case: &Case) -> std::string::String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let custom_elements: FxHashSet<std::string::String> = case
         .babel_options
         .get("isCustomElement")

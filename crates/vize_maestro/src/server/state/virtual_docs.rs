@@ -66,7 +66,7 @@ impl ServerState {
     fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{TemplateCodeGenerator, VirtualDocuments};
 
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (ast, _errors) = vize_armature::parse(&allocator, content);
         let base_uri = uri.path();
 
@@ -127,7 +127,7 @@ impl ServerState {
                 continue;
             }
 
-            let template_allocator = vize_carton::Bump::new();
+            let template_allocator = vize_carton::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
             let template_ptr = template_content.as_ptr() as usize;

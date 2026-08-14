@@ -1,7 +1,7 @@
 //! The `Compiler` WASM class, its free-function aliases, and the internal
 //! template/SFC compilation pipeline.
 
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use wasm_bindgen::prelude::*;
 
 use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
@@ -79,7 +79,7 @@ impl Compiler {
     #[wasm_bindgen]
     pub fn parse(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let template_syntax = resolve_template_syntax(parsed.options.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
 
@@ -329,7 +329,7 @@ pub(super) fn compile_internal(
     vapor: bool,
     binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
 ) -> Result<CompileResult, String> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
     let (experimental_in_tag_comments, experimental_patterned_template) = experimental_flags(opts);
 

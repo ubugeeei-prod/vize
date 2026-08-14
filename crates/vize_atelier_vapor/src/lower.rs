@@ -169,11 +169,11 @@ fn transform_combined_block_text<'a>(
 mod tests {
     use super::transform_to_ir;
     use vize_atelier_core::parser::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_transform_simple_element() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, "<div>hello</div>");
         let ir = transform_to_ir(&allocator, &root);
 
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn test_transform_nested_elements() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, "<div><span>nested</span></div>");
         let ir = transform_to_ir(&allocator, &root);
 

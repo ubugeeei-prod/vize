@@ -9,7 +9,7 @@ use super::*;
 fn module_code_prepends_merged_preamble_to_render_code() {
     // A single VDOM component's module string is its preamble followed by the
     // render code, so the emitted helpers are actually imported.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(
         &bump,
         "const A = () => <div>{x}</div>;",
@@ -22,7 +22,7 @@ fn module_code_prepends_merged_preamble_to_render_code() {
 
 #[test]
 fn source_map_present_only_for_single_component_module() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let mut config = JsxCompileConfig::default();
     config.vdom.source_map = true;
 

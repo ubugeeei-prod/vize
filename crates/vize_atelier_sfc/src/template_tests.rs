@@ -56,7 +56,9 @@ const isRootSelected = ref(false)
             .insert(local.to_compact_string(), key.to_compact_string());
     }
 
+    let template_allocator = vize_carton::Allocator::new();
     let template_output = crate::compile_template::compile_template_block(
+        &template_allocator,
         template,
         &crate::TemplateCompileOptions::default(),
         crate::compile_template::TemplateBlockCompileContext {

@@ -6,7 +6,7 @@ const TEMPLATE: &str =
 
 /// Generate the embedded-preamble virtual TS for a template with no script.
 fn generate(template: &str) -> vize_carton::String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_template(&root);
@@ -68,7 +68,7 @@ fn slot_payload_helpers_are_declared_only_where_they_are_referenced() {
 #[test]
 fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
     let script = r#"import { ElBadge } from 'element-plus'"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -107,7 +107,7 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
 
 #[test]
 fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_template(&root);
@@ -149,7 +149,7 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
 
 #[test]
 fn unresolved_slot_host_uses_vue_global_components_fallback() {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, TEMPLATE);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_template(&root);

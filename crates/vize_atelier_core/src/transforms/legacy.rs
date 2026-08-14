@@ -312,7 +312,7 @@ mod tests {
 
     /// Full lane (parse -> transform -> codegen) under a given dialect.
     fn compile(src: &str, dialect: VueVersion) -> std::string::String {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (mut root, errs) = parse(&allocator, src);
         assert!(errs.is_empty(), "parse errors: {errs:?}");
         let opts = TransformOptions {
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn sync_modifier_desugars_to_bind_plus_update_listener() {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (mut root, errs) = parse(&allocator, r#"<Comp :foo.sync="bar" />"#);
         assert!(errs.is_empty());
         desugar_legacy_template(&allocator, &mut root, v2_caps());
@@ -382,7 +382,7 @@ mod tests {
 
     #[test]
     fn sync_modifier_preserves_other_modifiers() {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         // `.sync` alongside another modifier: only `sync` is stripped.
         let (mut root, _) = parse(&allocator, r#"<Comp :foo.sync.camel="bar" />"#);
         desugar_legacy_template(&allocator, &mut root, v2_caps());
@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn template_slot_scope_desugars_to_v_slot() {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (mut root, _) = parse(
             &allocator,
             r#"<Comp><template slot="header" slot-scope="props">x</template></Comp>"#,
@@ -436,7 +436,7 @@ mod tests {
 
     #[test]
     fn scope_alias_desugars_to_default_v_slot() {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         // `scope` (2.1 alias) with no `slot=` => default slot.
         let (mut root, _) = parse(
             &allocator,
@@ -462,7 +462,7 @@ mod tests {
 
     #[test]
     fn vue3_dialect_is_a_noop() {
-        let allocator = Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (mut root, _) = parse(
             &allocator,
             r#"<Comp :foo.sync="bar"><template slot-scope="props">x</template></Comp>"#,

@@ -41,10 +41,12 @@ pub(super) fn compile_template_only(
     macro_artifacts: Vec<SfcMacroArtifact>,
 ) -> Result<SfcCompileResult, SfcError> {
     let template = input.descriptor.template.as_ref().unwrap();
+    let template_allocator = vize_carton::Allocator::new();
     let template_result = if input.is_vapor {
         profile!(
             "atelier.sfc.template.vapor",
             compile_template_block_vapor(
+                &template_allocator,
                 template,
                 input.scope_id,
                 input.has_scoped,
@@ -62,6 +64,7 @@ pub(super) fn compile_template_only(
         profile!(
             "atelier.sfc.template.compile",
             compile_template_block(
+                &template_allocator,
                 template,
                 &template_opts,
                 TemplateBlockCompileContext {

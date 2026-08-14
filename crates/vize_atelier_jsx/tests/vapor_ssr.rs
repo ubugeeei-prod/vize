@@ -4,7 +4,7 @@ mod common;
 
 use common::{snapshot_cases, snapshot_lang_cases, vapor_code};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, VaporCompileOptions, compile_to_vapor};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn ssr_codegen_matrix() {
@@ -107,7 +107,7 @@ fn client_codegen_matrix_when_ssr_is_off() {
 
 #[test]
 fn ssr_component_metadata_snapshot() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const Widget = () => <div/>;",

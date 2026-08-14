@@ -238,11 +238,11 @@ fn extract_expression<'a>(
 mod tests {
     use super::has_v_slot;
     use vize_atelier_core::{TemplateChildNode, parser::parse};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_has_v_slot() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<template v-slot:header>content</template>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {

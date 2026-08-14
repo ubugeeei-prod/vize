@@ -18,11 +18,11 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn diagnostics(source: &str) -> Vec<String> {
-    let bump = Bump::new();
-    let out = lower_source(&bump, source, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(&bump, bump.as_oxc(), source, JsxLang::Jsx);
     out.diagnostics
         .iter()
         .map(|diagnostic| diagnostic.message.as_str().to_string())
@@ -30,8 +30,8 @@ fn diagnostics(source: &str) -> Vec<String> {
 }
 
 fn errors(source: &str) -> Vec<String> {
-    let bump = Bump::new();
-    let out = lower_source(&bump, source, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(&bump, bump.as_oxc(), source, JsxLang::Jsx);
     out.diagnostics
         .iter()
         .filter(|diagnostic| diagnostic.is_error())
@@ -42,7 +42,7 @@ fn errors(source: &str) -> Vec<String> {
 /// Errors from the whole VDOM compile, so checks the shared transform makes
 /// (rather than JSX lowering) are visible too.
 fn compile_errors(source: &str) -> Vec<String> {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, JsxLang::Jsx, VdomCompileOptions::default());
     out.diagnostics
         .iter()
@@ -52,7 +52,7 @@ fn compile_errors(source: &str) -> Vec<String> {
 }
 
 fn render_code(source: &str) -> String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, JsxLang::Jsx, VdomCompileOptions::default());
     out.components
         .into_iter()
@@ -188,7 +188,7 @@ fn an_empty_slots_object_contributes_nothing() {
 fn v_slots_is_never_a_prop() {
     // The regression itself: no `slots` directive survives lowering, so no
     // `resolveDirective("slots")` and no raw JSX source can reach the output.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = common::lower_one(
         &bump,
         "const A = () => <B class=\"c\" v-slots={{foo: () => <b/>}}/>;",

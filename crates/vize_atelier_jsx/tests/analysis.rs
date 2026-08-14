@@ -3,7 +3,7 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, analyze_jsx_program, lower_source, parse_module};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_croquis::BindingMetadata;
 use vize_relief::BindingType;
 
@@ -22,9 +22,10 @@ fn sorted_bindings(out: &vize_atelier_jsx::LowerOutput<'_>) -> Vec<(String, Bind
 
 #[test]
 fn top_level_bindings_are_collected() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const count = 1;\nconst App = () => <div>{count}</div>;",
         JsxLang::Jsx,
     );
@@ -40,9 +41,10 @@ fn top_level_bindings_are_collected() {
 
 #[test]
 fn ref_binding_is_recognized_as_reactive() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "import { ref } from 'vue';\nconst n = ref(0);\nconst C = () => <p>{n.value}</p>;",
         JsxLang::Jsx,
     );
@@ -52,9 +54,10 @@ fn ref_binding_is_recognized_as_reactive() {
 
 #[test]
 fn analysis_runs_on_tsx_modules() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const label: string = 'x';\nconst C = (): JSX.Element => <span>{label}</span>;",
         JsxLang::Tsx,
     );
@@ -70,8 +73,13 @@ fn analysis_runs_on_tsx_modules() {
 
 #[test]
 fn undefined_binding_is_absent() {
-    let bump = Bump::new();
-    let out = lower_source(&bump, "const C = () => <div>{ghost}</div>;", JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(
+        &bump,
+        bump.as_oxc(),
+        "const C = () => <div>{ghost}</div>;",
+        JsxLang::Jsx,
+    );
     assert_eq!(
         sorted_bindings(&out),
         vec![("C".to_owned(), BindingType::SetupConst)]
@@ -96,8 +104,8 @@ fn parse_free_croquis_analysis_matches_lowering_analysis() {
     );
 
     let analyzed = analyze_jsx_program(&parsed.program, source);
-    let bump = Bump::new();
-    let lowered = lower_source(&bump, source, JsxLang::Tsx);
+    let bump = Allocator::new();
+    let lowered = lower_source(&bump, bump.as_oxc(), source, JsxLang::Tsx);
     assert!(!lowered.has_errors(), "{:?}", lowered.diagnostics);
 
     assert!(analyzed.bindings.is_ref("count"));

@@ -16,7 +16,7 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
         ":[propName]=\"dynamicValue\" ",
         "@save=\"handler\" @[eventName]=\"handler\" />",
     );
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(errors.is_empty(), "template errors: {errors:?}");
 

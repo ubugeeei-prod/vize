@@ -60,13 +60,13 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod tests {
     use super::super::parse_with_options;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
     use vize_relief::{ErrorCode, options::ParserOptions};
 
     #[test]
     fn empty_interpolation_delimiters_are_rejected_without_partial_output() {
         for (open, close) in [("", "}}"), ("{{", "")] {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let options = ParserOptions {
                 delimiters: (open.into(), close.into()),
                 ..ParserOptions::default()

@@ -27,7 +27,7 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     },
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ count }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();
@@ -96,7 +96,7 @@ export default {
     name: 'Namespaces',
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) =
         vize_armature::parse(&allocator, "<div>{{ Bare.label }} {{ missingThing }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
@@ -138,7 +138,7 @@ export default {
     name: 'Tsx',
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ icon }} {{ missingThing }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();
@@ -179,7 +179,7 @@ export default {
     name: 'Broken',
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ missingThing }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();
@@ -215,7 +215,7 @@ fn test_options_api_script_setup_next_to_plain_script_disables_the_instance_form
     inheritAttrs: false,
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ toaster }} {{ missingThing }}</div>");
     // The split-script shape the SFC pipeline builds: the setup summary is the
     // base, the plain script is merged into it, then the template is drawn.
@@ -260,7 +260,7 @@ fn test_script_setup_next_to_plain_script_drops_the_authored_component() {
     inheritAttrs: false,
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ toaster }}</div>");
     let options = vize_croquis::AnalyzerOptions::full();
     let mut setup_analyzer = vize_croquis::Analyzer::with_options(options).with_options_api();
@@ -303,7 +303,7 @@ fn test_options_api_configured_globals_are_not_redeclared_by_the_instance_form()
     name: 'Globals',
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ toThousandFilter(1) }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();

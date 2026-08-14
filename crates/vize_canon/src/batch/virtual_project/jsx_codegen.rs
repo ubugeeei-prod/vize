@@ -72,7 +72,7 @@
 use std::path::Path;
 
 use vize_atelier_jsx::{JsxDiagnostic, JsxLang, lower_source};
-use vize_carton::{Bump, String as CompactString, cstr};
+use vize_carton::{Allocator, String as CompactString, cstr};
 
 use crate::batch::error::CorsaResult;
 use crate::batch::{Diagnostic, SfcBlockType};
@@ -173,8 +173,8 @@ pub(super) fn generate_jsx_virtual_ts(
     source: &str,
     lang: JsxLang,
 ) -> CorsaResult<GeneratedJsxFile> {
-    let bump = Bump::new();
-    let lowered = lower_source(&bump, source, lang);
+    let allocator = Allocator::new();
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, lang);
 
     // Collect every outermost JSX root's byte range together with the dynamic
     // expressions inside it, in source order.

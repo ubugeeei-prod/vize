@@ -23,7 +23,7 @@ export default defineComponent({
     },
 })
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(
         &allocator,
         "<div>{{ aiSupportTitle }} {{ aiSupportType }} {{ aiSupportTagName }}</div>",
@@ -74,7 +74,7 @@ export default defineComponent({
     },
 })
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, r#"<button @click="$fetch">Refresh</button>"#);
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();
@@ -122,7 +122,7 @@ export default defineComponent({
     },
 })
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, r#"<button @click="$fetch">Refresh</button>"#);
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();

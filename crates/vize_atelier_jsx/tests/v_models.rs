@@ -15,13 +15,13 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 use common::{find_directive, lower_one, root_element, simple_content};
 
 fn errors(source: &str) -> Vec<String> {
-    let bump = Bump::new();
-    let out = lower_source(&bump, source, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(&bump, bump.as_oxc(), source, JsxLang::Jsx);
     out.diagnostics
         .iter()
         .filter(|diagnostic| diagnostic.is_error())
@@ -30,7 +30,7 @@ fn errors(source: &str) -> Vec<String> {
 }
 
 fn render_code(source: &str) -> String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, JsxLang::Jsx, VdomCompileOptions::default());
     out.components
         .into_iter()
@@ -108,7 +108,7 @@ fn an_entry_combines_a_member_target_an_argument_and_modifiers() {
 fn every_entry_lowers_to_its_own_model_directive() {
     // The IR shape behind the codegen above: one `model` directive per entry,
     // never a single `models` directive.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(
         &bump,
         "const A = () => <B v-models={[[foo], [bar, 'bar', ['trim']]]}/>;",

@@ -6,11 +6,11 @@
 #![allow(clippy::disallowed_macros)]
 
 use vize_atelier_ssr::compile_ssr;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 /// Helper to get the compiled string content (the template literal part)
 fn get_compiled_string(src: &str) -> String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     // Wrap in a div to avoid root-level attr injection
     let wrapped: String = format!("<div>{}</div>", src).into();
     let (_, errors, result) = compile_ssr(&allocator, &wrapped);
@@ -24,7 +24,7 @@ fn get_compiled_string(src: &str) -> String {
 
 /// Helper to compile full template
 fn compile_full(src: &str) -> String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_ssr(&allocator, src);
 
     if !errors.is_empty() {
@@ -313,7 +313,7 @@ mod v_show {
 mod component {
     use super::compile_full;
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn basic_component() {
@@ -322,7 +322,7 @@ mod component {
 
     #[test]
     fn self_component_resolve_marks_maybe_self_reference() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_options(
             &allocator,
             r#"<FileTree />"#,
@@ -553,10 +553,10 @@ mod v_text {
 
 mod scope_id {
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::{Bump, String};
+    use vize_carton::{Allocator, String};
 
     fn compile_with_scope_id(src: &str) -> String {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let options = SsrCompilerOptions {
             scope_id: Some("data-v-abc123".into()),
             ..Default::default()
@@ -587,10 +587,10 @@ mod scope_id {
 
 mod css_vars {
     use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-    use vize_carton::{Bump, String};
+    use vize_carton::{Allocator, String};
 
     fn compile_with_css_vars(src: &str) -> String {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let options = SsrCompilerOptions {
             ssr_css_vars: Some(r#"{ "color": _ctx.color }"#.into()),
             ..Default::default()

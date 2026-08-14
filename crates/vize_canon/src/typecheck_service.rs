@@ -130,7 +130,7 @@ impl TypeCheckService {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
         use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
-        use vize_carton::Bump;
+        use vize_carton::Allocator;
 
         let start_time = Instant::now();
         let mut result = SfcTypeCheckResult::default();
@@ -158,7 +158,7 @@ impl TypeCheckService {
         };
 
         // Create allocator for template parsing
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
 
         let mut has_script_parse_errors = false;
         if let Some(ref script) = descriptor.script {

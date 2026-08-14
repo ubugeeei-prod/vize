@@ -29,7 +29,7 @@ impl ReferencesService {
         // - Directive expressions: v-if="word", :prop="word", @event="word"
 
         // Parse template to find expressions
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, template_content);
 
         // Extract expression locations from the AST

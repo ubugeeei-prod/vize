@@ -39,11 +39,11 @@ use vize_atelier_core::{
     options::{ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_and_template_syntax,
 };
-use vize_carton::{Bump, String, profile};
+use vize_carton::{String, profile};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     compile_ssr_with_options(allocator, source, SsrCompilerOptions::default())
@@ -51,7 +51,7 @@ pub fn compile_ssr<'a>(
 
 /// Compile a Vue template for SSR with custom options
 pub fn compile_ssr_with_options<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
@@ -61,7 +61,7 @@ pub fn compile_ssr_with_options<'a>(
 /// Compile a Vue template for SSR with Vue parser quirk compatibility.
 #[deprecated(note = "use compile_ssr_with_template_syntax instead")]
 pub fn compile_ssr_with_vue_parser_quirks<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
@@ -71,7 +71,7 @@ pub fn compile_ssr_with_vue_parser_quirks<'a>(
 /// Compile a Vue template for SSR with an explicit template syntax mode.
 #[doc(hidden)]
 pub fn compile_ssr_with_template_syntax<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -80,7 +80,7 @@ pub fn compile_ssr_with_template_syntax<'a>(
 }
 
 fn compile_ssr_inner<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: SsrCompilerOptions,
     template_syntax: TemplateSyntaxMode,
@@ -186,14 +186,14 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 #[cfg(test)]
 mod tests {
     use super::{
-        Bump, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
+        Allocator, SsrCompilerOptions, compile_ssr, compile_ssr_with_options,
         compile_ssr_with_template_syntax,
     };
     use vize_atelier_core::TemplateSyntaxMode;
 
     #[test]
     fn test_compile_simple_element() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, errors, result) = compile_ssr(&allocator, "<div>hello</div>");
 
         assert!(errors.is_empty());
@@ -203,7 +203,7 @@ mod tests {
 
     #[test]
     fn test_compile_interpolation() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, "<div>{{ msg }}</div>");
 
         assert!(errors.is_empty());
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn test_scoped_dynamic_component_keeps_scope_id() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_options(
             &allocator,
             r#"<component :is="tag"><span>Logo</span></component>"#,
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_scoped_component_keeps_scope_id() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_options(
             &allocator,
             r#"<NuxtLink to="/news" class="news__link"><span>News</span></NuxtLink>"#,
@@ -267,7 +267,7 @@ mod tests {
 
     #[test]
     fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_template_syntax(
             &allocator,
             "<div /><span></span>",
@@ -281,7 +281,7 @@ mod tests {
 
     #[test]
     fn test_compile_standard_warns_and_rewrites_invalid_html_self_closing() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, "<div /><span></span>");
 
         assert!(errors.iter().any(|error| error.is_recoverable()));
@@ -290,7 +290,7 @@ mod tests {
 
     #[test]
     fn test_compile_strict_rejects_invalid_html_self_closing() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_template_syntax(
             &allocator,
             "<div /><span></span>",
@@ -308,7 +308,7 @@ mod tests {
         // escaped text content. The previous SSR path emitted
         // `<textarea></textarea>` with no body, losing the initial value
         // and triggering hydration mismatches.
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, r#"<textarea v-model="x"></textarea>"#);
         assert!(errors.is_empty(), "{errors:?}");
         assert!(
@@ -323,7 +323,7 @@ mod tests {
         // Regression for #962: `<select v-model="x">` must render the
         // matching `<option>` with `selected` set, not silently drop the
         // bound value.
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<select v-model="x"><option value="a">A</option><option value="b">B</option></select>"#,
@@ -348,7 +348,7 @@ mod tests {
 
     #[test]
     fn test_dynamic_slot_outlet_name_stays_expression() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_options(
             &allocator,
             r#"<Parent><slot :name="((item.slot || 'item') as keyof Slots)" :item="item" /></Parent>"#,
@@ -377,7 +377,7 @@ mod tests {
 
     #[test]
     fn test_ssr_v_if_v_else() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) =
             compile_ssr(&allocator, r#"<div v-if="ok">yes</div><p v-else>no</p>"#);
         assert!(errors.is_empty());
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_ssr_v_for_list() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<ul><li v-for="item in items" :key="item.id">{{ item.name }}</li></ul>"#,
@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_ssr_keyed_template_v_for_keeps_iteration_fragment() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Comp>
@@ -447,7 +447,7 @@ mod tests {
 
     #[test]
     fn test_ssr_keyed_template_v_for_single_element_unwraps_iteration_fragment() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Comp>
@@ -479,7 +479,7 @@ mod tests {
 
     #[test]
     fn test_ssr_keyed_template_v_for_slot_fallback_keeps_iteration_fragment() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Outer>
@@ -526,7 +526,7 @@ mod tests {
 
     #[test]
     fn test_ssr_static_and_dynamic_attrs() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<a class="link" :href="url" target="_blank">{{ label }}</a>"#,
@@ -537,7 +537,7 @@ mod tests {
 
     #[test]
     fn test_ssr_v_bind_object() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, r#"<div v-bind="attrs">content</div>"#);
         assert!(errors.is_empty());
         insta::assert_snapshot!(result.code.as_str());
@@ -545,7 +545,7 @@ mod tests {
 
     #[test]
     fn test_ssr_v_html() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, r#"<div v-html="raw"></div>"#);
         assert!(errors.is_empty());
         insta::assert_snapshot!(result.code.as_str());
@@ -553,7 +553,7 @@ mod tests {
 
     #[test]
     fn test_ssr_dynamic_class_and_style() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<div :class="{ active: isActive }" :style="{ color }">x</div>"#,
@@ -564,7 +564,7 @@ mod tests {
 
     #[test]
     fn test_ssr_component_with_props_and_slot() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) =
             compile_ssr(&allocator, r#"<MyCard :title="t"><p>body</p></MyCard>"#);
         assert!(errors.is_empty());
@@ -573,7 +573,7 @@ mod tests {
 
     #[test]
     fn test_ssr_fragment_multiple_roots() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) =
             compile_ssr(&allocator, r#"<header>a</header><main>{{ b }}</main>"#);
         assert!(errors.is_empty());
@@ -582,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_ssr_text_and_interpolation_mix() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<p>Hello {{ name }}, you have {{ count }} items</p>"#,
@@ -593,7 +593,7 @@ mod tests {
 
     #[test]
     fn test_ssr_v_show() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(&allocator, r#"<div v-show="visible">toggle</div>"#);
         assert!(errors.is_empty());
         insta::assert_snapshot!(result.code.as_str());
@@ -607,7 +607,7 @@ mod tests {
     // the SSR renderer read `.type` off an undefined vnode and return a 500.
     #[test]
     fn test_ssr_dynamic_v_for_slot_uses_create_slots() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Child>
@@ -648,7 +648,7 @@ mod tests {
     // branch.
     #[test]
     fn test_ssr_slot_outlet_fallback_survives_vnode_branch() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Outer>
@@ -674,7 +674,7 @@ mod tests {
     // through createSlots rather than collapse into the default slot.
     #[test]
     fn test_ssr_conditional_slot_uses_create_slots() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Child>
@@ -698,7 +698,7 @@ mod tests {
     // `<ULink v-slot="{ active, ...slotProps }">` inside NavigationMenu).
     #[test]
     fn test_ssr_component_level_v_slot_binds_props() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Comp v-slot="{ item }">
@@ -721,7 +721,7 @@ mod tests {
 
     #[test]
     fn test_ssr_typescript_scoped_slot_props_are_accepted() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr_with_options(
             &allocator,
             r#"<Popover v-slot="{ open, close }: { open: boolean, close?: () => void }">
@@ -743,7 +743,7 @@ mod tests {
 
     #[test]
     fn test_ssr_forwarded_slot_flags_match_vue_shape() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<NuxtLink v-slot="{ href, navigate, route: linkRoute, isActive, isExactActive, ...rest }" v-bind="nuxtLinkProps" :to="to" custom>
@@ -803,7 +803,7 @@ mod tests {
     // `<UDashboardGroup>`: `#header="{ collapsed }"`).
     #[test]
     fn test_ssr_named_scoped_slot_keeps_props_in_vnode_fallback() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Outer>
@@ -838,7 +838,7 @@ mod tests {
     // />>` shape where both the push and fallback branches are generated.
     #[test]
     fn test_ssr_dynamic_slot_vnode_fallback_uses_create_slots() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (_, errors, result) = compile_ssr(
             &allocator,
             r#"<Outer>

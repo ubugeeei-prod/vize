@@ -9,7 +9,7 @@ use vize_atelier_jsx::{
     BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx,
     compile_jsx_with_babel_object_slots,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 const LONE_IDENTIFIER_CHILD: &str = "const A = () => <B>{slots}</B>;";
 
@@ -27,7 +27,7 @@ fn compile(
     mode: JsxOutputMode,
     enable_object_slots: bool,
 ) -> (String, Vec<String>) {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx_with_babel_object_slots(
         &bump,
         source,
@@ -51,7 +51,7 @@ fn compile(
 }
 
 fn compile_default(source: &str, compat: JsxCompatMode) -> String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     compile_jsx(
         &bump,
         source,

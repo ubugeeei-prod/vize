@@ -4,7 +4,7 @@
 //! live in their own module so `parser.rs` stays within the repository's
 //! per-file source budget.
 
-use vize_carton::{Bump, Vec};
+use vize_carton::{Allocator, Vec};
 use vize_relief::{
     RootNode,
     errors::CompilerError,
@@ -14,7 +14,11 @@ use vize_relief::{
 use super::Parser;
 
 /// Parse a Vue template
-pub fn parse<'a>(allocator: &'a Bump, source: &'a str) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+pub fn parse<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::new(allocator, source).parse()
 }
 
@@ -27,38 +31,42 @@ pub fn parse<'a>(allocator: &'a Bump, source: &'a str) -> (RootNode<'a>, Vec<'a,
 /// sit on ordinary DOM elements. Additive: existing template parsing is
 /// unchanged.
 pub fn parse_document<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::new_document(allocator, source).parse()
 }
 
 /// Parse a full HTML document with options. See [`parse_document`].
 pub fn parse_document_with_options<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::document_with_options(allocator, source, options).parse()
 }
 
 /// Parse a Vue template with options
 pub fn parse_with_options<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::with_options(allocator, source, options).parse()
 }
 
 /// Parse a Vue template with options and invalid HTML self-closing compatibility.
 #[deprecated(note = "use parse_with_options_and_template_syntax instead")]
 pub fn parse_with_options_and_invalid_html_self_closing<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
     allow_invalid_html_self_closing: bool,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::with_options_and_template_syntax(
         allocator,
         source,
@@ -74,10 +82,11 @@ pub fn parse_with_options_and_invalid_html_self_closing<'a>(
 
 /// Parse a Vue template with options and template syntax compatibility.
 pub fn parse_with_options_and_template_syntax<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     source: &'a str,
     options: ParserOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
+    let allocator = allocator.as_bump();
     Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
 }

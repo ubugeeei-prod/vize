@@ -1,5 +1,5 @@
 use vize_armature::parse;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_croquis::croquis::BindingMetadata;
 use vize_croquis::script_parser::parse_script_setup;
 use vize_croquis::virtual_ts::{VirtualTsConfig, VirtualTsGenerator};
@@ -11,7 +11,7 @@ fn full_sfc_declares_attrs_only_inside_template_scope() {
     let script = "const visible = true";
     let template = r#"<div v-if="visible" v-bind="$attrs">{{ $attrs.id }}</div>"#;
     let parse_result = parse_script_setup(script);
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (template_ast, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse without errors");
 
@@ -39,7 +39,7 @@ fn full_sfc_declares_attrs_only_inside_template_scope() {
 
 #[test]
 fn standalone_template_declares_attrs_before_expressions() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (template_ast, errors) = parse(&allocator, r#"<main v-bind="$attrs"></main>"#);
     assert!(errors.is_empty(), "template should parse without errors");
 

@@ -18,10 +18,10 @@
 //! index in both modes — the same rule `@vue/compiler-vapor` follows.
 
 use super::compile_vapor;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 fn compile(template: &str) -> String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let result = compile_vapor(&allocator, template, Default::default());
     assert!(
         result.error_messages.is_empty(),

@@ -11,7 +11,7 @@ use crate::virtual_ts::generate_virtual_ts;
 use crate::virtual_ts::helpers::to_camel_case;
 
 fn virtual_ts(script: &str, template: &str) -> std::string::String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

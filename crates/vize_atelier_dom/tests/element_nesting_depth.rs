@@ -23,7 +23,7 @@
 
 use vize_atelier_core::{ErrorCode, errors::CompilerError};
 use vize_atelier_dom::{DomCompilerOptions, compile_template, compile_template_with_options};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// Mirrors `MAX_ELEMENT_NESTING_DEPTH` in `vize_armature::parser::element::nesting`.
 const NESTING_LIMIT: usize = 4096;
@@ -179,7 +179,7 @@ fn compile_source_on_small_stack(
     std::thread::Builder::new()
         .stack_size(SMALL_STACK)
         .spawn(move || {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (root, errors, result) = if experimental_patterned_template {
                 compile_template_with_options(
                     &allocator,

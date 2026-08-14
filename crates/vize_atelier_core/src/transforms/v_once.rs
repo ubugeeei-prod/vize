@@ -56,11 +56,11 @@ mod tests {
     use super::has_v_once;
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_has_v_once() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-once>static</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_no_v_once() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div>dynamic</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {

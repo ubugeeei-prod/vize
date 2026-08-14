@@ -16,7 +16,7 @@ mod structural_keys;
 #[path = "transform/traverse.rs"]
 pub mod traverse;
 
-use vize_carton::{Box, Bump, FxHashSet, SmallVec, String, Vec, profile};
+use vize_carton::{Allocator, Box, FxHashSet, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::errors::CompilerError;
@@ -75,7 +75,7 @@ pub(crate) struct JsxTransformCompat {
 /// Transform context for AST traversal
 pub struct TransformContext<'a> {
     /// Arena allocator
-    pub allocator: &'a Bump,
+    pub allocator: &'a Allocator,
     /// Transform options
     pub options: TransformOptions,
     /// Source code
@@ -188,7 +188,7 @@ impl<'a> ParentNode<'a> {
 /// directive usage or unparseable expressions) so callers can surface them
 /// alongside parse errors instead of silently dropping them.
 pub fn transform<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -206,7 +206,7 @@ pub fn transform<'a>(
 
 /// Transform the root AST node with template syntax quirk compatibility enabled.
 pub fn transform_with_template_syntax_quirks<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -225,7 +225,7 @@ pub fn transform_with_template_syntax_quirks<'a>(
 /// Transform the root AST node with Vue parser quirk compatibility enabled.
 #[deprecated(note = "use transform_with_template_syntax_quirks instead")]
 pub fn transform_with_vue_parser_quirks<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -234,7 +234,7 @@ pub fn transform_with_vue_parser_quirks<'a>(
 }
 
 pub(crate) fn transform_inner<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,

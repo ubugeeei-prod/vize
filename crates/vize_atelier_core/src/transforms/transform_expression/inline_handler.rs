@@ -193,9 +193,9 @@ mod tests {
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
-    use vize_carton::{Box, Bump, FxHashMap};
+    use vize_carton::{Allocator, Box, Bump, FxHashMap};
 
-    fn test_context<'a>(allocator: &'a Bump) -> TransformContext<'a> {
+    fn test_context<'a>(allocator: &'a Allocator) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_process_inline_handler_rewrites_compound_ts_assignment() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(
             &allocator,
@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_process_inline_handler_preserves_local_block_binding() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = test_context(&allocator);
         let expr = compound_expression(
             &allocator,

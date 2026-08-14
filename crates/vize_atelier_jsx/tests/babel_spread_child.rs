@@ -2,10 +2,10 @@
 
 use oxc_allocator::Allocator;
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx, parse_module};
-use vize_carton::{Bump, String};
+use vize_carton::String;
 
 fn compile(source: &str, compat: JsxCompatMode) -> (vize_carton::String, Vec<String>) {
-    let bump = Bump::new();
+    let bump = vize_carton::Allocator::new();
     let output = compile_jsx(
         &bump,
         source,

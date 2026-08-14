@@ -16,7 +16,7 @@ defineProps<FooProps>();
 "#;
     let template = r#"<input :required="required" :aria-label="label" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

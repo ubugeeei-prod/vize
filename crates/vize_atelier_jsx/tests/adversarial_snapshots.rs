@@ -13,7 +13,7 @@ use vize_atelier_jsx::{
     LowerOutput, VaporCompileOptions, VaporOutput, VdomCompileOptions, VdomOutput, compile_jsx,
     compile_to_vapor, compile_to_vdom, lower_source,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::{
     ExpressionNode, PropNode, RootNode, TemplateChildNode, TextCallContent,
     expressions::CompoundExpressionChild,
@@ -293,7 +293,7 @@ fn fragment_whitespace_text_snapshots() {
 
 #[test]
 fn mode_aware_multi_component_snapshot() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_jsx(
         &bump,
         MIXED_MODES,
@@ -336,8 +336,8 @@ fn invalid_and_ambiguous_source_diagnostics_snapshot() {
 
     let mut summaries = Vec::new();
     for (name, source, lang) in cases {
-        let bump = Bump::new();
-        let output = lower_source(&bump, source, lang);
+        let bump = Allocator::new();
+        let output = lower_source(&bump, bump.as_oxc(), source, lang);
         summaries.push(NamedDiagnostics {
             name,
             diagnostics: diagnostics_summary(source, &output.diagnostics),
@@ -358,19 +358,19 @@ fn vapor_ssr_snapshot() {
 }
 
 fn assert_lower_snapshot(name: &str, source: &str, lang: JsxLang) {
-    let bump = Bump::new();
-    let output = lower_source(&bump, source, lang);
+    let bump = Allocator::new();
+    let output = lower_source(&bump, bump.as_oxc(), source, lang);
     insta::assert_debug_snapshot!(format!("{name}_lower"), lower_summary(source, &output));
 }
 
 fn assert_vdom_snapshot(name: &str, source: &str, lang: JsxLang) {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     insta::assert_debug_snapshot!(format!("{name}_vdom"), vdom_output_summary(source, &output));
 }
 
 fn assert_vapor_snapshot(name: &str, source: &str, lang: JsxLang, options: VaporCompileOptions) {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let output = compile_to_vapor(&bump, source, lang, options);
     insta::assert_debug_snapshot!(
         format!("{name}_vapor"),

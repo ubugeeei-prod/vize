@@ -4,7 +4,7 @@ use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::parse;
-use bumpalo::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn test_transform_simple_element() {
@@ -24,7 +24,7 @@ fn test_transform_component() {
 
 #[test]
 fn test_transform_pascal_case_dynamic_component() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, r#"<Component :is="current" />"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -58,7 +58,7 @@ fn test_transform_v_for() {
 
 #[test]
 fn test_transform_v_for_rejects_unmatched_edge_parens_by_default() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -72,7 +72,7 @@ fn test_transform_v_for_rejects_unmatched_edge_parens_by_default() {
 
 #[test]
 fn test_transform_v_for_template_syntax_quirks_accepts_unmatched_edge_parens() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -91,7 +91,7 @@ fn test_transform_v_for_template_syntax_quirks_accepts_unmatched_edge_parens() {
 
 #[test]
 fn test_v_if_creates_if_node() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, r#"<div v-if="show">visible</div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -117,7 +117,7 @@ fn test_v_if_creates_if_node() {
 
 #[test]
 fn test_v_if_else_creates_branches() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(
         &allocator,
         r#"<div v-if="show">yes</div><div v-else>no</div>"#,
@@ -157,7 +157,7 @@ fn test_v_if_else_creates_branches() {
 
 #[test]
 fn test_v_for_creates_for_node() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, errors) = parse(&allocator, r#"<div v-for="item in items">{{ item }}</div>"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -194,7 +194,7 @@ fn test_v_for_creates_for_node() {
 
 #[test]
 fn test_codegen_v_if() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(&allocator, r#"<div v-if="show">visible</div>"#);
     transform(&allocator, &mut root, TransformOptions::default(), None);
 

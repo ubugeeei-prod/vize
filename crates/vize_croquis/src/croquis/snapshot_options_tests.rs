@@ -3,7 +3,7 @@ use crate::{Drawer, DrawerOptions};
 #[test]
 fn semantic_snapshot_preserves_options_api_and_nested_template_contracts() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     let script = r#"
 import Panel from './Panel.vue'
@@ -42,7 +42,7 @@ export default {
   {{ title }} {{ count }} {{ doubled }} {{ theme }} {{ row }}
 </Panel>"#;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse without errors");
 

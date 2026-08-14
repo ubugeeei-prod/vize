@@ -1,10 +1,10 @@
 use crate::{Drawer, DrawerOptions, ScopeKind, TemplateExpressionKind};
 use serde_json::{Value, json};
 use vize_armature::parse;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn component_usage_json(source: &str) -> Value {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "template errors: {errors:?}");
 
@@ -178,7 +178,7 @@ fn runtime_directive_arguments_are_checked_as_expressions() {
         "<template #[missingSlot]=\"{ row }\">{{ row }}</template>",
         "</Child>",
     );
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "template errors: {errors:?}");
 
@@ -243,7 +243,7 @@ fn dynamic_slot_name_sees_v_for_alias_but_not_its_own_slot_props() {
         "</Child>",
         "<Other :[after] />",
     );
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "template errors: {errors:?}");
 

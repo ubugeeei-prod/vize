@@ -7,7 +7,7 @@ use vize_atelier_jsx::{
     JsxLang, JsxOutputMode, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
     compile_to_vdom, lower_source,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn tsx_vdom_codegen_matrix() {
@@ -46,9 +46,10 @@ fn tsx_vapor_codegen_matrix() {
 
 #[test]
 fn tsx_type_annotation_is_an_error_when_parsed_as_plain_jsx() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const A = (props: { id: number }) => <div/>;",
         JsxLang::Jsx,
     );
@@ -59,7 +60,7 @@ fn tsx_type_annotation_is_an_error_when_parsed_as_plain_jsx() {
 
 #[test]
 fn default_mode_is_vdom_for_vdom_backend() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => <div/>;",
@@ -72,7 +73,7 @@ fn default_mode_is_vdom_for_vdom_backend() {
 
 #[test]
 fn use_vue_vapor_directive_is_surfaced_on_component_mode() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => { \"use vue:vapor\"; return <div/>; };",
@@ -85,7 +86,7 @@ fn use_vue_vapor_directive_is_surfaced_on_component_mode() {
 
 #[test]
 fn use_vue_vdom_directive_overrides_vapor_default() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => { \"use vue:vdom\"; return <div/>; };",
@@ -98,9 +99,10 @@ fn use_vue_vdom_directive_overrides_vapor_default() {
 
 #[test]
 fn mixed_module_selects_mode_per_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const A = () => { \"use vue:vapor\"; return <a/>; };\nconst B = () => <b/>;",
         JsxLang::Tsx,
     );

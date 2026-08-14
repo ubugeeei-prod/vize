@@ -133,7 +133,7 @@ export default {
   <span v-if="label">{{ label }}</span>
 </component>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
@@ -264,7 +264,7 @@ export default class Counter extends Vue {
   }
 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, "<div>{{ count }}{{ doubled }}</div>");
     let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full())
         .with_options_api();
@@ -461,7 +461,7 @@ defineProps<Props>();
 "#;
     let template = r#"<div>{{ title }}{{ meta }}{{ lookup }}{{ count }}</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -513,7 +513,7 @@ defineProps<Props>();
 "#;
     let template = r#"<div>{{ id }}{{ label }}</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -616,7 +616,7 @@ fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
     let script = "const count = 'oops'\n";
     let template = r#"<AutoCard :count="count" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -653,7 +653,7 @@ fn test_unknown_pascal_component_props_use_the_ambient_fallback() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
     let script = "const count = 'unknown'\n";
     let template = r#"<AutoCard :count="count" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -683,7 +683,7 @@ fn test_template_instance_globals_delegate_to_component_public_instance() {
 
     let template = r#"<button :title="$t('hello')">{{ missing }}</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -747,7 +747,7 @@ const $q = functionCall()
 "#;
     let template = r#"<div v-if="$q">None</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -813,7 +813,7 @@ function handleUpdate(value: string) {
 "#;
     let template = r#"<my-widget :label="value" @update:model-value="handleUpdate" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -844,7 +844,7 @@ const wrong = 'not a number'
 "#;
     let template = r#"<Child :count="wrong" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -944,7 +944,7 @@ const items = ref([{ id: 1, name: 'Hello' }])
   </li>
 </ul>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -971,7 +971,7 @@ const key = "a" as "a" | "b";"#;
   <button v-for="value in elems[key]" :key="value">{{ value }}</button>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1002,7 +1002,7 @@ const show = true;"#;
   </li>
 </ul>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1031,7 +1031,7 @@ const message = ref('')
   <div v-else>Done</div>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1061,7 +1061,7 @@ defineProps<{ log: Log }>()
   <span v-else-if="log.type === 't2'">{{ log.info.value2 }}</span>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1107,7 +1107,7 @@ const items = ['a', 'b']
   </template>
 </MyList>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1139,7 +1139,7 @@ fn test_repeated_default_slots_use_unique_helper_names() {
   </Child>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1195,7 +1195,7 @@ const user: User | null = null as any
   <p>{{ user.name }}</p>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1229,7 +1229,7 @@ defineProps<{
   </template>
 </TrendChart>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1267,7 +1267,7 @@ function handleHover() {}
   <button @click="handleClick" @mouseenter="handleHover">{{ count }}</button>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1289,7 +1289,7 @@ const val = 0 as unknown as UnionType;
 "#;
     let template = r#"<div v-if="val.type === 'b'" @click="val.bSpecific"></div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1314,7 +1314,7 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
 
     let template = r#"<button @click="(payload) => console.log(payload)">Click</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1354,7 +1354,7 @@ fn test_inline_arrow_event_handler_body_can_reference_dollar_event() {
 "#;
     let template = r#"<input @input="(e) => handleInput($event, e)" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1384,7 +1384,7 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
     let template =
         r#"<button @click="handlers['x']">Bad</button><button @click="arr[0]">Good</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1428,7 +1428,7 @@ function eventHandler(event: Event) {
 "#;
     let template = r#"<Child @keydown="eventHandler" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1487,7 +1487,7 @@ function editWord() {}
   "
 >edit</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1527,7 +1527,7 @@ fn test_object_form_v_on_is_preserved_as_expression() {
 "#;
     let template = r#"<button v-on="{ 'update:modelValue': props.handlers?.['update:modelValue'] }">Click</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1560,7 +1560,7 @@ const msg = ref('Hello')
 "#;
     let template = r#"<div>{{ msg }}</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1597,7 +1597,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 "#;
     let template = r#"<div :data-active="inputRef && inputRef.focus()"></div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1629,7 +1629,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 "#;
     let template = r#"<div>{{ users.length }} {{ inputRef && inputRef.focus() }}</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1656,7 +1656,7 @@ const heightLimit = "65vh";
 "#;
     let template = r#"<div>{{ heightLimit }}</div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1720,7 +1720,7 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   <TodoItem v-for="todo in todos" :key="todo.id" :item="todo" />
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1753,7 +1753,7 @@ const key = "a" as "a" | "b";"#;
   </button>
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1780,7 +1780,7 @@ const item = ref<{ name: string } | undefined>()
 "#;
     let template = r#"<LinkComp v-if="item" :to="item.name" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -1937,7 +1937,7 @@ function handleTest(value1: string, value2: number) {
 "#;
     let template = r#"<Test @test="handleTest" /><Test @test="(value1, value2) => handleTest(value1, value2)" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -2026,7 +2026,7 @@ fn test_native_event_handler_keeps_single_event_parameter() {
 "#;
     let template = r#"<button @click="handleClick">Click</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

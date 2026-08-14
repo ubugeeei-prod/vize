@@ -1,6 +1,6 @@
 //! Specialized transform entry points layered over the shared transform lane.
 
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 
 use super::{JsxTransformCompat, transform_inner};
@@ -9,7 +9,7 @@ use crate::{CompilerError, RootNode, TransformOptions};
 /// Transform the root AST node with an explicit scope ID for hoisted VNodes.
 #[doc(hidden)]
 pub fn transform_with_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -29,7 +29,7 @@ pub fn transform_with_hoisted_scope_id<'a>(
 /// Transform with template syntax quirks and an explicit hoisted VNode scope ID.
 #[doc(hidden)]
 pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -50,7 +50,7 @@ pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
 #[doc(hidden)]
 #[deprecated(note = "use transform_with_template_syntax_quirks_and_hoisted_scope_id instead")]
 pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -68,7 +68,7 @@ pub fn transform_with_vue_parser_quirks_and_hoisted_scope_id<'a>(
 /// Transform with Babel JSX's static plain-element v-model argument extension.
 #[doc(hidden)]
 pub fn transform_with_plain_element_model_argument<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
@@ -90,7 +90,7 @@ pub fn transform_with_plain_element_model_argument<'a>(
 /// Transform JSX with Babel-specific element and v-model classification.
 #[doc(hidden)]
 pub fn transform_with_jsx_compatibility<'a>(
-    allocator: &'a Bump,
+    allocator: &'a Allocator,
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,

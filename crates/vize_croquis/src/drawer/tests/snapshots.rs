@@ -178,9 +178,9 @@ const { name, id } = inject('user') as { name: string; id: number }
 #[test]
 fn test_vif_guard_in_template() {
     use vize_armature::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template = r#"<div>
             <p v-if="todo.description">{{ unwrapDescription(todo.description) }}</p>
             <span>{{ todo.title }}</span>

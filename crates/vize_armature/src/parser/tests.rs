@@ -5,7 +5,7 @@ use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
     parse_with_options_and_template_syntax,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
@@ -27,7 +27,7 @@ fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode
 
 #[test]
 fn test_parse_simple_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div></div>");
 
     assert!(errors.is_empty());
@@ -43,7 +43,7 @@ fn test_parse_simple_element() {
 
 #[test]
 fn test_parse_text() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "hello");
 
     assert!(errors.is_empty());
@@ -59,7 +59,7 @@ fn test_parse_text() {
 #[test]
 fn test_parse_less_than_before_non_tag_start_keeps_root_text_merged() {
     for source in ["a < b", "< b", "5 < 3 && 3 > 1", "<1div>"] {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, errors) = parse(&allocator, source);
 
         assert!(errors.is_empty(), "{source}: {errors:?}");
@@ -74,7 +74,7 @@ fn test_parse_less_than_before_non_tag_start_keeps_root_text_merged() {
 
 #[test]
 fn test_parse_less_than_before_non_tag_start_inside_element_has_no_error() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>price < 100</div>");
 
     assert!(errors.is_empty(), "{errors:?}");
@@ -96,7 +96,7 @@ fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
     // collapse runs of `[ \t\n\f\r]` to a single U+0020 inside text
     // nodes, matching `@vue/compiler-sfc`. The previous behavior left
     // mixed text nodes verbatim, so `x   y\n   z` stayed raw.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>x   y\n   z</div>");
     assert!(errors.is_empty(), "{errors:?}");
 
@@ -114,7 +114,7 @@ fn test_parse_condense_whitespace_collapses_runs_inside_text_nodes() {
 
 #[test]
 fn test_parse_text_with_entities_preserves_raw_source() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "&lt;foo&gt;");
 
     assert!(errors.is_empty());
@@ -132,7 +132,7 @@ fn test_parse_text_with_entities_preserves_raw_source() {
 
 #[test]
 fn test_parse_interpolation() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "{{ msg }}");
 
     assert!(errors.is_empty());
@@ -151,7 +151,7 @@ fn test_parse_interpolation() {
 
 #[test]
 fn test_parse_directive() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div v-if="ok"></div>"#);
 
     assert!(errors.is_empty());
@@ -174,7 +174,7 @@ fn test_parse_directive() {
 
 #[test]
 fn test_parse_shorthand_bind() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div :class="cls"></div>"#);
 
     assert!(errors.is_empty());
@@ -193,7 +193,7 @@ fn test_parse_shorthand_bind() {
 
 #[test]
 fn test_parse_shorthand_on() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<button @click="handler"></button>"#);
 
     assert!(errors.is_empty());
@@ -212,7 +212,7 @@ fn test_parse_shorthand_on() {
 
 #[test]
 fn test_parse_nested_elements() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div><span>text</span></div>");
 
     assert!(errors.is_empty());
@@ -230,7 +230,7 @@ fn test_parse_nested_elements() {
 
 #[test]
 fn test_parse_self_closing() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<input />");
 
     assert!(errors.is_empty());
@@ -244,7 +244,7 @@ fn test_parse_self_closing() {
 
 #[test]
 fn test_parse_self_closing_textarea_warns_and_rewrites() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
     let (root, errors) = parse(&allocator, source);
 
@@ -285,7 +285,7 @@ fn test_parse_self_closing_textarea_warns_and_rewrites() {
 
 #[test]
 fn test_parse_comment() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<!-- hello -->");
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 1);
@@ -313,7 +313,7 @@ fn parser_options_svg_subtree() -> ParserOptions {
 
 #[test]
 fn test_parse_cdata_in_html_root_emits_error() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<![CDATA[hi]]>");
     assert!(root.children.is_empty());
     assert_eq!(errors.len(), 1);
@@ -323,7 +323,7 @@ fn test_parse_cdata_in_html_root_emits_error() {
 
 #[test]
 fn test_parse_cdata_in_html_element_emits_error() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div><![CDATA[hi]]></div>");
     assert_eq!(errors.len(), 1);
     assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
@@ -338,7 +338,7 @@ fn test_parse_cdata_in_html_element_emits_error() {
 
 #[test]
 fn test_parse_cdata_in_svg_as_text() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<svg><![CDATA[hi]]></svg>",
@@ -362,7 +362,7 @@ fn test_parse_cdata_in_svg_as_text() {
 
 #[test]
 fn test_parse_void_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<input>");
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 1);
@@ -375,7 +375,7 @@ fn test_parse_void_element() {
 
 #[test]
 fn test_parse_multiple_root_children() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div></div><span></span>");
     assert!(errors.is_empty());
     assert_eq!(root.children.len(), 2);
@@ -389,7 +389,7 @@ fn test_parse_multiple_root_children() {
 
 #[test]
 fn test_parse_attribute_with_value() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div id="foo"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -405,7 +405,7 @@ fn test_parse_attribute_with_value() {
 
 #[test]
 fn test_parse_attribute_with_trailing_entity() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div title="Hello &quot;World&quot;"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -424,7 +424,7 @@ fn test_parse_attribute_with_trailing_entity() {
 
 #[test]
 fn test_parse_attribute_value_with_only_entity() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div title="&quot;"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -440,7 +440,7 @@ fn test_parse_attribute_value_with_only_entity() {
 
 #[test]
 fn test_parse_boolean_attribute() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<input disabled>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -456,7 +456,7 @@ fn test_parse_boolean_attribute() {
 
 #[test]
 fn test_parse_directive_modifiers() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div @click.stop.prevent="h"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -473,7 +473,7 @@ fn test_parse_directive_modifiers() {
 
 #[test]
 fn test_parse_dynamic_directive_arg() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div v-bind:[attr]="val"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0]
@@ -491,7 +491,7 @@ fn test_parse_dynamic_directive_arg() {
 
 #[test]
 fn test_parse_shorthand_slot() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<template #default></template>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -508,7 +508,7 @@ fn test_parse_shorthand_slot() {
 
 #[test]
 fn test_parse_v_for() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div v-for="item in items"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -525,7 +525,7 @@ fn test_parse_v_for() {
 
 #[test]
 fn test_no_value_directive_loc_excludes_trailing_whitespace() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<input v-if />");
     assert!(errors.is_empty());
 
@@ -540,7 +540,7 @@ fn test_no_value_directive_loc_excludes_trailing_whitespace() {
 
 #[test]
 fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<input class ="w-100" />"#);
     assert!(errors.is_empty());
 
@@ -557,7 +557,7 @@ fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
 
 #[test]
 fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<input v-if ="ok" />"#);
     assert!(errors.is_empty());
 
@@ -578,7 +578,7 @@ fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
 
 #[test]
 fn test_parse_mixed_children() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>text<span></span>{{ msg }}</div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -594,7 +594,7 @@ fn test_parse_mixed_children() {
 
 #[test]
 fn test_parse_whitespace_condense() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>  <span></span>  </div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -605,7 +605,7 @@ fn test_parse_whitespace_condense() {
 
 #[test]
 fn test_parse_whitespace_condense_skips_comment_gaps_when_comments_disabled() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<div><Foo />\n<!-- gap -->\n<input /></div>",
@@ -628,7 +628,7 @@ fn test_parse_whitespace_condense_skips_comment_gaps_when_comments_disabled() {
 
 #[test]
 fn test_parse_whitespace_condense_preserves_pre_children() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<pre>\n  hello\n  world\n</pre>",
@@ -651,7 +651,7 @@ fn test_parse_whitespace_condense_preserves_pre_children() {
 
 #[test]
 fn test_parse_error_missing_end_tag() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "<div>");
     assert!(!errors.is_empty());
     assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
@@ -663,7 +663,7 @@ fn test_parse_error_duplicate_attribute() {
     // (#958). Both occurrences remain in the AST so linters can warn
     // about the repeat; downstream codegen treats the diagnostic as
     // non-fatal and emits valid render code for the first occurrence.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" id="b"></div>"#);
     assert!(
         errors
@@ -677,7 +677,7 @@ fn test_parse_error_duplicate_attribute() {
 
 #[test]
 fn test_parse_error_duplicate_attribute_is_ascii_case_insensitive() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" ID="b"></div>"#);
 
     assert!(
@@ -692,7 +692,7 @@ fn test_parse_error_duplicate_attribute_is_ascii_case_insensitive() {
 
 #[test]
 fn test_parse_deep_nesting() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(
         &allocator,
         "<div><span><p><em><strong>deep</strong></em></p></span></div>",
@@ -721,7 +721,7 @@ fn test_parse_extreme_nesting_is_bounded() {
     // Pathologically deep input should parse without unbounded growth and
     // surface a recoverable error rather than producing an AST that later
     // passes would have to recurse into without limit.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let depth = 5000;
     let mut source = String::new();
     for _ in 0..depth {
@@ -756,7 +756,7 @@ fn test_parse_extreme_nesting_is_bounded() {
 
 #[test]
 fn test_parse_component() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<MyComponent></MyComponent>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -767,7 +767,7 @@ fn test_parse_component() {
 
 #[test]
 fn test_empty_quoted_attribute_double() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<img alt="" />"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -788,7 +788,7 @@ fn test_empty_quoted_attribute_double() {
 
 #[test]
 fn test_empty_quoted_attribute_single() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<img alt='' />");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -809,7 +809,7 @@ fn test_empty_quoted_attribute_single() {
 
 #[test]
 fn test_empty_quoted_attribute_disabled() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<input disabled="" />"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -832,7 +832,7 @@ fn test_parse_open_tag_at_eof_does_not_panic() {
     // Regression: a tag that is still open at EOF used to panic with
     // "byte index N is out of bounds" because on_error was called with
     // index == source.len(), and create_loc(index, index+1) sliced past the end.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "<template>\n  <div>\n  <div\n");
     // Should return errors (EofInTag / MissingEndTag), not panic.
     assert!(!errors.is_empty());
@@ -840,7 +840,7 @@ fn test_parse_open_tag_at_eof_does_not_panic() {
 
 #[test]
 fn test_parse_malformed_close_tag_at_eof_does_not_panic() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "\n  <div class=\"root\">{{ title }}</di=\"{");
 
     assert!(
@@ -852,7 +852,7 @@ fn test_parse_malformed_close_tag_at_eof_does_not_panic() {
 
 #[test]
 fn test_parse_recovers_open_tag_at_eof() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div class="a""#);
 
     assert!(errors.iter().any(|e| e.code == ErrorCode::EofInTag));
@@ -874,7 +874,7 @@ fn test_parse_recovers_open_tag_at_eof() {
 
 #[test]
 fn test_parse_recovers_missing_attribute_value() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div id=></div>");
 
     assert!(
@@ -896,7 +896,7 @@ fn test_parse_recovers_missing_attribute_value() {
 
 #[test]
 fn test_parse_recovers_missing_equals_before_quoted_attribute_value() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div id"foo"></div>"#);
 
     assert!(
@@ -918,7 +918,7 @@ fn test_parse_recovers_missing_equals_before_quoted_attribute_value() {
 
 #[test]
 fn test_parse_reports_missing_whitespace_between_attributes_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div id="a"class="b"></div>"#);
 
     assert!(
@@ -941,7 +941,7 @@ fn test_parse_reports_missing_whitespace_between_attributes_and_continues() {
 
 #[test]
 fn test_parse_recovers_missing_dynamic_directive_argument_end() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div :[foo="bar"></div>"#);
 
     assert!(
@@ -968,7 +968,7 @@ fn test_parse_recovers_missing_dynamic_directive_argument_end() {
 
 #[test]
 fn test_parse_reports_missing_directive_name_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div v->ok</div>");
 
     assert!(
@@ -986,7 +986,7 @@ fn test_parse_reports_missing_directive_name_and_continues() {
 
 #[test]
 fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "{{ unfinished");
 
     assert!(
@@ -1004,7 +1004,7 @@ fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
 
 #[test]
 fn test_parse_invalid_closing_tag_name_reports_error_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "</1div><span></span>");
 
     assert!(
@@ -1021,7 +1021,7 @@ fn test_parse_invalid_closing_tag_name_reports_error_and_continues() {
 
 #[test]
 fn test_parse_mixed_broken_input_keeps_later_nodes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = "<div v-><1bad></1bad><span id=a>ok</span></div>{{ broken";
     let (root, errors) = parse(&allocator, source);
 
@@ -1063,7 +1063,7 @@ fn test_parse_mixed_broken_input_keeps_later_nodes() {
 
 #[test]
 fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<!-- note --!><div></div>");
 
     assert!(
@@ -1079,7 +1079,7 @@ fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
 #[test]
 fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
     for comment_source in ["<!-->", "<!--->"] {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = format!("{comment_source}<div></div>");
         let (root, errors) = parse(&allocator, &source);
 
@@ -1101,7 +1101,7 @@ fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
 
 #[test]
 fn test_parse_nested_comment_reports_error_and_closes_at_first_end() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<!-- <!-- nested --> -->");
 
     assert!(errors.iter().any(|e| e.code == ErrorCode::NestedComment));
@@ -1120,7 +1120,7 @@ fn test_parse_nested_comment_reports_error_and_closes_at_first_end() {
 
 #[test]
 fn test_parse_processing_instruction_reports_error_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<?xml version="1.0"?><div></div>"#);
 
     assert!(
@@ -1137,7 +1137,7 @@ fn test_parse_processing_instruction_reports_error_and_continues() {
 
 #[test]
 fn test_parse_unexpected_solidus_before_attribute_reports_error_and_continues() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div / id=foo></div>");
 
     assert!(
@@ -1160,7 +1160,7 @@ fn test_parse_unexpected_solidus_before_attribute_reports_error_and_continues() 
 
 #[test]
 fn test_parse_self_closing_non_void_html_element_warns_and_rewrites() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div /><span></span>");
 
     assert!(errors.iter().any(|e| {
@@ -1184,7 +1184,7 @@ fn test_parse_self_closing_non_void_html_element_warns_and_rewrites() {
 
 #[test]
 fn test_parse_self_closing_non_void_html_element_strict_errors_and_rewrites() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options_and_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -1213,7 +1213,7 @@ fn test_parse_self_closing_non_void_html_element_strict_errors_and_rewrites() {
 
 #[test]
 fn test_parse_self_closing_non_void_html_element_quirk_keeps_flag() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options_and_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -1237,7 +1237,7 @@ fn test_parse_self_closing_non_void_html_element_quirk_keeps_flag() {
 
 #[test]
 fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse_with_options(
         &allocator,
         "<primitive />",
@@ -1260,7 +1260,7 @@ fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
 
 #[test]
 fn test_parse_table_inserts_implicit_tbody() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<table><tr><td>x</td></tr></table>");
 
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
@@ -1285,7 +1285,7 @@ fn test_parse_table_inserts_implicit_tbody() {
 
 #[test]
 fn test_parse_table_foster_parents_unexpected_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<table><div>hello</div></table>");
 
     assert!(
@@ -1304,7 +1304,7 @@ fn test_parse_table_foster_parents_unexpected_element() {
 
 #[test]
 fn test_parse_table_cell_keeps_normal_body_content() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<table><tr><td><div>ok</div></td></tr></table>");
 
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
@@ -1327,7 +1327,7 @@ fn test_parse_table_cell_keeps_normal_body_content() {
 
 #[test]
 fn test_parse_adoption_agency_repairs_misnested_formatting() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<b>aaa<i>bbb</b>ccc</i>");
 
     assert!(
@@ -1362,7 +1362,7 @@ fn test_parse_adoption_agency_repairs_misnested_formatting() {
 
 #[test]
 fn test_parse_in_body_omits_p_and_li_end_tags() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<p>a<p>b<ul><li>c<li>d</ul>");
 
     assert!(errors.is_empty(), "unexpected errors: {errors:?}");
@@ -1380,7 +1380,7 @@ fn test_parse_in_body_omits_p_and_li_end_tags() {
 #[test]
 fn test_parse_nested_list_items_respect_list_item_scope() {
     for list_tag in ["ol", "ul"] {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = format!(
             "<{list_tag}><li><span>outer</span><{list_tag}><li>inner</li></{list_tag}></li></{list_tag}>"
         );
@@ -1419,7 +1419,7 @@ fn test_parse_nested_list_items_respect_list_item_scope() {
 
 #[test]
 fn test_parse_nested_anchor_and_button_are_split() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (anchor_root, anchor_errors) = parse(
         &allocator,
         r#"<a href="/">outer<a href="/foo">inner</a></a>"#,
@@ -1456,7 +1456,7 @@ fn test_parse_nested_anchor_and_button_are_split() {
 
 #[test]
 fn test_parse_nested_form_start_tag_is_ignored() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<form><input><form><input></form></form>");
 
     assert!(
@@ -1478,7 +1478,7 @@ fn test_parse_nested_form_start_tag_is_ignored() {
 
 #[test]
 fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "before<!-- open");
 
     insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
@@ -1502,7 +1502,7 @@ fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
 
 #[test]
 fn test_boolean_attribute_no_value() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<input disabled />");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1525,7 +1525,7 @@ fn test_boolean_attribute_no_value() {
 
 #[test]
 fn test_parse_text_entity_named_amp_between_literals() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>a&amp;b</div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1543,7 +1543,7 @@ fn test_parse_text_entity_named_amp_between_literals() {
 
 #[test]
 fn test_parse_text_entity_lt_only() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>&lt;</div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1558,7 +1558,7 @@ fn test_parse_text_entity_lt_only() {
 
 #[test]
 fn test_parse_text_entity_numeric_dec() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>&#38;x</div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1574,7 +1574,7 @@ fn test_parse_text_entity_numeric_dec() {
 
 #[test]
 fn test_parse_text_entity_1_lt_2() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div>1&lt;2</div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1590,7 +1590,7 @@ fn test_parse_text_entity_1_lt_2() {
 
 #[test]
 fn test_parse_attribute_entity_single_quoted_numeric() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<div a='&#38;'></div>");
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1604,7 +1604,7 @@ fn test_parse_attribute_entity_single_quoted_numeric() {
 
 #[test]
 fn test_parse_attribute_entity_quot_in_double_quotes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div class="a &quot; b"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1619,7 +1619,7 @@ fn test_parse_attribute_entity_quot_in_double_quotes() {
 
 #[test]
 fn test_parse_attribute_entity_lt_gt() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div title="&lt;tag&gt;"></div>"#);
     assert!(errors.is_empty());
     if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -1633,7 +1633,7 @@ fn test_parse_attribute_entity_lt_gt() {
 
 #[test]
 fn test_parse_directive_value_entity_is_decoded() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, r#"<div v-if="a&amp;&amp;b"></div>"#);
     assert!(errors.is_empty());
 
@@ -1657,7 +1657,7 @@ fn test_parse_directive_value_entity_is_decoded() {
 /// parser inherits the foreign (SVG) namespace from the open `<svg>` ancestor.
 #[test]
 fn test_parse_self_closing_svg_path_inside_svg_is_not_flagged() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(
         &allocator,
         r#"<svg viewBox="0 0 24 24"><path d="M0 0h24v24H0z" /></svg>"#,
@@ -1688,7 +1688,7 @@ fn test_parse_self_closing_svg_path_inside_svg_is_not_flagged() {
 /// still rewritten (recovery), confirming the inheritance honours boundaries.
 #[test]
 fn test_parse_foreign_object_resets_namespace_for_self_closing_check() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(
         &allocator,
         "<svg><foreignObject><div /></foreignObject></svg>",
@@ -1711,7 +1711,7 @@ fn test_parse_foreign_object_resets_namespace_for_self_closing_check() {
 /// for the outer `</p>`.
 #[test]
 fn test_parse_p_auto_close_does_not_cross_template_boundary() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<p><template><p>inner</p></template>outer</p>");
 
     assert!(
@@ -1741,7 +1741,7 @@ fn test_parse_p_auto_close_does_not_cross_template_boundary() {
 /// suppress the legitimate recovery.
 #[test]
 fn test_parse_nested_p_without_boundary_still_auto_closes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<p>first<p>second</p>");
 
     assert!(
@@ -1786,7 +1786,7 @@ fn find_element<'a, 'b>(
 /// the `<html>/<head>/<body>` tree is available for downstream analysis.
 #[test]
 fn test_document_mode_tolerates_doctype() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let src = "<!DOCTYPE html>\n<html><head></head><body><div>hi</div></body></html>";
     let (root, errors) = parse_document(&allocator, src);
 
@@ -1806,7 +1806,7 @@ fn test_document_mode_tolerates_doctype() {
 /// tolerated in document mode.
 #[test]
 fn test_document_mode_tolerates_legacy_doctype() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let src = r#"<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"><html><body></body></html>"#;
     let (root, errors) = parse_document(&allocator, src);
 
@@ -1823,7 +1823,7 @@ fn test_document_mode_tolerates_legacy_doctype() {
 /// `@click`) are parsed as directives, so lint/scope can analyze them.
 #[test]
 fn test_document_mode_parses_petite_directives() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let src = concat!(
         "<!DOCTYPE html>\n",
         r#"<html><body><div v-scope="{ count: 0 }" v-effect="$el.dataset.c = count">"#,
@@ -1867,7 +1867,7 @@ fn test_document_mode_parses_petite_directives() {
 /// interpolation/tag parsing inside), matching template-mode RCDATA handling.
 #[test]
 fn test_document_mode_script_and_style_are_raw() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let src = concat!(
         "<!DOCTYPE html>\n",
         r#"<html><head><style>.a { color: red }</style>"#,
@@ -1890,7 +1890,7 @@ fn test_document_mode_script_and_style_are_raw() {
 /// untouched and the toleration is opt-in.
 #[test]
 fn test_template_mode_doctype_still_errors() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "<!DOCTYPE html><div></div>");
     assert!(
         errors
@@ -1904,7 +1904,7 @@ fn test_template_mode_doctype_still_errors() {
 /// mode — toleration is scoped to the doctype declaration only.
 #[test]
 fn test_document_mode_reports_real_errors() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let src = "<!DOCTYPE html><html><body><div></body></html>";
     let (_root, errors) = parse_document(&allocator, src);
     assert!(
@@ -1919,7 +1919,7 @@ fn test_document_mode_reports_real_errors() {
 /// interpolation delimiters) while still tolerating the doctype.
 #[test]
 fn test_document_mode_with_options() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut options = ParserOptions::default();
     options.delimiters = ("[[".into(), "]]".into());
     let src = "<!DOCTYPE html><html><body><span>[[ msg ]]</span></body></html>";
@@ -1950,7 +1950,7 @@ fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
     use vize_carton::config::VueVersion;
 
     for dialect in [VueVersion::V3, VueVersion::V2] {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut options = ParserOptions::default();
         options.dialect = dialect;
         let (root, errors) = parse_with_options(&allocator, "{{{ rawHtml }}}", options);
@@ -1990,7 +1990,7 @@ fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
 fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
     use vize_carton::config::VueVersion;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut options = ParserOptions::default();
     options.dialect = VueVersion::V1;
     let (root, errors) = parse_with_options(&allocator, "{{{ rawHtml }}}", options);
@@ -2019,7 +2019,7 @@ fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
 fn v1_double_mustache_stays_escaped_alongside_triple() {
     use vize_carton::config::VueVersion;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut options = ParserOptions::default();
     options.dialect = VueVersion::V1;
     let (root, errors) = parse_with_options(&allocator, "{{ a }} {{{ b }}}", options);

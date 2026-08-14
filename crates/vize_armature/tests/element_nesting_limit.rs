@@ -13,7 +13,7 @@
 #![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
 use vize_armature::parse;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::{
     TemplateChildNode,
     errors::{CompilerError, ErrorCode},
@@ -55,7 +55,7 @@ fn element_depth(node: Option<&TemplateChildNode<'_>>) -> usize {
 
 #[test]
 fn nesting_at_the_limit_parses_without_diagnostics() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = nested_divs(NESTING_LIMIT);
     let (root, errors) = parse(&allocator, &source);
 
@@ -66,7 +66,7 @@ fn nesting_at_the_limit_parses_without_diagnostics() {
 #[test]
 fn nesting_past_the_limit_reports_the_limit_once_without_inventing_end_tag_errors() {
     for depth in [NESTING_LIMIT + 1, NESTING_LIMIT + 2, 5_000, 10_000] {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let source = nested_divs(depth);
         let (_, errors) = parse(&allocator, &source);
 
@@ -83,7 +83,7 @@ fn each_over_limit_region_is_reported_at_its_own_location() {
     // Two independent subtrees that each cross the limit. The recovery is
     // per-region, so each one is worth a diagnostic; neither should produce an
     // `InvalidEndTag`.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let deep = nested_divs(NESTING_LIMIT + 1);
     let source = format!("<section>{deep}{deep}</section>");
     let (_, errors) = parse(&allocator, &source);
@@ -99,7 +99,7 @@ fn each_over_limit_region_is_reported_at_its_own_location() {
 
 #[test]
 fn retained_tree_depth_stays_bounded_past_the_limit() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = nested_divs(5_000);
     let (root, errors) = parse(&allocator, &source);
 
@@ -118,7 +118,7 @@ fn genuinely_unmatched_end_tags_are_still_reported_past_the_limit() {
     // The suppression must be limited to end tags that really do close an
     // over-limit element. A stray `</span>` inside the over-limit region has
     // nothing to close in the source either, and must keep its diagnostic.
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut source = String::new();
     for _ in 0..NESTING_LIMIT + 1 {
         source.push_str("<div>");

@@ -8,7 +8,6 @@ use super::compile_vapor;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::Bump;
 
 fn normalize_code(code: &str) -> String {
     code.lines()
@@ -39,7 +38,7 @@ fn assert_parses_as_module(code: &str) {
 
 #[test]
 fn test_compile_bare_default_slot_outlet() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, r#"<slot />"#, Default::default());
 
     assert!(
@@ -55,7 +54,7 @@ fn test_compile_bare_default_slot_outlet() {
 
 #[test]
 fn test_compile_named_slot_outlet_without_props() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(&allocator, r#"<slot name="head" />"#, Default::default());
 
     assert!(
@@ -71,7 +70,7 @@ fn test_compile_named_slot_outlet_without_props() {
 
 #[test]
 fn test_compile_default_slot_outlet_with_fallback_only() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<slot><div>fb</div></slot>"#,
@@ -91,7 +90,7 @@ fn test_compile_default_slot_outlet_with_fallback_only() {
 
 #[test]
 fn test_compile_slot_outlet_static_and_spread_props() {
-    let allocator = Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let result = compile_vapor(
         &allocator,
         r#"<slot kind="primary" :row="item" v-bind="extra" />"#,

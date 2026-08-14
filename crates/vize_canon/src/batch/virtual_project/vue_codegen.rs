@@ -5,7 +5,7 @@
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
-use vize_carton::{Bump, String as CompactString, cstr, profile};
+use vize_carton::{Allocator, String as CompactString, cstr, profile};
 
 use vize_atelier_core::{
     ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
@@ -69,7 +69,7 @@ pub(super) fn generate_vue_virtual_ts(
     options: &VirtualTsOptions,
     codegen_options: VueCodegenOptions<'_>,
 ) -> CorsaResult<GeneratedVueFile> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut diagnostics = Vec::new();
 
     if let Some(ref script) = descriptor.script {

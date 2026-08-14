@@ -1,5 +1,4 @@
-use oxc_allocator::Allocator;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 use super::{
     BabelJsxOptions, JsxCompileConfig, JsxCompileOutput,
@@ -38,7 +37,7 @@ impl Default for BabelJsxCustomizations<'_> {
 
 /// Compile JSX/TSX with every additive Babel customization combined.
 pub fn compile_jsx_with_babel_customizations(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -46,7 +45,7 @@ pub fn compile_jsx_with_babel_customizations(
     customizations: BabelJsxCustomizations<'_>,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations_inner(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -58,7 +57,7 @@ pub fn compile_jsx_with_babel_customizations(
 /// Compile with the additive Babel `pragma` and `mergeProps` options combined.
 #[doc(hidden)]
 pub fn compile_jsx_with_babel_pragma_and_merge_props(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -67,7 +66,7 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
     merge_props: bool,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -82,14 +81,14 @@ pub fn compile_jsx_with_babel_pragma_and_merge_props(
 
 /// Compile JSX/TSX with explicit `@vue/babel-plugin-jsx` option compatibility.
 pub fn compile_jsx_with_babel_options(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
     babel_options: &BabelJsxOptions,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -100,7 +99,7 @@ pub fn compile_jsx_with_babel_options(
 
 /// Compile JSX/TSX with an optional Babel-compatible vnode factory pragma.
 pub fn compile_jsx_with_babel_pragma(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -108,7 +107,7 @@ pub fn compile_jsx_with_babel_pragma(
     pragma: Option<&str>,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -122,7 +121,7 @@ pub fn compile_jsx_with_babel_pragma(
 
 /// Compile JSX/TSX with an explicit Babel-compatible `mergeProps` value.
 pub fn compile_jsx_with_babel_merge_props(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -130,7 +129,7 @@ pub fn compile_jsx_with_babel_merge_props(
     merge_props: bool,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -148,7 +147,7 @@ pub fn compile_jsx_with_babel_merge_props(
 /// of a component may already be a slots object and is checked at runtime.
 /// Passing `false` always wraps that value as the raw default-slot child.
 pub fn compile_jsx_with_babel_object_slots(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -156,7 +155,7 @@ pub fn compile_jsx_with_babel_object_slots(
     enable_object_slots: bool,
 ) -> JsxCompileOutput {
     compile_jsx_with_babel_customizations(
-        bump,
+        allocator,
         source,
         lang,
         config,
@@ -195,7 +194,7 @@ fn valid_pragma_expression(pragma: &str) -> bool {
     let mut probe = String::from("const __vize_pragma = (");
     probe.push_str(pragma);
     probe.push_str("\n);");
-    let allocator = Allocator::default();
+    let allocator = oxc_allocator::Allocator::default();
     !crate::parse_module(&allocator, probe.as_str(), JsxLang::Jsx).has_errors()
 }
 

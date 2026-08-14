@@ -220,7 +220,7 @@ fn event_handler_mapping_targets_the_user_operand() {
 "#;
     let template = r#"<button @click="__vize_cb">Click</button>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

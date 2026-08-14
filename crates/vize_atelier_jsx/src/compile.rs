@@ -10,7 +10,7 @@ mod render_exports;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 use vize_croquis::Croquis;
 
 use crate::compat::{JsxCompatMode, unsupported_with_vapor};
@@ -132,16 +132,16 @@ pub fn resolve_mode(
 /// Compile a JSX/TSX module, routing each component to VDOM or Vapor per the
 /// resolved output mode.
 pub fn compile_jsx(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
 ) -> JsxCompileOutput {
-    compile_jsx_with_babel_options(bump, source, lang, config, &BabelJsxOptions::default())
+    compile_jsx_with_babel_options(allocator, source, lang, config, &BabelJsxOptions::default())
 }
 
 pub(crate) fn compile_jsx_with_babel_customizations_inner(
-    bump: &Bump,
+    allocator: &Allocator,
     source: &str,
     lang: JsxLang,
     config: &JsxCompileConfig,
@@ -161,7 +161,8 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         None
     };
     let (lowered, custom_element_spans) = lower_source_with_compat(
-        bump,
+        allocator.as_bump(),
+        allocator.as_oxc(),
         source,
         lang,
         config.compat,
@@ -190,7 +191,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
     );
 
     // Move the analysis into the arena so the transforms can borrow it.
-    let analysis: &Croquis = &*bump.alloc(lowered.analysis);
+    let analysis: &Croquis = &*allocator.alloc(lowered.analysis);
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     for lowered_root in lowered.roots {
@@ -203,7 +204,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                 &mut diagnostics,
             );
             JsxComponent::Ssr(compile_lowered_root_to_ssr(
-                bump,
+                allocator,
                 lowered_root,
                 analysis,
                 config.default_mode,
@@ -227,7 +228,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             }
             match mode {
                 JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(
-                    bump,
+                    allocator,
                     lowered_root,
                     analysis,
                     is_ts,
@@ -245,7 +246,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                     &mut diagnostics,
                 )),
                 JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
-                    bump,
+                    allocator,
                     lowered_root,
                     analysis,
                     &config.vapor,

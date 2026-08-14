@@ -297,11 +297,11 @@ mod tests {
     use crate::TemplateChildNode;
     use crate::lane::TransformContext;
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_resolve_element_type() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = TransformContext::new(&allocator, "".into(), Default::default());
 
         let (root, _) = parse(&allocator, r#"<div>test</div>"#);
@@ -312,7 +312,7 @@ mod tests {
 
     #[test]
     fn test_resolve_component_type() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let mut ctx = TransformContext::new(&allocator, "".into(), Default::default());
 
         let (root, _) = parse(&allocator, r#"<MyComponent></MyComponent>"#);

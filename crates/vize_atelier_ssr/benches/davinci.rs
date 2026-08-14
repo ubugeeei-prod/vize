@@ -19,7 +19,7 @@ use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
 use vize_atelier_ssr::{SsrCodegenContext, SsrCompilerOptions, compile_ssr};
-use vize_carton::{Bump, cstr};
+use vize_carton::{Allocator, cstr};
 
 fn ssr_transform_options() -> TransformOptions {
     TransformOptions {
@@ -40,7 +40,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let codegen_id = cstr!("atelier_ssr_codegen_{}", fixture.name);
         bench_stage_with_metrics(criterion, &codegen_id, fixture.relative_path, |window| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             transform(&allocator, &mut root, ssr_transform_options(), None);
             window.measure(|| SsrCodegenContext::new(&allocator, &options).generate(&root))
@@ -48,7 +48,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let fused_id = cstr!("atelier_ssr_compile_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &fused_id, fixture.relative_path, || {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (root, errors, result) = compile_ssr(&allocator, template);
             // The AST borrows the iteration-local arena; return owned facts.
             (root.children.len(), errors.len(), result.code.len())
@@ -58,7 +58,7 @@ fn davinci(criterion: &mut Criterion) {
     for fixture in &LADDER {
         let template =
             template_block(fixture.source).expect("every ladder fixture has a template block");
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let before = expr_parse_probe::expr_parse_count();
         let _compiled = compile_ssr(&allocator, template);
         let parses = expr_parse_probe::expr_parse_count() - before;

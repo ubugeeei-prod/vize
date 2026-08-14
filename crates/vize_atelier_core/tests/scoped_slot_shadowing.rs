@@ -13,7 +13,7 @@ fn result_output(result: &CodegenResult) -> String {
 
 #[test]
 fn scoped_slot_props_shadow_inline_props_in_slot_outlet_vbind() {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = parse(
         &allocator,
         r#"<RouterLink v-slot="{ href }"><slot v-bind="{ href }" /></RouterLink>"#,

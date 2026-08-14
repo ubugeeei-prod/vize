@@ -414,10 +414,10 @@ fn extract_identifiers_from_compound(
 mod tests {
     use super::{TemplateUsedIdentifiers, is_used_in_template, resolve_template_used_identifiers};
     use vize_atelier_core::parser::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     fn analyze_template(source: &str) -> TemplateUsedIdentifiers {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, source);
         resolve_template_used_identifiers(&root)
     }
@@ -519,7 +519,7 @@ mod tests {
 
     #[test]
     fn test_is_used_in_template() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, "<div>{{ msg }}</div>");
         assert!(is_used_in_template("msg", &root));
         assert!(!is_used_in_template("other", &root));

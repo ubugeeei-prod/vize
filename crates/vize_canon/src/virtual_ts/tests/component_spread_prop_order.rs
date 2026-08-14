@@ -11,7 +11,7 @@ fn generated_props_literal(template: &str) -> vize_carton::String {
     let script = r#"import Child from "./Child.vue"
 const bag = { count: 1 }
 "#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -59,7 +59,7 @@ const second = { label: 'ok' }
 "#;
     let template =
         r#"<Child :count="2" v-bind="first" label="middle" v-bind="second" tone="info" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -88,7 +88,7 @@ fn dynamic_arguments_and_true_named_duplicates_are_not_disguised_as_spread_entri
 const key = 'data-id'
 "#;
     let template = r#"<Child :[key]="1" :count="1" :count="2" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -128,7 +128,7 @@ const bag = { count: 1, label: 'ok' }
 const value = { missing: 'bad' }
 "#;
     let template = r#"<Child :count="value.missing" v-bind="bag" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -165,7 +165,7 @@ defineProps<{ as?: string }>()
 const bag = { count: 1 }
 "#;
     let template = r#"<Child v-bind="{ as, count: bag.missing }" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -218,7 +218,7 @@ const items = ["local"]
     <Child v-bind="{ as }" />
   </div>
 </div>"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -249,7 +249,7 @@ defineProps<{ as: number }>()
     <Child v-bind="{ as }" />
   </template>
 </Provider>"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);

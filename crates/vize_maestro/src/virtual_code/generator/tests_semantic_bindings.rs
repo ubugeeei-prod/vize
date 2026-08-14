@@ -1,5 +1,5 @@
 use super::VirtualCodeGenerator;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 const COMPLEX_BINDINGS_SFC: &str = r#"<script setup lang="ts">
 import DefaultWidget, {
@@ -70,7 +70,7 @@ fn allocator_and_owned_generation_keep_semantic_exports_in_sync() {
     let descriptor = vize_atelier_sfc::parse_sfc(COMPLEX_BINDINGS_SFC, Default::default()).unwrap();
     let mut generator = VirtualCodeGenerator::new();
     let owned = generator.generate(&descriptor, "owned.vue");
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let allocated = generator.generate_with_allocator(&descriptor, "allocated.vue", &allocator);
 
     assert_eq!(

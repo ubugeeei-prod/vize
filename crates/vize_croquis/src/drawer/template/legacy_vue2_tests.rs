@@ -1,10 +1,10 @@
 use super::super::{Drawer, DrawerOptions};
 use crate::ScopeData;
 use vize_armature::parse;
-use vize_carton::{Bump, CompactString, cstr};
+use vize_carton::{Allocator, CompactString, cstr};
 
 fn undefined_refs(template: &str, legacy_vue2: bool) -> Vec<CompactString> {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse: {errors:?}");
     let mut drawer = Drawer::with_options(DrawerOptions::full());
@@ -41,7 +41,7 @@ fn slot_scope_attributes_resolve_only_inside_their_subtree() {
 
 #[test]
 fn destructured_slot_scope_records_name_pattern_and_component() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let template = r#"<Child><template slot="item" slot-scope="{ row, index }">{{ row.id }} {{ index }}</template></Child>"#;
     let (root, errors) = parse(&allocator, template);
     assert!(errors.is_empty(), "template should parse: {errors:?}");

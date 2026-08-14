@@ -30,7 +30,7 @@ use std::process::Command;
 
 use serde::Deserialize;
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[derive(Deserialize)]
 struct Manifest {
@@ -133,8 +133,8 @@ fn measure(entry: &Entry, checkout: &Path) -> Coverage {
         };
         let lang = lang_for(path);
         let outcome = panic::catch_unwind(panic::AssertUnwindSafe(|| {
-            let bump = Bump::new();
-            lower_source(&bump, &source, lang).has_errors()
+            let bump = Allocator::new();
+            lower_source(&bump, bump.as_oxc(), &source, lang).has_errors()
         }));
         match outcome {
             Ok(false) => cov.clean += 1,

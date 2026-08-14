@@ -36,10 +36,10 @@ use vize_atelier_jsx::{
     JsxLang, SsrCompileOptions, VaporCompileOptions, VdomCompileOptions, compile_to_ssr,
     compile_to_vapor, compile_to_vdom,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn render_code(source: &str) -> String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, JsxLang::Jsx, VdomCompileOptions::default());
     assert_eq!(
         out.diagnostics
@@ -161,7 +161,7 @@ fn v_slots_never_becomes_a_resolved_directive() {
     // The #3418 regression: an unrecognized `v-*` fell through to the custom
     // directive path. `slots` is a compiler built-in, so it contributes no prop,
     // no `withDirectives` wrapper and no `resolveDirective("slots")`.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = common::lower_one(&bump, "const A = () => <B class=\"c\" v-slots={slots}/>;");
     let element = common::root_element(&root);
     assert_eq!(element.props.len(), 2);
@@ -181,7 +181,7 @@ fn v_slots_never_becomes_a_resolved_directive() {
 fn vapor_output_reports_the_gap_instead_of_dropping_the_slots() {
     // Vapor builds its slots from the component's children and has no spread, so
     // it must not silently render a component with no slots.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <B v-slots={slots}/>;",
@@ -205,7 +205,7 @@ fn vapor_output_reports_the_gap_instead_of_dropping_the_slots() {
 
 #[test]
 fn ssr_output_reports_the_gap_instead_of_dropping_the_slots() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_ssr(
         &bump,
         "const A = () => <B v-slots={slots}/>;",

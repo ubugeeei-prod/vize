@@ -10,7 +10,7 @@ fn custom_directive_value_is_assigned_to_the_declared_value_type() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus="'nope'" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -33,7 +33,7 @@ fn custom_directive_check_identifier_anchors_at_the_authored_value() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus="'nope'" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -72,7 +72,7 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
 fn globally_registered_directive_emits_no_check() {
     let script = "const unrelated = 1";
     let template = r#"<div v-focus="'nope'" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -95,7 +95,7 @@ fn kebab_case_directive_resolves_to_its_camel_case_binding() {
     let script = r#"import type { Directive } from 'vue'
 const vMyDirective: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-my-directive="'nope'" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -116,7 +116,7 @@ const vMyDirective: Directive<HTMLElement, number> = () => {}"#;
 fn builtin_directives_are_not_treated_as_custom() {
     let script = "const flag = true\nconst items = [1]\nconst text = 'x'";
     let template = r#"<div v-show="flag"><p v-for="i in items" :key="i">{{ i }}</p><input v-model="text" /></div>"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -135,7 +135,7 @@ fn directive_argument_and_modifiers_do_not_change_the_value_check() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus:arg.mod="'nope'" />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -155,7 +155,7 @@ fn valueless_custom_directive_emits_no_check() {
     let script = r#"import type { Directive } from 'vue'
 const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let template = r#"<div v-focus />"#;
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, summary) = analyze(&allocator, script, template);
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
@@ -208,7 +208,7 @@ fn directive_value_alias_is_guarded_and_kept_referenced() {
 }
 
 fn analyze<'a>(
-    allocator: &'a vize_carton::Bump,
+    allocator: &'a vize_carton::Allocator,
     script: &str,
     template: &'a str,
 ) -> (vize_relief::RootNode<'a>, vize_croquis::Croquis) {

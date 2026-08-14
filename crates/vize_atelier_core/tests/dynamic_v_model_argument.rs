@@ -25,7 +25,7 @@ fn result_output(result: &CodegenResult) -> String {
 }
 
 fn compile(source: &str, prefix_identifiers: bool) -> String {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
     transform(

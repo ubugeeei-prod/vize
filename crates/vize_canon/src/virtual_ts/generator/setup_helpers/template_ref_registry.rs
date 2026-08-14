@@ -147,7 +147,7 @@ mod tests {
     }
 
     fn registry_for(script: &str, template: &str) -> Option<vize_carton::String> {
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template);
         super::template_ref_registry(Some(script), Some(&root))
     }

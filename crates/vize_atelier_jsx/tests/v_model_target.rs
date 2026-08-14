@@ -10,11 +10,11 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn errors(source: &str) -> Vec<String> {
-    let bump = Bump::new();
-    let out = lower_source(&bump, source, JsxLang::Jsx);
+    let bump = Allocator::new();
+    let out = lower_source(&bump, bump.as_oxc(), source, JsxLang::Jsx);
     out.diagnostics
         .iter()
         .filter(|diagnostic| diagnostic.is_error())
@@ -23,7 +23,7 @@ fn errors(source: &str) -> Vec<String> {
 }
 
 fn render_code(source: &str) -> String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, JsxLang::Jsx, VdomCompileOptions::default());
     out.components
         .into_iter()
@@ -110,7 +110,7 @@ fn assignable_targets_are_accepted() {
 fn missing_expression_keeps_its_own_diagnostic() {
     // `v-model` with no value at all is a different defect, already reported by
     // the core transform; the new check must not shadow or duplicate it.
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vdom(
         &bump,
         "const A = () => <input v-model/>;",

@@ -7,10 +7,10 @@
 //! while silently routing the rest to `attrs`.
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn module_code(source: &str, lang: JsxLang) -> std::string::String {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(&bump, source, lang, &JsxCompileConfig::default());
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     out.module_code().as_str().to_string()

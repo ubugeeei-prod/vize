@@ -2,7 +2,7 @@ use super::{CrossFileAnalyzer, CrossFileOptions};
 use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;
 use vize_armature::parse;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 
 #[path = "tests_fallthrough/base.rs"]
@@ -11,7 +11,7 @@ mod base;
 mod dynamic_names;
 
 fn analyze_template(template: &str) -> Croquis {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(
         errors.is_empty(),
@@ -24,7 +24,7 @@ fn analyze_template(template: &str) -> Croquis {
 }
 
 fn analyze_setup_component(script: &str, template: &str) -> Croquis {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(
         errors.is_empty(),
@@ -38,7 +38,7 @@ fn analyze_setup_component(script: &str, template: &str) -> Croquis {
 }
 
 fn analyze_options_component(script: &str, template: &str) -> Croquis {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, template);
     assert!(
         errors.is_empty(),

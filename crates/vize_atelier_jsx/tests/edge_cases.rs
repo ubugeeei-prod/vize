@@ -3,7 +3,7 @@
 mod common;
 
 use common::{as_attribute, as_directive, as_element, lower_one, lower_one_tsx, simple_content};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::{ElementType, ExpressionNode, TemplateChildNode};
 
 fn expr_text<'a>(expr: &'a ExpressionNode<'a>) -> &'a str {
@@ -16,7 +16,7 @@ fn element_tag<'a>(child: &'a TemplateChildNode<'a>) -> &'a str {
 
 #[test]
 fn fragment_preserves_mixed_child_order_exactly() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(
         &bump,
         r#"const View = () => (
@@ -73,7 +73,7 @@ fn fragment_preserves_mixed_child_order_exactly() {
 
 #[test]
 fn tsx_generic_component_map_lowers_aliases_and_key_exactly() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one_tsx(
         &bump,
         r#"const Select = <T extends string>({ options }: { options: T[] }) => (
@@ -119,7 +119,7 @@ fn tsx_generic_component_map_lowers_aliases_and_key_exactly() {
 
 #[test]
 fn nested_ternary_records_each_branch_condition_and_child() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(
         &bump,
         r#"const Badge = () => (
@@ -151,7 +151,7 @@ fn nested_ternary_records_each_branch_condition_and_child() {
 
 #[test]
 fn directive_arguments_modifiers_and_plain_attrs_are_kept_separate() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let root = lower_one(
         &bump,
         r#"const Form = () => <input id="email" v-model={model.email} v-focus:lazy={focusOptions} />;"#,
@@ -183,7 +183,7 @@ fn directive_arguments_modifiers_and_plain_attrs_are_kept_separate() {
 
 #[test]
 fn scoped_style_extraction_removes_style_child_and_keeps_interpolations() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = r#"const Themed = ({ color, gap }: { color: string; gap: number }) => (
   <>
     <section class="box">content</section>
@@ -195,7 +195,8 @@ fn scoped_style_extraction_removes_style_child_and_keeps_interpolations() {
     `}</style>
   </>
 );"#;
-    let out = vize_atelier_jsx::lower_source(&bump, src, vize_atelier_jsx::JsxLang::Tsx);
+    let out =
+        vize_atelier_jsx::lower_source(&bump, bump.as_oxc(), src, vize_atelier_jsx::JsxLang::Tsx);
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     assert_eq!(out.roots.len(), 1);
 

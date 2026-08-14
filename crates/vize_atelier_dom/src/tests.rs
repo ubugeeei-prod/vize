@@ -5,7 +5,7 @@ use super::{
     compile_template_with_options, compile_template_with_template_syntax,
 };
 use vize_atelier_core::options::{CodegenMode, TemplateSyntaxMode};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn full_output(preamble: &str, code: &str) -> vize_carton::String {
     let mut full = vize_carton::String::with_capacity(preamble.len() + code.len() + 1);
@@ -17,7 +17,7 @@ fn full_output(preamble: &str, code: &str) -> vize_carton::String {
 
 #[test]
 fn test_compile_simple_element() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, result) = compile_template(&allocator, "<div>hello</div>");
 
     assert!(errors.is_empty());
@@ -28,7 +28,7 @@ fn test_compile_simple_element() {
 
 #[test]
 fn test_compile_svg() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, _) = compile_template(&allocator, "<svg><circle /></svg>");
 
     assert!(errors.is_empty());
@@ -43,7 +43,7 @@ fn test_compile_svg() {
 /// `_mergeProps(obj, { ... })` rather than `_mergeProps({}, obj, { ... })`.
 #[test]
 fn test_dynamic_component_vbind_is_no_empty_merge_object() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<component :is="popup.component" v-bind="popup.props" :key="popup.id" @closed="onClose"/>"#,
@@ -62,7 +62,7 @@ fn test_dynamic_component_vbind_is_no_empty_merge_object() {
 
 #[test]
 fn test_dynamic_component_v_if_does_not_emit_is_prop() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<Component :is="current" v-if="ok" :foo="foo" />"#,
@@ -85,7 +85,7 @@ fn test_dynamic_component_v_if_does_not_emit_is_prop() {
 
 #[test]
 fn test_template_ref_in_v_for_emits_ref_for() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<span v-for="item in items" ref="itemEls"></span>"#,
@@ -103,7 +103,7 @@ fn test_static_ref_matching_prop_name_stays_string_ref() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("buttons".into(), BindingType::Props);
 
@@ -180,7 +180,7 @@ fn find_element<'a, 'b>(
 /// no namespace argument and depends on the runtime inferring it from a contiguous tree).
 #[test]
 fn test_svg_namespace_propagates_to_descendants() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, _) = compile_template(
         &allocator,
         "<svg><g><path d=\"M0 0\"/></g><rect x=\"0\" y=\"0\"/></svg>",
@@ -211,7 +211,7 @@ fn test_svg_namespace_propagates_to_descendants() {
 /// `<rect>` sibling after the `<foreignObject>` stays in the SVG namespace.
 #[test]
 fn test_svg_foreign_object_resets_namespace() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, _) = compile_template(
         &allocator,
         "<svg><foreignObject><div>hi</div></foreignObject><rect x=\"1\" y=\"1\"/></svg>",
@@ -241,7 +241,7 @@ fn test_svg_foreign_object_resets_namespace() {
 /// element call, so the runtime still threads the svg namespace into it.
 #[test]
 fn test_svg_namespace_with_v_if_branch() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (root, errors, _) = compile_template(
         &allocator,
         "<svg><rect v-if=\"show\" x=\"0\" y=\"0\"/></svg>",
@@ -260,7 +260,7 @@ fn test_svg_namespace_with_v_if_branch() {
 /// @vue/compiler-sfc, emits no explicit namespace argument).
 #[test]
 fn test_svg_codegen_shape_keeps_children_nested() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         "<svg><foreignObject><div>hi</div></foreignObject><rect x=\"1\" y=\"1\"/></svg>",
@@ -272,7 +272,7 @@ fn test_svg_codegen_shape_keeps_children_nested() {
 
 #[test]
 fn test_inline_svg_dynamic_subtree_uses_own_block() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         "<div><svg :width=\"w\"><g v-if=\"ok\"><rect :x=\"x\"/></g></svg></div>",
@@ -292,7 +292,7 @@ fn test_inline_svg_dynamic_subtree_uses_own_block() {
 
 #[test]
 fn test_inline_svg_descendants_inside_same_namespace_stay_vnodes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<div><svg><defs><pattern :x="0"><line :x1="w"/></pattern></defs></svg></div>"#,
@@ -318,7 +318,7 @@ fn test_inline_svg_descendants_inside_same_namespace_stay_vnodes() {
 
 #[test]
 fn test_svg_foreign_object_namespace_exit_uses_boundary_block() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<svg><foreignObject><div :id="id">hi</div></foreignObject></svg>"#,
@@ -338,7 +338,7 @@ fn test_svg_foreign_object_namespace_exit_uses_boundary_block() {
 
 #[test]
 fn test_nested_svg_with_v_bind_uses_own_block() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<div><svg xmlns="http://www.w3.org/2000/svg" :width="w" /></div>"#,
@@ -358,7 +358,7 @@ fn test_nested_svg_with_v_bind_uses_own_block() {
 
 #[test]
 fn test_svg_constant_bound_children_are_cached_vnodes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
         &allocator,
         r#"<svg xmlns="http://www.w3.org/2000/svg"><rect :x="1" /><rect x="1" /></svg>"#,
@@ -385,7 +385,7 @@ fn test_svg_constant_bound_children_are_cached_vnodes() {
 
 #[test]
 fn test_compile_with_options() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let opts = DomCompilerOptions {
         mode: CodegenMode::Module,
         ..Default::default()
@@ -399,7 +399,7 @@ fn test_compile_with_options() {
 
 #[test]
 fn test_compile_v_for_template_syntax_quirks_accepts_unmatched_alias_paren() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let opts = DomCompilerOptions::default();
     let (_, errors, result) = compile_template_with_template_syntax(
         &allocator,
@@ -414,7 +414,7 @@ fn test_compile_v_for_template_syntax_quirks_accepts_unmatched_alias_paren() {
 
 #[test]
 fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -430,7 +430,7 @@ fn test_compile_template_syntax_quirks_accepts_invalid_html_self_closing() {
 
 #[test]
 fn test_compile_standard_warns_and_rewrites_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_options(
         &allocator,
         "<div /><span></span>",
@@ -445,7 +445,7 @@ fn test_compile_standard_warns_and_rewrites_invalid_html_self_closing() {
 
 #[test]
 fn test_compile_strict_rejects_invalid_html_self_closing() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template_with_template_syntax(
         &allocator,
         "<div /><span></span>",
@@ -462,7 +462,7 @@ fn test_event_handler_setup_ref_value() {
     use vize_atelier_core::options::BindingType;
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings_map = FxHashMap::default();
     bindings_map.insert("quoteId".into(), BindingType::SetupRef);
     bindings_map.insert("renoteTargetNote".into(), BindingType::SetupRef);
@@ -497,7 +497,7 @@ fn test_inline_ref_class_binding_keeps_class_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("currentTab".into(), BindingType::SetupRef);
 
@@ -530,7 +530,7 @@ fn test_ref_scroll_keeps_need_patch_with_need_hydration() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("onScroll".into(), BindingType::SetupConst);
 
@@ -566,7 +566,7 @@ fn test_ref_text_keeps_need_patch_with_text_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("message".into(), BindingType::SetupRef);
 
@@ -596,7 +596,7 @@ fn test_ref_text_keeps_need_patch_with_text_flag() {
 
 #[test]
 fn test_inline_hoisted_bare_static_attrs_are_empty_strings() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let options = DomCompilerOptions {
         mode: CodegenMode::Module,
         prefix_identifiers: true,
@@ -625,7 +625,7 @@ fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("message".into(), BindingType::SetupRef);
     bindings.insert("activeClass".into(), BindingType::SetupRef);
@@ -659,7 +659,7 @@ fn test_v_if_branch_component_dynamic_prop_keeps_props_patch_flag() {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::FxHashMap;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("show".into(), BindingType::SetupRef);
     bindings.insert("message".into(), BindingType::SetupRef);

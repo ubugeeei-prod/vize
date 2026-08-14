@@ -99,8 +99,8 @@ impl DiagnosticService {
     ) -> Vec<Diagnostic> {
         let lang = vize_atelier_jsx::JsxLang::from_path(uri.path());
 
-        let bump = vize_carton::Bump::new();
-        let output = vize_atelier_jsx::lower_source(&bump, content, lang);
+        let allocator = vize_carton::Allocator::new();
+        let output = vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), content, lang);
 
         output
             .diagnostics
@@ -315,7 +315,7 @@ impl DiagnosticService {
             return vec![];
         };
 
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (_, errors) = vize_armature::parse(&allocator, &template.content);
         errors
             .iter()

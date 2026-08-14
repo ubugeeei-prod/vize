@@ -1,9 +1,9 @@
 use vize_atelier_dom::compile_template;
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 #[test]
 fn compile_survives_deep_bound_expression_without_recursive_static_analysis() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut source = String::with_capacity(2_736);
     source.push_str(r#"<li :key="S"#);
     for _ in 0..2_704 {

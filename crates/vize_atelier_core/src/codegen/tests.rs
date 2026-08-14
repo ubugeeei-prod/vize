@@ -45,7 +45,7 @@ fn test_codegen_component() {
 
 #[test]
 fn test_codegen_component_name_with_colon_uses_valid_identifier() {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let parser_opts = crate::ParserOptions {
         is_native_tag: Some(vize_carton::is_native_tag),
         ..Default::default()
@@ -92,7 +92,7 @@ fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
 
 #[test]
 fn test_codegen_inline_setup_ref_component_prop_uses_value() {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parse(&allocator, r#"<Child :initialText="initialText" />"#);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -190,7 +190,7 @@ fn test_codegen_duplicate_attribute_keeps_first_occurrence() {
     // diagnostic is classified as recoverable so downstream
     // continues. The compile macro bails on parse errors, so this
     // test drives the lane by hand.
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, r#"<div id="a" id="b">x</div>"#);
     assert!(
         errors
@@ -463,9 +463,9 @@ fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(
         &allocator,
         r#"<Comp>
@@ -622,9 +622,9 @@ fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(
         &allocator,
         r#"<div><template v-for="item, index of items" :key="index"><UserCard :user="item" :data-index="index" /></template></div>"#,
@@ -670,9 +670,9 @@ fn test_codegen_v_for_scope_handlers_are_not_cached() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(
         &allocator,
         r#"<button v-for="tab in tabs" :key="tab.id" @click="select(tab)">{{ tab.label }}</button>"#,
@@ -705,9 +705,9 @@ fn test_codegen_merged_v_on_handlers_are_cached() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(
         &allocator,
         r#"<div @click="() => x++" @click.stop="() => y++"></div>"#,
@@ -842,9 +842,9 @@ fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (mut root, _) = parse(
         &allocator,
         r#"<CommonPaginator>
@@ -909,7 +909,7 @@ fn test_codegen_escape_multiline_style_attribute() {
 }
 
 fn compile_prefixed(source: &str) -> vize_carton::String {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1011,10 +1011,10 @@ fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, ParserOptions, TransformOptions};
     use crate::parser::parse_with_options;
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
     use vize_carton::config::VueVersion;
 
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut options = ParserOptions::default();
     options.dialect = VueVersion::V1;
     let (mut root, errors) = parse_with_options(&allocator, "<div>{{{ rawHtml }}}</div>", options);
@@ -1143,7 +1143,7 @@ fn decode_mappings(mappings: &str) -> Vec<DecodedSegment> {
 /// Compile a template with `prefix_identifiers` so dynamic expressions surface
 /// as `_ctx.<name>` in the output (the interesting mapping case).
 fn compile_with_map(src: &str, filename: &str) -> super::CodegenResult {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1249,7 +1249,7 @@ fn source_map_does_not_alter_generated_code() {
 
     let with_map = compile_with_map(src, "Foo.vue");
 
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(
@@ -1458,7 +1458,7 @@ fn source_map_static_attr_and_text_do_not_alter_generated_code() {
 
     let with_map = compile_with_map(src, "Foo.vue");
 
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = crate::parser::parse(&allocator, src);
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     crate::lane::transform(

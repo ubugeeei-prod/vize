@@ -1,4 +1,4 @@
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_carton::cstr;
 
 use crate::script_parse::collect_script_parse_diagnostics;
@@ -69,7 +69,7 @@ fn type_check_sfc_impl(
     };
 
     // Create allocator for template parsing
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
 
     let mut has_script_parse_errors = false;
     if let Some(ref script) = descriptor.script {

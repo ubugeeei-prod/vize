@@ -438,11 +438,11 @@ mod tests {
     use super::{generate_vapor, setup::escape_template};
     use crate::lower::transform_to_ir;
     use vize_atelier_core::parser::parse;
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
 
     #[test]
     fn test_generate_simple() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, "<div>hello</div>");
         let ir = transform_to_ir(&allocator, &root);
         let result = generate_vapor(&ir, None);
@@ -453,7 +453,7 @@ mod tests {
 
     #[test]
     fn test_generate_with_event() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<button @click="handleClick">Click</button>"#);
         let ir = transform_to_ir(&allocator, &root);
         let result = generate_vapor(&ir, None);

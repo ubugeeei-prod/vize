@@ -1,6 +1,6 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_carton::{Bump, FxHashMap, String};
+use vize_carton::{Allocator, FxHashMap, String};
 
 fn full_output(preamble: &str, code: &str) -> String {
     let mut full = String::with_capacity(preamble.len() + code.len() + 1);
@@ -12,7 +12,7 @@ fn full_output(preamble: &str, code: &str) -> String {
 
 #[test]
 fn inline_setup_ref_component_tag_uses_unref() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();
     bindings.insert("Menu".into(), BindingType::SetupRef);
     bindings.insert("show".into(), BindingType::SetupRef);
@@ -99,7 +99,7 @@ fn binding_matrix() -> BindingMetadata {
 
 #[test]
 fn setup_component_tag_binding_matrix_matches_dom_modes() {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let source = r#"<RefMenu /><MaybeMenu /><LetMenu /><ImportedMenu /><ShallowMenu /><lowercase-widget /><RefMenu.Item />"#;
 
     let inline_options = DomCompilerOptions {

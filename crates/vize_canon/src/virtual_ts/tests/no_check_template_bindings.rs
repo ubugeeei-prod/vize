@@ -17,7 +17,7 @@ const isLoading = ref(false)
   {{ confirmDialog }}
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -71,7 +71,7 @@ function confirmDialog() {}
   <Child v-for="item in missingItems" :key="item.id" :busy="isLoading" @save="confirmDialog" />
 </div>"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

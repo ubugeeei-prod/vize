@@ -8,11 +8,11 @@
 )]
 
 use vize_atelier_dom::compile_template;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// Helper to get the compiled code
 fn get_compiled(src: &str) -> String {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let (_, errors, result) = compile_template(&allocator, src);
 
     if !errors.is_empty() {

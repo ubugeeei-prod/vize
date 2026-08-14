@@ -543,7 +543,7 @@ pub fn transform_interpolation<'a>(
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests {
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     use super::transform_element;
     use crate::{
@@ -555,7 +555,7 @@ mod tests {
     };
 
     fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -580,7 +580,7 @@ mod tests {
 
     #[test]
     fn test_transform_v_model_without_expression_reports_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(&allocator, r#"<input v-model />"#);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -607,7 +607,7 @@ mod tests {
 
     #[test]
     fn test_transform_component_v_model_without_expression_reports_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(&allocator, r#"<MyComponent v-model />"#);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
@@ -634,7 +634,7 @@ mod tests {
 
     #[test]
     fn test_transform_v_model_on_v_for_scope_reports_error() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(
             &allocator,
             r#"<div v-for="item in items"><input v-model="item" /></div>"#,
@@ -685,7 +685,7 @@ mod tests {
     }
 
     fn assert_v_model_arg_on_element_rejected(source: &str) {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 

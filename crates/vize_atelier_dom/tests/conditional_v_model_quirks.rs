@@ -2,10 +2,10 @@
 
 use vize_atelier_core::{ErrorCode, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_carton::{Bump, String};
+use vize_carton::{Allocator, String};
 
 fn compile(source: &str, mode: TemplateSyntaxMode) -> (Vec<ErrorCode>, String) {
-    let allocator = Bump::new();
+    let allocator = Allocator::new();
     let options = DomCompilerOptions {
         prefix_identifiers: true,
         ..DomCompilerOptions::default()

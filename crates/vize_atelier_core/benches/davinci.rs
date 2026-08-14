@@ -14,7 +14,7 @@ use davinci_harness::stage::bench_stage_with_metrics;
 use vize_atelier_core::lane::transform;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_core::parser::Parser;
-use vize_carton::{Bump, cstr};
+use vize_carton::{Allocator, cstr};
 
 fn davinci(criterion: &mut Criterion) {
     for fixture in &LADDER {
@@ -23,7 +23,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let bench_id = cstr!("atelier_core_transform_{}", fixture.name);
         bench_stage_with_metrics(criterion, &bench_id, fixture.relative_path, |window| {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             window.measure(|| transform(&allocator, &mut root, TransformOptions::default(), None))
         });

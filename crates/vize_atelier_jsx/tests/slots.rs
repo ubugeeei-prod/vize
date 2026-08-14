@@ -10,7 +10,7 @@
 mod common;
 
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_relief::ElementType;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
@@ -50,9 +50,10 @@ fn slot_codegen_snapshot() {
 //    wired in this crate, so we assert the slot KEY at the IR layer).
 #[test]
 fn slot_lowers_to_template_with_slot_directive() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const A = () => <Comp>{{ header: () => <h1>Hi</h1> }}</Comp>;",
         JsxLang::Jsx,
     );
@@ -100,9 +101,10 @@ fn slot_lowers_to_template_with_slot_directive() {
 // Scoped-slot params carry the RAW pattern source on the directive `exp`.
 #[test]
 fn scoped_slot_directive_carries_raw_param_pattern() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         "const A = () => <List>{{ item: ({ x }) => <li>{x}</li> }}</List>;",
         JsxLang::Jsx,
     );
@@ -137,9 +139,10 @@ fn scoped_slot_directive_carries_raw_param_pattern() {
 
 #[test]
 fn tsx_story_slot_object_with_kebab_update_handler_lowers() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = lower_source(
         &bump,
+        bump.as_oxc(),
         r#"export const Example = () => (
   <AfsStepperDialog
     value={isOpen.value}

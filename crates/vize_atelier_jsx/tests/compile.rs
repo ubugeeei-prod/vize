@@ -5,10 +5,10 @@ use vize_atelier_jsx::{
     JsxCompileConfig, JsxCompileOutput, JsxComponent, JsxLang, JsxOutputMode, compile_jsx,
     resolve_mode,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 fn compile(src: &str, config: &JsxCompileConfig) -> JsxCompileOutput {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_jsx(&bump, src, JsxLang::Jsx, config);
     assert!(!out.has_errors(), "diagnostics: {:?}", out.diagnostics);
     out
@@ -147,7 +147,7 @@ fn vapor_default_with_vdom_directive_override_in_one_module() {
 
 #[test]
 fn invalid_directive_produces_a_diagnostic() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let src = "const App = () => { \"use vue:vapour\"; return <div/>; };";
     let out = compile_jsx(&bump, src, JsxLang::Jsx, &JsxCompileConfig::default());
 

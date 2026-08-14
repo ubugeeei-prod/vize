@@ -62,7 +62,7 @@ fn transform_css_var_expression(
     var_expr: &str,
     source_is_ts: bool,
 ) -> String {
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let loc = SourceLocation::new(
         Position::new(0, 1, 1),
         Position::new(var_expr.len() as u32, 1, var_expr.len() as u32 + 1),

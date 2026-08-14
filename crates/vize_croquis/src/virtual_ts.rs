@@ -192,7 +192,7 @@ const count = ref(0)
     #[test]
     fn test_generate_template() {
         let source = r#"<div>{{ message }}</div>"#;
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, source);
 
         let mut bindings = BindingMetadata::default();
@@ -321,7 +321,7 @@ const processed = computed(() => data.map(d => d.name))
     #[test]
     fn test_snapshot_template_with_v_for() {
         let template_source = r#"<ul><li v-for="(item, index) in items" :key="item.id">{{ item.name }} - {{ index }}</li></ul>"#;
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, template_source);
 
         let mut bindings = BindingMetadata::default();
@@ -336,7 +336,7 @@ const processed = computed(() => data.map(d => d.name))
     #[test]
     fn test_snapshot_template_with_v_if() {
         let template_source = r#"<div><span v-if="isVisible">Visible</span><span v-else-if="isAlternate">Alternate</span><span v-else>Default</span></div>"#;
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, template_source);
 
         let mut bindings = BindingMetadata::default();
@@ -359,7 +359,7 @@ const increment = () => count.value++
         let template_source = r#"<button @click="increment">{{ count }}</button>"#;
 
         let parse_result = parse_script_setup(script);
-        let allocator = vize_carton::Bump::new();
+        let allocator = vize_carton::Allocator::new();
         let (template_ast, _) = vize_armature::parse(&allocator, template_source);
 
         let config = VirtualTsConfig {

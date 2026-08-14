@@ -20,7 +20,7 @@ mod tests;
 mod tests_semantic_bindings;
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_carton::cstr;
 
 use binding::template_used_script_bindings;
@@ -77,7 +77,7 @@ impl VirtualCodeGenerator {
         base_uri: &str,
     ) -> VirtualDocuments {
         // Create arena for temporary parsing data
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
 
         let mut docs = VirtualDocuments::new();
 
@@ -140,7 +140,7 @@ impl VirtualCodeGenerator {
         &mut self,
         descriptor: &SfcDescriptor<'a>,
         base_uri: &str,
-        allocator: &'alloc Bump,
+        allocator: &'alloc Allocator,
     ) -> VirtualDocuments {
         let mut docs = VirtualDocuments::new();
 
@@ -195,7 +195,7 @@ impl VirtualCodeGenerator {
     /// Useful for testing and single-file scenarios.
     #[inline]
     pub fn generate_template_only(&mut self, template_content: &str) -> Option<VirtualDocument> {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, template_content);
 
         let mut doc = self.template_gen.generate(&ast, template_content);
@@ -219,7 +219,7 @@ pub struct BatchVirtualCodeGenerator {
     /// Underlying generator
     generator: VirtualCodeGenerator,
     /// Shared allocator for batch processing
-    allocator: Bump,
+    allocator: Allocator,
 }
 
 impl BatchVirtualCodeGenerator {
@@ -228,7 +228,7 @@ impl BatchVirtualCodeGenerator {
     pub fn new() -> Self {
         Self {
             generator: VirtualCodeGenerator::new(),
-            allocator: Bump::new(),
+            allocator: Allocator::new(),
         }
     }
 
@@ -239,7 +239,7 @@ impl BatchVirtualCodeGenerator {
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             generator: VirtualCodeGenerator::new(),
-            allocator: Bump::with_capacity(capacity),
+            allocator: Allocator::with_capacity(capacity),
         }
     }
 

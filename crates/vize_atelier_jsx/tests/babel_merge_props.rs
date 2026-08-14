@@ -6,10 +6,9 @@ use vize_atelier_jsx::{
     compile_jsx_with_babel_merge_props, compile_jsx_with_babel_pragma_and_merge_props,
     parse_module,
 };
-use vize_carton::Bump;
 
 fn compile_module(source: &str, compat: JsxCompatMode, mode: JsxOutputMode) -> String {
-    let bump = Bump::new();
+    let bump = vize_carton::Allocator::new();
     let config = JsxCompileConfig {
         default_mode: mode,
         compat,
@@ -26,7 +25,7 @@ fn compile_with_merge_props(
     mode: JsxOutputMode,
     merge_props: bool,
 ) -> (String, Vec<String>) {
-    let bump = Bump::new();
+    let bump = vize_carton::Allocator::new();
     let out = compile_jsx_with_babel_merge_props(
         &bump,
         source,
@@ -153,7 +152,7 @@ fn option_is_inert_by_default_in_native_vapor_and_ssr() {
     assert_eq!(vapor_false_diagnostics.len(), 1);
 
     let compile_ssr = |merge_props| {
-        let bump = Bump::new();
+        let bump = vize_carton::Allocator::new();
         let out = compile_jsx_with_babel_merge_props(
             &bump,
             source,
@@ -179,7 +178,7 @@ fn option_is_inert_by_default_in_native_vapor_and_ssr() {
 
 #[test]
 fn false_composes_with_a_custom_pragma() {
-    let bump = Bump::new();
+    let bump = vize_carton::Allocator::new();
     let out = compile_jsx_with_babel_pragma_and_merge_props(
         &bump,
         "const A = () => <div class=\"a\" {...p} class={c}/>;",

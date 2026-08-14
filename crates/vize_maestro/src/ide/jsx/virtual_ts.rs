@@ -21,7 +21,7 @@
 
 use vize_atelier_jsx::{JsxLang, lower_source};
 use vize_canon::virtual_ts::VizeMapping;
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 mod collect;
 mod component;
@@ -76,8 +76,8 @@ enum JsxEmit {
 /// spans, that the type-aware features re-emit. Returns the expressions across
 /// all render roots flattened into one list.
 pub(in crate::ide) fn collect_jsx_expressions(source: &str, lang: JsxLang) -> Vec<JsxExpr> {
-    let bump = Bump::new();
-    let lowered = lower_source(&bump, source, lang);
+    let allocator = Allocator::new();
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, lang);
     let mut exprs = Vec::new();
     for root in &lowered.roots {
         let mut emits = Vec::new();

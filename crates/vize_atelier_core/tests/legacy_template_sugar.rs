@@ -19,7 +19,7 @@ use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, lane, parser}
 use vize_carton::config::VueVersion;
 
 fn compile(input: &str, dialect: VueVersion) -> String {
-    let allocator = bumpalo::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (mut root, errors) = parser::parse(&allocator, input);
     assert!(errors.is_empty(), "parse errors: {errors:?}");
 

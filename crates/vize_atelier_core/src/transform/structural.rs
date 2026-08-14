@@ -514,7 +514,7 @@ pub fn transform_v_for<'a>(
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests {
-    use bumpalo::Bump;
+    use vize_carton::Allocator;
 
     use super::super::traverse::traverse_children;
     use super::*;
@@ -524,7 +524,7 @@ mod tests {
     use crate::parser::parse;
 
     fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (mut root, errors) = parse(&allocator, source);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 

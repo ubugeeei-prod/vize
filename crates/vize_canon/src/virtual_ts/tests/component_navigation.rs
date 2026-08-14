@@ -3,7 +3,7 @@ use super::generate_virtual_ts;
 fn generate(script: &str, template: &str, script_setup: bool) -> super::super::VirtualTsOutput {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(
         errors.is_empty(),
@@ -31,7 +31,7 @@ const count = 1
 "#;
     let template = r#"<Child label="ready" :count="count" />"#;
 
-    let allocator = vize_carton::Bump::new();
+    let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

@@ -38,7 +38,7 @@ pub(super) fn add_inline_art_template_virtual_docs(
                 continue;
             }
 
-            let template_allocator = vize_carton::Bump::new();
+            let template_allocator = vize_carton::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
             let mut template_gen = TemplateCodeGenerator::new();

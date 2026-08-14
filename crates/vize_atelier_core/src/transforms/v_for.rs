@@ -289,7 +289,7 @@ mod tests {
     };
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use bumpalo::Bump;
+    use vize_carton::{Allocator, Bump};
 
     fn parse_for<'a>(allocator: &'a Bump, content: &str) -> ForParseResult<'a> {
         parse_for_expression(allocator, content, &SourceLocation::STUB)
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn test_has_v_for() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let (root, _) = parse(&allocator, r#"<div v-for="item in items">{{ item }}</div>"#);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_parse_simple_for() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for(&allocator, "item in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_with_index() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for(&allocator, "(item, index) in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_with_index_without_parens() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for(&allocator, "item, index in items");
 
         if let ExpressionNode::Simple(source) = &result.source {
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_with_destructure_and_index_without_parens() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for(&allocator, "{ id, name }, index of items");
 
         if let ExpressionNode::Simple(source) = &result.source {
@@ -369,7 +369,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_supports_newline_separator() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for(&allocator, "item\nin\nitems");
 
         if let ExpressionNode::Simple(source) = &result.source {
@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_rejects_missing_source() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
         let result = parse_for_expression(&allocator, "item in  ", &SourceLocation::STUB);
 
         assert!(result.is_none());
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_rejects_unmatched_edge_parens_by_default() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
 
         assert!(
             parse_for_expression(&allocator, "item) in items", &SourceLocation::STUB).is_none()
@@ -403,7 +403,7 @@ mod tests {
 
     #[test]
     fn test_parse_for_template_syntax_quirks_strips_unmatched_edge_parens() {
-        let allocator = Bump::new();
+        let allocator = Allocator::new();
 
         let trailing = parse_for_expression_with_options(
             &allocator,

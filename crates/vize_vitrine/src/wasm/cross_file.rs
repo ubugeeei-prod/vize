@@ -8,7 +8,7 @@
 )]
 
 use super::{to_js_value, utf8_byte_to_utf16_offset};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 use vize_croquis_cf::CrossFileDiagnosticKind::{
     ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,
     CircularDependency, CircularReactiveDependency, ClosureCapturesReactive,
@@ -89,7 +89,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
             };
             if let Ok(descriptor) = parse_sfc(source, parse_opts) {
                 let analysis = if let Some(ref template) = descriptor.template {
-                    let allocator = Bump::new();
+                    let allocator = Allocator::new();
                     let (root, _errors) = parse(&allocator, &template.content);
                     analyze_sfc_descriptor_with_context(
                         &descriptor,

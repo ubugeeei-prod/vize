@@ -26,7 +26,7 @@ use vize_atelier_jsx::{
     JsxCompileConfig, JsxLang, VaporCompileOptions, VdomCompileOptions, analyze_jsx_program,
     compile_jsx, compile_to_vapor, compile_to_vdom, lower_source, parse_module,
 };
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 /// A minimal single-element component.
 const SMALL_JSX: &str = r#"const App = () => <div class="hero">{title}</div>;"#;
@@ -90,8 +90,13 @@ fn bench_lower(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_function(name, |b| {
             b.iter(|| {
-                let bump = Bump::new();
-                let out = lower_source(&bump, black_box(source), black_box(lang));
+                let allocator = Allocator::new();
+                let out = lower_source(
+                    &allocator,
+                    allocator.as_oxc(),
+                    black_box(source),
+                    black_box(lang),
+                );
                 black_box(out);
             });
         });
@@ -131,9 +136,9 @@ fn bench_compile_vdom(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_function(name, |b| {
             b.iter(|| {
-                let bump = Bump::new();
+                let allocator = Allocator::new();
                 let out = compile_to_vdom(
-                    &bump,
+                    &allocator,
                     black_box(source),
                     black_box(lang),
                     VdomCompileOptions::default(),
@@ -151,9 +156,9 @@ fn bench_compile_vapor(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_function(name, |b| {
             b.iter(|| {
-                let bump = Bump::new();
+                let allocator = Allocator::new();
                 let out = compile_to_vapor(
-                    &bump,
+                    &allocator,
                     black_box(source),
                     black_box(lang),
                     VaporCompileOptions::default(),
@@ -172,8 +177,8 @@ fn bench_compile_mode_aware(c: &mut Criterion) {
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_function(name, |b| {
             b.iter(|| {
-                let bump = Bump::new();
-                let out = compile_jsx(&bump, black_box(source), black_box(lang), &config);
+                let allocator = Allocator::new();
+                let out = compile_jsx(&allocator, black_box(source), black_box(lang), &config);
                 black_box(out);
             });
         });

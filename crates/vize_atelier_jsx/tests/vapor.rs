@@ -4,7 +4,7 @@ mod common;
 
 use common::{snapshot_lang_cases, vapor_code};
 use vize_atelier_jsx::{JsxLang, JsxOutputMode, VaporCompileOptions, compile_to_vapor};
-use vize_carton::Bump;
+use vize_carton::Allocator;
 
 #[test]
 fn vapor_codegen_matrix() {
@@ -49,7 +49,7 @@ fn vapor_codegen_matrix() {
 
 #[test]
 fn templates_are_exposed_on_the_component() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <div class=\"x\"/>;",
@@ -62,7 +62,7 @@ fn templates_are_exposed_on_the_component() {
 
 #[test]
 fn mode_defaults_to_vapor() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <div/>;",
@@ -75,7 +75,7 @@ fn mode_defaults_to_vapor() {
 
 #[test]
 fn use_vue_vapor_directive_is_recorded() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => { \"use vue:vapor\"; return <div/>; };",
@@ -88,7 +88,7 @@ fn use_vue_vapor_directive_is_recorded() {
 
 #[test]
 fn component_name_is_resolved() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const Widget = () => <div/>;",
@@ -101,7 +101,7 @@ fn component_name_is_resolved() {
 
 #[test]
 fn multiple_components_compile_independently() {
-    let bump = Bump::new();
+    let bump = Allocator::new();
     let out = compile_to_vapor(
         &bump,
         "const A = () => <a/>;\nconst B = () => <b/>;",
