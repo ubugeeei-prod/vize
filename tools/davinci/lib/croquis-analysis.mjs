@@ -4,6 +4,7 @@
 import { discoverCrates } from "./crates.mjs";
 import { buildFileIndex } from "./croquis-file-index.mjs";
 import { collectCroquisProducers } from "./croquis-producers.mjs";
+import { byKey } from "./ordering.mjs";
 import { CROQUIS_CRATE_NAME } from "./paths.mjs";
 
 export function analyzeConsumers(products) {
@@ -29,7 +30,7 @@ export function analyzeConsumers(products) {
   };
 
   const isProduct = (name) => products.typeProducts.has(name);
-  const fieldNames = [...products.fieldProducts.keys()].sort();
+  const fieldNames = [...products.fieldProducts.keys()].sort(byKey);
   const fieldAlt = fieldNames.join("|");
 
   for (const crate of crates) {
@@ -101,8 +102,8 @@ export function analyzeConsumers(products) {
         //   let Some(a) = ctx.analysis() else…  (pub fn … -> Option<&Croquis>)
         //   let summary = result.croquis;       (pub field …: Croquis)
         if (producers.fns.size > 0 || producers.fields.size > 0) {
-          const fnAlt = [...producers.fns].sort().join("|");
-          const fieldAltP = [...producers.fields].sort().join("|");
+          const fnAlt = [...producers.fns].sort(byKey).join("|");
+          const fieldAltP = [...producers.fields].sort(byKey).join("|");
           const letRe = new RegExp(
             `\\blet\\s+(?:mut\\s+)?(?:Some\\s*\\(\\s*)?(?:mut\\s+)?(?:&\\s*)?([a-z_][a-z0-9_]*)\\s*\\)?\\s*=\\s*([^;]{0,200})`,
             "g",
@@ -141,7 +142,7 @@ export function analyzeConsumers(products) {
           }
         };
         if (receivers.size > 0) {
-          const rAlt = [...receivers].sort().join("|");
+          const rAlt = [...receivers].sort(byKey).join("|");
           collect(
             new RegExp(
               `(?<![A-Za-z0-9_])(?:${rAlt})\\s*(?:\\.\\s*[a-z_][a-z0-9_]*\\(\\)\\s*)*\\.\\s*(${fieldAlt})(?![A-Za-z0-9_(])`,
@@ -151,14 +152,14 @@ export function analyzeConsumers(products) {
         }
         const chainMethods = new Set([...croquisMethods, ...producers.fns]);
         if (chainMethods.size > 0) {
-          const mAlt = [...chainMethods].sort().join("|");
+          const mAlt = [...chainMethods].sort(byKey).join("|");
           collect(
             new RegExp(`\\.\\s*(?:${mAlt})\\(\\)\\s*\\.\\s*(${fieldAlt})(?![A-Za-z0-9_(])`, "g"),
           );
         }
         if (producers.fields.size > 0) {
           // Inline chains through a croquis-typed field: `entry.analysis.race_conditions`.
-          const pfAlt = [...producers.fields].sort().join("|");
+          const pfAlt = [...producers.fields].sort(byKey).join("|");
           collect(new RegExp(`\\.\\s*(?:${pfAlt})\\s*\\.\\s*(${fieldAlt})(?![A-Za-z0-9_(])`, "g"));
         }
         for (const [field, count] of fieldHits) {
@@ -178,6 +179,6 @@ export function analyzeConsumers(products) {
     }
   }
 
-  globFiles.sort();
+  globFiles.sort(byKey);
   return { crates, rows, nonProduct, grepRows, globFiles };
 }

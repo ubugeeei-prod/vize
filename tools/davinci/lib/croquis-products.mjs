@@ -4,6 +4,7 @@
 
 import { readFileSync } from "node:fs";
 
+import { byKey } from "./ordering.mjs";
 import { CROQUIS_RS, LIB_RS } from "./paths.mjs";
 import { expandUseTree, findUseDecls, stripRust } from "./rust-source.mjs";
 
@@ -122,6 +123,6 @@ export function enumerateProducts() {
     }
   }
 
-  passthroughs.sort();
+  passthroughs.sort(byKey);
   return { typeProducts, fieldProducts, passthroughs };
 }

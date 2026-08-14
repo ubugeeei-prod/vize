@@ -2,11 +2,8 @@
 // staleness check can byte-compare the committed matrix.
 
 import { formatTable } from "./markdown.mjs";
+import { byKey } from "./ordering.mjs";
 import { REGEN_COMMAND } from "./paths.mjs";
-
-function byKey(a, b) {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
 
 export function renderArtifact(products, analysis) {
   const { typeProducts, fieldProducts, passthroughs } = products;
