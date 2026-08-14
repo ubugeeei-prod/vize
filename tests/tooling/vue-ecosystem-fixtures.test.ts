@@ -103,6 +103,14 @@ const newlyAddedSubmodules = new Set([
   "vue-tui",
   "vue-termui",
   "vuefes-japan-speakers",
+  "wave-ui",
+  "dho-web-client",
+  "vue3-admin-design",
+  "vue3-antd-admin",
+  "vue-core-vapor",
+  "vue-jsx-vapor",
+  "wakapi",
+  "petite-vue",
 ]);
 const requestedFixtureLicenses = new Map<string, string>([
   ["airi", "MIT"],
@@ -194,6 +202,8 @@ test("fixtures with exact Vue SFC expectations stay explicit", () => {
       { id: "docsify", count: 0 },
       { id: "vue-native-core", count: 0 },
       { id: "vuefes-japan-speakers", count: 15 },
+      { id: "wakapi", count: 0 },
+      { id: "petite-vue", count: 0 },
     ],
   );
 });

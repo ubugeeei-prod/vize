@@ -677,3 +677,35 @@
 	path = tests/_fixtures/_git/mobile-web-best-practice
 	url = https://github.com/mcuking/mobile-web-best-practice
 	shallow = true
+[submodule "tests/_fixtures/_git/wave-ui"]
+	path = tests/_fixtures/_git/wave-ui
+	url = https://github.com/antoniandre/wave-ui
+	shallow = true
+[submodule "tests/_fixtures/_git/dho-web-client"]
+	path = tests/_fixtures/_git/dho-web-client
+	url = https://github.com/hypha-dao/dho-web-client
+	shallow = true
+[submodule "tests/_fixtures/_git/vue3-admin-design"]
+	path = tests/_fixtures/_git/vue3-admin-design
+	url = https://github.com/baimingxuan/vue3-admin-design
+	shallow = true
+[submodule "tests/_fixtures/_git/vue3-antd-admin"]
+	path = tests/_fixtures/_git/vue3-antd-admin
+	url = https://github.com/buqiyuan/vue3-antd-admin
+	shallow = true
+[submodule "tests/_fixtures/_git/vue-core-vapor"]
+	path = tests/_fixtures/_git/vue-core-vapor
+	url = https://github.com/vuejs/core
+	shallow = true
+[submodule "tests/_fixtures/_git/vue-jsx-vapor"]
+	path = tests/_fixtures/_git/vue-jsx-vapor
+	url = https://github.com/vuejs/vue-jsx-vapor
+	shallow = true
+[submodule "tests/_fixtures/_git/wakapi"]
+	path = tests/_fixtures/_git/wakapi
+	url = https://github.com/muety/wakapi
+	shallow = true
+[submodule "tests/_fixtures/_git/petite-vue"]
+	path = tests/_fixtures/_git/petite-vue
+	url = https://github.com/vuejs/petite-vue
+	shallow = true

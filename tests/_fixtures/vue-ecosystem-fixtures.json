@@ -3283,6 +3283,235 @@
         "lsp"
       ],
       "diff": "e2e-vrt"
+    },
+    {
+      "id": "wave-ui",
+      "displayName": "Wave UI",
+      "kind": "component-library",
+      "fixturePath": "tests/_fixtures/_git/wave-ui",
+      "repository": "https://github.com/antoniandre/wave-ui",
+      "revision": "a95a3bb1d65369de9befed6341bdc56bb5de075a",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "src/**/*.vue"
+      ],
+      "note": "Pug-template SFC corpus: every pinned src SFC uses <template lang=\"pug\"> (219 files at this revision). Globs stay scoped to src/ — docs assets are heavy.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "dho-web-client",
+      "displayName": "Hypha DHO Web Client",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/dho-web-client",
+      "repository": "https://github.com/hypha-dao/dho-web-client",
+      "revision": "94a804ee650cb49990f6fcd4f4c54afa3a925abe",
+      "license": {
+        "spdx": "Apache-2.0",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "src/**/*.vue"
+      ],
+      "note": "Pug-template Quasar application (211 of 215 pinned SFCs use <template lang=\"pug\">).",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue3-admin-design",
+      "displayName": "Vue3 Admin Design",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vue3-admin-design",
+      "repository": "https://github.com/baimingxuan/vue3-admin-design",
+      "revision": "d368ff2f1680414ae9b9fed93ced7cfba8b76b7f",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "src/**/*.vue",
+        "src/**/*.tsx"
+      ],
+      "note": "TSX-heavy Vue application (111 .tsx vs 7 .vue at this revision) — JSX corpus lane.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue3-antd-admin",
+      "displayName": "Vue3 Antd Admin",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/vue3-antd-admin",
+      "repository": "https://github.com/buqiyuan/vue3-antd-admin",
+      "revision": "64c03db76710e70b85aedf40a9ca87101946d70d",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "src/**/*.vue",
+        "src/**/*.tsx"
+      ],
+      "note": "Mixed SFC x TSX application (99 .vue + 29 .tsx at this revision).",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "vue-core-vapor",
+      "displayName": "Vue Core (Vapor test suites)",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-core-vapor",
+      "repository": "https://github.com/vuejs/core",
+      "revision": "3adb225775c9b28223a56e07f7a2f874b6fbb138",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "packages-private/vapor-e2e-test/**/*.vue",
+        "packages-private/benchmark/**/*.vue"
+      ],
+      "note": "Vapor SFC corpus pinned at tag v3.6.0-rc.3: upstream's vapor e2e suite plus the vapor benchmark app. The manifest has no test-suite kind, so this rides as library; globs deliberately exclude the rest of the monorepo.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "vue-jsx-vapor",
+      "displayName": "Vue JSX Vapor",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/vue-jsx-vapor",
+      "repository": "https://github.com/vuejs/vue-jsx-vapor",
+      "revision": "817e137c2847c7e4cca7d283637660f176060453",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "playground/src/**/*.tsx",
+        "docs/**/*.tsx"
+      ],
+      "note": "Vapor JSX corpus: playground app and docs tutorial steps hold the vapor-mode JSX sources.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
+    },
+    {
+      "id": "wakapi",
+      "displayName": "Wakapi",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/wakapi",
+      "repository": "https://github.com/muety/wakapi",
+      "revision": "1a08af5f78d4161f8b573de6ad82615b4f2b76f4",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "expectedVueFileCount": 0,
+      "petiteVueGlobs": [
+        "views/**/*.html",
+        "static/assets/js/components/**/*.js"
+      ],
+      "note": "petite-vue over Go-templated HTML: server-side Go {{ }} delimiters interleave with petite-vue directives in views/*.html. vueGlobs stays .vue-only because SFC tool lanes glob it directly; the petite-vue sources are recorded in petiteVueGlobs for corpus-coverage scanning.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt"
+    },
+    {
+      "id": "petite-vue",
+      "displayName": "petite-vue",
+      "kind": "library",
+      "fixturePath": "tests/_fixtures/_git/petite-vue",
+      "repository": "https://github.com/vuejs/petite-vue",
+      "revision": "9ff3b98b844033b935143c221176c81244aae32e",
+      "license": {
+        "spdx": "MIT",
+        "files": [
+          "LICENSE"
+        ]
+      },
+      "vueGlobs": [
+        "**/*.vue"
+      ],
+      "expectedVueFileCount": 0,
+      "petiteVueGlobs": [
+        "examples/**/*.html"
+      ],
+      "note": "petite-vue upstream examples (plain HTML, no SFCs). vueGlobs stays .vue-only because SFC tool lanes glob it directly; the petite-vue sources are recorded in petiteVueGlobs for corpus-coverage scanning.",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "curator-compare"
     }
   ]
 }

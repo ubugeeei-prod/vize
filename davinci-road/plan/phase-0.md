@@ -125,11 +125,11 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `tools/davinci/corpus-coverage.mjs`: scans corpus `.vue`/`.jsx`/`.tsx` sources for the construct taxonomy dimensions (P0-12's `taxonomy.toml`) and emits counts per construct per project
-- [ ] Committed report `davinci-road/plan/corpus-coverage.md` (generated, with a staleness header)
-- [ ] Candidate list of real projects filling the gaps (pug-using Vue apps, JSX/TSX Vue apps, Vapor early adopters, petite-vue sites) with license + size + rationale — **review point: maintainer approves the list before submodules land**
-- [ ] Approved projects added as pinned submodules under `tests/_fixtures/_git/` following existing conventions (`--depth 1`, license recorded in the fixtures manifest)
-- [ ] Re-run P0-5 baseline to include them
+- [x] `tools/davinci/corpus-coverage.mjs`: scans corpus `.vue`/`.jsx`/`.tsx` sources for the construct taxonomy dimensions (P0-12's `taxonomy.toml`) and emits counts per construct per project _(landed with `--write`/`--check`; also scans the petite-vue entries' `.html`/`.js` via the manifest's `petiteVueGlobs`; the report carries a scope-proof footer — hydrated-project count vs manifest total — so a partially hydrated run says so loudly. The `--check` staleness gate joins `tests/tooling/davinci-matrices.test.ts` only once CI hydrates the full corpus)_
+- [ ] Committed report `davinci-road/plan/corpus-coverage.md` (generated, with a staleness header) — the committed report currently covers the 8 round-1 projects only (8/142 hydrated, scope proof in the footer) (pending: full corpus hydration + P0-5 baseline — disk)
+- [x] Candidate list of real projects filling the gaps (pug-using Vue apps, JSX/TSX Vue apps, Vapor early adopters, petite-vue sites) with license + size + rationale — **review point: maintainer approves the list before submodules land** _(maintainer approval received 2026-08-14 via the recommended-picks review)_
+- [x] Approved projects added as pinned submodules under `tests/_fixtures/_git/` following existing conventions (`--depth 1`, license recorded in the fixtures manifest) _(round 1: `wave-ui`, `dho-web-client`, `vue3-admin-design`, `vue3-antd-admin`, `vue-core-vapor` (vuejs/core @ v3.6.0-rc.3, vapor suites), `vue-jsx-vapor`, `wakapi`, `petite-vue` — licenses verified at clone time; the two petite-vue entries pin `expectedVueFileCount: 0` and record their HTML corpus in `petiteVueGlobs` because SFC tool lanes glob `vueGlobs` directly)_
+- [ ] Re-run P0-5 baseline to include them (pending: full corpus hydration + P0-5 baseline — disk)
 
 **Acceptance:** coverage report regenerates identically; every taxonomy dimension has ≥1 real-project instance or a recorded "not represented — matrix fixtures only" note; baseline updated in the same PR.
 
