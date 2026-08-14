@@ -9,6 +9,7 @@ import {
   assertElkRenderRouteAnchors,
   ELK_RENDER_ROUTE,
   ELK_RENDER_ROUTE_SOURCE_CONTRACTS,
+  elkRequiredRouteLinks,
 } from "../app/dev/elk-route-contract.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -60,14 +61,21 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
   assert.match(visualSpec, /path: ELK_RENDER_ROUTE/);
   assert.match(visualSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
-  assert.match(
-    visualSpec,
-    /route\.path === ELK_RENDER_ROUTE \? \[\.\.\.ELK_RENDER_ROUTE_LINKS\] : \[\]/,
-  );
   assert.doesNotMatch(visualSpec, /path: "\/"(?:[,}])/);
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:vrt:elk"] ?? "", /app\/vrt\/elk\.spec\.ts/);
+});
+
+test("elk visual readiness requires settings links only on the deterministic render route", () => {
+  assert.deepEqual(elkRequiredRouteLinks(ELK_RENDER_ROUTE), [
+    "/settings/interface",
+    "/settings/about",
+  ]);
+
+  for (const routePath of ["/explore", "/public", "/settings/interface", "/share-target?text=hi"]) {
+    assert.deepEqual(elkRequiredRouteLinks(routePath), []);
+  }
 });
 
 test("elk setup pins runtime overrides in the generated package manifest", (t) => {

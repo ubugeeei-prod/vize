@@ -16,7 +16,11 @@ import {
   installVisualStabilityHooks,
   prepareStableVisualState,
 } from "../../_helpers/visual-parity";
-import { ELK_RENDER_ROUTE, readElkRenderRouteSourceEvidence } from "../dev/elk-route-contract";
+import {
+  ELK_RENDER_ROUTE,
+  elkRequiredRouteLinks,
+  readElkRenderRouteSourceEvidence,
+} from "../dev/elk-route-contract";
 
 interface VisualRoute {
   maxDiffRatio?: number;
@@ -33,7 +37,6 @@ const OUTPUT_DIR =
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const DEFAULT_MAX_DIFF_RATIO = 0.04;
 const ELK_MIN_RENDER_ROUTE_ELEMENTS = 100;
-const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const apps = createElkVisualParityApps();
 
@@ -189,7 +192,7 @@ async function openRoute(page: Page, baseUrl: string, route: VisualRoute): Promi
 }
 
 async function waitForElkPageContent(page: Page, route: VisualRoute): Promise<void> {
-  const requiredLinks = route.path === ELK_RENDER_ROUTE ? [...ELK_RENDER_ROUTE_LINKS] : [];
+  const requiredLinks = elkRequiredRouteLinks(route.path);
   await expect
     .poll(() => elkRouteContentState(page, requiredLinks), {
       intervals: [250, 500, 1_000],

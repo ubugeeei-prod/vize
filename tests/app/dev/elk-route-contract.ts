@@ -3,6 +3,14 @@ import path from "node:path";
 
 export const ELK_RENDER_ROUTE = "/settings";
 
+export const ELK_RENDER_ROUTE_LINKS = ["/settings/interface", "/settings/about"] as const;
+
+// Only the deterministic render route ships the pinned settings navigation, so
+// other routes must not gate readiness on those links.
+export function elkRequiredRouteLinks(routePath: string): string[] {
+  return routePath === ELK_RENDER_ROUTE ? [...ELK_RENDER_ROUTE_LINKS] : [];
+}
+
 export const ELK_RENDER_ROUTE_SOURCE_CONTRACTS = {
   "app/pages/index.vue": {
     description: "root route is an empty auth middleware handoff",
