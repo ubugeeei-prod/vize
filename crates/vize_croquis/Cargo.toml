@@ -35,7 +35,10 @@ criterion.workspace = true
 davinci_harness.workspace = true
 # Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
 # permits it, and the davinci bench needs the descriptor-level orchestration.
-vize_atelier_sfc.workspace = true
+# Path-only on purpose: the workspace entry pins `version = "=x.y.z"`, which
+# survives into the published manifest and would demand a vize_atelier_sfc
+# release before this crate. Version-less dev-deps are stripped when packaging.
+vize_atelier_sfc = { path = "../vize_atelier_sfc" }
 
 [[bench]]
 name = "davinci"

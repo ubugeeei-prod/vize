@@ -20,7 +20,7 @@ type CargoPackage = {
   version: string;
 };
 
-type CargoDependency = { name: string };
+type CargoDependency = { name: string; kind: string | null; req: string };
 
 function getScriptCrateArray(variableName: string): string[] {
   const scriptPath = path.join(repoRoot, "tools", "moon", "cmd", "publish_crates", "main.mbt");
@@ -61,12 +61,12 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
 
     for (const dependency of pkg.dependencies) {
       const dependencyOrder = publishOrder.get(dependency.name);
-      if (!packages.has(dependency.name)) continue;
+      const strippedOnPublish = dependency.kind === "dev" && dependency.req === "*";
+      if (!packages.has(dependency.name) || strippedOnPublish) continue;
       assert.ok(
         dependencyOrder != null,
         `${crateName} cannot depend on deferred workspace crate ${dependency.name}`,
       );
-
       const crateOrder = publishOrder.get(crateName);
       assert.ok(crateOrder != null, `Missing publish order for ${crateName}`);
       assert.ok(
