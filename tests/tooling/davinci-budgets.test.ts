@@ -5,8 +5,9 @@
 //      bench sources (cstr!-built or literal) has a [bench.<id>] entry in
 //      davinci-road/plan/budgets.toml, and vice versa, with the offending id
 //      named on mismatch. Entries carry exactly the documented field set and
-//      hold the tolerance ceilings (0.05, 0.10 for `_transform_` stage
-//      windows) — ceilings, not equalities, because the ratchet allows
+//      hold the tolerance ceilings (0.05; 0.10 for stage-window benches:
+//      `_transform_`, vapor lower, ssr codegen) — ceilings, not equalities,
+//      because the ratchet allows
 //      tightening.
 //   2. The ratchet header — budgets.toml carries the exact machine-checked
 //      ratchet line (the documented-in-file variant of the P0-4 ratchet rule).
@@ -69,7 +70,7 @@ function benchSources(): { file: string; text: string }[] {
         if (!name.endsWith(".rs")) continue;
         const file = path.join(root, pkg, "benches", name);
         const text = fs.readFileSync(path.join(repoRoot, file), "utf8");
-        if (text.includes("bench_with_metrics")) sources.push({ file, text });
+        if (text.includes("_with_metrics(")) sources.push({ file, text });
       }
     }
   }
@@ -160,7 +161,11 @@ test("every budget entry carries exactly the documented fields within the tolera
     const tolerance = entry.wall_tolerance;
     assert.ok(typeof tolerance === "number", `[bench.${id}] wall_tolerance must be a number`);
     assert.ok(tolerance > 0, `[bench.${id}] wall_tolerance must be positive`);
-    const ceiling = id.includes("_transform_") ? 0.1 : 0.05;
+    const stageWindow =
+      id.includes("_transform_") ||
+      id.startsWith("atelier_vapor_lower_") ||
+      id.startsWith("atelier_ssr_codegen_");
+    const ceiling = stageWindow ? 0.1 : 0.05;
     assert.ok(
       tolerance <= ceiling,
       `[bench.${id}] wall_tolerance ${tolerance} exceeds the ${ceiling} ceiling ` +
