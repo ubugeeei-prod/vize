@@ -22,6 +22,7 @@ import {
 import {
   ELK_RENDER_ROUTE,
   elkRouteReadinessExpectation,
+  elkRouteReadinessState,
   readElkRenderRouteSourceEvidence,
   type ElkRenderRouteSourceEvidence,
 } from "./elk-route-contract";
@@ -231,25 +232,24 @@ async function waitForElkPageContent(page: Page): Promise<void> {
 }
 
 async function elkRenderRouteContentState(page: Page): Promise<string> {
-  return page.evaluate(
-    ({ links, minElements, selector }) => {
+  const observation = await page.evaluate(
+    ({ links, selector }) => {
       const root = document.querySelector(selector);
       if (!root) {
-        return "missing-root";
+        return { elementCount: 0, missingLinks: links, rootFound: false };
       }
 
-      const elementCount = root.querySelectorAll("*").length;
-      const missingLinks = links.filter((href) => !root.querySelector(`a[href="${href}"]`));
-      if (elementCount >= minElements && missingLinks.length === 0) {
-        return "ready";
-      }
-
-      return `incomplete:elements=${elementCount}:missing=${missingLinks.join(",")}`;
+      return {
+        elementCount: root.querySelectorAll("*").length,
+        missingLinks: links.filter((href) => !root.querySelector(`a[href="${href}"]`)),
+        rootFound: true,
+      };
     },
     {
       links: ELK_RENDER_READINESS.links,
-      minElements: ELK_RENDER_READINESS.minElements,
       selector: app.mountSelector,
     },
   );
+
+  return elkRouteReadinessState(ELK_RENDER_ROUTE, observation);
 }

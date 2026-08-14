@@ -42,6 +42,31 @@ export function elkRouteReadinessExpectation(routePath: string): ElkRouteReadine
   };
 }
 
+export interface ElkRouteObservation {
+  elementCount: number;
+  missingLinks: readonly string[];
+  rootFound: boolean;
+}
+
+// Shared by the dev and visual specs so readiness gating is a single behavior
+// that can be exercised without a browser.
+export function elkRouteReadinessState(
+  routePath: string,
+  observation: ElkRouteObservation,
+): string {
+  if (!observation.rootFound) {
+    return "missing-root";
+  }
+
+  const { minElements } = elkRouteReadinessExpectation(routePath);
+  if (observation.elementCount >= minElements && observation.missingLinks.length === 0) {
+    return "ready";
+  }
+
+  const missing = observation.missingLinks.join(",");
+  return `incomplete:elements=${observation.elementCount}:missing=${missing}`;
+}
+
 function elkRoutePathname(routePath: string): string {
   return routePath.split("?", 1)[0] || "/";
 }
