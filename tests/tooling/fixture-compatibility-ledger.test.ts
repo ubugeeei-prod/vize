@@ -17,12 +17,12 @@ const ledger = readCompatibilityLedger();
 
 test("compatibility ledger joins every fixture inventory exactly once", () => {
   const validated = validateCompatibilityLedger(ledger, context);
-  assert.equal(validated.fixtureMap.size, 138);
+  assert.equal(validated.fixtureMap.size, 146);
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) =>
       fixture.memberships.includes("ecosystem"),
     ).length,
-    134,
+    142,
   );
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) => fixture.memberships.includes("app"))
@@ -48,8 +48,8 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
 test("report keeps present, exercised, and runtime evidence separate", () => {
   const report = createCompatibilityReport(ledger, context);
   assert.deepEqual(report.inventories, {
-    gitlinks: 138,
-    ecosystem: 134,
+    gitlinks: 146,
+    ecosystem: 142,
     app: 16,
     appOnly: 4,
   });
@@ -58,10 +58,10 @@ test("report keeps present, exercised, and runtime evidence separate", () => {
       Object.entries(report.oracles).map(([kind, oracle]) => [kind, oracle.fixtureCount]),
     ),
     {
-      compiler: 134,
-      "formatter-idempotency": 134,
-      linter: 134,
-      typechecker: 134,
+      compiler: 142,
+      "formatter-idempotency": 142,
+      linter: 142,
+      typechecker: 142,
       "production-build": 4,
       "authored-lsp": 3,
       "vue-tsc-parity": 11,
