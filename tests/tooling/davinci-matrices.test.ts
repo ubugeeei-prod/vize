@@ -21,6 +21,11 @@ const matrices = [
     generator: "tools/davinci/rule-parity.mjs",
     artifact: "davinci-road/plan/rule-parity.md",
   },
+  {
+    name: "SourceLocation consumer inventory",
+    generator: "tools/davinci/sourcelocation-inventory.mjs",
+    artifact: "davinci-road/plan/sourcelocation-inventory.md",
+  },
 ];
 
 function runCheck(generator: string) {

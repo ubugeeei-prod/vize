@@ -17,7 +17,7 @@
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
 - [x] P0-8 Rule-parity matrix (SFC × JSX) — surfaces derived from trait impls + overridden hooks per rule file; SFC/JSX membership derived from the registration sites and the `lint_jsx` three-lane partition (`as_markup_rule` / `jsx_needs_lowering` / legacy fallback), with drift asserts on the dispatch source
-- [ ] P0-9 `Span` type + `SourceLocation` consumer inventory
+- [x] P0-9 `Span` type + `SourceLocation` consumer inventory — corpus-diff acceptance clause pending the P0-5 tool
 - [x] P0-10 Folio harness skeleton + VIR absorption — the `vir` payload key lives in `vize_vitrine`, not `vize_curator`; alias added at the real site
 - [ ] P0-11 Profiler source-level attribution + stable export
 - [ ] P0-12 Assurance harness (assertion lint, mutation baseline, taxonomy)
@@ -176,12 +176,12 @@ detection.
 
 **Steps:**
 
-- [ ] `crates/vize_carton/src/span.rs`: `Span { start: u32, end: u32 }` with `slice(&'a str) -> &'a str`, `to_block_relative(block_start) -> Span`, `len()`; `#[derive(Copy, Clone, PartialEq, Eq, Hash)]`; size static-assert (8 bytes)
-- [ ] Block-relative hashing helper (`hash_relative(hasher, block_start)`) per the rustc relative-span import
-- [ ] Inventory script `tools/davinci/sourcelocation-inventory.mjs`: every read of `SourceLocation::{source, start.line, start.column, end.line, end.column}` across the workspace, grouped by crate and function; committed as `davinci-road/plan/sourcelocation-inventory.md` with counts
-- [ ] Doc note in the inventory: which consumers move to `Span::slice` (diagnostic excerpts), which to offset-derived line/col (source-map `finish()`), which delete outright
+- [x] `crates/vize_carton/src/span.rs`: `Span { start: u32, end: u32 }` with `slice(&'a str) -> &'a str`, `to_block_relative(block_start) -> Span`, `len()`; `#[derive(Copy, Clone, PartialEq, Eq, Hash)]`; size static-assert (8 bytes)
+- [x] Block-relative hashing helper (`hash_relative(hasher, block_start)`) per the rustc relative-span import
+- [x] Inventory script `tools/davinci/sourcelocation-inventory.mjs`: every read of `SourceLocation::{source, start.line, start.column, end.line, end.column}` across the workspace, grouped by crate and function; committed as `davinci-road/plan/sourcelocation-inventory.md` with counts
+- [x] Doc note in the inventory: which consumers move to `Span::slice` (diagnostic excerpts), which to offset-derived line/col (source-map `finish()`), which delete outright
 
-**Acceptance:** type + unit tests + size assert land; `tools/davinci/corpus-diff.mjs` empty (zero behavior change); inventory committed with per-crate counts.
+**Acceptance:** type + unit tests + size assert land; `tools/davinci/corpus-diff.mjs` empty (zero behavior change); inventory committed with per-crate counts. _Status: type, tests, size assert, and inventory landed unused by production code; the corpus-diff clause stays pending until the P0-5 tool exists (nothing to run it on yet — the type has zero production call sites)._
 
 **Deps:** P0-5.
 
@@ -260,7 +260,7 @@ detection.
 - [ ] All benches run in CI with committed baselines and `budgets.toml` (P0-1..4)
 - [ ] Corpus baseline + diff tool reproducible; expansion round 1 merged (P0-5..6)
 - [ ] Consumption + rule-parity matrices committed with staleness checks (P0-7..8)
-- [ ] `Span` landed unused; `SourceLocation` inventory committed (P0-9)
+- [x] `Span` landed unused; `SourceLocation` inventory committed (P0-9)
 - [x] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
 - [ ] Profiler export schema validating; zero overhead when off (P0-11)
 - [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12)
