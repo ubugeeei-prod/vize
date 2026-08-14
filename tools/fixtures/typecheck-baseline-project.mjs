@@ -35,13 +35,19 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
  * `.vize-baseline` directory makes TypeScript skip those package-local links and
  * turns a usable baseline into a configuration failure.
  *
- * The source config's own directory is also globbed as well as the fixture root,
- * because a TypeScript wildcard segment never descends into a dot-directory:
- * `<fixture>/**\/*.d.ts` misses `.nuxt/imports.d.ts` while `<fixture>/.nuxt/**`
- * matches it, the segment being literal. That is the whole of elk's generated
- * type environment, and every project whose baseline config is generated into a
- * dot-directory has the same shape. For the rest the second root is already
- * inside the first and adds nothing.
+ * The baseline also has to list non-Vue authored scripts that the compared SFCs
+ * import. Composite projects reject imported files that are not in the project
+ * file list (`TS6307`), and that is an instrument failure rather than a Vize
+ * diagnostic. These support globs deliberately exclude `.vue`, so `files` still
+ * fixes the comparable SFC corpus while TypeScript can build the same project
+ * graph around it.
+ *
+ * Dot-directories need literal include roots, because a TypeScript wildcard
+ * segment never descends into one: `<fixture>/**\/*.d.ts` misses
+ * `.nuxt/imports.d.ts` and `docs/.vitepress/utils.ts`, while literal
+ * `<fixture>/.nuxt/**` or `<fixture>/docs/.vitepress/**` matches them. The
+ * source config's own directory and every checked-file dot ancestor are therefore
+ * globbed by name.
  */
 export function materializeBaselineProject(fixtureRoot, reportDir, project, vizeReport) {
   const sourceProject = project.typecheckPerformance?.baseline?.tsconfig ?? project.tsconfig;
@@ -53,9 +59,19 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     `${project.id}-vue-tsc.tsconfig.json`,
   );
   const configDir = dirname(outputPath);
+  const dotRoots = dotDirectoryIncludeRoots(fixtureRoot, vizeReport);
   const ambientRoots = [
     ...new Set(
-      [fixtureRoot, dirname(sourcePath)].map((root) => configRelativePath(configDir, root)),
+      [fixtureRoot, dirname(sourcePath), ...dotRoots].map((root) =>
+        configRelativePath(configDir, root),
+      ),
+    ),
+  ];
+  const sourceRoots = [
+    ...new Set(
+      [...vueGlobSourceRoots(fixtureRoot, project), ...dotRoots].map((root) =>
+        configRelativePath(configDir, root),
+      ),
     ),
   ];
   const config = {
@@ -75,7 +91,10 @@ export function materializeBaselineProject(fixtureRoot, reportDir, project, vize
     files: vizeReport.files
       .slice(0, vizeReport.fileCount)
       .map((entry) => configRelativePath(configDir, resolve(fixtureRoot, entry.file))),
-    include: ambientRoots.map((root) => `${root}/**/*.d.ts`),
+    include: [
+      ...ambientRoots.map((root) => `${root}/**/*.d.ts`),
+      ...sourceRoots.flatMap((root) => sourceIncludeGlobs(root)),
+    ],
     exclude: ambientRoots.flatMap((root) => [`${root}/**/node_modules/**`, `${root}/**/dist/**`]),
     references: [],
   };
@@ -90,4 +109,48 @@ function configRelativePath(from, to) {
   const path = relative(from, to).replaceAll("\\", "/");
   if (isAbsolute(path) || /^[A-Za-z]:\//u.test(path)) return path;
   return path.startsWith(".") ? path : `./${path}`;
+}
+
+function vueGlobSourceRoots(fixtureRoot, project) {
+  if (!Array.isArray(project.vueGlobs)) return [];
+  return project.vueGlobs.map((glob) => resolve(fixtureRoot, literalGlobRoot(glob)));
+}
+
+function literalGlobRoot(glob) {
+  if (typeof glob !== "string" || glob.length === 0) return ".";
+  const firstMagic = glob.search(/[*?[\]{}]/u);
+  const prefix = firstMagic < 0 ? glob : glob.slice(0, firstMagic);
+  const slash = prefix.lastIndexOf("/");
+  const root = slash < 0 ? "" : prefix.slice(0, slash);
+  return root.length === 0 ? "." : root;
+}
+
+function dotDirectoryIncludeRoots(fixtureRoot, vizeReport) {
+  const roots = [];
+  const files = Array.isArray(vizeReport.files)
+    ? vizeReport.files.slice(0, vizeReport.fileCount)
+    : [];
+  for (const entry of files) {
+    if (typeof entry?.file !== "string") continue;
+    const segments = entry.file.replaceAll("\\", "/").split("/");
+    for (let index = 0; index < segments.length - 1; index += 1) {
+      const segment = segments[index];
+      if (!segment.startsWith(".") || segment === "." || segment === "..") continue;
+      roots.push(resolve(fixtureRoot, ...segments.slice(0, index + 1)));
+    }
+  }
+  return roots;
+}
+
+function sourceIncludeGlobs(root) {
+  return [
+    `${root}/**/*.ts`,
+    `${root}/**/*.tsx`,
+    `${root}/**/*.mts`,
+    `${root}/**/*.cts`,
+    `${root}/**/*.js`,
+    `${root}/**/*.jsx`,
+    `${root}/**/*.mjs`,
+    `${root}/**/*.cjs`,
+  ];
 }
