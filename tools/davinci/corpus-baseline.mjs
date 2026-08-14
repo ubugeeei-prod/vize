@@ -112,8 +112,7 @@ async function main() {
   else log(`raw shard reports kept: ${path.relative(repoRoot, scratchDir)}`);
 
   const elapsedSeconds = Math.round((Date.now() - startedAt) / 1000);
-  const outLabel =
-    outPath === BASELINE_PATH ? BASELINE_REL : path.relative(repoRoot, outPath);
+  const outLabel = outPath === BASELINE_PATH ? BASELINE_REL : path.relative(repoRoot, outPath);
   log(
     `wrote ${outLabel}: ${artifact.scope.row_count} rows (${artifact.scope.projects_run} projects x ${artifact.scope.surfaces_per_project} surfaces, ${artifact.scope.total_file_count} files) in ${elapsedSeconds}s`,
   );

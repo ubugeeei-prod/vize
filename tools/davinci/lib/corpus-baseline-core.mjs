@@ -444,7 +444,9 @@ export function loadUnstableRows(manifest) {
 export function resolveVizeBin(vizeBin) {
   const resolved = path.resolve(repoRoot, vizeBin ?? path.join("target", "release", "vize"));
   if (!existsSync(resolved)) {
-    throw new Error(`vize binary not found: ${resolved} (build with: cargo build --release -p vize)`);
+    throw new Error(
+      `vize binary not found: ${resolved} (build with: cargo build --release -p vize)`,
+    );
   }
   return resolved;
 }
