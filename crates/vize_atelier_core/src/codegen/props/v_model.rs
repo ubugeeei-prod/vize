@@ -26,16 +26,16 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         .exp
         .as_ref()
         .map(|e| match e {
-            ExpressionNode::Simple(s) => s.content.as_str(),
-            ExpressionNode::Compound(c) => c.loc.source.as_str(),
+            ExpressionNode::Simple(s) => s.content.clone(),
+            ExpressionNode::Compound(c) => vize_carton::String::new(c.loc.span.slice(&ctx.source)),
         })
-        .unwrap_or("undefined");
+        .unwrap_or_else(|| vize_carton::String::new("undefined"));
 
     // [prop]: value
     ctx.push("[");
     generate_expression(ctx, arg);
     ctx.push("]: ");
-    ctx.push(value_exp);
+    ctx.push(&value_exp);
     ctx.push(",");
     ctx.newline();
 
@@ -43,7 +43,7 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
     ctx.push("[\"onUpdate:\" + ");
     generate_expression(ctx, arg);
     ctx.push("]: $event => ((");
-    ctx.push(value_exp);
+    ctx.push(&value_exp);
     ctx.push(") = $event)");
 
     if !dir.modifiers.is_empty() {

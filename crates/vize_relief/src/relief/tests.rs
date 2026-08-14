@@ -337,7 +337,7 @@ fn block_statement_new() {
 #[test]
 fn template_child_text_loc() {
     let allocator = Bump::new();
-    let loc = SourceLocation::new(Position::new(5, 1, 6), Position::new(10, 1, 11), "hello");
+    let loc = SourceLocation::new(Position::new(5, 1, 6), Position::new(10, 1, 11));
     let text = TextNode::new("hello", loc.clone());
     let child = TemplateChildNode::Text(vize_carton::Box::new_in(text, &allocator));
     assert_eq!(*child.loc(), loc);
@@ -365,7 +365,7 @@ fn source_location_stub() {
     assert_eq!(stub.start.line, 1);
     assert_eq!(stub.start.column, 1);
     assert_eq!(stub.end.offset, 0);
-    assert_eq!(stub.source.as_str(), "");
+    assert_eq!(stub.span, vize_carton::Span::new(0, 0));
 }
 
 #[test]
@@ -376,10 +376,10 @@ fn source_location_default_is_stub() {
 
 #[test]
 fn source_location_new() {
-    let loc = SourceLocation::new(Position::new(0, 1, 1), Position::new(5, 1, 6), "hello");
+    let loc = SourceLocation::new(Position::new(0, 1, 1), Position::new(5, 1, 6));
     assert_eq!(loc.start.offset, 0);
     assert_eq!(loc.end.offset, 5);
-    assert_eq!(loc.source.as_str(), "hello");
+    assert_eq!(loc.span, vize_carton::Span::new(0, 5));
 }
 
 #[test]

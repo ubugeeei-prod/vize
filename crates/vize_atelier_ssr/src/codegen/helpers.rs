@@ -256,7 +256,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(") => {\n");
         self.indent_level += 1;
 
-        self.push_scoped_params(collect_for_scoped_params(for_node));
+        self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
 
         // Process for body
         let needs_fragment = !disable_nested_fragments

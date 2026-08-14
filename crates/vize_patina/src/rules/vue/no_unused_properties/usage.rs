@@ -71,11 +71,15 @@ pub(super) fn classify_props_access(script: &str, span: (u32, u32)) -> PropsAcce
 /// Every identifier-shaped token referenced by a compiled template expression.
 pub(super) fn template_references(root: &RootNode<'_>) -> FxHashSet<CompactString> {
     let mut names = FxHashSet::default();
-    collect_children(&root.children, &mut names);
+    collect_children(&root.children, &mut names, &root.source);
     names
 }
 
-fn collect_children(children: &[TemplateChildNode<'_>], names: &mut FxHashSet<CompactString>) {
+fn collect_children(
+    children: &[TemplateChildNode<'_>],
+    names: &mut FxHashSet<CompactString>,
+    source: &str,
+) {
     for child in children {
         match child {
             TemplateChildNode::Element(element) => {
@@ -88,14 +92,14 @@ fn collect_children(children: &[TemplateChildNode<'_>], names: &mut FxHashSet<Co
                             .into_iter()
                             .flatten()
                         {
-                            push_identifier_tokens(expression_source(exp), names);
+                            push_identifier_tokens(expression_source(exp, source), names);
                         }
                     }
                 }
-                collect_children(&element.children, names);
+                collect_children(&element.children, names, source);
             }
             TemplateChildNode::Interpolation(interpolation) => {
-                push_identifier_tokens(expression_source(&interpolation.content), names);
+                push_identifier_tokens(expression_source(&interpolation.content, source), names);
             }
             // `v-if` / `v-for` are still plain directives in the parse this
             // reads, so these arms only matter if a transformed AST is ever
@@ -103,24 +107,24 @@ fn collect_children(children: &[TemplateChildNode<'_>], names: &mut FxHashSet<Co
             TemplateChildNode::If(if_node) => {
                 for branch in if_node.branches.iter() {
                     if let Some(condition) = branch.condition.as_ref() {
-                        push_identifier_tokens(expression_source(condition), names);
+                        push_identifier_tokens(expression_source(condition, source), names);
                     }
-                    collect_children(&branch.children, names);
+                    collect_children(&branch.children, names, source);
                 }
             }
             TemplateChildNode::For(for_node) => {
-                push_identifier_tokens(expression_source(&for_node.source), names);
-                collect_children(&for_node.children, names);
+                push_identifier_tokens(expression_source(&for_node.source, source), names);
+                collect_children(&for_node.children, names, source);
             }
             _ => {}
         }
     }
 }
 
-fn expression_source<'a>(exp: &'a ExpressionNode<'a>) -> &'a str {
+fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }
 

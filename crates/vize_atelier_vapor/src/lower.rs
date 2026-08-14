@@ -24,15 +24,20 @@ use element::transform_element;
 use text::{transform_interpolation, transform_text};
 
 /// Transform AST to Vapor IR
-pub fn transform_to_ir<'a>(allocator: &'a Bump, root: &RootNode<'a>) -> RootIRNode<'a> {
-    transform_to_ir_with_diagnostics(allocator, root).0
+pub fn transform_to_ir<'a>(
+    allocator: &'a Bump,
+    root: &RootNode<'a>,
+    source: &'a str,
+) -> RootIRNode<'a> {
+    transform_to_ir_with_diagnostics(allocator, root, source).0
 }
 
 pub(crate) fn transform_to_ir_with_diagnostics<'a>(
     allocator: &'a Bump,
     root: &RootNode<'a>,
+    source: &'a str,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
-    let mut ctx = TransformContext::new(allocator);
+    let mut ctx = TransformContext::new(allocator, source);
 
     // Create block for root
     let block = transform_children(&mut ctx, &root.children);
@@ -40,7 +45,7 @@ pub(crate) fn transform_to_ir_with_diagnostics<'a>(
     (
         RootIRNode {
             node: RootNode::new(allocator, ""),
-            source: String::from(""),
+            source: String::from(source),
             template: Default::default(),
             template_index_map: Default::default(),
             root_template_indexes: Vec::new_in(allocator),
@@ -174,8 +179,9 @@ mod tests {
     #[test]
     fn test_transform_simple_element() {
         let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, "<div>hello</div>");
-        let ir = transform_to_ir(&allocator, &root);
+        let source = "<div>hello</div>";
+        let (root, _) = parse(&allocator, source);
+        let ir = transform_to_ir(&allocator, &root, source);
 
         assert!(!ir.block.returns.is_empty());
     }
@@ -183,8 +189,9 @@ mod tests {
     #[test]
     fn test_transform_nested_elements() {
         let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, "<div><span>nested</span></div>");
-        let ir = transform_to_ir(&allocator, &root);
+        let source = "<div><span>nested</span></div>";
+        let (root, _) = parse(&allocator, source);
+        let ir = transform_to_ir(&allocator, &root, source);
 
         assert!(!ir.block.returns.is_empty());
     }

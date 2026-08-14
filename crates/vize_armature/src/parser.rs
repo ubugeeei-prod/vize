@@ -289,11 +289,7 @@ impl<'a> Parser<'a> {
     /// Create a source location
     fn create_loc(&self, start: usize, end: usize) -> SourceLocation {
         let (start, end) = self.normalize_span(start, end);
-        SourceLocation::new(
-            self.get_pos(start),
-            self.get_pos(end),
-            self.get_source(start, end),
-        )
+        SourceLocation::new(self.get_pos(start), self.get_pos(end))
     }
 
     /// Add child to current context (stack top or root)

@@ -22,7 +22,7 @@ pub mod steps;
 pub mod expr_parse_probe;
 
 // Re-export from vize_relief (AST, errors, options)
-pub use vize_relief::errors::{CompilerError, CompilerResult, ErrorCode};
+pub use vize_relief::errors::{CompilerError, CompilerErrorWithSource, CompilerResult, ErrorCode};
 pub use vize_relief::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CompilerOptions, ParseMode,
     ParserOptions, TemplateSyntaxMode, TextMode, TransformOptions, WhitespaceStrategy,

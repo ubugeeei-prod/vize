@@ -101,7 +101,7 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
 }
 
 /// Check if component has dynamic slots (requires DYNAMIC_SLOTS patch flag)
-pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
+pub fn has_dynamic_slots_flag(el: &ElementNode<'_>, source: &str) -> bool {
     // A forwarded slots object can change without anything on this vnode
     // changing, and the emitted slots object carries no `_` stability flag (see
     // `generate_slots`), so the child is only re-rendered if the parent forces
@@ -111,7 +111,7 @@ pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
     if slots_spread(el).is_some() {
         return true;
     }
-    let collected_slots = collect_slots(el);
+    let collected_slots = collect_slots(el, source);
     if collected_slots.iter().any(|s| s.is_dynamic) {
         return true;
     }

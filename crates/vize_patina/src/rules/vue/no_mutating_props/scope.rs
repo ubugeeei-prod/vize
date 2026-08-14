@@ -43,7 +43,7 @@ fn starts_member(rest: &str) -> bool {
 /// The parsed aliases are preferred; a `v-for` the parser could not split
 /// falls back to the whole expression, whose identifier tokens include the
 /// source as well as the aliases. Over-collecting only suppresses reports.
-pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<String>) {
+pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<String>, source: &str) {
     if let Some(parsed) = directive.for_parse_result.as_ref() {
         for alias in [
             parsed.value.as_ref(),
@@ -53,19 +53,19 @@ pub(super) fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<Stri
         .into_iter()
         .flatten()
         {
-            push_identifier_tokens(expression_source(alias), out);
+            push_identifier_tokens(expression_source(alias, source), out);
         }
         return;
     }
     if let Some(exp) = directive.exp.as_ref() {
-        push_identifier_tokens(expression_source(exp), out);
+        push_identifier_tokens(expression_source(exp, source), out);
     }
 }
 
-pub(super) fn expression_source<'a>(exp: &'a ExpressionNode<'a>) -> &'a str {
+pub(super) fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }
 

@@ -37,20 +37,20 @@ pub fn transform_v_model<'a>(
 }
 
 /// Get v-model binding expression
-pub fn get_model_value(dir: &DirectiveNode<'_>) -> Option<String> {
+pub fn get_model_value(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(s) => s.content.clone(),
-        ExpressionNode::Compound(c) => c.loc.source.clone(),
+        ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
     })
 }
 
 /// Get v-model argument (for v-model:propName)
-pub fn get_model_arg(dir: &DirectiveNode<'_>) -> String {
+pub fn get_model_arg(dir: &DirectiveNode<'_>, source: &str) -> String {
     dir.arg
         .as_ref()
         .map(|arg| match arg {
             ExpressionNode::Simple(s) => s.content.clone(),
-            ExpressionNode::Compound(c) => c.loc.source.clone(),
+            ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
         })
         .unwrap_or_else(|| String::new("modelValue"))
 }

@@ -12,7 +12,7 @@
 //! ([`VaporGenerateOptions::jsx_closure`]): free identifiers stay bare instead
 //! of being `_ctx.`-prefixed, matching `vue-jsx-vapor`.
 
-use vize_atelier_core::lane::transform;
+use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_vapor::{
     VaporGenerateOptions, drop_ir_stack_safe, generate_vapor_with_options, transform_to_ir,
@@ -98,6 +98,7 @@ pub fn compile_to_vapor(
             lowered_root,
             analysis,
             &options,
+            source,
         ));
     }
 
@@ -114,6 +115,7 @@ pub(crate) fn compile_root_to_vapor(
     lowered: LoweredRoot,
     analysis: &Croquis,
     options: &VaporCompileOptions,
+    source: &str,
 ) -> VaporComponent {
     if options.ssr {
         let ssr = crate::ssr::compile_lowered_root_to_ssr(
@@ -121,6 +123,7 @@ pub(crate) fn compile_root_to_vapor(
             lowered,
             analysis,
             JsxOutputMode::Vapor,
+            source,
         );
         return VaporComponent {
             component_name: ssr.component_name,
@@ -161,9 +164,9 @@ pub(crate) fn compile_root_to_vapor(
         binding_metadata: None,
         ..Default::default()
     };
-    transform(allocator, &mut root, transform_opts, Some(analysis));
+    transform_with_source_text(allocator, &mut root, transform_opts, Some(analysis), source);
 
-    let ir = transform_to_ir(allocator, &root);
+    let ir = transform_to_ir(allocator, &root, source);
     let generated =
         generate_vapor_with_options(&ir, None, VaporGenerateOptions { jsx_closure: true });
     drop_ir_stack_safe(ir);

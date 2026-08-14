@@ -228,7 +228,7 @@ pub(super) fn generate_von_handler_value(ctx: &mut CodegenContext, dir: &Directi
     }
 
     if let Some(handler_name) = options_api_handler_name(ctx, dir) {
-        generate_options_api_handler_reference(ctx, handler_name);
+        generate_options_api_handler_reference(ctx, &handler_name);
     } else if let Some(exp) = &dir.exp {
         generate_event_handler(ctx, exp, needs_cache);
     } else {
@@ -278,15 +278,12 @@ fn generate_options_api_handler_reference(ctx: &mut CodegenContext, name: &str) 
     ctx.push("(...args))");
 }
 
-fn options_api_handler_name<'a>(
-    ctx: &CodegenContext,
-    dir: &'a DirectiveNode<'_>,
-) -> Option<&'a str> {
+fn options_api_handler_name(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> Option<String> {
     let ExpressionNode::Simple(simple) = dir.exp.as_ref()? else {
         return None;
     };
 
-    let name = simple.loc.source.as_str().trim();
+    let name = simple.loc.span.slice(&ctx.source).trim();
     if simple.is_static || !crate::steps::is_simple_identifier(name) {
         return None;
     }
@@ -296,7 +293,7 @@ fn options_api_handler_name<'a>(
         .as_ref()
         .and_then(|metadata| metadata.bindings.get(name))
         .filter(|binding| **binding == BindingType::Options)
-        .map(|_| name)
+        .map(|_| String::new(name))
 }
 
 fn is_setup_const_handler(ctx: &CodegenContext, dir: &DirectiveNode<'_>) -> bool {

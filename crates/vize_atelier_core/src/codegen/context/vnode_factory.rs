@@ -45,6 +45,7 @@ impl CodegenContext {
             in_cached_static: false,
             v_if_branch_counter: 0,
             map_builder,
+            source: String::default(),
         }
     }
 

@@ -82,6 +82,9 @@ pub struct CodegenContext {
     /// `record_mapping` is a no-op, keeping the generated `code` byte-identical
     /// either way.
     pub(super) map_builder: Option<SourceMapBuilder>,
+    /// The template source node spans index into (the transformed root's
+    /// `source`), used to recover covered text from a `SourceLocation`.
+    pub(super) source: String,
 }
 
 /// Byte offsets of the structural sections of a generated render module,

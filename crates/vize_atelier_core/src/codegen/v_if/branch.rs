@@ -237,7 +237,7 @@ fn generate_if_branch_component(
 
     if el.tag == "KeepAlive"
         || el.tag == "keep-alive"
-        || has_dynamic_slots_flag(el)
+        || has_dynamic_slots_flag(el, &ctx.source)
         || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
     {
         patch_flag = Some(patch_flag.unwrap_or(0) | 1024);

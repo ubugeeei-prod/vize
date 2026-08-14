@@ -53,10 +53,12 @@ pub(super) fn root_attrs_spread(root: &RootNode<'_>) -> Option<AttrsSpread> {
         return None;
     }
     element.props.iter().find_map(|prop| match prop {
-        PropNode::Directive(directive) if is_attrs_spread(directive) => Some(AttrsSpread {
-            start: directive.loc.start.offset,
-            end: directive.loc.end.offset,
-        }),
+        PropNode::Directive(directive) if is_attrs_spread(directive, &root.source) => {
+            Some(AttrsSpread {
+                start: directive.loc.start.offset,
+                end: directive.loc.end.offset,
+            })
+        }
         _ => None,
     })
 }
@@ -89,19 +91,19 @@ fn single_root_element<'a, 'ast>(root: &'a RootNode<'ast>) -> Option<&'a Element
 /// a whole — trimmed — rather than searched: the construct *is* the entire
 /// expression, so equality is exact, and anything richer
 /// (`v-bind="{ ...$attrs }"`) is deliberately not matched.
-fn is_attrs_spread(directive: &DirectiveNode<'_>) -> bool {
+fn is_attrs_spread(directive: &DirectiveNode<'_>, source: &str) -> bool {
     if directive.name.as_str() != "bind" || directive.arg.is_some() {
         return false;
     }
     directive
         .exp
         .as_ref()
-        .is_some_and(|exp| expression_source(exp).trim() == "$attrs")
+        .is_some_and(|exp| expression_source(exp, source).trim() == "$attrs")
 }
 
-fn expression_source<'a>(exp: &'a ExpressionNode<'a>) -> &'a str {
+fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

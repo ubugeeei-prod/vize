@@ -45,6 +45,10 @@ const REGEN_COMMAND = "node tools/davinci/sourcelocation-inventory.mjs --write";
 /** Offset member paths that survive the migration as `span.start`/`span.end`. */
 
 /** Is `ident` a loc-shaped receiver or field name? */
+/** `source` reads counted at generation time of the P0-9 map, all migrated
+ * to `Span::slice` by Davinci P1-3. */
+const P0_9_SOURCE_READS = 106;
+
 function generate() {
   const { crates, allSites, offsetReadTotal, offsetReadCrateCount } = scanWorkspace();
   const grandTotal = crates.reduce((sum, c) => sum + c.total, 0);
@@ -53,6 +57,13 @@ function generate() {
     MEMBERS.map((member) => [member, crates.reduce((sum, c) => sum + c.counts[member], 0)]),
   );
   const sourceTotal = memberTotals.source;
+  if (sourceTotal !== 0) {
+    const site = allSites.find((s) => s.member === "source");
+    throw new Error(
+      `P1-3 ratchet: ${sourceTotal} \`.source\` read(s) reintroduced on loc-shaped receivers ` +
+        `(first: ${site.relPath}:${site.line}); read covered text via \`span.slice(source)\` instead`,
+    );
+  }
   const lineColTotal = grandTotal - sourceTotal;
 
   const sorted = [...crates].sort((a, b) =>
@@ -89,14 +100,24 @@ function generate() {
     ]),
   );
 
-  // Group 1 citations: content reads that become `Span::slice`.
-  const g1Codegen = citeSite(
-    allSites,
+  // Group 1 citations: content reads, now anchored on their migrated
+  // `Span::slice` forms so a moved consumer still fails regeneration.
+  const g1Codegen = citeAnchor(
     "crates/vize_atelier_core/src/codegen/expression/generate.rs",
+    /span\.slice\(&ctx\.source\)/,
   );
-  const g1Croquis = citeSite(allSites, "crates/vize_croquis/src/drawer/template/components.rs");
-  const g1Patina = citeSite(allSites, "crates/vize_patina/src/rules/script/template_scan.rs");
-  const g1Vapor = citeSite(allSites, "crates/vize_atelier_vapor/src/transforms/v_on.rs");
+  const g1Croquis = citeAnchor(
+    "crates/vize_croquis/src/drawer/template/components.rs",
+    /span\.slice\(&self\.template_source\)/,
+  );
+  const g1Patina = citeAnchor(
+    "crates/vize_patina/src/rules/script/template_scan.rs",
+    /span\.slice\(source\)/,
+  );
+  const g1Vapor = citeAnchor(
+    "crates/vize_atelier_vapor/src/transforms/v_on.rs",
+    /span\.slice\(source\)/,
+  );
 
   // Group 2 citations: line/column consumers that become offset-derived.
   const g2Comment = citeSite(
@@ -137,11 +158,13 @@ function generate() {
 Every textual read of the relief \`SourceLocation\` members that
 \`vize_carton::Span\` (\`crates/vize_carton/src/span.rs\`) deletes —
 \`source\`, \`start.line\`, \`start.column\`, \`end.line\`, \`end.column\` —
-across \`crates/*/src\`, plus the migration group each consumer moves to when
-relief nodes carry two-u32 byte spans instead of owned
+across \`crates/*/src\`, plus the migration group each consumer moves to as
+relief nodes switch to two-u32 byte spans instead of owned
 \`{ start: Position, end: Position, source: String }\` triples
 ([architecture.md](../architecture.md), S0). This is the migration map Davinci
-P1 executes (P0-9).
+P1 executes (P0-9). P1-3 executed group 1: every \`source\` read is migrated,
+the scan now counts zero, and regeneration fails if one comes back. The
+line/column members remain until P1-4.
 
 ## Resolution method (and its limits)
 
@@ -189,23 +212,23 @@ The line/column members are read so rarely that the sites fit in one table:
 ${lineColTable}
 ## Migration groups
 
-### Group 1 — content reads move to \`Span::slice\` (${sourceTotal} sites, every \`source\` read)
+### Group 1 — content reads moved to \`Span::slice\` (migrated by P1-3: ${P0_9_SOURCE_READS} sites at P0-9, ${sourceTotal} remain)
 
 The dominant consumer class by far: code that wants **the text a node
 covers** — codegen re-emitting an expression, croquis capturing a binding
 name, a lint rule inspecting raw expression text, a test asserting what the
-parser captured. Today each read pays for an owned \`String\` copied into the
-node at parse time; with spans the node stores 8 bytes and the read becomes
+parser captured. Each read used to pay for an owned \`String\` copied into
+the node at parse time; the node now stores 8 bytes and the read is
 \`span.slice(source)\` against the one authored source string (or, for
-block-relative spans, against that block's text). Representative sites:
+block-relative spans, against that block's text). Representative migrated
+sites:
 
-- \`${g1Codegen}\` — codegen emits the recorded expression text verbatim
+- \`${g1Codegen}\` — codegen reads the recorded expression text verbatim
 - \`${g1Croquis}\` — croquis captures component/expression text into
   analysis products
 - \`${g1Patina}\` — lint rule matches against raw expression text
-- \`${g1Vapor}\` — vapor transform re-wraps an expression by copying
-  \`loc.source\` into a new node (see also group 3: the copy itself
-  disappears)
+- \`${g1Vapor}\` — vapor transform re-wraps an expression from the covered
+  text (the owned copy the pre-span node stored is gone; see also group 3)
 
 ### Group 2 — line/column reads move to offset-derived rendering (${lineColTotal} direct sites + 4 known-missed, see limits)
 
@@ -244,10 +267,10 @@ representation. No slice or line/col replacement — they stop existing:
 - \`${g3Stub}\` — \`STUB_LOCATION\` / \`SourceLocation::STUB\`: the
   owned-string stub machinery for generated nodes collapses to
   \`Span::new(0, 0)\`
-- \`${g3Simple}\` — \`SimpleExpressionNode\` stores \`content: String\`
-  **and** \`loc.source\` duplicating it; span-carrying nodes keep one span,
-  and every group-1 site that today clones \`loc.source\` to build another
-  node (e.g. \`${g1Vapor}\`) stops copying text entirely
+- \`${g3Simple}\` — \`SimpleExpressionNode\` stored \`content: String\`
+  **and** \`loc.source\` duplicating it; since P1-3 the node keeps one span
+  next to \`content\`, and every group-1 site that cloned \`loc.source\` to
+  build another node (e.g. \`${g1Vapor}\`) slices on demand instead
 `;
 }
 

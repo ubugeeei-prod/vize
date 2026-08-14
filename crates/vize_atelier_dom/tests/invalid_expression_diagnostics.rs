@@ -54,7 +54,7 @@ fn assert_single_invalid_expression(source: &str, expression: &str) {
         .as_ref()
         .unwrap_or_else(|| panic!("diagnostic for {source:?} should carry a span"));
     assert_eq!(
-        loc.source.as_str(),
+        loc.span.slice(source),
         expression,
         "span text mismatch in {source:?}"
     );

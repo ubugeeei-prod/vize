@@ -23,6 +23,7 @@ pub fn transform_with_hoisted_scope_id<'a>(
         false,
         hoisted_scope_id,
         JsxTransformCompat::default(),
+        None,
     )
 }
 
@@ -43,6 +44,7 @@ pub fn transform_with_template_syntax_quirks_and_hoisted_scope_id<'a>(
         true,
         hoisted_scope_id,
         JsxTransformCompat::default(),
+        None,
     )
 }
 
@@ -84,6 +86,32 @@ pub fn transform_with_plain_element_model_argument<'a>(
             allow_static_v_model_arg_on_element: true,
             ..Default::default()
         },
+        None,
+    )
+}
+
+/// Transform against an explicit loc-span source basis.
+///
+/// JSX roots keep the root element's slice in `RootNode::source` (the source
+/// maps embed it), while node spans index into the whole module source; this
+/// entry lets those callers supply the module text the spans resolve against.
+#[doc(hidden)]
+pub fn transform_with_source_text<'a>(
+    allocator: &'a Allocator,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    source_text: &str,
+) -> std::vec::Vec<CompilerError> {
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        false,
+        None,
+        JsxTransformCompat::default(),
+        Some(source_text),
     )
 }
 
@@ -96,6 +124,7 @@ pub fn transform_with_jsx_compatibility<'a>(
     analysis: Option<&'a Croquis>,
     allow_static_v_model_arg_on_element: bool,
     custom_element_spans: &[(u32, u32)],
+    source_text: Option<&str>,
 ) -> std::vec::Vec<CompilerError> {
     let mut jsx_compat = JsxTransformCompat {
         allow_static_v_model_arg_on_element,
@@ -104,5 +133,14 @@ pub fn transform_with_jsx_compatibility<'a>(
     jsx_compat
         .custom_element_spans
         .extend(custom_element_spans.iter().copied());
-    transform_inner(allocator, root, options, analysis, false, None, jsx_compat)
+    transform_inner(
+        allocator,
+        root,
+        options,
+        analysis,
+        false,
+        None,
+        jsx_compat,
+        source_text,
+    )
 }

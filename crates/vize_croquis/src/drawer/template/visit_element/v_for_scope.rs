@@ -19,8 +19,9 @@ pub(super) fn v_for_scope_bindings(aliases: &VForScopeAliases) -> ParamNames {
 pub(super) fn v_for_alias_declaration_offsets(
     exp: &ExpressionNode<'_>,
     aliases: &VForScopeAliases,
+    template_source: &str,
 ) -> SmallVec<[(CompactString, u32); 4]> {
-    let (content, base_offset) = expression_content_and_offset(exp);
+    let (content, base_offset) = expression_content_and_offset(exp, template_source);
     let Some((alias_start, alias_end)) = v_for_alias_range(content) else {
         return SmallVec::new();
     };
@@ -39,8 +40,9 @@ pub(super) fn v_for_alias_declaration_offsets(
 pub(super) fn v_for_source_offset(
     exp: &ExpressionNode<'_>,
     aliases: &VForScopeAliases,
+    template_source: &str,
 ) -> Option<u32> {
-    let (content, base_offset) = expression_content_and_offset(exp);
+    let (content, base_offset) = expression_content_and_offset(exp, template_source);
     source_offset_in_expression(content, base_offset, aliases.source.as_str())
 }
 
@@ -50,11 +52,14 @@ fn source_offset_in_expression(content: &str, base_offset: u32, source: &str) ->
         .map(|relative| base_offset + relative as u32)
 }
 
-fn expression_content_and_offset<'a>(exp: &'a ExpressionNode<'_>) -> (&'a str, u32) {
+fn expression_content_and_offset<'a>(
+    exp: &'a ExpressionNode<'_>,
+    source: &'a str,
+) -> (&'a str, u32) {
     let loc = exp.loc();
     let content = match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     };
     (content, loc.start.offset)
 }

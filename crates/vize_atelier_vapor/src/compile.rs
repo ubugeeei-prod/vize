@@ -169,7 +169,7 @@ fn compile_vapor_inner_with_stack<'a>(
 
     // Lower to Vapor IR
     let (ir, transform_diagnostics) =
-        vapor_lower::transform_to_ir_with_diagnostics(allocator, &root);
+        vapor_lower::transform_to_ir_with_diagnostics(allocator, &root, source);
 
     // Generate Vapor code
     let result = generate_vapor(&ir, binding_metadata.as_ref());

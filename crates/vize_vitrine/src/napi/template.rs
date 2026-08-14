@@ -169,7 +169,7 @@ pub fn parse_template(
     if !errors.is_empty() {
         return Err(Error::new(
             Status::GenericFailure,
-            format!("Parse errors: {:?}", errors),
+            crate::parse_errors::message(&errors, &template),
         ));
     }
 

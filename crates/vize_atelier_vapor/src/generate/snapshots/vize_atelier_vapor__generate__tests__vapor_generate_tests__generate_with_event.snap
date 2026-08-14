@@ -1,5 +1,6 @@
 ---
-source: crates/vize_atelier_vapor/src/generate.rs
+source: crates/vize_atelier_vapor/src/generate/tests.rs
+assertion_line: 31
 expression: result.code.as_str()
 ---
 import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';

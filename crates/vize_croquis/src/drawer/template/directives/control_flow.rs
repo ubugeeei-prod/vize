@@ -40,10 +40,16 @@ impl Drawer {
                 );
             }
 
-            let current_condition = branch.condition.as_ref().map(|cond| match cond {
-                ExpressionNode::Simple(s) => s.content.as_str(),
-                ExpressionNode::Compound(c) => c.loc.source.as_str(),
-            });
+            let compound_condition;
+            let current_condition = match branch.condition.as_ref() {
+                Some(ExpressionNode::Simple(s)) => Some(s.content.as_str()),
+                Some(ExpressionNode::Compound(c)) => {
+                    compound_condition =
+                        CompactString::new(c.loc.span.slice(&self.template_source));
+                    Some(compound_condition.as_str())
+                }
+                None => None,
+            };
 
             let branch_guard =
                 build_branch_guard(previous_conditions.as_slice(), current_condition);
@@ -91,7 +97,9 @@ impl Drawer {
         if self.options.analyze_template_scopes && !vars_added.is_empty() {
             let source_content = match &for_node.source {
                 ExpressionNode::Simple(s) => CompactString::new(s.content.as_str()),
-                ExpressionNode::Compound(c) => CompactString::new(c.loc.source.as_str()),
+                ExpressionNode::Compound(c) => {
+                    CompactString::new(c.loc.span.slice(&self.template_source))
+                }
             };
 
             let value_alias = vars_added

@@ -152,7 +152,7 @@ fn compile_ssr_inner<'a>(
     errors.extend(transform_errors);
 
     // SSR codegen
-    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);
+    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options, source);
     let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
 
     (root, errors, codegen_result)

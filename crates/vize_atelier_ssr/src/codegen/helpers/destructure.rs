@@ -3,23 +3,23 @@
 use vize_atelier_core::{CompoundExpressionChild, ExpressionNode, ForNode};
 use vize_carton::{FxHashSet, SmallVec, String, ToCompactString};
 
-pub(crate) fn collect_for_scoped_params(for_node: &ForNode) -> FxHashSet<String> {
+pub(crate) fn collect_for_scoped_params(for_node: &ForNode, source: &str) -> FxHashSet<String> {
     let mut params = FxHashSet::default();
 
     if let Some(value) = &for_node.value_alias {
-        collect_expression_params(value, &mut params);
+        collect_expression_params(value, &mut params, source);
     }
     if let Some(key) = &for_node.key_alias {
-        collect_expression_params(key, &mut params);
+        collect_expression_params(key, &mut params, source);
     }
     if let Some(index) = &for_node.object_index_alias {
-        collect_expression_params(index, &mut params);
+        collect_expression_params(index, &mut params, source);
     }
 
     params
 }
 
-fn collect_expression_params(expr: &ExpressionNode, params: &mut FxHashSet<String>) {
+fn collect_expression_params(expr: &ExpressionNode, params: &mut FxHashSet<String>, source: &str) {
     let content = match expr {
         ExpressionNode::Simple(simple) => simple.content.clone(),
         ExpressionNode::Compound(compound) => {
@@ -32,7 +32,7 @@ fn collect_expression_params(expr: &ExpressionNode, params: &mut FxHashSet<Strin
                 }
             }
             if content.is_empty() {
-                compound.loc.source.clone()
+                String::new(compound.loc.span.slice(source))
             } else {
                 content
             }

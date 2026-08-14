@@ -22,7 +22,7 @@ pub fn process_inline_handler<'a>(
 ) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
-    let normalized = normalize_expression(exp, allocator);
+    let normalized = normalize_expression(exp, allocator, &ctx.source);
 
     if normalized.is_static {
         return ExpressionNode::Simple(normalized);
@@ -86,7 +86,7 @@ pub fn process_inline_handler<'a>(
                 allocator,
             ));
         }
-        return clone_expression(exp, allocator);
+        return clone_expression(exp, allocator, &ctx.source);
     }
 
     // Check if it's an identifier/member-expression handler reference.
@@ -195,7 +195,7 @@ mod tests {
     };
     use vize_carton::{Allocator, Box, Bump, FxHashMap};
 
-    fn test_context<'a>(allocator: &'a Allocator) -> TransformContext<'a> {
+    fn test_context<'a>(allocator: &'a Allocator, source: &str) -> TransformContext<'a> {
         let mut bindings = FxHashMap::default();
         bindings.insert("selectedFolders".into(), BindingType::SetupRef);
         bindings.insert("folder".into(), BindingType::SetupRef);
@@ -204,7 +204,7 @@ mod tests {
 
         TransformContext::new(
             allocator,
-            "".into(),
+            source.into(),
             TransformOptions {
                 prefix_identifiers: true,
                 inline: true,
@@ -223,7 +223,6 @@ mod tests {
         let loc = SourceLocation::new(
             Position::new(0, 1, 1),
             Position::new(source.len() as u32, 1, source.len() as u32 + 1),
-            source,
         );
 
         ExpressionNode::Compound(Box::new_in(
@@ -235,11 +234,9 @@ mod tests {
     #[test]
     fn test_process_inline_handler_rewrites_compound_ts_assignment() {
         let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(
-            &allocator,
-            "selectedFolders = selectedFolders.filter(f => f.id !== folder!.id)",
-        );
+        let source = "selectedFolders = selectedFolders.filter(f => f.id !== folder!.id)";
+        let mut ctx = test_context(&allocator, source);
+        let expr = compound_expression(&allocator, source);
 
         let result = process_inline_handler(&mut ctx, &expr);
         let ExpressionNode::Simple(result) = result else {
@@ -258,11 +255,9 @@ mod tests {
     #[test]
     fn test_process_inline_handler_preserves_local_block_binding() {
         let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(
-            &allocator,
-            "() => { const value = compute(); emit('change', value) }",
-        );
+        let source = "() => { const value = compute(); emit('change', value) }";
+        let mut ctx = test_context(&allocator, source);
+        let expr = compound_expression(&allocator, source);
 
         let result = process_inline_handler(&mut ctx, &expr);
         let ExpressionNode::Simple(result) = result else {

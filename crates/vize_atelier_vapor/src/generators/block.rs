@@ -6,6 +6,10 @@ use vize_carton::{String, cstr};
 /// Context for code generation
 pub struct GenerateContext {
     pub code: String,
+    /// The source string node-loc spans index into. Callers that generate
+    /// from an AST whose locations should resolve set it before generating;
+    /// it defaults to empty.
+    pub source: String,
     pub indent_level: u32,
     pub temp_count: usize,
 }
@@ -14,6 +18,7 @@ impl GenerateContext {
     pub fn new() -> Self {
         Self {
             code: String::with_capacity(4096),
+            source: String::default(),
             indent_level: 0,
             temp_count: 0,
         }

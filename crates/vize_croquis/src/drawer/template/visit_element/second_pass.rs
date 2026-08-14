@@ -38,7 +38,8 @@ impl Drawer {
         is_component: bool,
         tag: &str,
     ) {
-        let event_target_component = event_target_component(el, is_component, tag);
+        let event_target_component =
+            event_target_component(el, is_component, tag, &self.template_source);
         profile!("croquis.template.element.second_pass", {
             for prop in &el.props {
                 let PropNode::Directive(dir) = prop else {
@@ -136,7 +137,7 @@ impl Drawer {
             return;
         };
 
-        let content = expression_content(exp);
+        let content = expression_content(exp, &self.template_source);
         let loc = exp.loc();
         let scope_id = self.croquis.scopes.current_id();
         self.croquis.template_expressions.push(TemplateExpression {
@@ -164,7 +165,7 @@ impl Drawer {
         if self.options.collect_template_expressions {
             let loc = arg.loc();
             self.croquis.template_expressions.push(TemplateExpression {
-                content: CompactString::new(expression_content(arg)),
+                content: CompactString::new(expression_content(arg, &self.template_source)),
                 kind: TemplateExpressionKind::DynamicDirectiveArgument,
                 start: loc.start.offset,
                 end: loc.end.offset,
@@ -183,15 +184,20 @@ fn event_target_component(
     el: &ElementNode<'_>,
     is_component: bool,
     tag: &str,
+    template_source: &str,
 ) -> Option<CompactString> {
     if is_component {
         return Some(CompactString::new(tag));
     }
 
-    dynamic_component_target(el, tag)
+    dynamic_component_target(el, tag, template_source)
 }
 
-fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactString> {
+fn dynamic_component_target(
+    el: &ElementNode<'_>,
+    tag: &str,
+    template_source: &str,
+) -> Option<CompactString> {
     if tag != "component" {
         return None;
     }
@@ -203,7 +209,7 @@ fn dynamic_component_target(el: &ElementNode<'_>, tag: &str) -> Option<CompactSt
         if !is_bind_is_directive(dir) {
             return None;
         }
-        expression_identifier(dir.exp.as_ref()?)
+        expression_identifier(dir.exp.as_ref()?, template_source)
     })
 }
 
@@ -215,10 +221,10 @@ fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {
         )
 }
 
-fn expression_identifier(exp: &ExpressionNode<'_>) -> Option<CompactString> {
+fn expression_identifier(exp: &ExpressionNode<'_>, template_source: &str) -> Option<CompactString> {
     let source = match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(template_source),
     };
     parse_component_reference_expression(source)
 }
@@ -237,9 +243,9 @@ fn parse_component_reference_expression(source: &str) -> Option<CompactString> {
     }
 }
 
-fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {
+fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(s) => s.content.as_str(),
-        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+        ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

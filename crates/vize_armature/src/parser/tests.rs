@@ -12,15 +12,12 @@ use vize_relief::{
     options::{ParserOptions, TemplateSyntaxMode},
 };
 
-fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode, &str, &str)> {
+fn recovery_snapshot(src: &str, errors: &[CompilerError]) -> Vec<(ErrorCode, String, String)> {
     errors
         .iter()
-        .map(|error| {
-            (
-                error.code,
-                error.message.as_str(),
-                error.loc.as_ref().map_or("", |loc| loc.source.as_str()),
-            )
+        .map(|e| {
+            let covered = e.loc.as_ref().map_or("", |loc| loc.span.slice(src));
+            (e.code, e.message.to_string(), covered.to_string())
         })
         .collect()
 }
@@ -531,7 +528,7 @@ fn test_no_value_directive_loc_excludes_trailing_whitespace() {
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.loc.source.as_str(), "v-if");
+            assert_eq!(dir.loc.span.slice("<input v-if />"), "v-if");
         } else {
             panic!("Expected directive");
         }
@@ -541,14 +538,15 @@ fn test_no_value_directive_loc_excludes_trailing_whitespace() {
 #[test]
 fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, r#"<input class ="w-100" />"#);
+    let source = r#"<input class ="w-100" />"#;
+    let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty());
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Attribute(attr) = &el.props[0] {
-            assert_eq!(attr.loc.source.as_str(), r#"class ="w-100""#);
+            assert_eq!(attr.loc.span.slice(source), r#"class ="w-100""#);
             assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "w-100");
-            assert_eq!(attr.value.as_ref().unwrap().loc.source.as_str(), "w-100");
+            assert_eq!(attr.value.as_ref().unwrap().loc.span.slice(source), "w-100");
         } else {
             panic!("Expected attribute");
         }
@@ -558,15 +556,16 @@ fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
 #[test]
 fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, r#"<input v-if ="ok" />"#);
+    let source = r#"<input v-if ="ok" />"#;
+    let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty());
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.loc.source.as_str(), r#"v-if ="ok""#);
+            assert_eq!(dir.loc.span.slice(source), r#"v-if ="ok""#);
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
                 assert_eq!(exp.content.as_str(), "ok");
-                assert_eq!(exp.loc.source.as_str(), "ok");
+                assert_eq!(exp.loc.span.slice(source), "ok");
             } else {
                 panic!("Expected expression");
             }
@@ -1025,7 +1024,7 @@ fn test_parse_mixed_broken_input_keeps_later_nodes() {
     let source = "<div v-><1bad></1bad><span id=a>ok</span></div>{{ broken";
     let (root, errors) = parse(&allocator, source);
 
-    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    insta::assert_debug_snapshot!(recovery_snapshot(source, &errors), @r###"
     [
         (
             MissingDirectiveName,
@@ -1091,7 +1090,7 @@ fn test_parse_abrupt_empty_comment_reports_error_and_continues() {
         assert_eq!(root.children.len(), 2);
         if let TemplateChildNode::Comment(comment) = &root.children[0] {
             assert_eq!(comment.content.as_str(), "");
-            assert_eq!(comment.loc.source.as_str(), comment_source);
+            assert_eq!(comment.loc.span.slice(&source), comment_source);
         } else {
             panic!("Expected recovered comment");
         }
@@ -1481,7 +1480,7 @@ fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
     let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "before<!-- open");
 
-    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    insta::assert_debug_snapshot!(recovery_snapshot("before<!-- open", &errors), @r###"
     [
         (
             EofInComment,
@@ -1494,7 +1493,7 @@ fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
     assert!(matches!(&root.children[0], TemplateChildNode::Text(_)));
     if let TemplateChildNode::Comment(comment) = &root.children[1] {
         assert_eq!(comment.content.as_str(), " open");
-        assert_eq!(comment.loc.source.as_str(), "<!-- open");
+        assert_eq!(comment.loc.span.slice("before<!-- open"), "<!-- open");
     } else {
         panic!("Expected recovered comment");
     }
@@ -1532,7 +1531,7 @@ fn test_parse_text_entity_named_amp_between_literals() {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
             assert_eq!(t.content.as_str(), "a&b");
-            assert_eq!(t.loc.source.as_str(), "a&amp;b");
+            assert_eq!(t.loc.span.slice("<div>a&amp;b</div>"), "a&amp;b");
         } else {
             panic!("expected text");
         }
@@ -1565,7 +1564,7 @@ fn test_parse_text_entity_numeric_dec() {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
             assert_eq!(t.content.as_str(), "&x");
-            assert_eq!(t.loc.source.as_str(), "&#38;x");
+            assert_eq!(t.loc.span.slice("<div>&#38;x</div>"), "&#38;x");
         } else {
             panic!("expected text");
         }
@@ -1581,7 +1580,7 @@ fn test_parse_text_entity_1_lt_2() {
         assert_eq!(el.children.len(), 1);
         if let TemplateChildNode::Text(t) = &el.children[0] {
             assert_eq!(t.content.as_str(), "1<2");
-            assert_eq!(t.loc.source.as_str(), "1&lt;2");
+            assert_eq!(t.loc.span.slice("<div>1&lt;2</div>"), "1&lt;2");
         } else {
             panic!("expected text");
         }
@@ -2011,7 +2010,7 @@ fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
     // The extra braces are stripped from the expression and the node spans the
     // full triple-mustache.
     assert_eq!(expr.content.as_str(), "rawHtml");
-    assert_eq!(interp.loc.source.as_str(), "{{{ rawHtml }}}");
+    assert_eq!(interp.loc.span.slice("{{{ rawHtml }}}"), "{{{ rawHtml }}}");
 }
 
 #[cfg(feature = "legacy")]

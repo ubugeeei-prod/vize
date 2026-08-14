@@ -12,8 +12,9 @@ pub fn transform_interpolation<'a>(
     allocator: &'a Bump,
     interp: &InterpolationNode<'a>,
     element_id: usize,
+    source: &str,
 ) -> (OperationNode<'a>, bool) {
-    let values = extract_text_values(allocator, &interp.content);
+    let values = extract_text_values(allocator, &interp.content, source);
 
     let set_text = SetTextIRNode {
         element: element_id,
@@ -41,6 +42,7 @@ pub fn transform_text<'a>(
 fn extract_text_values<'a>(
     allocator: &'a Bump,
     exp: &ExpressionNode<'a>,
+    source: &str,
 ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
     let mut values = Vec::new_in(allocator);
 
@@ -55,8 +57,11 @@ fn extract_text_values<'a>(
         }
         ExpressionNode::Compound(compound) => {
             // For compound expressions, extract as a single value
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             values.push(Box::new_in(node, allocator));
         }
     }

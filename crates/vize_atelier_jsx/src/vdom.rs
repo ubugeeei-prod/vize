@@ -129,6 +129,7 @@ pub fn compile_to_vdom(
             &options,
             VdomCompatOptions::default(),
             &mut diagnostics,
+            source,
         ));
     }
 
@@ -141,6 +142,7 @@ pub fn compile_to_vdom(
 /// Compile a single already-lowered root to a VDOM [`VdomComponent`], appending
 /// any transform diagnostics. Shared by [`compile_to_vdom`] and the mode-aware
 /// dispatcher in [`crate::compile`].
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn compile_root_to_vdom(
     allocator: &Allocator,
     lowered: LoweredRoot,
@@ -149,6 +151,7 @@ pub(crate) fn compile_root_to_vdom(
     options: &VdomCompileOptions,
     compat: VdomCompatOptions<'_>,
     diagnostics: &mut Vec<JsxDiagnostic>,
+    source: &str,
 ) -> VdomComponent {
     let LoweredRoot {
         mut root,
@@ -186,6 +189,7 @@ pub(crate) fn compile_root_to_vdom(
         Some(analysis),
         compat.allow_static_v_model_arg_on_element,
         compat.custom_element_spans,
+        Some(source),
     );
     diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
 
@@ -206,6 +210,7 @@ pub(crate) fn compile_root_to_vdom(
         codegen_opts,
         compat.vnode_factory,
         compat.merge_props,
+        Some(source),
     );
     let mut preamble = result.preamble;
     if let Some(helper) = compat.transform_on_helper

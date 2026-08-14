@@ -83,12 +83,12 @@ pub fn parse_for_expression_with_options<'a>(
     // expression so downstream diagnostics (e.g. an unparseable source)
     // point at the right characters. `find_for_separator` already skips
     // whitespace, so `source_start` is the first byte of the source text.
-    let source_loc = if loc.source.is_empty() {
+    let source_loc = if loc.span.is_empty() {
         SourceLocation::default()
     } else {
         let start = advance_position(&loc.start, &content[..source_start]);
         let end = advance_position(&start, source_str);
-        SourceLocation::new(start, end, source_str)
+        SourceLocation::new(start, end)
     };
 
     let source = ExpressionNode::Simple(Box::new_in(

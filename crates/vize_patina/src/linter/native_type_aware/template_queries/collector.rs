@@ -21,20 +21,19 @@ pub(super) fn collect_template_query_sets(
     include_template_promise_queries: bool,
 ) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
     // One traversal populates both query vectors. `TemplateQuerySinks` keeps
-    // disabled rules out of the hot path while preserving source-order discovery,
-    // which lets the later sort/dedup stages stay deterministic.
+    // disabled rules out of the hot path, preserves the source-order discovery
+    // the sort/dedup stages rely on, and carries the span-slicing source text.
     let mut template_queries = Vec::new();
     let mut template_promise_queries = Vec::new();
     let mut sinks = TemplateQuerySinks {
+        source: &template_ast.source,
         template_queries: include_template_queries.then_some(&mut template_queries),
         template_promise_queries: include_template_promise_queries
             .then_some(&mut template_promise_queries),
     };
 
-    // Build the parsing arena and source type once per file. Every template
-    // expression reuses the same allocator (reset between expressions so its
-    // memory is recycled rather than freed and re-reserved) and the same source
-    // type (avoids re-deriving it from a path per expression).
+    // Build the parsing arena and source type once per file; every template
+    // expression reuses both (the allocator is reset between expressions).
     let mut allocator = OxcAllocator::default();
     let source_type = SourceType::from_path("template.ts").unwrap_or_default();
 
@@ -66,6 +65,7 @@ pub(super) fn collect_template_query_sets(
 }
 
 struct TemplateQuerySinks<'a> {
+    source: &'a str,
     template_queries: Option<&'a mut Vec<TemplateQuery>>,
     template_promise_queries: Option<&'a mut Vec<TemplatePromiseQuery>>,
 }
@@ -375,7 +375,7 @@ fn collect_expression_query_sets(
     else {
         return;
     };
-    let source_text = expression.loc().source.as_str();
+    let source_text = expression.loc().span.slice(sinks.source);
     let include_template_queries = sinks.template_queries.is_some();
     let include_template_promise_queries = sinks.template_promise_queries.is_some();
     // Resolve the full expression's generated offset once, then reuse the parsed

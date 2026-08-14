@@ -70,7 +70,7 @@ pub(crate) fn validate_v_slot_usage(ctx: &mut TransformContext<'_>, el: &Element
         has_template_slots = true;
 
         if !has_structural_slot_directive(child_el) && slot_name_is_static(slot_dir) {
-            let slot_name = get_slot_name(slot_dir);
+            let slot_name = get_slot_name(slot_dir, &ctx.source);
             if seen_static_slots
                 .iter()
                 .any(|seen| seen.as_str() == slot_name.as_str())

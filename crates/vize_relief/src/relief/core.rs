@@ -4,7 +4,7 @@
 //! node type discriminants, source locations, and constant types.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::String;
+use vize_carton::{Span, String};
 
 /// Node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -97,12 +97,18 @@ impl Position {
 }
 
 /// Source location span [start, end)
+///
+/// The covered text is not stored; it is recovered on demand from the file's
+/// source string via `loc.span.slice(source_text)` (Davinci P1-3).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SourceLocation {
     pub start: Position,
     pub end: Position,
-    pub source: String,
+    /// Byte range `[start.offset, end.offset)` into the authored source.
+    pub span: Span,
 }
+
+const _: () = assert!(core::mem::size_of::<SourceLocation>() == 32);
 
 impl Default for SourceLocation {
     fn default() -> Self {
@@ -111,19 +117,7 @@ impl Default for SourceLocation {
 }
 
 /// Static stub location for returning references
-pub(crate) static STUB_LOCATION: SourceLocation = SourceLocation {
-    start: Position {
-        offset: 0,
-        line: 1,
-        column: 1,
-    },
-    end: Position {
-        offset: 0,
-        line: 1,
-        column: 1,
-    },
-    source: String::const_new(""),
-};
+pub(crate) static STUB_LOCATION: SourceLocation = SourceLocation::STUB;
 
 impl SourceLocation {
     /// Stub location for generated nodes
@@ -138,15 +132,18 @@ impl SourceLocation {
             line: 1,
             column: 1,
         },
-        source: String::const_new(""),
+        span: Span::new(0, 0),
     };
 
-    pub fn new(start: Position, end: Position, source: impl Into<String>) -> Self {
-        Self {
-            start,
-            end,
-            source: source.into(),
-        }
+    pub fn new(start: Position, end: Position) -> Self {
+        let span = Span::new(start.offset, end.offset);
+        Self { start, end, span }
+    }
+
+    /// Move the end of the location, keeping `span` in sync with the offsets.
+    pub fn set_end(&mut self, end: Position) {
+        self.span.end = end.offset;
+        self.end = end;
     }
 }
 

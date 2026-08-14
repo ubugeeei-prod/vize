@@ -16,9 +16,10 @@ pub fn transform_slot_outlet<'a>(
     el: &ElementNode<'a>,
     element_id: usize,
     fallback: Option<BlockIRNode<'a>>,
+    source: &str,
 ) -> OperationNode<'a> {
-    let name = get_slot_outlet_name(allocator, el);
-    let props = get_slot_outlet_props(allocator, el);
+    let name = get_slot_outlet_name(allocator, el, source);
+    let props = get_slot_outlet_props(allocator, el, source);
 
     let slot_outlet = SlotOutletIRNode {
         id: element_id,
@@ -34,6 +35,7 @@ pub fn transform_slot_outlet<'a>(
 fn get_slot_outlet_name<'a>(
     allocator: &'a Bump,
     el: &ElementNode<'a>,
+    source: &str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     // Look for name attribute or v-bind:name
     for prop in el.props.iter() {
@@ -57,7 +59,7 @@ fn get_slot_outlet_name<'a>(
                     && arg_exp.content == "name"
                     && let Some(ref exp) = dir.exp
                 {
-                    return extract_expression(allocator, exp);
+                    return extract_expression(allocator, exp, source);
                 }
             }
         }
@@ -72,6 +74,7 @@ fn get_slot_outlet_name<'a>(
 fn get_slot_outlet_props<'a>(
     allocator: &'a Bump,
     el: &ElementNode<'a>,
+    source: &str,
 ) -> Vec<'a, crate::ir::IRProp<'a>> {
     let mut props = Vec::new_in(allocator);
 
@@ -98,7 +101,7 @@ fn get_slot_outlet_props<'a>(
 
             let mut values = Vec::new_in(allocator);
             if let Some(ref exp) = dir.exp {
-                values.push(extract_expression(allocator, exp));
+                values.push(extract_expression(allocator, exp, source));
             }
 
             props.push(crate::ir::IRProp {
@@ -117,6 +120,7 @@ pub fn collect_component_slots<'a>(
     allocator: &'a Bump,
     el: &ElementNode<'a>,
     transform_children: impl Fn(&'a Bump, &[TemplateChildNode<'a>]) -> BlockIRNode<'a>,
+    source: &str,
 ) -> Vec<'a, IRSlot<'a>> {
     let mut slots = Vec::new_in(allocator);
 
@@ -129,8 +133,8 @@ pub fn collect_component_slots<'a>(
                 if let PropNode::Directive(dir) = prop
                     && dir.name == "slot"
                 {
-                    let name = get_slot_name(allocator, dir);
-                    let fn_exp = get_slot_params(allocator, dir);
+                    let name = get_slot_name(allocator, dir, source);
+                    let fn_exp = get_slot_params(allocator, dir, source);
                     let block = transform_children(allocator, &child_el.children);
 
                     slots.push(IRSlot {
@@ -177,6 +181,7 @@ fn has_v_slot(el: &ElementNode<'_>) -> bool {
 fn get_slot_name<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     let node = match dir.arg.as_ref() {
         Some(ExpressionNode::Simple(simple)) if simple.is_static => SimpleExpressionNode::new(
@@ -184,7 +189,7 @@ fn get_slot_name<'a>(
             true,
             simple.loc.clone(),
         ),
-        Some(arg) => return extract_expression(allocator, arg),
+        Some(arg) => return extract_expression(allocator, arg, source),
         None => SimpleExpressionNode::new(
             static_slot_name_with_modifiers(String::new("default"), dir),
             true,
@@ -206,16 +211,18 @@ fn static_slot_name_with_modifiers(mut name: String, dir: &DirectiveNode<'_>) ->
 fn get_slot_params<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Option<Box<'a, SimpleExpressionNode<'a>>> {
     dir.exp
         .as_ref()
-        .map(|exp| extract_expression(allocator, exp))
+        .map(|exp| extract_expression(allocator, exp, source))
 }
 
 /// Extract expression helper
 fn extract_expression<'a>(
     allocator: &'a Bump,
     exp: &ExpressionNode<'a>,
+    source: &str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => {
@@ -227,8 +234,11 @@ fn extract_expression<'a>(
             Box::new_in(node, allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, allocator)
         }
     }

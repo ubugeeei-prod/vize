@@ -31,33 +31,30 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let merge_start_off = if let Some(entry) = self.stack.last() {
-            match entry.element.children.last() {
-                Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
-                _ => None,
-            }
+        let can_merge = if let Some(entry) = self.stack.last() {
+            matches!(
+                entry.element.children.last(),
+                Some(TemplateChildNode::Text(_))
+            )
         } else {
-            match self.root.as_ref().and_then(|root| root.children.last()) {
-                Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
-                _ => None,
-            }
+            matches!(
+                self.root.as_ref().and_then(|root| root.children.last()),
+                Some(TemplateChildNode::Text(_))
+            )
         };
 
-        if let Some(merge_start) = merge_start_off {
+        if can_merge {
             let end_pos = self.get_pos(end);
-            let source_span = self.get_source(merge_start, end).into();
             if let Some(entry) = self.stack.last_mut()
                 && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.end = end_pos;
-                text_node.loc.source = source_span;
+                text_node.loc.set_end(end_pos);
             } else if let Some(root) = self.root.as_mut()
                 && let Some(TemplateChildNode::Text(text_node)) = root.children.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.end = end_pos;
-                text_node.loc.source = source_span;
+                text_node.loc.set_end(end_pos);
             }
         } else {
             let loc = self.create_loc(start, end);
@@ -73,20 +70,18 @@ impl<'a> Parser<'a> {
             return;
         };
 
-        let merge_start_off = match self.stack[table_index].fostered_before.last() {
-            Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
-            _ => None,
-        };
+        let can_merge = matches!(
+            self.stack[table_index].fostered_before.last(),
+            Some(TemplateChildNode::Text(_))
+        );
 
-        if let Some(merge_start) = merge_start_off {
+        if can_merge {
             let end_pos = self.get_pos(end);
-            let source_span = self.get_source(merge_start, end).into();
             if let Some(TemplateChildNode::Text(text_node)) =
                 self.stack[table_index].fostered_before.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.end = end_pos;
-                text_node.loc.source = source_span;
+                text_node.loc.set_end(end_pos);
             }
         } else {
             let loc = self.create_loc(start, end);

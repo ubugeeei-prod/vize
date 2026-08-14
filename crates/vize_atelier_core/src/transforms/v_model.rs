@@ -132,7 +132,7 @@ pub fn transform_v_model<'a>(
     let value_exp = match &dir.exp {
         Some(exp) => match exp {
             ExpressionNode::Simple(s) => s.content.clone(),
-            ExpressionNode::Compound(c) => c.loc.source.clone(),
+            ExpressionNode::Compound(c) => String::new(c.loc.span.slice(&ctx.source)),
         },
         None => return props,
     };
@@ -145,7 +145,7 @@ pub fn transform_v_model<'a>(
             .as_ref()
             .map(|arg| match arg {
                 ExpressionNode::Simple(exp) => exp.content.clone(),
-                ExpressionNode::Compound(exp) => exp.loc.source.clone(),
+                ExpressionNode::Compound(exp) => String::new(exp.loc.span.slice(&ctx.source)),
             })
             .unwrap_or_else(|| String::new("modelValue"));
 

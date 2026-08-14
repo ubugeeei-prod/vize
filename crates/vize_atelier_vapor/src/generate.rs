@@ -54,6 +54,7 @@ pub fn generate_vapor_with_options(
         &ir.element_template_map,
         &ir.standalone_text_elements,
         binding_metadata,
+        &ir.source,
     );
     ctx.jsx_closure = options.jsx_closure;
 
@@ -434,37 +435,4 @@ fn collect_root_if_templates(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{generate_vapor, setup::escape_template};
-    use crate::lower::transform_to_ir;
-    use vize_atelier_core::parser::parse;
-    use vize_carton::Allocator;
-
-    #[test]
-    fn test_generate_simple() {
-        let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, "<div>hello</div>");
-        let ir = transform_to_ir(&allocator, &root);
-        let result = generate_vapor(&ir, None);
-
-        assert!(!result.code.is_empty());
-        insta::assert_snapshot!(result.code.as_str());
-    }
-
-    #[test]
-    fn test_generate_with_event() {
-        let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, r#"<button @click="handleClick">Click</button>"#);
-        let ir = transform_to_ir(&allocator, &root);
-        let result = generate_vapor(&ir, None);
-
-        insta::assert_snapshot!(result.code.as_str());
-    }
-
-    #[test]
-    fn test_escape_template() {
-        assert_eq!(escape_template("hello"), "hello");
-        assert_eq!(escape_template("hello\nworld"), "hello\\nworld");
-        assert_eq!(escape_template("hello\"world"), "hello\\\"world");
-    }
-}
+mod tests;

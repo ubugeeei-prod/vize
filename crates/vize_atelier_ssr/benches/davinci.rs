@@ -43,7 +43,8 @@ fn davinci(criterion: &mut Criterion) {
             let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             transform(&allocator, &mut root, ssr_transform_options(), None);
-            window.measure(|| SsrCodegenContext::new(&allocator, &options).generate(&root))
+            window
+                .measure(|| SsrCodegenContext::new(&allocator, &options, template).generate(&root))
         });
 
         let fused_id = cstr!("atelier_ssr_compile_{}", fixture.name);

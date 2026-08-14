@@ -28,7 +28,7 @@ pub enum StructuralDirectiveKind {
     For,
 }
 
-fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionContent {
+fn directive_expression_to_content(exp: ExpressionNode<'_>, src: &str) -> SimpleExpressionContent {
     match exp {
         ExpressionNode::Simple(s) => {
             let s = Box::into_inner(s);
@@ -39,10 +39,9 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionC
             }
         }
         ExpressionNode::Compound(c) => {
-            let c = Box::into_inner(c);
-            let loc = c.loc;
+            let loc = Box::into_inner(c).loc;
             SimpleExpressionContent {
-                content: loc.source.clone(),
+                content: String::new(loc.span.slice(src)),
                 is_static: false,
                 loc,
             }
@@ -56,6 +55,7 @@ fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionC
 /// This removes the selected directive from the element in the same pass we discover it.
 pub fn take_structural_directive<'a>(
     el: &mut Box<'a, ElementNode<'a>>,
+    src: &str,
 ) -> Option<(
     StructuralDirectiveKind,
     Option<SimpleExpressionContent>,
@@ -99,11 +99,10 @@ pub fn take_structural_directive<'a>(
         }
     };
 
-    Some((
-        directive_kind,
-        directive.exp.map(directive_expression_to_content),
-        directive.loc,
-    ))
+    let exp = directive
+        .exp
+        .map(|exp| directive_expression_to_content(exp, src));
+    Some((directive_kind, exp, directive.loc))
 }
 
 /// Extract and remove key prop from element
@@ -357,16 +356,16 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 
             // Check for key collision with existing branches (vuejs/core #13881)
             let has_key_collision = if let Some(ref new_key) = user_key {
-                let new_key_str = extract_key_value_str(new_key, ctx.template_syntax_quirks());
+                let quirks = ctx.template_syntax_quirks();
+                let src = ctx.source.as_str();
+                let new_key_str = extract_key_value_str(new_key, quirks, src);
                 if let Some(parent) = &ctx.parent {
                     let children = parent.children_mut();
                     if let TemplateChildNode::If(if_node) = &children[if_idx] {
                         if_node.branches.iter().any(|existing_branch| {
                             if let Some(ref existing_key) = existing_branch.user_key {
-                                let existing_key_str = extract_key_value_str(
-                                    existing_key,
-                                    ctx.template_syntax_quirks(),
-                                );
+                                let existing_key_str =
+                                    extract_key_value_str(existing_key, quirks, src);
                                 matches!((&new_key_str, &existing_key_str), (Some(nk), Some(ek)) if nk == ek)
                             } else {
                                 false
@@ -480,11 +479,13 @@ pub fn transform_v_for<'a>(
     for_children.push(taken_node);
 
     // Create parse result (clone expressions for parse_result)
+    let src = ctx.source.as_str();
+    let clone = |e: &ExpressionNode<'a>| clone_expression(allocator, e, src);
     let parse_result = ForParseResult {
-        source: clone_expression(allocator, &source),
-        value: value_alias.as_ref().map(|e| clone_expression(allocator, e)),
-        key: key_alias.as_ref().map(|e| clone_expression(allocator, e)),
-        index: index_alias.as_ref().map(|e| clone_expression(allocator, e)),
+        source: clone_expression(allocator, &source, src),
+        value: value_alias.as_ref().map(clone),
+        key: key_alias.as_ref().map(clone),
+        index: index_alias.as_ref().map(clone),
         finalized: false,
     };
 
@@ -513,47 +514,5 @@ pub fn transform_v_for<'a>(
 
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
-mod tests {
-    use vize_carton::Allocator;
-
-    use super::super::traverse::traverse_children;
-    use super::*;
-    use crate::errors::CompilerError;
-    use crate::lane::{ParentNode, TransformContext};
-    use crate::options::TransformOptions;
-    use crate::parser::parse;
-
-    fn transform_errors(source: &str) -> std::vec::Vec<CompilerError> {
-        let allocator = Allocator::new();
-        let (mut root, errors) = parse(&allocator, source);
-        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-
-        let mut ctx =
-            TransformContext::new(&allocator, root.source.clone(), TransformOptions::default());
-        traverse_children(&mut ctx, ParentNode::Root(&mut root as *mut _));
-        ctx.errors
-    }
-
-    #[test]
-    fn test_v_if_without_expression_reports_error() {
-        let errors = transform_errors(r#"<div v-if>always</div>"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VIfNoExpression);
-    }
-
-    #[test]
-    fn test_v_else_if_without_expression_reports_error() {
-        let errors = transform_errors(r#"<div v-if="ok">yes</div><div v-else-if>maybe</div>"#);
-
-        assert_eq!(errors.len(), 1);
-        assert_eq!(errors[0].code, ErrorCode::VIfNoExpression);
-    }
-
-    #[test]
-    fn test_v_else_without_expression_stays_valid() {
-        let errors = transform_errors(r#"<div v-if="ok">yes</div><div v-else>no</div>"#);
-
-        assert!(errors.is_empty(), "Unexpected errors: {:?}", errors);
-    }
-}
+#[path = "structural/tests.rs"]
+mod tests;

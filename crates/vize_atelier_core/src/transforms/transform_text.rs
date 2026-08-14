@@ -111,7 +111,9 @@ pub fn build_text_call<'a>(
                         parts.push(TextPart::Dynamic(exp.content.clone()));
                     }
                     ExpressionNode::Compound(exp) => {
-                        parts.push(TextPart::Dynamic(exp.loc.source.clone()));
+                        parts.push(TextPart::Dynamic(String::new(
+                            exp.loc.span.slice(&ctx.source),
+                        )));
                     }
                 }
             }

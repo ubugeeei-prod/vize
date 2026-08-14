@@ -248,7 +248,7 @@ fn generate_slot_object_entry(
     });
 
     if let Some(dir) = slot_dir {
-        let slot_name = get_slot_name(dir);
+        let slot_name = get_slot_name(dir, &ctx.source);
 
         ctx.push("{");
         ctx.indent();
@@ -267,7 +267,7 @@ fn generate_slot_object_entry(
         ctx.push("(");
 
         // Slot props
-        let params = if let Some(props_str) = get_slot_props(dir) {
+        let params = if let Some(props_str) = get_slot_props(dir, &ctx.source) {
             let processed = prefix_slot_defaults(&props_str);
             ctx.push("(");
             ctx.push(&processed);

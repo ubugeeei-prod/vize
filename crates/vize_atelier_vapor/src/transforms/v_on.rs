@@ -12,9 +12,10 @@ pub fn transform_v_on<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
     element_id: usize,
+    source: &str,
 ) -> Option<OperationNode<'a>> {
-    let key = extract_event_name(allocator, dir)?;
-    let value = extract_handler(allocator, dir);
+    let key = extract_event_name(allocator, dir, source)?;
+    let value = extract_handler(allocator, dir, source);
     let modifiers = parse_modifiers(dir);
 
     let set_event = SetEventIRNode {
@@ -33,6 +34,7 @@ pub fn transform_v_on<'a>(
 fn extract_event_name<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Option<Box<'a, SimpleExpressionNode<'a>>> {
     dir.arg.as_ref().map(|arg| match arg {
         ExpressionNode::Simple(exp) => {
@@ -41,8 +43,11 @@ fn extract_event_name<'a>(
             Box::new_in(node, allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, allocator)
         }
     })
@@ -52,6 +57,7 @@ fn extract_event_name<'a>(
 fn extract_handler<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Option<Box<'a, SimpleExpressionNode<'a>>> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(simple) => {
@@ -63,8 +69,11 @@ fn extract_handler<'a>(
             Box::new_in(node, allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, allocator)
         }
     })

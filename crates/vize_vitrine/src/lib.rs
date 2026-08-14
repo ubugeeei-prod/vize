@@ -17,6 +17,8 @@ mod lint_fix_tests;
 pub mod wasm;
 
 #[cfg(any(feature = "napi", feature = "wasm"))]
+mod parse_errors;
+#[cfg(any(feature = "napi", feature = "wasm"))]
 mod template_syntax;
 pub mod typecheck;
 pub mod types;

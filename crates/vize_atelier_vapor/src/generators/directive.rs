@@ -19,7 +19,9 @@ pub fn generate_directive(ctx: &mut GenerateContext, directive: &DirectiveIRNode
                     vize_carton::CompactString::from(exp.content.as_str())
                 }
             }
-            ExpressionNode::Compound(c) => vize_carton::CompactString::from(c.loc.source.as_str()),
+            ExpressionNode::Compound(c) => {
+                vize_carton::CompactString::from(c.loc.span.slice(&ctx.source))
+            }
         }
     } else {
         vize_carton::CompactString::from("undefined")
@@ -34,7 +36,9 @@ pub fn generate_directive(ctx: &mut GenerateContext, directive: &DirectiveIRNode
                     vize_carton::CompactString::from(e.content.as_str())
                 }
             }
-            ExpressionNode::Compound(c) => vize_carton::CompactString::from(c.loc.source.as_str()),
+            ExpressionNode::Compound(c) => {
+                vize_carton::CompactString::from(c.loc.span.slice(&ctx.source))
+            }
         }
     } else {
         vize_carton::CompactString::from("undefined")

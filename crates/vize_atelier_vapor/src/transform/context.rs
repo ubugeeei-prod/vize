@@ -6,6 +6,9 @@ use vize_carton::{Bump, FxHashMap, FxHashSet, String, Vec};
 /// Transform context
 pub(crate) struct TransformContext<'a> {
     pub(crate) allocator: &'a Bump,
+    /// The source string node-loc spans index into, used to recover covered
+    /// text from a `SourceLocation`.
+    pub(crate) source: &'a str,
     temp_id: usize,
     pub(crate) templates: Vec<'a, String>,
     pub(crate) element_template_map: FxHashMap<usize, usize>,
@@ -15,9 +18,10 @@ pub(crate) struct TransformContext<'a> {
 }
 
 impl<'a> TransformContext<'a> {
-    pub(crate) fn new(allocator: &'a Bump) -> Self {
+    pub(crate) fn new(allocator: &'a Bump, source: &'a str) -> Self {
         Self {
             allocator,
+            source,
             temp_id: 0,
             templates: Vec::new_in(allocator),
             element_template_map: FxHashMap::default(),

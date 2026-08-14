@@ -90,7 +90,7 @@ impl NoMutatingProps {
         let Some(exp) = directive.exp.as_ref() else {
             return;
         };
-        let content = expression_source(exp);
+        let content = expression_source(exp, ctx.source);
         if !scope.is_mutation(content) {
             return;
         }
@@ -123,7 +123,7 @@ impl NoMutatingProps {
             return;
         };
         let mut mutated: Vec<String> = Vec::new();
-        handlers::for_each_mutation_target(expression_source(exp), |target| {
+        handlers::for_each_mutation_target(expression_source(exp, ctx.source), |target| {
             let target = target.trim();
             if scope.is_mutation(target) && !mutated.iter().any(|seen| seen == target) {
                 mutated.push(String::new(target));
@@ -183,7 +183,7 @@ impl NoMutatingProps {
         .into_iter()
         .flatten()
         {
-            push_identifier_tokens(expression_source(alias), &mut scope.shadowed);
+            push_identifier_tokens(expression_source(alias, ctx.source), &mut scope.shadowed);
         }
         self.check_children(ctx, &for_node.children, scope);
         scope.shadowed.truncate(depth);
@@ -208,7 +208,7 @@ impl NoMutatingProps {
             if let PropNode::Directive(dir) = prop
                 && dir.name.as_str() == "for"
             {
-                push_for_aliases(dir, &mut scope.shadowed);
+                push_for_aliases(dir, &mut scope.shadowed, ctx.source);
             }
         }
 
@@ -226,7 +226,7 @@ impl NoMutatingProps {
                 && dir.name.as_str() == "slot"
                 && let Some(exp) = dir.exp.as_ref()
             {
-                push_identifier_tokens(expression_source(exp), &mut scope.shadowed);
+                push_identifier_tokens(expression_source(exp, ctx.source), &mut scope.shadowed);
             }
         }
 

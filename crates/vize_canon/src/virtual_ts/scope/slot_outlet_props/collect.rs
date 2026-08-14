@@ -16,7 +16,7 @@ pub(super) fn collect_slot_outlets_by_scope(
         return FxHashMap::default();
     };
     for child in &root.children {
-        collect_child_outlets(summary, child, &mut outlets);
+        collect_child_outlets(summary, child, &mut outlets, &root.source);
     }
 
     let mut by_scope: FxHashMap<u32, Vec<SlotOutlet>> = FxHashMap::default();
@@ -73,24 +73,27 @@ fn collect_child_outlets(
     summary: &Croquis,
     child: &TemplateChildNode<'_>,
     outlets: &mut Vec<SlotOutlet>,
+    source: &str,
 ) {
     match child {
-        TemplateChildNode::Element(element) => collect_element_outlets(summary, element, outlets),
+        TemplateChildNode::Element(element) => {
+            collect_element_outlets(summary, element, outlets, source)
+        }
         TemplateChildNode::If(node) => {
             for branch in &node.branches {
                 for child in &branch.children {
-                    collect_child_outlets(summary, child, outlets);
+                    collect_child_outlets(summary, child, outlets, source);
                 }
             }
         }
         TemplateChildNode::IfBranch(branch) => {
             for child in &branch.children {
-                collect_child_outlets(summary, child, outlets);
+                collect_child_outlets(summary, child, outlets, source);
             }
         }
         TemplateChildNode::For(node) => {
             for child in &node.children {
-                collect_child_outlets(summary, child, outlets);
+                collect_child_outlets(summary, child, outlets, source);
             }
         }
         _ => {}
@@ -101,18 +104,19 @@ fn collect_element_outlets(
     summary: &Croquis,
     element: &ElementNode<'_>,
     outlets: &mut Vec<SlotOutlet>,
+    source: &str,
 ) {
     if element.tag == "slot"
-        && let Some(outlet) = slot_outlet(summary, element)
+        && let Some(outlet) = slot_outlet(summary, element, source)
     {
         outlets.push(outlet);
     }
     for child in &element.children {
-        collect_child_outlets(summary, child, outlets);
+        collect_child_outlets(summary, child, outlets, source);
     }
 }
 
-fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutlet> {
+fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Option<SlotOutlet> {
     let mut name = CompactString::const_new("default");
     let mut name_is_dynamic = false;
     let mut props = Vec::new();
@@ -139,11 +143,11 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutle
             }
             PropNode::Directive(directive) if directive.name.as_str() == "bind" => {
                 if let Some(ref arg) = directive.arg {
-                    let (prop_name, prop_name_is_dynamic) = directive_argument(arg);
+                    let (prop_name, prop_name_is_dynamic) = directive_argument(arg, source);
                     let value = directive
                         .exp
                         .as_ref()
-                        .map(|exp| CompactString::new(expression_content(exp)))
+                        .map(|exp| CompactString::new(expression_content(exp, source)))
                         .or_else(|| Some(prop_name.clone()));
                     if prop_name == "name" && !prop_name_is_dynamic {
                         name_is_dynamic = true;
@@ -165,7 +169,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutle
                 } else if let Some(ref exp) = directive.exp {
                     record_expression_scope(summary, Some(exp), &mut scope);
                     spread_props.push(SpreadProp {
-                        expression: CompactString::new(expression_content(exp)),
+                        expression: CompactString::new(expression_content(exp, source)),
                         start: directive.loc.start.offset,
                         end: directive.loc.end.offset,
                     });
@@ -190,11 +194,11 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>) -> Option<SlotOutle
     })
 }
 
-fn directive_argument(arg: &ExpressionNode<'_>) -> (CompactString, bool) {
+fn directive_argument(arg: &ExpressionNode<'_>, source: &str) -> (CompactString, bool) {
     match arg {
         ExpressionNode::Simple(simple) => (simple.content.clone(), !simple.is_static),
         ExpressionNode::Compound(compound) => {
-            (CompactString::new(compound.loc.source.as_str()), true)
+            (CompactString::new(compound.loc.span.slice(source)), true)
         }
     }
 }
@@ -223,9 +227,9 @@ fn template_expression(summary: &Croquis, start: u32, end: u32) -> Option<&Templ
     })
 }
 
-fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {
+fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

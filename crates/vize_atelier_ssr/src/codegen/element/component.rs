@@ -2,7 +2,6 @@
 
 use super::props::{
     is_dynamic_component_tag, is_simple_identifier, is_valid_js_identifier, quoted_js_string,
-    slot_props_pattern_to_string,
 };
 use super::{
     ComponentSlotChildren, ComponentTemplateSlot, DirectiveNode, ElementNode, ElementType,
@@ -324,7 +323,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(") => {\n");
         self.indent_level += 1;
 
-        let params = super::super::helpers::collect_for_scoped_params(for_node);
+        let params = super::super::helpers::collect_for_scoped_params(for_node, self.source);
         self.push_scoped_params(params);
         self.push_indent();
         self.push("return ");
@@ -379,7 +378,7 @@ impl<'a> SsrCodegenContext<'a> {
         };
 
         let name = self.slot_entry_name(dir);
-        let props_pattern = dir.exp.as_ref().map(slot_props_pattern_to_string);
+        let props_pattern = self.slot_props_pattern(dir);
         let mut params = FxHashSet::default();
         if let Some(pattern) = props_pattern.as_deref() {
             extract_destructure_params(pattern.trim(), &mut params);
@@ -549,7 +548,7 @@ impl<'a> SsrCodegenContext<'a> {
                 Some(_) => "default".to_compact_string(),
                 None => "default".to_compact_string(),
             };
-            let props_pattern = dir.exp.as_ref().map(slot_props_pattern_to_string);
+            let props_pattern = self.slot_props_pattern(dir);
             let mut params = FxHashSet::default();
             if let Some(pattern) = props_pattern.as_deref() {
                 extract_destructure_params(pattern.trim(), &mut params);

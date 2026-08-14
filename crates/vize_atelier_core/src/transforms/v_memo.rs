@@ -16,7 +16,7 @@ pub fn has_v_memo(el: &ElementNode<'_>) -> bool {
 }
 
 /// Get v-memo expression content as string
-pub fn get_memo_deps(el: &ElementNode<'_>) -> Option<String> {
+pub fn get_memo_deps(el: &ElementNode<'_>, source: &str) -> Option<String> {
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop
             && dir.name == "memo"
@@ -24,7 +24,7 @@ pub fn get_memo_deps(el: &ElementNode<'_>) -> Option<String> {
         {
             return Some(match exp {
                 ExpressionNode::Simple(s) => s.content.clone(),
-                ExpressionNode::Compound(c) => c.loc.source.clone(),
+                ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
             });
         }
     }
@@ -113,10 +113,11 @@ mod tests {
     #[test]
     fn test_get_memo_deps() {
         let allocator = Allocator::new();
-        let (root, _) = parse(&allocator, r#"<div v-memo="[count]">{{ count }}</div>"#);
+        let source = r#"<div v-memo="[count]">{{ count }}</div>"#;
+        let (root, _) = parse(&allocator, source);
 
         if let TemplateChildNode::Element(el) = &root.children[0] {
-            let deps = get_memo_deps(el);
+            let deps = get_memo_deps(el, source);
             assert!(deps.is_some());
             assert_eq!(deps.unwrap().as_str(), "[count]");
         }

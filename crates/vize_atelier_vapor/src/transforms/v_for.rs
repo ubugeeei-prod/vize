@@ -17,9 +17,10 @@ pub fn transform_v_for<'a>(
     el: &ElementNode<'a>,
     render_block: BlockIRNode<'a>,
     id: usize,
+    source_text: &str,
 ) -> OperationNode<'a> {
     let source = if let Some(ref exp) = dir.exp {
-        extract_expression(allocator, exp)
+        extract_expression(allocator, exp, source_text)
     } else {
         Box::new_in(
             SimpleExpressionNode::new("[]", false, SourceLocation::STUB),
@@ -51,21 +52,22 @@ pub fn transform_for_node<'a>(
     for_node: &ForNode<'a>,
     render_block: BlockIRNode<'a>,
     id: usize,
+    source_text: &str,
 ) -> OperationNode<'a> {
-    let source = extract_expression(allocator, &for_node.source);
+    let source = extract_expression(allocator, &for_node.source, source_text);
 
     let value = for_node
         .value_alias
         .as_ref()
-        .map(|v| extract_expression(allocator, v));
+        .map(|v| extract_expression(allocator, v, source_text));
     let key = for_node
         .key_alias
         .as_ref()
-        .map(|k| extract_expression(allocator, k));
+        .map(|k| extract_expression(allocator, k, source_text));
     let index = for_node
         .object_index_alias
         .as_ref()
-        .map(|i| extract_expression(allocator, i));
+        .map(|i| extract_expression(allocator, i, source_text));
 
     let for_ir = ForIRNode {
         id,
@@ -89,6 +91,7 @@ pub fn transform_for_node<'a>(
 fn extract_expression<'a>(
     allocator: &'a Bump,
     exp: &ExpressionNode<'a>,
+    source: &str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => {
@@ -100,8 +103,11 @@ fn extract_expression<'a>(
             Box::new_in(node, allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, allocator)
         }
     }

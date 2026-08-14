@@ -131,7 +131,13 @@ fn scoped_slot_directive_carries_raw_param_pattern() {
     match exp {
         ExpressionNode::Simple(simple) => {
             assert!(!simple.is_static, "scoped params are dynamic");
-            assert_eq!(simple.loc.source.as_str(), "{ x }");
+            assert_eq!(
+                simple
+                    .loc
+                    .span
+                    .slice("const A = () => <List>{{ item: ({ x }) => <li>{x}</li> }}</List>;"),
+                "{ x }"
+            );
         }
         ExpressionNode::Compound(_) => panic!("expected simple param expression"),
     }

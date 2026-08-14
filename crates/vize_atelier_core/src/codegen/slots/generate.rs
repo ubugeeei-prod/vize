@@ -63,7 +63,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         None
     });
 
-    let collected_slots = collect_slots(el);
+    let collected_slots = collect_slots(el, &ctx.source);
     let has_forwarded_slots = has_forwarded_slot_outlet(el);
     let forwarded_slots_are_dynamic = has_forwarded_slots && ctx.has_slot_params();
     let has_dynamic_slots =
@@ -87,7 +87,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push(ctx.helper(RuntimeHelper::WithCtx));
         ctx.push("(");
         // Slot props (scoped slot params) - use raw source with default value prefix
-        let params = if let Some(props_str) = get_slot_props(slot_dir) {
+        let params = if let Some(props_str) = get_slot_props(slot_dir, &ctx.source) {
             let processed = prefix_slot_defaults(&props_str);
             ctx.push("(");
             ctx.push(&processed);
@@ -135,7 +135,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     first_slot = false;
                     ctx.newline();
 
-                    let slot_name = get_slot_name(slot_dir);
+                    let slot_name = get_slot_name(slot_dir, &ctx.source);
                     let is_dynamic = slot_dir
                         .arg
                         .as_ref()
@@ -178,7 +178,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     ctx.push("(");
 
                     // Slot props - use raw source with default value prefix
-                    let params = if let Some(props_str) = get_slot_props(slot_dir) {
+                    let params = if let Some(props_str) = get_slot_props(slot_dir, &ctx.source) {
                         let processed = prefix_slot_defaults(&props_str);
                         ctx.push("(");
                         ctx.push(&processed);

@@ -508,6 +508,7 @@ impl<'a> TransformContext<'a> {
 pub(super) fn clone_expression<'a>(
     allocator: &'a Allocator,
     exp: &ExpressionNode<'a>,
+    source: &str,
 ) -> ExpressionNode<'a> {
     match exp {
         ExpressionNode::Simple(s) => ExpressionNode::Simple(Box::new_in(
@@ -524,22 +525,19 @@ pub(super) fn clone_expression<'a>(
             },
             allocator,
         )),
-        ExpressionNode::Compound(c) => {
-            // For compound expressions, we recreate from source
-            ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: c.loc.source.clone(),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: c.loc.clone(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: c.is_handler_key,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            ))
-        }
+        ExpressionNode::Compound(c) => ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode {
+                content: String::new(c.loc.span.slice(source)),
+                is_static: false,
+                const_type: ConstantType::NotConstant,
+                loc: c.loc.clone(),
+                js_ast: None,
+                hoisted: None,
+                identifiers: None,
+                is_handler_key: c.is_handler_key,
+                is_ref_transformed: false,
+            },
+            allocator,
+        )),
     }
 }

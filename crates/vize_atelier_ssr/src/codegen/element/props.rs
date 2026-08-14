@@ -16,12 +16,21 @@ pub(super) fn component_props_object(entries: &[VNodePropEntry]) -> String {
     out
 }
 
-pub(super) fn slot_props_pattern_to_string(expr: &ExpressionNode) -> String {
+pub(super) fn slot_props_pattern_to_string(expr: &ExpressionNode, source_text: &str) -> String {
     let source = match expr {
-        ExpressionNode::Simple(simple) => simple.loc.source.clone(),
-        ExpressionNode::Compound(compound) => compound.loc.source.clone(),
+        ExpressionNode::Simple(simple) => String::new(simple.loc.span.slice(source_text)),
+        ExpressionNode::Compound(compound) => String::new(compound.loc.span.slice(source_text)),
     };
     vize_atelier_core::steps::strip_typescript_from_expression(&source)
+}
+
+impl crate::codegen::SsrCodegenContext<'_> {
+    /// [`slot_props_pattern_to_string`] against this context's source text.
+    pub(in crate::codegen) fn slot_props_pattern(&self, dir: &DirectiveNode<'_>) -> Option<String> {
+        dir.exp
+            .as_ref()
+            .map(|exp| slot_props_pattern_to_string(exp, self.source))
+    }
 }
 
 pub(super) fn component_prop_entry(key: &str, value: &str, dynamic: bool) -> VNodePropEntry {

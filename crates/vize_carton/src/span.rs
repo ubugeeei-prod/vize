@@ -5,12 +5,10 @@
 //! `[start, end)` into the one authored source string, and nothing else.
 //! Text is recovered on demand with [`Span::slice`]; line/column exist only
 //! at diagnostic-rendering time, derived from offsets (see
-//! [`crate::line_index::LineIndex`]). This is the replacement for the owned
-//! `SourceLocation { start: Position, end: Position, source: String }`
-//! carried by every relief node today.
-//!
-//! Landed unused by production code (Davinci P0-9); the migration map lives
-//! in `davinci-road/plan/sourcelocation-inventory.md`.
+//! [`crate::line_index::LineIndex`]). Since Davinci P1-3 the relief
+//! `SourceLocation` carries one of these instead of an owned `source: String`
+//! copy of the covered text; the migration record lives in
+//! `davinci-road/plan/sourcelocation-inventory.md`.
 //!
 //! # Offset contract
 //!
@@ -21,7 +19,7 @@
 //! malformed input, it clamps and snaps as documented there.
 
 /// A half-open byte range `[start, end)` into an authored source string.
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Span {
     /// Start byte offset (inclusive).
     pub start: u32,

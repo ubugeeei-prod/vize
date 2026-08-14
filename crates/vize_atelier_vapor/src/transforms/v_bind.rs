@@ -15,9 +15,10 @@ pub fn transform_v_bind<'a>(
     dir: &DirectiveNode<'a>,
     el: &ElementNode<'a>,
     element_id: usize,
+    source: &str,
 ) -> Option<OperationNode<'a>> {
-    let key = extract_prop_key(allocator, dir)?;
-    let values = extract_prop_values(allocator, dir);
+    let key = extract_prop_key(allocator, dir, source)?;
+    let values = extract_prop_values(allocator, dir, source);
 
     let set_prop = SetPropIRNode {
         element: element_id,
@@ -64,6 +65,7 @@ pub fn transform_v_bind_dynamic<'a>(
 fn extract_prop_key<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Option<Box<'a, SimpleExpressionNode<'a>>> {
     dir.arg.as_ref().map(|arg| match arg {
         ExpressionNode::Simple(exp) => {
@@ -78,8 +80,11 @@ fn extract_prop_key<'a>(
             Box::new_in(node, allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, allocator)
         }
     })
@@ -89,6 +94,7 @@ fn extract_prop_key<'a>(
 fn extract_prop_values<'a>(
     allocator: &'a Bump,
     dir: &DirectiveNode<'a>,
+    source: &str,
 ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
     let mut values = Vec::new_in(allocator);
 
@@ -104,7 +110,7 @@ fn extract_prop_values<'a>(
             }
             ExpressionNode::Compound(compound) => {
                 let node = SimpleExpressionNode::new(
-                    compound.loc.source.clone(),
+                    compound.loc.span.slice(source),
                     false,
                     compound.loc.clone(),
                 );

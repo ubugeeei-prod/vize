@@ -29,10 +29,10 @@ pub fn transform_v_show<'a>(
 }
 
 /// Get v-show condition expression
-pub fn get_show_condition(dir: &DirectiveNode<'_>) -> Option<String> {
+pub fn get_show_condition(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {
     dir.exp.as_ref().map(|exp| match exp {
         ExpressionNode::Simple(s) => s.content.clone(),
-        ExpressionNode::Compound(c) => c.loc.source.clone(),
+        ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
     })
 }
 

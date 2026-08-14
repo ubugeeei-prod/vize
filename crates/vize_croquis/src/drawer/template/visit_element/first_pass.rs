@@ -35,14 +35,19 @@ impl Drawer {
 
                 if dir.name == "for" && self.options.analyze_template_scopes {
                     if let Some(ref exp) = dir.exp {
-                        let content = expression_content(exp);
+                        let content = expression_content(exp, &self.template_source);
                         let aliases = profile!(
                             "croquis.template.v_for.parse_expression",
                             parse_v_for_scope_expression(content)
                         );
                         if let Some(aliases) = aliases {
-                            let alias_offsets = v_for_alias_declaration_offsets(exp, &aliases);
-                            let source_offset = v_for_source_offset(exp, &aliases);
+                            let alias_offsets = v_for_alias_declaration_offsets(
+                                exp,
+                                &aliases,
+                                &self.template_source,
+                            );
+                            let source_offset =
+                                v_for_source_offset(exp, &aliases, &self.template_source);
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
                             state.for_scope = Some((
                                 aliases,
@@ -55,19 +60,20 @@ impl Drawer {
                     }
                 } else if dir.name == "bind" {
                     if let Some(ref arg) = dir.arg {
-                        let arg_name = expression_content(arg);
+                        let arg_name = expression_content(arg, &self.template_source);
                         if arg_name == "key"
                             && let Some(ref exp) = dir.exp
                         {
-                            state.key_expression =
-                                Some(CompactString::new(expression_content(exp)));
+                            state.key_expression = Some(CompactString::new(expression_content(
+                                exp,
+                                &self.template_source,
+                            )));
                         }
                     }
                 } else if dir.name == "if" || dir.name == "else-if" || dir.name == "else" {
-                    let condition = dir
-                        .exp
-                        .as_ref()
-                        .map(|exp| CompactString::new(expression_content(exp)));
+                    let condition = dir.exp.as_ref().map(|exp| {
+                        CompactString::new(expression_content(exp, &self.template_source))
+                    });
                     let kind = match dir.name.as_str() {
                         "if" => ConditionalKind::If,
                         "else-if" => ConditionalKind::ElseIf,
@@ -78,7 +84,9 @@ impl Drawer {
                     let slot_name = dir
                         .arg
                         .as_ref()
-                        .map(|arg| CompactString::new(expression_content(arg)))
+                        .map(|arg| {
+                            CompactString::new(expression_content(arg, &self.template_source))
+                        })
                         .unwrap_or_else(|| CompactString::const_new("default"));
                     let slot_name_is_static = dir
                         .arg
@@ -90,7 +98,7 @@ impl Drawer {
                         .unwrap_or(true);
 
                     let (prop_names, props_pattern) = if let Some(ref exp) = dir.exp {
-                        let content = expression_content(exp);
+                        let content = expression_content(exp, &self.template_source);
                         (
                             profile!(
                                 "croquis.template.v_slot.extract_props",
@@ -113,7 +121,7 @@ impl Drawer {
                     // petite-vue `v-scope="{ ... }"`: the object's top-level
                     // keys become in-scope names for this element's subtree.
                     if let Some(ref exp) = dir.exp {
-                        let content = expression_content(exp);
+                        let content = expression_content(exp, &self.template_source);
                         let base = exp.loc().start.offset;
                         let bindings: SmallVec<[(CompactString, u32); 4]> = profile!(
                             "croquis.template.v_scope.extract_keys",
@@ -176,9 +184,9 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
     ))
 }
 
-fn expression_content<'a>(exp: &'a ExpressionNode<'_>) -> &'a str {
+fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
     match exp {
         ExpressionNode::Simple(s) => s.content.as_str(),
-        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+        ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

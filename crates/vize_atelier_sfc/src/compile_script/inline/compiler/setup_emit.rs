@@ -66,7 +66,6 @@ fn transform_css_var_expression(
     let loc = SourceLocation::new(
         Position::new(0, 1, 1),
         Position::new(var_expr.len() as u32, 1, var_expr.len() as u32 + 1),
-        var_expr,
     );
     let exp = ExpressionNode::Simple(CoreBox::new_in(
         SimpleExpressionNode::new(var_expr, false, loc),
@@ -74,7 +73,7 @@ fn transform_css_var_expression(
     ));
     let mut transform_ctx = TransformContext::new(
         &allocator,
-        String::default(),
+        String::new(var_expr),
         TransformOptions {
             prefix_identifiers: true,
             inline: true,

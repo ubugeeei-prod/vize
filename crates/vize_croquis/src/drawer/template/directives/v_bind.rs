@@ -23,9 +23,13 @@ impl Drawer {
         scope_vars: &mut Vec<CompactString>,
     ) {
         if let Some(ref exp) = dir.exp {
+            let compound_content;
             let content = match exp {
                 ExpressionNode::Simple(s) => s.content.as_str(),
-                ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                ExpressionNode::Compound(c) => {
+                    compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
+                    compound_content.as_str()
+                }
             };
             let loc = exp.loc();
 
@@ -66,7 +70,7 @@ impl Drawer {
                                 cstr!(":{}callback", s.content)
                             }
                             ExpressionNode::Compound(c) => {
-                                cstr!(":{}callback", c.loc.source)
+                                cstr!(":{}callback", c.loc.span.slice(&self.template_source))
                             }
                         })
                         .unwrap_or_else(|| CompactString::const_new(":bind callback"));

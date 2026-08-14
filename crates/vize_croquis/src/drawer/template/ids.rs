@@ -78,9 +78,14 @@ impl Drawer {
                     if dir.name == "bind"
                         && let Some(ref arg) = dir.arg
                     {
+                        let compound_arg;
                         let arg_name = match arg {
                             ExpressionNode::Simple(s) => s.content.as_str(),
-                            ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                            ExpressionNode::Compound(c) => {
+                                compound_arg =
+                                    CompactString::new(c.loc.span.slice(&self.template_source));
+                                compound_arg.as_str()
+                            }
                         };
 
                         if let Some(kind) = get_id_kind(arg_name)
@@ -89,7 +94,7 @@ impl Drawer {
                             let content = match exp {
                                 ExpressionNode::Simple(s) => s.content.clone(),
                                 ExpressionNode::Compound(c) => {
-                                    CompactString::new(c.loc.source.as_str())
+                                    CompactString::new(c.loc.span.slice(&self.template_source))
                                 }
                             };
 
@@ -152,9 +157,13 @@ impl Drawer {
         expr: &ExpressionNode<'_>,
         scope_vars: &[CompactString],
     ) {
+        let compound_content;
         let content = match expr {
             ExpressionNode::Simple(s) => s.content.as_str(),
-            ExpressionNode::Compound(c) => c.loc.source.as_str(),
+            ExpressionNode::Compound(c) => {
+                compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
+                compound_content.as_str()
+            }
         };
         let base_offset = expr.loc().start.offset;
 

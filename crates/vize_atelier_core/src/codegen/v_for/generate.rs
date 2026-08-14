@@ -327,7 +327,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     // slots inside v-for are dynamic by construction.
                     if matches!(el.tag.as_str(), "KeepAlive" | "keep-alive")
                         || (ctx.in_v_for && has_slot_children(el))
-                        || has_dynamic_slots_flag(el)
+                        || has_dynamic_slots_flag(el, &ctx.source)
                     {
                         let dynamic_slots_flag = 1024;
                         patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);

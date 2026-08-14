@@ -61,6 +61,9 @@ pub struct VirtualTsGenerator {
     diagnostics: Vec<GenerationDiagnostic>,
     /// Current indentation level
     indent_level: usize,
+    /// Template source the node-loc spans index into (`RootNode::source`),
+    /// captured when template generation starts.
+    template_source: CompactString,
 }
 
 impl VirtualTsGenerator {
@@ -77,6 +80,7 @@ impl VirtualTsGenerator {
             resolved_imports: Vec::new(),
             diagnostics: Vec::new(),
             indent_level: 0,
+            template_source: CompactString::default(),
         }
     }
 
@@ -90,6 +94,12 @@ impl VirtualTsGenerator {
     pub fn with_type_resolver(mut self, resolver: TypeResolver) -> Self {
         self.type_resolver = resolver;
         self
+    }
+
+    /// [`expression_source`] as an owned string against this generator's
+    /// template source.
+    fn owned_expression_source(&self, expr: &vize_relief::ExpressionNode<'_>) -> CompactString {
+        CompactString::new(expression_source(expr, &self.template_source))
     }
 
     /// Reset state for a new generation.
@@ -154,5 +164,14 @@ impl VirtualTsGenerator {
 impl Default for VirtualTsGenerator {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// The text an expression covers: the parsed content for simple expressions,
+/// the span-sliced source for compounds.
+fn expression_source<'a>(expr: &'a vize_relief::ExpressionNode<'a>, source: &'a str) -> &'a str {
+    match expr {
+        vize_relief::ExpressionNode::Simple(simple) => simple.content.as_str(),
+        vize_relief::ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     }
 }

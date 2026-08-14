@@ -137,7 +137,7 @@ pub fn process_expression<'a>(
     // `mut` is only consumed by the legacy filter rewrite below; without the
     // `legacy` feature that block is cfg'd out and the binding is never mutated.
     #[cfg_attr(not(feature = "legacy"), allow(unused_mut))]
-    let mut normalized = normalize_expression(exp, allocator);
+    let mut normalized = normalize_expression(exp, allocator, &ctx.source);
 
     // Vue 2 pipe filters (`{{ msg | capitalize }}`): split the top-level `|`
     // chain into an unprefixed `_filter_<name>(base,args)` rewrite, register
@@ -223,6 +223,7 @@ pub fn process_expression<'a>(
 pub(crate) fn clone_expression<'a>(
     exp: &ExpressionNode<'a>,
     allocator: &'a Bump,
+    source: &str,
 ) -> ExpressionNode<'a> {
     match exp {
         ExpressionNode::Simple(simple) => ExpressionNode::Simple(Box::new_in(
@@ -241,7 +242,7 @@ pub(crate) fn clone_expression<'a>(
         )),
         ExpressionNode::Compound(compound) => ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {
-                content: compound.loc.source.clone(),
+                content: String::new(compound.loc.span.slice(source)),
                 is_static: false,
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
@@ -259,6 +260,7 @@ pub(crate) fn clone_expression<'a>(
 pub(crate) fn normalize_expression<'a>(
     exp: &ExpressionNode<'a>,
     allocator: &'a Bump,
+    source: &str,
 ) -> Box<'a, SimpleExpressionNode<'a>> {
     match exp {
         ExpressionNode::Simple(simple) => Box::new_in(
@@ -277,7 +279,7 @@ pub(crate) fn normalize_expression<'a>(
         ),
         ExpressionNode::Compound(compound) => Box::new_in(
             SimpleExpressionNode {
-                content: compound.loc.source.clone(),
+                content: String::new(compound.loc.span.slice(source)),
                 is_static: false,
                 const_type: ConstantType::NotConstant,
                 loc: compound.loc.clone(),
@@ -293,244 +295,8 @@ pub(crate) fn normalize_expression<'a>(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        MAX_EXPRESSION_NESTING_DEPTH, clone_expression, expression_exceeds_max_depth,
-        expression_nesting_depth, is_event_handler_reference_expression, is_function_expression,
-        prefix::prefix_identifiers_in_expression, process_expression,
-        typescript::strip_typescript_from_expression,
-    };
-    use crate::{
-        CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation,
-        lane::TransformContext,
-        options::{BindingMetadata, BindingType, TransformOptions},
-    };
-    use vize_carton::{Allocator, Box, Bump, FxHashMap};
-
-    fn test_context<'a>(allocator: &'a Allocator) -> TransformContext<'a> {
-        let mut bindings = FxHashMap::default();
-        bindings.insert("selectedFolders".into(), BindingType::SetupRef);
-        bindings.insert("folder".into(), BindingType::SetupRef);
-
-        TransformContext::new(
-            allocator,
-            "".into(),
-            TransformOptions {
-                prefix_identifiers: true,
-                inline: true,
-                is_ts: true,
-                binding_metadata: Some(BindingMetadata {
-                    bindings,
-                    props_aliases: FxHashMap::default(),
-                    is_script_setup: true,
-                }),
-                ..Default::default()
-            },
-        )
-    }
-
-    fn compound_expression<'a>(allocator: &'a Bump, source: &str) -> ExpressionNode<'a> {
-        let loc = SourceLocation::new(
-            Position::new(0, 1, 1),
-            Position::new(source.len() as u32, 1, source.len() as u32 + 1),
-            source,
-        );
-
-        ExpressionNode::Compound(Box::new_in(
-            CompoundExpressionNode::new(allocator, loc),
-            allocator,
-        ))
-    }
-
-    #[test]
-    fn test_process_expression_rewrites_compound_ts_ref_reads() {
-        let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(
-            &allocator,
-            "!selectedFolders.some(f => f.id === folder!.id)",
-        );
-
-        let result = process_expression(&mut ctx, &expr, false);
-        let ExpressionNode::Simple(result) = result else {
-            panic!("expected simple expression");
-        };
-
-        assert!(result.content.starts_with("!selectedFolders.value.some("));
-        assert!(result.content.contains("folder.value.id"));
-    }
-
-    #[test]
-    fn test_process_expression_uses_setup_proxy_in_function_mode() {
-        let allocator = Allocator::new();
-        let mut bindings = FxHashMap::default();
-        bindings.insert("isExternal".into(), BindingType::SetupRef);
-
-        let mut ctx = TransformContext::new(
-            &allocator,
-            "".into(),
-            TransformOptions {
-                prefix_identifiers: true,
-                inline: false,
-                is_ts: true,
-                binding_metadata: Some(BindingMetadata {
-                    bindings,
-                    props_aliases: FxHashMap::default(),
-                    is_script_setup: true,
-                }),
-                ..Default::default()
-            },
-        );
-        let expr = compound_expression(&allocator, "isExternal && isExternal.value");
-
-        let result = process_expression(&mut ctx, &expr, false);
-        let ExpressionNode::Simple(result) = result else {
-            panic!("expected simple expression");
-        };
-
-        assert_eq!(
-            result.content.as_str(),
-            "$setup.isExternal && $setup.isExternal.value"
-        );
-        assert!(!ctx.has_helper(RuntimeHelper::Unref));
-    }
-
-    #[test]
-    fn test_expression_nesting_depth_counts_parens() {
-        assert_eq!(expression_nesting_depth("a + b"), 0);
-        assert_eq!(expression_nesting_depth("(a + b)"), 1);
-        assert_eq!(expression_nesting_depth("((a + b))"), 2);
-        assert_eq!(expression_nesting_depth("[[[1]]]"), 3);
-        assert_eq!(expression_nesting_depth("{a: 1}"), 1);
-    }
-
-    #[test]
-    fn test_expression_nesting_depth_ignores_brackets_in_strings_and_comments() {
-        assert_eq!(expression_nesting_depth(r#""((((""#), 0);
-        assert_eq!(expression_nesting_depth(r#"'((((((' + 1"#), 0);
-        assert_eq!(expression_nesting_depth("`((((`"), 0);
-        assert_eq!(expression_nesting_depth("a /* (((( */ b"), 0);
-        assert_eq!(expression_nesting_depth("a // ((((\n + b"), 0);
-    }
-
-    #[test]
-    fn test_expression_exceeds_max_depth_guards_deeply_nested() {
-        let deep = "(".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1)
-            + "1"
-            + &")".repeat(MAX_EXPRESSION_NESTING_DEPTH + 1);
-        assert!(expression_exceeds_max_depth(&deep));
-        let shallow = "(".repeat(MAX_EXPRESSION_NESTING_DEPTH)
-            + "1"
-            + &")".repeat(MAX_EXPRESSION_NESTING_DEPTH);
-        assert!(!expression_exceeds_max_depth(&shallow));
-    }
-
-    #[test]
-    fn test_expression_entry_points_do_not_overflow_on_deep_input() {
-        // Regression for #956: every entry point that previously fed the
-        // recursive oxc parser must return a benign value for an input
-        // beyond MAX_EXPRESSION_NESTING_DEPTH rather than abort the
-        // process via stack overflow.
-        let deep = "(".repeat(100_000) + "1" + &")".repeat(100_000);
-        assert!(!is_event_handler_reference_expression(&deep));
-        assert!(!is_function_expression(&deep));
-        let prefixed = prefix_identifiers_in_expression(&deep);
-        assert_eq!(prefixed.as_str(), deep.as_str());
-        let stripped = strip_typescript_from_expression(&deep);
-        assert_eq!(stripped.as_str(), deep.as_str());
-    }
-
-    #[test]
-    fn test_process_expression_reports_invalid_expression() {
-        let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(&allocator, "foo(");
-
-        let result = process_expression(&mut ctx, &expr, false);
-        let ExpressionNode::Simple(result) = result else {
-            panic!("expected simple expression");
-        };
-
-        // Raw passthrough (matches vue-core, which returns the node
-        // unchanged), but with a compile diagnostic instead of silence.
-        assert_eq!(result.content.as_str(), "foo(");
-        assert_eq!(ctx.errors.len(), 1, "errors: {:?}", ctx.errors);
-        assert_eq!(
-            ctx.errors[0].code,
-            crate::errors::ErrorCode::InvalidExpression
-        );
-        assert!(
-            ctx.errors[0]
-                .message
-                .starts_with("Error parsing JavaScript expression: "),
-            "message: {:?}",
-            ctx.errors[0].message
-        );
-        assert!(ctx.errors[0].loc.is_some(), "diagnostic must carry a span");
-    }
-
-    #[test]
-    fn test_process_expression_keyword_identifier_has_no_diagnostic() {
-        // `class` fails to parse as an expression but is a rewritable simple
-        // identifier; vue-core never parses it (simple-identifier fast path)
-        // and emits no error.
-        let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(&allocator, "class");
-
-        let result = process_expression(&mut ctx, &expr, false);
-        let ExpressionNode::Simple(result) = result else {
-            panic!("expected simple expression");
-        };
-
-        assert_eq!(result.content.as_str(), "_ctx.class");
-        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
-    }
-
-    #[test]
-    fn test_process_expression_valid_ts_fallback_has_no_diagnostic() {
-        // `foo<string>` is a TS instantiation expression. The TS-stripping
-        // heuristic does not lower it, so the JS parse fails — but the
-        // official compiler (babel + typescript plugin) accepts it, and the
-        // parity rule forbids rejecting what the official compiler accepts.
-        let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let expr = compound_expression(&allocator, "foo<string>");
-
-        let _ = process_expression(&mut ctx, &expr, false);
-        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
-    }
-
-    #[test]
-    fn test_process_expression_ts_slot_params_have_no_diagnostic() {
-        let allocator = Allocator::new();
-        let mut ctx = test_context(&allocator);
-        let source = "{ open, close }: { open: boolean, close?: () => void }";
-        let expr = compound_expression(&allocator, source);
-
-        let result = process_expression(&mut ctx, &expr, true);
-        let ExpressionNode::Simple(result) = result else {
-            panic!("expected simple expression");
-        };
-
-        assert_eq!(result.content.as_str(), source);
-        assert!(ctx.errors.is_empty(), "errors: {:?}", ctx.errors);
-    }
-
-    #[test]
-    fn test_clone_expression_preserves_compound_source() {
-        let allocator = Allocator::new();
-        let source = "foo + bar";
-        let expr = compound_expression(&allocator, source);
-
-        let cloned = clone_expression(&expr, &allocator);
-        let ExpressionNode::Simple(simple) = cloned else {
-            panic!("expected clone_expression to flatten Compound to Simple");
-        };
-
-        assert_eq!(simple.content.as_str(), source);
-    }
-}
+#[path = "transform_expression/tests.rs"]
+mod tests;
 
 // Note: Multiline arrow function handling and ES6 shorthand expansion
 // are tested via SFC snapshot tests in tests/fixtures/sfc/patches.pkl.

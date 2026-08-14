@@ -67,9 +67,9 @@ impl Rule for HtmlQuotes {
             if let PropNode::Attribute(attr) = prop
                 && let Some(value) = &attr.value
             {
-                // Use the source span from the attribute location to check quote style.
-                // The attribute loc.source contains the full attribute including quotes.
-                // We need to look at the source around the value to find the quote character.
+                // Use the value span from the attribute location to check quote style:
+                // the attribute span covers the full attribute including quotes, so the
+                // byte just before the value is the opening quote character (if any).
                 let start = value.loc.start.offset as usize;
                 if start == 0 || start > ctx.source.len() {
                     continue;

@@ -4,8 +4,7 @@ use super::super::helpers::collect_for_scoped_params;
 use super::component::{has_slot_directive, slot_template_in_children, template_slot_is_dynamic};
 use super::props::{
     component_prop_entry, component_props_object, is_dynamic_component_tag, is_valid_js_identifier,
-    normalize_prop_entries, quoted_js_string, slot_props_pattern_to_string,
-    transform_bound_prop_key, wrap_call,
+    normalize_prop_entries, quoted_js_string, transform_bound_prop_key, wrap_call,
 };
 use super::{
     ComponentSlotChildren, ElementNode, ElementType, ExpressionNode, FxHashSet, PropNode,
@@ -397,7 +396,7 @@ impl<'a> SsrCodegenContext<'a> {
         append_for_aliases(self, &mut out, for_node);
         out.push_str(") => {");
 
-        self.push_scoped_params(collect_for_scoped_params(for_node));
+        self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
         out.push_str(" return ");
         out.push_str(&self.vnode_slot_object_entry(template_el, None));
         self.pop_scoped_params();
@@ -460,7 +459,7 @@ impl<'a> SsrCodegenContext<'a> {
     /// `_withCtx((params) => [children])` for a slot template's vnode form.
     fn vnode_slot_fn(&mut self, template_el: &ElementNode<'a>) -> String {
         let dir = self.slot_directive(template_el);
-        let props_pattern = dir.and_then(|d| d.exp.as_ref().map(slot_props_pattern_to_string));
+        let props_pattern = dir.and_then(|d| self.slot_props_pattern(d));
         let mut params = FxHashSet::default();
         if let Some(pattern) = props_pattern.as_deref() {
             extract_destructure_params(pattern.trim(), &mut params);
@@ -589,7 +588,7 @@ impl<'a> SsrCodegenContext<'a> {
         append_for_aliases(self, &mut out, for_node);
         out.push_str(") => { return ");
 
-        self.push_scoped_params(collect_for_scoped_params(for_node));
+        self.push_scoped_params(collect_for_scoped_params(for_node, self.source));
         let key = single_for_child_key_expression(self, for_node);
         let body = if let Some(template_el) = single_template_for_child(for_node) {
             if let Some(key) = key.as_deref() {

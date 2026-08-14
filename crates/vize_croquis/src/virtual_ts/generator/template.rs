@@ -23,6 +23,7 @@ impl VirtualTsGenerator {
     ) -> VirtualTsOutput {
         self.reset();
         self.block_offset = block_offset;
+        self.template_source = ast.source.clone();
 
         if emit_context {
             self.write_line("// Virtual TypeScript for template type checking");
@@ -217,7 +218,7 @@ impl VirtualTsGenerator {
     where
         F: FnOnce(&mut Self),
     {
-        let content = expression_source(exp);
+        let content = super::expression_source(exp, &self.template_source);
 
         // Parse v-for expression: "item in items" or "(item, index) in items"
         if let Some(aliases) = parse_v_for_scope_expression(content) {
@@ -306,7 +307,7 @@ impl VirtualTsGenerator {
             .value
             .as_ref()
             .or(for_node.value_alias.as_ref())
-            .map(expression_source);
+            .map(|exp| self.owned_expression_source(exp));
         let key_alias = parse_result
             .key
             .as_ref()
@@ -563,11 +564,4 @@ fn is_simple_identifier(name: &str) -> bool {
         && name
             .chars()
             .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-}
-
-fn expression_source<'a>(expr: &'a ExpressionNode<'a>) -> &'a str {
-    match expr {
-        ExpressionNode::Simple(simple) => simple.content.as_str(),
-        ExpressionNode::Compound(compound) => compound.loc.source.as_str(),
-    }
 }

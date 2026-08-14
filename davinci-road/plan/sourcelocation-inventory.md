@@ -8,11 +8,13 @@
 Every textual read of the relief `SourceLocation` members that
 `vize_carton::Span` (`crates/vize_carton/src/span.rs`) deletes —
 `source`, `start.line`, `start.column`, `end.line`, `end.column` —
-across `crates/*/src`, plus the migration group each consumer moves to when
-relief nodes carry two-u32 byte spans instead of owned
+across `crates/*/src`, plus the migration group each consumer moves to as
+relief nodes switch to two-u32 byte spans instead of owned
 `{ start: Position, end: Position, source: String }` triples
 ([architecture.md](../architecture.md), S0). This is the migration map Davinci
-P1 executes (P0-9).
+P1 executes (P0-9). P1-3 executed group 1: every `source` read is migrated,
+the scan now counts zero, and regeneration fails if one comes back. The
+line/column members remain until P1-4.
 
 ## Resolution method (and its limits)
 
@@ -23,7 +25,7 @@ P1 executes (P0-9).
   `loc` / `location` / `*_loc` / `*_location`.
 - Reads of `start.offset` / `end.offset` are **not** inventoried: they
   survive the migration verbatim as `span.start` / `span.end`
-  (279 loc-shaped offset-read sites across
+  (276 loc-shaped offset-read sites across
   8 crates at generation time).
 - `#[cfg(test)]` code inside `src/` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
@@ -52,18 +54,11 @@ P1 executes (P0-9).
 
 ## Reads per crate × member
 
-| crate                | `source` | `start.line` | `start.column` | `end.line` | `end.column` | total | in test code |
-| -------------------- | -------: | -----------: | -------------: | ---------: | -----------: | ----: | -----------: |
-| `vize_atelier_core`  |       35 |            0 |              0 |          0 |            0 |    35 |            7 |
-| `vize_croquis`       |       22 |            0 |              0 |          0 |            0 |    22 |            1 |
-| `vize_armature`      |       18 |            1 |              0 |          0 |            0 |    19 |           12 |
-| `vize_atelier_vapor` |       19 |            0 |              0 |          0 |            0 |    19 |            0 |
-| `vize_patina`        |        5 |            0 |              0 |          0 |            0 |     5 |            0 |
-| `vize_atelier_ssr`   |        3 |            0 |              0 |          0 |            0 |     3 |            0 |
-| `vize_relief`        |        1 |            1 |              1 |          0 |            0 |     3 |            3 |
-| `vize_canon`         |        2 |            0 |              0 |          0 |            0 |     2 |            0 |
-| `vize_atelier_jsx`   |        1 |            0 |              0 |          0 |            0 |     1 |            1 |
-| **total**            |      106 |            2 |              1 |          0 |            0 |   109 |           24 |
+| crate           | `source` | `start.line` | `start.column` | `end.line` | `end.column` | total | in test code |
+| --------------- | -------: | -----------: | -------------: | ---------: | -----------: | ----: | -----------: |
+| `vize_relief`   |        0 |            1 |              1 |          0 |            0 |     2 |            2 |
+| `vize_armature` |        0 |            1 |              0 |          0 |            0 |     1 |            0 |
+| **total**       |        0 |            2 |              1 |          0 |            0 |     3 |            2 |
 
 ## Every `line` / `column` read site
 
@@ -77,23 +72,23 @@ The line/column members are read so rarely that the sites fit in one table:
 
 ## Migration groups
 
-### Group 1 — content reads move to `Span::slice` (106 sites, every `source` read)
+### Group 1 — content reads moved to `Span::slice` (migrated by P1-3: 106 sites at P0-9, 0 remain)
 
 The dominant consumer class by far: code that wants **the text a node
 covers** — codegen re-emitting an expression, croquis capturing a binding
 name, a lint rule inspecting raw expression text, a test asserting what the
-parser captured. Today each read pays for an owned `String` copied into the
-node at parse time; with spans the node stores 8 bytes and the read becomes
+parser captured. Each read used to pay for an owned `String` copied into
+the node at parse time; the node now stores 8 bytes and the read is
 `span.slice(source)` against the one authored source string (or, for
-block-relative spans, against that block's text). Representative sites:
+block-relative spans, against that block's text). Representative migrated
+sites:
 
-- `crates/vize_atelier_core/src/codegen/expression/generate.rs:39` — codegen emits the recorded expression text verbatim
-- `crates/vize_croquis/src/drawer/template/components.rs:42` — croquis captures component/expression text into
+- `crates/vize_atelier_core/src/codegen/expression/generate.rs:39` — codegen reads the recorded expression text verbatim
+- `crates/vize_croquis/src/drawer/template/components.rs:43` — croquis captures component/expression text into
   analysis products
-- `crates/vize_patina/src/rules/script/template_scan.rs:190` — lint rule matches against raw expression text
-- `crates/vize_atelier_vapor/src/transforms/v_on.rs:45` — vapor transform re-wraps an expression by copying
-  `loc.source` into a new node (see also group 3: the copy itself
-  disappears)
+- `crates/vize_patina/src/rules/script/template_scan.rs:193` — lint rule matches against raw expression text
+- `crates/vize_atelier_vapor/src/transforms/v_on.rs:47` — vapor transform re-wraps an expression from the covered
+  text (the owned copy the pre-span node stored is gone; see also group 3)
 
 ### Group 2 — line/column reads move to offset-derived rendering (3 direct sites + 4 known-missed, see limits)
 
@@ -129,10 +124,10 @@ representation. No slice or line/col replacement — they stop existing:
   (`oxc_span::Span`, already `{ start: u32, end: u32 }`) into owned
   `SourceLocation`s for every lowered JSX node; under S0 the oxc span
   passes through unchanged and the whole conversion layer deletes
-- `crates/vize_relief/src/relief/core.rs:114` — `STUB_LOCATION` / `SourceLocation::STUB`: the
+- `crates/vize_relief/src/relief/core.rs:120` — `STUB_LOCATION` / `SourceLocation::STUB`: the
   owned-string stub machinery for generated nodes collapses to
   `Span::new(0, 0)`
-- `crates/vize_relief/src/relief/expressions.rs:33` — `SimpleExpressionNode` stores `content: String`
-  **and** `loc.source` duplicating it; span-carrying nodes keep one span,
-  and every group-1 site that today clones `loc.source` to build another
-  node (e.g. `crates/vize_atelier_vapor/src/transforms/v_on.rs:45`) stops copying text entirely
+- `crates/vize_relief/src/relief/expressions.rs:33` — `SimpleExpressionNode` stored `content: String`
+  **and** `loc.source` duplicating it; since P1-3 the node keeps one span
+  next to `content`, and every group-1 site that cloned `loc.source` to
+  build another node (e.g. `crates/vize_atelier_vapor/src/transforms/v_on.rs:47`) slices on demand instead

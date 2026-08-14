@@ -12,10 +12,10 @@ use vize_carton::{FxHashSet, String, ToCompactString};
 use vize_croquis::builtins::is_global_allowed;
 
 /// Get slot props expression as raw source (not transformed)
-pub(super) fn get_slot_props(dir: &DirectiveNode<'_>) -> Option<vize_carton::String> {
+pub(super) fn get_slot_props(dir: &DirectiveNode<'_>, source: &str) -> Option<vize_carton::String> {
     dir.exp.as_ref().map(|exp| match exp {
-        ExpressionNode::Simple(s) => s.loc.source.clone(),
-        ExpressionNode::Compound(c) => c.loc.source.clone(),
+        ExpressionNode::Simple(s) => String::new(s.loc.span.slice(source)),
+        ExpressionNode::Compound(c) => String::new(c.loc.span.slice(source)),
     })
 }
 

@@ -98,7 +98,7 @@ impl<'a> Parser<'a> {
                             let prefix = dir.raw_name.as_deref().unwrap_or(&dir.name);
                             let arg_str = dir.arg.as_ref().map(|a| match a {
                                 ExpressionNode::Simple(s) => s.content.as_str(),
-                                ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                                ExpressionNode::Compound(c) => c.loc.span.slice(self.source),
                             });
                             if let Some(arg) = arg_str {
                                 let mut name =
@@ -112,11 +112,11 @@ impl<'a> Parser<'a> {
                         };
                         let attr_value = dir.exp.as_ref().map(|e| {
                             let content = match e {
-                                ExpressionNode::Simple(s) => s.loc.source.clone(),
-                                ExpressionNode::Compound(c) => c.loc.source.clone(),
+                                ExpressionNode::Simple(s) => s.loc.span.slice(self.source),
+                                ExpressionNode::Compound(c) => c.loc.span.slice(self.source),
                             };
                             TextNode {
-                                content,
+                                content: content.into(),
                                 loc: dir.loc.clone(),
                             }
                         });

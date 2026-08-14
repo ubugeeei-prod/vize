@@ -28,7 +28,7 @@ fn directive_arg(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> Stri
                 }
             }
             ExpressionNode::Compound(compound) => {
-                ctx.resolve_expression(compound.loc.source.as_str())
+                ctx.resolve_expression(compound.loc.span.slice(ctx.source))
             }
         }
     } else {
@@ -47,7 +47,7 @@ fn directive_value(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> St
                 }
             }
             ExpressionNode::Compound(compound) => {
-                ctx.resolve_expression(compound.loc.source.as_str())
+                ctx.resolve_expression(compound.loc.span.slice(ctx.source))
             }
         }
     } else {

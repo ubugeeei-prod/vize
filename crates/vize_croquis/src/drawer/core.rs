@@ -35,6 +35,10 @@ pub struct Drawer {
     /// Component tag stack for the current element ancestry. Used by
     /// `<template #name>` slot hosts to recover the owning child component.
     pub(crate) parent_component_stack: Vec<CompactString>,
+    /// The template source string node-loc spans index into. Captured from
+    /// `RootNode::source` when `draw_template` starts so the walk can recover
+    /// covered text from a `SourceLocation` span.
+    pub(crate) template_source: CompactString,
     /// Memoized identifier extraction keyed by expression text. Template
     /// expressions repeat heavily (e.g. the same `:to`/`@click`/`{{ }}` across
     /// every `v-for` iteration's rendered element), and `extract_identifiers_oxc`
@@ -66,6 +70,7 @@ impl Drawer {
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
             parent_component_stack: Vec::new(),
+            template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
         }
     }
@@ -87,6 +92,7 @@ impl Drawer {
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
             parent_component_stack: Vec::new(),
+            template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
         }
     }

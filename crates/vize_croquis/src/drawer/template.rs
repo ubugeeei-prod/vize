@@ -29,6 +29,7 @@ impl Drawer {
         if !self.options.analyze_template_scopes && !self.options.track_usage {
             return self;
         }
+        self.template_source = root.source.clone();
 
         // Count root-level elements
         let root_element_count = profile!("croquis.template.root_count", {
@@ -100,9 +101,14 @@ impl Drawer {
             }
             TemplateChildNode::Interpolation(interp) => {
                 profile!("croquis.template.interpolation", {
+                    let compound_content;
                     let content = match &interp.content {
                         ExpressionNode::Simple(s) => s.content.as_str(),
-                        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                        ExpressionNode::Compound(c) => {
+                            compound_content =
+                                CompactString::new(c.loc.span.slice(&self.template_source));
+                            compound_content.as_str()
+                        }
                     };
 
                     // Track $attrs usage

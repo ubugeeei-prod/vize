@@ -27,13 +27,13 @@ fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &Element
                 continue;
             }
 
-            let prop_names = get_slot_prop_names(dir);
+            let prop_names = get_slot_prop_names(dir, &ctx.source);
             if prop_names.is_empty() {
                 return false;
             }
 
-            let slot_name = get_slot_name(dir);
-            let props_pattern = get_slot_props_string(dir);
+            let slot_name = get_slot_name(dir, &ctx.source);
+            let props_pattern = get_slot_props_string(dir, &ctx.source);
             ctx.enter_v_slot_scope(
                 slot_name.as_str(),
                 props_pattern.as_ref().map(|pattern| pattern.as_str()),
@@ -98,7 +98,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
     let structural_result = if let TemplateChildNode::Element(el) = node {
         profile!(
             "atelier.transform.check_structural",
-            take_structural_directive(el)
+            take_structural_directive(el, &ctx.source)
         )
     } else {
         None
@@ -192,9 +192,14 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                             None
                         }
                     });
+                    let compound_source;
                     let source = match &for_node.source {
                         ExpressionNode::Simple(exp) => exp.content.as_str(),
-                        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                        ExpressionNode::Compound(c) => {
+                            compound_source =
+                                vize_carton::String::new(c.loc.span.slice(&ctx.source));
+                            compound_source.as_str()
+                        }
                     };
                     ctx.enter_v_for_scope(value, key, index, source);
 
@@ -287,9 +292,13 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                         None
                     }
                 });
+                let compound_source;
                 let source = match &for_node.source {
                     ExpressionNode::Simple(exp) => exp.content.as_str(),
-                    ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                    ExpressionNode::Compound(c) => {
+                        compound_source = vize_carton::String::new(c.loc.span.slice(&ctx.source));
+                        compound_source.as_str()
+                    }
                 };
                 ctx.enter_v_for_scope(value, key, index, source);
 

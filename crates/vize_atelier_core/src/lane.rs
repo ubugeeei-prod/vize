@@ -32,7 +32,7 @@ use traverse::traverse_children;
 #[allow(deprecated)]
 pub use extensions::{
     transform_with_hoisted_scope_id, transform_with_jsx_compatibility,
-    transform_with_plain_element_model_argument,
+    transform_with_plain_element_model_argument, transform_with_source_text,
     transform_with_template_syntax_quirks_and_hoisted_scope_id,
     transform_with_vue_parser_quirks_and_hoisted_scope_id,
 };
@@ -201,6 +201,7 @@ pub fn transform<'a>(
         false,
         None,
         JsxTransformCompat::default(),
+        None,
     )
 }
 
@@ -219,6 +220,7 @@ pub fn transform_with_template_syntax_quirks<'a>(
         true,
         None,
         JsxTransformCompat::default(),
+        None,
     )
 }
 
@@ -233,6 +235,7 @@ pub fn transform_with_vue_parser_quirks<'a>(
     transform_with_template_syntax_quirks(allocator, root, options, analysis)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn transform_inner<'a>(
     allocator: &'a Allocator,
     root: &mut RootNode<'a>,
@@ -241,8 +244,12 @@ pub(crate) fn transform_inner<'a>(
     template_syntax_quirks: bool,
     hoisted_scope_id: Option<String>,
     jsx_compat: JsxTransformCompat,
+    source_text: Option<&str>,
 ) -> std::vec::Vec<CompilerError> {
-    let source = root.source.clone();
+    let source = match source_text {
+        Some(text) => String::new(text),
+        None => root.source.clone(),
+    };
     let mut ctx = if let Some(analysis) = analysis {
         TransformContext::with_analysis_and_template_syntax_quirks(
             allocator,

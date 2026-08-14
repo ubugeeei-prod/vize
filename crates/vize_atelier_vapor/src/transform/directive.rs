@@ -439,8 +439,8 @@ fn clone_expression<'a>(
             ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
         }
         ExpressionNode::Compound(compound) => {
-            let cloned =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let text = compound.loc.span.slice(ctx.source);
+            let cloned = SimpleExpressionNode::new(text, false, compound.loc.clone());
             ExpressionNode::Simple(Box::new_in(cloned, ctx.allocator))
         }
     })

@@ -55,7 +55,7 @@ fn davinci(criterion: &mut Criterion) {
             let allocator = Allocator::new();
             let (mut root, _errors) = Parser::new(&allocator, template).parse();
             transform(&allocator, &mut root, vapor_transform_options(), None);
-            let ir = window.measure(|| transform_to_ir(&allocator, &root));
+            let ir = window.measure(|| transform_to_ir(&allocator, &root, template));
             drop_ir_stack_safe(ir);
         });
 
@@ -63,7 +63,7 @@ fn davinci(criterion: &mut Criterion) {
         let (mut root, _errors) = Parser::new(&allocator, template).parse();
         transform(&allocator, &mut root, vapor_transform_options(), None);
         let root = root;
-        let ir = transform_to_ir(&allocator, &root);
+        let ir = transform_to_ir(&allocator, &root, template);
         let generate_id = cstr!("atelier_vapor_generate_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &generate_id, fixture.relative_path, || {
             generate_vapor(&ir, None)

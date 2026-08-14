@@ -18,7 +18,7 @@ use super::root::{
 
 /// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
-    generate_with_vnode_factory_and_merge_props(root, options, None, true)
+    generate_with_sections_and_options(root, options, None, true, None).into_result()
 }
 
 /// Generate code with an explicit `mergeProps` policy.
@@ -32,7 +32,7 @@ pub fn generate_with_merge_props(
     options: CodegenOptions,
     merge_props: bool,
 ) -> CodegenResult {
-    generate_with_vnode_factory_and_merge_props(root, options, None, merge_props)
+    generate_with_sections_and_options(root, options, None, merge_props, None).into_result()
 }
 
 /// Generate code while routing vnode creation through a caller-provided JSX
@@ -42,18 +42,24 @@ pub fn generate_with_vnode_factory(
     options: CodegenOptions,
     vnode_factory: &str,
 ) -> CodegenResult {
-    generate_with_vnode_factory_and_merge_props(root, options, Some(vnode_factory), true)
+    generate_with_sections_and_options(root, options, Some(vnode_factory), true, None).into_result()
 }
 
 /// Generate code with optional custom vnode creation and `mergeProps` policy.
+///
+/// `source_text` overrides the loc-span slicing basis; JSX roots pass the
+/// module source their node spans index into (`RootNode::source` keeps the
+/// root element's slice for the source-map path).
 #[doc(hidden)]
 pub fn generate_with_vnode_factory_and_merge_props(
     root: &RootNode<'_>,
     options: CodegenOptions,
     vnode_factory: Option<&str>,
     merge_props: bool,
+    source_text: Option<&str>,
 ) -> CodegenResult {
-    generate_with_sections_and_options(root, options, vnode_factory, merge_props).into_result()
+    generate_with_sections_and_options(root, options, vnode_factory, merge_props, source_text)
+        .into_result()
 }
 
 /// Generate code from root AST and return emission-recorded section boundaries.
@@ -61,7 +67,7 @@ pub fn generate_with_sections(
     root: &RootNode<'_>,
     options: CodegenOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options(root, options, None, true)
+    generate_with_sections_and_options(root, options, None, true, None)
 }
 
 fn generate_with_sections_and_options(
@@ -69,9 +75,14 @@ fn generate_with_sections_and_options(
     options: CodegenOptions,
     vnode_factory: Option<&str>,
     merge_props: bool,
+    source_text: Option<&str>,
 ) -> CodegenResultWithSections {
     let mut ctx =
         CodegenContext::new_with_vnode_factory_and_merge_props(options, vnode_factory, merge_props);
+    ctx.source = match source_text {
+        Some(text) => vize_carton::String::new(text),
+        None => root.source.clone(),
+    };
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children

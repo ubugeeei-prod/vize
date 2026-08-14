@@ -69,7 +69,7 @@ fn transform_if_node_with_options<'a>(
             }
             ExpressionNode::Compound(compound) => {
                 let cond_node = SimpleExpressionNode::new(
-                    compound.loc.source.clone(),
+                    compound.loc.span.slice(ctx.source),
                     false,
                     compound.loc.clone(),
                 );
@@ -147,7 +147,7 @@ pub(crate) fn transform_remaining_branches<'a>(
             }
             ExpressionNode::Compound(compound) => {
                 let cond_node = SimpleExpressionNode::new(
-                    compound.loc.source.clone(),
+                    compound.loc.span.slice(ctx.source),
                     false,
                     compound.loc.clone(),
                 );
@@ -296,8 +296,11 @@ fn clone_simple_expr<'a>(
             Box::new_in(node, ctx.allocator)
         }
         ExpressionNode::Compound(compound) => {
-            let node =
-                SimpleExpressionNode::new(compound.loc.source.clone(), false, compound.loc.clone());
+            let node = SimpleExpressionNode::new(
+                compound.loc.span.slice(ctx.source),
+                false,
+                compound.loc.clone(),
+            );
             Box::new_in(node, ctx.allocator)
         }
     }

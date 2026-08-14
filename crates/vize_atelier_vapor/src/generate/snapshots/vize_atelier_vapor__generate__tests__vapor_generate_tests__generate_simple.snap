@@ -1,5 +1,6 @@
 ---
-source: crates/vize_atelier_vapor/src/generate.rs
+source: crates/vize_atelier_vapor/src/generate/tests.rs
+assertion_line: 20
 expression: result.code.as_str()
 ---
 import { template as _template } from 'vue';

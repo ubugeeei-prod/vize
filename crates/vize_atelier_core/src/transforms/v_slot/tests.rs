@@ -32,19 +32,17 @@ fn test_has_v_slot() {
 fn test_default_slot_name() {
     let allocator = Allocator::new();
     let dir = DirectiveNode::new(&allocator, "slot", SourceLocation::STUB);
-    assert_eq!(get_slot_name(&dir).as_str(), "default");
+    assert_eq!(get_slot_name(&dir, "").as_str(), "default");
 }
 
 #[test]
 fn test_collect_slots() {
     let allocator = Allocator::new();
-    let (root, _) = parse(
-        &allocator,
-        r#"<Comp><template #header>H</template><template #footer>F</template></Comp>"#,
-    );
+    let source = r#"<Comp><template #header>H</template><template #footer>F</template></Comp>"#;
+    let (root, _) = parse(&allocator, source);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        let slots = collect_slots(el);
+        let slots = collect_slots(el, source);
         assert_eq!(slots.len(), 2);
         assert!(slots.iter().any(|s| s.name == "header"));
         assert!(slots.iter().any(|s| s.name == "footer"));
@@ -54,13 +52,11 @@ fn test_collect_slots() {
 #[test]
 fn test_collect_slots_dedupes_static_duplicate_slot_names() {
     let allocator = Allocator::new();
-    let (root, _) = parse(
-        &allocator,
-        r#"<Comp><template #header>H1</template><template #header>H2</template></Comp>"#,
-    );
+    let source = r#"<Comp><template #header>H1</template><template #header>H2</template></Comp>"#;
+    let (root, _) = parse(&allocator, source);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
-        let slots = collect_slots(el);
+        let slots = collect_slots(el, source);
         assert_eq!(slots.len(), 1);
         assert_eq!(slots[0].name, "header");
     }
@@ -133,10 +129,8 @@ fn test_custom_directive_on_slot_outlet_reports_error() {
 #[test]
 fn test_get_slot_prop_names_from_directive() {
     let allocator = Allocator::new();
-    let (root, _) = parse(
-        &allocator,
-        r#"<Comp><template #default="{ item, active }">{{ item.id }}{{ active }}</template></Comp>"#,
-    );
+    let source = r#"<Comp><template #default="{ item, active }">{{ item.id }}{{ active }}</template></Comp>"#;
+    let (root, _) = parse(&allocator, source);
 
     if let TemplateChildNode::Element(el) = &root.children[0] {
         if let TemplateChildNode::Element(slot_template) = &el.children[0] {
@@ -148,7 +142,7 @@ fn test_get_slot_prop_names_from_directive() {
                     _ => None,
                 })
                 .expect("expected v-slot directive");
-            let names = get_slot_prop_names(dir);
+            let names = get_slot_prop_names(dir, source);
             let names: Vec<_> = names.iter().map(|name| name.as_str()).collect();
             assert_eq!(names, vec!["item", "active"]);
         } else {

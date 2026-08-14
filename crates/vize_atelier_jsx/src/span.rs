@@ -53,11 +53,7 @@ impl<'s> SpanMapper<'s> {
 
     /// Convert an OXC [`Span`] to a full [`SourceLocation`].
     pub fn location(&self, span: Span) -> SourceLocation {
-        SourceLocation::new(
-            self.position(span.start),
-            self.position(span.end),
-            self.slice(span),
-        )
+        SourceLocation::new(self.position(span.start), self.position(span.end))
     }
 }
 
@@ -96,6 +92,6 @@ mod tests {
         let loc = mapper.location(Span::new(4, 8));
         assert_eq!(loc.start.offset, 4);
         assert_eq!(loc.end.offset, 8);
-        assert_eq!(loc.source.as_str(), "<a/>");
+        assert_eq!(loc.span.slice(mapper.source()), "<a/>");
     }
 }

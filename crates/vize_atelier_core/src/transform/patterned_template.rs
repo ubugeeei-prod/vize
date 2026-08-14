@@ -10,22 +10,27 @@ use crate::{
 /// Rewrite experimental `v-match` / `v-case` syntax into the existing `v-if`
 /// structural directive chain.
 pub fn desugar_patterned_templates<'a>(allocator: &'a Bump, root: &mut RootNode<'a>) {
-    rewrite_children(allocator, &mut root.children);
+    let source = root.source.clone();
+    rewrite_children(allocator, &mut root.children, &source);
 }
 
-fn rewrite_children<'a>(allocator: &'a Bump, children: &mut Vec<'a, TemplateChildNode<'a>>) {
+fn rewrite_children<'a>(
+    allocator: &'a Bump,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    source: &str,
+) {
     for child in children.iter_mut() {
         let TemplateChildNode::Element(el) = child else {
             continue;
         };
 
-        ensure_sufficient_stack(|| rewrite_children(allocator, &mut el.children));
-        rewrite_match_element(allocator, el);
+        ensure_sufficient_stack(|| rewrite_children(allocator, &mut el.children, source));
+        rewrite_match_element(allocator, el, source);
     }
 }
 
-fn rewrite_match_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) {
-    let Some((match_idx, match_expr)) = find_match_expression(el) else {
+fn rewrite_match_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>, source: &str) {
+    let Some((match_idx, match_expr)) = find_match_expression(el, source) else {
         return;
     };
 
@@ -34,7 +39,7 @@ fn rewrite_match_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) {
         let TemplateChildNode::Element(case_el) = child else {
             continue;
         };
-        if rewrite_case_element(allocator, case_el, &match_expr, has_case) {
+        if rewrite_case_element(allocator, case_el, &match_expr, has_case, source) {
             has_case = true;
         }
     }
@@ -49,12 +54,12 @@ fn rewrite_match_element<'a>(allocator: &'a Bump, el: &mut ElementNode<'a>) {
     el.is_self_closing = false;
 }
 
-fn find_match_expression(el: &ElementNode<'_>) -> Option<(usize, String)> {
+fn find_match_expression(el: &ElementNode<'_>, source: &str) -> Option<(usize, String)> {
     for (idx, prop) in el.props.iter().enumerate() {
         if let PropNode::Directive(dir) = prop
             && dir.name == "match"
         {
-            let exp = dir.exp.as_ref().map(expression_source)?;
+            let exp = dir.exp.as_ref().map(|exp| expression_source(exp, source))?;
             return Some((idx, exp));
         }
     }
@@ -66,6 +71,7 @@ fn rewrite_case_element<'a>(
     el: &mut ElementNode<'a>,
     match_expr: &str,
     has_previous_branch: bool,
+    source: &str,
 ) -> bool {
     let Some(case_idx) = find_case_directive(el) else {
         return false;
@@ -74,7 +80,7 @@ fn rewrite_case_element<'a>(
     let (is_default, case_expr) = match &el.props[case_idx] {
         PropNode::Directive(dir) => (
             dir.modifiers.iter().any(|m| m.content == "default"),
-            dir.exp.as_ref().map(expression_source),
+            dir.exp.as_ref().map(|exp| expression_source(exp, source)),
         ),
         PropNode::Attribute(_) => return false,
     };
@@ -155,9 +161,9 @@ fn is_array_literal(expr: &str) -> bool {
     expr.starts_with('[') && expr.ends_with(']')
 }
 
-fn expression_source(exp: &ExpressionNode<'_>) -> String {
+fn expression_source(exp: &ExpressionNode<'_>, source: &str) -> String {
     match exp {
         ExpressionNode::Simple(simple) => simple.content.clone(),
-        ExpressionNode::Compound(compound) => compound.loc.source.clone(),
+        ExpressionNode::Compound(compound) => String::new(compound.loc.span.slice(source)),
     }
 }

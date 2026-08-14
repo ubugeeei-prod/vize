@@ -342,7 +342,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             // KeepAlive always gets DYNAMIC_SLOTS
             if el.tag == "KeepAlive"
                 || el.tag == "keep-alive"
-                || has_dynamic_slots_flag(el)
+                || has_dynamic_slots_flag(el, &ctx.source)
                 || (ctx.has_slot_params() && has_forwarded_slot_outlet(el))
             {
                 let dynamic_slots_flag = 1024;

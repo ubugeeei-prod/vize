@@ -91,7 +91,7 @@ impl Compiler {
         );
 
         if !errors.is_empty() {
-            return Err(JsValue::from_str(&format!("Parse errors: {:?}", errors)));
+            return Err(crate::parse_errors::message(&errors, template).into());
         }
 
         let ast = build_ast_json(&root);

@@ -58,13 +58,17 @@ pub struct SsrCodegenContext<'a> {
     /// `selected` for the matching value. Vue's SSR runtime tracks the same
     /// state in JS via `_temp`; we thread it through codegen instead. (#962)
     pub(crate) select_v_model_stack: std::vec::Vec<String>,
+    /// The source string node-loc spans index into, used to recover covered
+    /// text from a `SourceLocation`.
+    pub(crate) source: &'a str,
 }
 
 impl<'a> SsrCodegenContext<'a> {
-    pub fn new(allocator: &'a Bump, options: &'a SsrCompilerOptions) -> Self {
+    pub fn new(allocator: &'a Bump, options: &'a SsrCompilerOptions, source: &'a str) -> Self {
         Self {
             allocator,
             options,
+            source,
             code: Vec::with_capacity(1024),
             indent_level: 0,
             ssr_helpers: FxHashSet::default(),
@@ -304,54 +308,4 @@ fn push_helper_imports(out: &mut String, helpers: &[RuntimeHelper]) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::SsrCodegenResult;
-    use super::helpers::{escape_html, escape_html_attr};
-
-    #[test]
-    fn test_escape_html() {
-        assert_eq!(escape_html("<div>"), "&lt;div&gt;");
-        assert_eq!(escape_html("a & b"), "a &amp; b");
-        assert_eq!(escape_html("\"hello\""), "&quot;hello&quot;");
-    }
-
-    #[test]
-    fn test_escape_html_all_special_chars() {
-        assert_eq!(escape_html("&"), "&amp;");
-        assert_eq!(escape_html("<"), "&lt;");
-        assert_eq!(escape_html(">"), "&gt;");
-        assert_eq!(escape_html("\""), "&quot;");
-        assert_eq!(escape_html("'"), "&#39;");
-    }
-
-    #[test]
-    fn test_escape_html_no_special() {
-        assert_eq!(escape_html("hello world"), "hello world");
-        assert_eq!(escape_html("abc123"), "abc123");
-    }
-
-    #[test]
-    fn test_escape_html_attr() {
-        assert_eq!(escape_html_attr("hello\"world"), "hello&quot;world");
-        assert_eq!(escape_html_attr("a & b"), "a &amp; b");
-    }
-
-    #[test]
-    fn test_escape_html_attr_preserves_angle_brackets() {
-        // In attribute context, < and > do not need escaping
-        assert_eq!(escape_html_attr("<foo>"), "<foo>");
-        assert_eq!(escape_html_attr("a > b"), "a > b");
-    }
-
-    #[test]
-    fn test_escape_html_attr_no_special() {
-        assert_eq!(escape_html_attr("hello"), "hello");
-    }
-
-    #[test]
-    fn test_ssr_codegen_result_default() {
-        let result = SsrCodegenResult::default();
-        assert!(result.code.is_empty());
-        assert!(result.preamble.is_empty());
-    }
-}
+mod tests;

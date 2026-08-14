@@ -141,7 +141,7 @@ fn indent(out: &mut String, level: usize) {
     }
 }
 
-fn diagnostics(errors: &[CompilerError]) -> Vec<Diagnostic> {
+fn diagnostics(source_text: &str, errors: &[CompilerError]) -> Vec<Diagnostic> {
     errors
         .iter()
         .map(|error| {
@@ -149,7 +149,7 @@ fn diagnostics(errors: &[CompilerError]) -> Vec<Diagnostic> {
                 Some(loc) => (
                     (loc.start.offset, loc.start.line, loc.start.column),
                     (loc.end.offset, loc.end.line, loc.end.column),
-                    Some(String::from(loc.source.as_str())),
+                    Some(String::from(loc.span.slice(source_text))),
                 ),
                 None => ((0, 0, 0), (0, 0, 0), None),
             };
@@ -193,7 +193,7 @@ fn compile_source_on_small_stack(
                 compile_template(&allocator, &source)
             };
             let compiled = Compiled {
-                diagnostics: diagnostics(&errors),
+                diagnostics: diagnostics(&source, &errors),
                 code: String::from(result.code.as_str()),
                 preamble: String::from(result.preamble.as_str()),
                 has_source_map: result.map.is_some(),

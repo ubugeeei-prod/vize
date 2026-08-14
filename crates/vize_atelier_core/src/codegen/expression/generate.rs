@@ -29,14 +29,14 @@ pub fn is_simple_member_expression(s: &str) -> bool {
 /// Check if an event handler expression is an inline handler.
 /// Inline handlers are expressions that are NOT simple identifiers or member expressions.
 #[allow(dead_code)]
-pub fn is_inline_handler(exp: &ExpressionNode<'_>) -> bool {
+pub fn is_inline_handler(ctx: &CodegenContext, exp: &ExpressionNode<'_>) -> bool {
     match exp {
         ExpressionNode::Simple(simple) => {
             if simple.is_static {
                 return false;
             }
 
-            let content = simple.loc.source.as_str();
+            let content = simple.loc.span.slice(&ctx.source);
 
             if crate::steps::expression::is_function_expression(content) {
                 return false;

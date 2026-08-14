@@ -208,6 +208,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                 lowered_root,
                 analysis,
                 config.default_mode,
+                source,
             ))
         } else {
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
@@ -244,12 +245,14 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
                         custom_element_spans: &custom_element_spans,
                     },
                     &mut diagnostics,
+                    source,
                 )),
                 JsxOutputMode::Vapor => JsxComponent::Vapor(compile_root_to_vapor(
                     allocator,
                     lowered_root,
                     analysis,
                     &config.vapor,
+                    source,
                 )),
             }
         };
