@@ -46,6 +46,7 @@ const HOSTED_FALLBACK_JOBS: Record<string, string[]> = {
   "e2e.yml": ["app-readiness-producer", "app-e2e-producer"],
   "miri.yml": ["miri"],
   "pkg-pr-new.yml": ["publish-preview"],
+  "real-project-matrix.yml": ["real-project-matrix"],
   "release-preflight.yml": ["verify", "validate-crates"],
   "release.yml": [
     "plan-release-platforms",
