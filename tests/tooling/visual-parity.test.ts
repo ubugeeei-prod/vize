@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { PNG } from "pngjs";
 
 import {
+  VISUAL_STABILITY_CSS,
   comparePngBuffers,
   visualComparisonDimensions,
   visualDiffWithinBudget,
@@ -66,6 +67,15 @@ test("visual diff budget can cap absolute pixels for narrow long pages", () => {
     ),
     false,
   );
+});
+
+test("visual stability CSS installs without Playwright style tag injection", () => {
+  const source = fs.readFileSync(path.resolve("tests/_helpers/visual-parity.ts"), "utf8");
+
+  assert.match(VISUAL_STABILITY_CSS, /animation-duration: 0s !important/);
+  assert.match(VISUAL_STABILITY_CSS, /transition-duration: 0s !important/);
+  assert.match(source, /adoptedStyleSheets/);
+  assert.doesNotMatch(source, /\.addStyleTag\(/);
 });
 
 function solidPng([red, green, blue, alpha]: [number, number, number, number]): Buffer {

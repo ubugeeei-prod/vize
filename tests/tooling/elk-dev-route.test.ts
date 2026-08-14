@@ -60,6 +60,10 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   assert.match(visualSpec, /readElkRenderRouteSourceEvidence\(app\.cwd\)/);
   assert.match(visualSpec, /path: ELK_RENDER_ROUTE/);
   assert.match(visualSpec, /ELK_MIN_RENDER_ROUTE_ELEMENTS = 100/);
+  assert.match(
+    visualSpec,
+    /route\.path === ELK_RENDER_ROUTE \? \[\.\.\.ELK_RENDER_ROUTE_LINKS\] : \[\]/,
+  );
   assert.doesNotMatch(visualSpec, /path: "\/"(?:[,}])/);
   assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
   assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);

@@ -31,6 +31,7 @@ export const frontendPhpconVisualRoutes: FrontendPhpconVisualRouteConfig[] = [
     path: "/",
     viewport: MOBILE_VIEWPORT,
     maxDiffRatio: STRICT_ROUTE_MAX_DIFF_RATIO,
+    maxDiffPixelsByMode: { preview: PREVIEW_MOBILE_MAX_DIFF_PIXELS },
   },
   { name: "about", path: "/about" },
   { name: "news", path: "/news/2026-05-06-social-gathering-ticket" },

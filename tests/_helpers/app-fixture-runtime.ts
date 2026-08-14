@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 export const NPMX_E2E_ENV = {
+  NUXT_TEST_FIXTURES: "true",
   NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
   VIZE_E2E_DISABLE_LUNARIA: "1",
 } as const;

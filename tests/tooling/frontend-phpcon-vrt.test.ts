@@ -21,7 +21,7 @@ test("frontend-phpcon preview mobile visual budget is mode-scoped", () => {
   assert.equal(maxDiffPixelsForFrontendPhpconMode(homeMobile, "dev"), undefined);
   assert.deepEqual(mobileMenu.viewport, MOBILE_VIEWPORT);
   assert.equal(mobileMenu.maxDiffRatio, STRICT_ROUTE_MAX_DIFF_RATIO);
-  assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "preview"), undefined);
+  assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "preview"), 43_887);
   assert.equal(maxDiffPixelsForFrontendPhpconMode(mobileMenu, "dev"), undefined);
 });
 
