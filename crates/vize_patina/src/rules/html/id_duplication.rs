@@ -124,7 +124,7 @@ fn collect_static_ids<'a>(
             TemplateChildNode::If(if_node) => {
                 for (branch_index, branch) in if_node.branches.iter().enumerate() {
                     branches.push(BranchChoice {
-                        if_start: if_node.loc.start.offset,
+                        if_start: if_node.loc.span.start,
                         branch_index,
                     });
                     collect_static_ids(&branch.children, branches, ids);
@@ -152,7 +152,7 @@ fn collect_conditional_element_chain<'a>(
     let TemplateChildNode::Element(first) = &children[index] else {
         return index + 1;
     };
-    let if_start = first.loc.start.offset;
+    let if_start = first.loc.span.start;
     let mut branch_index = 0;
 
     collect_element_branch(first, if_start, branch_index, branches, ids);
@@ -245,8 +245,8 @@ fn element_has_directive(element: &ElementNode, name: &str) -> bool {
 
 fn loc_info(loc: &SourceLocation) -> LocInfo {
     LocInfo {
-        start: loc.start.offset,
-        end: loc.end.offset,
+        start: loc.span.start,
+        end: loc.span.end,
     }
 }
 

@@ -255,7 +255,7 @@ fn compiler_error_to_diagnostic(error: &CompilerError) -> JsxDiagnostic {
     let (start, end) = error
         .loc
         .as_ref()
-        .map(|loc| (loc.start.offset, loc.end.offset))
+        .map(|loc| (loc.span.start, loc.span.end))
         .unwrap_or((0, 0));
     JsxDiagnostic::error(error.message.as_str(), start, end)
 }

@@ -89,7 +89,7 @@ pub fn generate_simple_expression(ctx: &mut CodegenContext, exp: &SimpleExpressi
         // from generated `_ctx.foo` back to template `foo`), and this is the
         // single chokepoint every dynamic expression flows through. No-op unless
         // the `source_map` flag is on.
-        ctx.record_mapping(&exp.loc.start);
+        ctx.record_mapping(exp.loc.span.start);
 
         // Replace generated scope prefixes when X is a known slot/v-for parameter.
         // This handles destructured variables that the transform phase

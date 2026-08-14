@@ -152,7 +152,7 @@ impl Walker<'_> {
         let shadowed = &self.shadowed;
         calls::for_each_call(
             expression_source(exp, self.source),
-            exp.loc().start.offset,
+            exp.loc().span.start,
             &mut |call| {
                 if shadowed.iter().any(|name| name.as_str() == call.callee) {
                     return;

@@ -38,8 +38,8 @@ fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &Element
                 slot_name.as_str(),
                 props_pattern.as_ref().map(|pattern| pattern.as_str()),
                 &prop_names,
-                dir.loc.start.offset,
-                el.loc.end.offset,
+                dir.loc.span.start,
+                el.loc.span.end,
             );
             return true;
         }

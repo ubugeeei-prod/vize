@@ -70,7 +70,7 @@ impl Rule for HtmlQuotes {
                 // Use the value span from the attribute location to check quote style:
                 // the attribute span covers the full attribute including quotes, so the
                 // byte just before the value is the opening quote character (if any).
-                let start = value.loc.start.offset as usize;
+                let start = value.loc.span.start as usize;
                 if start == 0 || start > ctx.source.len() {
                     continue;
                 }
@@ -86,14 +86,14 @@ impl Rule for HtmlQuotes {
                             let mut diagnostic = LintDiagnostic::warn(
                                 META.name,
                                 message,
-                                value.loc.start.offset,
-                                value.loc.end.offset,
+                                value.loc.span.start,
+                                value.loc.span.end,
                             )
                             .with_help(help);
                             if let Some(fix) = quote_fix(
                                 ctx.source,
-                                value.loc.start.offset,
-                                value.loc.end.offset,
+                                value.loc.span.start,
+                                value.loc.span.end,
                                 b'"',
                                 "Use double quotes",
                             ) {
@@ -109,14 +109,14 @@ impl Rule for HtmlQuotes {
                             let mut diagnostic = LintDiagnostic::warn(
                                 META.name,
                                 message,
-                                value.loc.start.offset,
-                                value.loc.end.offset,
+                                value.loc.span.start,
+                                value.loc.span.end,
                             )
                             .with_help(help);
                             if let Some(fix) = quote_fix(
                                 ctx.source,
-                                value.loc.start.offset,
-                                value.loc.end.offset,
+                                value.loc.span.start,
+                                value.loc.span.end,
                                 b'\'',
                                 "Use single quotes",
                             ) {

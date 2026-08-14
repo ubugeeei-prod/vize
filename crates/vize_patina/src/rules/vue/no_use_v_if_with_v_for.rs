@@ -109,15 +109,11 @@ impl Rule for NoUseVIfWithVFor {
             let diagnostic = LintDiagnostic::warn(
                 META.name,
                 message.as_ref(),
-                v_if_loc.start.offset,
-                v_if_loc.end.offset,
+                v_if_loc.span.start,
+                v_if_loc.span.end,
             )
             .with_help(help.as_ref())
-            .with_label(
-                "v-for is here",
-                v_for_loc.start.offset,
-                v_for_loc.end.offset,
-            );
+            .with_label("v-for is here", v_for_loc.span.start, v_for_loc.span.end);
 
             ctx.report(diagnostic);
         }

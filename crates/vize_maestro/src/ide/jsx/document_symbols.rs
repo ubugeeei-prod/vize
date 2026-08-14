@@ -56,8 +56,8 @@ impl JsxDocumentSymbolsService {
                     }
                 });
 
-            let start = (root.root.loc.start.offset as usize).min(content.len());
-            let end = (root.root.loc.end.offset as usize)
+            let start = (root.root.loc.span.start as usize).min(content.len());
+            let end = (root.root.loc.span.end as usize)
                 .min(content.len())
                 .max(start);
             let (start_line, start_char) = offset_to_position(content, start);

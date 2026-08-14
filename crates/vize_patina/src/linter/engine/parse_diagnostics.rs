@@ -34,7 +34,7 @@ fn template_parse_span(parse_error: &CompilerError, source_len: usize) -> (u32, 
     let (raw_start, raw_end) = parse_error
         .loc
         .as_ref()
-        .map(|loc| (loc.start.offset, loc.end.offset))
+        .map(|loc| (loc.span.start, loc.span.end))
         .unwrap_or((0, 0));
     let start = raw_start.min(source_len.saturating_sub(1));
     let end = raw_end

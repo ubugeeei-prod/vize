@@ -67,14 +67,14 @@ impl Rule for ValidVElse {
         if directive.exp.is_some() {
             let fix = Fix::new(
                 "Remove the expression from v-else",
-                TextEdit::delete(directive.loc.start.offset, directive.loc.end.offset),
+                TextEdit::delete(directive.loc.span.start, directive.loc.span.end),
             );
             ctx.report(
                 crate::diagnostic::LintDiagnostic::error(
                     META.name,
                     ctx.t("vue/valid-v-else.unexpected_expression").as_ref(),
-                    directive.loc.start.offset,
-                    directive.loc.end.offset,
+                    directive.loc.span.start,
+                    directive.loc.span.end,
                 )
                 .with_help(ctx.t("vue/valid-v-else.help").as_ref())
                 .with_fix(fix),

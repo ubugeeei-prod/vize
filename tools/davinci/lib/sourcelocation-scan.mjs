@@ -12,7 +12,7 @@ import { repoRoot } from "./paths.mjs";
 import { stripRust } from "./rust-source.mjs";
 
 export const MEMBERS = ["source", "start.line", "start.column", "end.line", "end.column"];
-export const OFFSET_MEMBERS = ["start.offset", "end.offset"];
+export const OFFSET_MEMBERS = ["span.start", "span.end"];
 
 export function isLocShaped(ident) {
   return (
@@ -155,4 +155,36 @@ export function countExternalReferences(name, excludeRelPaths) {
     }
   }
   return count;
+}
+
+/**
+ * Pin a deletion: fail regeneration when `anchor` matches in `relPath` again
+ * (or the file itself reappears after `relPath` was deleted whole). The
+ * inverse of `citeAnchor`, for migration groups whose consumers stop
+ * existing rather than move.
+ */
+export function assertAnchorAbsent(relPath, anchor, description) {
+  const file = path.join(repoRoot, relPath);
+  if (!existsSync(file)) return;
+  const lines = readFileSync(file, "utf8").split("\n");
+  const idx = lines.findIndex((line) => anchor.test(line));
+  if (idx !== -1) {
+    throw new Error(
+      `deletion regressed: ${description} reappeared at ${relPath}:${idx + 1}; ` +
+        `it was deleted by Davinci P1-4 — re-classify it in ` +
+        `tools/davinci/sourcelocation-inventory.mjs if it is back by design`,
+    );
+  }
+}
+
+/** Pin a workspace-wide deletion of `name` (no references anywhere). */
+export function assertSymbolAbsent(name, description) {
+  const count = countExternalReferences(name, []);
+  if (count !== 0) {
+    throw new Error(
+      `deletion regressed: ${count} reference(s) to ${name} reappeared (${description}); ` +
+        `it was deleted by Davinci P1-4 — re-classify it in ` +
+        `tools/davinci/sourcelocation-inventory.mjs if it is back by design`,
+    );
+  }
 }

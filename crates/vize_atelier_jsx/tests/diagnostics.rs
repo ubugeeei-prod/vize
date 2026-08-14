@@ -43,8 +43,8 @@ fn element_location_round_trips_through_source() {
     let src = "const App = () => <button class=\"x\">Go</button>;";
     let out = lower_all(&bump, src);
     let element = root_element(&out.roots[0].root);
-    let start = element.loc.start.offset as usize;
-    let end = element.loc.end.offset as usize;
+    let start = element.loc.span.start as usize;
+    let end = element.loc.span.end as usize;
     assert_eq!(&src[start..end], "<button class=\"x\">Go</button>");
 }
 
@@ -58,20 +58,23 @@ fn attribute_value_location_round_trips() {
         _ => panic!("expected attribute"),
     };
     let value = attr.value.as_ref().unwrap();
-    let start = value.loc.start.offset as usize;
-    let end = value.loc.end.offset as usize;
+    let start = value.loc.span.start as usize;
+    let end = value.loc.span.end as usize;
     assert_eq!(&src[start..end], "\"hello\"");
 }
 
 #[test]
-fn line_and_column_are_one_indexed() {
+fn line_and_column_derive_from_the_span_offset() {
     let bump = Allocator::new();
-    // `<div/>` begins at column 1 of line 2.
+    // `<div/>` begins at column 1 of line 2 (0-indexed: line 1, column 0).
+    // Nodes store byte offsets only; line/column are derived at the edges
+    // that render them, via `vize_carton::line_index` (Davinci P1-4).
     let src = "x;\n<div/>;";
     let out = lower_all(&bump, src);
     let loc = &root_element(&out.roots[0].root).loc;
-    assert_eq!(loc.start.line, 2);
-    assert_eq!(loc.start.column, 1);
+    let (line, column) = vize_carton::line_index::offset_to_line_col(src, loc.span.start as usize);
+    assert_eq!(line, 1);
+    assert_eq!(column, 0);
 }
 
 /// The shapes below all used to lower to something meaningless with no signal

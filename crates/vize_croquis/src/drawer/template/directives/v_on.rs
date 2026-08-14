@@ -41,8 +41,8 @@ impl Drawer {
                         .push(crate::croquis::TemplateExpression {
                             content: CompactString::new(content),
                             kind: crate::croquis::TemplateExpressionKind::VOn,
-                            start: loc.start.offset,
-                            end: loc.end.offset,
+                            start: loc.span.start,
+                            end: loc.span.end,
                             scope_id,
                             vif_guard: self.current_vif_guard(),
                         });
@@ -82,8 +82,8 @@ impl Drawer {
                         handler_expression: Some(CompactString::new(content)),
                         target_component: target_component.clone(),
                     },
-                    dir.loc.start.offset,
-                    dir.loc.end.offset,
+                    dir.loc.span.start,
+                    dir.loc.span.end,
                 );
 
                 if self.options.collect_template_expressions {
@@ -94,8 +94,8 @@ impl Drawer {
                         .push(crate::croquis::TemplateExpression {
                             content: CompactString::new(content),
                             kind: crate::croquis::TemplateExpressionKind::VOn,
-                            start: exp_loc.start.offset,
-                            end: exp_loc.end.offset,
+                            start: exp_loc.span.start,
+                            end: exp_loc.span.end,
                             scope_id,
                             vif_guard: self.current_vif_guard(),
                         });
@@ -154,8 +154,8 @@ impl Drawer {
                             handler_expression: Some(CompactString::new(content)),
                             target_component,
                         },
-                        dir.loc.start.offset,
-                        dir.loc.end.offset,
+                        dir.loc.span.start,
+                        dir.loc.span.end,
                     );
 
                     if self.options.collect_template_expressions {
@@ -165,8 +165,8 @@ impl Drawer {
                             crate::croquis::TemplateExpression {
                                 content: CompactString::new(content),
                                 kind: crate::croquis::TemplateExpressionKind::VOn,
-                                start: exp_loc.start.offset,
-                                end: exp_loc.end.offset,
+                                start: exp_loc.span.start,
+                                end: exp_loc.span.end,
                                 scope_id,
                                 vif_guard: self.current_vif_guard(),
                             },
@@ -192,8 +192,8 @@ impl Drawer {
                             crate::croquis::TemplateExpression {
                                 content: CompactString::new(content),
                                 kind: crate::croquis::TemplateExpressionKind::VOn,
-                                start: exp_loc.start.offset,
-                                end: exp_loc.end.offset,
+                                start: exp_loc.span.start,
+                                end: exp_loc.span.end,
                                 scope_id,
                                 vif_guard: self.current_vif_guard(),
                             },

@@ -72,8 +72,8 @@ impl Rule for HeadingLevels {
             if let Some(level) = heading_level(element.tag.as_str()) {
                 headings.push(HeadingInfo {
                     level,
-                    start: element.loc.start.offset,
-                    end: element.loc.end.offset,
+                    start: element.loc.span.start,
+                    end: element.loc.span.end,
                 });
             }
         });

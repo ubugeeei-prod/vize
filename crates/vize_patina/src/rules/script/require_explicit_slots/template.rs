@@ -128,8 +128,8 @@ impl SlotCollector<'_> {
         }
         self.slots.push(RenderedSlot {
             name: CompactString::new(name.unwrap_or("default")),
-            start: element.loc.start.offset,
-            end: element.loc.end.offset,
+            start: element.loc.span.start,
+            end: element.loc.span.end,
         });
     }
 }
@@ -150,8 +150,8 @@ fn argument_name<'a>(arg: &'a ExpressionNode<'a>) -> Option<&'a str> {
 /// `/` or `>`); a mention inside another attribute's value can still match,
 /// which suppresses a report rather than inventing one.
 fn start_tag_has_v_pre(source: &str, element: &ElementNode<'_>) -> bool {
-    let start = element.loc.start.offset as usize;
-    let end = element.loc.end.offset as usize;
+    let start = element.loc.span.start as usize;
+    let end = element.loc.span.end as usize;
     let Some(start_tag) = source.get(start..end) else {
         return false;
     };

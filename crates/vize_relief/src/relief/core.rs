@@ -75,40 +75,24 @@ pub enum ConstantType {
     CanStringify = 3,
 }
 
-/// Source position in the template
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
-pub struct Position {
-    /// Byte offset from start of file
-    pub offset: u32,
-    /// 1-indexed line number
-    pub line: u32,
-    /// 1-indexed column number
-    pub column: u32,
-}
-
-impl Position {
-    pub const fn new(offset: u32, line: u32, column: u32) -> Self {
-        Self {
-            offset,
-            line,
-            column,
-        }
-    }
-}
-
 /// Source location span [start, end)
 ///
 /// The covered text is not stored; it is recovered on demand from the file's
-/// source string via `loc.span.slice(source_text)` (Davinci P1-3).
+/// source string via `loc.span.slice(source_text)` (Davinci P1-3). Line and
+/// column are not stored either (Davinci P1-4): the retired `Position` type
+/// carried per-node `line`/`column` fields, but the parser never populated
+/// its newline table, so every stored value was the frozen `line: 1,
+/// column: offset + 1` shape. The few places that render line/column derive
+/// them at the edge — real values via `vize_carton::line_index` where the
+/// output layer already did (source maps, patina, LSP), and the frozen shape
+/// via [`crate::errors::CompilerErrorWithSource`] where byte parity pins it.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SourceLocation {
-    pub start: Position,
-    pub end: Position,
-    /// Byte range `[start.offset, end.offset)` into the authored source.
+    /// Byte range `[start, end)` into the authored source.
     pub span: Span,
 }
 
-const _: () = assert!(core::mem::size_of::<SourceLocation>() == 32);
+const _: () = assert!(core::mem::size_of::<SourceLocation>() == 8);
 
 impl Default for SourceLocation {
     fn default() -> Self {
@@ -122,28 +106,18 @@ pub(crate) static STUB_LOCATION: SourceLocation = SourceLocation::STUB;
 impl SourceLocation {
     /// Stub location for generated nodes
     pub const STUB: Self = Self {
-        start: Position {
-            offset: 0,
-            line: 1,
-            column: 1,
-        },
-        end: Position {
-            offset: 0,
-            line: 1,
-            column: 1,
-        },
         span: Span::new(0, 0),
     };
 
-    pub fn new(start: Position, end: Position) -> Self {
-        let span = Span::new(start.offset, end.offset);
-        Self { start, end, span }
+    pub const fn new(start: u32, end: u32) -> Self {
+        Self {
+            span: Span::new(start, end),
+        }
     }
 
-    /// Move the end of the location, keeping `span` in sync with the offsets.
-    pub fn set_end(&mut self, end: Position) {
-        self.span.end = end.offset;
-        self.end = end;
+    /// Move the end offset of the location.
+    pub fn set_end(&mut self, end: u32) {
+        self.span.end = end;
     }
 }
 

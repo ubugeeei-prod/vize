@@ -200,8 +200,8 @@ impl TypeCheckService {
                     .as_ref()
                     .map(|loc| {
                         (
-                            template_offset + loc.start.offset,
-                            template_offset + loc.end.offset,
+                            template_offset + loc.span.start,
+                            template_offset + loc.span.end,
                         )
                     })
                     .unwrap_or((template_offset, template_offset));

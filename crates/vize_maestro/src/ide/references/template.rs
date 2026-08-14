@@ -146,13 +146,13 @@ impl ReferencesService {
                 if simple.content.is_empty() {
                     None
                 } else {
-                    Some((simple.content.to_string(), simple.loc.start.offset as usize))
+                    Some((simple.content.to_string(), simple.loc.span.start as usize))
                 }
             }
             ExpressionNode::Compound(compound) => {
                 // For compound expressions, we can't easily get the text
                 // Return the location but mark as compound
-                Some(("<compound>".to_string(), compound.loc.start.offset as usize))
+                Some(("<compound>".to_string(), compound.loc.span.start as usize))
             }
         }
     }

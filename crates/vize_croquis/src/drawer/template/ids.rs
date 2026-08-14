@@ -65,8 +65,8 @@ impl Drawer {
                     {
                         self.croquis.element_ids.push(ElementIdInfo {
                             value: value.content.clone(),
-                            start: attr.loc.start.offset,
-                            end: attr.loc.end.offset,
+                            start: attr.loc.span.start,
+                            end: attr.loc.span.end,
                             is_static: true,
                             in_loop,
                             scope_id,
@@ -107,8 +107,8 @@ impl Drawer {
                                 } else {
                                     content
                                 },
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: dir.loc.span.start,
+                                end: dir.loc.span.end,
                                 is_static,
                                 in_loop,
                                 scope_id,
@@ -165,7 +165,7 @@ impl Drawer {
                 compound_content.as_str()
             }
         };
-        let base_offset = expr.loc().start.offset;
+        let base_offset = expr.loc().span.start;
 
         // Identifier extraction is a pure function of the expression text, and
         // template expressions repeat heavily (the same bindings/handlers across

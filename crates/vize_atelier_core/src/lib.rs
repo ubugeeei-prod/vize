@@ -35,9 +35,9 @@ pub use vize_relief::{
     ElementType, ExpressionNode, ForNode, ForParseResult, FunctionBody, FunctionExpression,
     FunctionParam, FunctionParams, FunctionReturns, IfBranchNode, IfNode, IfStatement,
     IfStatementAlternate, ImportItem, InterpolationNode, JsChildNode, JsExpression, Namespace,
-    NodeType, ObjectExpression, Position, PropNode, Property, PropsExpression, ReturnStatement,
-    ReturnValue, RootNode, RuntimeHelper, SequenceExpression, SimpleExpressionNode,
-    SlotsExpression, SourceLocation, TemplateChildNode, TemplateLiteral, TemplateLiteralElement,
+    NodeType, ObjectExpression, PropNode, Property, PropsExpression, ReturnStatement, ReturnValue,
+    RootNode, RuntimeHelper, SequenceExpression, SimpleExpressionNode, SlotsExpression,
+    SourceLocation, TemplateChildNode, TemplateLiteral, TemplateLiteralElement,
     TemplateTextChildNode, TextCallContent, TextCallNode, TextNode, VNodeCall, VNodeChildren,
     VNodeTag,
 };

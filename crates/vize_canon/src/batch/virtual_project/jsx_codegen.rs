@@ -189,7 +189,7 @@ pub(super) fn generate_jsx_virtual_ts(
         // root's JSX expressions, source-mapped back to their `.tsx` ranges
         // (#1497).
         collect_style_expressions(&root.scoped_style_exprs, &mut exprs);
-        roots.push((root.root.loc.start.offset, root.root.loc.end.offset, exprs));
+        roots.push((root.root.loc.span.start, root.root.loc.span.end, exprs));
     }
     // Outermost roots never overlap and are produced in source order, but guard
     // the rewrite against any accidental disorder.

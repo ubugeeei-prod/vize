@@ -204,18 +204,16 @@ fn collect_compound(compound: &CompoundExpressionNode<'_>, out: &mut Vec<JsxEmit
 }
 
 fn push_expr(content: &str, loc: &vize_relief::SourceLocation, out: &mut Vec<JsxEmit>) {
-    if let Some(expr) = jsx_expr(content, loc.start.offset, loc.end.offset) {
+    if let Some(expr) = jsx_expr(content, loc.span.start, loc.span.end) {
         out.push(JsxEmit::Expr(expr));
     }
 }
 
 pub(super) fn expr_of(expression: &ExpressionNode<'_>) -> Option<JsxExpr> {
     match expression {
-        ExpressionNode::Simple(simple) if !simple.is_static => jsx_expr(
-            &simple.content,
-            simple.loc.start.offset,
-            simple.loc.end.offset,
-        ),
+        ExpressionNode::Simple(simple) if !simple.is_static => {
+            jsx_expr(&simple.content, simple.loc.span.start, simple.loc.span.end)
+        }
         _ => None,
     }
 }
@@ -228,8 +226,8 @@ pub(super) fn alias_expr(alias: &ExpressionNode<'_>) -> Option<JsxExpr> {
             let content = simple.content.trim();
             (!content.is_empty()).then(|| JsxExpr {
                 content: content.to_string(),
-                start: simple.loc.start.offset,
-                end: simple.loc.end.offset,
+                start: simple.loc.span.start,
+                end: simple.loc.span.end,
             })
         }
         ExpressionNode::Compound(_) => None,

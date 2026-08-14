@@ -6,15 +6,17 @@
 # `SourceLocation` consumer inventory
 
 Every textual read of the relief `SourceLocation` members that
-`vize_carton::Span` (`crates/vize_carton/src/span.rs`) deletes —
+`vize_carton::Span` (`crates/vize_carton/src/span.rs`) deleted —
 `source`, `start.line`, `start.column`, `end.line`, `end.column` —
-across `crates/*/src`, plus the migration group each consumer moves to as
-relief nodes switch to two-u32 byte spans instead of owned
+across `crates/*/src`, plus the migration group each consumer moved to as
+relief nodes switched to two-u32 byte spans instead of owned
 `{ start: Position, end: Position, source: String }` triples
-([architecture.md](../architecture.md), S0). This is the migration map Davinci
-P1 executes (P0-9). P1-3 executed group 1: every `source` read is migrated,
-the scan now counts zero, and regeneration fails if one comes back. The
-line/column members remain until P1-4.
+([architecture.md](../architecture.md), S0). This was the migration map
+Davinci P1 executed (P0-9). P1-3 executed group 1 (`source` reads to
+`Span::slice`); P1-4 executed groups 2 and 3 (line/column reads to
+offset-derived rendering, the `Position` type and its converters deleted).
+The scan now counts zero across all five members, and regeneration fails if
+any read — or any deleted carrier — comes back.
 
 ## Resolution method (and its limits)
 
@@ -23,9 +25,10 @@ line/column members remain until P1-4.
   **textually** on loc-shaped receivers only: chained `.loc.<member>`,
   `.loc().<member>`, `.location.<member>` accesses, and bare locals named
   `loc` / `location` / `*_loc` / `*_location`.
-- Reads of `start.offset` / `end.offset` are **not** inventoried: they
-  survive the migration verbatim as `span.start` / `span.end`
-  (276 loc-shaped offset-read sites across
+- Reads of `span.start` / `span.end` are **not** inventoried: they are
+  the surviving offset representation — the pre-migration
+  `start.offset` / `end.offset` reads moved to them verbatim
+  (293 loc-shaped span-read sites across
   8 crates at generation time).
 - `#[cfg(test)]` code inside `src/` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
@@ -36,39 +39,17 @@ line/column members remain until P1-4.
     (`crates/vize_doctor/src/model/evidence.rs`) that is already
     span-shaped; its members (`path`, `start: u32`, `end: u32`) never
     form any of the five member paths, so it cannot contribute rows here and
-    needs no migration.
+    needed no migration.
   - `BlockLocation` (`crates/vize_atelier_sfc/src/types.rs`) also sits
     behind `loc` fields, but its `start`/`end` are plain `usize`
     offsets with flat `start_line`/`start_column` siblings — none of the
     five member paths exist on it, so it cannot collide either.
-  - Locals bound under non-loc names are missed:
-    `crates/vize_relief/src/relief/tests.rs` binds `SourceLocation::STUB`
-    as `stub` and reads `stub.start.line` / `stub.start.column`
-    (2 sites, test-only).
-  - `Position` values escaping whole are counted where the `.line` /
-    `.column` read happens, which a loc-shaped filter can miss: the two
-    reads inside `internal_to_lsp_position`
-    (`crates/vize_maestro/src/utils/position.rs`, receiver `pos`) are the
-    only such sites today, reached only through `source_location_to_range`
-    (0 references outside its own module at generation time).
 
 ## Reads per crate × member
 
-| crate           | `source` | `start.line` | `start.column` | `end.line` | `end.column` | total | in test code |
-| --------------- | -------: | -----------: | -------------: | ---------: | -----------: | ----: | -----------: |
-| `vize_relief`   |        0 |            1 |              1 |          0 |            0 |     2 |            2 |
-| `vize_armature` |        0 |            1 |              0 |          0 |            0 |     1 |            0 |
-| **total**       |        0 |            2 |              1 |          0 |            0 |     3 |            2 |
-
-## Every `line` / `column` read site
-
-The line/column members are read so rarely that the sites fit in one table:
-
-| member         | site                                                    | test code |
-| -------------- | ------------------------------------------------------- | --------- |
-| `start.line`   | `crates/vize_armature/src/parser/element/comment.rs:17` | no        |
-| `start.line`   | `crates/vize_relief/src/relief/tests.rs:352`            | yes       |
-| `start.column` | `crates/vize_relief/src/relief/tests.rs:353`            | yes       |
+| crate     | `source` | `start.line` | `start.column` | `end.line` | `end.column` | total | in test code |
+| --------- | -------: | -----------: | -------------: | ---------: | -----------: | ----: | -----------: |
+| **total** |        0 |            0 |              0 |          0 |            0 |     0 |            0 |
 
 ## Migration groups
 
@@ -90,42 +71,45 @@ sites:
 - `crates/vize_atelier_vapor/src/transforms/v_on.rs:47` — vapor transform re-wraps an expression from the covered
   text (the owned copy the pre-span node stored is gone; see also group 3)
 
-### Group 2 — line/column reads move to offset-derived rendering (3 direct sites + 4 known-missed, see limits)
+### Group 2 — line/column reads moved to offset-derived rendering (migrated by P1-4: 3 direct sites + 4 known-missed at P0-9, 0 remain)
 
 Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
 derived from byte offsets via `vize_carton::line_index::LineIndex`
 (`crates/vize_carton/src/line_index.rs:23`) at the edge that needs them — exactly how the
-source-map `finish()` step and Patina's output layer already work. The
-eagerly-stored `Position { line, column }` pairs these sites read today
-delete with the type:
+source-map `finish()` step and Patina's output layer already worked. The
+eagerly-stored `Position { line, column }` pairs deleted with the type.
+Where each read went:
 
-- `crates/vize_armature/src/parser/element/comment.rs:17` — the **only** production read: seeds
-  `parse_vize_directive` with the comment's start line; becomes a
-  `LineIndex` lookup from the span start (or a plain offset if the
-  consumer is offset-ready)
-- `crates/vize_maestro/src/utils/position.rs:102` — `source_location_to_range` converts stored
-  `Position`s to LSP positions via `internal_to_lsp_position` (2 of the
-  4 known-missed reads: `pos.line` / `pos.column`; the other 2 are the
-  `stub` locals in the relief tests); its replacement
-  is the offset → `LineIndex` path every live maestro collector already
-  uses — and it has no callers, so see group 3
-- `crates/vize_relief/src/relief/tests.rs:352` — relief tests pinning the 1-indexed line/column
-  convention of stub locations; re-target to span offsets (the 1-based
-  convention itself becomes a rendering-layer concern)
+- `crates/vize_armature/src/parser/element/comment.rs:21` — the only production read seeded
+  `parse_vize_directive` with the comment's start line, which that caller
+  discards (only the directive kind survives); it now passes the constant
+  line the retired tracking always reported
+- `crates/vize_relief/src/errors/render.rs:88` — the one output path that printed stored
+  line/column (the SFC gate / binding-boundary debug rendering) reproduces
+  the retired tracking's frozen `line: 1, column: offset + 1` shape from
+  the span offset, byte-for-byte, because corpus oracles pin those
+  diagnostic bytes; switching it to true `LineIndex` derivation is a
+  recorded corpus-visible behavior change for the plan to schedule
+- `crates/vize_maestro/src/utils/position.rs` — `source_location_to_range`
+  / `internal_to_lsp_position` converted stored `Position`s to LSP
+  positions; they had no callers and are deleted (regeneration asserts they
+  stay gone)
+- `crates/vize_relief/src/relief/tests.rs:360` — relief tests that pinned the 1-indexed line/column
+  convention of stub locations now pin span offsets (the 1-based convention
+  itself is a rendering-layer concern)
 
-### Group 3 — delete outright
+### Group 3 — deleted outright
 
-Structures whose entire job is carrying or converting the eager
-representation. No slice or line/col replacement — they stop existing:
+Structures whose entire job was carrying or converting the eager
+representation:
 
-- `crates/vize_maestro/src/utils/position.rs:102` — `source_location_to_range` has
-  0 references outside its own module; dead conversion code
-- `crates/vize_atelier_jsx/src/span.rs:18` — `SpanMapper` eagerly expands oxc byte spans
-  (`oxc_span::Span`, already `{ start: u32, end: u32 }`) into owned
-  `SourceLocation`s for every lowered JSX node; under S0 the oxc span
-  passes through unchanged and the whole conversion layer deletes
-- `crates/vize_relief/src/relief/core.rs:120` — `STUB_LOCATION` / `SourceLocation::STUB`: the
-  owned-string stub machinery for generated nodes collapses to
+- `crates/vize_relief/src/relief/core.rs` — the `Position` type itself
+  is gone; `SourceLocation` is the 8-byte `{ span: Span }` (regeneration
+  asserts `pub struct Position` stays gone from the module)
+- `crates/vize_atelier_jsx/src/span.rs:15` — `SpanMapper` no longer expands oxc byte spans into
+  eager positions; `location()` is a direct offset carry-over and the
+  `LineIndex` it built per module is deleted
+- `crates/vize_relief/src/relief/core.rs:104` — `STUB_LOCATION` / `SourceLocation::STUB` collapsed to
   `Span::new(0, 0)`
 - `crates/vize_relief/src/relief/expressions.rs:33` — `SimpleExpressionNode` stored `content: String`
   **and** `loc.source` duplicating it; since P1-3 the node keeps one span

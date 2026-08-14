@@ -44,17 +44,16 @@ impl<'a> Parser<'a> {
         };
 
         if can_merge {
-            let end_pos = self.get_pos(end);
             if let Some(entry) = self.stack.last_mut()
                 && let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.set_end(end_pos);
+                text_node.loc.set_end(end as u32);
             } else if let Some(root) = self.root.as_mut()
                 && let Some(TemplateChildNode::Text(text_node)) = root.children.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.set_end(end_pos);
+                text_node.loc.set_end(end as u32);
             }
         } else {
             let loc = self.create_loc(start, end);
@@ -76,12 +75,11 @@ impl<'a> Parser<'a> {
         );
 
         if can_merge {
-            let end_pos = self.get_pos(end);
             if let Some(TemplateChildNode::Text(text_node)) =
                 self.stack[table_index].fostered_before.last_mut()
             {
                 text_node.content.push_str(content);
-                text_node.loc.set_end(end_pos);
+                text_node.loc.set_end(end as u32);
             }
         } else {
             let loc = self.create_loc(start, end);

@@ -148,7 +148,7 @@ fn element_event_host_tag<'root, 'arena>(
     if element.props.iter().any(|prop| {
         matches!(
             prop,
-            PropNode::Directive(directive) if directive.loc.start.offset == directive_start
+            PropNode::Directive(directive) if directive.loc.span.start == directive_start
         )
     }) {
         return Some(element.tag.as_str());

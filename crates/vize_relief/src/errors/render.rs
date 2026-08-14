@@ -7,6 +7,16 @@
 //! through [`CompilerErrorWithSource`] instead, which prints the exact shape
 //! the derive printed when locations still stored their covered text inline —
 //! `source` included, sliced from the file's source text.
+//!
+//! The `line`/`column` fields printed here reproduce the retired parser
+//! tracking byte-for-byte (Davinci P1-4): the parser never populated its
+//! newline table, so every stored `Position` was `line: 1, column:
+//! offset + 1` regardless of the real line. Corpus oracles pin diagnostic
+//! messages containing that frozen shape, so this renderer reconstructs it
+//! from the offset instead of deriving the real line/column. Switching this
+//! output to true `vize_carton::line_index` derivation is a recorded,
+//! corpus-visible behavior change for the plan to schedule — not a byte-safe
+//! cleanup.
 
 use core::fmt;
 
@@ -18,7 +28,8 @@ use super::CompilerError;
 ///
 /// The `Debug` output is byte-identical to the derived `Debug` of the
 /// pre-span `CompilerError` (whose `SourceLocation` carried
-/// `source: String`), which diagnostic messages embed verbatim.
+/// `source: String` and eager `Position`s), which diagnostic messages embed
+/// verbatim.
 pub struct CompilerErrorWithSource<'a> {
     error: &'a CompilerError,
     source: &'a str,
@@ -62,23 +73,40 @@ struct LocationWithSource<'a> {
 impl fmt::Debug for LocationWithSource<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SourceLocation")
-            .field("start", &self.loc.start)
-            .field("end", &self.loc.end)
+            .field("start", &FrozenPosition(self.loc.span.start))
+            .field("end", &FrozenPosition(self.loc.span.end))
             .field("source", &self.loc.span.slice(self.source))
+            .finish()
+    }
+}
+
+/// Renders a byte offset in the retired `Position` debug shape.
+///
+/// `line: 1, column: offset + 1` is not a placeholder: it is exactly what the
+/// retired parser tracking stored for every node (see the module docs), and
+/// the pinned diagnostic bytes depend on it.
+struct FrozenPosition(u32);
+
+impl fmt::Debug for FrozenPosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Position")
+            .field("offset", &self.0)
+            .field("line", &1u32)
+            .field("column", &(self.0 + 1))
             .finish()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::relief::{Position, SourceLocation};
+    use crate::relief::SourceLocation;
 
     use super::super::{CompilerError, ErrorCode};
     use super::CompilerErrorWithSource;
 
     #[test]
     fn debug_prints_the_pre_span_derive_shape() {
-        let loc = SourceLocation::new(Position::new(5, 1, 6), Position::new(9, 1, 10));
+        let loc = SourceLocation::new(5, 9);
         let error = CompilerError::with_message(
             ErrorCode::MissingEndTag,
             "Element is missing end tag.",

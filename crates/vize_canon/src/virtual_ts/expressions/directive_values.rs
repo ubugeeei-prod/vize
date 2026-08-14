@@ -125,7 +125,7 @@ fn directive_value_binding(
     }
     let location = expression.loc();
     Some((
-        (location.start.offset, location.end.offset),
+        (location.span.start, location.span.end),
         DirectiveValueBinding { variable },
     ))
 }

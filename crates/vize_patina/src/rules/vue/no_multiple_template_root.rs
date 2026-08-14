@@ -45,8 +45,8 @@ fn has_directive(element: &ElementNode<'_>, name: &str) -> bool {
 /// Recover the start-tag range, matching vue-eslint-parser's reported span.
 /// Quoted `>` bytes do not terminate the tag.
 fn start_tag_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
-    let start = element.loc.start.offset as usize;
-    let end = element.loc.end.offset as usize;
+    let start = element.loc.span.start as usize;
+    let end = element.loc.span.end as usize;
     let Some(element_source) = source.get(start..end) else {
         return element.loc.clone();
     };
@@ -59,7 +59,7 @@ fn start_tag_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
             (None, b'\'' | b'"') => quote = Some(byte),
             (None, b'>') => {
                 let mut loc = element.loc.clone();
-                loc.end.offset = (start + relative + 1) as u32;
+                loc.span.end = (start + relative + 1) as u32;
                 return loc;
             }
             (None, _) => {}
@@ -82,12 +82,12 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
     let search_from = element
         .children
         .iter()
-        .fold(loc.end.offset as usize, |end, child| {
+        .fold(loc.span.end as usize, |end, child| {
             let child_end = match child {
                 TemplateChildNode::Element(child) => {
-                    ensure_sufficient_stack(|| full_element_loc(source, child).end.offset as usize)
+                    ensure_sufficient_stack(|| full_element_loc(source, child).span.end as usize)
                 }
-                other => other.loc().end.offset as usize,
+                other => other.loc().span.end as usize,
             };
             end.max(child_end)
         });
@@ -111,7 +111,7 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
                 .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b'>')
             && let Some(end_relative) = bytes[name_end..].iter().position(|&byte| byte == b'>')
         {
-            loc.end.offset = (name_end + end_relative + 1) as u32;
+            loc.span.end = (name_end + end_relative + 1) as u32;
             return loc;
         }
         cursor = start + 1;
@@ -123,7 +123,7 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
 #[inline]
 fn is_non_blank(source: &str, loc: &SourceLocation) -> bool {
     source
-        .get(loc.start.offset as usize..loc.end.offset as usize)
+        .get(loc.span.start as usize..loc.span.end as usize)
         .is_some_and(|text| !text.trim().is_empty())
 }
 

@@ -33,7 +33,7 @@ pub(in crate::ide) fn generate_jsx_virtual_ts(source: &str, lang: JsxLang) -> Op
         let mut emits = Vec::new();
         collect_root_expressions(&root.root, &mut emits, true);
         collect_style_expressions(&root.scoped_style_exprs, &mut emits);
-        roots.push((root.root.loc.start.offset, root.root.loc.end.offset, emits));
+        roots.push((root.root.loc.span.start, root.root.loc.span.end, emits));
     }
     roots.sort_by_key(|(start, _, _)| *start);
 

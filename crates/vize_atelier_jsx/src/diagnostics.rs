@@ -51,7 +51,7 @@ impl JsxDiagnostic {
 
     /// Build an error diagnostic from a Vize [`SourceLocation`].
     pub fn error_at(message: impl Into<String>, loc: &SourceLocation) -> Self {
-        Self::error(message, loc.start.offset, loc.end.offset)
+        Self::error(message, loc.span.start, loc.span.end)
     }
 
     /// Whether this diagnostic is an error.

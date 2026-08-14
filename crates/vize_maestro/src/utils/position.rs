@@ -90,22 +90,6 @@ pub fn offset_to_position_str(content: &str, offset: usize) -> Position {
     Position { line, character }
 }
 
-/// Convert internal 1-based Position to LSP 0-based Position.
-pub fn internal_to_lsp_position(pos: &vize_relief::Position) -> Position {
-    Position {
-        line: pos.line.saturating_sub(1),
-        character: pos.column.saturating_sub(1),
-    }
-}
-
-/// Convert internal SourceLocation to LSP Range.
-pub fn source_location_to_range(loc: &vize_relief::SourceLocation) -> Range {
-    Range {
-        start: internal_to_lsp_position(&loc.start),
-        end: internal_to_lsp_position(&loc.end),
-    }
-}
-
 /// Create an LSP Range from start and end positions.
 pub fn make_range(start_line: u32, start_char: u32, end_line: u32, end_char: u32) -> Range {
     Range {
@@ -179,8 +163,7 @@ pub fn line_range(rope: &Rope, line: usize) -> Option<Range> {
 #[cfg(test)]
 mod tests {
     use super::{
-        internal_to_lsp_position, offset_to_position, offset_to_position_str, position_to_offset,
-        position_to_offset_str,
+        offset_to_position, offset_to_position_str, position_to_offset, position_to_offset_str,
     };
     use ropey::Rope;
     use tower_lsp::lsp_types::Position;
@@ -358,18 +341,5 @@ mod tests {
         assert_eq!(position_to_offset_str(content, 0, 3), "a😀".len());
         assert_eq!(position_to_offset_str(content, 0, 4), "a😀b".len());
         assert_eq!(position_to_offset_str(content, 1, 1), content.len());
-    }
-
-    #[test]
-    fn test_internal_to_lsp_position() {
-        let internal = vize_relief::Position {
-            offset: 10,
-            line: 2,
-            column: 5,
-        };
-
-        let lsp = internal_to_lsp_position(&internal);
-        assert_eq!(lsp.line, 1);
-        assert_eq!(lsp.character, 4);
     }
 }

@@ -6,8 +6,8 @@ use vize_carton::{Box, Bump};
 
 use crate::lane::TransformContext;
 use crate::{
-    ElementNode, ExpressionNode, ForParseResult, Position, PropNode, RuntimeHelper,
-    SimpleExpressionNode, SourceLocation,
+    ElementNode, ExpressionNode, ForParseResult, PropNode, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation,
 };
 
 /// Check if an element has a v-for directive
@@ -86,9 +86,8 @@ pub fn parse_for_expression_with_options<'a>(
     let source_loc = if loc.span.is_empty() {
         SourceLocation::default()
     } else {
-        let start = advance_position(&loc.start, &content[..source_start]);
-        let end = advance_position(&start, source_str);
-        SourceLocation::new(start, end)
+        let start = loc.span.start + source_start as u32;
+        SourceLocation::new(start, start + source_str.len() as u32)
     };
 
     let source = ExpressionNode::Simple(Box::new_in(
@@ -138,21 +137,6 @@ pub fn parse_for_expression_with_options<'a>(
         index,
         finalized: false,
     })
-}
-
-/// Advance `base` over `text`, tracking byte offset, 1-indexed line and column.
-fn advance_position(base: &Position, text: &str) -> Position {
-    let mut line = base.line;
-    let mut column = base.column;
-    for ch in text.chars() {
-        if ch == '\n' {
-            line += 1;
-            column = 1;
-        } else {
-            column += 1;
-        }
-    }
-    Position::new(base.offset + text.len() as u32, line, column)
 }
 
 fn find_for_separator(content: &str) -> Option<(usize, usize)> {

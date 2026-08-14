@@ -9,13 +9,11 @@
 //! serializes a standard [Source Map v3] document with base64 [VLQ]-encoded
 //! `mappings`.
 //!
-//! Both sides are resolved from byte offsets rather than from the AST's
-//! `line`/`column` fields: the parser does not track line breaks for node
-//! positions (it reports everything on line 1), so its `column` is effectively a
-//! global offset and its `line` is unusable for multi-line templates. The byte
-//! `offset`, by contrast, is exact. Computing line/column here from the offsets
-//! keeps the map correct regardless of that parser limitation and is the
-//! conventional approach for source-map generators anyway.
+//! Both sides are resolved from byte offsets: the AST stores no line/column
+//! at all (Davinci P1-4 — the retired eager `Position` fields were never
+//! line-accurate anyway, reporting everything on line 1 with a global-offset
+//! column). The byte offset is exact, and computing line/column here from the
+//! offsets is the conventional approach for source-map generators anyway.
 //!
 //! This is intentionally additive: recording a segment never writes to the code
 //! buffer, so the generated `code` string is byte-identical whether or not the
@@ -84,7 +82,7 @@ impl SourceMapBuilder {
     ///
     /// Call this *immediately before* writing the mapped token to the code
     /// buffer, passing the buffer's current length as `generated_offset` and the
-    /// originating AST node's `loc.start.offset` as `source_offset`.
+    /// originating AST node's `loc.span.start` as `source_offset`.
     pub fn add_raw(&mut self, generated_offset: usize, source_offset: u32) {
         self.segments.push(Segment {
             generated_offset: generated_offset as u32,

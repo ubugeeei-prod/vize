@@ -293,7 +293,7 @@ fn try_generate_static_attrs(
         // Anchor the generated prop key back to the attribute name in source,
         // recording the symbol so it lands in the v3 `names` array. No-op
         // without `source_map`.
-        ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
+        ctx.record_mapping_named(attr.name_loc.span.start, &attr.name);
         ctx.push(&attr.name);
         if needs_quotes {
             ctx.push("\"");
@@ -303,7 +303,7 @@ fn try_generate_static_attrs(
             ctx.push("\"");
             // Anchor the generated value literal back to the attribute value in
             // source, just inside the opening quote. No-op without `source_map`.
-            ctx.record_mapping(&value.loc.start);
+            ctx.record_mapping(value.loc.span.start);
             ctx.push(&escape_js_string(&value.content));
             ctx.push("\"");
         } else {
@@ -473,7 +473,7 @@ fn generate_props_object_inner(
                     // Anchor the generated prop key back to the attribute name in
                     // source, recording the symbol so it lands in the v3 `names`
                     // array. No-op without `source_map`.
-                    ctx.record_mapping_named(&attr.name_loc.start, &attr.name);
+                    ctx.record_mapping_named(attr.name_loc.span.start, &attr.name);
                     ctx.push(&attr.name);
                     if needs_quotes {
                         ctx.push("\"");
@@ -489,7 +489,7 @@ fn generate_props_object_inner(
                             // Anchor the generated value literal back to the
                             // attribute value, just inside the opening quote.
                             // No-op without `source_map`.
-                            ctx.record_mapping(&value.loc.start);
+                            ctx.record_mapping(value.loc.span.start);
                             ctx.push(&escape_js_string(&value.content));
                             ctx.push("\"");
                         }

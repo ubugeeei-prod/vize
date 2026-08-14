@@ -451,8 +451,8 @@ impl VirtualTsGenerator {
                     let expr_start = self.gen_offset + prefix_len as u32;
                     let expr_end = expr_start + simple.content.len() as u32;
 
-                    let source_start = simple.loc.start.offset + self.block_offset;
-                    let source_end = simple.loc.end.offset + self.block_offset;
+                    let source_start = simple.loc.span.start + self.block_offset;
+                    let source_end = simple.loc.span.end + self.block_offset;
 
                     // Create mapping
                     self.mappings.push(SourceMapping::with_data(
@@ -496,8 +496,8 @@ impl VirtualTsGenerator {
 
         let expr_start = self.gen_offset + (self.indent_level * 2 + prefix.len()) as u32;
         let expr_end = expr_start + simple.content.len() as u32;
-        let source_start = simple.loc.start.offset + self.block_offset;
-        let source_end = simple.loc.end.offset + self.block_offset;
+        let source_start = simple.loc.span.start + self.block_offset;
+        let source_end = simple.loc.span.end + self.block_offset;
 
         self.mappings.push(SourceMapping::with_data(
             SourceRange::new(source_start, source_end),

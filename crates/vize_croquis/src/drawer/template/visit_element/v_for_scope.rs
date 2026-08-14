@@ -61,7 +61,7 @@ fn expression_content_and_offset<'a>(
         ExpressionNode::Simple(simple) => simple.content.as_str(),
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
     };
-    (content, loc.start.offset)
+    (content, loc.span.start)
 }
 
 fn v_for_alias_range(expr: &str) -> Option<(usize, usize)> {

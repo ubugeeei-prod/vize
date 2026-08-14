@@ -116,8 +116,8 @@ impl Drawer {
     ) -> Option<ComponentUsage> {
         (is_component && self.options.track_usage).then(|| ComponentUsage {
             name: CompactString::new(tag),
-            start: el.loc.start.offset,
-            end: el.loc.end.offset,
+            start: el.loc.span.start,
+            end: el.loc.span.end,
             props: SmallVec::new(),
             events: SmallVec::new(),
             slots: SmallVec::new(),

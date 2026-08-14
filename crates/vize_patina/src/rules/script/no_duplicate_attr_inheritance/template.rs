@@ -55,8 +55,8 @@ pub(super) fn root_attrs_spread(root: &RootNode<'_>) -> Option<AttrsSpread> {
     element.props.iter().find_map(|prop| match prop {
         PropNode::Directive(directive) if is_attrs_spread(directive, &root.source) => {
             Some(AttrsSpread {
-                start: directive.loc.start.offset,
-                end: directive.loc.end.offset,
+                start: directive.loc.span.start,
+                end: directive.loc.span.end,
             })
         }
         _ => None,

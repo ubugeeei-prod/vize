@@ -44,8 +44,8 @@ impl Drawer {
         self.croquis.template_info.root_element_count = root_element_count;
 
         // Store template content range
-        self.croquis.template_info.content_start = root.loc.start.offset;
-        self.croquis.template_info.content_end = root.loc.end.offset;
+        self.croquis.template_info.content_start = root.loc.span.start;
+        self.croquis.template_info.content_end = root.loc.span.end;
 
         // Keep profiling around the whole traversal instead of every recursive
         // child visit. The traversal itself is the hot path; per-node spans
@@ -123,8 +123,8 @@ impl Drawer {
                             crate::croquis::TemplateExpression {
                                 content: CompactString::new(content),
                                 kind: crate::croquis::TemplateExpressionKind::Interpolation,
-                                start: loc.start.offset,
-                                end: loc.end.offset,
+                                start: loc.span.start,
+                                end: loc.span.end,
                                 scope_id,
                                 vif_guard: self.current_vif_guard(),
                             },

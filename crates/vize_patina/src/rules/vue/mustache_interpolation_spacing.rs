@@ -71,8 +71,8 @@ impl Rule for MustacheInterpolationSpacing {
 
         // Get the raw source to check spacing
         // Note: end.offset is exclusive (points to the character AFTER the last one)
-        let start = interpolation.loc.start.offset as usize;
-        let end = interpolation.loc.end.offset as usize;
+        let start = interpolation.loc.span.start as usize;
+        let end = interpolation.loc.span.end as usize;
 
         if end <= start || end > ctx.source.len() {
             return;

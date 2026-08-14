@@ -3,8 +3,8 @@
 use super::{
     ArrayExpression, AttributeNode, BlockStatement, CallExpression, Callee, CommentNode,
     CompoundExpressionNode, ConstantType, DirectiveNode, ElementNode, ElementType, IfBranchNode,
-    IfNode, Namespace, NodeType, ObjectExpression, Position, RootNode, RuntimeHelper,
-    SimpleExpressionNode, SourceLocation, TemplateChildNode, TextNode,
+    IfNode, Namespace, NodeType, ObjectExpression, RootNode, RuntimeHelper, SimpleExpressionNode,
+    SourceLocation, TemplateChildNode, TextNode,
 };
 use vize_carton::Bump;
 
@@ -337,7 +337,7 @@ fn block_statement_new() {
 #[test]
 fn template_child_text_loc() {
     let allocator = Bump::new();
-    let loc = SourceLocation::new(Position::new(5, 1, 6), Position::new(10, 1, 11));
+    let loc = SourceLocation::new(5, 10);
     let text = TextNode::new("hello", loc.clone());
     let child = TemplateChildNode::Text(vize_carton::Box::new_in(text, &allocator));
     assert_eq!(*child.loc(), loc);
@@ -348,23 +348,17 @@ fn template_child_text_loc() {
 fn template_child_hoisted_loc() {
     let child = TemplateChildNode::Hoisted(0);
     // Hoisted nodes use the STUB_LOCATION
-    assert_eq!(child.loc().start.offset, 0);
-    assert_eq!(child.loc().start.line, 1);
-    assert_eq!(child.loc().start.column, 1);
+    assert_eq!(child.loc().span, vize_carton::Span::new(0, 0));
     assert_eq!(child.node_type(), NodeType::SimpleExpression);
 }
 
 // ========================================================================
-// SourceLocation / Position tests
+// SourceLocation tests
 // ========================================================================
 
 #[test]
 fn source_location_stub() {
     let stub = SourceLocation::STUB;
-    assert_eq!(stub.start.offset, 0);
-    assert_eq!(stub.start.line, 1);
-    assert_eq!(stub.start.column, 1);
-    assert_eq!(stub.end.offset, 0);
     assert_eq!(stub.span, vize_carton::Span::new(0, 0));
 }
 
@@ -376,24 +370,13 @@ fn source_location_default_is_stub() {
 
 #[test]
 fn source_location_new() {
-    let loc = SourceLocation::new(Position::new(0, 1, 1), Position::new(5, 1, 6));
-    assert_eq!(loc.start.offset, 0);
-    assert_eq!(loc.end.offset, 5);
+    let loc = SourceLocation::new(0, 5);
     assert_eq!(loc.span, vize_carton::Span::new(0, 5));
 }
 
 #[test]
-fn position_new() {
-    let pos = Position::new(42, 3, 10);
-    assert_eq!(pos.offset, 42);
-    assert_eq!(pos.line, 3);
-    assert_eq!(pos.column, 10);
-}
-
-#[test]
-fn position_default() {
-    let pos = Position::default();
-    assert_eq!(pos.offset, 0);
-    assert_eq!(pos.line, 0);
-    assert_eq!(pos.column, 0);
+fn source_location_set_end() {
+    let mut loc = SourceLocation::new(3, 5);
+    loc.set_end(9);
+    assert_eq!(loc.span, vize_carton::Span::new(3, 9));
 }

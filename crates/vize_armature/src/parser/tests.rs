@@ -315,7 +315,7 @@ fn test_parse_cdata_in_html_root_emits_error() {
     assert!(root.children.is_empty());
     assert_eq!(errors.len(), 1);
     assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
-    assert_eq!(errors[0].loc.as_ref().unwrap().start.offset, 0);
+    assert_eq!(errors[0].loc.as_ref().unwrap().span.start, 0);
 }
 
 #[test]

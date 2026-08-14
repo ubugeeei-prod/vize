@@ -143,8 +143,8 @@ impl Drawer {
         self.croquis.template_expressions.push(TemplateExpression {
             content: CompactString::new(content),
             kind,
-            start: loc.start.offset,
-            end: loc.end.offset,
+            start: loc.span.start,
+            end: loc.span.end,
             scope_id,
             vif_guard: self.current_vif_guard(),
         });
@@ -167,8 +167,8 @@ impl Drawer {
             self.croquis.template_expressions.push(TemplateExpression {
                 content: CompactString::new(expression_content(arg, &self.template_source)),
                 kind: TemplateExpressionKind::DynamicDirectiveArgument,
-                start: loc.start.offset,
-                end: loc.end.offset,
+                start: loc.span.start,
+                end: loc.span.end,
                 scope_id: self.croquis.scopes.current_id(),
                 vif_guard: self.current_vif_guard(),
             });

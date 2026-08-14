@@ -62,11 +62,11 @@ fn assert_single_invalid_expression(source: &str, expression: &str) {
         .find(expression)
         .expect("expression must appear in template") as u32;
     assert_eq!(
-        loc.start.offset, expected_offset,
+        loc.span.start, expected_offset,
         "span start offset mismatch in {source:?}"
     );
     assert_eq!(
-        loc.end.offset,
+        loc.span.end,
         expected_offset + expression.len() as u32,
         "span end offset mismatch in {source:?}"
     );

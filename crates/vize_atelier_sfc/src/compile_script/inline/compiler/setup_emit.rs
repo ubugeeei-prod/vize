@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
 use vize_atelier_core::{
-    BindingMetadata, ExpressionNode, Position, SimpleExpressionNode, SourceLocation,
-    TransformContext, TransformOptions, process_expression,
+    BindingMetadata, ExpressionNode, SimpleExpressionNode, SourceLocation, TransformContext,
+    TransformOptions, process_expression,
 };
 use vize_carton::{Box as CoreBox, String, profile};
 
@@ -63,10 +63,7 @@ fn transform_css_var_expression(
     source_is_ts: bool,
 ) -> String {
     let allocator = vize_carton::Allocator::new();
-    let loc = SourceLocation::new(
-        Position::new(0, 1, 1),
-        Position::new(var_expr.len() as u32, 1, var_expr.len() as u32 + 1),
-    );
+    let loc = SourceLocation::new(0, var_expr.len() as u32);
     let exp = ExpressionNode::Simple(CoreBox::new_in(
         SimpleExpressionNode::new(var_expr, false, loc),
         &allocator,

@@ -328,8 +328,8 @@ impl DiagnosticService {
                 // block's position in the SFC. `LineIndex::line_col` counts
                 // UTF-16 code units so the position lands at the right
                 // editor column for non-ASCII content. (#965)
-                let absolute_start_offset = template.loc.start as u32 + loc.start.offset;
-                let absolute_end_offset = template.loc.start as u32 + loc.end.offset;
+                let absolute_start_offset = template.loc.start as u32 + loc.span.start;
+                let absolute_end_offset = template.loc.start as u32 + loc.span.end;
                 let (start_line, start_character) =
                     line_index.line_col(absolute_start_offset as usize);
                 let (end_line, end_character) = line_index.line_col(absolute_end_offset as usize);

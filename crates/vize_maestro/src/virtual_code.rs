@@ -227,8 +227,8 @@ impl SourceRange {
 impl From<vize_relief::SourceLocation> for SourceRange {
     fn from(loc: vize_relief::SourceLocation) -> Self {
         Self {
-            start: loc.start.offset,
-            end: loc.end.offset,
+            start: loc.span.start,
+            end: loc.span.end,
         }
     }
 }
@@ -236,8 +236,8 @@ impl From<vize_relief::SourceLocation> for SourceRange {
 impl From<&vize_relief::SourceLocation> for SourceRange {
     fn from(loc: &vize_relief::SourceLocation) -> Self {
         Self {
-            start: loc.start.offset,
-            end: loc.end.offset,
+            start: loc.span.start,
+            end: loc.span.end,
         }
     }
 }

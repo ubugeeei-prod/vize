@@ -10,7 +10,7 @@ mod transform_expression_tests {
         typescript::strip_typescript_from_expression,
     };
     use crate::{
-        CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation,
+        CompoundExpressionNode, ExpressionNode, RuntimeHelper, SourceLocation,
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
     };
@@ -39,10 +39,7 @@ mod transform_expression_tests {
     }
 
     fn compound_expression<'a>(allocator: &'a Bump, source: &str) -> ExpressionNode<'a> {
-        let loc = SourceLocation::new(
-            Position::new(0, 1, 1),
-            Position::new(source.len() as u32, 1, source.len() as u32 + 1),
-        );
+        let loc = SourceLocation::new(0, source.len() as u32);
 
         ExpressionNode::Compound(Box::new_in(
             CompoundExpressionNode::new(allocator, loc),

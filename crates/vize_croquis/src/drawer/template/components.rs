@@ -24,8 +24,8 @@ impl Drawer {
                         name: attr.name.clone(),
                         name_is_dynamic: false,
                         value: attr.value.as_ref().map(|v| v.content.clone()),
-                        start: attr.loc.start.offset,
-                        end: attr.loc.end.offset,
+                        start: attr.loc.span.start,
+                        end: attr.loc.span.end,
                         is_dynamic: false,
                     });
                 }
@@ -48,8 +48,8 @@ impl Drawer {
                                 name: prop_name,
                                 name_is_dynamic,
                                 value,
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: dir.loc.span.start,
+                                end: dir.loc.span.end,
                                 is_dynamic: true,
                             });
                         } else if let Some(ref exp) = dir.exp {
@@ -61,8 +61,8 @@ impl Drawer {
                                         CompactString::new(c.loc.span.slice(&self.template_source))
                                     }
                                 },
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: dir.loc.span.start,
+                                end: dir.loc.span.end,
                             });
                         }
                     }
@@ -83,8 +83,8 @@ impl Drawer {
                                 name_is_dynamic,
                                 handler,
                                 modifiers,
-                                start: dir.loc.start.offset,
-                                end: dir.loc.end.offset,
+                                start: dir.loc.span.start,
+                                end: dir.loc.span.end,
                             });
                         }
                     }
@@ -106,8 +106,8 @@ impl Drawer {
                             name: model_name.clone(),
                             name_is_dynamic,
                             value: value.clone(),
-                            start: dir.loc.start.offset,
-                            end: dir.loc.end.offset,
+                            start: dir.loc.span.start,
+                            end: dir.loc.span.end,
                             is_dynamic: true,
                         });
 
@@ -116,8 +116,8 @@ impl Drawer {
                             name_is_dynamic,
                             handler: value,
                             modifiers: SmallVec::new(),
-                            start: dir.loc.start.offset,
-                            end: dir.loc.end.offset,
+                            start: dir.loc.span.start,
+                            end: dir.loc.span.end,
                         });
                     }
                     _ => {}
@@ -197,8 +197,8 @@ fn push_slot_usage(usage: &mut ComponentUsage, dir: &vize_relief::DirectiveNode<
         name_is_dynamic,
         has_scope: dir.exp.is_some(),
         scope_vars,
-        start: dir.loc.start.offset,
-        end: dir.loc.end.offset,
+        start: dir.loc.span.start,
+        end: dir.loc.span.end,
     });
 }
 
@@ -210,8 +210,8 @@ fn default_slot_child_span(el: &ElementNode<'_>) -> Option<(u32, u32)> {
         }
         let loc = child.loc();
         span = Some(match span {
-            Some((start, end)) => (start.min(loc.start.offset), end.max(loc.end.offset)),
-            None => (loc.start.offset, loc.end.offset),
+            Some((start, end)) => (start.min(loc.span.start), end.max(loc.span.end)),
+            None => (loc.span.start, loc.span.end),
         });
     }
     span

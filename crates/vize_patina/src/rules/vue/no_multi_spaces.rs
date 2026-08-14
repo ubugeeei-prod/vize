@@ -54,13 +54,13 @@ impl Rule for NoMultiSpaces {
             return;
         }
 
-        let first_prop_start = props[0].loc().start.offset as usize;
-        let tag_end = element.loc.start.offset as usize + 1 + element.tag.len();
+        let first_prop_start = props[0].loc().span.start as usize;
+        let tag_end = element.loc.span.start as usize + 1 + element.tag.len();
         self.check_gap(ctx, tag_end, first_prop_start);
 
         for pair in props.windows(2) {
-            let prev_end = pair[0].loc().end.offset as usize;
-            let curr_start = pair[1].loc().start.offset as usize;
+            let prev_end = pair[0].loc().span.end as usize;
+            let curr_start = pair[1].loc().span.start as usize;
             self.check_gap(ctx, prev_end, curr_start);
         }
     }

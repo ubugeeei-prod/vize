@@ -12,9 +12,7 @@ mod types;
 
 pub use types::*;
 
-use char_codes::NEWLINE;
 use sequences::Sequence;
-use vize_relief::Position;
 
 /// HTML tokenizer
 pub struct Tokenizer<'a, C: Callbacks> {
@@ -28,8 +26,6 @@ pub struct Tokenizer<'a, C: Callbacks> {
     section_start: usize,
     /// Current index
     index: usize,
-    /// Newline positions for line/column calculation
-    newlines: Vec<usize>,
     /// Callbacks
     callbacks: C,
     /// Delimiter open sequence
@@ -105,7 +101,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             state: State::Text,
             section_start: 0,
             index: 0,
-            newlines: Vec::new(),
             callbacks,
             delimiter_open,
             delimiter_close,
@@ -153,36 +148,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         self.in_tag_comments = enabled;
     }
 
-    /// Get the position for a given index
-    pub fn get_pos(&self, index: usize) -> Position {
-        // Binary search for line number
-        let line = match self.newlines.binary_search(&index) {
-            Ok(i) => i + 1,
-            Err(i) => i + 1,
-        };
-
-        let column = if line == 1 {
-            index + 1
-        } else {
-            index - self.newlines[line - 2]
-        };
-
-        Position {
-            offset: index as u32,
-            line: line as u32,
-            column: column as u32,
-        }
-    }
-
     /// Skip through the buffer until a target byte is found.
     fn fast_forward_to(&mut self, c: u8) -> bool {
         while self.index + 1 < self.input.len() {
             self.index += 1;
-            let cc = self.input[self.index];
-            if cc == NEWLINE {
-                self.newlines.push(self.index);
-            }
-            if cc == c {
+            if self.input[self.index] == c {
                 return true;
             }
         }
@@ -194,11 +164,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub fn tokenize(&mut self) {
         while self.index < self.input.len() {
             let c = self.input[self.index];
-
-            // Track newlines
-            if c == NEWLINE {
-                self.newlines.push(self.index);
-            }
 
             match self.state {
                 State::Text => self.state_text(c),

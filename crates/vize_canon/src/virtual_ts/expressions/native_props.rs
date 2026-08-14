@@ -170,15 +170,12 @@ fn native_prop_binding(
     let expression = directive.exp.as_ref()?;
     let expression_location = expression.loc();
     Some((
-        (
-            expression_location.start.offset,
-            expression_location.end.offset,
-        ),
+        (expression_location.span.start, expression_location.span.end),
         NativePropBinding {
             tag: element.tag.clone(),
             name: argument.content.clone(),
-            name_start: argument.loc.start.offset,
-            name_end: argument.loc.end.offset,
+            name_start: argument.loc.span.start,
+            name_end: argument.loc.span.end,
         },
     ))
 }

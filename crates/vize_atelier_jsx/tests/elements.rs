@@ -155,7 +155,7 @@ fn root_location_points_at_the_element() {
     let src = "const a = <div></div>;";
     let root = lower_one(&bump, src);
     let element = root_element(&root);
-    let start = element.loc.start.offset as usize;
-    let end = element.loc.end.offset as usize;
+    let start = element.loc.span.start as usize;
+    let end = element.loc.span.end as usize;
     assert_eq!(&src[start..end], "<div></div>");
 }

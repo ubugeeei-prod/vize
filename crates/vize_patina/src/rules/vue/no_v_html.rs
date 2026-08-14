@@ -72,7 +72,7 @@ impl Rule for NoVHtml {
             // comment) so the suppression survives and `vize fmt` does not
             // introduce a finding (lint-agreement, #3252). The diagnostic is
             // still reported at the precise directive span.
-            if ctx.is_rule_disabled_at_offset(META.name, element.loc.start.offset) {
+            if ctx.is_rule_disabled_at_offset(META.name, element.loc.span.start) {
                 return;
             }
             ctx.warn_with_help(

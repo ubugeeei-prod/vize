@@ -41,8 +41,8 @@ impl Drawer {
                     .push(crate::croquis::TemplateExpression {
                         content: CompactString::new(content),
                         kind: crate::croquis::TemplateExpressionKind::VBind,
-                        start: loc.start.offset,
-                        end: loc.end.offset,
+                        start: loc.span.start,
+                        end: loc.span.end,
                         scope_id,
                         vif_guard: self.current_vif_guard(),
                     });
@@ -80,8 +80,8 @@ impl Drawer {
                             param_names: params.into_iter().collect(),
                             context,
                         },
-                        dir.loc.start.offset,
-                        dir.loc.end.offset,
+                        dir.loc.span.start,
+                        dir.loc.span.end,
                     );
 
                     let params_added: Vec<CompactString> = self

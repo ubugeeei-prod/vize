@@ -225,7 +225,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
             // still gets output alongside the error.
             if config.compat.is_babel() && mode == JsxOutputMode::Vapor {
                 let loc = &lowered_root.root.loc;
-                diagnostics.push(unsupported_with_vapor(loc.start.offset, loc.end.offset));
+                diagnostics.push(unsupported_with_vapor(loc.span.start, loc.span.end));
             }
             match mode {
                 JsxOutputMode::Vdom => JsxComponent::Vdom(compile_root_to_vdom(

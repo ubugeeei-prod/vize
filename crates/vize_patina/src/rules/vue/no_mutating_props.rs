@@ -98,8 +98,8 @@ impl NoMutatingProps {
             crate::diagnostic::LintDiagnostic::error(
                 ctx.current_rule,
                 format!("Unexpected mutation of prop '{}' via v-model", content),
-                directive.loc.start.offset,
-                directive.loc.end.offset,
+                directive.loc.span.start,
+                directive.loc.span.end,
             )
             .with_help("Use a local ref or emit an event instead of mutating props directly"),
         );
@@ -137,8 +137,8 @@ impl NoMutatingProps {
                         "Unexpected mutation of prop '{}' in an inline handler",
                         target
                     ),
-                    directive.loc.start.offset,
-                    directive.loc.end.offset,
+                    directive.loc.span.start,
+                    directive.loc.span.end,
                 )
                 .with_help("Use a local ref or emit an event instead of mutating props directly"),
             );

@@ -132,7 +132,7 @@ impl TransformContext<'_> {
     pub(crate) fn is_jsx_custom_element(&self, el: &ElementNode<'_>) -> bool {
         self.jsx_compat
             .custom_element_spans
-            .contains(&(el.loc.start.offset, el.loc.end.offset))
+            .contains(&(el.loc.span.start, el.loc.span.end))
     }
 }
 

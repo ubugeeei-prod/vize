@@ -193,8 +193,8 @@ impl TemplateCodeGenerator {
         let gen_start = self.gen_offset + expr_start_in_line;
         let gen_end = gen_start + expr.content.len() as u32;
 
-        let source_start = expr.loc.start.offset;
-        let source_end = expr.loc.end.offset;
+        let source_start = expr.loc.span.start;
+        let source_end = expr.loc.span.end;
 
         // Create mapping
         let mapping = SourceMapping::with_data(

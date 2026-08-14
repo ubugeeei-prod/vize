@@ -155,7 +155,7 @@ pub(super) fn generate_vue_virtual_ts(
                 let start = error
                     .loc
                     .as_ref()
-                    .map(|loc| template_offset + loc.start.offset)
+                    .map(|loc| template_offset + loc.span.start)
                     .unwrap_or(template_offset);
                 diagnostics.push(diagnostic_for_offset(
                     path,

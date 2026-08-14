@@ -140,8 +140,8 @@ pub(super) fn absolute_expression_range(
     template_offset: u32,
 ) -> Option<(u32, u32)> {
     let location = expression.loc();
-    let source_start = template_offset + location.start.offset;
-    let source_end = template_offset + location.end.offset;
+    let source_start = template_offset + location.span.start;
+    let source_end = template_offset + location.span.end;
     (source_end > source_start).then_some((source_start, source_end))
 }
 

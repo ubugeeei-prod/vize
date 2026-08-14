@@ -2,10 +2,14 @@
 // SourceLocation consumer inventory (Davinci P0-9).
 //
 // Counts every textual read of the relief `SourceLocation` members that the
-// Davinci `Span` type (crates/vize_carton/src/span.rs) deletes —
+// Davinci `Span` type (crates/vize_carton/src/span.rs) deleted —
 // `source`, `start.line`, `start.column`, `end.line`, `end.column` — across
 // `crates/*/src/**/*.rs`, grouped by crate and member, and emits the
-// migration map P1 executes as davinci-road/plan/sourcelocation-inventory.md.
+// migration record as davinci-road/plan/sourcelocation-inventory.md. The
+// migration is fully executed (P1-3 retired `source`, P1-4 retired
+// line/column with the `Position` type itself), so the scan doubles as the
+// ratchet: any member read coming back fails regeneration, as does any
+// reappearance of the deleted carriers.
 //
 // Resolution is textual, not type-aware: comments and string literals are
 // stripped first (lib/rust-source.mjs), then member paths are counted on
@@ -29,9 +33,9 @@ import path from "node:path";
 import { formatTable } from "./lib/markdown.mjs";
 import {
   MEMBERS,
+  assertAnchorAbsent,
+  assertSymbolAbsent,
   citeAnchor,
-  citeSite,
-  countExternalReferences,
   scanWorkspace,
 } from "./lib/sourcelocation-scan.mjs";
 import { repoRoot } from "./lib/paths.mjs";
@@ -40,67 +44,48 @@ const ARTIFACT_REL = "davinci-road/plan/sourcelocation-inventory.md";
 const ARTIFACT = path.join(repoRoot, ARTIFACT_REL);
 const REGEN_COMMAND = "node tools/davinci/sourcelocation-inventory.mjs --write";
 
-/** The five member paths `Span` deletes, in table-column order. */
-
-/** Offset member paths that survive the migration as `span.start`/`span.end`. */
-
-/** Is `ident` a loc-shaped receiver or field name? */
 /** `source` reads counted at generation time of the P0-9 map, all migrated
  * to `Span::slice` by Davinci P1-3. */
 const P0_9_SOURCE_READS = 106;
+/** Line/column reads counted when P1-4 executed: 3 direct sites plus the 4
+ * known-missed reads the limits section of the P0-9 map documented. */
+const P1_4_LINE_COL_READS = "3 direct sites + 4 known-missed";
 
 function generate() {
   const { crates, allSites, offsetReadTotal, offsetReadCrateCount } = scanWorkspace();
   const grandTotal = crates.reduce((sum, c) => sum + c.total, 0);
-  const grandTest = crates.reduce((sum, c) => sum + c.testSites, 0);
-  const memberTotals = Object.fromEntries(
-    MEMBERS.map((member) => [member, crates.reduce((sum, c) => sum + c.counts[member], 0)]),
-  );
-  const sourceTotal = memberTotals.source;
-  if (sourceTotal !== 0) {
-    const site = allSites.find((s) => s.member === "source");
+  if (grandTotal !== 0) {
+    const site = allSites[0];
     throw new Error(
-      `P1-3 ratchet: ${sourceTotal} \`.source\` read(s) reintroduced on loc-shaped receivers ` +
-        `(first: ${site.relPath}:${site.line}); read covered text via \`span.slice(source)\` instead`,
+      `P1-3/P1-4 ratchet: ${grandTotal} deleted-member read(s) reintroduced on loc-shaped ` +
+        `receivers (first: \`${site.member}\` at ${site.relPath}:${site.line}); read covered ` +
+        `text via \`span.slice(source)\` and derive line/column from offsets via ` +
+        `\`vize_carton::line_index\` instead`,
     );
   }
-  const lineColTotal = grandTotal - sourceTotal;
 
-  const sorted = [...crates].sort((a, b) =>
-    a.total !== b.total ? b.total - a.total : a.name < b.name ? -1 : 1,
+  // The deleted carriers must stay deleted (P1-4).
+  assertAnchorAbsent(
+    "crates/vize_relief/src/relief/core.rs",
+    /pub struct Position/,
+    "the eager `Position { offset, line, column }` type",
+  );
+  assertSymbolAbsent(
+    "source_location_to_range",
+    "maestro's stored-Position -> LSP Range converter",
+  );
+  assertSymbolAbsent(
+    "internal_to_lsp_position",
+    "maestro's stored-Position -> LSP Position converter",
   );
 
   const countsTable = formatTable(
     ["crate", ...MEMBERS.map((m) => `\`${m}\``), "total", "in test code"],
     ["left", ...MEMBERS.map(() => "right"), "right", "right"],
-    [
-      ...sorted.map((crate) => [
-        `\`${crate.name}\``,
-        ...MEMBERS.map((member) => String(crate.counts[member])),
-        String(crate.total),
-        String(crate.testSites),
-      ]),
-      [
-        "**total**",
-        ...MEMBERS.map((member) => String(memberTotals[member])),
-        String(grandTotal),
-        String(grandTest),
-      ],
-    ],
+    [["**total**", ...MEMBERS.map(() => "0"), "0", "0"]],
   );
 
-  const lineColSites = allSites.filter((site) => site.member !== "source");
-  const lineColTable = formatTable(
-    ["member", "site", "test code"],
-    ["left", "left", "left"],
-    lineColSites.map((site) => [
-      `\`${site.member}\``,
-      `\`${site.relPath}:${site.line}\``,
-      site.test ? "yes" : "no",
-    ]),
-  );
-
-  // Group 1 citations: content reads, now anchored on their migrated
+  // Group 1 citations: content reads, anchored on their migrated
   // `Span::slice` forms so a moved consumer still fails regeneration.
   const g1Codegen = citeAnchor(
     "crates/vize_atelier_core/src/codegen/expression/generate.rs",
@@ -119,25 +104,23 @@ function generate() {
     /span\.slice\(source\)/,
   );
 
-  // Group 2 citations: line/column consumers that become offset-derived.
-  const g2Comment = citeSite(
-    allSites,
+  // Group 2 citations: line/column consumers, anchored on their migrated
+  // offset-derived forms.
+  const g2Comment = citeAnchor(
     "crates/vize_armature/src/parser/element/comment.rs",
-    "start.line",
+    /parse_vize_directive\(content, 1, loc\.span\.start\)/,
   );
-  const g2Convert = citeAnchor(
-    "crates/vize_maestro/src/utils/position.rs",
-    /fn source_location_to_range/,
+  const g2FrozenRender = citeAnchor(
+    "crates/vize_relief/src/errors/render.rs",
+    /struct FrozenPosition/,
   );
-  const g2ReliefTest = citeSite(allSites, "crates/vize_relief/src/relief/tests.rs", "start.line");
   const g2LineIndex = citeAnchor("crates/vize_carton/src/line_index.rs", /pub struct LineIndex/);
+  const g2ReliefTest = citeAnchor(
+    "crates/vize_relief/src/relief/tests.rs",
+    /fn source_location_stub/,
+  );
 
-  // Group 3 citations: structures that delete outright.
-  const g3Convert = g2Convert;
-  const convertCallers = countExternalReferences("source_location_to_range", [
-    "crates/vize_maestro/src/utils.rs",
-    "crates/vize_maestro/src/utils/position.rs",
-  ]);
+  // Group 3 citations: what remains of the deleted carriers.
   const g3Mapper = citeAnchor("crates/vize_atelier_jsx/src/span.rs", /pub struct SpanMapper/);
   const g3Stub = citeAnchor(
     "crates/vize_relief/src/relief/core.rs",
@@ -156,15 +139,17 @@ function generate() {
 # \`SourceLocation\` consumer inventory
 
 Every textual read of the relief \`SourceLocation\` members that
-\`vize_carton::Span\` (\`crates/vize_carton/src/span.rs\`) deletes —
+\`vize_carton::Span\` (\`crates/vize_carton/src/span.rs\`) deleted —
 \`source\`, \`start.line\`, \`start.column\`, \`end.line\`, \`end.column\` —
-across \`crates/*/src\`, plus the migration group each consumer moves to as
-relief nodes switch to two-u32 byte spans instead of owned
+across \`crates/*/src\`, plus the migration group each consumer moved to as
+relief nodes switched to two-u32 byte spans instead of owned
 \`{ start: Position, end: Position, source: String }\` triples
-([architecture.md](../architecture.md), S0). This is the migration map Davinci
-P1 executes (P0-9). P1-3 executed group 1: every \`source\` read is migrated,
-the scan now counts zero, and regeneration fails if one comes back. The
-line/column members remain until P1-4.
+([architecture.md](../architecture.md), S0). This was the migration map
+Davinci P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads to
+\`Span::slice\`); P1-4 executed groups 2 and 3 (line/column reads to
+offset-derived rendering, the \`Position\` type and its converters deleted).
+The scan now counts zero across all five members, and regeneration fails if
+any read — or any deleted carrier — comes back.
 
 ## Resolution method (and its limits)
 
@@ -173,9 +158,10 @@ line/column members remain until P1-4.
   **textually** on loc-shaped receivers only: chained \`.loc.<member>\`,
   \`.loc().<member>\`, \`.location.<member>\` accesses, and bare locals named
   \`loc\` / \`location\` / \`*_loc\` / \`*_location\`.
-- Reads of \`start.offset\` / \`end.offset\` are **not** inventoried: they
-  survive the migration verbatim as \`span.start\` / \`span.end\`
-  (${offsetReadTotal} loc-shaped offset-read sites across
+- Reads of \`span.start\` / \`span.end\` are **not** inventoried: they are
+  the surviving offset representation — the pre-migration
+  \`start.offset\` / \`end.offset\` reads moved to them verbatim
+  (${offsetReadTotal} loc-shaped span-read sites across
   ${offsetReadCrateCount} crates at generation time).
 - \`#[cfg(test)]\` code inside \`src/\` is included and reported in the
   "in test code" column: a site counts as test code when its file is a test
@@ -186,33 +172,18 @@ line/column members remain until P1-4.
     (\`crates/vize_doctor/src/model/evidence.rs\`) that is already
     span-shaped; its members (\`path\`, \`start: u32\`, \`end: u32\`) never
     form any of the five member paths, so it cannot contribute rows here and
-    needs no migration.
+    needed no migration.
   - \`BlockLocation\` (\`crates/vize_atelier_sfc/src/types.rs\`) also sits
     behind \`loc\` fields, but its \`start\`/\`end\` are plain \`usize\`
     offsets with flat \`start_line\`/\`start_column\` siblings — none of the
     five member paths exist on it, so it cannot collide either.
-  - Locals bound under non-loc names are missed:
-    \`crates/vize_relief/src/relief/tests.rs\` binds \`SourceLocation::STUB\`
-    as \`stub\` and reads \`stub.start.line\` / \`stub.start.column\`
-    (2 sites, test-only).
-  - \`Position\` values escaping whole are counted where the \`.line\` /
-    \`.column\` read happens, which a loc-shaped filter can miss: the two
-    reads inside \`internal_to_lsp_position\`
-    (\`crates/vize_maestro/src/utils/position.rs\`, receiver \`pos\`) are the
-    only such sites today, reached only through \`source_location_to_range\`
-    (${convertCallers} references outside its own module at generation time).
 
 ## Reads per crate × member
 
 ${countsTable}
-## Every \`line\` / \`column\` read site
-
-The line/column members are read so rarely that the sites fit in one table:
-
-${lineColTable}
 ## Migration groups
 
-### Group 1 — content reads moved to \`Span::slice\` (migrated by P1-3: ${P0_9_SOURCE_READS} sites at P0-9, ${sourceTotal} remain)
+### Group 1 — content reads moved to \`Span::slice\` (migrated by P1-3: ${P0_9_SOURCE_READS} sites at P0-9, 0 remain)
 
 The dominant consumer class by far: code that wants **the text a node
 covers** — codegen re-emitting an expression, croquis capturing a binding
@@ -230,42 +201,45 @@ sites:
 - \`${g1Vapor}\` — vapor transform re-wraps an expression from the covered
   text (the owned copy the pre-span node stored is gone; see also group 3)
 
-### Group 2 — line/column reads move to offset-derived rendering (${lineColTotal} direct sites + 4 known-missed, see limits)
+### Group 2 — line/column reads moved to offset-derived rendering (migrated by P1-4: ${P1_4_LINE_COL_READS} at P0-9, 0 remain)
 
 Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
 derived from byte offsets via \`vize_carton::line_index::LineIndex\`
 (\`${g2LineIndex}\`) at the edge that needs them — exactly how the
-source-map \`finish()\` step and Patina's output layer already work. The
-eagerly-stored \`Position { line, column }\` pairs these sites read today
-delete with the type:
+source-map \`finish()\` step and Patina's output layer already worked. The
+eagerly-stored \`Position { line, column }\` pairs deleted with the type.
+Where each read went:
 
-- \`${g2Comment}\` — the **only** production read: seeds
-  \`parse_vize_directive\` with the comment's start line; becomes a
-  \`LineIndex\` lookup from the span start (or a plain offset if the
-  consumer is offset-ready)
-- \`${g2Convert}\` — \`source_location_to_range\` converts stored
-  \`Position\`s to LSP positions via \`internal_to_lsp_position\` (2 of the
-  4 known-missed reads: \`pos.line\` / \`pos.column\`; the other 2 are the
-  \`stub\` locals in the relief tests); its replacement
-  is the offset → \`LineIndex\` path every live maestro collector already
-  uses — and it has no callers, so see group 3
-- \`${g2ReliefTest}\` — relief tests pinning the 1-indexed line/column
-  convention of stub locations; re-target to span offsets (the 1-based
-  convention itself becomes a rendering-layer concern)
+- \`${g2Comment}\` — the only production read seeded
+  \`parse_vize_directive\` with the comment's start line, which that caller
+  discards (only the directive kind survives); it now passes the constant
+  line the retired tracking always reported
+- \`${g2FrozenRender}\` — the one output path that printed stored
+  line/column (the SFC gate / binding-boundary debug rendering) reproduces
+  the retired tracking's frozen \`line: 1, column: offset + 1\` shape from
+  the span offset, byte-for-byte, because corpus oracles pin those
+  diagnostic bytes; switching it to true \`LineIndex\` derivation is a
+  recorded corpus-visible behavior change for the plan to schedule
+- \`crates/vize_maestro/src/utils/position.rs\` — \`source_location_to_range\`
+  / \`internal_to_lsp_position\` converted stored \`Position\`s to LSP
+  positions; they had no callers and are deleted (regeneration asserts they
+  stay gone)
+- \`${g2ReliefTest}\` — relief tests that pinned the 1-indexed line/column
+  convention of stub locations now pin span offsets (the 1-based convention
+  itself is a rendering-layer concern)
 
-### Group 3 — delete outright
+### Group 3 — deleted outright
 
-Structures whose entire job is carrying or converting the eager
-representation. No slice or line/col replacement — they stop existing:
+Structures whose entire job was carrying or converting the eager
+representation:
 
-- \`${g3Convert}\` — \`source_location_to_range\` has
-  ${convertCallers} references outside its own module; dead conversion code
-- \`${g3Mapper}\` — \`SpanMapper\` eagerly expands oxc byte spans
-  (\`oxc_span::Span\`, already \`{ start: u32, end: u32 }\`) into owned
-  \`SourceLocation\`s for every lowered JSX node; under S0 the oxc span
-  passes through unchanged and the whole conversion layer deletes
-- \`${g3Stub}\` — \`STUB_LOCATION\` / \`SourceLocation::STUB\`: the
-  owned-string stub machinery for generated nodes collapses to
+- \`crates/vize_relief/src/relief/core.rs\` — the \`Position\` type itself
+  is gone; \`SourceLocation\` is the 8-byte \`{ span: Span }\` (regeneration
+  asserts \`pub struct Position\` stays gone from the module)
+- \`${g3Mapper}\` — \`SpanMapper\` no longer expands oxc byte spans into
+  eager positions; \`location()\` is a direct offset carry-over and the
+  \`LineIndex\` it built per module is deleted
+- \`${g3Stub}\` — \`STUB_LOCATION\` / \`SourceLocation::STUB\` collapsed to
   \`Span::new(0, 0)\`
 - \`${g3Simple}\` — \`SimpleExpressionNode\` stored \`content: String\`
   **and** \`loc.source\` duplicating it; since P1-3 the node keeps one span

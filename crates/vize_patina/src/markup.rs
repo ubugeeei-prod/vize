@@ -1239,7 +1239,7 @@ fn span_to_range(span: Span, offset: u32) -> ByteRange {
 
 #[inline]
 fn loc_to_range(loc: &SourceLocation) -> ByteRange {
-    ByteRange::new(loc.start.offset, loc.end.offset)
+    ByteRange::new(loc.span.start, loc.span.end)
 }
 
 // ===========================================================================

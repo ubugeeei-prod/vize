@@ -138,8 +138,8 @@ fn collect_landmarks<'a>(children: &[TemplateChildNode<'a>], landmarks: &mut Vec
                     landmarks.push(LandmarkInfo {
                         role: role.to_compact_string(),
                         label: get_label(el),
-                        start: el.loc.start.offset,
-                        end: el.loc.end.offset,
+                        start: el.loc.span.start,
+                        end: el.loc.span.end,
                     });
                 }
                 collect_landmarks(&el.children, landmarks);

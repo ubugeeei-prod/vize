@@ -23,7 +23,7 @@ mod tests;
 
 use vize_carton::{Bump, String, Vec};
 use vize_relief::{
-    ElementNode, Namespace, Position, PropNode, RootNode, SourceLocation, TemplateChildNode,
+    ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
@@ -54,8 +54,6 @@ pub struct Parser<'a> {
     current_dir: Option<CurrentDirective<'a>>,
     /// Errors collected during parsing
     errors: Vec<'a, CompilerError>,
-    /// Newline positions for calculating line/column
-    newlines: Vec<'a, usize>,
     /// Whether in pre block
     in_pre: bool,
     /// Whether in v-pre block
@@ -181,7 +179,6 @@ impl<'a> Parser<'a> {
             current_attr: None,
             current_dir: None,
             errors: Vec::new_in(allocator),
-            newlines: Vec::new_in(allocator),
             in_pre: false,
             in_v_pre: false,
             open_table_count: 0,
@@ -268,28 +265,10 @@ impl<'a> Parser<'a> {
         offset
     }
 
-    /// Calculate position from byte offset
-    fn get_pos(&self, offset: usize) -> Position {
-        let line = match self.newlines.binary_search(&offset) {
-            Ok(i) => i + 1,
-            Err(i) => i + 1,
-        };
-
-        let column = if line == 1 {
-            offset + 1
-        } else if line > 1 && line - 2 < self.newlines.len() {
-            offset - self.newlines[line - 2]
-        } else {
-            offset + 1
-        };
-
-        Position::new(offset as u32, line as u32, column as u32)
-    }
-
     /// Create a source location
     fn create_loc(&self, start: usize, end: usize) -> SourceLocation {
         let (start, end) = self.normalize_span(start, end);
-        SourceLocation::new(self.get_pos(start), self.get_pos(end))
+        SourceLocation::new(start as u32, end as u32)
     }
 
     /// Add child to current context (stack top or root)

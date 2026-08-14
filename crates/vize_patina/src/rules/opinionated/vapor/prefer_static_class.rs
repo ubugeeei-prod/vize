@@ -143,8 +143,8 @@ impl Rule for PreferStaticClass {
                 let fix = Fix::new(
                     "Replace with static class attribute",
                     TextEdit::replace(
-                        directive.loc.start.offset,
-                        directive.loc.end.offset + 1, // Include closing quote
+                        directive.loc.span.start,
+                        directive.loc.span.end + 1, // Include closing quote
                         replacement,
                     ),
                 );
@@ -153,8 +153,8 @@ impl Rule for PreferStaticClass {
                     crate::diagnostic::LintDiagnostic::warn(
                         META.name,
                         message.as_ref(),
-                        arg.loc.start.offset,
-                        directive.loc.end.offset,
+                        arg.loc.span.start,
+                        directive.loc.span.end,
                     )
                     .with_fix(fix),
                 );

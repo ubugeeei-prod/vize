@@ -136,8 +136,8 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                     name: attr.name.clone(),
                     name_is_dynamic: false,
                     value: attr.value.as_ref().map(|value| value.content.clone()),
-                    start: attr.loc.start.offset,
-                    end: attr.loc.end.offset,
+                    start: attr.loc.span.start,
+                    end: attr.loc.span.end,
                     is_dynamic: false,
                 });
             }
@@ -162,16 +162,16 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
                         name: prop_name,
                         name_is_dynamic: false,
                         value,
-                        start: directive.loc.start.offset,
-                        end: directive.loc.end.offset,
+                        start: directive.loc.span.start,
+                        end: directive.loc.span.end,
                         is_dynamic: true,
                     });
                 } else if let Some(ref exp) = directive.exp {
                     record_expression_scope(summary, Some(exp), &mut scope);
                     spread_props.push(SpreadProp {
                         expression: CompactString::new(expression_content(exp, source)),
-                        start: directive.loc.start.offset,
-                        end: directive.loc.end.offset,
+                        start: directive.loc.span.start,
+                        end: directive.loc.span.end,
                     });
                 }
             }
@@ -187,7 +187,7 @@ fn slot_outlet(summary: &Croquis, element: &ElementNode<'_>, source: &str) -> Op
         scope_id,
         name,
         name_is_dynamic,
-        start: element.loc.start.offset,
+        start: element.loc.span.start,
         vif_guard,
         props,
         spread_props,
@@ -215,7 +215,7 @@ fn record_expression_scope(
         return;
     };
     let loc = exp.loc();
-    let Some(expr) = template_expression(summary, loc.start.offset, loc.end.offset) else {
+    let Some(expr) = template_expression(summary, loc.span.start, loc.span.end) else {
         return;
     };
     *scope = Some((expr.scope_id.as_u32(), expr.vif_guard.clone()));

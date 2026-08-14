@@ -218,7 +218,7 @@ fn component_tag(element: &ElementNode<'_>) -> Option<JsxExpr> {
         });
     }
 
-    let start = element.loc.start.offset.saturating_add(1);
+    let start = element.loc.span.start.saturating_add(1);
     Some(JsxExpr {
         content: element.tag.as_str().to_compact_string(),
         start,
@@ -232,20 +232,20 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             let value = match attribute.value.as_ref() {
                 Some(value) => PropValue::Expression(JsxExpr {
                     content: json_string(value.content.as_str()),
-                    start: value.loc.start.offset,
-                    end: value.loc.end.offset,
+                    start: value.loc.span.start,
+                    end: value.loc.span.end,
                 }),
                 None => PropValue::Boolean,
             };
             Some(JsxComponentProp::Property {
                 name: PropName::Static {
                     content: canonical_prop_name(attribute.name.as_str()),
-                    start: attribute.name_loc.start.offset,
-                    end: attribute.name_loc.end.offset,
+                    start: attribute.name_loc.span.start,
+                    end: attribute.name_loc.span.end,
                 },
                 value,
-                source_start: attribute.loc.start.offset,
-                source_end: attribute.loc.end.offset,
+                source_start: attribute.loc.span.start,
+                source_end: attribute.loc.span.end,
             })
         }
         PropNode::Attribute(_) => None,
@@ -254,8 +254,8 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             let Some(arg) = directive.arg.as_ref() else {
                 return Some(JsxComponentProp::Spread {
                     value,
-                    source_start: directive.loc.start.offset,
-                    source_end: directive.loc.end.offset,
+                    source_start: directive.loc.span.start,
+                    source_end: directive.loc.span.end,
                 });
             };
             let name = match arg {
@@ -267,8 +267,8 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
                     }
                     PropName::Static {
                         content: canonical_prop_name(simple.content.as_str()),
-                        start: simple.loc.start.offset,
-                        end: simple.loc.end.offset,
+                        start: simple.loc.span.start,
+                        end: simple.loc.span.end,
                     }
                 }
                 _ => PropName::Computed(super::expr_of(arg)?),
@@ -276,8 +276,8 @@ fn component_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> Option<JsxC
             Some(JsxComponentProp::Property {
                 name,
                 value: PropValue::Expression(value),
-                source_start: directive.loc.start.offset,
-                source_end: directive.loc.end.offset,
+                source_start: directive.loc.span.start,
+                source_end: directive.loc.span.end,
             })
         }
         PropNode::Directive(_) => None,

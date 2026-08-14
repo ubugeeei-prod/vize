@@ -145,40 +145,6 @@ fn test_is_end_of_tag_section() {
 }
 
 // ========================================================================
-// Position calculation tests
-// ========================================================================
-
-#[test]
-fn test_get_pos_single_line() {
-    let cb = TestCallbacks::default();
-    let tok = Tokenizer::new("hello", cb);
-    let pos = tok.get_pos(0);
-    assert_eq!(pos.offset, 0);
-    assert_eq!(pos.line, 1);
-    assert_eq!(pos.column, 1);
-
-    let pos = tok.get_pos(4);
-    assert_eq!(pos.offset, 4);
-    assert_eq!(pos.line, 1);
-    assert_eq!(pos.column, 5);
-}
-
-#[test]
-fn test_get_pos_multi_line() {
-    let input = "line1\nline2\nline3";
-    let cb = TestCallbacks::default();
-    let mut tok = Tokenizer::new(input, cb);
-    tok.tokenize();
-    let pos = tok.get_pos(6);
-    assert_eq!(pos.line, 2);
-    assert_eq!(pos.column, 1);
-
-    let pos = tok.get_pos(12);
-    assert_eq!(pos.line, 3);
-    assert_eq!(pos.column, 1);
-}
-
-// ========================================================================
 // Basic text tests
 // ========================================================================
 

@@ -18,8 +18,8 @@ impl<'a> LintContext<'a> {
         self.report(LintDiagnostic::error(
             self.current_rule,
             message,
-            loc.start.offset,
-            loc.end.offset,
+            loc.span.start,
+            loc.span.end,
         ));
     }
 
@@ -89,8 +89,8 @@ impl<'a> LintContext<'a> {
         self.report(LintDiagnostic::warn(
             self.current_rule,
             message,
-            loc.start.offset,
-            loc.end.offset,
+            loc.span.start,
+            loc.span.end,
         ));
     }
 
@@ -103,7 +103,7 @@ impl<'a> LintContext<'a> {
         help: impl Into<CompactString>,
     ) {
         let mut diag =
-            LintDiagnostic::error(self.current_rule, message, loc.start.offset, loc.end.offset);
+            LintDiagnostic::error(self.current_rule, message, loc.span.start, loc.span.end);
         let help_str: CompactString = help.into();
         if let Some(processed) = self.help_level.process(help_str.as_str()) {
             diag = diag.with_help(processed);
@@ -120,7 +120,7 @@ impl<'a> LintContext<'a> {
         help: impl Into<CompactString>,
     ) {
         let mut diag =
-            LintDiagnostic::warn(self.current_rule, message, loc.start.offset, loc.end.offset);
+            LintDiagnostic::warn(self.current_rule, message, loc.span.start, loc.span.end);
         let help_str: CompactString = help.into();
         if let Some(processed) = self.help_level.process(help_str.as_str()) {
             diag = diag.with_help(processed);
@@ -138,8 +138,8 @@ impl<'a> LintContext<'a> {
         label_loc: &SourceLocation,
     ) {
         self.report(
-            LintDiagnostic::error(self.current_rule, message, loc.start.offset, loc.end.offset)
-                .with_label(label_message, label_loc.start.offset, label_loc.end.offset),
+            LintDiagnostic::error(self.current_rule, message, loc.span.start, loc.span.end)
+                .with_label(label_message, label_loc.span.start, label_loc.span.end),
         );
     }
 

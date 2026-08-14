@@ -53,7 +53,7 @@ impl Drawer {
                                 aliases,
                                 alias_offsets,
                                 source_offset,
-                                el.loc.start.offset,
+                                el.loc.span.start,
                                 end,
                             ));
                         }
@@ -115,14 +115,14 @@ impl Drawer {
                         slot_name_is_static,
                         prop_names,
                         props_pattern,
-                        dir.loc.start.offset,
+                        dir.loc.span.start,
                     ));
                 } else if dir.name == "scope" && self.options.analyze_template_scopes {
                     // petite-vue `v-scope="{ ... }"`: the object's top-level
                     // keys become in-scope names for this element's subtree.
                     if let Some(ref exp) = dir.exp {
                         let content = expression_content(exp, &self.template_source);
-                        let base = exp.loc().start.offset;
+                        let base = exp.loc().span.start;
                         let bindings: SmallVec<[(CompactString, u32); 4]> = profile!(
                             "croquis.template.v_scope.extract_keys",
                             extract_v_scope_bindings(content)
@@ -133,7 +133,7 @@ impl Drawer {
 
                         if !bindings.is_empty() {
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
-                            state.v_scope = Some((bindings, el.loc.start.offset, end));
+                            state.v_scope = Some((bindings, el.loc.span.start, end));
                         }
                     }
                 }
@@ -180,7 +180,7 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
         true,
         extract_slot_props(pattern),
         Some(CompactString::new(pattern)),
-        value.loc.start.offset,
+        value.loc.span.start,
     ))
 }
 

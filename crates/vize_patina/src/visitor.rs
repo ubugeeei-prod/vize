@@ -150,17 +150,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         match node {
             TemplateChildNode::Comment(comment) => {
                 if let Some(kind) = comment.directive {
-                    let line = self.ctx.offset_to_line(comment.loc.start.offset);
+                    let line = self.ctx.offset_to_line(comment.loc.span.start);
                     match kind {
                         DirectiveKind::Expected => {
                             self.ctx.expect_error_next_line(line);
                         }
                         DirectiveKind::Level => {
-                            if let Some(d) = parse_vize_directive(
-                                &comment.content,
-                                line,
-                                comment.loc.start.offset,
-                            ) && let Some(severity) = parse_level_severity(&d.payload)
+                            if let Some(d) =
+                                parse_vize_directive(&comment.content, line, comment.loc.span.start)
+                                && let Some(severity) = parse_level_severity(&d.payload)
                             {
                                 self.ctx.set_severity_override_next_line(line, severity);
                             }
@@ -233,8 +231,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     fn disable_loc_range(&mut self, loc: &SourceLocation) {
-        let start_line = self.ctx.offset_to_line(loc.start.offset);
-        let end_line = self.ctx.offset_to_line(loc.end.offset);
+        let start_line = self.ctx.offset_to_line(loc.span.start);
+        let end_line = self.ctx.offset_to_line(loc.span.end);
         self.ctx.disable_all(start_line, Some(end_line));
     }
 
@@ -244,8 +242,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             TemplateChildNode::Element(el) => {
                 if self.forget_next_element {
                     self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(el.loc.start.offset);
-                    let end_line = self.ctx.offset_to_line(el.loc.end.offset);
+                    let start_line = self.ctx.offset_to_line(el.loc.span.start);
+                    let end_line = self.ctx.offset_to_line(el.loc.span.end);
                     self.ctx.disable_all(start_line, Some(end_line));
                 }
                 self.visit_element(el);
@@ -273,8 +271,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             TemplateChildNode::If(if_node) => {
                 if self.forget_next_element {
                     self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(if_node.loc.start.offset);
-                    let end_line = self.ctx.offset_to_line(if_node.loc.end.offset);
+                    let start_line = self.ctx.offset_to_line(if_node.loc.span.start);
+                    let end_line = self.ctx.offset_to_line(if_node.loc.span.end);
                     self.ctx.disable_all(start_line, Some(end_line));
                 }
                 self.visit_if(if_node);
@@ -282,8 +280,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             TemplateChildNode::For(for_node) => {
                 if self.forget_next_element {
                     self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(for_node.loc.start.offset);
-                    let end_line = self.ctx.offset_to_line(for_node.loc.end.offset);
+                    let start_line = self.ctx.offset_to_line(for_node.loc.span.start);
+                    let end_line = self.ctx.offset_to_line(for_node.loc.span.end);
                     self.ctx.disable_all(start_line, Some(end_line));
                 }
                 self.visit_for(for_node);
@@ -300,13 +298,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
 
     /// Process `@vize:` directives on comment nodes.
     fn process_vize_directive(&mut self, comment: &CommentNode, kind: DirectiveKind) {
-        let line = self.ctx.offset_to_line(comment.loc.start.offset);
+        let line = self.ctx.offset_to_line(comment.loc.span.start);
         let loc = &comment.loc;
 
         match kind {
             DirectiveKind::Todo => {
                 // Parse the payload from the comment content
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("TODO")
                     } else {
@@ -317,7 +315,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 }
             }
             DirectiveKind::Fixme => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("FIXME")
                     } else {
@@ -337,14 +335,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.ctx.pop_ignore_region(line);
             }
             DirectiveKind::Level => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset)
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start)
                     && let Some(severity) = parse_level_severity(&d.payload)
                 {
                     self.ctx.set_severity_override_next_line(line, severity);
                 }
             }
             DirectiveKind::Deprecated => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
                     let msg = if d.payload.is_empty() {
                         CompactString::from("Deprecated")
                     } else {
@@ -355,7 +353,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 }
             }
             DirectiveKind::Forget => {
-                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.span.start) {
                     if d.payload.is_empty() {
                         self.ctx.current_rule = "vize/forget";
                         self.ctx

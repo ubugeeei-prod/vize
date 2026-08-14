@@ -73,7 +73,7 @@ impl Rule for NoDuplicateDt {
                 if let std::collections::hash_map::Entry::Vacant(entry) =
                     seen.entry(normalized.clone())
                 {
-                    entry.insert(el.loc.start.offset);
+                    entry.insert(el.loc.span.start);
                 } else {
                     let message = ctx.t_fmt(
                         "html/no-duplicate-dt.message",

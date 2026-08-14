@@ -49,15 +49,9 @@ const EXPECTED_STRUCTURAL_PREAMBLE: &str = "const { resolveComponent: _resolveCo
 
 const EXPECTED_V_FOR_PREAMBLE: &str = "const { resolveComponent: _resolveComponent, renderSlot: _renderSlot, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList, withCtx: _withCtx } = Vue\n";
 
-/// `(code, message, start, end, source)` where the positions are
-/// `(offset, line, column)`.
-type Diagnostic = (
-    ErrorCode,
-    String,
-    (u32, u32, u32),
-    (u32, u32, u32),
-    Option<String>,
-);
+/// `(code, message, start, end, source)` where the positions are byte
+/// offsets.
+type Diagnostic = (ErrorCode, String, u32, u32, Option<String>);
 
 /// Everything a compile produced, in a form that survives the worker thread.
 struct Compiled {
@@ -147,11 +141,11 @@ fn diagnostics(source_text: &str, errors: &[CompilerError]) -> Vec<Diagnostic> {
         .map(|error| {
             let (start, end, source) = match &error.loc {
                 Some(loc) => (
-                    (loc.start.offset, loc.start.line, loc.start.column),
-                    (loc.end.offset, loc.end.line, loc.end.column),
+                    loc.span.start,
+                    loc.span.end,
                     Some(String::from(loc.span.slice(source_text))),
                 ),
-                None => ((0, 0, 0), (0, 0, 0), None),
+                None => (0, 0, None),
             };
             (
                 error.code,
@@ -335,8 +329,8 @@ fn nesting_past_the_limit_is_a_diagnostic_and_not_an_abort() {
         vec![(
             ErrorCode::ExtendPoint,
             "Element nesting is too deep.".to_owned(),
-            (refused_at, 1, refused_at + 1),
-            (refused_at + 5, 1, refused_at + 6),
+            refused_at,
+            refused_at + 5,
             Some("<div>".to_owned()),
         )]
     );
