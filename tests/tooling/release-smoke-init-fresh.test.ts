@@ -6,12 +6,12 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import {
-  hasProjectLocalBin,
+  assertProjectLocalToolchain,
   managerCommand,
   managerEnv,
-  projectLocalBinCandidates,
   projectEnv,
   runManager,
+  writeFiles,
 } from "../../tools/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../tools/npm/smoke-release-init-managers.mjs";
 import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "../../tools/npm/smoke-release-init-shapes.mjs";
@@ -102,23 +102,26 @@ test("fresh-project package managers use exact Corepack runners where needed", (
   assert.match(runManager(PACKAGE_MANAGERS.npm, ["--version"], { cwd: process.cwd() }), /^\d+\./u);
 });
 
-test("fresh-project toolchain accepts package-manager-specific Windows shims", (t) => {
-  assert.deepEqual(projectLocalBinCandidates("vize", "win32"), ["vize", "vize.cmd", "vize.ps1"]);
-  assert.deepEqual(projectLocalBinCandidates("vize", "linux"), ["vize"]);
-
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-bin-"));
+test("fresh-project toolchain accepts package-local vize without manager shims", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-toolchain-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const nodeModules = path.join(root, "node_modules");
-  const binDir = path.join(nodeModules, ".bin");
-  fs.mkdirSync(binDir, { recursive: true });
-
-  for (const shim of ["vize.cmd", "vize.ps1"]) {
-    fs.rmSync(binDir, { recursive: true, force: true });
-    fs.mkdirSync(binDir, { recursive: true });
-    fs.writeFileSync(path.join(binDir, shim), "");
-    assert.equal(hasProjectLocalBin(nodeModules, "vize", "win32"), true, `${shim} was ignored`);
-    assert.equal(hasProjectLocalBin(nodeModules, "vize", "linux"), false, `${shim} counted here`);
-  }
+  const projectRoot = path.join(root, "project");
+  writeFiles(path.join(projectRoot, "node_modules", "vize"), {
+    "bin/vize": "",
+    "package.json": `${JSON.stringify({ name: "vize", version: "0.0.0" })}\n`,
+  });
+  writeFiles(path.join(projectRoot, "node_modules", "@typescript", "native-preview"), {
+    "package.json": `${JSON.stringify({ name: "@typescript/native-preview", version: "0.0.0" })}\n`,
+  });
+  assertProjectLocalToolchain(
+    {
+      installDir: path.join(root, "install"),
+      repoRoot: path.join(root, "repo"),
+      versions: new Map([["vize", "0.0.0"]]),
+    },
+    projectRoot,
+    { plannedDependencies: ["vize"] },
+  );
 });
 
 test("every shape drives a clean, broken, and repaired check", () => {
