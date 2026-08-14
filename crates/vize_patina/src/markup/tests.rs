@@ -20,7 +20,7 @@ mod markup_ir_tests {
     /// Run a markup rule over a Vue template and return the diagnostic count.
     fn run_over_template<R: MarkupRule>(rule: &R, source: &str) -> usize {
         let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
+        let parser = vize_armature::Parser::new(&allocator, source);
         let (root, _errors) = parser.parse();
         let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
 
@@ -260,7 +260,7 @@ mod markup_ir_tests {
         // Modifiers come through the normalized binding view for templates.
         let allocator = Allocator::with_capacity(1024);
         let source = r#"<button @click.stop.prevent="f"></button>"#;
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
+        let parser = vize_armature::Parser::new(&allocator, source);
         let (root, _errors) = parser.parse();
         let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
 
@@ -282,7 +282,7 @@ mod markup_ir_tests {
         let rule = ImgAlt;
         let allocator = Allocator::with_capacity(1024);
         let source = r#"<div><img src="/p.jpg" /></div>"#;
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
+        let parser = vize_armature::Parser::new(&allocator, source);
         let (root, _errors) = parser.parse();
         let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
         let mut lint = LintContext::new(&allocator, source, "test.vue");

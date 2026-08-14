@@ -18,7 +18,6 @@ pub fn parse<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::new(allocator, source).parse()
 }
 
@@ -34,7 +33,6 @@ pub fn parse_document<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::new_document(allocator, source).parse()
 }
 
@@ -44,7 +42,6 @@ pub fn parse_document_with_options<'a>(
     source: &'a str,
     options: ParserOptions,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::document_with_options(allocator, source, options).parse()
 }
 
@@ -54,7 +51,6 @@ pub fn parse_with_options<'a>(
     source: &'a str,
     options: ParserOptions,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::with_options(allocator, source, options).parse()
 }
 
@@ -66,7 +62,6 @@ pub fn parse_with_options_and_invalid_html_self_closing<'a>(
     options: ParserOptions,
     allow_invalid_html_self_closing: bool,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::with_options_and_template_syntax(
         allocator,
         source,
@@ -87,6 +82,5 @@ pub fn parse_with_options_and_template_syntax<'a>(
     options: ParserOptions,
     template_syntax: TemplateSyntaxMode,
 ) -> (RootNode<'a>, Vec<'a, CompilerError>) {
-    let allocator = allocator.as_bump();
     Parser::with_options_and_template_syntax(allocator, source, options, template_syntax).parse()
 }

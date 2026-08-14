@@ -136,7 +136,8 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let expr = SimpleExpressionNode::new(content, false, inner_loc);
+        let mut expr = SimpleExpressionNode::new(content, false, inner_loc);
+        self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
         let expr_boxed = Box::new_in(expr, self.allocator);
 
         let interp = InterpolationNode {

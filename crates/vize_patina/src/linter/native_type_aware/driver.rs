@@ -29,7 +29,7 @@ pub(super) fn lint_with_descriptor<'a>(
     let allocator =
         vize_carton::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let template_ast = descriptor.template.as_ref().map(|template| {
-        let parser = TemplateParser::new(allocator.as_bump(), &template.content);
+        let parser = TemplateParser::new(&allocator, &template.content);
         let (root, parse_errors) = profile!("patina.type_aware.template_parse", parser.parse());
         let has_fatal_parse_errors = Linter::has_fatal_template_parse_errors(&parse_errors);
         (

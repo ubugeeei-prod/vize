@@ -20,6 +20,9 @@ vize_carton = { workspace = true }
 vize_relief = { workspace = true }
 
 compact_str = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 htmlize = { workspace = true }
@@ -28,6 +31,7 @@ htmlize = { workspace = true }
 insta = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+oxc_ast = { workspace = true }
 
 [[bench]]
 name = "davinci"

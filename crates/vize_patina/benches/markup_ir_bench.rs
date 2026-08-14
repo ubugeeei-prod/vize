@@ -49,7 +49,7 @@ fn lint_template_only(linter: &Linter, source: &str) -> usize {
 /// `MarkupRule` over the zero-copy [`MarkupDocument`].
 fn lint_via_markup_ir(source: &str) -> usize {
     let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
-    let parser = vize_armature::Parser::new(allocator.as_bump(), source);
+    let parser = vize_armature::Parser::new(&allocator, source);
     let (root, _errors) = parser.parse();
     let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
 

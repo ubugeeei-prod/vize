@@ -218,7 +218,7 @@ fn analyze_sfc_for_cross_file(
     let analysis = if let Some(template) = descriptor.template.as_ref() {
         offsets.template = template.loc.start as u32;
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
-        let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
+        let parser = Parser::new(&allocator, template.content.as_ref());
         let (root, parse_errors) = parser.parse();
         let template_ast = if parse_errors.iter().any(|error| !error.is_recoverable()) {
             None

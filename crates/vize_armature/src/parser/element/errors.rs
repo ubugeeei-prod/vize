@@ -113,7 +113,7 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod tests {
-    use vize_carton::Bump;
+    use vize_carton::Allocator;
     use vize_relief::errors::{CompilerError, ErrorCode, recovery::RECOVERED_PARSE_CODES};
 
     use crate::parser::Parser;
@@ -128,8 +128,8 @@ mod tests {
     /// message, so it is the one allowed asymmetry.
     #[test]
     fn recovery_messages_and_recovered_parse_classification_agree() {
-        let bump = Bump::new();
-        let parser = Parser::new(&bump, "");
+        let allocator = Allocator::new();
+        let parser = Parser::new(&allocator, "");
         for &code in RECOVERED_PARSE_CODES {
             assert!(
                 parser.recovery_error_message(code).is_some(),

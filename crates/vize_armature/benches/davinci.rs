@@ -13,7 +13,7 @@
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_armature::{Callbacks, ErrorCode, Parser, QuoteType, Tokenizer};
-use vize_carton::{Bump, cstr};
+use vize_carton::{Allocator, cstr};
 
 /// No-op tokenizer sink: every callback discards its span, so the measured
 /// cost is the tokenizer state machine alone.
@@ -55,7 +55,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let parse_id = cstr!("armature_parse_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &parse_id, fixture.relative_path, || {
-            let allocator = Bump::new();
+            let allocator = Allocator::new();
             let (root, errors) = Parser::new(&allocator, template).parse();
             (root.children.len(), errors.len())
         });

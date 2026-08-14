@@ -46,7 +46,7 @@ where
     let template = descriptor.template.as_ref()?;
     let (root, parse_errors) = profile!(
         "patina.script_rule.template_parse",
-        Parser::new(allocator.as_bump(), template.content.as_ref()).parse()
+        Parser::new(allocator, template.content.as_ref()).parse()
     );
     if Linter::has_fatal_template_parse_errors(&parse_errors) {
         return None;

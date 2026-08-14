@@ -14,6 +14,7 @@ mod element;
 mod entry;
 #[cfg(test)]
 mod experimental_tests;
+mod expression;
 mod whitespace;
 
 pub use entry::*;
@@ -21,7 +22,7 @@ pub use entry::*;
 #[cfg(test)]
 mod tests;
 
-use vize_carton::{Bump, String, Vec};
+use vize_carton::{Allocator, Bump, String, Vec};
 use vize_relief::{
     ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
@@ -33,6 +34,9 @@ use whitespace::condense_whitespace;
 
 pub struct Parser<'a> {
     allocator: &'a Bump,
+    /// The compile's oxc arena pool: retained expression ASTs (Davinci P1-5)
+    /// are parsed into it so they share the template tree's lifetime.
+    oxc_allocator: &'a oxc_allocator::Allocator,
     source: &'a str,
     options: ParserOptions,
     /// Template syntax compatibility mode.
@@ -126,12 +130,12 @@ pub(super) struct CurrentDirective<'a> {
 
 impl<'a> Parser<'a> {
     /// Create a new parser
-    pub fn new(allocator: &'a Bump, source: &'a str) -> Self {
+    pub fn new(allocator: &'a Allocator, source: &'a str) -> Self {
         Self::with_options(allocator, source, ParserOptions::default())
     }
 
     /// Create a new parser with options
-    pub fn with_options(allocator: &'a Bump, source: &'a str, options: ParserOptions) -> Self {
+    pub fn with_options(allocator: &'a Allocator, source: &'a str, options: ParserOptions) -> Self {
         Self::with_options_and_template_syntax(
             allocator,
             source,
@@ -143,7 +147,7 @@ impl<'a> Parser<'a> {
     /// Create a new parser with options and invalid HTML self-closing compatibility.
     #[deprecated(note = "use with_options_and_template_syntax instead")]
     pub fn with_options_and_invalid_html_self_closing(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: &'a str,
         options: ParserOptions,
         allow_invalid_html_self_closing: bool,
@@ -162,23 +166,25 @@ impl<'a> Parser<'a> {
 
     /// Create a new parser with options and template syntax compatibility.
     pub fn with_options_and_template_syntax(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: &'a str,
         options: ParserOptions,
         template_syntax: TemplateSyntaxMode,
     ) -> Self {
+        let bump = allocator.as_bump();
         Self {
-            allocator,
+            allocator: bump,
+            oxc_allocator: allocator.as_oxc(),
             source,
             options,
             template_syntax,
-            stack: Vec::new_in(allocator),
-            flattened_tags: Vec::new_in(allocator),
+            stack: Vec::new_in(bump),
+            flattened_tags: Vec::new_in(bump),
             root: None,
             current_element: None,
             current_attr: None,
             current_dir: None,
-            errors: Vec::new_in(allocator),
+            errors: Vec::new_in(bump),
             in_pre: false,
             in_v_pre: false,
             open_table_count: 0,
@@ -199,13 +205,13 @@ impl<'a> Parser<'a> {
     /// live on ordinary elements. The only behavioral difference from
     /// [`Parser::with_options`] is doctype tolerance; SFC `<template>` parsing is
     /// unaffected.
-    pub fn new_document(allocator: &'a Bump, source: &'a str) -> Self {
+    pub fn new_document(allocator: &'a Allocator, source: &'a str) -> Self {
         Self::document_with_options(allocator, source, ParserOptions::default())
     }
 
     /// Create a new document-mode parser with options.
     pub fn document_with_options(
-        allocator: &'a Bump,
+        allocator: &'a Allocator,
         source: &'a str,
         options: ParserOptions,
     ) -> Self {
@@ -244,6 +250,13 @@ impl<'a> Parser<'a> {
 
     /// Get source slice
     fn get_source(&self, start: usize, end: usize) -> &str {
+        let (start, end) = self.normalize_span(start, end);
+        &self.source[start..end]
+    }
+
+    /// Get a source slice tied to the arena lifetime (`get_source` narrows to
+    /// `&self`); retained expression ASTs parse from `'a` text.
+    fn get_source_retained(&self, start: usize, end: usize) -> &'a str {
         let (start, end) = self.normalize_span(start, end);
         &self.source[start..end]
     }

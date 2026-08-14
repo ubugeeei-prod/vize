@@ -71,12 +71,29 @@ impl<'a> SimpleExpressionNode<'a> {
     }
 }
 
-/// Placeholder for JavaScript expression AST from OXC
+/// A template expression's JavaScript AST, parsed once per compile into the
+/// shared oxc arena pool (Davinci P1-5).
+///
+/// `ast` covers the whole of `raw`: the parser only retains complete
+/// single-expression parses, so text a lone [`oxc_ast::ast::Expression`]
+/// cannot represent (v-for values such as `item of items`, v-on
+/// multi-statement bodies such as `a++; b++`, invalid expressions) leaves
+/// [`SimpleExpressionNode::js_ast`] as `None` and consumers keep their own
+/// handling for those shapes.
+///
+/// Lifetime contract: `'a` is the compile's arena lifetime, so retained
+/// references are per-compile ephemera. Anything crossing a compile boundary
+/// (caches, folios, summaries) must convert to an owned form (the expression
+/// text) first — the arena/cache contract; never store this reference.
 #[derive(Debug)]
 pub struct JsExpression<'a> {
-    /// Raw expression content (will be replaced with OXC AST)
-    pub raw: String,
-    _marker: std::marker::PhantomData<&'a ()>,
+    /// Retained oxc AST, allocated in the compile's oxc arena pool.
+    pub ast: &'a oxc_ast::ast::Expression<'a>,
+    /// The exact text `ast` was parsed from (display slice): the template
+    /// source slice where the node content equals it, otherwise an arena
+    /// copy of the decoded content (attribute values with entities,
+    /// camelized same-name shorthand arguments).
+    pub raw: &'a str,
 }
 
 /// Compound expression node (mixed content)

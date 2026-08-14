@@ -3604,6 +3604,10 @@ dependencies = [
  "davinci_harness",
  "htmlize",
  "insta",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_parser",
+ "oxc_span",
  "serde",
  "thiserror 2.0.20",
  "vize_carton",
@@ -4050,6 +4054,7 @@ dependencies = [
 name = "vize_relief"
 version = "0.348.0"
 dependencies = [
+ "oxc_ast",
  "serde",
  "serde_json",
  "thiserror 2.0.20",

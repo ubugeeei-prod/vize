@@ -280,6 +280,7 @@ impl<'a> Parser<'a> {
             let mut arg_expr = SimpleExpressionNode::new(arg_content, !is_dynamic, arg_loc);
             if is_dynamic {
                 arg_expr.const_type = ConstantType::NotConstant;
+                self.retain_expression_ast(&mut arg_expr, arg_start, arg_end);
             }
             let arg_boxed = Box::new_in(arg_expr, self.allocator);
             dir_node.arg = Some(ExpressionNode::Simple(arg_boxed));
@@ -306,13 +307,15 @@ impl<'a> Parser<'a> {
             (dir.value_start, dir.value_end, dir.value_content)
         {
             let exp_loc = self.create_loc(v_start, v_end);
-            let exp_node = SimpleExpressionNode::new(v_content, false, exp_loc);
+            let mut exp_node = SimpleExpressionNode::new(v_content, false, exp_loc);
+            self.retain_expression_ast(&mut exp_node, v_start, v_end);
             let exp_boxed = Box::new_in(exp_node, self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {
             // Apply same-name shorthand: synthesize expression from arg name
             let exp_loc = self.create_loc(s_start, s_end);
-            let exp_node = SimpleExpressionNode::new(&*camelized, false, exp_loc);
+            let mut exp_node = SimpleExpressionNode::new(&*camelized, false, exp_loc);
+            self.retain_expression_ast(&mut exp_node, s_start, s_end);
             let exp_boxed = Box::new_in(exp_node, self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
             dir_node.shorthand = true;

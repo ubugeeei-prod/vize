@@ -154,7 +154,7 @@ fn add_sfc(
     }
     let analysis = if let Some(template) = descriptor.template.as_ref() {
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
-        let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
+        let parser = Parser::new(&allocator, template.content.as_ref());
         let (root, errors) = parser.parse();
         if let Some(error) = errors.iter().find(|error| !error.is_recoverable()) {
             return Err(DoctorError::ParseSfc {

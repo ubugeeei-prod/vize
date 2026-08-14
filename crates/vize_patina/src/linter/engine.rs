@@ -687,7 +687,7 @@ impl Linter {
         dialect: VueDialect,
     ) -> LintResult {
         // Parse the template
-        let parser = Parser::new(allocator.as_bump(), source);
+        let parser = Parser::new(allocator, source);
         let (root, parse_errors) = profile!("patina.template.parse", parser.parse());
         let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
 
@@ -767,7 +767,7 @@ impl Linter {
 
         let allocator =
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
-        let parser = Parser::new(allocator.as_bump(), &template.content);
+        let parser = Parser::new(&allocator, &template.content);
         let (root, parse_errors) = profile!("patina.sfc.descriptor.template_parse", parser.parse());
         let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
 

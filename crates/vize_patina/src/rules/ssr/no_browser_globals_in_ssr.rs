@@ -496,7 +496,7 @@ mod tests {
         );
         ctx.set_ssr_mode(SsrMode::Enabled);
 
-        let parser = vize_armature::Parser::new(allocator.as_bump(), source);
+        let parser = vize_armature::Parser::new(&allocator, source);
         let (root, _) = parser.parse();
 
         let rules: Vec<Box<dyn Rule>> = vec![Box::new(NoBrowserGlobalsInSsr)];
