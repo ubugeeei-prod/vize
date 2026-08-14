@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
   hostedOrBlacksmith,
@@ -50,6 +51,39 @@ test("GitHub workflows use the current cache action", () => {
     const file = readRepoFile(...relativePath.split("/"));
     assert.doesNotMatch(file, /uses:\s*actions\/cache@v4/, `${relativePath} still uses cache v4`);
   }
+});
+
+test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => {
+  const action = parse(
+    readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml"),
+  ) as {
+    runs?: { steps?: Array<{ name?: string; if?: string; run?: string; uses?: string }> };
+  };
+  const steps = action.runs?.steps ?? [];
+
+  // Every mount has to carry the guard itself: a condition attached to one step
+  // does nothing for an unconditional `stickydisk` sibling, which fails on a
+  // GitHub-hosted runner instead of being skipped.
+  const mounts = steps.filter((step) => step.uses?.startsWith("useblacksmith/stickydisk@"));
+  assert.ok(mounts.length > 0, "expected sticky disk mounts");
+  for (const mount of mounts) {
+    const guard =
+      mount.name === "Mount secondary Rust target sticky disk"
+        ? "${{ runner.environment != 'github-hosted' && inputs.secondary-target-path != '' }}"
+        : "${{ runner.environment != 'github-hosted' }}";
+    assert.equal(mount.if, guard, `unguarded sticky disk mount: ${mount.name}`);
+  }
+  assert.ok(
+    mounts.some((mount) => mount.name === "Mount secondary Rust target sticky disk"),
+    "the optional secondary mount must keep both guards",
+  );
+
+  // Found by what it reports, not by its condition: keying off the condition
+  // alone would keep passing once the notice is deleted and any other
+  // hosted-only step remains.
+  const notice = steps.find((step) => step.run?.includes("skipping Blacksmith sticky disks"));
+  assert.ok(notice, "hosted runners must report why sticky disks were skipped");
+  assert.equal(notice.if, "${{ runner.environment == 'github-hosted' }}");
 });
 
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {

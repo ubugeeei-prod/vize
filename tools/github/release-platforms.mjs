@@ -14,14 +14,17 @@ export const slowNapiPackageDirs = new Map([
   ["aarch64-pc-windows-msvc", "win32-arm64-msvc"],
 ]);
 
+// Temporary hosted-runner fallback:
+// - restore macos-15-intel/macos-15 to blacksmith-12vcpu-macos-15
+// - restore ubuntu-24.04/ubuntu-24.04-arm to blacksmith-32vcpu-ubuntu-2404/blacksmith-32vcpu-ubuntu-2404-arm
 export const cliReleasePlatforms = [
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: "macos-15-intel",
     target: "x86_64-apple-darwin",
     archive: "vize-x86_64-apple-darwin.tar.gz",
   },
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: "macos-15",
     target: "aarch64-apple-darwin",
     archive: "vize-aarch64-apple-darwin.tar.gz",
   },
@@ -36,22 +39,22 @@ export const cliReleasePlatforms = [
     archive: "vize-aarch64-pc-windows-msvc.zip",
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "x86_64-unknown-linux-gnu",
     archive: "vize-x86_64-unknown-linux-gnu.tar.gz",
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "x86_64-unknown-linux-musl",
     archive: "vize-x86_64-unknown-linux-musl.tar.gz",
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "aarch64-unknown-linux-gnu",
     archive: "vize-aarch64-unknown-linux-gnu.tar.gz",
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "aarch64-unknown-linux-musl",
     archive: "vize-aarch64-unknown-linux-musl.tar.gz",
   },
@@ -59,12 +62,12 @@ export const cliReleasePlatforms = [
 
 export const nativeReleasePlatforms = [
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: "macos-15",
     target: "x86_64-apple-darwin",
     cross_compile: false,
   },
   {
-    host: "blacksmith-12vcpu-macos-15",
+    host: "macos-15",
     target: "aarch64-apple-darwin",
     cross_compile: false,
   },
@@ -79,22 +82,22 @@ export const nativeReleasePlatforms = [
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "x86_64-unknown-linux-gnu",
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404",
+    host: "ubuntu-24.04",
     target: "x86_64-unknown-linux-musl",
     cross_compile: true,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404-arm",
+    host: "ubuntu-24.04-arm",
     target: "aarch64-unknown-linux-gnu",
     cross_compile: false,
   },
   {
-    host: "blacksmith-32vcpu-ubuntu-2404-arm",
+    host: "ubuntu-24.04-arm",
     target: "aarch64-unknown-linux-musl",
     cross_compile: true,
   },

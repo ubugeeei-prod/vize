@@ -76,7 +76,9 @@ export const fullAppE2eRows = [
 ];
 
 export const readinessRows = [
-  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "5m"),
+  // Temporary hosted-runner fallback while Blacksmith is degraded.
+  // Restore check to 5m and dev-nuxt-ui to 8m with blacksmith-32vcpu-ubuntu-2404.
+  row("readiness", "readiness", "check", "test:readiness:check", readinessFixtures, false, "12m"),
   row(
     "readiness",
     "readiness",
@@ -104,7 +106,10 @@ export const readinessRows = [
     "test:readiness:dev:nuxt-ui",
     ["nuxt-ui"],
     true,
-    "8m",
+    // Hosted boot can lose the Nuxt SSR bridge, which the suite replaces by
+    // rebooting the dev server, so this budget has to absorb those extra
+    // startups plus one Playwright retry of the whole fixture setup.
+    "30m",
   ),
 ];
 

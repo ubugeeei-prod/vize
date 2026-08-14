@@ -19,6 +19,8 @@ const FULL_SWEEP_PATHS = new Set([
   "bench/generate.mjs",
   "rust-toolchain.toml",
 ]);
+const HOSTED_FALLBACK_SMOKE_SUITES = ["vize_glyph"];
+const RUST_BENCHMARK_SUBJECT_PATHS = new Set(["Cargo.lock", "Cargo.toml", "rust-toolchain.toml"]);
 
 function parseArgs(argv) {
   const args = {};
@@ -124,7 +126,28 @@ function dependsOnAny(packageId, changedIds, graph) {
   return false;
 }
 
-export function selectCriterionSuites({ changedPaths, metadata, repoDir }) {
+function isCrateBenchmarkSubjectPath(path) {
+  const parts = path.split("/");
+  if (parts[0] !== "crates" || parts.length < 3) return false;
+  const cratePath = parts.slice(2).join("/");
+  return (
+    cratePath === "Cargo.toml" ||
+    cratePath === "build.rs" ||
+    cratePath.startsWith("src/") ||
+    cratePath.startsWith("benches/")
+  );
+}
+
+function isRustBenchmarkSubjectPath(path) {
+  return (
+    RUST_BENCHMARK_SUBJECT_PATHS.has(path) ||
+    path.startsWith(".cargo/") ||
+    path.startsWith("benchmarks/") ||
+    isCrateBenchmarkSubjectPath(path)
+  );
+}
+
+export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedFallback = false }) {
   const inventory = CRITERION_SUITES.map((suite) => suite.package);
   const normalizedPaths = [...new Set(changedPaths.map(normalizeRepoPath))].sort((left, right) =>
     left.localeCompare(right),
@@ -133,6 +156,16 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir }) {
     (path) => FULL_SWEEP_PATHS.has(path) || path.startsWith(".cargo/"),
   );
   if (infrastructure.length > 0) {
+    const subjectPaths = normalizedPaths.filter(isRustBenchmarkSubjectPath);
+    if (hostedFallback && subjectPaths.length === 0) {
+      const selected = inventory.filter((suite) => HOSTED_FALLBACK_SMOKE_SUITES.includes(suite));
+      return {
+        mode: "hosted-smoke",
+        selected,
+        skipped: inventory.filter((suite) => !selected.includes(suite)),
+        reason: `Hosted fallback smoke: Criterion infrastructure changed without Rust benchmark subjects (${infrastructure.join(", ")}).`,
+      };
+    }
     return {
       mode: "full",
       selected: inventory,
@@ -221,6 +254,7 @@ export function main(argv = process.argv.slice(2)) {
     changedPaths: changedPathsBetween(repoDir, baseSha, headSha),
     metadata,
     repoDir,
+    hostedFallback: process.env.VIZE_CRITERION_HOSTED_FALLBACK === "1",
   });
   writeFileSync(out, `${JSON.stringify(selection, null, 2)}\n`);
   if (process.env.GITHUB_OUTPUT) {

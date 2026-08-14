@@ -9,15 +9,14 @@ import {
   isFatalError,
   verifySSRContent,
 } from "../../_helpers/assertions";
+import { killProcess } from "../../_helpers/server";
 import {
-  ensurePortFree,
-  getProcessLogs,
-  killProcess,
-  startDevServer,
-  waitForHttpReady,
-  waitForServerReady,
-} from "../../_helpers/server";
+  DEAD_NUXT_UI_SSR_BRIDGE,
+  isHealthyNuxtUiSsrResponse,
+  startNuxtUiDevServer,
+} from "./nuxt-ui-dev-server";
 import { verifyNuxtUiAuthoredSourceHmr } from "./nuxt-ui-hmr";
+import { normalizeNuxtUiSnapshotHtml } from "./nuxt-ui-snapshot";
 
 const app = nuxtUiApp;
 
@@ -32,6 +31,8 @@ const WARMUP_PATHS = ["/", "/components/button"] as const;
 // once pre-bundling settles.
 const OPTIMIZE_DEP_ERROR =
   /Outdated Optimize Dep|Failed to fetch dynamically imported module|504|new dependencies optimized/i;
+const SSR_WARMUP_REQUEST_TIMEOUT_MS = 90_000;
+const BROWSER_WARMUP_NAVIGATION_TIMEOUT_MS = 90_000;
 
 /**
  * Hit the dev server for each warmup path until it returns a healthy SSR page
@@ -45,14 +46,23 @@ async function warmUpNuxtUi(): Promise<void> {
     let settled = false;
     while (Date.now() < deadline) {
       try {
-        const res = await fetch(target, { signal: AbortSignal.timeout(20_000) });
+        const res = await fetch(target, {
+          signal: AbortSignal.timeout(SSR_WARMUP_REQUEST_TIMEOUT_MS),
+        });
         const body = await res.text();
-        const churning = res.status >= 500 || res.status === 504 || OPTIMIZE_DEP_ERROR.test(body);
-        if (!churning && body.includes("__nuxt")) {
+        if (DEAD_NUXT_UI_SSR_BRIDGE.test(body)) {
+          throw new Error(`Nuxt UI SSR bridge closed while warming ${pathname}`);
+        }
+        const churning =
+          !isHealthyNuxtUiSsrResponse(res.status, body) || OPTIMIZE_DEP_ERROR.test(body);
+        if (!churning) {
           settled = true;
           break;
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("SSR bridge closed")) {
+          throw error;
+        }
         // Server still pre-bundling / restarting; retry.
       }
       await new Promise((r) => setTimeout(r, 2_000));
@@ -83,16 +93,23 @@ async function warmUpNuxtUiInBrowser(browser: Browser): Promise<void> {
         try {
           const res = await page.goto(target, {
             waitUntil: "domcontentloaded",
-            timeout: 30_000,
+            timeout: BROWSER_WARMUP_NAVIGATION_TIMEOUT_MS,
           });
           const status = res?.status() ?? 0;
           const html = await page.content().catch(() => "");
-          const churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
-          if (!churning && html.includes("__nuxt")) {
+          if (DEAD_NUXT_UI_SSR_BRIDGE.test(html)) {
+            throw new Error(`Nuxt UI SSR bridge closed during browser warmup for ${pathname}`);
+          }
+          const churning =
+            !isHealthyNuxtUiSsrResponse(status, html) || OPTIMIZE_DEP_ERROR.test(html);
+          if (!churning) {
             settled = true;
             break;
           }
-        } catch {
+        } catch (error) {
+          if (error instanceof Error && error.message.includes("SSR bridge closed")) {
+            throw error;
+          }
           // Navigation aborted mid-rebundle (e.g. failed dynamic import); retry.
         }
         await page.waitForTimeout(2_000);
@@ -131,11 +148,14 @@ async function gotoNuxtUi(page: Page, pathname = "/") {
     try {
       response = await page.goto(target, {
         waitUntil: app.waitUntil ?? "networkidle",
-        timeout: 30_000,
+        timeout: BROWSER_WARMUP_NAVIGATION_TIMEOUT_MS,
       });
 
       status = response?.status() ?? 0;
       const html = await page.content().catch(() => "");
+      if (DEAD_NUXT_UI_SSR_BRIDGE.test(html)) {
+        throw new Error(`Nuxt UI SSR bridge closed while loading ${pathname}`);
+      }
       churning = status === 504 || status >= 500 || OPTIMIZE_DEP_ERROR.test(html);
     } catch (error) {
       const navigationTimedOut = error instanceof Error && error.name === "TimeoutError";
@@ -173,49 +193,20 @@ async function waitForVueHydration(page: Page, buttonName: string): Promise<void
   );
 }
 
-function normalizeNuxtUiSnapshotHtml(html: string): string {
-  const normalizedWorktreePath = encodeURIComponent(app.cwd);
-  return html
-    .replaceAll(normalizedWorktreePath, "__NUXT_UI_WORKTREE__")
-    .replaceAll(app.cwd, "__NUXT_UI_WORKTREE__")
-    .replace(
-      /<script type="application\/json" data-nuxt-logs="nuxt-app">[\s\S]*?<\/script>/,
-      '<script type="application/json" data-nuxt-logs="nuxt-app">__NUXT_UI_LOGS__</script>',
-    )
-    .replace(
-      /<style>@layer base {\n(?::where\(\.i-lucide\\:[\s\S]*?\n)+}<\/style>/g,
-      "<style>@layer base {\n__NUXT_UI_ICON_CSS__\n}</style>",
-    )
-    .replace(/\b\d{13}\b/g, "0");
-}
-
 test.describe("nuxt-ui dev", () => {
   let devServer: ChildProcess;
   let hmrStartupLogStart = 0;
 
   test.beforeAll(async ({ browser }) => {
-    // setup + install + dev:prepare + server start + route warmup can exceed the
-    // default hook timeout for this heavy playground.
-    test.setTimeout(600_000);
+    // setup + install + dev:prepare + server start (with a bounded restart when
+    // the SSR bridge dies) + route warmup can exceed the default hook timeout for
+    // this heavy playground.
+    test.setTimeout(900_000);
     if (app.setup) app.setup();
-    await ensurePortFree(app.port);
 
-    console.log(`Starting dev server for ${app.name}...`);
-    devServer = startDevServer(app);
-    hmrStartupLogStart = getProcessLogs(devServer).length;
-    devServer.on("exit", (code) => {
-      console.log(`[${app.name}] dev server exited with code ${code}`);
-    });
-
-    console.log(`Waiting for ${app.name} server to be ready (port ${app.port})...`);
-    await waitForServerReady(
-      devServer,
-      app.port,
-      app.readyPattern,
-      app.startupTimeout,
-      app.readyDelay,
-    );
-    await waitForHttpReady(app.url, app.port);
+    const started = await startNuxtUiDevServer();
+    devServer = started.devServer;
+    hmrStartupLogStart = started.startupLogStart;
     console.log(`${app.name} server is ready`);
 
     // Pre-bundle the routes the suite visits so Vite finishes optimize-deps churn
@@ -252,7 +243,7 @@ test.describe("nuxt-ui dev", () => {
     ).toBeVisible();
 
     const html = await verifySSRContent(page, app.url);
-    expect(normalizeNuxtUiSnapshotHtml(html)).toMatchSnapshot("home-ssr");
+    expect(normalizeNuxtUiSnapshotHtml(html, { cwd: app.cwd })).toMatchSnapshot("home-ssr");
 
     expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
     const unexpectedHydrationErrors = hydrationErrors.filter((error) => !/Hydration/i.test(error));
@@ -280,7 +271,7 @@ test.describe("nuxt-ui dev", () => {
     await expect(loadingAutoButton).toBeEnabled({ timeout: 10_000 });
 
     const html = await verifySSRContent(page, `${app.url}/components/button`);
-    expect(normalizeNuxtUiSnapshotHtml(html)).toMatchSnapshot("button-ssr");
+    expect(normalizeNuxtUiSnapshotHtml(html, { cwd: app.cwd })).toMatchSnapshot("button-ssr");
 
     expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
     const unexpectedHydrationErrors = hydrationErrors.filter((error) => !/Hydration/i.test(error));

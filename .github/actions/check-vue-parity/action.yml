@@ -10,23 +10,68 @@ runs:
     # missing exactly when it is needed.
     - name: Record runner process budget baseline
       shell: bash
+      env:
+        RUNNER_ENVIRONMENT: ${{ runner.environment }}
       run: |
-        export RAYON_NUM_THREADS=4
+        cpu_count() {
+          if command -v nproc >/dev/null 2>&1; then
+            nproc
+          elif command -v sysctl >/dev/null 2>&1; then
+            sysctl -n hw.ncpu 2>/dev/null || echo 1
+          else
+            echo 1
+          fi
+        }
+        thread_count() {
+          local count
+          if [ -d /proc ]; then
+            count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
+          else
+            count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
+          fi
+          echo "${count:-0}"
+        }
+        if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          # Temporary hosted-runner fallback while Blacksmith is degraded.
+          # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove these hosted caps/scales.
+          export RAYON_NUM_THREADS=1
+          export GOMAXPROCS=1
+          export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=12
+          export VIZE_TIER_L_BUDGET_SCALE=2
+          export VIZE_PERF_BUDGET_SCALE=2
+        else
+          export RAYON_NUM_THREADS=4
+        fi
         echo "RAYON_NUM_THREADS=$RAYON_NUM_THREADS" >> "$GITHUB_ENV"
+        if [ -n "${GOMAXPROCS:-}" ]; then
+          echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-}" ]; then
+          echo "VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=$VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${VIZE_TIER_L_BUDGET_SCALE:-}" ]; then
+          echo "VIZE_TIER_L_BUDGET_SCALE=$VIZE_TIER_L_BUDGET_SCALE" >> "$GITHUB_ENV"
+        fi
+        if [ -n "${VIZE_PERF_BUDGET_SCALE:-}" ]; then
+          echo "VIZE_PERF_BUDGET_SCALE=$VIZE_PERF_BUDGET_SCALE" >> "$GITHUB_ENV"
+        fi
         mkdir -p target/vize-tests/metrics/check-fixtures-topology
+        threads_total="$(thread_count)"
+        echo "VIZE_RUNNER_BASELINE_THREADS=$threads_total" >> "$GITHUB_ENV"
         {
-          echo "cpus=$(nproc)"
+          echo "runner_environment=$RUNNER_ENVIRONMENT"
+          echo "cpus=$(cpu_count)"
           echo "rayon_num_threads=$RAYON_NUM_THREADS"
+          echo "gomaxprocs=${GOMAXPROCS:-unset}"
+          echo "budget_cpu_floor=${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-unset}"
+          echo "tier_l_budget_scale=${VIZE_TIER_L_BUDGET_SCALE:-unset}"
+          echo "perf_budget_scale=${VIZE_PERF_BUDGET_SCALE:-unset}"
           echo "ulimit_u=$(ulimit -u)"
           echo "ulimit_Hu=$(ulimit -Hu)"
-          echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ')"
+          echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ' || echo unavailable)"
           echo "pids_current=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo unavailable)"
           echo "pids_max=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo unavailable)"
-          # `grep -s` reads the files rather than `awk`: a process that exits
-          # between the glob expanding and the read makes `awk` fail without
-          # running `END`, which discarded the whole thread count. `grep`
-          # reports a vanished file as a skipped input instead.
-          echo "threads_total=$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}')"
+          echo "threads_total=$threads_total"
         } > target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
         cat target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
 
@@ -49,7 +94,54 @@ runs:
 
     - name: Build vize CLI
       shell: bash
-      run: cargo build --profile ci -p vize --features legacy
+      env:
+        RUNNER_ENVIRONMENT: ${{ runner.environment }}
+      run: |
+        cargo_args=(build --profile ci -p vize --features legacy)
+        if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          cargo_args+=(--jobs 2)
+        fi
+        cargo "${cargo_args[@]}"
+
+    - name: Settle hosted runner task budget
+      if: ${{ runner.environment == 'github-hosted' }}
+      shell: bash
+      run: |
+        mkdir -p target/vize-tests/metrics/check-fixtures-topology
+        baseline_threads="${VIZE_RUNNER_BASELINE_THREADS:-0}"
+        if ! [[ "$baseline_threads" =~ ^[0-9]+$ ]]; then
+          baseline_threads=0
+        fi
+        budget_threads=$((baseline_threads + 96))
+        deadline=$((SECONDS + 30))
+        sample=0
+        thread_count() {
+          local count
+          if [ -d /proc ]; then
+            count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
+          else
+            count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
+          fi
+          echo "${count:-0}"
+        }
+        while true; do
+          sample=$((sample + 1))
+          threads_total="$(thread_count)"
+          {
+            echo "sample=$sample"
+            echo "threads_total=$threads_total"
+            echo "baseline_threads=$baseline_threads"
+            echo "budget_threads=$budget_threads"
+          } | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+          if [ "$baseline_threads" -eq 0 ] || [ "$threads_total" -le "$budget_threads" ]; then
+            break
+          fi
+          if [ "$SECONDS" -ge "$deadline" ]; then
+            echo "warning=hosted runner thread count did not settle below budget" | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+            break
+          fi
+          sleep 1
+        done
 
     - name: Check Vue compiler and typecheck parity
       shell: bash
@@ -57,11 +149,21 @@ runs:
         VIZE_TEST_BIN: target/ci/vize
       run: vp run --filter './tests' test:check:fixtures
 
+    # `--no-cache` is load-bearing, not a cache-hygiene preference. A cached
+    # Vite+ script receives only the runner's own passthrough set plus the
+    # variables its task config declares, and a `package.json` script cannot
+    # declare any, so `GOMAXPROCS`, `RAYON_NUM_THREADS` and the cycle-budget
+    # floor were dropped between this step's shell and the harness: run
+    # 31737148023 exported a floor of 8 and its artifact still recorded
+    # `budgetCpuCount: 4`, so the hosted lane measured itself against the
+    # 32-vCPU bound and failed 16 of 20 cycles. Caching a measurement lane is
+    # wrong on its own terms too, since a replayed cycle proves nothing.
     - name: Bound fixture process topology under a constrained PID budget
       shell: bash
       env:
         VIZE_TEST_BIN: target/ci/vize
-      run: vp run --filter './tests' test:check:fixtures:cycles
+        VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: ${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}
+      run: vp run --no-cache --filter './tests' test:check:fixtures:cycles
 
     - name: Check Tier-L batch incremental session reuse
       shell: bash
@@ -69,6 +171,7 @@ runs:
         VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
         VIZE_TIER_L_CORSA_BIN: node_modules/.bin/tsgo
         VIZE_TIER_L_METRICS_DIR: target/vize-tests/metrics/vben-batch-incremental
+        VIZE_TIER_L_BUDGET_SCALE: ${{ env.VIZE_TIER_L_BUDGET_SCALE }}
         VIZE_RUNTIME_NODE_MODULES: node_modules
       run: cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture
 
@@ -92,13 +195,15 @@ runs:
       shell: bash
       env:
         VIZE_LSP_BIN: target/ci/vize
-      run: vp run --filter './tests' test:performance:lsp-incremental
+        VIZE_PERF_BUDGET_SCALE: ${{ env.VIZE_PERF_BUDGET_SCALE }}
+      run: vp run --no-cache --filter './tests' test:performance:lsp-incremental
 
     - name: Stress LSP edit churn against Misskey
       shell: bash
       env:
         VIZE_LSP_BIN: target/ci/vize
-      run: vp run --filter './tests' test:performance:lsp-churn
+        VIZE_PERF_BUDGET_SCALE: ${{ env.VIZE_PERF_BUDGET_SCALE }}
+      run: vp run --no-cache --filter './tests' test:performance:lsp-churn
 
     - name: Publish incremental LSP summaries
       if: ${{ always() }}

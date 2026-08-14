@@ -1,22 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parse } from "yaml";
 
 import {
   CHECK_FIXTURE_ENV,
   CHECK_FIXTURE_NODE_ARGS,
   checkFixturePhases,
 } from "./support/check-fixtures/manifest.ts";
+import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
-
-type CompositeActionStep = {
-  env?: Record<string, string>;
-  if?: string;
-  name?: string;
-  run?: string;
-  uses?: string;
-  with?: Record<string, number | string>;
-};
 
 test("the typecheck divergence ratchet runs on every pull request", () => {
   // Dimension 1 of the vue-tsc parity scorecard (#3222) is a *per-PR* ratchet:
@@ -40,9 +31,7 @@ test("the typecheck divergence ratchet runs on every pull request", () => {
 test("Vue parity structurally gates compiler fixtures and incremental LSP behavior", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "vue-parity");
-  const action = parse(readRepoFile(".github", "actions", "check-vue-parity", "action.yml")) as {
-    runs?: { steps?: CompositeActionStep[]; using?: string };
-  };
+  const action = vueParityAction();
   const testsPackage = JSON.parse(readRepoFile("tests", "package.json"));
 
   assert.match(job, /uses:\s*\.\/\.github\/actions\/check-vue-parity/);
@@ -61,32 +50,51 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vue-vben-admin/);
   assert.match(hydration?.run ?? "", /tests\/_fixtures\/_git\/vitepress/);
   assert.match(hydration?.run ?? "", /vp install --frozen-lockfile --prefer-offline/);
-  assert.equal(
-    steps.find((step) => step.name === "Build vize CLI")?.run,
-    "cargo build --profile ci -p vize --features legacy",
+  const build = steps.find((step) => step.name === "Build vize CLI");
+  assert.deepEqual(build?.env, { RUNNER_ENVIRONMENT: "${{ runner.environment }}" });
+  assert.match(
+    build?.run ?? "",
+    /cargo_args=\(build --profile ci -p vize --features legacy\)/,
+    "the hosted-runner fallback must keep the same vize build command shape",
   );
+  assert.match(
+    build?.run ?? "",
+    /\[ "\$RUNNER_ENVIRONMENT" = "github-hosted" \]/,
+    "the hosted-runner fallback must make build pressure runner-aware",
+  );
+  assert.match(
+    build?.run ?? "",
+    /cargo_args\+=\(--jobs 2\)/,
+    "GitHub-hosted vue-parity builds must avoid saturating the smaller runner before Corsa starts",
+  );
+  assert.match(build?.run ?? "", /cargo "\$\{cargo_args\[@\]\}"/);
   // The first step of the action writes the process-budget baseline, so the
   // always-uploaded artifact exists even when a later step is killed by the
   // spawn exhaustion this lane is guarding against (#4126).
   assert.equal(steps[0]?.name, "Record runner process budget baseline");
+  // The runner profile only reaches the script through this mapping; what the
+  // script then emits for each profile is executed below.
+  assert.deepEqual(steps[0]?.env, { RUNNER_ENVIRONMENT: "${{ runner.environment }}" });
+
+  const buildIndex = steps.findIndex((step) => step.name === "Build vize CLI");
+  const settle = steps[buildIndex + 1];
+  assert.equal(settle?.name, "Settle hosted runner task budget");
+  assert.equal(settle?.if, "${{ runner.environment == 'github-hosted' }}");
   assert.match(
-    steps[0]?.run ?? "",
-    /export RAYON_NUM_THREADS=4/,
-    "vue-parity must cap Vize's Rayon fan-out under the runner task budget",
+    settle?.run ?? "",
+    /VIZE_RUNNER_BASELINE_THREADS/,
+    "hosted-runner settling must compare against the captured baseline",
   );
   assert.match(
-    steps[0]?.run ?? "",
-    /echo "RAYON_NUM_THREADS=\$RAYON_NUM_THREADS" >> "\$GITHUB_ENV"/,
-    "the Rayon cap must apply to every later composite-action step",
+    settle?.run ?? "",
+    /budget_threads=\$\(\(baseline_threads \+ 96\)\)/,
+    "hosted-runner settling must reserve the fixture cycle's bounded process budget",
   );
   assert.match(
-    steps[0]?.run ?? "",
-    /echo "rayon_num_threads=\$RAYON_NUM_THREADS"/,
-    "the runner baseline must record the emitted Rayon cap",
+    settle?.run ?? "",
+    /post-build-settle\.txt/,
+    "hosted-runner settling must publish its samples with the existing topology artifact",
   );
-  for (const fact of ["nproc", "ulimit -u", "ulimit -Hu", "pids.current", "pids.max", "Threads:"]) {
-    assert.ok((steps[0]?.run ?? "").includes(fact), `the runner baseline must record ${fact}`);
-  }
 
   const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
@@ -119,8 +127,18 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   const cycles = steps.find(
     (step) => step.name === "Bound fixture process topology under a constrained PID budget",
   );
-  assert.deepEqual(cycles?.env, { VIZE_TEST_BIN: "target/ci/vize" });
-  assert.equal(cycles?.run, "vp run --filter './tests' test:check:fixtures:cycles");
+  assert.deepEqual(cycles?.env, {
+    VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: "${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}",
+    VIZE_TEST_BIN: "target/ci/vize",
+  });
+  // `--no-cache` carries the step's environment, so it belongs to the contract
+  // rather than to cache hygiene: Vite+ hands a cached script only its own
+  // passthrough set plus the variables the task config declares, and a
+  // `package.json` script has no task config to declare them in, so a cached
+  // invocation reaches the harness without the floor above, without
+  // `GOMAXPROCS`, and without `RAYON_NUM_THREADS`. It also keeps a
+  // process-budget measurement from being replayed instead of measured.
+  assert.equal(cycles?.run, "vp run --no-cache --filter './tests' test:check:fixtures:cycles");
   assert.equal(
     testsPackage.scripts["test:check:fixtures:cycles"],
     "node tooling/support/check-fixtures/cycles.ts",
@@ -162,6 +180,7 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
     VIZE_TIER_L_FIXTURE: "tests/_fixtures/_git/vue-vben-admin",
     VIZE_TIER_L_CORSA_BIN: "node_modules/.bin/tsgo",
     VIZE_TIER_L_METRICS_DIR: "target/vize-tests/metrics/vben-batch-incremental",
+    VIZE_TIER_L_BUDGET_SCALE: "${{ env.VIZE_TIER_L_BUDGET_SCALE }}",
     VIZE_RUNTIME_NODE_MODULES: "node_modules",
   });
   assert.equal(
@@ -193,12 +212,21 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   const incremental = steps.find(
     (step) => step.name === "Check incremental LSP against Misskey and Vue Vben Admin",
   );
-  assert.deepEqual(incremental?.env, { VIZE_LSP_BIN: "target/ci/vize" });
-  assert.equal(incremental?.run, "vp run --filter './tests' test:performance:lsp-incremental");
+  assert.deepEqual(incremental?.env, {
+    VIZE_LSP_BIN: "target/ci/vize",
+    VIZE_PERF_BUDGET_SCALE: "${{ env.VIZE_PERF_BUDGET_SCALE }}",
+  });
+  assert.equal(
+    incremental?.run,
+    "vp run --no-cache --filter './tests' test:performance:lsp-incremental",
+  );
 
   const churn = steps.find((step) => step.name === "Stress LSP edit churn against Misskey");
-  assert.deepEqual(churn?.env, { VIZE_LSP_BIN: "target/ci/vize" });
-  assert.equal(churn?.run, "vp run --filter './tests' test:performance:lsp-churn");
+  assert.deepEqual(churn?.env, {
+    VIZE_LSP_BIN: "target/ci/vize",
+    VIZE_PERF_BUDGET_SCALE: "${{ env.VIZE_PERF_BUDGET_SCALE }}",
+  });
+  assert.equal(churn?.run, "vp run --no-cache --filter './tests' test:performance:lsp-churn");
 
   const summary = steps.find((step) => step.name === "Publish incremental LSP summaries");
   assert.equal(summary?.if, "${{ always() }}");

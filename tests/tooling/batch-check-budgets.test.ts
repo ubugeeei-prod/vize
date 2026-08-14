@@ -4,7 +4,11 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { loadBatchCheckBudget } from "../snapshots/_helpers/batch-check-performance.ts";
+import {
+  batchCheckBudgetScaleVariable,
+  loadBatchCheckBudget,
+  resolveBatchCheckBudgetScale,
+} from "../snapshots/_helpers/batch-check-performance.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const registry = JSON.parse(
@@ -39,4 +43,16 @@ test("batch budget consumers run both projects through the fail-closed helper", 
   assert.match(helper, /const cold = runCrashFreeVizeCheck/);
   assert.match(helper, /const warm = runCrashFreeVizeCheck/);
   assert.match(helper, /warm\.result,[\s\S]*cold\.result/);
+});
+
+test("batch check budget scale parses strictly and defaults to 1", () => {
+  assert.equal(resolveBatchCheckBudgetScale({}), 1);
+  assert.equal(resolveBatchCheckBudgetScale({ [batchCheckBudgetScaleVariable]: "" }), 1);
+  assert.equal(resolveBatchCheckBudgetScale({ [batchCheckBudgetScaleVariable]: "2.5" }), 2.5);
+  for (const invalid of ["0", "-1", "Infinity", "nope", "101"]) {
+    assert.throws(
+      () => resolveBatchCheckBudgetScale({ [batchCheckBudgetScaleVariable]: invalid }),
+      new RegExp(batchCheckBudgetScaleVariable),
+    );
+  }
 });

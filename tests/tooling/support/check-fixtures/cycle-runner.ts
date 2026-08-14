@@ -181,7 +181,7 @@ export type CycleOptions = {
   readonly corsaBin: string;
   readonly sampleIntervalMs: number;
   readonly startedAt: number;
-  readonly cpuCount: number;
+  readonly budgetCpuCount: number;
   /** Hash every later cycle must reproduce, or `null` for the first cycle. */
   readonly expectedSha256: string | null;
   readonly expectedExitCode: number | null;
@@ -194,10 +194,11 @@ export async function runCycle(
   options: CycleOptions,
 ): Promise<CycleRecord> {
   const args = checkArgv(target, options.corsaBin);
+  const taskBudget = target.taskBudget(options.budgetCpuCount);
   // The budget is re-measured every cycle: the box is shared, so a ceiling
   // derived once at the start would drift into either uselessness or a flake.
   const baseline = sampleTopology("baseline", { pgid: null, startedAt: options.startedAt });
-  const budget = resolveBudget(baseline.liveTasks, target.taskBudget(options.cpuCount));
+  const budget = resolveBudget(baseline.liveTasks, taskBudget);
 
   const result = await runSupervised({
     args: budgetedArgv(budget.ulimitProcesses, options.vizeBin, args),
@@ -247,10 +248,8 @@ export async function runCycle(
       `peak group processes ${result.samples.peak.group.processes.length} > ${target.peakGroupProcessBound}`,
     );
   }
-  if (result.samples.peak.group.liveTasks > target.taskBudget(options.cpuCount)) {
-    failures.push(
-      `peak group tasks ${result.samples.peak.group.liveTasks} > ${target.taskBudget(options.cpuCount)}`,
-    );
+  if (result.samples.peak.group.liveTasks > taskBudget) {
+    failures.push(`peak group tasks ${result.samples.peak.group.liveTasks} > ${taskBudget}`);
   }
   if (peakCorsaProcesses > target.corsaProcesses) {
     failures.push(`peak Corsa processes ${peakCorsaProcesses} > ${target.corsaProcesses}`);
