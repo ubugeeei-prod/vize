@@ -13,7 +13,7 @@
 - [x] P0-2 Template-pipeline microbenches, front half (armature, croquis)
 - [x] P0-3 Template-pipeline microbenches, back half (atelier core/dom/vapor/ssr)
 - [ ] P0-4 Bench baselines and CI gating (`budgets.toml`) — budget registry, compare gate, and tests landed; reference-runner baseline recording + CI lane pending
-- [ ] P0-5 Corpus baseline snapshot + diff tool
+- [x] P0-5 Corpus baseline snapshot + diff tool — fingerprints the four harness lanes (single DOM compile lane today); TS-11 scope proof embedded; one filed unstable row (`typechecker/element-plus` corsa-shard race) shard-scoped in `corpus-baseline-unstable.json`
 - [ ] P0-6 Corpus expansion round 1 (pug/JSX/Vapor/petite-vue)
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
 - [x] P0-8 Rule-parity matrix (SFC × JSX) — surfaces derived from trait impls + overridden hooks per rule file; SFC/JSX membership derived from the registration sites and the `lint_jsx` three-lane partition (`as_markup_rule` / `jsx_needs_lowering` / legacy fallback), with drift asserts on the dispatch source
@@ -113,10 +113,10 @@ detection.
 
 **Steps:**
 
-- [ ] `tools/davinci/corpus-baseline.mjs`: runs `tools/fixtures/tool-matrix-report.mjs` across all shards, then reduces each project's per-surface outputs (compile dom/vapor/ssr, lint JSON, format output, check diagnostics) to `{surface, project, file_count, content_hash}` rows
-- [ ] Baseline artifact `tests/_fixtures/davinci-baseline.json` (hashes only — small) committed
-- [ ] `tools/davinci/corpus-diff.mjs`: compares a fresh run against the baseline; reports per-surface/per-project drift; `--surface` filter
-- [ ] Reproducibility check: two runs on the same tree produce byte-identical baseline files (this will surface any nondeterminism in current output — if found, file it, do not fix it in this task)
+- [x] `tools/davinci/corpus-baseline.mjs`: runs `tools/fixtures/tool-matrix-report.mjs` across all shards, then reduces each project's per-surface outputs (compile dom/vapor/ssr, lint JSON, format output, check diagnostics) to `{surface, project, file_count, content_hash}` rows _(landed on the four lanes the harness actually emits — `compiler` (the single DOM-backend `build --format json` lane; no vapor/ssr lanes exist in the harness yet), `typechecker`, `linter`, `formatter` — with the scope proof embedded in the artifact; hash contract in `corpus-baseline-notes.md`)_
+- [x] Baseline artifact `tests/_fixtures/davinci-baseline.json` (hashes only — small) committed _(covers the 134-project manifest; landing required restoring the `vue-storefront` pin that bump #4236 had moved to an emptied upstream revision — see the notes)_
+- [x] `tools/davinci/corpus-diff.mjs`: compares a fresh run against the baseline; reports per-surface/per-project drift; `--surface` filter _(exit 0 only on zero drift plus TS-11 scope proof on both the committed baseline and the fresh run; missing baseline or scope shortfall fails with exact reasons)_
+- [x] Reproducibility check: two runs on the same tree produce byte-identical baseline files (this will surface any nondeterminism in current output — if found, file it, do not fix it in this task) _(ran twice: 535 of 536 rows byte-identical; the one divergent row — `typechecker/element-plus`, a racy corsa-shard TS6307 (3704 vs 3703 errors on the same tree) — is filed in `corpus-baseline-notes.md` and shard-scoped via `corpus-baseline-unstable.json`, exactly as this step prescribes; compiler/formatter stderr timing, temp paths, and print ordering are likewise filed and excluded from the hash contract)_
 
 **Acceptance:**
 

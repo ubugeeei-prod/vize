@@ -1,0 +1,201 @@
+# Corpus baseline notes (P0-5)
+
+> [!NOTE]
+> Companion to `tests/_fixtures/davinci-baseline.json` — the whole-corpus
+> output fingerprint that `tools/davinci/corpus-diff.mjs` (suite TS-11)
+> gates every later Davinci phase against. This file records the hash
+> contract, the surface-list derivation, and every known source of
+> nondeterminism in current tool output, filed here per the P0-5 rule:
+> file it, do not fix it in this task.
+
+## Regeneration
+
+```sh
+cargo build --release -p vize
+node tools/davinci/corpus-baseline.mjs            # rewrite the committed baseline
+node tools/davinci/corpus-diff.mjs                # gate a fresh run against it
+```
+
+Both tools spawn `tools/fixtures/tool-matrix-report.mjs` across all shards
+(4 parallel shard processes by default; the harness is serial inside a
+shard) and reduce each project's per-surface payload to a
+`{surface, project, file_count, content_hash}` row.
+
+## Surface list — derived from the harness, not the plan prose
+
+The phase-0 task text names "compile dom/vapor/ssr" as compile surfaces.
+The harness this baseline wraps emits exactly four tool lanes per project,
+and those lanes are the baseline's surfaces:
+
+| Surface       | Harness command                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| `compiler`    | `vize build <globs> --format json --output <tmp> --template-syntax quirks --continue-on-error --no-config` |
+| `typechecker` | `vize check <globs> --format json --no-config [--tsconfig <path>]`                                         |
+| `linter`      | `vize lint <globs> --format json --preset ecosystem --no-config`                                           |
+| `formatter`   | `vize fmt <globs> --check --no-config`                                                                     |
+
+There is a single compile lane — the default (DOM) backend. The harness has
+no vapor or ssr lanes today, so the baseline cannot fingerprint them;
+per-backend compile surfaces join the baseline when the harness grows those
+lanes.
+
+## Hash contract
+
+`content_hash` is the sha256 of a canonical JSON (object keys sorted
+recursively) of the following fields of the harness run payload
+(`<project>-<tool>.json`, schema `vize.fixtureToolRun`):
+
+| Surface       | Hashed fields                                         |
+| ------------- | ----------------------------------------------------- |
+| `compiler`    | `compilerArtifacts`, `exitCode`, `stdout`             |
+| `typechecker` | `exitCode`, `stderr`, `stdout`, `typecheckerCoverage` |
+| `linter`      | `exitCode`, `stderr`, `stdout`                        |
+| `formatter`   | `exitCode`, `formatterCheck`, `stdout`                |
+
+- `stdout` carries the actual tool output for `typechecker` (check JSON)
+  and `linter` (lint JSON). The payload's `parsed` field is its
+  `JSON.parse` and is deliberately not hashed twice.
+- The compiled artifacts themselves are covered byte-for-byte by
+  `compilerArtifacts.sha256` — the path + content digest the harness
+  computes over every emitted compile artifact
+  (`tools/fixtures/tool-matrix-run.mjs`, `inspectCompilerArtifacts`),
+  taken before the temporary output directory is deleted.
+- `file_count` mirrors `tools/fixtures/tool-matrix-metrics.mjs`:
+  compiler `inputFileCount`, typechecker `fileCount` (requested +
+  transitive authored), linter file-entry count, formatter
+  `checkedFileCount`.
+
+## Filed nondeterminism: compiler and formatter `stderr` are excluded
+
+Two payload fields a successful run produces are excluded from the
+fingerprint because they are machine- and run-varying by construction.
+Both were verified empirically before the baseline landed: two
+back-to-back single-project matrix runs on the same tree differ in
+exactly these two fields and nothing else. Filed here per the P0-5
+rule — do not fix the tools in this task; a later change can make these
+streams deterministic and fold them into the hash with a schema-version
+bump.
+
+**Compiler `stderr`** (`crates/vize/src/commands/build/` at the P0-5
+baseline commit) varies four ways:
+
+1. **Absolute temporary output paths** — every compiled file logs
+   `Built: <input> -> <output>` (`runner/output.rs:199-204`), and the
+   harness points `--output` at a fresh `mkdtemp` directory
+   (`vize-fixture-compiler-XXXXXX`), so every line embeds a random
+   absolute path that changes each run.
+2. **Wall-clock banner** — every run ends with
+   `✓ N files compiled in {:.4}s` (`runner.rs:412-419`) or
+   `✗ N file(s) failed, M compiled in {:.4}s` (`runner.rs:400-410`).
+3. **Load-dependent slow-file warnings** — any file whose compile
+   crosses `--slow-threshold` (default 100 ms) adds a
+   `⚠ N slow file(s) detected` block with per-file millisecond timings
+   (`runner.rs:241-272`); whether a file crosses 100 ms under a parallel
+   sweep depends on machine load.
+4. **Error-listing order** — with `--continue-on-error`, per-file errors
+   are pushed into a `Mutex<Vec<_>>` from rayon workers
+   (`runner/fallback.rs`, `record_error`) and printed in push order,
+   which is thread-completion order, not input order.
+
+None of this is compile _output_ — the artifacts, diagnostics, and exit
+code are all hashed via `compilerArtifacts`.
+
+**Formatter `stderr`** (`crates/vize/src/commands/fmt.rs`): the
+`Would reformat: <path>` lines are printed directly from rayon worker
+threads (`eprintln!` at line 415 inside the `files.par_iter()` loop at
+line 144), so the same set of paths arrives in a different order on
+every run. The deterministic form of the same evidence is hashed
+instead: `formatterCheck.changedPathsSha256` digests the sorted path
+set, plus the checked/changed/unchanged counts.
+
+`stderr` stays hashed on the remaining two surfaces: lint and check
+emit nothing there on a clean corpus run, and any future stderr chatter
+on those lanes should surface as drift, not be masked.
+
+## Reproducibility verdict (two full sweeps, same tree)
+
+Recorded 2026-08-14 on the baseline machine (macOS arm64, Apple M2 Max,
+12 logical CPUs; release binary built from the P0-5 branch):
+
+- Sweep 1: `node tools/davinci/corpus-baseline.mjs` — wrote the committed
+  artifact (251 s wall for 134 projects x 4 surfaces, 4 shard processes).
+- Sweep 2: `node tools/davinci/corpus-diff.mjs --write-fresh <tmp>` —
+  the two artifact files are **not byte-identical**: they differ in
+  exactly one of 536 rows, `typechecker/element-plus`
+  (`0ed6b624d6ee…` vs `9ec7a085ab15…`); the other 535 rows and the whole
+  scope block are byte-equal.
+
+The divergence, pinned from the kept raw payloads of both sweeps: the
+check JSON differs in a single file entry,
+`packages/components/slot/index.ts`, which in sweep 1 carries one extra
+diagnostic — `TS6307 File '…/slot/src/only-child.tsx' is not listed
+within the file list of project '…/tsconfig.shard0.json'` — and in
+sweep 2 carries none (corpus totals 3704 vs 3703 errors).
+`tsconfig.shard0.json` is not a file on disk; it is the virtual shard
+project `vize check` builds internally (corsa), so whether
+`only-child.tsx` lands in the shard's file list before its importer is
+checked races between runs. A third full sweep produced yet another
+distinct hash for the same row (`cfc6a995efad…`), so the race has more
+than two outcomes; every other row stayed byte-equal in all three
+sweeps. **Filed, not fixed** (P0-5 is instrumentation-only): the row is
+shard-scoped in `corpus-baseline-unstable.json`, which `corpus-diff`
+reports as "unstable (filed, not gating)" while every other row still
+gates. The committed baseline carries sweep 1's value. Fixing the race
+in `vize check` and deleting the sidecar entry is the follow-up.
+
+Two machine-boundedness facts, also filed (run-stable on one machine,
+so they do not affect this verdict, but they anchor the artifact to the
+machine that produced it):
+
+- 132 of 134 typechecker payloads carry a stderr progress banner
+  (`Building Corsa virtual project for N files under <absolute path>…`)
+  that embeds the absolute fixture path.
+- 10 projects embed absolute paths inside check diagnostics themselves
+  (stdout): `directus`, `element-plus`, `element-plus-x`,
+  `lx-music-desktop`, `mealie`, `scalar`, `vant`, `vue-cropper`,
+  `vue-draggable-next`, `vue-router`.
+
+A baseline regenerated on a different machine (or a different worktree
+path) will therefore drift on typechecker rows even with identical tool
+behavior; regenerate on the reference runner (or an identical path) when
+refreshing the artifact.
+
+## Corpus repair required before the first baseline
+
+The first full sweep failed on exactly one project: `vue-storefront`,
+all four lanes (`compiler matched no Vue files`, and the other three
+validators rejecting a zero-file run for a fixture that does not declare
+`expectedVueFileCount: 0`). The unattended submodule bump #4236
+(2026-08-12) had followed upstream to revision `16167a4c`, whose commit
+message is "chore: remove all code, keep README only" — the upstream
+repository was emptied, and the bump also downgraded the manifest
+license to `NONE`. P0-5 restored the previous pin `220341f4` (48 `.vue`
+files, MIT license) in both the gitlink and the manifest entry; the
+baseline covers the restored pin. Follow-up for the bump lane: a pin
+that zeroes out a project's `vueGlobs` matches should fail the bump PR,
+not the next corpus consumer.
+
+## Scope proof (TS-11)
+
+An "empty" diff is only meaningful if the run actually covered the
+corpus, so the artifact embeds its scope and `corpus-diff` re-proves it
+on both sides before reporting success:
+
+- the baseline artifact exists and parses;
+- baseline and fresh runs each cover every project in
+  `tests/_fixtures/vue-ecosystem-fixtures.json` on every gated surface
+  (missing or unknown projects are itemized);
+- row count equals projects x surfaces;
+- the total file count is nonzero (a zero-file run fails), and a
+  zero-file row is only legal for projects whose manifest entry declares
+  `expectedVueFileCount: 0` (`docsify`, `vue-native-core`);
+- `--surface` narrows which lanes are gated for the fresh run, but the
+  committed baseline is always validated against the full manifest scope;
+- rows listed in `corpus-baseline-unstable.json` (filed nondeterminism)
+  are still compared and reported, but their hash drift does not gate;
+  missing rows always gate, and the sidecar rejects unknown surfaces,
+  unknown projects, and entries without a reason.
+
+The baseline covers the 134-project manifest as of the P0-5 branch point;
+the P0-6 corpus-expansion projects re-run `corpus-baseline.mjs` when they
+land (that re-baseline is part of P0-6 per the phase plan).

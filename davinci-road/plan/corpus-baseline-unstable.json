@@ -1,0 +1,13 @@
+{
+  "schema": "vize.davinciCorpusUnstableRows",
+  "version": 1,
+  "notes": "davinci-road/plan/corpus-baseline-notes.md",
+  "rows": [
+    {
+      "surface": "typechecker",
+      "project": "element-plus",
+      "reason": "vize check output for element-plus is racy on an identical tree. Byte-level witness from two kept raw sweeps (2026-08-14): sweep 1 emits TS6307 for packages/components/slot/index.ts (src/only-child.tsx not listed in the virtual corsa shard project tsconfig.shard0.json) and sweep 2 does not — 3704 vs 3703 errors, every other row byte-equal. A third full sweep produced yet another distinct content hash for this row, so the shard-membership race has more than two outcomes. Baseline carries sweep 1's value.",
+      "filed": "davinci-road/plan/corpus-baseline-notes.md"
+    }
+  ]
+}

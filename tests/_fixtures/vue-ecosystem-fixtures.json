@@ -1183,8 +1183,8 @@
       "kind": "application",
       "fixturePath": "tests/_fixtures/_git/vue-storefront",
       "repository": "https://github.com/vuestorefront/vue-storefront",
-      "revision": "16167a4c7d1fb1b77fcafb3ca7e49560f489aecc",
-      "license": { "spdx": "NONE", "files": [] },
+      "revision": "220341f4c15d9f6ddb8d5e4c2fd225f5dd4d6f76",
+      "license": { "spdx": "MIT", "files": ["LICENSE.md"] },
       "vueGlobs": ["**/*.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
