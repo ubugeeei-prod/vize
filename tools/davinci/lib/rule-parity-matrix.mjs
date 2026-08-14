@@ -5,7 +5,6 @@
 // without a META is a hard failure, so the file model cannot drift silently.
 
 import { walkRustFiles } from "./crates.mjs";
-import { byKey } from "./ordering.mjs";
 import { loadDispatchModel } from "./rule-parity-dispatch.mjs";
 import { parseOverrides } from "./rule-parity-overrides.mjs";
 import { META_KINDS, OVERRIDES_REL, RULES_DIR } from "./rule-parity-paths.mjs";
