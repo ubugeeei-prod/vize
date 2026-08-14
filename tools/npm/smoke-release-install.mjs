@@ -193,9 +193,8 @@ function packPackage(packageDir, packDir) {
     .map((entry) => path.join(packDir, entry));
 
   assert.equal(created.length, 1, `expected exactly one tarball from ${packageDir}`);
-  return created[0];
+  return fs.realpathSync.native(created[0]);
 }
-
 function installedPackageDir(nodeModules, name) {
   if (name.startsWith("@")) {
     const [scope, packageName] = name.split("/");
@@ -306,7 +305,8 @@ function resolveInstalledBin(installDir, packageName, binName) {
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-"));
+  const tempPrefix = path.join(os.tmpdir(), "vize-release-smoke-");
+  const tempDir = fs.realpathSync.native(fs.mkdtempSync(tempPrefix));
   const packDir = path.join(tempDir, "packs");
   fs.mkdirSync(packDir, { recursive: true });
 
