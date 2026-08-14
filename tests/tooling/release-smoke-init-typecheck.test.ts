@@ -27,3 +27,20 @@ test("init typecheck smoke rejects only package roots inside the repository", ()
     false,
   );
 });
+
+test("init typecheck smoke treats .. as a path segment", () => {
+  assert.equal(
+    isPathInsideOrEqual(
+      "D:\\a\\vize\\vize",
+      "D:\\a\\vize\\vize\\..cache\\node_modules\\vize",
+      path.win32,
+    ),
+    true,
+  );
+  assert.equal(isPathInsideOrEqual("D:\\a\\vize\\vize", "D:\\a\\vize", path.win32), false);
+  assert.equal(
+    isPathInsideOrEqual("/tmp/vize", "/tmp/vize/..cache/node_modules/vize", path.posix),
+    true,
+  );
+  assert.equal(isPathInsideOrEqual("/tmp/vize", "/tmp", path.posix), false);
+});

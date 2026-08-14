@@ -37,8 +37,11 @@ function writeProjectFile(projectDir, filename, source) {
 
 export function isPathInsideOrEqual(parent, candidate, pathApi = path) {
   const relative = pathApi.relative(parent, candidate);
+  if (relative === "") return true;
+  // Compare ".." as a path segment so names such as "..cache" stay inside.
+  if (relative === ".." || relative.startsWith(`..${pathApi.sep}`)) return false;
   // On Windows, paths on different drives produce an absolute relative path.
-  return relative === "" || (!relative.startsWith("..") && !pathApi.isAbsolute(relative));
+  return !pathApi.isAbsolute(relative);
 }
 
 function initTypecheckAppSource(language, failure = null) {
