@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
 import {
+  hasProjectLocalBin,
   managerCommand,
   managerEnv,
   projectLocalBinCandidates,
@@ -98,7 +102,34 @@ test("fresh-project package managers use exact Corepack runners where needed", (
   assert.match(runManager(PACKAGE_MANAGERS.npm, ["--version"], { cwd: process.cwd() }), /^\d+\./u);
 });
 
+/** A fresh project whose `node_modules/.bin` holds exactly the given shims. */
+function projectWithBinShims(...shims: string[]) {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fresh-bin-"));
+  const binDir = path.join(projectRoot, "node_modules", ".bin");
+  fs.mkdirSync(binDir, { recursive: true });
+  for (const shim of shims) fs.writeFileSync(path.join(binDir, shim), "");
+  return path.join(projectRoot, "node_modules");
+}
+
 test("fresh-project toolchain accepts package-manager-specific Windows shims", () => {
+  // Each shim a Windows package manager may write on its own must satisfy the
+  // toolchain check, since Yarn does not always author `vize.cmd`.
+  for (const shim of ["vize", "vize.cmd", "vize.ps1"]) {
+    const nodeModules = projectWithBinShims(shim);
+    assert.equal(
+      hasProjectLocalBin(nodeModules, "vize", "win32"),
+      true,
+      `Windows toolchain check rejected the ${shim} shim`,
+    );
+  }
+  // Non-Windows detection stays unchanged: only the extensionless bin counts.
+  assert.equal(hasProjectLocalBin(projectWithBinShims("vize"), "vize", "linux"), true);
+  assert.equal(hasProjectLocalBin(projectWithBinShims("vize.cmd"), "vize", "linux"), false);
+  // No shim at all still fails on every platform.
+  assert.equal(hasProjectLocalBin(projectWithBinShims(), "vize", "win32"), false);
+  assert.equal(hasProjectLocalBin(projectWithBinShims(), "vize", "linux"), false);
+
+  // Supplemental: the candidate list the check consumes.
   assert.deepEqual(projectLocalBinCandidates("vize", "win32"), ["vize", "vize.cmd", "vize.ps1"]);
   assert.deepEqual(projectLocalBinCandidates("vize", "linux"), ["vize"]);
 });

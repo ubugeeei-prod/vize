@@ -235,9 +235,9 @@ export function projectLocalBinCandidates(binName, platform = process.platform) 
   return [binName, `${binName}.cmd`, `${binName}.ps1`];
 }
 
-function hasProjectLocalBin(nodeModules, binName) {
+export function hasProjectLocalBin(nodeModules, binName, platform = process.platform) {
   const binDir = path.join(nodeModules, ".bin");
-  return projectLocalBinCandidates(binName).some((candidate) =>
+  return projectLocalBinCandidates(binName, platform).some((candidate) =>
     fs.existsSync(path.join(binDir, candidate)),
   );
 }
