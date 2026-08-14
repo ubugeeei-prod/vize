@@ -208,3 +208,36 @@ phase plan (P0-6 is still open): run `node tools/davinci/corpus-baseline.mjs`
 once the new fixtures are checked out, and the row count moves to
 142 x 4 = 568. The failure is deliberate: a stale-scope baseline reports
 loudly instead of gating a subset of the corpus and calling it green.
+_(Resolved: the phase-0 exit gate (#4331) executed exactly that re-record —
+568 rows at the phase-final head, corpus-diff verified twice.)_
+
+## Re-record 2 — post-main-sync materialized tsgo sessions (2026-08-14)
+
+The first main → davinci sync after the phase-0 exit gate (#4333) imported
+`2b56b13ed` _fix(canon): share tsgo editor project state_, which
+materializes project session state — including a `node_modules` directory —
+**inside the checked project's working tree** during batch `vize check`.
+Against the exit-gate baseline this drifted two surfaces deterministically:
+typechecker 137/142 rows (resolution now sees the materialized state) and
+compiler 15/142 rows (`vize build` project sniffing flips on `node_modules`
+presence — exact 15/15 correlation, likely unintended coupling; filed as
+[#4340](https://github.com/ubugeeei-prod/vize/issues/4340) with the
+maintainer questions).
+
+Evidence recorded before re-recording (TS-11: investigate, never average):
+
+- drift is deterministic — two independent clean-fixture sweeps reproduce
+  identical drift sets and identical fresh hashes;
+- drift is binary-bracketed — the committed baseline _is_ the pre-sync run
+  (verified twice at the exit gate), and the post-sync head drifts
+  identically with and without the P1-1 allocator change (hash-identical
+  on all 568 rows), so phase-1 work contributes zero drift;
+- one sweep from clean fixtures leaves 142 fixture projects with a
+  materialized `node_modules` (dirty submodule worktrees) — corpus runs
+  must start from clean fixtures (`git submodule status` all-clean, no
+  `node_modules`) for reproducible hashes; a runner-side contamination
+  guard is filed as follow-up work.
+
+This section's baseline (568 rows at `d96852a18` + this branch) blesses
+the post-sync behavior so the TS-11 gate stays meaningful for phase-1 PRs.
+If #4340 changes the materialization behavior, that PR re-records again.
