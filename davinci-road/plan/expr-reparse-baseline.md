@@ -12,21 +12,21 @@
 >
 > This is the number P1 drives toward "parse once": after P1-7 retains
 > expression ASTs, TS-26 asserts `davinci.expr.parses == distinct
-> expressions`. Regenerate by running
+expressions`. Regenerate by running
 > `cargo bench -p vize_atelier_dom -p vize_atelier_vapor -p vize_atelier_ssr`
 > and reading the `davinci.expr.parses <backend> <fixture> <count>` stderr
 > lines.
 
 ## Counts per fused compile (2026-08-13, probe at P0-3 introduction)
 
-| fixture | dom | vapor | ssr |
-| ------- | --: | ----: | --: |
-| small | 1 | 0 | 4 |
-| medium | 33 | 4 | 37 |
-| large | 106 | 45 | 155 |
-| stress-deep | 24 | 16 | 48 |
-| stress-wide | 102 | 0 | 100 |
-| stress-interp | 0 | 0 | **500** |
+| fixture       | dom | vapor |     ssr |
+| ------------- | --: | ----: | ------: |
+| small         |   1 |     0 |       4 |
+| medium        |  33 |     4 |      37 |
+| large         | 106 |    45 |     155 |
+| stress-deep   |  24 |    16 |      48 |
+| stress-wide   | 102 |     0 |     100 |
+| stress-interp |   0 |     0 | **500** |
 
 ## What the numbers say
 
