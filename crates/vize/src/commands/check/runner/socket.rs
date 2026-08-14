@@ -28,11 +28,7 @@ use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print
 /// Run type checking via Unix socket connection to check-server.
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let start = Instant::now();
-    if args.profile || args.profile_export.is_requested() {
-        let profiler = global_profiler();
-        profiler.clear();
-        profiler.enable();
-    }
+    args.profile_export.begin(args.profile);
 
     let collect_start = Instant::now();
     #[allow(clippy::disallowed_types)]
@@ -273,12 +269,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
         files.len(),
         total_time
     );
-    // Machine-readable profile export, written while the profiler is still
-    // populated.
-    args.profile_export.write_or_exit("check");
-    if args.profile_export.is_requested() && !args.profile {
-        global_profiler().disable();
-    }
+    args.profile_export.finish("check", args.profile);
     if args.profile {
         let profiler = global_profiler();
         let allocation_summary = profile_support::allocation_snapshot();

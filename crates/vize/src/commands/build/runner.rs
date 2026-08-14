@@ -19,9 +19,7 @@ use std::{
 };
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use vize_carton::String;
-use vize_carton::cstr;
-use vize_carton::profiler::global_profiler;
+use vize_carton::{String, cstr, profiler::global_profiler};
 
 use crate::profile_support;
 use vize_curator::profile::{
@@ -109,11 +107,7 @@ pub(crate) fn run(args: BuildArgs) {
     let stats = CompileStats::new(total_files);
     let collect_elapsed = start.elapsed();
 
-    if args.profile || args.profile_export.is_requested() {
-        let profiler = global_profiler();
-        profiler.clear();
-        profiler.enable();
-    }
+    args.profile_export.begin(args.profile);
     if args.profile {
         eprintln!(
             "Found {} files in {:.4}s. Compiling using {} threads...",
@@ -277,13 +271,8 @@ pub(crate) fn run(args: BuildArgs) {
     let errors = errors.into_inner().unwrap_or_default();
     fallback::report_errors(&errors);
 
-    // Machine-readable profile export, written while the profiler is still
-    // populated (and before the failure exit below, so failed compiles still
-    // produce a report for what did run).
-    args.profile_export.write_or_exit("build");
-    if args.profile_export.is_requested() && !args.profile {
-        global_profiler().disable();
-    }
+    // Before the failure exit below, so failed compiles still report what ran.
+    args.profile_export.finish("build", args.profile);
 
     // Profile breakdown
     if args.profile {

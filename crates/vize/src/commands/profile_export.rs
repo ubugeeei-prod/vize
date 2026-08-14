@@ -25,6 +25,25 @@ impl ProfileExportArgs {
         self.profile_json.is_some()
     }
 
+    /// Clear and enable the global profiler when this run collects spans,
+    /// either for human-readable `--profile` output or for an export.
+    pub fn begin(&self, profile: bool) {
+        if profile || self.is_requested() {
+            let profiler = global_profiler();
+            profiler.clear();
+            profiler.enable();
+        }
+    }
+
+    /// Write the export, then release the profiler when only the export was
+    /// holding it enabled (`--profile` owns that lifecycle otherwise).
+    pub fn finish(&self, command: &'static str, profile: bool) {
+        self.write_or_exit(command);
+        if self.is_requested() && !profile {
+            global_profiler().disable();
+        }
+    }
+
     /// Write the export for the still-populated global profiler, exiting the
     /// process with an error message if the file cannot be written.
     ///

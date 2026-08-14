@@ -13,7 +13,6 @@ use super::allocation::{
 };
 use super::attribution::{AttributedSpanKey, SpanAttribution};
 use super::metrics::{CounterMetrics, Metrics, SpanAllocationDelta};
-use super::report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
 
 const PROFILER_SHARDS: usize = 32;
 
@@ -160,9 +159,9 @@ pub struct Profiler {
     /// operation name like `metrics`. Kept separate so every pre-attribution
     /// consumer of `metrics`, `get`, `all`, and `summary` observes exactly the
     /// historical key space.
-    attributed: [RwLock<FxHashMap<AttributedSpanKey, Metrics>>; PROFILER_SHARDS],
+    pub(super) attributed: [RwLock<FxHashMap<AttributedSpanKey, Metrics>>; PROFILER_SHARDS],
     /// Non-duration counters by name.
-    counters: [RwLock<FxHashMap<&'static str, CounterMetrics>>; PROFILER_SHARDS],
+    pub(super) counters: [RwLock<FxHashMap<&'static str, CounterMetrics>>; PROFILER_SHARDS],
     /// Whether profiling is enabled
     enabled: AtomicBool,
 }
@@ -323,262 +322,11 @@ impl Profiler {
         }
     }
 
-    /// Record a non-duration counter sample.
-    pub fn record_counter(&self, name: &'static str, value: u64) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled(name, value);
-    }
-
-    /// Record a counter after the caller has already checked profiling.
-    #[doc(hidden)]
-    pub fn record_counter_enabled(&self, name: &'static str, value: u64) {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut counters = self.counters_write(Self::shard_index(name));
-        counters.entry(name).or_default().record(value);
-    }
-
-    /// Record a successful `std::fs::read_to_string` call.
-    pub fn record_fs_read_to_string(&self, bytes: usize) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("io.read.calls", 1);
-        self.record_counter_enabled("io.read.bytes", bytes as u64);
-        self.record_counter_enabled("syscall.fs.read_to_string.calls", 1);
-    }
-
-    /// Record a failed `std::fs::read_to_string` call.
-    pub fn record_fs_read_to_string_failure(&self) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("io.read.calls", 1);
-        self.record_counter_enabled("io.read.failures", 1);
-        self.record_counter_enabled("syscall.fs.read_to_string.calls", 1);
-        self.record_counter_enabled("syscall.fs.read_to_string.failures", 1);
-    }
-
-    /// Record a successful `std::fs::write` call.
-    pub fn record_fs_write(&self, bytes: usize) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("io.write.calls", 1);
-        self.record_counter_enabled("io.write.attempted_bytes", bytes as u64);
-        self.record_counter_enabled("io.write.bytes", bytes as u64);
-        self.record_counter_enabled("syscall.fs.write.calls", 1);
-    }
-
-    /// Record a failed `std::fs::write` call.
-    pub fn record_fs_write_failure(&self, bytes: usize) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("io.write.calls", 1);
-        self.record_counter_enabled("io.write.attempted_bytes", bytes as u64);
-        self.record_counter_enabled("io.write.failures", 1);
-        self.record_counter_enabled("syscall.fs.write.calls", 1);
-        self.record_counter_enabled("syscall.fs.write.failures", 1);
-    }
-
-    /// Record a successful `std::fs::create_dir_all` call.
-    pub fn record_fs_create_dir_all(&self) {
-        if self.is_enabled() {
-            self.record_counter_enabled("syscall.fs.create_dir_all.calls", 1);
-        }
-    }
-
-    /// Record a failed `std::fs::create_dir_all` call.
-    pub fn record_fs_create_dir_all_failure(&self) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("syscall.fs.create_dir_all.calls", 1);
-        self.record_counter_enabled("syscall.fs.create_dir_all.failures", 1);
-    }
-
-    /// Record a successful `std::fs::remove_dir_all` call.
-    pub fn record_fs_remove_dir_all(&self) {
-        if self.is_enabled() {
-            self.record_counter_enabled("syscall.fs.remove_dir_all.calls", 1);
-        }
-    }
-
-    /// Record a failed `std::fs::remove_dir_all` call.
-    pub fn record_fs_remove_dir_all_failure(&self) {
-        if !self.is_enabled() {
-            return;
-        }
-
-        self.record_counter_enabled("syscall.fs.remove_dir_all.calls", 1);
-        self.record_counter_enabled("syscall.fs.remove_dir_all.failures", 1);
-    }
-
-    /// Get metrics for the given operation.
-    pub fn get(&self, name: &str) -> Option<Metrics> {
-        self.metrics_read(Self::shard_index(name))
-            .get(name)
-            .cloned()
-    }
-
-    /// Get all metrics.
-    pub fn all(&self) -> FxHashMap<&'static str, Metrics> {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut all = FxHashMap::default();
-        for shard in &self.metrics {
-            let metrics = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            all.extend(
-                metrics
-                    .iter()
-                    .map(|(name, metrics)| (*name, metrics.clone())),
-            );
-        }
-        all
-    }
-
-    /// Clear all metrics.
-    pub fn clear(&self) {
-        let _allocation_tracking = pause_allocation_tracking();
-        for shard in &self.metrics {
-            shard
-                .write()
-                .unwrap_or_else(|poisoned| poisoned.into_inner())
-                .clear();
-        }
-        for shard in &self.attributed {
-            shard
-                .write()
-                .unwrap_or_else(|poisoned| poisoned.into_inner())
-                .clear();
-        }
-        for shard in &self.counters {
-            shard
-                .write()
-                .unwrap_or_else(|poisoned| poisoned.into_inner())
-                .clear();
-        }
-    }
-
-    /// Snapshot every span bucket — plain dotted keys first, then attributed
-    /// keys — for the machine-readable export.
-    pub(super) fn span_snapshot(&self) -> Vec<(&'static str, SpanAttribution, Metrics)> {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut spans = Vec::new();
-        for shard in &self.metrics {
-            let metrics = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            spans.reserve(metrics.len());
-            spans.extend(
-                metrics
-                    .iter()
-                    .map(|(name, metrics)| (*name, SpanAttribution::EMPTY, metrics.clone())),
-            );
-        }
-        for shard in &self.attributed {
-            let metrics = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            spans.reserve(metrics.len());
-            spans.extend(
-                metrics
-                    .iter()
-                    .map(|(key, metrics)| (key.name, key.attribution, metrics.clone())),
-            );
-        }
-        spans
-    }
-
-    /// Snapshot every counter for the machine-readable export.
-    pub(super) fn counter_snapshot(&self) -> Vec<(&'static str, CounterMetrics)> {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut counters = Vec::new();
-        for shard in &self.counters {
-            let entries = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            counters.reserve(entries.len());
-            counters.extend(
-                entries
-                    .iter()
-                    .map(|(name, counter)| (*name, counter.clone())),
-            );
-        }
-        counters
-    }
-
-    /// Generate a summary report.
-    pub fn summary(&self) -> ProfileSummary {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut entries = Vec::new();
-        for shard in &self.metrics {
-            let metrics = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            entries.reserve(metrics.len());
-            entries.extend(metrics.iter().map(|(name, m)| ProfileEntry {
-                name,
-                count: m.count,
-                total: m.total_duration,
-                self_total: m.self_duration,
-                child_total: m.child_duration,
-                average: m.average(),
-                self_average: m.self_average(),
-                min: m.min_duration,
-                max: m.max_duration,
-                self_min: m.min_self_duration,
-                self_max: m.max_self_duration,
-                p50: m.percentile(0.50),
-                p95: m.percentile(0.95),
-                p99: m.percentile(0.99),
-                samples_over_1ms: m.samples_over_1ms(),
-                samples_over_10ms: m.samples_over_10ms(),
-                samples_over_100ms: m.samples_over_100ms(),
-            }));
-        }
-
-        // Sort by total time descending
-        entries.sort_by_key(|entry| std::cmp::Reverse(entry.total));
-
-        ProfileSummary { entries }
-    }
-
-    /// Generate a counter summary report.
-    pub fn counter_summary(&self) -> CounterSummary {
-        let _allocation_tracking = pause_allocation_tracking();
-        let mut entries = Vec::new();
-        for shard in &self.counters {
-            let counters = shard
-                .read()
-                .unwrap_or_else(|poisoned| poisoned.into_inner());
-            entries.reserve(counters.len());
-            entries.extend(counters.iter().map(|(name, counter)| CounterEntry {
-                name,
-                samples: counter.samples,
-                total: counter.total,
-                average: counter.average(),
-                min: if counter.samples == 0 { 0 } else { counter.min },
-                max: counter.max,
-            }));
-        }
-
-        entries.sort_by(|left, right| left.name.cmp(right.name));
-
-        CounterSummary { entries }
-    }
-
     #[inline]
-    fn metrics_read(&self, shard: usize) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
+    pub(super) fn metrics_read(
+        &self,
+        shard: usize,
+    ) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
         self.metrics[shard]
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
@@ -605,7 +353,7 @@ impl Profiler {
     }
 
     #[inline]
-    fn counters_write(
+    pub(super) fn counters_write(
         &self,
         shard: usize,
     ) -> RwLockWriteGuard<'_, FxHashMap<&'static str, CounterMetrics>> {

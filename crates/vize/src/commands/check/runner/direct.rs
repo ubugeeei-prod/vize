@@ -5,8 +5,6 @@ use std::{
     time::Instant,
 };
 
-use vize_carton::profiler::global_profiler;
-
 use super::{
     CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
     collect_roots, dialect_from_features, exit_after_execution_error, explicit_input_root,
@@ -19,11 +17,7 @@ use super::{
 /// Run type checking directly with materialized Corsa projects.
 pub(crate) fn run_direct(args: &CheckArgs) {
     let start = Instant::now();
-    if args.profile || args.profile_export.is_requested() {
-        let profiler = global_profiler();
-        profiler.clear();
-        profiler.enable();
-    }
+    args.profile_export.begin(args.profile);
     crate::config::write_schema(None);
     validate_config_arg(args);
 

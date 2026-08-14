@@ -7,9 +7,11 @@ mod allocation;
 mod attribution;
 mod cache;
 mod core;
+mod counters;
 mod export;
 mod metrics;
 mod report;
+mod snapshot;
 
 pub use allocation::{
     AllocationSnapshot, ProfilingAllocator, allocation_snapshot, reset_allocation_counters,
