@@ -58,12 +58,13 @@ test("release install smoke canonicalizes symlinked temp directories", () => {
 
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     const keptTemp = /^kept (.+)$/m.exec(result.stdout)?.[1];
-    assert.equal(keptTemp, fs.realpathSync.native(keptTemp ?? ""));
-    const relativeToRealTemp = path.relative(fs.realpathSync.native(realTemp), keptTemp ?? "");
+    assert.ok(keptTemp, "release smoke did not report a kept temp directory");
+    assert.equal(keptTemp, fs.realpathSync.native(keptTemp));
+    const relativeToRealTemp = path.relative(fs.realpathSync.native(realTemp), keptTemp);
     assert.ok(relativeToRealTemp !== "");
     assert.ok(!relativeToRealTemp.startsWith(".."));
     assert.ok(!path.isAbsolute(relativeToRealTemp));
-    fs.rmSync(keptTemp ?? "", { force: true, recursive: true });
+    fs.rmSync(keptTemp, { force: true, recursive: true });
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true });
   }
