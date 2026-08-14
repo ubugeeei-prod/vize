@@ -8,6 +8,7 @@ import {
   VITE_NODE_REQUEST_TIMEOUT_MS,
   withViteNodeRequestBudget,
 } from "../app/dev/nuxt-ui-vite-node.ts";
+import { normalizeNuxtUiSnapshotHtml } from "../app/dev/nuxt-ui-snapshot.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -69,6 +70,38 @@ test("nuxt-ui warmups do not abort slow hosted SSR compilation too early", () =>
   assert.match(source, /DEAD_NUXT_UI_SSR_BRIDGE\.test\(html\)/);
   assert.match(source, /isHealthyNuxtUiSsrResponse\(res\.status, body\)/);
   assert.match(source, /isHealthyNuxtUiSsrResponse\(status, html\)/);
+});
+
+test("nuxt-ui SSR snapshots ignore dev-only entry scripts", () => {
+  const cwd = "/tmp/nuxt ui";
+  const encodedCwd = encodeURIComponent(cwd);
+  const normalized = normalizeNuxtUiSnapshotHtml(
+    [
+      `<head><link rel="modulepreload" as="script" crossorigin href="/_nuxt${encodedCwd}/node_modules/nuxt/dist/app/entry.async.js">`,
+      '<script type="module" src="/_nuxt/@vite/client" crossorigin></script>',
+      `<script type="module" src="/_nuxt${encodedCwd}/node_modules/nuxt/dist/app/entry.async.js" crossorigin></script>`,
+      '<meta name="description" content="Explore and test all Nuxt UI components in an interactive environment"><script>',
+      "if (!window.__NUXT_DEVTOOLS_TIME_METRIC__) {",
+      "  Object.defineProperty(window, '__NUXT_DEVTOOLS_TIME_METRIC__', {",
+      "    value: {},",
+      "    enumerable: false,",
+      "    configurable: true,",
+      "  })",
+      "}",
+      "window.__NUXT_DEVTOOLS_TIME_METRIC__.appInit = Date.now()",
+      '</script><script>"use strict";</script></head>',
+      `<body>${cwd}<script type="application/json" data-nuxt-logs="nuxt-app">[{"date":1234567890123}]</script></body>`,
+    ].join("\n"),
+    { cwd },
+  );
+
+  assert.equal(
+    normalized,
+    [
+      '<head><meta name="description" content="Explore and test all Nuxt UI components in an interactive environment"><script>"use strict";</script></head>',
+      '<body>__NUXT_UI_WORKTREE__<script type="application/json" data-nuxt-logs="nuxt-app">__NUXT_UI_LOGS__</script></body>',
+    ].join("\n"),
+  );
 });
 
 test("nuxt-ui setup avoids the Nuxt Content module on hosted readiness runners", () => {

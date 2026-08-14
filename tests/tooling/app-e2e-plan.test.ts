@@ -253,7 +253,7 @@ test("planned tasks, fixtures, and mutable identities are exact and unique", () 
   );
   assert.equal(
     scripts["test:readiness:dev:nuxt-ui"],
-    "playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
+    "playwright test --config app/playwright.config.ts --retries=0 app/dev/nuxt-ui.spec.ts",
   );
   assert.equal(
     scripts["test:readiness:check:vuefes"],

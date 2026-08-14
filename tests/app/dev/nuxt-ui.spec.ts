@@ -16,6 +16,7 @@ import {
   startNuxtUiDevServer,
 } from "./nuxt-ui-dev-server";
 import { verifyNuxtUiAuthoredSourceHmr } from "./nuxt-ui-hmr";
+import { normalizeNuxtUiSnapshotHtml } from "./nuxt-ui-snapshot";
 
 const app = nuxtUiApp;
 
@@ -192,22 +193,6 @@ async function waitForVueHydration(page: Page, buttonName: string): Promise<void
   );
 }
 
-function normalizeNuxtUiSnapshotHtml(html: string): string {
-  const normalizedWorktreePath = encodeURIComponent(app.cwd);
-  return html
-    .replaceAll(normalizedWorktreePath, "__NUXT_UI_WORKTREE__")
-    .replaceAll(app.cwd, "__NUXT_UI_WORKTREE__")
-    .replace(
-      /<script type="application\/json" data-nuxt-logs="nuxt-app">[\s\S]*?<\/script>/,
-      '<script type="application/json" data-nuxt-logs="nuxt-app">__NUXT_UI_LOGS__</script>',
-    )
-    .replace(
-      /<style>@layer base {\n(?::where\(\.i-lucide\\:[\s\S]*?\n)+}<\/style>/g,
-      "<style>@layer base {\n__NUXT_UI_ICON_CSS__\n}</style>",
-    )
-    .replace(/\b\d{13}\b/g, "0");
-}
-
 test.describe("nuxt-ui dev", () => {
   let devServer: ChildProcess;
   let hmrStartupLogStart = 0;
@@ -258,7 +243,7 @@ test.describe("nuxt-ui dev", () => {
     ).toBeVisible();
 
     const html = await verifySSRContent(page, app.url);
-    expect(normalizeNuxtUiSnapshotHtml(html)).toMatchSnapshot("home-ssr");
+    expect(normalizeNuxtUiSnapshotHtml(html, { cwd: app.cwd })).toMatchSnapshot("home-ssr");
 
     expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
     const unexpectedHydrationErrors = hydrationErrors.filter((error) => !/Hydration/i.test(error));
@@ -286,7 +271,7 @@ test.describe("nuxt-ui dev", () => {
     await expect(loadingAutoButton).toBeEnabled({ timeout: 10_000 });
 
     const html = await verifySSRContent(page, `${app.url}/components/button`);
-    expect(normalizeNuxtUiSnapshotHtml(html)).toMatchSnapshot("button-ssr");
+    expect(normalizeNuxtUiSnapshotHtml(html, { cwd: app.cwd })).toMatchSnapshot("button-ssr");
 
     expect(consoleErrors.filter(isFatalError)).toHaveLength(0);
     const unexpectedHydrationErrors = hydrationErrors.filter((error) => !/Hydration/i.test(error));

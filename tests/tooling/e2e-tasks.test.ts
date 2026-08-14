@@ -124,7 +124,7 @@ test("fast app readiness aliases use bounded pinned fixtures", () => {
   assert.equal(
     scripts["test:readiness:dev"],
     "VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/misskey.spec.ts" +
-      " && VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts app/dev/nuxt-ui.spec.ts",
+      " && VIZE_TEST_WORKTREE_ID=${VIZE_TEST_WORKTREE_ID:-ci-readiness} playwright test --config app/playwright.config.ts --retries=0 app/dev/nuxt-ui.spec.ts",
   );
 
   assertExists("tests", "snapshots", "check", "compiler-macros.ts");
