@@ -1,0 +1,52 @@
+---
+source: crates/vize_davinci/tests/folio_laws.rs
+expression: "$crate :: folio :: Folio ::\nprint_to_string(& folio, $crate :: folio :: FolioMode :: Full,)"
+---
+[vir]
+script_setup=true
+scopes=3
+bindings=4
+
+[surface.props]
+title!:string
+subtitle?=
+
+[surface.emits]
+change
+
+[surface.models]
+modelValue:string
+
+[surface.expose]
+{ focus }
+@10:20
+
+[surface.slots]
+{ default(props: { item: string }): any }
+
+[macros]
+@defineProps<{ title: string }> @5:40
+@defineEmits @50:70
+
+[reactivity]
+count=ref
+
+[extern]
+./helpers {formatDate,parseDate}
+vue^
+
+[types]
+Props^i@1:30
+Rowt@31:60
+
+[bindings]
+c:formatDate,parseDate
+st:count
+
+[scopes]
+~0 mod @0:100 [count,formatDate]
+~1 setup @0:100 [parseDate] < ~0
+!0 mounted @40:80 < ~1
+
+[errors]
+rows=Const@197:237

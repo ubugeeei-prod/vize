@@ -18,7 +18,7 @@
 - [x] P0-7 Croquis consumption matrix as tracked artifact — resolution is `use`-declaration-based with a grep cross-check lane (rustdoc-JSON upgrade possible later)
 - [ ] P0-8 Rule-parity matrix (SFC × JSX)
 - [ ] P0-9 `Span` type + `SourceLocation` consumer inventory
-- [ ] P0-10 Folio harness skeleton + VIR absorption
+- [x] P0-10 Folio harness skeleton + VIR absorption — the `vir` payload key lives in `vize_vitrine`, not `vize_curator`; alias added at the real site
 - [ ] P0-11 Profiler source-level attribution + stable export
 - [ ] P0-12 Assurance harness (assertion lint, mutation baseline, taxonomy)
 - [ ] P0-13 Seeded-defect + suppression-telemetry pilots (FP/FN oracles)
@@ -184,16 +184,16 @@ criterion with allocation and RSS metrics, used by every later bench.
 
 **Steps:**
 
-- [ ] `crates/vize_davinci/` crate skeleton (workspace member, `no_std + alloc`, `experimental`): only `folio` module for now — `trait Folio { fn print(&self, w: &mut W, mode: FolioMode) -> fmt::Result; fn parse(input: &str) -> Result<Self, FolioError>; }` with `FolioMode { Full, Display }`. **Equality laws are mode-explicit:** `Full` is the injective, parseable form (round-trip laws apply); `Display` elides spans/defaults for humans and carries **no** round-trip law. Normalization (stable sequential ids, sorted map iteration) applies to both
-- [ ] Normalization rules documented in `davinci-road/plan/folio-format.md` (the "test-mode printer" contract: what is elided, what is stable)
-- [ ] `crates/vize_davinci/src/bin/davinci-opt.rs` (or a `tools/` binary if binary-in-lib is awkward): `davinci-opt --roundtrip <file>` — parse → print → byte-compare; `--stage croquis` initially
-- [ ] Croquis folio: implement `Folio` for the existing VIR dump content (`crates/vize_croquis/src/croquis/vir.rs`) — print delegates to the current renderer, parse added; VIR's "display-only" doc updated to point at Folio
-- [ ] Deprecation alias: `crates/vize_curator/src/inspector/payload.rs` keeps the `vir` payload key, adds `folio.croquis`; playground consumes either (no playground change required this task)
-- [ ] insta helper: `assert_folio_snapshot!(value)` using the normalized printer (allowed `#[allow(clippy::disallowed_macros)]` per existing insta convention)
+- [x] `crates/vize_davinci/` crate skeleton (workspace member, `no_std + alloc`, `experimental`): only `folio` module for now — `trait Folio { fn print(&self, w: &mut W, mode: FolioMode) -> fmt::Result; fn parse(input: &str) -> Result<Self, FolioError>; }` with `FolioMode { Full, Display }`. **Equality laws are mode-explicit:** `Full` is the injective, parseable form (round-trip laws apply); `Display` elides spans/defaults for humans and carries **no** round-trip law. Normalization (stable sequential ids, sorted map iteration) applies to both — _landed with a provided `print_to_string(mode)` convenience on the trait; no `std` feature was needed (host-only code lives in the binary)_
+- [x] Normalization rules documented in `davinci-road/plan/folio-format.md` (the "test-mode printer" contract: what is elided, what is stable)
+- [x] `crates/vize_davinci/src/bin/davinci-opt.rs` (or a `tools/` binary if binary-in-lib is awkward): `davinci-opt --roundtrip <file>` — parse → print → byte-compare; `--stage croquis` initially — _binary-in-lib worked; the bin also compiles under `wasm32-wasip2` (wasip2 has `std`)_
+- [x] Croquis folio: implement `Folio` for the existing VIR dump content (`crates/vize_croquis/src/croquis/vir.rs`) — print delegates to the current renderer, parse added; VIR's "display-only" doc updated to point at Folio — _"delegates" is by contract, not by call: `CroquisFolio` is a document model of the dump; the fixture harness (`crates/vize_davinci/tests/croquis_folio.rs`) pins parser and renderer together, keeping `vize_davinci` free of a `vize_croquis` dependency (dev-dep only). Discovered en route: `[macros]` entries can span physical lines (multi-line type args), handled by the parser_
+- [x] Deprecation alias: ~~`crates/vize_curator/src/inspector/payload.rs`~~ the `vir` payload key actually lives in `crates/vize_vitrine/src/wasm/analyze.rs` (curator's inspector payload never carried it); that site keeps `vir` and adds nested `folio.croquis` with the same content; playground consumes either (no playground change required this task)
+- [x] insta helper: `assert_folio_snapshot!(value)` using the normalized printer (allowed `#[allow(clippy::disallowed_macros)]` per existing insta convention)
 
 **Acceptance:**
 
-- `davinci-opt --roundtrip` is identity on ≥10 committed croquis-folio fixtures (drawn from the P0-2 fixture ladder). **Folio identity is defined post-normalization:** the round-trip law is `print(parse(t)) == t` for canonical (normalized) text `t`, plus structural equality `parse(print(v)) == v` for values — non-canonical input is normalized by the first print, by design
+- `davinci-opt --roundtrip` is identity on ≥10 committed croquis-folio fixtures (drawn from the P0-2 fixture ladder — _the ladder had not landed, so the 14 fixtures come from the e2e project fixtures plus two written for section coverage; provenance table in `folio-format.md`_). **Folio identity is defined post-normalization:** the round-trip law is `print(parse(t)) == t` for canonical (normalized) text `t`, plus structural equality `parse(print(v)) == v` for values — non-canonical input is normalized by the first print, by design
 - Existing VIR consumers' tests pass untouched
 - `wasm32-wasip2` target compiles for `vize_davinci` (`cargo build -p vize_davinci --target wasm32-wasip2`)
 
@@ -254,7 +254,7 @@ criterion with allocation and RSS metrics, used by every later bench.
 - [ ] Corpus baseline + diff tool reproducible; expansion round 1 merged (P0-5..6)
 - [ ] Consumption + rule-parity matrices committed with staleness checks (P0-7..8)
 - [ ] `Span` landed unused; `SourceLocation` inventory committed (P0-9)
-- [ ] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
+- [x] `davinci-opt --roundtrip` identity on croquis folio; VIR alias live; `vize_davinci` builds for wasm32-wasip2 (P0-10)
 - [ ] Profiler export schema validating; zero overhead when off (P0-11)
 - [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12)
 - [ ] FP/FN pilot oracles running with committed ledgers (P0-13)

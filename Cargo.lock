@@ -3869,6 +3869,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_davinci"
+version = "0.348.0"
+dependencies = [
+ "insta",
+ "vize_atelier_core",
+ "vize_atelier_sfc",
+ "vize_carton",
+ "vize_croquis",
+]
+
+[[package]]
 name = "vize_doctor"
 version = "0.348.0"
 dependencies = [
