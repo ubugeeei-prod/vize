@@ -112,7 +112,7 @@ pub fn run(args: LintArgs) {
     );
     let write_failures = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
-    if args.profile {
+    if args.profile || args.profile_export.is_requested() {
         let profiler = global_profiler();
         profiler.clear();
         profiler.enable();
@@ -241,6 +241,9 @@ pub fn run(args: LintArgs) {
         }
     }
     let output_time = output_start.elapsed();
+    // Machine-readable profile export, written while the profiler is still
+    // populated.
+    args.profile_export.write_or_exit("lint");
     let (operation_summary, counter_summary, allocation_summary) = if args.profile {
         let profiler = global_profiler();
         let allocation = profile_support::allocation_snapshot();
@@ -249,6 +252,9 @@ pub fn run(args: LintArgs) {
         profiler.disable();
         (Some(operations), Some(counters), allocation)
     } else {
+        if args.profile_export.is_requested() {
+            global_profiler().disable();
+        }
         (None, None, None)
     };
 

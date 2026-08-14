@@ -98,6 +98,9 @@ pub struct CheckArgs {
     /// Output directory for emitted `.d.ts` files
     #[arg(long)]
     pub declaration_dir: Option<PathBuf>,
+
+    #[command(flatten)]
+    pub profile_export: super::profile_export::ProfileExportArgs,
 }
 
 /// Serde types for check-server JSON-RPC communication (Unix only).

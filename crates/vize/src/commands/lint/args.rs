@@ -72,4 +72,7 @@ pub struct LintArgs {
     /// Slow file threshold in milliseconds for profile output
     #[arg(long, default_value = "100")]
     pub slow_threshold: u64,
+
+    #[command(flatten)]
+    pub profile_export: crate::commands::profile_export::ProfileExportArgs,
 }

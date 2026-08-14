@@ -109,10 +109,12 @@ pub(crate) fn run(args: BuildArgs) {
     let stats = CompileStats::new(total_files);
     let collect_elapsed = start.elapsed();
 
-    if args.profile {
+    if args.profile || args.profile_export.is_requested() {
         let profiler = global_profiler();
         profiler.clear();
         profiler.enable();
+    }
+    if args.profile {
         eprintln!(
             "Found {} files in {:.4}s. Compiling using {} threads...",
             total_files,
@@ -274,6 +276,14 @@ pub(crate) fn run(args: BuildArgs) {
     // Show collected errors
     let errors = errors.into_inner().unwrap_or_default();
     fallback::report_errors(&errors);
+
+    // Machine-readable profile export, written while the profiler is still
+    // populated (and before the failure exit below, so failed compiles still
+    // produce a report for what did run).
+    args.profile_export.write_or_exit("build");
+    if args.profile_export.is_requested() && !args.profile {
+        global_profiler().disable();
+    }
 
     // Profile breakdown
     if args.profile {

@@ -45,6 +45,9 @@ fn declaration_check_args(args: &BuildArgs, patterns: Vec<std::string::String>) 
         servers: None,
         declaration: true,
         declaration_dir: Some(declaration_output_dir(args)),
+        // The build command owns the machine-readable export for its own run;
+        // the delegated declaration pass never writes one.
+        profile_export: Default::default(),
     }
 }
 

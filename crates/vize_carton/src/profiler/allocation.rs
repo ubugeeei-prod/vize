@@ -10,6 +10,15 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 thread_local! {
     static ALLOCATION_TRACKING_SUPPRESSION: Cell<u32> = const { Cell::new(0) };
+    /// Monotone per-thread allocation totals backing per-span deltas.
+    ///
+    /// Spans are thread-local by construction (the profile stack lives in a
+    /// `thread_local!`), so a span's allocation cost is the growth of this
+    /// thread's counters between guard start and drop. The counters are never
+    /// reset: deltas of a monotone counter stay correct across
+    /// [`reset_allocation_counters`], which only rewinds the global window.
+    static THREAD_ALLOCATIONS: Cell<ThreadAllocationCounters> =
+        const { Cell::new(ThreadAllocationCounters::ZERO) };
 }
 
 pub(super) static ALLOCATION_TRACKING_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -55,6 +64,52 @@ fn allocation_tracking_is_suppressed() -> bool {
 #[inline]
 fn allocation_tracking_is_enabled() -> bool {
     ALLOCATION_TRACKING_ENABLED.load(Ordering::Relaxed) && !allocation_tracking_is_suppressed()
+}
+
+/// Allocation-like calls and requested bytes recorded on one thread.
+///
+/// Counts `alloc`, `alloc_zeroed`, and successful `realloc` calls (the same
+/// "allocation-like" family as [`AllocationSnapshot::allocation_calls`]);
+/// bytes are the sizes requested by those calls.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(super) struct ThreadAllocationCounters {
+    pub(super) calls: u64,
+    pub(super) bytes: u64,
+}
+
+impl ThreadAllocationCounters {
+    pub(super) const ZERO: Self = Self { calls: 0, bytes: 0 };
+
+    /// Growth from `earlier` to `self` (saturating; the counter is monotone).
+    pub(super) fn since(self, earlier: Self) -> Self {
+        Self {
+            calls: self.calls.saturating_sub(earlier.calls),
+            bytes: self.bytes.saturating_sub(earlier.bytes),
+        }
+    }
+}
+
+/// Record one allocation-like call on this thread's counters.
+///
+/// Only reached from the enabled branch of the allocator hooks, so the
+/// disabled-profiling fast path stays a single relaxed atomic load.
+#[inline]
+fn bump_thread_allocation(bytes: u64) {
+    let _ = THREAD_ALLOCATIONS.try_with(|counters| {
+        let current = counters.get();
+        counters.set(ThreadAllocationCounters {
+            calls: current.calls.saturating_add(1),
+            bytes: current.bytes.saturating_add(bytes),
+        });
+    });
+}
+
+/// Read this thread's monotone allocation counters.
+#[inline]
+pub(super) fn current_thread_allocation() -> ThreadAllocationCounters {
+    THREAD_ALLOCATIONS
+        .try_with(Cell::get)
+        .unwrap_or(ThreadAllocationCounters::ZERO)
 }
 
 /// Allocation counters captured for a profile window.
@@ -168,6 +223,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for ProfilingAllocator<A> {
             } else {
                 ALLOC_CALLS.fetch_add(1, Ordering::Relaxed);
                 ALLOC_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
+                bump_thread_allocation(layout.size() as u64);
             }
         }
         ptr
@@ -182,6 +238,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for ProfilingAllocator<A> {
             } else {
                 ALLOC_ZEROED_CALLS.fetch_add(1, Ordering::Relaxed);
                 ALLOC_ZEROED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
+                bump_thread_allocation(layout.size() as u64);
             }
         }
         ptr
@@ -206,6 +263,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for ProfilingAllocator<A> {
                 REALLOC_CALLS.fetch_add(1, Ordering::Relaxed);
                 REALLOC_OLD_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
                 REALLOC_NEW_BYTES.fetch_add(new_size as u64, Ordering::Relaxed);
+                bump_thread_allocation(new_size as u64);
             }
         }
         new_ptr

@@ -84,5 +84,8 @@ Options:
       --continue-on-error
           Continue on errors (collect all errors and show at end)
 
+      --profile-json <PATH>
+          Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: davinci-road/plan/profile-export.schema.json)
+
   -h, --help
           Print help (see a summary with '-h')

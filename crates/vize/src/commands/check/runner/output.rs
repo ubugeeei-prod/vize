@@ -2,6 +2,7 @@
 
 use std::{collections::BTreeSet, path::Path, time::Duration, time::Instant};
 
+use vize_carton::profiler::global_profiler;
 use vize_carton::{String, cstr};
 
 use super::{
@@ -60,6 +61,12 @@ pub(super) fn finish_executions(
             eprintln!("\x1b[31mError:\x1b[0m {error}");
             1
         });
+    // Machine-readable profile export: written after every reporting path
+    // (including diagnostics failures) so the collected spans always land.
+    args.profile_export.write_or_exit("check");
+    if args.profile_export.is_requested() {
+        global_profiler().disable();
+    }
     if exit_code != 0 {
         std::process::exit(exit_code);
     }

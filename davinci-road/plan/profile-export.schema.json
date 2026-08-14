@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vize.dev/schemas/profile-export.schema.json",
+  "title": "Vize profile export",
+  "description": "Machine-readable profiling report written by `vize <command> --profile-json <path>` (P0-11). Spans carry the historical dotted key plus optional structured attribution (stage, pass, file_id, block, span). The export is size-budgeted: entries beyond the recorded budget are dropped from the tail of a deterministic ranking and counted in `truncation`, never silently. Consumers: Spolvero (C-4) and the AI optimization loop (C-10).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool",
+    "tool_version",
+    "command",
+    "budget",
+    "truncation",
+    "spans",
+    "counters",
+    "allocation"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Export format version. Incompatible shape changes bump this."
+    },
+    "tool": {
+      "type": "string",
+      "const": "vize",
+      "description": "Producing tool."
+    },
+    "tool_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the producing tool."
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "CLI subcommand that produced the export (for example `build`)."
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_spans", "max_counters"],
+      "description": "Entry limits that were applied while building the export.",
+      "properties": {
+        "max_spans": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum span entries retained."
+        },
+        "max_counters": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum counter entries retained."
+        }
+      }
+    },
+    "truncation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dropped_spans", "dropped_counters"],
+      "description": "Explicit accounting for entries omitted by the budget.",
+      "properties": {
+        "dropped_spans": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lower-ranked span entries excluded by `budget.max_spans`."
+        },
+        "dropped_counters": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Counter entries excluded by `budget.max_counters`."
+        }
+      }
+    },
+    "spans": {
+      "type": "array",
+      "description": "Span entries ranked by total wall time descending, ties broken by key then attribution, capped at `budget.max_spans`. Each entry is one disjoint measurement bucket: an attributed sample is never also counted in the plain dotted-key entry with the same key.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "count", "wall_ns", "alloc"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "description": "Dotted operation key (for example `atelier.dom.template.parse`)."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of calls aggregated into this entry."
+          },
+          "wall_ns": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["total", "self", "min", "max", "p50", "p95", "p99"],
+            "description": "Wall-clock aggregates in nanoseconds.",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Total wall time across all calls, nested child spans included."
+              },
+              "self": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Total wall time excluding nested child spans."
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Minimum single-call wall time."
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Maximum single-call wall time."
+              },
+              "p50": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Approximate p50 single-call wall time (histogram bucket upper bound)."
+              },
+              "p95": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Approximate p95 single-call wall time (histogram bucket upper bound)."
+              },
+              "p99": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Approximate p99 single-call wall time (histogram bucket upper bound)."
+              }
+            }
+          },
+          "alloc": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "required": ["calls", "bytes", "self_calls", "self_bytes"],
+            "description": "Allocation aggregates measured on the span's thread; null when the profiling allocator is not installed as the global allocator.",
+            "properties": {
+              "calls": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Allocation-like calls (alloc + alloc_zeroed + successful realloc), nested child spans included."
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Bytes requested by those allocation-like calls."
+              },
+              "self_calls": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Allocation-like calls excluding nested child spans."
+              },
+              "self_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Requested bytes excluding nested child spans."
+              }
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Structured source attribution. Absent for plain dotted-key spans; when present, only the known fields appear and each is optional.",
+            "properties": {
+              "stage": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Pipeline stage that ran the work (for example `s1`)."
+              },
+              "pass": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Pass name within the stage (for example `hoist_static`)."
+              },
+              "file_id": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Producer-scoped source file id; the producer owns the id-to-path map."
+              },
+              "block": {
+                "type": "string",
+                "minLength": 1,
+                "description": "SFC block kind the work applies to (for example `template`)."
+              },
+              "span": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["start", "end"],
+                "description": "Half-open byte range of the attributed source construct.",
+                "properties": {
+                  "start": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Inclusive start byte offset."
+                  },
+                  "end": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Exclusive end byte offset."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "counters": {
+      "type": "array",
+      "description": "Non-duration counter entries sorted by key, capped at `budget.max_counters`.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "samples", "total", "min", "max"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "description": "Dotted counter key (for example `io.read.bytes`)."
+          },
+          "samples": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of samples recorded."
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Sum of all recorded samples."
+          },
+          "min": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Smallest sample, or zero when no samples were recorded."
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Largest sample."
+          }
+        }
+      }
+    },
+    "allocation": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["calls", "requested_bytes", "released_bytes", "failures"],
+      "description": "Process-wide allocation totals over the profile window; null when the profiling allocator is not installed as the global allocator.",
+      "properties": {
+        "calls": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Allocation-like calls (alloc + alloc_zeroed + successful realloc)."
+        },
+        "requested_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Bytes requested through allocation-like calls."
+        },
+        "released_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Bytes released or replaced during the window."
+        },
+        "failures": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Failed allocation-like calls."
+        }
+      }
+    }
+  }
+}

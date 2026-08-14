@@ -64,5 +64,8 @@ Options:
 
           [default: 100]
 
+      --profile-json <PATH>
+          Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: davinci-road/plan/profile-export.schema.json)
+
   -h, --help
           Print help

@@ -8,9 +8,11 @@ use std::time::{Duration, Instant};
 use rustc_hash::FxHashMap;
 
 use super::allocation::{
-    ALLOCATION_TRACKING_ENABLED, pause_allocation_tracking, reset_allocation_counters,
+    ALLOCATION_TRACKING_ENABLED, ThreadAllocationCounters, current_thread_allocation,
+    pause_allocation_tracking, reset_allocation_counters,
 };
-use super::metrics::{CounterMetrics, Metrics};
+use super::attribution::{AttributedSpanKey, SpanAttribution};
+use super::metrics::{CounterMetrics, Metrics, SpanAllocationDelta};
 use super::report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
 
 const PROFILER_SHARDS: usize = 32;
@@ -22,8 +24,13 @@ thread_local! {
 #[derive(Debug)]
 struct ProfileFrame {
     name: &'static str,
+    attribution: SpanAttribution,
     start: Instant,
     child_duration: Duration,
+    /// This thread's monotone allocation counters at guard start.
+    alloc_start: ThreadAllocationCounters,
+    /// Allocation growth already attributed to nested child spans.
+    child_alloc: ThreadAllocationCounters,
 }
 
 /// RAII guard for nested global profiling spans.
@@ -35,13 +42,23 @@ pub struct ProfileGuard {
 
 impl ProfileGuard {
     #[inline]
-    fn start(profiler: &'static Profiler, name: &'static str) -> Self {
+    fn start(
+        profiler: &'static Profiler,
+        name: &'static str,
+        attribution: SpanAttribution,
+    ) -> Self {
         let _allocation_tracking = pause_allocation_tracking();
+        // Read after pausing so the frame push below (suppressed) cannot sit
+        // between the counter read and the measured window.
+        let alloc_start = current_thread_allocation();
         PROFILE_STACK.with(|stack| {
             stack.borrow_mut().push(ProfileFrame {
                 name,
+                attribution,
                 start: Instant::now(),
                 child_duration: Duration::ZERO,
+                alloc_start,
+                child_alloc: ThreadAllocationCounters::ZERO,
             });
         });
         Self {
@@ -57,6 +74,9 @@ impl Drop for ProfileGuard {
             return;
         }
 
+        // Snapshot the thread's allocation counters before any profiler
+        // bookkeeping below (all of it suppressed) runs.
+        let alloc_now = current_thread_allocation();
         PROFILE_STACK.with(|stack| {
             let mut stack = stack.borrow_mut();
             let Some(frame) = stack.pop() else {
@@ -64,11 +84,26 @@ impl Drop for ProfileGuard {
             };
 
             let duration = frame.start.elapsed();
+            let alloc_delta = alloc_now.since(frame.alloc_start);
             if let Some(parent) = stack.last_mut() {
                 parent.child_duration += duration;
+                parent.child_alloc.calls =
+                    parent.child_alloc.calls.saturating_add(alloc_delta.calls);
+                parent.child_alloc.bytes =
+                    parent.child_alloc.bytes.saturating_add(alloc_delta.bytes);
             }
-            self.profiler
-                .record_sample_enabled(frame.name, duration, frame.child_duration);
+            self.profiler.record_span_sample_attributed_enabled(
+                frame.name,
+                frame.attribution,
+                duration,
+                frame.child_duration,
+                SpanAllocationDelta {
+                    calls: alloc_delta.calls,
+                    bytes: alloc_delta.bytes,
+                    child_calls: frame.child_alloc.calls,
+                    child_bytes: frame.child_alloc.bytes,
+                },
+            );
         });
     }
 }
@@ -121,6 +156,11 @@ pub struct Profiler {
     /// Metrics by operation name, split into shards to keep parallel profile runs from
     /// funnelling every span through the same lock.
     pub(super) metrics: [RwLock<FxHashMap<&'static str, Metrics>>; PROFILER_SHARDS],
+    /// Metrics for spans carrying a non-empty [`SpanAttribution`], sharded by
+    /// operation name like `metrics`. Kept separate so every pre-attribution
+    /// consumer of `metrics`, `get`, `all`, and `summary` observes exactly the
+    /// historical key space.
+    attributed: [RwLock<FxHashMap<AttributedSpanKey, Metrics>>; PROFILER_SHARDS],
     /// Non-duration counters by name.
     counters: [RwLock<FxHashMap<&'static str, CounterMetrics>>; PROFILER_SHARDS],
     /// Whether profiling is enabled
@@ -132,6 +172,7 @@ impl Profiler {
     pub fn new() -> Self {
         Self {
             metrics: std::array::from_fn(|_| RwLock::new(FxHashMap::default())),
+            attributed: std::array::from_fn(|_| RwLock::new(FxHashMap::default())),
             counters: std::array::from_fn(|_| RwLock::new(FxHashMap::default())),
             enabled: AtomicBool::new(false),
         }
@@ -191,17 +232,28 @@ impl Profiler {
     /// Start a nested profiling span on the global profiler.
     #[inline]
     pub fn global_span(&'static self, name: &'static str) -> Option<ProfileGuard> {
+        self.global_span_attributed(name, SpanAttribution::EMPTY)
+    }
+
+    /// Start a nested profiling span carrying structured source attribution.
+    ///
+    /// An empty attribution records under the plain dotted key, exactly like
+    /// [`Profiler::global_span`]; a non-empty one records under its own
+    /// `key × attribution` bucket and is never merged into the plain key.
+    #[inline]
+    pub fn global_span_attributed(
+        &'static self,
+        name: &'static str,
+        attribution: SpanAttribution,
+    ) -> Option<ProfileGuard> {
         if self.is_enabled() {
-            Some(ProfileGuard::start(self, name))
+            Some(ProfileGuard::start(self, name, attribution))
         } else {
             None
         }
     }
 
     /// Record a duration and child duration after the caller has already checked profiling.
-    ///
-    /// `ProfileGuard::drop` uses this path after the macro has checked
-    /// `is_enabled()`, avoiding another atomic load for every nested span.
     #[doc(hidden)]
     pub fn record_sample_enabled(
         &self,
@@ -209,12 +261,66 @@ impl Profiler {
         duration: Duration,
         child_duration: Duration,
     ) {
+        self.record_span_sample_attributed_enabled(
+            name,
+            SpanAttribution::EMPTY,
+            duration,
+            child_duration,
+            SpanAllocationDelta::ZERO,
+        );
+    }
+
+    /// Record a duration under an attributed span key.
+    ///
+    /// Companion to [`Profiler::record`] for callers that measure durations
+    /// themselves; span guards from [`Profiler::global_span_attributed`] also
+    /// capture per-span allocation deltas, which this direct path cannot.
+    pub fn record_attributed(
+        &self,
+        name: &'static str,
+        attribution: SpanAttribution,
+        duration: Duration,
+    ) {
+        if !self.is_enabled() {
+            return;
+        }
+
+        self.record_span_sample_attributed_enabled(
+            name,
+            attribution,
+            duration,
+            Duration::ZERO,
+            SpanAllocationDelta::ZERO,
+        );
+    }
+
+    /// Record one span sample after the caller has already checked profiling.
+    ///
+    /// `ProfileGuard::drop` uses this path after the macro has checked
+    /// `is_enabled()`, avoiding another atomic load for every nested span.
+    fn record_span_sample_attributed_enabled(
+        &self,
+        name: &'static str,
+        attribution: SpanAttribution,
+        duration: Duration,
+        child_duration: Duration,
+        allocations: SpanAllocationDelta,
+    ) {
         let _allocation_tracking = pause_allocation_tracking();
-        let mut metrics = self.metrics_write(Self::shard_index(name));
-        metrics
-            .entry(name)
-            .or_default()
-            .record_with_child(duration, child_duration);
+        if attribution.is_empty() {
+            let mut metrics = self.metrics_write(Self::shard_index(name));
+            metrics.entry(name).or_default().record_span_sample(
+                duration,
+                child_duration,
+                allocations,
+            );
+        } else {
+            let mut metrics = self.attributed_write(Self::shard_index(name));
+            metrics
+                .entry(AttributedSpanKey { name, attribution })
+                .or_default()
+                .record_span_sample(duration, child_duration, allocations);
+        }
     }
 
     /// Record a non-duration counter sample.
@@ -349,12 +455,66 @@ impl Profiler {
                 .unwrap_or_else(|poisoned| poisoned.into_inner())
                 .clear();
         }
+        for shard in &self.attributed {
+            shard
+                .write()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .clear();
+        }
         for shard in &self.counters {
             shard
                 .write()
                 .unwrap_or_else(|poisoned| poisoned.into_inner())
                 .clear();
         }
+    }
+
+    /// Snapshot every span bucket — plain dotted keys first, then attributed
+    /// keys — for the machine-readable export.
+    pub(super) fn span_snapshot(&self) -> Vec<(&'static str, SpanAttribution, Metrics)> {
+        let _allocation_tracking = pause_allocation_tracking();
+        let mut spans = Vec::new();
+        for shard in &self.metrics {
+            let metrics = shard
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            spans.reserve(metrics.len());
+            spans.extend(
+                metrics
+                    .iter()
+                    .map(|(name, metrics)| (*name, SpanAttribution::EMPTY, metrics.clone())),
+            );
+        }
+        for shard in &self.attributed {
+            let metrics = shard
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            spans.reserve(metrics.len());
+            spans.extend(
+                metrics
+                    .iter()
+                    .map(|(key, metrics)| (key.name, key.attribution, metrics.clone())),
+            );
+        }
+        spans
+    }
+
+    /// Snapshot every counter for the machine-readable export.
+    pub(super) fn counter_snapshot(&self) -> Vec<(&'static str, CounterMetrics)> {
+        let _allocation_tracking = pause_allocation_tracking();
+        let mut counters = Vec::new();
+        for shard in &self.counters {
+            let entries = shard
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            counters.reserve(entries.len());
+            counters.extend(
+                entries
+                    .iter()
+                    .map(|(name, counter)| (*name, counter.clone())),
+            );
+        }
+        counters
     }
 
     /// Generate a summary report.
@@ -430,6 +590,16 @@ impl Profiler {
         shard: usize,
     ) -> RwLockWriteGuard<'_, FxHashMap<&'static str, Metrics>> {
         self.metrics[shard]
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    #[inline]
+    fn attributed_write(
+        &self,
+        shard: usize,
+    ) -> RwLockWriteGuard<'_, FxHashMap<AttributedSpanKey, Metrics>> {
+        self.attributed[shard]
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }

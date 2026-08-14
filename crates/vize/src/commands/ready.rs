@@ -111,6 +111,7 @@ pub fn run(args: ReadyArgs) {
         strict_reactivity: false,
         profile: false,
         slow_threshold: 100,
+        profile_export: Default::default(),
     });
 
     eprintln!("vize ready: check");
@@ -134,6 +135,7 @@ pub fn run(args: ReadyArgs) {
         profile: false,
         slow_threshold: 100,
         continue_on_error: false,
+        profile_export: Default::default(),
     });
 }
 
@@ -167,6 +169,7 @@ fn check_args(args: &ReadyArgs) -> CheckArgs {
         servers: None,
         declaration: false,
         declaration_dir: None,
+        profile_export: Default::default(),
     }
 }
 

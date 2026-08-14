@@ -3799,6 +3799,7 @@ dependencies = [
  "once_cell",
  "phf 0.13.1",
  "pklrust",
+ "regex-lite",
  "rustc-hash",
  "serde",
  "serde_json",

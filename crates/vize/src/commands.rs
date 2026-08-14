@@ -17,6 +17,7 @@ pub mod lint;
 #[cfg(feature = "maestro")]
 pub mod lsp;
 pub mod musea;
+pub mod profile_export;
 #[cfg(feature = "glyph")]
 pub mod ready;
 pub mod upgrade;

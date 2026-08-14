@@ -23,6 +23,16 @@ pub struct Metrics {
     pub min_self_duration: Duration,
     /// Maximum self duration
     pub max_self_duration: Duration,
+    /// Allocation-like calls made on the span's thread across all samples,
+    /// nested child spans included. Zero unless the profiling allocator is
+    /// installed and the sample was recorded through a span guard.
+    pub alloc_calls: u64,
+    /// Bytes requested by those allocation-like calls.
+    pub alloc_bytes: u64,
+    /// Allocation-like calls excluding those attributed to nested child spans.
+    pub self_alloc_calls: u64,
+    /// Bytes requested excluding those attributed to nested child spans.
+    pub self_alloc_bytes: u64,
     pub(super) histogram: [u64; PROFILE_HISTOGRAM_BUCKETS],
     pub(super) samples_over_1ms: u64,
     pub(super) samples_over_10ms: u64,
@@ -41,6 +51,10 @@ impl Metrics {
             max_duration: Duration::ZERO,
             min_self_duration: Duration::MAX,
             max_self_duration: Duration::ZERO,
+            alloc_calls: 0,
+            alloc_bytes: 0,
+            self_alloc_calls: 0,
+            self_alloc_bytes: 0,
             histogram: [0; PROFILE_HISTOGRAM_BUCKETS],
             samples_over_1ms: 0,
             samples_over_10ms: 0,
@@ -55,6 +69,17 @@ impl Metrics {
 
     /// Record a duration and the already-accounted nested child span duration.
     pub fn record_with_child(&mut self, duration: Duration, child_duration: Duration) {
+        self.record_span_sample(duration, child_duration, SpanAllocationDelta::ZERO);
+    }
+
+    /// Record one span sample: durations plus the thread-local allocation
+    /// delta measured over the span window.
+    pub(super) fn record_span_sample(
+        &mut self,
+        duration: Duration,
+        child_duration: Duration,
+        allocations: SpanAllocationDelta,
+    ) {
         let self_duration = duration.saturating_sub(child_duration);
 
         self.count += 1;
@@ -65,6 +90,14 @@ impl Metrics {
         self.max_duration = self.max_duration.max(duration);
         self.min_self_duration = self.min_self_duration.min(self_duration);
         self.max_self_duration = self.max_self_duration.max(self_duration);
+        self.alloc_calls = self.alloc_calls.saturating_add(allocations.calls);
+        self.alloc_bytes = self.alloc_bytes.saturating_add(allocations.bytes);
+        self.self_alloc_calls = self
+            .self_alloc_calls
+            .saturating_add(allocations.calls.saturating_sub(allocations.child_calls));
+        self.self_alloc_bytes = self
+            .self_alloc_bytes
+            .saturating_add(allocations.bytes.saturating_sub(allocations.child_bytes));
         self.histogram[duration_bucket(duration)] += 1;
 
         if duration >= Duration::from_millis(1) {
@@ -126,6 +159,27 @@ impl Default for Metrics {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Thread-local allocation growth measured over one span window.
+///
+/// `child_*` is the portion already attributed to nested child spans, so a
+/// parent's self-allocations mirror the existing self-duration accounting.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(super) struct SpanAllocationDelta {
+    pub(super) calls: u64,
+    pub(super) bytes: u64,
+    pub(super) child_calls: u64,
+    pub(super) child_bytes: u64,
+}
+
+impl SpanAllocationDelta {
+    pub(super) const ZERO: Self = Self {
+        calls: 0,
+        bytes: 0,
+        child_calls: 0,
+        child_bytes: 0,
+    };
 }
 
 /// Monotonic counter metrics for non-duration profile signals.

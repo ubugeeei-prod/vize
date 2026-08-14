@@ -19,7 +19,7 @@ use super::{
 /// Run type checking directly with materialized Corsa projects.
 pub(crate) fn run_direct(args: &CheckArgs) {
     let start = Instant::now();
-    if args.profile {
+    if args.profile || args.profile_export.is_requested() {
         let profiler = global_profiler();
         profiler.clear();
         profiler.enable();

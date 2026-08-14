@@ -124,6 +124,9 @@ pub struct BuildArgs {
     /// Continue on errors (collect all errors and show at end)
     #[arg(long)]
     pub continue_on_error: bool,
+
+    #[command(flatten)]
+    pub profile_export: super::profile_export::ProfileExportArgs,
 }
 
 pub fn run(args: BuildArgs) {
