@@ -196,6 +196,15 @@ on both sides before reporting success:
   missing rows always gate, and the sidecar rejects unknown surfaces,
   unknown projects, and entries without a reason.
 
-The baseline covers the 134-project manifest as of the P0-5 branch point;
-the P0-6 corpus-expansion projects re-run `corpus-baseline.mjs` when they
-land (that re-baseline is part of P0-6 per the phase plan).
+The baseline covers the 134-project manifest as of the P0-5 sweep. Corpus
+expansion round 1 (#4324) has since added 8 projects to the manifest
+(`dho-web-client`, `petite-vue`, `vue-core-vapor`, `vue-jsx-vapor`,
+`vue3-admin-design`, `vue3-antd-admin`, `wakapi`, `wave-ui`), so against
+the current 142-project manifest `corpus-diff` fails its scope proof up
+front — `manifest_project_count 134 != manifest 142` plus the eight
+missing rows per surface — and will keep failing until the artifact is
+regenerated on the reference runner. That re-baseline is P0-6 work per the
+phase plan (P0-6 is still open): run `node tools/davinci/corpus-baseline.mjs`
+once the new fixtures are checked out, and the row count moves to
+142 x 4 = 568. The failure is deliberate: a stale-scope baseline reports
+loudly instead of gating a subset of the corpus and calling it green.
