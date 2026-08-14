@@ -14,7 +14,7 @@ import {
   materializeCreateVueTypecheckSource,
 } from "../../../tests/_helpers/create-vue-typecheck-patch.ts";
 import { withPinnedFixtureWorkspace } from "../../../tests/_helpers/realworld-patch.ts";
-import { runPackagedExtensionHost } from "./packaged-host-contract.mjs";
+import { createRealHostEnvironment, runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 import { readPinnedCreateVueHostResult } from "./pinned-create-vue-host-result.mjs";
 
 const sourceExtensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -72,14 +72,13 @@ await withPinnedFixtureWorkspace(
         extensionId: "ubugeeei.vize",
         extensionsPath,
         extensionTestsPath,
-        hostEnvironment: {
-          ...process.env,
-          VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
-          VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
-          VIZE_TEST_PINNED_CREATE_VUE_RESULT_PATH: resultPath,
-          VIZE_TEST_SERVER_PATH: serverPath,
-          VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
-        },
+        hostEnvironment: createRealHostEnvironment({
+          extensionsPath,
+          processEnvironment: process.env,
+          resultPath,
+          serverPath,
+          sourceExtensionPath,
+        }),
         hostTimeoutMs,
         installEnvironment: process.env,
         installTimeoutMs: 120_000,

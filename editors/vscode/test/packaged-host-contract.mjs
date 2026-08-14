@@ -37,6 +37,29 @@ export function createPackagedHostLaunchArgs({
   ];
 }
 
+/**
+ * Builds the environment the real host smoke launches VS Code with. The hidden
+ * `vize.test.*` commands only exist when `VIZE_TEST_ENABLE_HOST_COMMANDS` is
+ * "1", so this lives next to the launch protocol and tests can assert the flag
+ * survives all the way into the recorded launch environment.
+ */
+export function createRealHostEnvironment({
+  extensionsPath,
+  processEnvironment,
+  resultPath,
+  serverPath,
+  sourceExtensionPath,
+}) {
+  return {
+    ...processEnvironment,
+    VIZE_TEST_ENABLE_HOST_COMMANDS: "1",
+    VIZE_TEST_PACKAGED_EXTENSIONS_DIR: extensionsPath,
+    VIZE_TEST_PINNED_CREATE_VUE_RESULT_PATH: resultPath,
+    VIZE_TEST_SERVER_PATH: serverPath,
+    VIZE_TEST_SOURCE_EXTENSION_PATH: sourceExtensionPath,
+  };
+}
+
 export function createPackagedHostEnvironment(environment) {
   const cleanEnvironment = { ...environment };
   delete cleanEnvironment.NODE_OPTIONS;

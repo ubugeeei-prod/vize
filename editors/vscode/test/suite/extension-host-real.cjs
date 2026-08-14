@@ -26,23 +26,6 @@ const expectedMismatchDiagnostic = {
   source: "vize/types",
 };
 const mismatchRepairRange = new vscode.Range(9, 19, 9, 24);
-const requiredTemplateCompletionLabels = ["Child", "amount", "label"];
-const forbiddenTemplateCompletionLabels = [
-  "Fake Vize Completion",
-  "v-bind",
-  "v-else",
-  "v-else-if",
-  "v-for",
-  "v-html",
-  "v-if",
-  "v-model",
-  "v-on",
-  "v-once",
-  "v-pre",
-  "v-show",
-  "v-slot",
-  "v-text",
-];
 
 exports.run = async function run() {
   logProgress("start");
@@ -113,36 +96,17 @@ async function runRealDiagnosticSmoke(mismatchDocument, cleanDocument) {
 }
 
 async function runRealCompletionSmoke(mismatchDocument) {
+  const { HOST_TEST_COMPLETION_COMMAND, assertRealHostCompletionLabels } = await import(
+    "../real-host-completion-oracle.mjs"
+  );
   const position = positionAfter(mismatchDocument, "{{ label }}", "{{ label");
-  const completions = await vscode.commands.executeCommand("vize.test.executeCompletion", {
+  const completions = await vscode.commands.executeCommand(HOST_TEST_COMPLETION_COMMAND, {
     uri: mismatchDocument.uri.toString(),
     line: position.line,
     character: position.character,
   });
-  const labels = completionItems(completions).map((item) =>
-    typeof item.label === "string" ? item.label : item.label.label,
-  );
 
-  for (const required of requiredTemplateCompletionLabels) {
-    assert.ok(
-      labels.includes(required),
-      `template completion must include script binding ${JSON.stringify(required)}: ${JSON.stringify(labels)}`,
-    );
-  }
-  for (const forbidden of forbiddenTemplateCompletionLabels) {
-    assert.equal(
-      labels.includes(forbidden),
-      false,
-      `template expression completion must not surface ${JSON.stringify(forbidden)}: ${JSON.stringify(labels)}`,
-    );
-  }
-}
-
-function completionItems(response) {
-  if (Array.isArray(response)) {
-    return response;
-  }
-  return response?.items ?? [];
+  assertRealHostCompletionLabels(completions);
 }
 
 async function runRealHoverSmoke(mismatchDocument) {
