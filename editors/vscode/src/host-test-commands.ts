@@ -1,6 +1,6 @@
 import { commands, type Disposable } from "vscode";
 
-import { createHostTestCommands, type HostTestLanguageClient } from "./extension-core";
+import { bindHostTestCommands, type HostTestLanguageClient } from "./extension-core";
 
 /**
  * Binds the environment-gated host smoke commands to the VS Code command
@@ -11,7 +11,9 @@ export function registerHostTestCommands(
   getClient: () => HostTestLanguageClient | undefined,
   environment: Partial<Record<string, string>> = process.env,
 ): Disposable[] {
-  return createHostTestCommands({ environment, getClient }).map(({ command, handler }) =>
-    commands.registerCommand(command, handler),
-  );
+  return bindHostTestCommands({
+    environment,
+    getClient,
+    register: (command, handler) => commands.registerCommand(command, handler),
+  });
 }

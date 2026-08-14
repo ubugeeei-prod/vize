@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   HOST_TEST_COMMAND_ENVIRONMENT_FLAG,
   HOST_TEST_COMPLETION_COMMAND,
+  bindHostTestCommands,
   createHostTestCommands,
   type HostTestLanguageClient,
   type TestCompletionRequest,
@@ -12,7 +13,6 @@ import {
   HOST_TEST_COMPLETION_COMMAND as suiteHostCompletionCommand,
   assertRealHostCompletionLabels,
 } from "../../editors/vscode/test/real-host-completion-oracle.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 test("the hidden host completion command only exists for the host smoke", async () => {
   const client = createFakeClient([{ label: "label" }]);
@@ -59,7 +59,9 @@ test("the host completion command forwards the request to the Vize language clie
   const invalidRequests: unknown[] = [
     undefined,
     { character: 8, line: 3 },
+    { character: 8, line: 3, uri: 42 },
     { character: 8, line: -1, uri: "file:///App.vue" },
+    { character: -1, line: 3, uri: "file:///App.vue" },
     { character: 1.5, line: 3, uri: "file:///App.vue" },
   ];
   for (const invalid of invalidRequests) {
@@ -71,13 +73,42 @@ test("the host completion command forwards the request to the Vize language clie
   assert.equal(client.requests.length, 1);
 });
 
-test("the extension registers the gated host commands from the packaged activation", () => {
-  const extensionSource = readRepoFile("editors/vscode/src/extension.ts");
-  const glueSource = readRepoFile("editors/vscode/src/host-test-commands.ts");
+test("registering the gated host commands leaves an executable command behind", async () => {
+  const registry = new Map<string, (request: TestCompletionRequest) => Promise<unknown>>();
+  const register = (
+    command: string,
+    handler: (request: TestCompletionRequest) => Promise<unknown>,
+  ) => {
+    registry.set(command, handler);
+    return { dispose: () => registry.delete(command) };
+  };
+  const client = createFakeClient([{ label: "label" }]);
 
-  assert.match(extensionSource, /\.\.\.registerHostTestCommands\(\(\) => client\)/);
-  assert.match(glueSource, /createHostTestCommands\(\{ environment, getClient \}\)/);
-  assert.match(glueSource, /commands\.registerCommand\(command, handler\)/);
+  assert.deepEqual(
+    bindHostTestCommands({ environment: {}, getClient: () => client, register }),
+    [],
+  );
+  assert.deepEqual([...registry.keys()], []);
+
+  const registrations = bindHostTestCommands({
+    environment: { [HOST_TEST_COMMAND_ENVIRONMENT_FLAG]: "1" },
+    getClient: () => client,
+    register,
+  });
+  assert.deepEqual([...registry.keys()], [HOST_TEST_COMPLETION_COMMAND]);
+
+  const execute = registry.get(HOST_TEST_COMPLETION_COMMAND);
+  assert.ok(execute);
+  assert.deepEqual(await execute({ character: 8, line: 3, uri: "file:///App.vue" }), {
+    isIncomplete: false,
+    items: [{ label: "label" }],
+  });
+  assert.equal(client.requests.length, 1);
+
+  for (const registration of registrations) {
+    registration.dispose();
+  }
+  assert.deepEqual([...registry.keys()], []);
 });
 
 test("the real host completion oracle keeps the smoke on the Vize server answer", () => {

@@ -159,6 +159,23 @@ export function createHostTestCommands(behavior: {
   ];
 }
 
+/**
+ * Registers the gated host commands through the caller's command registry so
+ * the wiring stays observable without a VS Code host.
+ */
+export function bindHostTestCommands<TRegistration>(behavior: {
+  environment: Partial<Record<string, string>>;
+  getClient: () => HostTestLanguageClient | undefined;
+  register: (
+    command: string,
+    handler: (request: TestCompletionRequest) => Promise<unknown>,
+  ) => TRegistration;
+}): TRegistration[] {
+  return createHostTestCommands(behavior).map(({ command, handler }) =>
+    behavior.register(command, handler),
+  );
+}
+
 function assertTestCompletionRequest(request: TestCompletionRequest): void {
   if (
     request == null ||
